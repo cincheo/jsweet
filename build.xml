@@ -1,0 +1,43 @@
+<project name="jsweet" basedir="." default="install-toolsjar">
+
+	<property environment="env" />
+
+	<condition property="maven.bin" value="${env.MAVEN_HOME}\bin\mvn.cmd" else="${env.MAVEN_HOME}/bin/mvn">
+		<os family="winnt" />
+	</condition>
+
+	<target name="install-toolsjar">
+		<property name="lib.path" value="C:/Program Files/Java/jdk1.8.0_60/lib/tools.jar">
+		</property>
+		<echo>installing local tools.jar in local maven: ${lib.path}</echo>
+		<echo>Java home: ${env.JAVA_HOME}</echo>
+		<echo>Maven home: ${env.MAVEN_HOME}</echo>
+		<echo>WARNING: this script requires that your JAVA_HOME environment variable points to the Java 8 JDK (not JRE)</echo>
+		<echo>note that under Eclipse, you can locally set your JAVA_HOME variable in "External tools configuration -> Environment"</echo>
+		<property name="lib.name" value="tools">
+		</property>
+		<property name="lib.version" value="8">
+		</property>
+		<exec executable="${maven.bin}" failonerror="true">
+			<arg line="install:install-file -Dfile='${lib.path}' -DgroupId=com.sun -DartifactId=${lib.name} -Dpackaging=jar -Dversion=${lib.version}" />
+		</exec>
+		<echo>WARNING: a successful build does not necessarily mean that you installed the right version of tools.jar</echo>
+	</target>
+
+	<target name="deploy-toolsjar">
+		<property name="lib.path" value="${env.JAVA_HOME}/lib/tools.jar">
+		</property>
+		<echo>installing local tools.jar in local maven: ${lib.path}</echo>
+		<echo>WARNING: this script requires that your JAVA_HOME environment variable points to the Java 8 JDK (not JRE)</echo>
+		<echo>note that under Eclipse, you can locally set your JAVA_HOME variable in "External tools configuration -> Environment"</echo>
+		<property name="lib.name" value="tools">
+		</property>
+		<property name="lib.version" value="8">
+		</property>
+		<exec executable="${maven.bin}" failonerror="true">
+			<arg line="deploy:deploy-file -Dfile='${lib.path}' -Durl=http://jsweet.org:8081/artifactory/libs-release-local -DrepositoryId=jsweet-release -DgroupId=com.sun -DartifactId=${lib.name} -Dpackaging=jar -Dversion=${lib.version}" />
+		</exec>
+		<echo>WARNING: a successful build does not necessarily mean that you installed the right version of tools.jar</echo>
+	</target>
+
+</project>
