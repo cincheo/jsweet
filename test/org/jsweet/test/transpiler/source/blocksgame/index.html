@@ -1,0 +1,76 @@
+<html>
+<head>
+<title>Blocks game</title>
+<style type="text/css">
+html, body {
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	background-color: black;
+}
+
+body * {
+	font-family: verdana;
+	font-size: 12px;
+	color: white;
+}
+
+div {
+	margin: 0px;
+	padding: 0px;
+	border: 0px;
+}
+</style>
+
+	<link rel="icon" type="image/png" href="../../../../../logo.png">
+	<link rel="shortcut icon" href="../../../../../logo.png">
+</head>
+<body id="body" style="margin: 0; padding: 0">
+
+	<img id="sprite-breakable-block" src="breakable-block.png"
+		style="display: none;" />
+	<img id="sprite-unbreakable-block" src="unbreakable-block.png"
+		style="display: none;" />
+	<canvas id="spritesCanvas" style="display: none;" width="1000px"
+		height="100px"></canvas>
+
+	<div id="textRow" style="margin-left: auto; margin-right: auto;">
+		<span id="blocks" style="font-family: impact;">Blocks</span><span style="float: right"><span
+			id="time" style="font-family: impact;"></span></span>
+	</div>
+
+	<div id="gameRow"
+		style="margin-left: auto; margin-right: auto; height: 40px;">
+		<div id="gameContent" style="position: relative;">
+			<canvas id="topLayer"
+				style="position: absolute; left: 0px; top: 0px; z-index: 4;"></canvas>
+			<canvas id="ballsLayer"
+				style="position: absolute; left: 0px; top: 0px; z-index: 3;"></canvas>
+			<canvas id="areaLayer"
+				style="position: absolute; left: 0px; top: 0px; z-index: 1;"></canvas>
+			<canvas id="backgroundLayer"
+				style="position: absolute; left: 0px; top: 0px; z-index: 0; background-color: black;"></canvas>
+		</div>
+	</div>
+
+	<script src="util/Point.js"></script>
+	<script src="util/Line.js"></script>
+	<script src="util/Rectangle.js"></script>
+	<script src="util/AnimatedElement.js"></script>
+	<script src="util/Vector.js"></script>
+	<script src="util/MobileElement.js"></script>
+	<script src="util/Direction.js"></script>
+	<script src="util/Collisions.js"></script>
+	<script src="BlockElement.js"></script>
+	<script src="Ball.js"></script>
+	<script src="Player.js"></script>
+	<script src="Factory.js"></script>
+	<script src="GameArea.js"></script>
+	<script src="GameManager.js"></script>
+	<script src="globals/Globals.js"></script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+/* Copyright 2015 CINCHEO SAS
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jsweet.test.transpiler;
+
+import java.io.File;
+
+import org.apache.commons.io.FileUtils;
+import org.jsweet.test.transpiler.source.ambient.LibAccess;
+import org.jsweet.test.transpiler.source.ambient.LibAccessSubModule;
+import org.jsweet.test.transpiler.source.ambient.lib.Base;
+import org.jsweet.test.transpiler.source.ambient.lib.Extension;
+import org.jsweet.test.transpiler.source.ambient.lib.sub.C;
+import org.jsweet.transpiler.ModuleKind;
+import org.jsweet.transpiler.SourceFile;
+import org.jsweet.transpiler.util.EvaluationResult;
+import org.junit.Assert;
+import org.junit.Test;
+
+public class AmbientTests extends AbstractTest {
+
+	@Test
+	public void testLibAccess() throws Exception {
+		File target = new File(transpiler.getTsOutputDir(), "lib.js");
+		FileUtils.deleteQuietly(target);
+		FileUtils.copyFile(new File("test/org/jsweet/test/transpiler/source/ambient/lib.js"), target);
+		System.out.println("copied to " + target);
+
+		SourceFile libJs = new SourceFile(null) {
+			{
+				setJsFile(target);
+			}
+
+			@Override
+			public String toString() {
+				return target.toString();
+			}
+
+			@Override
+			public void touch() {
+			}
+		};
+
+		// TODO: also test with modules (we need a requirable lib and a way to
+		// specify modules in ambients)
+		eval(ModuleKind.none, (logHandler, result) -> {
+			Assert.assertTrue("test was not executed", result.get("baseExecuted"));
+			Assert.assertTrue("extension was not executed", result.get("extensionExecuted"));
+		} , libJs, getSourceFile(LibAccess.class));
+	}
+
+	@Test
+	public void testLibAccessSubModule() throws Exception {
+		File target = new File(transpiler.getTsOutputDir(), "libsub.js");
+		FileUtils.deleteQuietly(target);
+		FileUtils.copyFile(new File("test/org/jsweet/test/transpiler/source/ambient/libsub.js"), target);
+		System.out.println("copied to " + target);
+
+		SourceFile libJs = new SourceFile(null) {
+			{
+				setJsFile(target);
+			}
+
+			@Override
+			public String toString() {
+				return target.toString();
+			}
+
+			@Override
+			public void touch() {
+			}
+		};
+
+		// TODO: also test with modules (we need a requirable lib and a way to
+		// specify modules in ambients)
+		eval(ModuleKind.none, (logHandler, result) -> {
+			Assert.assertTrue("test was not executed", result.get("baseExecuted"));
+			Assert.assertTrue("extension was not executed", result.get("extensionExecuted"));
+		} , libJs, getSourceFile(LibAccessSubModule.class), getSourceFile(Base.class),
+				getSourceFile(Extension.class), getSourceFile(C.class));
+	}
+
+}
