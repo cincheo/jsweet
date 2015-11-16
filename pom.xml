@@ -182,7 +182,7 @@
 		<!-- Test-only dependencies for testing candies -->
 		<dependency>
 			<groupId>org.jsweet.candies</groupId>
-			<artifactId>core</artifactId>
+			<artifactId>jsweet-core</artifactId>
 			<version>1.0.1-SNAPSHOT</version>
 			<scope>test</scope>
 			<optional>true</optional>
