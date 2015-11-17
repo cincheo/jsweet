@@ -20,5 +20,5 @@ Visit JSweet's web site (http://www.jsweet.org) to get started with JSweet.
 
 ## License
 
-JSweet is under the Apache 2.0 license.
+JSweet is under the Apache 2.0 Open Source license.
 
