@@ -1,8 +1,8 @@
 # JSweet: a Java to JavaScript transpiler
 
-JSweet is built on the top of TypeScript to bring the most up-to-date and safest JavaScript APIs right to the Java world.
+JSweet is built on the top of TypeScript to bring the most up-to-date JavaScript APIs right to the Java world.
 
-JSweet is *not* Java, it is Java syntax only and the APIs and programs run in JavaScript. With JSweet, your take advantage of all the Java tooling to program *real* JavaScript applications using the *latest* JavaScript libraries.
+JSweet is *not* Java, it is Java syntax only and the APIs and programs run in JavaScript. With JSweet, your take advantage of all the Java tooling to program *real* JavaScript applications using the *latest* JavaScript libraries. JSweet is designed to be as safe as possible and generate fully type-checked JavaScript programs.
 
 ## Features
 
