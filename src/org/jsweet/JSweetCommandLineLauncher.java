@@ -252,8 +252,7 @@ public class JSweetCommandLineLauncher {
 	}
 
 	private static void printUsage(JSAP jsapSpec) {
-		System.out.println("Usage: java -jar <jsweet-jar-with-dependencies> [option(s)]");
-		System.out.println("  options:\n");
+		System.out.println("Command line options:");
 		System.out.println(jsapSpec.getHelp());
 		System.exit(-1);
 	}
