@@ -38,6 +38,8 @@ import org.junit.rules.TestName;
 
 public class AbstractTest {
 
+	protected static final String TEST_DIRECTORY_NAME = "src/test/java";
+
 	protected static final Logger staticLogger = Logger.getLogger(AbstractTest.class);
 
 	protected final Logger logger = Logger.getLogger(getClass());
@@ -48,7 +50,7 @@ public class AbstractTest {
 	public final TestName testNameRule = new TestName();
 
 	protected File getTestFile(String name) {
-		return new File("./test/" + getClass().getPackage().getName().replace('.', '/'), name + ".d.ts");
+		return new File(TEST_DIRECTORY_NAME + "/" + getClass().getPackage().getName().replace('.', '/'), name + ".d.ts");
 	}
 
 	protected final String getCurrentTestName() {
@@ -112,7 +114,7 @@ public class AbstractTest {
 	}
 
 	protected SourceFile getSourceFile(Class<?> mainClass) {
-		return new SourceFile(new File("test/" + mainClass.getName().replace(".", "/") + ".java"));
+		return new SourceFile(new File(TEST_DIRECTORY_NAME + "/" + mainClass.getName().replace(".", "/") + ".java"));
 	}
 
 	protected EvaluationResult eval(SourceFile sourceFile, JSweetProblem... expectedProblems) {

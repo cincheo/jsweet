@@ -128,7 +128,7 @@ public class TranspilerTests extends AbstractTest {
 				"--tsout", outDir.getPath(), //
 				"--jsout", outDir.getPath(), //
 				"--debug", //
-				"-i", "test/org/jsweet/test/transpiler/source/blocksgame");
+				"-i", TEST_DIRECTORY_NAME+"/org/jsweet/test/transpiler/source/blocksgame");
 
 		assertTrue(process.exitValue() == 0);
 		LinkedList<File> files = new LinkedList<>();

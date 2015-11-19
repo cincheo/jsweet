@@ -24,7 +24,6 @@ import org.jsweet.test.transpiler.source.ambient.lib.Extension;
 import org.jsweet.test.transpiler.source.ambient.lib.sub.C;
 import org.jsweet.transpiler.ModuleKind;
 import org.jsweet.transpiler.SourceFile;
-import org.jsweet.transpiler.util.EvaluationResult;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -34,7 +33,7 @@ public class AmbientTests extends AbstractTest {
 	public void testLibAccess() throws Exception {
 		File target = new File(transpiler.getTsOutputDir(), "lib.js");
 		FileUtils.deleteQuietly(target);
-		FileUtils.copyFile(new File("test/org/jsweet/test/transpiler/source/ambient/lib.js"), target);
+		FileUtils.copyFile(new File(TEST_DIRECTORY_NAME + "/org/jsweet/test/transpiler/source/ambient/lib.js"), target);
 		System.out.println("copied to " + target);
 
 		SourceFile libJs = new SourceFile(null) {
@@ -64,7 +63,7 @@ public class AmbientTests extends AbstractTest {
 	public void testLibAccessSubModule() throws Exception {
 		File target = new File(transpiler.getTsOutputDir(), "libsub.js");
 		FileUtils.deleteQuietly(target);
-		FileUtils.copyFile(new File("test/org/jsweet/test/transpiler/source/ambient/libsub.js"), target);
+		FileUtils.copyFile(new File(TEST_DIRECTORY_NAME + "/org/jsweet/test/transpiler/source/ambient/libsub.js"), target);
 		System.out.println("copied to " + target);
 
 		SourceFile libJs = new SourceFile(null) {
@@ -87,8 +86,7 @@ public class AmbientTests extends AbstractTest {
 		eval(ModuleKind.none, (logHandler, result) -> {
 			Assert.assertTrue("test was not executed", result.get("baseExecuted"));
 			Assert.assertTrue("extension was not executed", result.get("extensionExecuted"));
-		} , libJs, getSourceFile(LibAccessSubModule.class), getSourceFile(Base.class),
-				getSourceFile(Extension.class), getSourceFile(C.class));
+		} , libJs, getSourceFile(LibAccessSubModule.class), getSourceFile(Base.class), getSourceFile(Extension.class), getSourceFile(C.class));
 	}
 
 }
