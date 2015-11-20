@@ -109,10 +109,9 @@ public class TranspilerTests extends AbstractTest {
 	}
 
 	@Test
-	public void testTscInstallation() throws Throwable {
+	public void testTscInstallation() {
 		ProcessUtil.uninstallNodePackage("typescript", true);
-		Process process = ProcessUtil.runCommand("tsc", null, null , "--version");
-		assertFalse(process.exitValue()==0);
+		assertFalse(ProcessUtil.isInstalledWithNpm("tsc"));
 		transpiler.cleanWorkingDirectory();
 		transpile(ModuleKind.none, h -> h.assertReportedProblems(), getSourceFile(Overload.class));
 	}
@@ -128,7 +127,7 @@ public class TranspilerTests extends AbstractTest {
 				"--tsout", outDir.getPath(), //
 				"--jsout", outDir.getPath(), //
 				"--debug", //
-				"-i", TEST_DIRECTORY_NAME+"/org/jsweet/test/transpiler/source/blocksgame");
+				"-i", TEST_DIRECTORY_NAME + "/org/jsweet/test/transpiler/source/blocksgame");
 
 		assertTrue(process.exitValue() == 0);
 		LinkedList<File> files = new LinkedList<>();

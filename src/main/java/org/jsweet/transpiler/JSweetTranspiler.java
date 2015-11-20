@@ -207,12 +207,12 @@ public class JSweetTranspiler {
 				transpilationHandler.report(JSweetProblem.NODE_CANNOT_START, null, JSweetProblem.NODE_CANNOT_START.getMessage());
 				throw new RuntimeException("cannot find node.js");
 			} , "--version");
-			ProcessUtil.runCommand("tsc", null, () -> {
+			if (!ProcessUtil.isInstalledWithNpm("tsc")) {
 				ProcessUtil.installNodePackage("typescript", true);
-			} , "--version");
-			ProcessUtil.runCommand("browserify", null, () -> {
+			}
+			if (!ProcessUtil.isInstalledWithNpm("browserify")) {
 				ProcessUtil.installNodePackage("browserify", true);
-			} , "--version");
+			}
 			initFile.mkdirs();
 			initFile.createNewFile();
 		}

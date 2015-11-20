@@ -17,7 +17,8 @@ package org.jsweet.transpiler.util;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
-import java.util.Map;
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Consumer;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -39,8 +40,25 @@ public class ProcessUtil {
 
 	private static File NPM_DIR = new File(USER_HOME_DIR, ".jsweet-node_modules");
 
-	private static String WINDOWS_PATH_VARIABLE = "Path";
-	private static String UNIX_PATH_VARIABLE = "PATH";
+	private static List<String> nodeCommands = Arrays.asList("tsc", "browserify");
+
+	/**
+	 * Gets the full path of a command installed with npm.
+	 */
+	private static String getNpmPath(String command) {
+		if (System.getProperty("os.name").startsWith("Windows")) {
+			return NPM_DIR.getPath() + File.separator + command + ".cmd";
+		} else {
+			return NPM_DIR.getPath() + File.separator + "bin" + File.separator + command;
+		}
+	}
+
+	/**
+	 * Tells if this node command is installed.
+	 */
+	public static boolean isInstalledWithNpm(String command) {
+		return new File(getNpmPath(command)).exists();
+	}
 
 	/**
 	 * Runs the given command.
@@ -106,26 +124,25 @@ public class ProcessUtil {
 			Runnable errorHandler, String... args) {
 
 		String[] cmd;
-		String pathVariable;
 		if (System.getProperty("os.name").startsWith("Windows")) {
-			cmd = new String[] { "cmd", "/c" };
-			pathVariable = WINDOWS_PATH_VARIABLE;
+			if (nodeCommands.contains(command)) {
+				cmd = new String[] { getNpmPath(command) };
+			} else {
+				cmd = new String[] { "cmd", "/c", command };
+			}
 		} else {
-			cmd = new String[0];
-			pathVariable = UNIX_PATH_VARIABLE;
+			if (nodeCommands.contains(command)) {
+				cmd = new String[] { getNpmPath(command) };
+			} else {
+				cmd = new String[] { command };
+			}
 		}
-		cmd = ArrayUtils.addAll(cmd, command);
 		cmd = ArrayUtils.addAll(cmd, args);
 
 		logger.debug("run command: " + StringUtils.join(cmd, " "));
 		Process[] process = { null };
 		try {
 			ProcessBuilder processBuilder = new ProcessBuilder(cmd);
-			Map<String, String> envs = processBuilder.environment();
-			String currentPath = envs.get(pathVariable);
-			String newPath = NPM_DIR.getPath() + File.separator + "bin" + (currentPath != null ? File.pathSeparator + currentPath : "");
-			envs.put(pathVariable, newPath);
-			logger.debug("path: " + newPath);
 			processBuilder.redirectErrorStream(true);
 			if (directory != null) {
 				processBuilder.directory(directory);
@@ -177,6 +194,7 @@ public class ProcessUtil {
 			if (errorHandler != null) {
 				errorHandler.run();
 			}
+			return null;
 		}
 		return process[0];
 	}
