@@ -200,7 +200,7 @@ public class JSweetTranspiler {
 		candiesProcessor.touch();
 	}
 
-	protected void initNode(TranspilationHandler transpilationHandler) throws Exception {
+	private void initNode(TranspilationHandler transpilationHandler) throws Exception {
 		File initFile = new File(workingDir, ".node-init");
 		boolean initialized = initFile.exists();
 		if (!initialized) {
@@ -208,14 +208,17 @@ public class JSweetTranspiler {
 				transpilationHandler.report(JSweetProblem.NODE_CANNOT_START, null, JSweetProblem.NODE_CANNOT_START.getMessage());
 				throw new RuntimeException("cannot find node.js");
 			} , "--version");
-			if (!ProcessUtil.isInstalledWithNpm("tsc")) {
-				ProcessUtil.installNodePackage("typescript", true);
-			}
-			if (!ProcessUtil.isInstalledWithNpm("browserify")) {
-				ProcessUtil.installNodePackage("browserify", true);
-			}
 			initFile.mkdirs();
 			initFile.createNewFile();
+		}
+	}
+
+	private void initNodeCommands(TranspilationHandler transpilationHandler) throws Exception {
+		if (!ProcessUtil.isInstalledWithNpm("tsc")) {
+			ProcessUtil.installNodePackage("typescript", true);
+		}
+		if (!ProcessUtil.isInstalledWithNpm("browserify")) {
+			ProcessUtil.installNodePackage("browserify", true);
 		}
 	}
 
@@ -535,6 +538,7 @@ public class JSweetTranspiler {
 		transpilationStartTimestamp = System.currentTimeMillis();
 		try {
 			initNode(transpilationHandler);
+			initNodeCommands(transpilationHandler);
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			return;
