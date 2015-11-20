@@ -41,7 +41,7 @@ public class ProcessUtil {
 
 	private static String WINDOWS_PATH_VARIABLE = "Path";
 	private static String UNIX_PATH_VARIABLE = "PATH";
-	
+
 	/**
 	 * Runs the given command.
 	 * 
@@ -123,7 +123,7 @@ public class ProcessUtil {
 			ProcessBuilder processBuilder = new ProcessBuilder(cmd);
 			Map<String, String> envs = processBuilder.environment();
 			String currentPath = envs.get(pathVariable);
-			String newPath = NPM_DIR.getPath() + (currentPath != null ? File.pathSeparator + currentPath : "");
+			String newPath = NPM_DIR.getPath() + File.separator + "bin" + (currentPath != null ? File.pathSeparator + currentPath : "");
 			envs.put(pathVariable, newPath);
 			logger.debug("path: " + newPath);
 			processBuilder.redirectErrorStream(true);
