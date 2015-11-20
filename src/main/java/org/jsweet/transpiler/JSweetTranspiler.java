@@ -197,6 +197,7 @@ public class JSweetTranspiler {
 
 	public void cleanWorkingDirectory() {
 		FileUtils.deleteQuietly(this.workingDir);
+		candiesProcessor.touch();
 	}
 
 	protected void initNode(TranspilationHandler transpilationHandler) throws Exception {

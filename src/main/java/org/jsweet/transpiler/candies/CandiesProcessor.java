@@ -298,6 +298,13 @@ public class CandiesProcessor {
 
 	private CandiesStore candiesStore;
 
+	/**
+	 * Cleans the candies store so that it will be read from file next time.
+	 */
+	public void touch() {
+		candiesStore = null;
+	}
+
 	private CandiesStore getCandiesStore() {
 		if (candiesStore == null) {
 			if (candiesStoreFile.exists()) {

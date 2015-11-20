@@ -29,7 +29,6 @@ import org.jsweet.test.transpiler.source.syntax.QualifiedNames;
 import org.jsweet.test.transpiler.source.syntax.References;
 import org.jsweet.test.transpiler.source.syntax.SpecialFunctions;
 import org.jsweet.test.transpiler.source.syntax.ValidIndexedAccesses;
-import org.jsweet.test.transpiler.source.typing.InvalidIndexedAccesses;
 import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.util.EvaluationResult;
 import org.junit.Assert;

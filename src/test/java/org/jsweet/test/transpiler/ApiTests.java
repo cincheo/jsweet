@@ -15,7 +15,6 @@
 package org.jsweet.test.transpiler;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 import org.jsweet.test.transpiler.source.api.CastMethods;
 import org.jsweet.test.transpiler.source.api.ForeachIteration;
@@ -24,7 +23,6 @@ import org.jsweet.test.transpiler.source.api.PrimitiveInstantiation;
 import org.jsweet.test.transpiler.source.api.QualifiedInstantiation;
 import org.jsweet.test.transpiler.source.api.WrongJdkInvocations;
 import org.jsweet.transpiler.JSweetProblem;
-import org.jsweet.transpiler.util.EvaluationResult;
 import org.junit.Assert;
 import org.junit.Test;
 

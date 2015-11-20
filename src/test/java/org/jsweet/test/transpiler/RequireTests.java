@@ -43,7 +43,6 @@ import org.jsweet.test.transpiler.source.require.b.ClassImport;
 import org.jsweet.test.transpiler.source.require.b.ClassImportImplicitRequire;
 import org.jsweet.test.transpiler.source.require.b.GlobalsImport;
 import org.jsweet.transpiler.ModuleKind;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class RequireTests extends AbstractTest {

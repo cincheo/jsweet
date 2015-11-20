@@ -15,8 +15,9 @@
 package org.jsweet.test.transpiler;
 
 
-import static org.jsweet.transpiler.JSweetProblem.*;
+import static org.jsweet.transpiler.JSweetProblem.GLOBAL_CANNOT_BE_INSTANTIATED;
 import static org.jsweet.transpiler.JSweetProblem.GLOBAL_CONSTRUCTOR_DEF;
+import static org.jsweet.transpiler.JSweetProblem.GLOBAL_DELETE;
 import static org.jsweet.transpiler.JSweetProblem.GLOBAL_INDEXER_GET;
 import static org.jsweet.transpiler.JSweetProblem.GLOBAL_INDEXER_SET;
 import static org.junit.Assert.assertEquals;
@@ -44,7 +45,6 @@ import org.jsweet.test.transpiler.source.structural.globalclasses.d.GlobalFuncti
 import org.jsweet.test.transpiler.source.structural.globalclasses.f.GlobalFunctionStaticDelete;
 import org.jsweet.test.transpiler.source.structural.globalclasses.g.GlobalFunctionDelete;
 import org.jsweet.transpiler.JSweetProblem;
-import org.jsweet.transpiler.ModuleKind;
 import org.junit.Assert;
 import org.junit.Test;
 

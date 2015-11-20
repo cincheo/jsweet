@@ -15,11 +15,8 @@
 package org.jsweet.test.transpiler;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
-import org.jsweet.test.transpiler.source.candies.QualifiedNames;
 import org.jsweet.test.transpiler.source.generics.InstantiationWithGenerics;
-import org.jsweet.transpiler.ModuleKind;
 import org.junit.Test;
 
 public class GenericsTests extends AbstractTest {
