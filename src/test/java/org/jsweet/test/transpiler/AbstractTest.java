@@ -92,11 +92,12 @@ public class AbstractTest {
 		if (!testSuiteInitialized) {
 			staticLogger.info("*** test suite initialization ***");
 			FileUtils.deleteQuietly(outDir);
+			staticLogger.info("*** create tranpiler ***");
+			transpiler = new JSweetTranspiler(outDir, null, System.getProperty("java.class.path"));
+			transpiler.setModuleKind(ModuleKind.none);
+			transpiler.cleanWorkingDirectory();
 			testSuiteInitialized = true;
 		}
-		staticLogger.info("*** create tranpiler ***");
-		transpiler = new JSweetTranspiler(outDir, null, System.getProperty("java.class.path"));
-		transpiler.setModuleKind(ModuleKind.none);
 	}
 
 	private void initOutputDir() {
