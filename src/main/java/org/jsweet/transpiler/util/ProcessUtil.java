@@ -17,6 +17,7 @@ package org.jsweet.transpiler.util;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
+import java.util.Map;
 import java.util.function.Consumer;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -36,6 +37,11 @@ public class ProcessUtil {
 	 */
 	public static File USER_HOME_DIR = new File(System.getProperty("user.home"));
 
+	private static File NPM_DIR = new File(USER_HOME_DIR, ".jsweet-node_modules");
+
+	private static String WINDOWS_PATH_VARIABLE = "Path";
+	private static String UNIX_PATH_VARIABLE = "PATH";
+	
 	/**
 	 * Runs the given command.
 	 * 
@@ -100,10 +106,13 @@ public class ProcessUtil {
 			Runnable errorHandler, String... args) {
 
 		String[] cmd;
+		String pathVariable;
 		if (System.getProperty("os.name").startsWith("Windows")) {
 			cmd = new String[] { "cmd", "/c" };
+			pathVariable = WINDOWS_PATH_VARIABLE;
 		} else {
 			cmd = new String[0];
+			pathVariable = UNIX_PATH_VARIABLE;
 		}
 		cmd = ArrayUtils.addAll(cmd, command);
 		cmd = ArrayUtils.addAll(cmd, args);
@@ -111,8 +120,12 @@ public class ProcessUtil {
 		logger.debug("run command: " + StringUtils.join(cmd, " "));
 		Process[] process = { null };
 		try {
-
 			ProcessBuilder processBuilder = new ProcessBuilder(cmd);
+			Map<String, String> envs = processBuilder.environment();
+			String currentPath = envs.get(pathVariable);
+			String newPath = NPM_DIR.getPath() + (currentPath != null ? File.pathSeparator + currentPath : "");
+			envs.put(pathVariable, newPath);
+			logger.debug("path: " + newPath);
 			processBuilder.redirectErrorStream(true);
 			if (directory != null) {
 				processBuilder.directory(directory);
@@ -180,7 +193,7 @@ public class ProcessUtil {
 	public static void installNodePackage(String nodePackageName, boolean global) {
 		logger.debug("installing " + nodePackageName + " with npm");
 		if (global) {
-			runCommand("npm", USER_HOME_DIR, false, null, null, null, "install", nodePackageName, "-g");
+			runCommand("npm", USER_HOME_DIR, false, null, null, null, "install", "--prefix", NPM_DIR.getPath(), nodePackageName, "-g");
 		} else {
 			runCommand("npm", USER_HOME_DIR, false, null, null, null, "install", nodePackageName);
 		}
@@ -198,7 +211,7 @@ public class ProcessUtil {
 	public static void uninstallNodePackage(String nodePackageName, boolean global) {
 		logger.debug("uninstalling " + nodePackageName + " with npm");
 		if (global) {
-			runCommand("npm", USER_HOME_DIR, false, null, null, null, "uninstall", nodePackageName, "-g");
+			runCommand("npm", USER_HOME_DIR, false, null, null, null, "uninstall", "--prefix", NPM_DIR.getPath(), nodePackageName, "-g");
 		} else {
 			runCommand("npm", USER_HOME_DIR, false, null, null, null, "uninstall", nodePackageName);
 		}
