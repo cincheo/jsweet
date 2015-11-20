@@ -15,25 +15,22 @@
 package org.jsweet.test.transpiler;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import org.jsweet.transpiler.JSweetProblem;
-import org.jsweet.transpiler.JSweetTranspiler;
-import org.jsweet.transpiler.SourceFile;
-import org.jsweet.transpiler.TranspilationHandler;
+import org.jsweet.transpiler.util.ConsoleTranspilationHandler;
 
-public class TestTranspilationHandler implements TranspilationHandler {
+public class TestTranspilationHandler extends ConsoleTranspilationHandler {
 
 	List<JSweetProblem> reportedProblems = new ArrayList<>();
 	List<SourcePosition> reportedSourcePositions = new ArrayList<>();
 
 	@Override
 	public void report(JSweetProblem problem, SourcePosition sourcePosition, String message) {
-		System.out.println(problem.getSeverity().toString() + ": " + message + (sourcePosition == null ? "" : " at line " + sourcePosition.getStartLine()));
+		super.report(problem, sourcePosition, message);
 		reportedProblems.add(problem);
 		reportedSourcePositions.add(sourcePosition);
 	}
@@ -49,10 +46,6 @@ public class TestTranspilationHandler implements TranspilationHandler {
 
 	public List<SourcePosition> getReportedSourcePositions() {
 		return reportedSourcePositions;
-	}
-
-	@Override
-	public void onCompleted(JSweetTranspiler transpiler, boolean fullPass, SourceFile[] files) {
 	}
 
 }

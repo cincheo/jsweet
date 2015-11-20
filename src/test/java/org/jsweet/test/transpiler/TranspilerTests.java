@@ -15,13 +15,13 @@
 package org.jsweet.test.transpiler;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.util.LinkedList;
 
-import org.apache.commons.io.FileUtils;
 import org.jsweet.JSweetCommandLineLauncher;
 import org.jsweet.test.transpiler.source.overload.Overload;
 import org.jsweet.test.transpiler.source.structural.AbstractClass;
@@ -32,8 +32,6 @@ import org.jsweet.transpiler.util.ProcessUtil;
 import org.jsweet.transpiler.util.Util;
 import org.junit.Ignore;
 import org.junit.Test;
-
-import jsweet.util.StringTypes.tr;
 
 public class TranspilerTests extends AbstractTest {
 
@@ -113,6 +111,8 @@ public class TranspilerTests extends AbstractTest {
 	@Test
 	public void testTscInstallation() throws Throwable {
 		ProcessUtil.uninstallNodePackage("typescript", true);
+		Process process = ProcessUtil.runCommand("tsc", null, null , "--version");
+		assertFalse(process.exitValue()==0);
 		transpiler.cleanWorkingDirectory();
 		transpile(ModuleKind.none, h -> h.assertReportedProblems(), getSourceFile(Overload.class));
 	}

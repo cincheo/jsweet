@@ -16,6 +16,8 @@ package org.jsweet.transpiler;
 
 import java.io.File;
 
+import org.apache.log4j.Logger;
+
 import com.sun.tools.javac.tree.JCTree;
 
 /**
@@ -24,6 +26,8 @@ import com.sun.tools.javac.tree.JCTree;
  * @author Renaud Pawlak
  */
 public interface TranspilationHandler {
+
+	Logger OUTPUT_LOGGER = Logger.getLogger("output");
 
 	/**
 	 * A position in a source file.
@@ -117,5 +121,10 @@ public interface TranspilationHandler {
 	 *            <code>transpiler.getWatchedFiles()</code> in a non-full pass)
 	 */
 	public void onCompleted(JSweetTranspiler transpiler, boolean fullPass, SourceFile[] files);
+
+	/**
+	 * Reports an error that will be hidden to the user.
+	 */
+	public void reportSilentError();
 
 }

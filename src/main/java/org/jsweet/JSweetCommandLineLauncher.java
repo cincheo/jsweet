@@ -14,15 +14,17 @@
  */
 package org.jsweet;
 
+import static org.jsweet.transpiler.TranspilationHandler.OUTPUT_LOGGER;
+
 import java.io.File;
 import java.util.LinkedList;
 
-import org.jsweet.transpiler.JSweetProblem;
+import org.apache.log4j.Logger;
 import org.jsweet.transpiler.JSweetTranspiler;
 import org.jsweet.transpiler.ModuleKind;
-import org.jsweet.transpiler.Severity;
 import org.jsweet.transpiler.SourceFile;
-import org.jsweet.transpiler.TranspilationHandler;
+import org.jsweet.transpiler.util.ConsoleTranspilationHandler;
+import org.jsweet.transpiler.util.ErrorCountTranspilationHandler;
 import org.jsweet.transpiler.util.Util;
 
 import com.martiansoftware.jsap.FlaggedOption;
@@ -41,6 +43,8 @@ import com.sun.tools.javac.main.JavaCompiler;
  */
 public class JSweetCommandLineLauncher {
 
+	private static final Logger logger = Logger.getLogger(JSweetCommandLineLauncher.class);
+
 	private static int errorCount = 0;
 
 	/**
@@ -57,21 +61,21 @@ public class JSweetCommandLineLauncher {
 			}
 
 			String classPath = jsapArgs.getString("classpath");
-			System.out.println("classpath: " + classPath);
+			logger.info("classpath: " + classPath);
 
 			File tsOutputDir = jsapArgs.getFile("tsout");
 			tsOutputDir.mkdirs();
-			System.out.println("ts output dir: " + tsOutputDir);
+			logger.info("ts output dir: " + tsOutputDir);
 
 			File jsOutputDir = null;
 			if (jsapArgs.getFile("jsout") != null) {
 				jsOutputDir = jsapArgs.getFile("jsout");
 				jsOutputDir.mkdirs();
 			}
-			System.out.println("js output dir: " + jsOutputDir);
+			logger.info("js output dir: " + jsOutputDir);
 
 			File inputDir = new File(jsapArgs.getString("input"));
-			System.out.println("input dir: " + inputDir);
+			logger.info("input dir: " + inputDir);
 
 			LinkedList<File> files = new LinkedList<File>();
 			Util.addFiles(".java", inputDir, files);
@@ -84,7 +88,7 @@ public class JSweetCommandLineLauncher {
 				bundlesDirectory = jsapArgs.getFile("bundlesDirectory");
 				bundlesDirectory.getParentFile().mkdirs();
 			}
-			System.out.println("bundles directory: " + bundlesDirectory);
+			logger.info("bundles directory: " + bundlesDirectory);
 			transpiler.setBundlesDirectory(bundlesDirectory);
 
 			transpiler.setPreserveSourceLineNumbers(jsapArgs.getBoolean("debug"));
@@ -92,41 +96,31 @@ public class JSweetCommandLineLauncher {
 				File f = new File(args[4]);
 				if (f.exists()) {
 					transpiler.setTsDefDirs(f);
-					System.out.println("tsdef dir: " + args[4]);
+					logger.info("tsdef dir: " + args[4]);
 				} else {
-					System.out.println("WARNING: tsdef dir does not exist - " + args[4]);
+					OUTPUT_LOGGER.warn("tsdef dir does not exist - " + args[4]);
 				}
 			}
 
 			transpiler.setModuleKind(ModuleKind.valueOf(jsapArgs.getString("module")));
 
-			TranspilationHandler transpilationHandler = new TranspilationHandler() {
-				@Override
-				public void report(JSweetProblem problem, SourcePosition sourcePosition, String message) {
-					String file = "<unknown>";
-					String startLine = "<unknown>";
-					if (sourcePosition != null) {
-						if (sourcePosition.getFile() != null) {
-							file = sourcePosition.getFile().getName();
-						}
-						startLine = "" + sourcePosition.getStartLine();
-					}
-					System.out.println(problem.getSeverity() + ": " + message + " at " + file + ":" + startLine);
-					if (problem.getSeverity() == Severity.ERROR) {
-						errorCount++;
-					}
-				}
-
-				@Override
-				public void onCompleted(JSweetTranspiler transpiler, boolean fullPass, SourceFile[] files) {
-				}
-			};
+			ErrorCountTranspilationHandler transpilationHandler = new ErrorCountTranspilationHandler(new ConsoleTranspilationHandler());
+			errorCount = transpilationHandler.getErrorCount();
 
 			transpiler.setEncoding(jsapArgs.getString("encoding"));
 
 			transpiler.transpile(transpilationHandler, SourceFile.toSourceFiles(files));
 
-			System.out.println("transpilation done, errors: " + errorCount);
+			errorCount = transpilationHandler.getErrorCount();
+			if (errorCount > 0) {
+				OUTPUT_LOGGER.info("transpilation failed with " + errorCount + " error(s) and " + transpilationHandler.getWarningCount() + " warning(s)");
+			} else {
+				if (transpilationHandler.getWarningCount() > 0) {
+					OUTPUT_LOGGER.info("transpilation completed with " + transpilationHandler.getWarningCount() + " warning(s)");
+				} else {
+					OUTPUT_LOGGER.info("transpilation successfully completed with no errors and no warnings");
+				}
+			}
 		} catch (Throwable t) {
 			t.printStackTrace();
 			System.exit(1);
@@ -140,7 +134,7 @@ public class JSweetCommandLineLauncher {
 		Switch switchArg;
 		FlaggedOption optionArg;
 
-		// help
+		// Help
 		switchArg = new Switch("help");
 		switchArg.setShortFlag('h');
 		switchArg.setLongFlag("help");
@@ -232,8 +226,8 @@ public class JSweetCommandLineLauncher {
 	}
 
 	private static JSAPResult parseArgs(JSAP jsapSpec, String[] commandLineArgs) {
-		System.out.println("JSweet transpiler version " + JSweetConfig.getVersionNumber() + " (build date: " + JSweetConfig.getBuildDate() + ")");
-		System.out.println("Java compiler version: " + JavaCompiler.version());
+		OUTPUT_LOGGER.info("JSweet transpiler version " + JSweetConfig.getVersionNumber() + " (build date: " + JSweetConfig.getBuildDate() + ")");
+		OUTPUT_LOGGER.info("Java compiler version: " + JavaCompiler.version());
 
 		if (jsapSpec == null) {
 			throw new IllegalStateException("no args, please call setArgs before");

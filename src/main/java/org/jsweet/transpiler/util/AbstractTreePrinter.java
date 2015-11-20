@@ -20,6 +20,7 @@ import static org.apache.commons.lang3.StringUtils.join;
 import java.util.List;
 import java.util.Stack;
 
+import org.apache.log4j.Logger;
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.TranspilationHandler;
 import org.jsweet.transpiler.TypeChecker;
@@ -35,6 +36,8 @@ import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
  */
 public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 
+	private static final Logger logger = Logger.getLogger(AbstractTreePrinter.class);
+	
 	/**
 	 * Represents a position in the source file.
 	 * 
@@ -159,7 +162,7 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 				currentLine--;
 			}
 			if (currentLine != line) {
-				System.out.println("cannot adjust line for: " + tree.getClass() + " at line " + line);
+				logger.warn("cannot adjust line for: " + tree.getClass() + " at line " + line);
 			}
 			// adjusting columns... (TODO: does not work)
 			// int column =

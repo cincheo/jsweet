@@ -83,4 +83,11 @@ public class ErrorCountTranspilationHandler implements TranspilationHandler {
 		return problemCount;
 	}
 
+	@Override
+	public void reportSilentError() {
+		errorCount++;
+		problemCount++;
+		delegate.reportSilentError();
+	}
+
 }

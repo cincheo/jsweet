@@ -253,101 +253,101 @@ public enum JSweetProblem {
 	public String getMessage(Object... params) {
 		switch (this) {
 		case JAVA_ERRORS:
-			return String.format("Javac reports %s error(s) that should be fixed before compiling", params);
+			return String.format("Java compiler reports %s error(s) that should be fixed before transpiling", params);
 		case INTERNAL_TSC_ERROR:
-			return String.format("Internal TypeScript error: %s", params);
+			return String.format("internal TypeScript error: %s", params);
 		case NODE_CANNOT_START:
-			return String.format("Cannot find Node.js: install first and make sure that the 'node' command is in your execution path", params);
+			return String.format("cannot find Node.js: install first and make sure that the 'node' command is in your execution path", params);
 		case TSC_CANNOT_START:
-			return String.format("Cannot find TypeScript compiler: install first and make sure that the 'tsc' command is in your execution path", params);
+			return String.format("cannot find TypeScript compiler: install first and make sure that the 'tsc' command is in your execution path", params);
 		case JDK_TYPE:
-			return String.format("Invalid access to JDK type %s from JSweet", params);
+			return String.format("invalid access to JDK type %s from JSweet", params);
 		case JDK_METHOD:
-			return String.format("Invalid access to JDK method %s from JSweet", params);
+			return String.format("invalid access to JDK method %s from JSweet", params);
 		case ERASED_METHOD:
-			return String.format("Invalid access to erased method %s", params);
+			return String.format("invalid access to erased method %s", params);
 		case ERASED_CLASS_CONSTRUCTOR:
-			return String.format("Erased class constructors must take exactly one parameter", params);
+			return String.format("erased class constructors must take exactly one parameter", params);
 		case SYNCHRONIZATION:
-			return String.format("Synchronization is not allowed in JSweet", params);
+			return String.format("synchronization is not allowed in JSweet", params);
 		case METHOD_CONFLICTS_FIELD:
-			return String.format("Method %s has the same name as a field in %s", params);
+			return String.format("method %s has the same name as a field in %s", params);
 		case FIELD_CONFLICTS_METHOD:
-			return String.format("Field %s has the same name as a method in %s", params);
+			return String.format("field %s has the same name as a method in %s", params);
 		case INNER_CLASS:
-			return String.format("Inner classes are not allowed in JSweet: %s", params);
+			return String.format("inner classes are not allowed in JSweet: %s", params);
 		case INVALID_INITIALIZER_STATEMENT:
-			return String.format("Invalid initializer statement; only field assignments are allowed", params);
+			return String.format("invalid initializer statement; only field assignments are allowed", params);
 		case UNINITIALIZED_FIELD:
-			return String.format("Field %s is not optional (see @Optional) but has not been initialized", params);
+			return String.format("field %s is not optional (see @Optional) but has not been initialized", params);
 		case USELESS_OPTIONAL_ANNOTATION:
-			return String.format("Useless @Optional field %s (fields are optional by default in classes, use @Interface to define %s as an interface)", params);
+			return String.format("useless @Optional field %s (fields are optional by default in classes, use @Interface to define %s as an interface)", params);
 		case JS_KEYWORD_CONFLICT:
-			return String.format("Local variable name '%s' is not allowed and is automatically generated to '_jsweet_%s'", params);
+			return String.format("local variable name '%s' is not allowed and is automatically generated to '_jsweet_%s'", params);
 		case INVALID_METHOD_BODY_IN_INTERFACE:
-			return String.format("Method %s cannot define a body in interface %s", params);
+			return String.format("method %s cannot define a body in interface %s", params);
 		case INVALID_PRIVATE_IN_INTERFACE:
-			return String.format("Member %s cannot be private in interface %s", params);
+			return String.format("member %s cannot be private in interface %s", params);
 		case INVALID_STATIC_IN_INTERFACE:
-			return String.format("Member %s cannot be static in interface %s", params);
+			return String.format("member %s cannot be static in interface %s", params);
 		case INVALID_FIELD_INITIALIZER_IN_INTERFACE:
-			return String.format("Field %s cannot be initialized in interface %s", params);
+			return String.format("field %s cannot be initialized in interface %s", params);
 		case INVALID_INITIALIZER_IN_INTERFACE:
-			return String.format("No initialization blocks are allowed in interface %s", params);
+			return String.format("no initialization blocks are allowed in interface %s", params);
 		case INVALID_OVERLOAD:
-			return String.format("Invalid overload of method %s", params);
+			return String.format("invalid overload of method %s", params);
 		case CONSTRUCTOR_MEMBER:
-			return String.format("Invalid member name 'constructor'", params);
+			return String.format("invalid member name 'constructor'", params);
 		case INTERFACE_MUST_BE_ABSTRACT:
 			return String.format("@Interface '%s' must be abstract", params);
 		case NATIVE_MODIFIER_IS_NOT_ALLOWED:
-			return String.format("Method %s cannot be native", params);
+			return String.format("method %s cannot be native", params);
 		case INVALID_INSTANCEOF_INTERFACE:
-			return String.format("Operator 'instanceof' cannot apply to interfaces", params);
+			return String.format("operator 'instanceof' cannot apply to interfaces", params);
 		case LABELS_ARE_NOT_SUPPORTED:
-			return String.format("Labels are not supported", params);
+			return String.format("labels are not supported", params);
 		case TRY_WITHOUT_CATCH_OR_FINALLY:
-			return String.format("Try statement must define at least a catch or a finally clause", params);
+			return String.format("try statement must define at least a catch or a finally clause", params);
 		case UNSUPPORTED_TRY_WITH_RESOURCE:
-			return String.format("Try-with-resource statement is not supported", params);
+			return String.format("try-with-resource statement is not supported", params);
 		case TRY_WITH_MULTIPLE_CATCHES:
-			return String.format("Try statement cannot define more than one catch clause", params);
+			return String.format("try statement cannot define more than one catch clause", params);
 		case GLOBAL_INDEXER_GET:
-			return String.format("Indexer cannot be used in a global context", params);
+			return String.format("indexer cannot be used in a global context", params);
 		case GLOBAL_INDEXER_SET:
-			return String.format("Indexer cannot be used in a global context", params);
+			return String.format("indexer cannot be used in a global context", params);
 		case GLOBAL_DELETE:
 			return String.format("static delete cannot be used in a global context", params);
 		case STRING_LITERAL_EXPECTED:
-			return String.format("String literal expected", params);
+			return String.format("string literal expected", params);
 		case GLOBAL_CONSTRUCTOR_DEF:
-			return String.format("Global class cannot have constructor", params);
+			return String.format("global class cannot have constructor", params);
 		case GLOBAL_CANNOT_BE_INSTANTIATED:
-			return String.format("Global classes cannot be instantiated", params);
+			return String.format("global classes cannot be instantiated", params);
 		case INVALID_CONSTRUCTOR_IN_ENUM:
-			return String.format("Constructors are not allowed in enums", params);
+			return String.format("constructors are not allowed in enums", params);
 		case INVALID_FIELD_IN_ENUM:
-			return String.format("Fields are not allowed in enums", params);
+			return String.format("fields are not allowed in enums", params);
 		case INVALID_METHOD_IN_ENUM:
-			return String.format("Methods are not allowed in enums", params);
+			return String.format("methods are not allowed in enums", params);
 		case INVALID_METHOD_BODY_IN_AMBIENT:
-			return String.format("Method %s is an ambiant declaration and cannot define an implementation", params);
+			return String.format("method %s is an ambiant declaration and cannot define an implementation", params);
 		case INVALID_NON_EMPTY_CONSTRUCTOR_IN_AMBIENT:
-			return String.format("Constructor is an ambiant declaration and must have an empty body", params);
+			return String.format("constructor is an ambiant declaration and must have an empty body", params);
 		case INVALID_MODIFIER_IN_AMBIENT:
-			return String.format("Modifier '%s' is not allowed in an ambiant declaration", params);
+			return String.format("modifier '%s' is not allowed in an ambiant declaration", params);
 		case INDEXED_SET_TYPE_MISMATCH:
-			return String.format("Type mismatch, expecting '%s' (inferred from the indexed getter type)", params);
+			return String.format("type mismatch, expecting '%s' (inferred from the indexed getter type)", params);
 		case UNION_TYPE_MISMATCH:
-			return String.format("Type mismatch in union type", params);
+			return String.format("type mismatch in union type", params);
 		case BUNDLE_WITH_COMMONJS:
-			return String.format("No bundle file generated: choose the 'commonjs' module kind when specifying a bundle file", params);
+			return String.format("no bundle file generated: choose the 'commonjs' module kind when specifying a bundle file", params);
 		case BUNDLE_HAS_CYCLE:
-			return String.format("No bundle file generated: cycle detected in package graph %s", params);
+			return String.format("no bundle file generated: cycle detected in package graph %s", params);
 		case BUNDLE_HAS_NO_ENTRIES:
-			return String.format("No bundle file generated: no entries found, you must define at least one main method", params);
+			return String.format("no bundle file generated: no entries found, you must define at least one main method", params);
 		case PACKAGE_NAME_CONTAINS_KEYWORD:
-			return String.format("A package name cannot contain top-level keyword(s): %s", params);
+			return String.format("a package name cannot contain top-level keyword(s): %s", params);
 		}
 		return null;
 	}

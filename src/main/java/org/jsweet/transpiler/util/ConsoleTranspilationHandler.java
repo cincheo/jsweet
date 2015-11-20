@@ -16,12 +16,13 @@ package org.jsweet.transpiler.util;
 
 import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.JSweetTranspiler;
+import org.jsweet.transpiler.Severity;
 import org.jsweet.transpiler.SourceFile;
 import org.jsweet.transpiler.TranspilationHandler;
 
 /**
  * This is a simple transpilation handler that reports problems to the default
- * output stream.
+ * output streams.
  * 
  * @author Renaud Pawlak
  */
@@ -30,16 +31,32 @@ public class ConsoleTranspilationHandler implements TranspilationHandler {
 	@Override
 	public void report(JSweetProblem problem, SourcePosition sourcePosition, String message) {
 		if (sourcePosition == null || sourcePosition.getFile() == null) {
-			System.out.println(problem.getSeverity().toString() + ": " + message);
+			log(problem.getSeverity(), message);
 		} else {
-			System.out
-					.println(problem.getSeverity().toString() + ": " + message + " at " + sourcePosition.getFile() + "(" + sourcePosition.getStartLine() + ")");
+			log(problem.getSeverity(), message + " at " + sourcePosition.getFile() + "(" + sourcePosition.getStartLine() + ")");
 		}
 	}
 
+	private void log(Severity severity, String message) {
+		switch (severity) {
+		case ERROR:
+			OUTPUT_LOGGER.error(message);
+			break;
+		case WARNING:
+			OUTPUT_LOGGER.warn(message);
+			break;
+		case MESSAGE:
+			OUTPUT_LOGGER.info(message);
+			break;
+		}
+	}
+	
 	@Override
 	public void onCompleted(JSweetTranspiler transpiler, boolean fullPass, SourceFile[] files) {
-		System.out.println("end");
+	}
+	
+	@Override
+	public void reportSilentError() {
 	}
 
 }

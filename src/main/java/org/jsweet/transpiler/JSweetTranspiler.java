@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.lang.reflect.Field;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -30,12 +31,14 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 
@@ -61,8 +64,12 @@ import com.sun.tools.javac.main.Option;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.TreeScanner;
+import com.sun.tools.javac.util.BasicDiagnosticFormatter;
+import com.sun.tools.javac.util.JCDiagnostic;
+import com.sun.tools.javac.util.JavacMessages;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Log;
+import com.sun.tools.javac.util.Log.WriterKind;
 import com.sun.tools.javac.util.Options;
 
 /**
@@ -110,6 +117,7 @@ public class JSweetTranspiler {
 	private Options options;
 	private JavaFileManager fileManager;
 	private JavaCompiler compiler;
+	private Log log;
 	private boolean preserveSourceLineNumbers = false;
 	private File workingDir;
 	private File tsOutputDir;
@@ -242,7 +250,7 @@ public class JSweetTranspiler {
 		tsDefDirs = new File[0];
 	}
 
-	private void initJavac() {
+	private void initJavac(final TranspilationHandler transpilationHandler) {
 		context = new JSweetContext();
 		options = Options.instance(context);
 		if (classPath != null) {
@@ -254,8 +262,38 @@ public class JSweetTranspiler {
 
 		compiler = JavaCompiler.instance(context);
 		compiler.attrParseOnly = true;
-		compiler.verbose = true;
+		compiler.verbose = false;
 		compiler.genEndPos = true;
+
+		log = Log.instance(context);
+
+		log.dumpOnError = false;
+		log.emitWarnings = false;
+
+		Writer w = new StringWriter() {
+			@Override
+			public void write(String str) {
+				TranspilationHandler.OUTPUT_LOGGER.error(getBuffer());
+				getBuffer().delete(0, getBuffer().length());
+			}
+
+		};
+
+		log.setWriter(WriterKind.ERROR, new PrintWriter(w));
+		log.setDiagnosticFormatter(new BasicDiagnosticFormatter(JavacMessages.instance(context)) {
+			@Override
+			public String format(JCDiagnostic diagnostic, Locale locale) {
+				if (diagnostic.getKind() == Kind.ERROR) {
+					transpilationHandler.reportSilentError();
+				}
+				if (diagnostic.getSource() != null) {
+					return diagnostic.getMessage(locale) + " at " + diagnostic.getSource().getName() + "(" + diagnostic.getLineNumber() + ")";
+				} else {
+					return diagnostic.getMessage(locale);
+				}
+			}
+		});
+
 		if (encoding != null) {
 			compiler.encoding = encoding;
 		}
@@ -652,18 +690,21 @@ public class JSweetTranspiler {
 
 	private void java2ts(TranspilationHandler transpilationHandler, SourceFile[] files) throws IOException {
 
-		initJavac();
+		initJavac(transpilationHandler);
 		List<JavaFileObject> fileObjects = toJavaFileObjects(fileManager, Arrays.asList(SourceFile.toFiles(files)));
 
 		logger.info("parsing: " + fileObjects);
 		List<JCCompilationUnit> compilationUnits = compiler.enterTrees(compiler.parseFiles(fileObjects));
+		if (log.nerrors > 0) {
+			transpilationHandler.report(JSweetProblem.JAVA_ERRORS, null, JSweetProblem.JAVA_ERRORS.getMessage(log.nerrors));
+			return;
+		}
 		logger.info("attribution phase");
 		compiler.attribute(compiler.todo);
-		Log log = Log.instance(context);
-		log.dumpOnError = true;
 
 		if (log.nerrors > 0) {
 			transpilationHandler.report(JSweetProblem.JAVA_ERRORS, null, JSweetProblem.JAVA_ERRORS.getMessage(log.nerrors));
+			return;
 		}
 		context.useModules = isUsingModules();
 		context.sourceFiles = files;
