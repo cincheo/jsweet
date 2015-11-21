@@ -81,8 +81,9 @@ public class JSweetCommandLineLauncher {
 			Util.addFiles(".java", inputDir, files);
 
 			JSweetTranspiler transpiler = new JSweetTranspiler(tsOutputDir, jsOutputDir, classPath);
-			transpiler.setBundle(jsapArgs.getBoolean("bundle"));
 
+			transpiler.setBundle(jsapArgs.getBoolean("bundle"));
+			transpiler.setNoRootDirectories(jsapArgs.getBoolean("noRootDirectories"));
 			File bundlesDirectory = null;
 			if (jsapArgs.getFile("bundlesDirectory") != null) {
 				bundlesDirectory = jsapArgs.getFile("bundlesDirectory");
@@ -90,24 +91,12 @@ public class JSweetCommandLineLauncher {
 			}
 			logger.info("bundles directory: " + bundlesDirectory);
 			transpiler.setBundlesDirectory(bundlesDirectory);
-
 			transpiler.setPreserveSourceLineNumbers(jsapArgs.getBoolean("debug"));
-			if (args.length > 4) {
-				File f = new File(args[4]);
-				if (f.exists()) {
-					transpiler.setTsDefDirs(f);
-					logger.info("tsdef dir: " + args[4]);
-				} else {
-					OUTPUT_LOGGER.warn("tsdef dir does not exist - " + args[4]);
-				}
-			}
-
 			transpiler.setModuleKind(ModuleKind.valueOf(jsapArgs.getString("module")));
+			transpiler.setEncoding(jsapArgs.getString("encoding"));
 
 			ErrorCountTranspilationHandler transpilationHandler = new ErrorCountTranspilationHandler(new ConsoleTranspilationHandler());
 			errorCount = transpilationHandler.getErrorCount();
-
-			transpiler.setEncoding(jsapArgs.getString("encoding"));
 
 			transpiler.transpile(transpilationHandler, SourceFile.toSourceFiles(files));
 
@@ -158,6 +147,14 @@ public class JSweetCommandLineLauncher {
 		optionArg.setRequired(true);
 		optionArg.setHelp("An input dir containing Java files to be transpiled.");
 		jsap.registerParameter(optionArg);
+
+		// Skip empty root dirs
+		switchArg = new Switch("noRootDirectories");
+		switchArg.setLongFlag("noRootDirectories");
+		switchArg.setHelp(
+				"Skip the root directories (i.e. packages annotated with @jsweet.lang.Root) so that the generated file hierarchy starts at the root directories rather than including the entire directory structure.");
+		switchArg.setDefault("false");
+		jsap.registerParameter(switchArg);
 
 		// TypeScript output directory
 		optionArg = new FlaggedOption("tsout");

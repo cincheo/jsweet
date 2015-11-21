@@ -132,6 +132,7 @@ public class JSweetTranspiler {
 	private boolean bundle = false;
 	private File bundlesDirectory;
 	private String encoding = null;
+	private boolean noRootDirectories = false;
 
 	/**
 	 * Creates a JSweet transpiler, with the default values.
@@ -773,7 +774,8 @@ public class JSweetTranspiler {
 				String cuName = s[s.length - 1];
 				s = cuName.split("\\.");
 				cuName = s[0];
-				String outputFileRelativePathNoExt = cu.packge.fullname.toString().replace(".", File.separator) + File.separator + cuName;
+				String packageName = isNoRootDirectories() ? Util.getRootRelativeJavaName(cu.packge) : cu.packge.getQualifiedName().toString();
+				String outputFileRelativePathNoExt = packageName.replace(".", File.separator) + File.separator + cuName;
 				String outputFileRelativePath = outputFileRelativePathNoExt + printer.getTargetFilesExtension();
 				logger.info("output file: " + outputFileRelativePath);
 				File outputFile = new File(tsOutputDir, outputFileRelativePath);
@@ -1235,5 +1237,25 @@ public class JSweetTranspiler {
 	 */
 	public void setEncoding(String encoding) {
 		this.encoding = encoding;
+	}
+
+	/**
+	 * Tells if this transpiler skips the root directories (packages annotated
+	 * with @jsweet.lang.Root) so that the generated file hierarchy starts at
+	 * the root directories rather than including the entire directory
+	 * structure.
+	 */
+	public boolean isNoRootDirectories() {
+		return noRootDirectories;
+	}
+
+	/**
+	 * Sets this transpiler to skip the root directories (packages annotated
+	 * with @jsweet.lang.Root) so that the generated file hierarchy starts at
+	 * the root directories rather than including the entire directory
+	 * structure.
+	 */
+	public void setNoRootDirectories(boolean noRootDirectories) {
+		this.noRootDirectories = noRootDirectories;
 	}
 }
