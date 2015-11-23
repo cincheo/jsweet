@@ -44,6 +44,8 @@ import org.jsweet.test.transpiler.source.structural.globalclasses.c.GlobalFuncti
 import org.jsweet.test.transpiler.source.structural.globalclasses.d.GlobalFunctionAccessFromMain;
 import org.jsweet.test.transpiler.source.structural.globalclasses.f.GlobalFunctionStaticDelete;
 import org.jsweet.test.transpiler.source.structural.globalclasses.g.GlobalFunctionDelete;
+import org.jsweet.test.transpiler.source.structural.globalclasses.noroot.a.GlobalsInNoRoot;
+import org.jsweet.test.transpiler.source.structural.globalclasses.root.a.GlobalsInRoot;
 import org.jsweet.transpiler.JSweetProblem;
 import org.junit.Assert;
 import org.junit.Test;
@@ -204,6 +206,24 @@ public class StructuralTests extends AbstractTest {
 				getSourceFile(GlobalFunctionAccessFromMain.class));
 	}
 
+	@Test
+	public void testGlobalsInRoot() {
+		eval((logHandler, r) -> {
+			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+			Assert.assertEquals(true, r.get("m1"));
+			Assert.assertEquals(true, r.get("m2"));
+		} , getSourceFile(GlobalsInRoot.class));
+	}
+
+	@Test
+	public void testGlobalsInNoRoot() {
+		eval((logHandler, r) -> {
+			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+			Assert.assertEquals(true, r.get("m1"));
+			Assert.assertEquals(true, r.get("m2"));
+		} , getSourceFile(GlobalsInNoRoot.class));
+	}
+	
 	@Test
 	public void testAutoImportClassesInSamePackage() {
 		eval((logHandler, r) -> {

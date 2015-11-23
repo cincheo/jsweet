@@ -136,12 +136,13 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				}
 				// function belong to the current package (no need to
 				// import)
+				String current = Util.getRootRelativeJavaName(getPrinter().getCompilationUnit().packge);
 				if (getPrinter().getContext().useModules) {
-					if (getPrinter().getCompilationUnit().packge.getQualifiedName().toString().equals(name)) {
+					if (current.equals(name)) {
 						return null;
 					}
 				} else {
-					if (getPrinter().getCompilationUnit().packge.getQualifiedName().toString().startsWith(name)) {
+					if (current.startsWith(name)) {
 						return null;
 					}
 				}
