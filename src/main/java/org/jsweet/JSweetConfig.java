@@ -92,7 +92,7 @@ public abstract class JSweetConfig {
 			if (handler != null) {
 				handler.report(JSweetProblem.JAVA_COMPILER_NOT_FOUND, null, JSweetProblem.JAVA_COMPILER_NOT_FOUND.getMessage());
 			} else {
-				logger.error("cannot find javac");
+				logger.debug("cannot find javac with JAVA_HOME="+System.getenv("JAVA_HOME"));
 			}
 		}
 	}

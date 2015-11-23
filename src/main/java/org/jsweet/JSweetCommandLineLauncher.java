@@ -19,6 +19,8 @@ import static org.jsweet.transpiler.TranspilationHandler.OUTPUT_LOGGER;
 import java.io.File;
 import java.util.LinkedList;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.jsweet.transpiler.JSweetTranspiler;
 import org.jsweet.transpiler.ModuleKind;
@@ -57,6 +59,10 @@ public class JSweetCommandLineLauncher {
 
 			if (!jsapArgs.success()) {
 				printUsage(jsapSpec);
+			}
+
+			if (jsapArgs.getBoolean("verbose")) {
+				LogManager.getLogger("org.jsweet").setLevel(Level.ALL);
 			}
 
 			ErrorCountTranspilationHandler transpilationHandler = new ErrorCountTranspilationHandler(new ConsoleTranspilationHandler());
@@ -126,6 +132,14 @@ public class JSweetCommandLineLauncher {
 		switchArg = new Switch("help");
 		switchArg.setShortFlag('h');
 		switchArg.setLongFlag("help");
+		switchArg.setDefault("false");
+		jsap.registerParameter(switchArg);
+
+		// Verbose
+		switchArg = new Switch("verbose");
+		switchArg.setLongFlag("verbose");
+		switchArg.setShortFlag('v');
+		switchArg.setHelp("Turn all levels of logging.");
 		switchArg.setDefault("false");
 		jsap.registerParameter(switchArg);
 
