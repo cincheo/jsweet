@@ -83,12 +83,12 @@ public abstract class JSweetConfig {
 		try {
 			com.sun.tools.javac.main.JavaCompiler.version();
 			return;
-		} catch (Exception e) {
+		} catch (NoClassDefFoundError e) {
 			initClassPath(ClassLoader.getSystemClassLoader(), jdkHome);
 		}
 		try {
 			com.sun.tools.javac.main.JavaCompiler.version();
-		} catch (Exception e) {
+		} catch (NoClassDefFoundError e) {
 			if (handler != null) {
 				handler.report(JSweetProblem.JAVA_COMPILER_NOT_FOUND, null, JSweetProblem.JAVA_COMPILER_NOT_FOUND.getMessage());
 			} else {
