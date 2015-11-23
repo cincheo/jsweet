@@ -83,7 +83,7 @@ import com.sun.tools.javac.util.Options;
 public class JSweetTranspiler {
 
 	static {
-		JSweetConfig.checkAndResolveJavaCompiler(null, null);
+		JSweetConfig.initClassPath(null);
 	}
 	
 	/**

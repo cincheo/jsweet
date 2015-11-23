@@ -25,8 +25,6 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
-import org.jsweet.transpiler.JSweetProblem;
-import org.jsweet.transpiler.TranspilationHandler;
 
 /**
  * This class contains static constants and utilities.
@@ -69,8 +67,7 @@ public abstract class JSweetConfig {
 	}
 
 	/**
-	 * Checks that the Java compiler is accessible and if not, tries to
-	 * initialize the classpath to include tools.jar.
+	 * Initialize the classpath to include tools.jar.
 	 * 
 	 * @param jdkHome
 	 *            the jdkHome option value (if not set or not found, fall back
@@ -79,27 +76,9 @@ public abstract class JSweetConfig {
 	 *            the transpilation handler that should report an error if
 	 *            tools.jar is not found (if null uses the default logger)
 	 */
-	public static void checkAndResolveJavaCompiler(String jdkHome, TranspilationHandler handler) {
+	public static void initClassPath(String jdkHome) {
 		try {
-			com.sun.tools.javac.main.JavaCompiler.version();
-			return;
-		} catch (NoClassDefFoundError e) {
-			initClassPath(ClassLoader.getSystemClassLoader(), jdkHome);
-		}
-		try {
-			com.sun.tools.javac.main.JavaCompiler.version();
-		} catch (NoClassDefFoundError e) {
-			if (handler != null) {
-				handler.report(JSweetProblem.JAVA_COMPILER_NOT_FOUND, null, JSweetProblem.JAVA_COMPILER_NOT_FOUND.getMessage());
-			} else {
-				logger.debug("cannot find javac with JAVA_HOME="+System.getenv("JAVA_HOME"));
-			}
-		}
-	}
-
-	private static void initClassPath(ClassLoader classLoader, String jdkHome) {
-		try {
-			URLClassLoader urlClassLoader = (URLClassLoader) classLoader;
+			URLClassLoader urlClassLoader = (URLClassLoader) ClassLoader.getSystemClassLoader();
 			boolean found = false;
 			for (URL url : urlClassLoader.getURLs()) {
 				if (url.getPath().endsWith("/tools.jar")) {
@@ -112,6 +91,7 @@ public abstract class JSweetConfig {
 				logger.debug("adding tools.jar in classpath");
 				File toolsLib = null;
 				if (!StringUtils.isBlank(jdkHome)) {
+					logger.debug("lookup in " + jdkHome);
 					toolsLib = new File(jdkHome, "lib/tools.jar");
 					if (!toolsLib.exists()) {
 						// we may be pointing to the JDK's jre
@@ -119,6 +99,7 @@ public abstract class JSweetConfig {
 					}
 				}
 				if (toolsLib == null || !toolsLib.exists()) {
+					logger.debug("lookup in JAVA_HOME=" + System.getenv("JAVA_HOME"));
 					toolsLib = new File(System.getenv("JAVA_HOME"), "lib/tools.jar");
 					if (!toolsLib.exists()) {
 						// we may be pointing to the JDK's jre

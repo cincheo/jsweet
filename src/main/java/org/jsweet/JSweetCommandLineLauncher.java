@@ -22,6 +22,7 @@ import java.util.LinkedList;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.JSweetTranspiler;
 import org.jsweet.transpiler.ModuleKind;
 import org.jsweet.transpiler.SourceFile;
@@ -65,8 +66,7 @@ public class JSweetCommandLineLauncher {
 				LogManager.getLogger("org.jsweet").setLevel(Level.ALL);
 			}
 
-			ErrorCountTranspilationHandler transpilationHandler = new ErrorCountTranspilationHandler(new ConsoleTranspilationHandler());
-			JSweetConfig.checkAndResolveJavaCompiler(jsapArgs.getString("jdkHome"), transpilationHandler);
+			JSweetConfig.initClassPath(jsapArgs.getString("jdkHome"));
 
 			String classPath = jsapArgs.getString("classpath");
 			logger.info("classpath: " + classPath);
@@ -88,22 +88,27 @@ public class JSweetCommandLineLauncher {
 			LinkedList<File> files = new LinkedList<File>();
 			Util.addFiles(".java", inputDir, files);
 
-			JSweetTranspiler transpiler = new JSweetTranspiler(tsOutputDir, jsOutputDir, classPath);
+			ErrorCountTranspilationHandler transpilationHandler = new ErrorCountTranspilationHandler(new ConsoleTranspilationHandler());
+			try {
+				JSweetTranspiler transpiler = new JSweetTranspiler(tsOutputDir, jsOutputDir, classPath);
 
-			transpiler.setBundle(jsapArgs.getBoolean("bundle"));
-			transpiler.setNoRootDirectories(jsapArgs.getBoolean("noRootDirectories"));
-			File bundlesDirectory = null;
-			if (jsapArgs.getFile("bundlesDirectory") != null) {
-				bundlesDirectory = jsapArgs.getFile("bundlesDirectory");
-				bundlesDirectory.getParentFile().mkdirs();
+				transpiler.setBundle(jsapArgs.getBoolean("bundle"));
+				transpiler.setNoRootDirectories(jsapArgs.getBoolean("noRootDirectories"));
+				File bundlesDirectory = null;
+				if (jsapArgs.getFile("bundlesDirectory") != null) {
+					bundlesDirectory = jsapArgs.getFile("bundlesDirectory");
+					bundlesDirectory.getParentFile().mkdirs();
+				}
+				logger.info("bundles directory: " + bundlesDirectory);
+				transpiler.setBundlesDirectory(bundlesDirectory);
+				transpiler.setPreserveSourceLineNumbers(jsapArgs.getBoolean("debug"));
+				transpiler.setModuleKind(ModuleKind.valueOf(jsapArgs.getString("module")));
+				transpiler.setEncoding(jsapArgs.getString("encoding"));
+
+				transpiler.transpile(transpilationHandler, SourceFile.toSourceFiles(files));
+			} catch (NoClassDefFoundError error) {
+				transpilationHandler.report(JSweetProblem.JAVA_COMPILER_NOT_FOUND, null, JSweetProblem.JAVA_COMPILER_NOT_FOUND.getMessage());
 			}
-			logger.info("bundles directory: " + bundlesDirectory);
-			transpiler.setBundlesDirectory(bundlesDirectory);
-			transpiler.setPreserveSourceLineNumbers(jsapArgs.getBoolean("debug"));
-			transpiler.setModuleKind(ModuleKind.valueOf(jsapArgs.getString("module")));
-			transpiler.setEncoding(jsapArgs.getString("encoding"));
-
-			transpiler.transpile(transpilationHandler, SourceFile.toSourceFiles(files));
 
 			errorCount = transpilationHandler.getErrorCount();
 			if (errorCount > 0) {
