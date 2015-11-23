@@ -82,6 +82,10 @@ import com.sun.tools.javac.util.Options;
  */
 public class JSweetTranspiler {
 
+	static {
+		JSweetConfig.checkAndResolveJavaCompiler(null, null);
+	}
+	
 	/**
 	 * The constant for the name of the directory that stores temporary files.
 	 */
@@ -192,7 +196,8 @@ public class JSweetTranspiler {
 		logger.info("curent dir: " + new File(".").getAbsolutePath());
 		logger.info("tsOut: " + tsOutputDir + (tsOutputDir == null ? "" : " - " + tsOutputDir.getAbsolutePath()));
 		logger.info("jsOut: " + jsOutputDir + (jsOutputDir == null ? "" : " - " + jsOutputDir.getAbsolutePath()));
-		logger.debug("classpath: " + classPath);
+		logger.debug("compile classpath: " + classPath);
+		logger.debug("runtime classpath: " + System.getProperty("java.class.path"));
 		this.candiesProcessor = new CandiesProcessor(workingDir, classPath);
 	}
 
@@ -1258,4 +1263,5 @@ public class JSweetTranspiler {
 	public void setNoRootDirectories(boolean noRootDirectories) {
 		this.noRootDirectories = noRootDirectories;
 	}
+
 }

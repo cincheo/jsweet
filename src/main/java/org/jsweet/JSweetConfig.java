@@ -14,10 +14,19 @@
  */
 package org.jsweet;
 
+import java.io.File;
 import java.io.InputStream;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
+import org.jsweet.transpiler.JSweetProblem;
+import org.jsweet.transpiler.TranspilationHandler;
 
 /**
  * This class contains static constants and utilities.
@@ -25,6 +34,8 @@ import java.util.Set;
  * @author Renaud Pawlak
  */
 public abstract class JSweetConfig {
+
+	private static Logger logger = Logger.getLogger(JSweetConfig.class);
 
 	private JSweetConfig() {
 	}
@@ -55,6 +66,77 @@ public abstract class JSweetConfig {
 	 */
 	public static String getBuildDate() {
 		return APPLICATION_PROPERTIES.getProperty("application.buildDate");
+	}
+
+	/**
+	 * Checks that the Java compiler is accessible and if not, tries to
+	 * initialize the classpath to include tools.jar.
+	 * 
+	 * @param jdkHome
+	 *            the jdkHome option value (if not set or not found, fall back
+	 *            to the JAVA_HOME environment variable)
+	 * @param handler
+	 *            the transpilation handler that should report an error if
+	 *            tools.jar is not found (if null uses the default logger)
+	 */
+	public static void checkAndResolveJavaCompiler(String jdkHome, TranspilationHandler handler) {
+		try {
+			com.sun.tools.javac.main.JavaCompiler.version();
+			return;
+		} catch (Exception e) {
+			initClassPath(ClassLoader.getSystemClassLoader(), jdkHome);
+		}
+		try {
+			com.sun.tools.javac.main.JavaCompiler.version();
+		} catch (Exception e) {
+			if (handler != null) {
+				handler.report(JSweetProblem.JAVA_COMPILER_NOT_FOUND, null, JSweetProblem.JAVA_COMPILER_NOT_FOUND.getMessage());
+			} else {
+				logger.error("cannot find javac");
+			}
+		}
+	}
+
+	private static void initClassPath(ClassLoader classLoader, String jdkHome) {
+		try {
+			URLClassLoader urlClassLoader = (URLClassLoader) classLoader;
+			boolean found = false;
+			for (URL url : urlClassLoader.getURLs()) {
+				if (url.getPath().endsWith("/tools.jar")) {
+					found = true;
+					logger.debug("tools.jar already in classpath");
+					break;
+				}
+			}
+			if (!found) {
+				logger.debug("adding tools.jar in classpath");
+				File toolsLib = null;
+				if (!StringUtils.isBlank(jdkHome)) {
+					toolsLib = new File(jdkHome, "lib/tools.jar");
+					if (!toolsLib.exists()) {
+						// we may be pointing to the JDK's jre
+						toolsLib = new File(jdkHome, "../lib/tools.jar");
+					}
+				}
+				if (toolsLib == null || !toolsLib.exists()) {
+					toolsLib = new File(System.getenv("JAVA_HOME"), "lib/tools.jar");
+					if (!toolsLib.exists()) {
+						// we may be pointing to the JDK's jre
+						toolsLib = new File(System.getenv("JAVA_HOME"), "../lib/tools.jar");
+					}
+				}
+				if (!toolsLib.exists()) {
+					return;
+				}
+
+				Method method = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
+				method.setAccessible(true);
+				method.invoke(urlClassLoader, toolsLib.toURI().toURL());
+				logger.debug("updated classpath with: " + toolsLib);
+			}
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+		}
 	}
 
 	/**
@@ -239,7 +321,7 @@ public abstract class JSweetConfig {
 		TS_STRICT_MODE_KEYWORDS.add("type");
 		TS_STRICT_MODE_KEYWORDS.add("from");
 		TS_STRICT_MODE_KEYWORDS.add("of");
-		
+
 		TS_TOP_LEVEL_KEYWORDS.add("require");
 	}
 

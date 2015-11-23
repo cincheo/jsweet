@@ -34,7 +34,6 @@ import com.martiansoftware.jsap.JSAPResult;
 import com.martiansoftware.jsap.Switch;
 import com.martiansoftware.jsap.stringparsers.EnumeratedStringParser;
 import com.martiansoftware.jsap.stringparsers.FileStringParser;
-import com.sun.tools.javac.main.JavaCompiler;
 
 /**
  * The command line launcher for the JSweet transpiler.
@@ -59,6 +58,9 @@ public class JSweetCommandLineLauncher {
 			if (!jsapArgs.success()) {
 				printUsage(jsapSpec);
 			}
+
+			ErrorCountTranspilationHandler transpilationHandler = new ErrorCountTranspilationHandler(new ConsoleTranspilationHandler());
+			JSweetConfig.checkAndResolveJavaCompiler(jsapArgs.getString("jdkHome"), transpilationHandler);
 
 			String classPath = jsapArgs.getString("classpath");
 			logger.info("classpath: " + classPath);
@@ -94,9 +96,6 @@ public class JSweetCommandLineLauncher {
 			transpiler.setPreserveSourceLineNumbers(jsapArgs.getBoolean("debug"));
 			transpiler.setModuleKind(ModuleKind.valueOf(jsapArgs.getString("module")));
 			transpiler.setEncoding(jsapArgs.getString("encoding"));
-
-			ErrorCountTranspilationHandler transpilationHandler = new ErrorCountTranspilationHandler(new ConsoleTranspilationHandler());
-			errorCount = transpilationHandler.getErrorCount();
 
 			transpiler.transpile(transpilationHandler, SourceFile.toSourceFiles(files));
 
@@ -137,6 +136,15 @@ public class JSweetCommandLineLauncher {
 		optionArg.setRequired(false);
 		optionArg.setDefault("UTF-8");
 		optionArg.setHelp("Force the Java compiler to use a specific encoding (UTF-8, UTF-16, ...).");
+		jsap.registerParameter(optionArg);
+
+		// JDK home directory
+		optionArg = new FlaggedOption("jdkHome");
+		optionArg.setLongFlag("jdkHome");
+		optionArg.setStringParser(JSAP.STRING_PARSER);
+		optionArg.setRequired(false);
+		optionArg.setHelp(
+				"Set the JDK home directory to be used to find the Java compiler. If not set, the transpiler will try to use the JAVA_HOME environment variable. Note that the expected JDK version is greater or equals to version 8.");
 		jsap.registerParameter(optionArg);
 
 		// Input directory
@@ -224,7 +232,6 @@ public class JSweetCommandLineLauncher {
 
 	private static JSAPResult parseArgs(JSAP jsapSpec, String[] commandLineArgs) {
 		OUTPUT_LOGGER.info("JSweet transpiler version " + JSweetConfig.getVersionNumber() + " (build date: " + JSweetConfig.getBuildDate() + ")");
-		OUTPUT_LOGGER.info("Java compiler version: " + JavaCompiler.version());
 
 		if (jsapSpec == null) {
 			throw new IllegalStateException("no args, please call setArgs before");

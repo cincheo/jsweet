@@ -23,6 +23,10 @@ package org.jsweet.transpiler;
 public enum JSweetProblem {
 
 	/**
+	 * Raised when the JDK is not found (hence tools.jar).
+	 */
+	JAVA_COMPILER_NOT_FOUND(Severity.ERROR),
+	/**
 	 * Raised when the Java compiler reports errors.
 	 */
 	JAVA_ERRORS(Severity.ERROR),
@@ -252,6 +256,8 @@ public enum JSweetProblem {
 	 */
 	public String getMessage(Object... params) {
 		switch (this) {
+		case JAVA_COMPILER_NOT_FOUND:
+			return String.format("Java compiler cannot be found: make sure that JAVA_HOME points to a JDK (version>=8) and not a JRE, or sets the transpiler jdkHome option", params);
 		case JAVA_ERRORS:
 			return String.format("Java compiler reports %s error(s) that should be fixed before transpiling", params);
 		case INTERNAL_TSC_ERROR:
