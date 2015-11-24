@@ -236,7 +236,11 @@ public enum JSweetProblem {
 	 * Raised when a package is named after an invalid name (typically a
 	 * TypeScript keyword).
 	 */
-	PACKAGE_NAME_CONTAINS_KEYWORD(Severity.ERROR);
+	PACKAGE_NAME_CONTAINS_KEYWORD(Severity.ERROR),
+	/**
+	 * Raised when a wildcard import is used.
+	 */
+	WILDCARD_IMPORT(Severity.ERROR);
 
 	private Severity severity;
 
@@ -354,6 +358,8 @@ public enum JSweetProblem {
 			return String.format("no bundle file generated: no entries found, you must define at least one main method", params);
 		case PACKAGE_NAME_CONTAINS_KEYWORD:
 			return String.format("a package name cannot contain top-level keyword(s): %s", params);
+		case WILDCARD_IMPORT:
+			return String.format("imports cannot use * wildcards: please import a specific element", params);
 		}
 		return null;
 	}

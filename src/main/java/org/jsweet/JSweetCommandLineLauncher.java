@@ -144,7 +144,7 @@ public class JSweetCommandLineLauncher {
 		switchArg = new Switch("verbose");
 		switchArg.setLongFlag("verbose");
 		switchArg.setShortFlag('v');
-		switchArg.setHelp("Turn all levels of logging.");
+		switchArg.setHelp("Turn on all levels of logging.");
 		switchArg.setDefault("false");
 		jsap.registerParameter(switchArg);
 

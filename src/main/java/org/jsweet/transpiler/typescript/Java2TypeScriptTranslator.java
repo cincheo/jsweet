@@ -882,6 +882,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	public void visitImport(JCImport importDecl) {
 		imports.add(importDecl);
 		String qualId = importDecl.getQualifiedIdentifier().toString();
+		if (qualId.endsWith("*")) {
+			report(importDecl, JSweetProblem.WILDCARD_IMPORT);
+			return;
+		}
 		String adaptedQualId = getAdapter().needsImport(importDecl, qualId);
 		if (adaptedQualId != null && adaptedQualId.contains(".")) {
 			String[] namePath = adaptedQualId.split("\\.");
