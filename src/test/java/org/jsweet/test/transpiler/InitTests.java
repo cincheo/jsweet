@@ -19,24 +19,25 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import org.jsweet.test.transpiler.source.init.Constructor;
-import org.jsweet.test.transpiler.source.init.ConstructorField;
-import org.jsweet.test.transpiler.source.init.ConstructorFieldInInterface;
-import org.jsweet.test.transpiler.source.init.ConstructorMethod;
-import org.jsweet.test.transpiler.source.init.ConstructorMethodInInterface;
-import org.jsweet.test.transpiler.source.init.Initializer;
-import org.jsweet.test.transpiler.source.init.InitializerStatementConditionError;
-import org.jsweet.test.transpiler.source.init.InitializerStatementError;
-import org.jsweet.test.transpiler.source.init.InterfaceRawConstruction;
-import org.jsweet.test.transpiler.source.init.MultipleMains;
-import org.jsweet.test.transpiler.source.init.NoOptionalFieldsInClass;
-import org.jsweet.test.transpiler.source.init.StaticInitializer;
-import org.jsweet.test.transpiler.source.structural.OptionalField;
-import org.jsweet.test.transpiler.source.structural.OptionalFieldError;
 import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.util.EvaluationResult;
 import org.junit.Assert;
 import org.junit.Test;
+
+import source.init.Constructor;
+import source.init.ConstructorField;
+import source.init.ConstructorFieldInInterface;
+import source.init.ConstructorMethod;
+import source.init.ConstructorMethodInInterface;
+import source.init.Initializer;
+import source.init.InitializerStatementConditionError;
+import source.init.InitializerStatementError;
+import source.init.InterfaceRawConstruction;
+import source.init.MultipleMains;
+import source.init.NoOptionalFieldsInClass;
+import source.init.StaticInitializer;
+import source.structural.OptionalField;
+import source.structural.OptionalFieldError;
 
 public class InitTests extends AbstractTest {
 

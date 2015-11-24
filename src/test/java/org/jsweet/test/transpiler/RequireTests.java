@@ -17,33 +17,34 @@ package org.jsweet.test.transpiler;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import org.jsweet.test.transpiler.source.blocksgame.Ball;
-import org.jsweet.test.transpiler.source.blocksgame.BlockElement;
-import org.jsweet.test.transpiler.source.blocksgame.Factory;
-import org.jsweet.test.transpiler.source.blocksgame.GameArea;
-import org.jsweet.test.transpiler.source.blocksgame.GameManager;
-import org.jsweet.test.transpiler.source.blocksgame.Globals;
-import org.jsweet.test.transpiler.source.blocksgame.Player;
-import org.jsweet.test.transpiler.source.blocksgame.util.AnimatedElement;
-import org.jsweet.test.transpiler.source.blocksgame.util.Collisions;
-import org.jsweet.test.transpiler.source.blocksgame.util.Direction;
-import org.jsweet.test.transpiler.source.blocksgame.util.Line;
-import org.jsweet.test.transpiler.source.blocksgame.util.MobileElement;
-import org.jsweet.test.transpiler.source.blocksgame.util.Point;
-import org.jsweet.test.transpiler.source.blocksgame.util.Rectangle;
-import org.jsweet.test.transpiler.source.blocksgame.util.Vector;
-import org.jsweet.test.transpiler.source.require.TopLevel1;
-import org.jsweet.test.transpiler.source.require.TopLevel2;
-import org.jsweet.test.transpiler.source.require.a.A;
-import org.jsweet.test.transpiler.source.require.a.Use1;
-import org.jsweet.test.transpiler.source.require.a.Use2;
-import org.jsweet.test.transpiler.source.require.a.b.B1;
-import org.jsweet.test.transpiler.source.require.a.b.B2;
-import org.jsweet.test.transpiler.source.require.b.ClassImport;
-import org.jsweet.test.transpiler.source.require.b.ClassImportImplicitRequire;
-import org.jsweet.test.transpiler.source.require.b.GlobalsImport;
 import org.jsweet.transpiler.ModuleKind;
 import org.junit.Test;
+
+import source.blocksgame.Ball;
+import source.blocksgame.BlockElement;
+import source.blocksgame.Factory;
+import source.blocksgame.GameArea;
+import source.blocksgame.GameManager;
+import source.blocksgame.Globals;
+import source.blocksgame.Player;
+import source.blocksgame.util.AnimatedElement;
+import source.blocksgame.util.Collisions;
+import source.blocksgame.util.Direction;
+import source.blocksgame.util.Line;
+import source.blocksgame.util.MobileElement;
+import source.blocksgame.util.Point;
+import source.blocksgame.util.Rectangle;
+import source.blocksgame.util.Vector;
+import source.require.TopLevel1;
+import source.require.TopLevel2;
+import source.require.a.A;
+import source.require.a.Use1;
+import source.require.a.Use2;
+import source.require.a.b.B1;
+import source.require.a.b.B2;
+import source.require.b.ClassImport;
+import source.require.b.ClassImportImplicitRequire;
+import source.require.b.GlobalsImport;
 
 public class RequireTests extends AbstractTest {
 
@@ -81,7 +82,7 @@ public class RequireTests extends AbstractTest {
 	public void testGlobalsImport() {
 		transpile(logHandler -> {
 			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-		} , getSourceFile(org.jsweet.test.transpiler.source.require.globals.Globals.class), getSourceFile(GlobalsImport.class));
+		} , getSourceFile(source.require.globals.Globals.class), getSourceFile(GlobalsImport.class));
 	}
 
 	@Test

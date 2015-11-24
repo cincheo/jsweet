@@ -23,8 +23,6 @@ import java.io.File;
 import java.util.LinkedList;
 
 import org.jsweet.JSweetCommandLineLauncher;
-import org.jsweet.test.transpiler.source.overload.Overload;
-import org.jsweet.test.transpiler.source.structural.AbstractClass;
 import org.jsweet.transpiler.JSweetTranspiler;
 import org.jsweet.transpiler.ModuleKind;
 import org.jsweet.transpiler.SourceFile;
@@ -32,6 +30,9 @@ import org.jsweet.transpiler.util.ProcessUtil;
 import org.jsweet.transpiler.util.Util;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import source.overload.Overload;
+import source.structural.AbstractClass;
 
 public class TranspilerTests extends AbstractTest {
 

@@ -16,8 +16,9 @@ package org.jsweet.test.transpiler;
 
 import static org.junit.Assert.assertEquals;
 
-import org.jsweet.test.transpiler.source.generics.InstantiationWithGenerics;
 import org.junit.Test;
+
+import source.generics.InstantiationWithGenerics;
 
 public class GenericsTests extends AbstractTest {
 

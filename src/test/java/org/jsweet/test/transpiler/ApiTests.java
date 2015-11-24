@@ -16,15 +16,16 @@ package org.jsweet.test.transpiler;
 
 import static org.junit.Assert.assertEquals;
 
-import org.jsweet.test.transpiler.source.api.CastMethods;
-import org.jsweet.test.transpiler.source.api.ForeachIteration;
-import org.jsweet.test.transpiler.source.api.JdkInvocations;
-import org.jsweet.test.transpiler.source.api.PrimitiveInstantiation;
-import org.jsweet.test.transpiler.source.api.QualifiedInstantiation;
-import org.jsweet.test.transpiler.source.api.WrongJdkInvocations;
 import org.jsweet.transpiler.JSweetProblem;
 import org.junit.Assert;
 import org.junit.Test;
+
+import source.api.CastMethods;
+import source.api.ForeachIteration;
+import source.api.JdkInvocations;
+import source.api.PrimitiveInstantiation;
+import source.api.QualifiedInstantiation;
+import source.api.WrongJdkInvocations;
 
 public class ApiTests extends AbstractTest {
 

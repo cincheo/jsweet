@@ -17,12 +17,13 @@ package org.jsweet.test.transpiler;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-import org.jsweet.test.transpiler.source.overload.Overload;
-import org.jsweet.test.transpiler.source.overload.WrongOverload;
-import org.jsweet.test.transpiler.source.overload.WrongOverloads;
 import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.util.EvaluationResult;
 import org.junit.Test;
+
+import source.overload.Overload;
+import source.overload.WrongOverload;
+import source.overload.WrongOverloads;
 
 public class OverloadTests extends AbstractTest {
 

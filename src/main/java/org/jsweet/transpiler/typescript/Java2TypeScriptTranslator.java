@@ -146,7 +146,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	private boolean globalModule = false;
 
-	private PackageSymbol rootPackage;
+	private PackageSymbol topLevelPackage;
 
 	private void useModule(PackageSymbol targetPackage, JCTree sourceTree, String targetName, String moduleName) {
 		if (context.useModules) {
@@ -164,12 +164,34 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 	}
 
+	private void checkRootPackageParent(JCCompilationUnit topLevel, PackageSymbol rootPackage, PackageSymbol parentPackage) {
+		if (parentPackage == null) {
+			return;
+		}
+		if (Util.hasAnnotationType(parentPackage, JSweetConfig.ANNOTATION_ROOT)) {
+			report(topLevel.getPackageName(), JSweetProblem.ENCLOSED_ROOT_PACKAGES, rootPackage.getQualifiedName().toString(),
+					parentPackage.getQualifiedName().toString());
+		}
+		for (Symbol s : parentPackage.getEnclosedElements()) {
+			if (!(s instanceof PackageSymbol)) {
+				report(topLevel.getPackageName(), JSweetProblem.CLASS_OUT_OF_ROOT_PACKAGE_SCOPE, s.getQualifiedName().toString(),
+						rootPackage.getQualifiedName().toString());
+			}
+		}
+		checkRootPackageParent(topLevel, rootPackage, (PackageSymbol)parentPackage.owner);
+	}
+
 	@Override
 	public void visitTopLevel(JCCompilationUnit topLevel) {
 		printIndent().print("\"Generated from Java with JSweet " + JSweetConfig.getVersionNumber() + " - http://www.jsweet.org\";").println();
-		rootPackage = Util.getRootPackage(topLevel.packge);
+		PackageSymbol rootPackage = Util.getFirstEnclosingRootPackage(topLevel.packge);
 		if (rootPackage != null) {
-			context.rootPackageNames.add(rootPackage.getQualifiedName().toString());
+			checkRootPackageParent(topLevel, rootPackage, (PackageSymbol)rootPackage.owner);
+		}
+
+		topLevelPackage = Util.getTopLevelPackage(topLevel.packge);
+		if (topLevelPackage != null) {
+			context.topLevelPackageNames.add(topLevelPackage.getQualifiedName().toString());
 		}
 
 		footer.delete(0, footer.length());
@@ -279,7 +301,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (qualified.sym instanceof ClassSymbol) {
 					ClassSymbol importedClass = (ClassSymbol) qualified.sym;
 					if (Util.isSourceType(importedClass)) {
-						PackageSymbol targetRootPackage = Util.getRootPackage(importedClass);
+						PackageSymbol targetRootPackage = Util.getTopLevelPackage(importedClass);
 						if (targetRootPackage == null) {
 							continue;
 						}
@@ -882,7 +904,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	public void visitImport(JCImport importDecl) {
 		imports.add(importDecl);
 		String qualId = importDecl.getQualifiedIdentifier().toString();
-		if (qualId.endsWith("*")) {
+		if (qualId.endsWith("*") && !qualId.endsWith("." + JSweetConfig.GLOBALS_CLASS_NAME + ".*")) {
 			report(importDecl, JSweetProblem.WILDCARD_IMPORT);
 			return;
 		}
@@ -897,7 +919,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					context.registerImportedName(compilationUnit.packge, name);
 				}
 			} else {
-				if (rootPackage == null) {
+				if (topLevelPackage == null) {
 					if (context.globalImports.contains(name)) {
 						// Tsc global package does allow multiple import with
 						// the same name in the global namespace (bug?)

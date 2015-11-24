@@ -18,21 +18,22 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
-import org.jsweet.test.transpiler.source.syntax.AnnotationQualifiedNames;
-import org.jsweet.test.transpiler.source.syntax.FinalVariables;
-import org.jsweet.test.transpiler.source.syntax.FinalVariablesRuntime;
-import org.jsweet.test.transpiler.source.syntax.GlobalsInvocation;
-import org.jsweet.test.transpiler.source.syntax.IndexedAccessInStaticScope;
-import org.jsweet.test.transpiler.source.syntax.Keywords;
-import org.jsweet.test.transpiler.source.syntax.Labels;
-import org.jsweet.test.transpiler.source.syntax.QualifiedNames;
-import org.jsweet.test.transpiler.source.syntax.References;
-import org.jsweet.test.transpiler.source.syntax.SpecialFunctions;
-import org.jsweet.test.transpiler.source.syntax.ValidIndexedAccesses;
 import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.util.EvaluationResult;
 import org.junit.Assert;
 import org.junit.Test;
+
+import source.syntax.AnnotationQualifiedNames;
+import source.syntax.FinalVariables;
+import source.syntax.FinalVariablesRuntime;
+import source.syntax.GlobalsInvocation;
+import source.syntax.IndexedAccessInStaticScope;
+import source.syntax.Keywords;
+import source.syntax.Labels;
+import source.syntax.QualifiedNames;
+import source.syntax.References;
+import source.syntax.SpecialFunctions;
+import source.syntax.ValidIndexedAccesses;
 
 public class SyntaxTests extends AbstractTest {
 

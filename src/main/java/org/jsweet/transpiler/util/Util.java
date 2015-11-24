@@ -385,10 +385,12 @@ public class Util {
 	}
 
 	/**
-	 * Gets root package (see <code>jsweet.lang.Root</code>) enclosing the given
-	 * symbol.
+	 * Gets the top-level package enclosing the given symbol. The top-level
+	 * package is the one that is enclosed within a root package (see
+	 * <code>jsweet.lang.Root</code>) or the one in the default (unnamed)
+	 * package.
 	 */
-	public static PackageSymbol getRootPackage(Symbol symbol) {
+	public static PackageSymbol getTopLevelPackage(Symbol symbol) {
 		if ((symbol instanceof PackageSymbol) && Util.hasAnnotationType(symbol, JSweetConfig.ANNOTATION_ROOT)) {
 			return null;
 		}
@@ -407,9 +409,23 @@ public class Util {
 					return null;
 				}
 			} else {
-				return getRootPackage(parent);
+				return getTopLevelPackage(parent);
 			}
 		}
+	}
+
+	/**
+	 * Finds the first (including itself) enclosing package annotated
+	 * with @Root.
+	 */
+	public static PackageSymbol getFirstEnclosingRootPackage(PackageSymbol packageSymbol) {
+		if (packageSymbol == null) {
+			return null;
+		}
+		if (Util.hasAnnotationType(packageSymbol, JSweetConfig.ANNOTATION_ROOT)) {
+			return packageSymbol;
+		}
+		return getFirstEnclosingRootPackage((PackageSymbol) packageSymbol.owner);
 	}
 
 	private static void getRootRelativeJavaName(StringBuilder sb, Symbol symbol) {
@@ -695,7 +711,9 @@ public class Util {
 
 	/**
 	 * Removes the extensions of the given file name.
-	 * @param fileName the given file name (can contain path)
+	 * 
+	 * @param fileName
+	 *            the given file name (can contain path)
 	 * @return the file name without the extension
 	 */
 	public static String removeExtension(String fileName) {

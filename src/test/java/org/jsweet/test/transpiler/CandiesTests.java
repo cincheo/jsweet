@@ -16,13 +16,14 @@ package org.jsweet.test.transpiler;
 
 import static org.junit.Assert.assertEquals;
 
-import org.jsweet.test.transpiler.source.candies.Angular;
-import org.jsweet.test.transpiler.source.candies.ExpressLib;
-import org.jsweet.test.transpiler.source.candies.GlobalsImport;
-import org.jsweet.test.transpiler.source.candies.JQuery;
-import org.jsweet.test.transpiler.source.candies.QualifiedNames;
 import org.jsweet.transpiler.ModuleKind;
 import org.junit.Test;
+
+import source.candies.Angular;
+import source.candies.ExpressLib;
+import source.candies.GlobalsImport;
+import source.candies.JQuery;
+import source.candies.QualifiedNames;
 
 public class CandiesTests extends AbstractTest {
 

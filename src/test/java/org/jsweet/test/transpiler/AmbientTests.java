@@ -17,15 +17,16 @@ package org.jsweet.test.transpiler;
 import java.io.File;
 
 import org.apache.commons.io.FileUtils;
-import org.jsweet.test.transpiler.source.ambient.LibAccess;
-import org.jsweet.test.transpiler.source.ambient.LibAccessSubModule;
-import org.jsweet.test.transpiler.source.ambient.lib.Base;
-import org.jsweet.test.transpiler.source.ambient.lib.Extension;
-import org.jsweet.test.transpiler.source.ambient.lib.sub.C;
 import org.jsweet.transpiler.ModuleKind;
 import org.jsweet.transpiler.SourceFile;
 import org.junit.Assert;
 import org.junit.Test;
+
+import source.ambient.LibAccess;
+import source.ambient.LibAccessSubModule;
+import source.ambient.lib.Base;
+import source.ambient.lib.Extension;
+import source.ambient.lib.sub.C;
 
 public class AmbientTests extends AbstractTest {
 
@@ -33,7 +34,7 @@ public class AmbientTests extends AbstractTest {
 	public void testLibAccess() throws Exception {
 		File target = new File(transpiler.getTsOutputDir(), "lib.js");
 		FileUtils.deleteQuietly(target);
-		FileUtils.copyFile(new File(TEST_DIRECTORY_NAME + "/org/jsweet/test/transpiler/source/ambient/lib.js"), target);
+		FileUtils.copyFile(new File(TEST_DIRECTORY_NAME + "/source/ambient/lib.js"), target);
 		System.out.println("copied to " + target);
 
 		SourceFile libJs = new SourceFile(null) {
@@ -63,7 +64,7 @@ public class AmbientTests extends AbstractTest {
 	public void testLibAccessSubModule() throws Exception {
 		File target = new File(transpiler.getTsOutputDir(), "libsub.js");
 		FileUtils.deleteQuietly(target);
-		FileUtils.copyFile(new File(TEST_DIRECTORY_NAME + "/org/jsweet/test/transpiler/source/ambient/libsub.js"), target);
+		FileUtils.copyFile(new File(TEST_DIRECTORY_NAME + "/source/ambient/libsub.js"), target);
 		System.out.println("copied to " + target);
 
 		SourceFile libJs = new SourceFile(null) {

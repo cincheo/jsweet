@@ -240,7 +240,15 @@ public enum JSweetProblem {
 	/**
 	 * Raised when a wildcard import is used.
 	 */
-	WILDCARD_IMPORT(Severity.ERROR);
+	WILDCARD_IMPORT(Severity.ERROR),
+	/**
+	 * Raised when a @Root package is enclosed in a @Root package.
+	 */
+	ENCLOSED_ROOT_PACKAGES(Severity.ERROR),
+	/**
+	 * Raised when a class is declared in a parent of a @Root package.
+	 */
+	CLASS_OUT_OF_ROOT_PACKAGE_SCOPE(Severity.ERROR);
 
 	private Severity severity;
 
@@ -261,7 +269,9 @@ public enum JSweetProblem {
 	public String getMessage(Object... params) {
 		switch (this) {
 		case JAVA_COMPILER_NOT_FOUND:
-			return String.format("Java compiler cannot be found: make sure that JAVA_HOME points to a JDK (version>=8) and not a JRE, or sets the transpiler jdkHome option", params);
+			return String.format(
+					"Java compiler cannot be found: make sure that JAVA_HOME points to a JDK (version>=8) and not a JRE, or sets the transpiler jdkHome option",
+					params);
 		case JAVA_ERRORS:
 			return String.format("Java compiler reports %s error(s) that should be fixed before transpiling", params);
 		case INTERNAL_TSC_ERROR:
@@ -360,6 +370,10 @@ public enum JSweetProblem {
 			return String.format("a package name cannot contain top-level keyword(s): %s", params);
 		case WILDCARD_IMPORT:
 			return String.format("imports cannot use * wildcards: please import a specific element", params);
+		case ENCLOSED_ROOT_PACKAGES:
+			return String.format("invalid package hierarchy: @Root package %s cannot be enclosed in @Root package %s", params);
+		case CLASS_OUT_OF_ROOT_PACKAGE_SCOPE:
+			return String.format("invalid package hierarchy: type %s is declared in a parent of @Root package %s", params);
 		}
 		return null;
 	}

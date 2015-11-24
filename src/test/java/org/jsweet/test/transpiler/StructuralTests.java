@@ -22,37 +22,37 @@ import static org.jsweet.transpiler.JSweetProblem.GLOBAL_INDEXER_SET;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import org.jsweet.test.transpiler.source.structural.AbstractClass;
-import org.jsweet.test.transpiler.source.structural.AutoImportClassesInSamePackage;
-import org.jsweet.test.transpiler.source.structural.AutoImportClassesInSamePackageUsed;
-import org.jsweet.test.transpiler.source.structural.Enums;
-import org.jsweet.test.transpiler.source.structural.ExtendsClassInSameFile;
-import org.jsweet.test.transpiler.source.structural.ExtendsObject;
-import org.jsweet.test.transpiler.source.structural.GlobalsAccess;
-import org.jsweet.test.transpiler.source.structural.Inheritance;
-import org.jsweet.test.transpiler.source.structural.InnerClass;
-import org.jsweet.test.transpiler.source.structural.NameClashes;
-import org.jsweet.test.transpiler.source.structural.NoInstanceofForInterfaces;
-import org.jsweet.test.transpiler.source.structural.NoWildcardsInImports;
-import org.jsweet.test.transpiler.source.structural.TwoClassesInSameFile;
-import org.jsweet.test.transpiler.source.structural.WrongConstructsInEnums;
-import org.jsweet.test.transpiler.source.structural.WrongConstructsInInterfaces;
-import org.jsweet.test.transpiler.source.structural.globalclasses.Globals;
-import org.jsweet.test.transpiler.source.structural.globalclasses.a.GlobalsConstructor;
-import org.jsweet.test.transpiler.source.structural.globalclasses.b.GlobalFunctionStaticGetSet;
-import org.jsweet.test.transpiler.source.structural.globalclasses.c.GlobalFunctionGetSet;
-import org.jsweet.test.transpiler.source.structural.globalclasses.d.GlobalFunctionAccessFromMain;
-import org.jsweet.test.transpiler.source.structural.globalclasses.f.GlobalFunctionStaticDelete;
-import org.jsweet.test.transpiler.source.structural.globalclasses.g.GlobalFunctionDelete;
-import org.jsweet.test.transpiler.source.structural.globalclasses.noroot.a.GlobalsInNoRoot;
-import org.jsweet.test.transpiler.source.structural.globalclasses.root.a.GlobalsInRoot;
-import org.jsweet.test.transpiler.source.structural.rootparent1.InvalidClassLocation;
-import org.jsweet.test.transpiler.source.structural.rootparent1.root.NoClassesInRootParent;
-import org.jsweet.test.transpiler.source.structural.rootparent2.root.NoRootInRoot;
 import org.jsweet.transpiler.JSweetProblem;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
+
+import source.root.noroot.a.GlobalsInNoRoot;
+import source.root.root.a.GlobalsInRoot;
+import source.root.rootparent1.InvalidClassLocation;
+import source.root.rootparent1.root.NoClassesInRootParent;
+import source.root.rootparent2.root.NoRootInRoot;
+import source.structural.AbstractClass;
+import source.structural.AutoImportClassesInSamePackage;
+import source.structural.AutoImportClassesInSamePackageUsed;
+import source.structural.Enums;
+import source.structural.ExtendsClassInSameFile;
+import source.structural.ExtendsObject;
+import source.structural.GlobalsAccess;
+import source.structural.Inheritance;
+import source.structural.InnerClass;
+import source.structural.NameClashes;
+import source.structural.NoInstanceofForInterfaces;
+import source.structural.NoWildcardsInImports;
+import source.structural.TwoClassesInSameFile;
+import source.structural.WrongConstructsInEnums;
+import source.structural.WrongConstructsInInterfaces;
+import source.structural.globalclasses.Globals;
+import source.structural.globalclasses.a.GlobalsConstructor;
+import source.structural.globalclasses.b.GlobalFunctionStaticGetSet;
+import source.structural.globalclasses.c.GlobalFunctionGetSet;
+import source.structural.globalclasses.d.GlobalFunctionAccessFromMain;
+import source.structural.globalclasses.f.GlobalFunctionStaticDelete;
+import source.structural.globalclasses.g.GlobalFunctionDelete;
 
 public class StructuralTests extends AbstractTest {
 
@@ -205,48 +205,14 @@ public class StructuralTests extends AbstractTest {
 			Assert.assertEquals("invoked", r.get("test"));
 			Assert.assertEquals("invoked1_2", r.get("Static"));
 			Assert.assertEquals("invoked1_2", r.get("test2"));
-		} , getSourceFile(Globals.class), getSourceFile(org.jsweet.test.transpiler.source.structural.globalclasses.e.Globals.class),
+		} , getSourceFile(Globals.class), getSourceFile(source.structural.globalclasses.e.Globals.class),
 				getSourceFile(GlobalFunctionAccessFromMain.class));
-	}
-
-	@Test
-	public void testGlobalsInRoot() {
-		eval((logHandler, r) -> {
-			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-			Assert.assertEquals(true, r.get("m1"));
-			Assert.assertEquals(true, r.get("m2"));
-		} , getSourceFile(GlobalsInRoot.class));
-	}
-
-	@Test
-	public void testGlobalsInNoRoot() {
-		eval((logHandler, r) -> {
-			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-			Assert.assertEquals(true, r.get("m1"));
-			Assert.assertEquals(true, r.get("m2"));
-		} , getSourceFile(GlobalsInNoRoot.class));
-	}
-
-	@Ignore
-	@Test
-	public void testNoClassesInRootParent() {
-		transpile((logHandler) -> {
-			assertEquals(1, logHandler.reportedProblems.size());
-		} , getSourceFile(InvalidClassLocation.class), getSourceFile(NoClassesInRootParent.class));
-	}
-
-	@Ignore
-	@Test
-	public void testNoRootInRoot() {
-		transpile((logHandler) -> {
-			assertEquals(1, logHandler.reportedProblems.size());
-		} , getSourceFile(NoRootInRoot.class));
 	}
 
 	@Test
 	public void testWildcardsInImports() {
 		transpile((logHandler) -> {
-			logHandler.assertReportedProblems(JSweetProblem.WILDCARD_IMPORT, JSweetProblem.WILDCARD_IMPORT);
+			logHandler.assertReportedProblems(JSweetProblem.WILDCARD_IMPORT);
 		} , getSourceFile(NoWildcardsInImports.class));
 	}
 

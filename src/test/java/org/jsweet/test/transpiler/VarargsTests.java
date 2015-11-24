@@ -16,17 +16,18 @@ package org.jsweet.test.transpiler;
 
 import static org.junit.Assert.assertEquals;
 
-import org.jsweet.test.transpiler.source.varargs.VarargsCalledWithArray;
-import org.jsweet.test.transpiler.source.varargs.VarargsOnAnonymous;
-import org.jsweet.test.transpiler.source.varargs.VarargsOnApi;
-import org.jsweet.test.transpiler.source.varargs.VarargsOnField;
-import org.jsweet.test.transpiler.source.varargs.VarargsOnGetter;
-import org.jsweet.test.transpiler.source.varargs.VarargsOnNew;
-import org.jsweet.test.transpiler.source.varargs.VarargsOnStaticMethod;
-import org.jsweet.test.transpiler.source.varargs.VarargsTransmission;
 import org.jsweet.transpiler.util.EvaluationResult;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import source.varargs.VarargsCalledWithArray;
+import source.varargs.VarargsOnAnonymous;
+import source.varargs.VarargsOnApi;
+import source.varargs.VarargsOnField;
+import source.varargs.VarargsOnGetter;
+import source.varargs.VarargsOnNew;
+import source.varargs.VarargsOnStaticMethod;
+import source.varargs.VarargsTransmission;
 
 public class VarargsTests extends AbstractTest {
 	@Test

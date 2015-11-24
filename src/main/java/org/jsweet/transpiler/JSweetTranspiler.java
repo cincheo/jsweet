@@ -673,7 +673,7 @@ public class JSweetTranspiler {
 				createModuleFile = false;
 				// create only auxiliary module files on modules within a root
 				// package
-				for (String roots : context.rootPackageNames) {
+				for (String roots : context.topLevelPackageNames) {
 					File root = new File(tsOutputDir, roots.replace('.', File.separatorChar));
 					if (rootDir.getPath().startsWith(root.getPath())) {
 						createModuleFile = true;

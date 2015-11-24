@@ -21,17 +21,18 @@ import static org.junit.Assert.fail;
 import java.io.File;
 
 import org.apache.commons.io.FileUtils;
-import org.jsweet.test.transpiler.source.tscomparison.AbstractClasses;
-import org.jsweet.test.transpiler.source.tscomparison.ActualScoping;
-import org.jsweet.test.transpiler.source.tscomparison.CompileTimeWarnings;
-import org.jsweet.test.transpiler.source.tscomparison.OtherThisExample;
-import org.jsweet.test.transpiler.source.tscomparison.SaferVarargs;
-import org.jsweet.test.transpiler.source.tscomparison.StrongerTyping;
-import org.jsweet.test.transpiler.source.tscomparison.ThisIsThis;
 import org.jsweet.transpiler.SourceFile;
 import org.jsweet.transpiler.util.EvaluationResult;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import source.tscomparison.AbstractClasses;
+import source.tscomparison.ActualScoping;
+import source.tscomparison.CompileTimeWarnings;
+import source.tscomparison.OtherThisExample;
+import source.tscomparison.SaferVarargs;
+import source.tscomparison.StrongerTyping;
+import source.tscomparison.ThisIsThis;
 
 public class TsComparisonTest extends AbstractTest {
 

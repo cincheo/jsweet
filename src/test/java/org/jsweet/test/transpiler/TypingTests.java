@@ -16,21 +16,22 @@ package org.jsweet.test.transpiler;
 
 import static org.junit.Assert.fail;
 
-import org.jsweet.test.transpiler.source.typing.ArraysOfLambdas;
-import org.jsweet.test.transpiler.source.typing.ClassTypeAsFunction;
-import org.jsweet.test.transpiler.source.typing.ClassTypeAsTypeOf;
-import org.jsweet.test.transpiler.source.typing.InvalidIndexedAccesses;
-import org.jsweet.test.transpiler.source.typing.Lambdas;
-import org.jsweet.test.transpiler.source.typing.Numbers;
-import org.jsweet.test.transpiler.source.typing.StringTypesUsage;
-import org.jsweet.test.transpiler.source.typing.Tuples;
-import org.jsweet.test.transpiler.source.typing.Unions;
-import org.jsweet.test.transpiler.source.typing.VoidType;
-import org.jsweet.test.transpiler.source.typing.WrongUnions;
 import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.util.EvaluationResult;
 import org.junit.Assert;
 import org.junit.Test;
+
+import source.typing.ArraysOfLambdas;
+import source.typing.ClassTypeAsFunction;
+import source.typing.ClassTypeAsTypeOf;
+import source.typing.InvalidIndexedAccesses;
+import source.typing.Lambdas;
+import source.typing.Numbers;
+import source.typing.StringTypesUsage;
+import source.typing.Tuples;
+import source.typing.Unions;
+import source.typing.VoidType;
+import source.typing.WrongUnions;
 
 public class TypingTests extends AbstractTest {
 
