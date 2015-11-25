@@ -62,8 +62,13 @@ public class JSweetCommandLineLauncher {
 
 			if (!jsapArgs.success()) {
 				printUsage(jsapSpec);
+				System.exit(-1);
 			}
-
+			
+			if (jsapArgs.getBoolean("help")) {
+				printUsage(jsapSpec);
+			}
+			
 			if (jsapArgs.getBoolean("verbose")) {
 				LogManager.getLogger("org.jsweet").setLevel(Level.ALL);
 			}
@@ -273,7 +278,6 @@ public class JSweetCommandLineLauncher {
 	private static void printUsage(JSAP jsapSpec) {
 		System.out.println("Command line options:");
 		System.out.println(jsapSpec.getHelp());
-		System.exit(-1);
 	}
 
 }
