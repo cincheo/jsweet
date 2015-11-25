@@ -40,6 +40,11 @@
 			<name>libs-snapshot</name>
 			<url>http://repository.jsweet.org/artifactory/libs-snapshot-local</url>
 		</repository>
+		<repository>
+			<id>jsweet-central</id>
+			<name>libs-release</name>
+			<url>http://repository.jsweet.org/artifactory/ext-release-local</url>
+		</repository>
 	</repositories>
 	<build>
 		<resources>

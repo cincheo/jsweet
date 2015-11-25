@@ -83,7 +83,7 @@ public abstract class JSweetConfig {
 			URLClassLoader urlClassLoader = (URLClassLoader) ClassLoader.getSystemClassLoader();
 			boolean found = false;
 			for (URL url : urlClassLoader.getURLs()) {
-				if (url.getPath().endsWith("/tools.jar")) {
+				if (url.getPath().endsWith("/tools.jar") || url.getPath().endsWith("/Classes/classes.jar")) {
 					found = true;
 					logger.debug("tools.jar already in classpath");
 					break;
@@ -99,6 +99,13 @@ public abstract class JSweetConfig {
 						// we may be pointing to the JDK's jre
 						toolsLib = new File(jdkHome, "../lib/tools.jar");
 					}
+					// for Mac
+					if (!toolsLib.exists()) {
+						toolsLib = new File(jdkHome, "/Classes/classes.jar");
+					}
+					if (!toolsLib.exists()) {
+						toolsLib = new File(jdkHome, "../Classes/classes.jar");
+					}
 				}
 				if (toolsLib == null || !toolsLib.exists()) {
 					logger.debug("lookup in JAVA_HOME=" + System.getenv("JAVA_HOME"));
@@ -106,6 +113,13 @@ public abstract class JSweetConfig {
 					if (!toolsLib.exists()) {
 						// we may be pointing to the JDK's jre
 						toolsLib = new File(System.getenv("JAVA_HOME"), "../lib/tools.jar");
+					}
+					// for Mac
+					if (!toolsLib.exists()) {
+						toolsLib = new File(System.getenv("JAVA_HOME"), "/Classes/classes.jar");
+					}
+					if (!toolsLib.exists()) {
+						toolsLib = new File(System.getenv("JAVA_HOME"), "../Classes/classes.jar");
 					}
 				}
 				if (!toolsLib.exists()) {
