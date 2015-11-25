@@ -103,7 +103,7 @@
 				<version>2.10.3</version>
 				<configuration>
 					<javadocVersion>1.8</javadocVersion>
-					<sourcepath>src</sourcepath>
+					<sourcepath>src/main/java</sourcepath>
 					<encoding>UTF-8</encoding>
 					<fixTags>all</fixTags>
 					<failOnError>false</failOnError>
