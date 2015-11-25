@@ -203,6 +203,9 @@ public class JSweetTranspiler {
 		this.candiesProcessor = new CandiesProcessor(workingDir, classPath);
 	}
 
+	/**
+	 * Cleans temporary files.
+	 */
 	public void cleanWorkingDirectory() {
 		FileUtils.deleteQuietly(this.workingDir);
 		candiesProcessor.touch();
