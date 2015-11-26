@@ -1,3 +1,27 @@
+-   [Basic concepts](#basic-concepts)
+    -   [Core types and objects](#core-types-and-objects)
+    -   [Classes](#classes)
+    -   [Interfaces](#interfaces)
+    -   [Enums](#enums)
+    -   [Indexed objects](#indexed-objects)
+    -   [Optional parameters](#sec:optional)
+-   [Types](#types)
+    -   [Functional types](#functional-types)
+    -   [Object types](#object-types)
+    -   [String types](#string-types)
+    -   [Tuple types](#tuple-types)
+    -   [Union types](#union-types)
+-   [Semantics](#sec:semantics)
+    -   [Main methods](#main-methods)
+    -   [Initializers](#initializers)
+    -   [Name clashes](#name-clashes)
+-   [Packaging](#packaging)
+    -   [Packages and modules](#packages-and-modules)
+    -   [Globals](#globals)
+    -   [Root packages](#root-packages)
+    -   [Modules](#modules)
+    -   [Bundles](#bundles)
+
 Basic concepts
 --------------
 
