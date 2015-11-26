@@ -238,7 +238,7 @@ Programmers should use this API most of the time. However, for objects that need
 
 As a consequence, programmers need to be able to switch to the JavaScript API when coming from a Java object. The \texttt{jsweet.util.Globals} class defines convenient static methods to cast back and forth core Java objects to their corresponding JSweet objects. For instance the \texttt{string(...)} method will allow the programmer to switch from the Java to the JSweet strings and conversely.
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Java]
 import jsweet.util.Globals.string;
 String str = "This is a test string";
 str.toLowerCase(); // valid: toLowerCase it defined both in Java and JavaScript
@@ -249,7 +249,7 @@ string(str).substr(1); // valid: string(str) is a jsweet.lang.String.
 \noindent
 Here is another example that shows the use of the \texttt{array} method to access the \texttt{push} method available on JavaScript arrays.
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Java]
 import jsweet.util.Globals.array;
 String[] strings = { "a", "b", "c" };
 array(strings).push("d");
@@ -260,7 +260,7 @@ assert strings[3] == "d";
 
 Classes in JSweet are very similar to Java classes. For example:
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Java]
 public class BankAccount {  
     public double balance = 0;  
     public double deposit(double credit) {  
@@ -273,7 +273,7 @@ public class BankAccount {
 \noindent
 Which is transpiled to the following JavaScript code:
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Java]
 var BankAccount = (function () {  
     function BankAccount() {  
         this.balance = 0;  
@@ -288,7 +288,7 @@ var BankAccount = (function () {
 
 Classes can define constructors, have super classes and be instantiated exactly like in Java. The only restriction compared to Java is that inner classes or anonymous classes are not allowed in JSweet. For instance, the following code will raise an error.
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Java]
 public class ContainerClass {
 	// error: inner classes are not allowed
 	public class InnerClass {
@@ -302,7 +302,7 @@ In JSweet, an interface (a.k.a. object type) can be seen as object signature, th
 
 JSweet interfaces can be defined as regular Java interfaces, but also as Java classes annotated with \texttt{@jsweet.lang.Interface}, so that is is possible to define properties as fields. Such classes impose many constraints, as shown in the following code.
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Java]
 @Interface
 public class WrongConstructsInInterfaces {
 	native public void m1(); // OK
@@ -337,7 +337,7 @@ public class WrongConstructsInInterfaces {
 
 In JSweet, typed object can be constructed out of interfaces. If we take the following interface:
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Java]
 @Interface
 public class Point {
 	public double x;
@@ -348,14 +348,14 @@ public class Point {
 \noindent
 We can create an object typed after the interface. Note that the following code is not actually creating an instance of the \texttt{Point} interface, it is creating an object that conforms to the interface. 
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Java]
 Point p1 = new Point() {{ x=1; y=1; }};
 \end{lstlisting}
 
 \noindent
 As a direct consequence, in JSweet it is not allowed to check an instance against an interface type.
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Java]
 if (p1 instanceof Point) { ... } // compile error 
 \end{lstlisting}
 
@@ -366,7 +366,7 @@ This may seems quite confusing for Java programmers, but you have to remember th
  
 Interfaces can define \emph{optional fields}, which are used to report errors when the programmer forgets to initialize a mandatory field in an object. Supporting optional fields in JSweet is done through the use of \texttt{@jsweet.lang.Optional} annotations. For instance:
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Java]
 @Interface
 public class Point {
 	public double x;
@@ -378,7 +378,7 @@ public class Point {
 
 It is the JSweet compiler that will check that the fields are correctly initialized, when constructing an object.
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Java]
 // no errors (z is optional)
 Point p1 = new Point() {{ x=1; y=1; }};
 // JSweet reports a compile error since y is not optional
@@ -398,7 +398,7 @@ In JavaScript, objects can have properties and functions, but can also (not excl
 
 JSweet allows the definition of enums similarly to Java, but with some restrictions. The following code declares an enum with tree possible values (\texttt{A}, \texttt{B}, and \texttt{C}).
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Java]
 enum MyEnum {
 	A, B, C
 }
@@ -406,7 +406,7 @@ enum MyEnum {
 
 The following statements are valid statements in JSweet.
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Java]
 MyEnum e = MyEnum.A;
 assert MyEnum.A == e;
 assert e.name().equals("A");
@@ -417,7 +417,7 @@ assert array(MyEnum.values()).indexOf(MyEnum.valueOf("C")) == 2;
 
 On the other hand, unlike Java enums, other members than constants are not allowed, raising JSweet transpilation errors, as shown in the following code.
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Java]
 public enum WrongConstructsInEnums {
 
 	A, B, C;
@@ -465,7 +465,7 @@ The type of keys and values can be overloaded for every object. For example, the
 
 In the case of objects indexed with number keys, it is allowed to implement the \texttt{java.lang.Iterable} interface so that it is possible to use they in \emph{foreach} loops. For instance, the \texttt{NodeList} type (from the DOM) defines an indexed function:
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Java]
 @Interface
 class NodeList implements java.lang.Iterable {
     public double length;
@@ -476,7 +476,7 @@ class NodeList implements java.lang.Iterable {
 
 In JSweet, you can access the node list elements with the \texttt{\$get} function, and your can also iterate with the \emph{foreach} syntax. The following code generates fully valid JavaScript code.
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Java]
 NodeList nodes = ...
 for (int i = 0; i < nodes.length; i++) {
 	HTMLElement element = (HTMLElement) nodes.$get(i);
@@ -495,7 +495,7 @@ for (Node node : nodes) {
 
 In JavaScript, parameters can be optional, in the sense that a parameter value does not need to be provided when calling a function. Except for varargs, which are fully supported in JSweet, the general concept of an optional parameter does not exits in Java. To simulate optional parameters, JSweet supports overloading as long as it is for implementing optional parameters -- a very commonly used idiom. Here are some example of valid and invalid overloading in JSweet:
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Java]
 String m(String s, double n) { return s + n; }
 // valid overloading (JSweet transpiles to optional parameter)
 String m(String s) { return m(s, 0); }
@@ -535,7 +535,7 @@ Union types represent values that may have one of several distinct representatio
 
 The following code shows a typical use of union types in JSweet. It simply declares a variable as a union between a string and a number, which means that the variable can actually be of one of that types (but of no other types). The switch from a union type to a regular type is done through the \texttt{jsweet\-.util\-.Globals\-.union} helper method. This helper method is completely untyped, allowing from a Java perspective any union to be transformed to another type. It is actually the JSweet transpiler that checks that the union type is consistently used.
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Java]
 import static jsweet.util.Globals.union;
 import jsweet.util.union.Union;
 [...]
@@ -550,7 +550,7 @@ Date d = union(u); // JSweet error
 
 The \texttt{union} helper can also be used the other way, to switch from a regular type back to a union type, when expected.
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Java]
 import static jsweet.util.Globals.union;
 import jsweet.util.union.Union3;
 [...]
@@ -564,7 +564,7 @@ m(union(new RegExp(".*"))); // compile error
 
 Note: the use of Java function overloading is preferred over union types when typing function parameters. For example:
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Java]
 // with union types (discouraged)
 native public void m(Union3<String, Number, Date>> u);
 // with overloading (preferred way)
@@ -594,7 +594,7 @@ On contrary to Java, methods and fields of the same name are not allowed within 
 
 As an example:
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Java]
 public class NameClashes {
 
 	// error: field name clashes with existing method name
@@ -612,7 +612,7 @@ public class NameClashes {
 
 Variables in JSweet are dealt with like final Java variables. In the following code, the element variable is re-scoped in the lambda expression so that the enclosing loop does not change its value.
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Java]
 NodeList nodes = document.querySelectorAll(".control");
 for (int i = 0; i < nodes.length; i++) {
 	HTMLElement element = (HTMLElement) nodes.$get(i); // final
@@ -627,7 +627,7 @@ for (int i = 0; i < nodes.length; i++) {
 
 On contrary to JavaScript and similarly to Java, using a method as a lambda will prevent loosing the reference to \texttt{this}. For instance, at line 10 of the following program, \texttt{this} holds the right value, even when \texttt{action} was called as a lambda (line 14). Although this seem logical to Java programmers, it is not a given that the JavaScript semantics ensures this behavior. 
 
-\begin{lstlisting}[numbers=left]
+\begin{lstlisting}[language=Java]
 package example;
 import static jsweet.dom.Globals.console;
 
@@ -674,7 +674,7 @@ In Globals classes, only static fields (global variables) and static methods (gl
 
 For instance, the following code snippets will raise transpilation errors.
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Java]
 class Globals {
 	public int a;
 	// error: public constructors are not allowed
@@ -688,7 +688,7 @@ class Globals {
 }
 \end{lstlisting}
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Java]
 // error: Globals classes cannot be used as types
 Globals myVariable = null;
 \end{lstlisting}
