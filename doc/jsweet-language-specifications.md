@@ -1,3 +1,13 @@
+JSweet Language Specifications
+==============================
+
+Version: 1.0.0
+
+Author: Renaud Pawlak
+
+Content
+-------
+
 -   [Basic concepts](#basic-concepts)
     -   [Core types and objects](#core-types-and-objects)
     -   [Classes](#classes)

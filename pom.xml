@@ -136,6 +136,8 @@
 						<argument>--base-header-level=2</argument>
 						<argument>-s</argument>
 						<argument>--toc</argument>
+						<argument>-B</argument>
+						<argument>header.md</argument>
 						<argument>-o</argument>
 						<argument>jsweet-language-specifications.md</argument>
 						<argument>jsweet-language-specifications.tex</argument>
