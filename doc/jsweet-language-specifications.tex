@@ -1,0 +1,710 @@
+\documentclass[a4paper]{report}
+
+\usepackage[a4paper, margin=3cm]{geometry}
+\usepackage{times}
+\usepackage{graphicx} 
+%\usepackage{color}
+%\usepackage{multirow}
+\usepackage{url}
+\usepackage{verbatim}
+\usepackage{hyperref}
+\usepackage{wrapfig}
+\usepackage{titling}
+
+\usepackage{listings}
+\usepackage{color}
+\usepackage{titlesec}
+\usepackage[htt]{hyphenat}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{lightgray}{rgb}{0.95,0.95,0.95}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{lightgray}{rgb}{0.7,0.7,0.7}
+\definecolor{lightlightgray}{rgb}{0.98,0.98,0.98}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstset{
+  language=Java,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=2,
+  backgroundcolor=\color{lightlightgray},
+  frame=single,
+  rulecolor=\color{lightgray},
+  morekeywords={assert}
+}
+
+\titleformat{\chapter}{\bfseries\LARGE}{\thechapter.}{1ex}{}[]
+\titlespacing{\chapter}{0pt}{20pt}{16pt}
+
+\pretitle{%
+  \begin{center}
+  \LARGE
+  \includegraphics[width=6cm,height=6cm]{logo}\\[\bigskipamount]
+}
+\posttitle{\end{center}}
+
+\newcommand{\code}[1]{\texttt{\small #1}}
+\newcommand{\api}[1]{\subsection*{\normalsize\texttt{#1}}}
+
+\begin{document}
+
+\title{JSweet Language Specifications\\{\large Version 1.0.0 BETA\\\colorbox{red}{IN PROGRESS DRAFT}}}
+\author{%
+Renaud Pawlak\\
+{\normalsize renaud.pawlak@jsweet.org}\\
+{\normalsize http://www.jsweet.org}\\
+}% author
+\date{}
+\maketitle
+
+\tableofcontents
+
+\chapter{Basic concepts} 
+
+This section presents the JSweet language basic concepts. One must keep in mind that JSweet, as a Java-to-JavaScript transpiler, is an extension of Java at compile-time, and executes as JavaScript at runtime. Thus, most Java typing and syntactic constraints will apply at compile time, but some JavaScript semantics may apply at runtime. This document will mention when Java syntactic constructs and semantics are not legal (or differ) in JSweet.
+
+\section{Core types and objects}
+
+JSweet allows the use of primitive Java types, core Java objects (with some restrictions) and of core JavaScript objects, which are defined in the \texttt{jsweet.lang} package. Next, we describe the use of such core types and objects.
+
+\subsection{Primitive Java types}
+
+JSweet allows the use of Java primitive types (and associated literals).
+
+\begin{itemize}
+\item \texttt{int}, \texttt{byte}, \texttt{short}, \texttt{double}, \texttt{float} are all converted to JavaScript numbers (precision does not matter in JSweet).
+\item \texttt{char} follows the Java typing rules but is converted to a JavaScript string by the transpiler.
+\item \texttt{boolean} corresponds to the JavaScript boolean.
+\item \texttt{java.lang.String} corresponds to the JavaScript \texttt{string}. (not per say a primitive type, but is immutable and used as the class of string literals in Java)
+\end{itemize}
+
+\noindent
+Examples of valid statements:
+
+\begin{lstlisting}
+// warning '==' behaves like the JavaScript one at runtime
+int i = 2;
+assert i == 2;
+double d = i + 4;
+assert d == 6;
+String s = "string" + '0' + i;
+assert s == "string02"; // JavaScript '=='
+boolean b = false;
+assert !b;
+\end{lstlisting}
+
+\subsection{Allowed Java objects}
+
+Here follows the list of allowed Java classes in JSweet:
+
+\begin{itemize}
+\item \texttt{java.lang.Object}
+	\begin{itemize}
+	\item allowed methods: \texttt{toString()}
+	\end{itemize}
+\item \texttt{java.lang.String}
+	\begin{itemize}
+	\item allowed methods: 
+			\begin{itemize}
+				\item \texttt{charAt(int)}
+				\item \texttt{concat(java.lang.String)} 
+				\item \texttt{indexOf(java.lang.String)}
+				\item \texttt{lastIndexOf(java.lang.String)}
+				\item \texttt{lastIndexOf(java.lang.String,int)}
+				\item \texttt{substring(int)}
+				\item \texttt{substring(int,int)} (with the JavaScript behavior)
+				\item \texttt{replace(java.lang.String,java.lang.String)}
+				\item \texttt{split(java.lang.String)}
+				\item \texttt{trim()}
+				\item \texttt{toLowerCase()}
+				\item \texttt{toUpperCase()}
+			\end{itemize}
+	\end{itemize}
+\item \texttt{java.lang.Class}
+	\begin{itemize}
+	\item allowed methods: none
+	\end{itemize}
+\item \texttt{java.lang.Boolean}
+	\begin{itemize}
+	\item allowed methods: none
+	\end{itemize}
+\item \texttt{java.lang.Void}
+	\begin{itemize}
+	\item allowed methods: none
+	\end{itemize}
+\item \texttt{java.lang.Integer}
+	\begin{itemize}
+	\item allowed methods: none
+	\end{itemize}
+\item \texttt{java.lang.Double}
+	\begin{itemize}
+	\item allowed methods: none
+	\end{itemize}
+\item \texttt{java.lang.Number}
+	\begin{itemize}
+	\item allowed methods: none
+	\end{itemize}
+\item \texttt{java.lang.Float}
+	\begin{itemize}
+	\item allowed methods: none
+	\end{itemize}
+\item \texttt{java.lang.Byte}
+	\begin{itemize}
+	\item allowed methods: none
+	\end{itemize}
+\item \texttt{java.lang.Short}
+	\begin{itemize}
+	\item allowed methods: none
+	\end{itemize}
+\item \texttt{java.lang.Iterable}
+	\begin{itemize}
+	\item allowed methods: none (for using the \emph{foreach} loop on indexed objects)
+	\end{itemize}
+\item \texttt{java.lang.Runnable}
+	\begin{itemize}
+	\item allowed methods: none (for declaring lambdas)
+	\end{itemize}
+\item \texttt{java.util.function.*} (for declaring lambdas)
+	\begin{itemize}
+	\item prohibited method names: 
+			\begin{itemize}
+				\item \texttt{and}
+				\item \texttt{negate} 
+				\item \texttt{or}
+				\item \texttt{andThen}
+			\end{itemize}
+	\end{itemize}
+\end{itemize}
+
+\noindent
+Examples of valid statements:
+
+\begin{lstlisting}
+// warning '==' behaves like the JavaScript one at runtime
+Integer i = 2;
+assert i == 2; // JavaScript '=='
+Double d = i + 4;
+assert d.toString() == "6"; // JavaScript '=='
+assert d == "6"; // JavaScript '=='
+BiFunction<String, Integer, String> f = (s, i) -> { return s.substring(i); };
+assert "bc" == f.apply("abc", 1); // JavaScript '=='
+\end{lstlisting}
+
+\subsection{Java arrays}
+
+Arrays can be used in JSweet and are transpiled to JavaScript arrays. Array initialization, accesses and and iteration are all valid statements.
+
+\begin{lstlisting}
+int[] arrayOfInts = { 1, 2, 3, 4};
+assert arrayOfInts.length == 4;  
+assert arrayOfInts[0] == 1;
+for(int i : arrayOfInts) {
+	arrayOfInts[i] = arrayOfInts[i] - 1;
+	assert arrayOfInts[i] == i;
+}
+\end{lstlisting}
+
+\subsection{Core JavaScript API}
+
+The core JavaScript API is defined in \texttt{jsweet.lang} (the full documentation can be found at \url{http://www.jsweet.org/core-api-javadoc/}). Main JavaScript classes are:
+
+\begin{itemize}
+\item \texttt{jsweet.lang.Object}: common ancestor for JavaScript objects functions and properties.
+\item \texttt{jsweet.lang.Boolean}: a wrapper for boolean values.
+\item \texttt{jsweet.lang.Number}: a wrapper for numerical values.
+\item \texttt{jsweet.lang.String}: a wrapper and constructor for strings.
+\item \texttt{jsweet.lang.Function}: a constructor for functions.
+\item \texttt{jsweet.lang.Date}: enables basic storage and retrieval of dates and times.
+\item \texttt{jsweet.lang.Array<T>}: used in the construction of arrays, which are high-level, list-like objects.
+\item \texttt{jsweet.lang.Error}: this class implements \texttt{java.lang.RuntimeException} and can be thrown and caught with \texttt{try} ... \texttt{catch} statements.
+\end{itemize}
+
+Programmers should use this API most of the time. However, for objects that need to be used with Java literals (numbers, booleans, and strings), the use of the \texttt{java.lang} package classes is recommended. For instance, the jQuery API declares \texttt{\$(java.lang.String)} instead of \texttt{\$(jsweet.\-lang.\-String)}. This allows the programmer to write expressions using literals, such as \texttt{\$("a")} (for selecting all links in a document).
+
+As a consequence, programmers need to be able to switch to the JavaScript API when coming from a Java object. The \texttt{jsweet.util.Globals} class defines convenient static methods to cast back and forth core Java objects to their corresponding JSweet objects. For instance the \texttt{string(...)} method will allow the programmer to switch from the Java to the JSweet strings and conversely.
+
+\begin{lstlisting}
+import jsweet.util.Globals.string;
+String str = "This is a test string";
+str.toLowerCase(); // valid: toLowerCase it defined both in Java and JavaScript
+str.substr(1); // compile error: substr is not a Java method
+string(str).substr(1); // valid: string(str) is a jsweet.lang.String.
+\end{lstlisting}
+
+\noindent
+Here is another example that shows the use of the \texttt{array} method to access the \texttt{push} method available on JavaScript arrays.
+
+\begin{lstlisting}
+import jsweet.util.Globals.array;
+String[] strings = { "a", "b", "c" };
+array(strings).push("d");
+assert strings[3] == "d";
+\end{lstlisting}
+
+\section{Classes}
+
+Classes in JSweet are very similar to Java classes. For example:
+
+\begin{lstlisting}
+public class BankAccount {  
+    public double balance = 0;  
+    public double deposit(double credit) {  
+        balance += credit;  
+        return this.balance;  
+    }  
+}  
+\end{lstlisting}
+
+\noindent
+Which is transpiled to the following JavaScript code:
+
+\begin{lstlisting}
+var BankAccount = (function () {  
+    function BankAccount() {  
+        this.balance = 0;  
+    }  
+    BankAccount.prototype.deposit = function(credit) {  
+        this.balance += credit;  
+        return this.balance;  
+    };  
+    return BankAccount;  
+})();
+\end{lstlisting}
+
+Classes can define constructors, have super classes and be instantiated exactly like in Java. The only restriction compared to Java is that inner classes or anonymous classes are not allowed in JSweet. For instance, the following code will raise an error.
+
+\begin{lstlisting}
+public class ContainerClass {
+	// error: inner classes are not allowed
+	public class InnerClass {
+	}
+}
+\end{lstlisting}
+
+\section{Interfaces}
+
+In JSweet, an interface (a.k.a. object type) can be seen as object signature, that is to say the accessible functions and properties of an object (without specifying any implementation). An interface is defined for typing only and has no runtime representation (no instances), however, they can be used to type objects.
+
+JSweet interfaces can be defined as regular Java interfaces, but also as Java classes annotated with \texttt{@jsweet.lang.Interface}, so that is is possible to define properties as fields. Such classes impose many constraints, as shown in the following code.
+
+\begin{lstlisting}
+@Interface
+public class WrongConstructsInInterfaces {
+	native public void m1(); // OK
+	// error: field initializers are not allowed
+	public long l = 4;
+	// error: statics are not allowed
+	static String s1;
+	// error: private are not allowed
+	private String s2;
+	// error: constructors are not allowed
+	public WrongConstructsInInterfaces() {
+		l = 4;
+	}
+	// error: bodies are not allowed
+	public void m2() {
+		l = 4;
+	}
+	// error: statics are not allowed
+	native static void m3();
+	// error: initializers are not allowed
+	{
+		l = 4;
+	}
+	// error: static initializers are not allowed
+	static {
+		s1 = "";
+	}
+}
+\end{lstlisting}
+
+\subsection{Object typing}
+
+In JSweet, typed object can be constructed out of interfaces. If we take the following interface:
+
+\begin{lstlisting}
+@Interface
+public class Point {
+	public double x;
+	public double y;
+}
+\end{lstlisting}
+
+\noindent
+We can create an object typed after the interface. Note that the following code is not actually creating an instance of the \texttt{Point} interface, it is creating an object that conforms to the interface. 
+
+\begin{lstlisting}
+Point p1 = new Point() {{ x=1; y=1; }};
+\end{lstlisting}
+
+\noindent
+As a direct consequence, in JSweet it is not allowed to check an instance against an interface type.
+
+\begin{lstlisting}
+if (p1 instanceof Point) { ... } // compile error 
+\end{lstlisting}
+
+\noindent
+This may seems quite confusing for Java programmers, but you have to remember that, on contrary to Java where interfaces are available as special classes at runtime, in JSweet, interfaces have no reality at runtime. Think of generics, which are of the same kind in Java. As a consequence, the \texttt{instanceof} operator is not applicable on interfaces at runtime (like it is not applicable on generics).
+
+\subsection{Optional fields}
+ 
+Interfaces can define \emph{optional fields}, which are used to report errors when the programmer forgets to initialize a mandatory field in an object. Supporting optional fields in JSweet is done through the use of \texttt{@jsweet.lang.Optional} annotations. For instance:
+
+\begin{lstlisting}
+@Interface
+public class Point {
+	public double x;
+	public double y;
+	@Optional
+	public double z = 0;
+}
+\end{lstlisting}
+
+It is the JSweet compiler that will check that the fields are correctly initialized, when constructing an object.
+
+\begin{lstlisting}
+// no errors (z is optional)
+Point p1 = new Point() {{ x=1; y=1; }};
+// JSweet reports a compile error since y is not optional
+Point p2 = new Point() {{ x=1; z=1; }};
+\end{lstlisting}
+
+\subsection{Special functions in interfaces}
+
+In JavaScript, objects can have properties and functions, but can also (not exclusively), be used as constructors and functions themselves. This is not possible in Java, so JSweet defines special functions for handling these cases.
+
+\begin{itemize}
+\item \texttt{\$apply} is used to state that the object can be used as a function.
+\item \texttt{\$new} is used to state that the object can be used as a constructor.
+\end{itemize}
+
+\section{Enums} 
+
+JSweet allows the definition of enums similarly to Java, but with some restrictions. The following code declares an enum with tree possible values (\texttt{A}, \texttt{B}, and \texttt{C}).
+
+\begin{lstlisting}
+enum MyEnum {
+	A, B, C
+}
+\end{lstlisting}
+
+The following statements are valid statements in JSweet.
+
+\begin{lstlisting}
+MyEnum e = MyEnum.A;
+assert MyEnum.A == e;
+assert e.name().equals("A");
+assert e.ordinal() == 0;
+assert MyEnum.valueOf("A") == e;
+assert array(MyEnum.values()).indexOf(MyEnum.valueOf("C")) == 2;
+\end{lstlisting}
+
+On the other hand, unlike Java enums, other members than constants are not allowed, raising JSweet transpilation errors, as shown in the following code.
+
+\begin{lstlisting}
+public enum WrongConstructsInEnums {
+
+	A, B, C;
+	
+	// error: fields are not allowed
+	public long l = 4;
+	// error: fields are not allowed
+	static String s1;
+	// error: fields are not allowed
+	private String s2;
+	// error: constructors are not allowed	
+	private WrongConstructsInEnums() {
+		l = 4;
+	}
+	// error: methods are not allowed	
+	native public void m1();
+	// error: methods are not allowed
+	public void m2() {
+		l = 4;
+	}
+	// error: methods are not allowed
+	native static void m3();
+	// error: initializers are not allowed
+	{
+		l = 4;
+	}
+	// error: initializers are not allowed
+	static {
+		s1 = "";
+	}
+}
+\end{lstlisting}
+
+\section{Indexed objects}
+
+In JavaScript, object can be seen as maps containing key-value pairs (key is often called \emph{index}, especially when it is a number). So, in JSweet, all objects define the special functions (defined on \texttt{jsweet.lang.Object}):
+
+\begin{itemize}
+\item \texttt{\$get(key)} accesses a value with the given key.
+\item \texttt{\$set(key,value)} sets or replace a value for the given key.
+\item \texttt{\$delete(key)} deletes the value for the given key.
+\end{itemize}
+
+The type of keys and values can be overloaded for every object. For example, the \texttt{Array<T>} class, will define keys as numbers and values as objects conforming to type \texttt{T}.
+
+In the case of objects indexed with number keys, it is allowed to implement the \texttt{java.lang.Iterable} interface so that it is possible to use they in \emph{foreach} loops. For instance, the \texttt{NodeList} type (from the DOM) defines an indexed function:
+
+\begin{lstlisting}
+@Interface
+class NodeList implements java.lang.Iterable {
+    public double length;
+    public Node item(double index);
+    public Node $get(double index);
+}
+\end{lstlisting}
+
+In JSweet, you can access the node list elements with the \texttt{\$get} function, and your can also iterate with the \emph{foreach} syntax. The following code generates fully valid JavaScript code.
+
+\begin{lstlisting}
+NodeList nodes = ...
+for (int i = 0; i < nodes.length; i++) {
+	HTMLElement element = (HTMLElement) nodes.$get(i);
+	[...]
+}
+// same as:
+NodeList nodes = ...
+for (Node node : nodes) {
+	HTMLElement element = (HTMLElement) node;
+	[...]
+}
+\end{lstlisting}
+
+\section{Optional parameters} 
+\label{sec:optional}
+
+In JavaScript, parameters can be optional, in the sense that a parameter value does not need to be provided when calling a function. Except for varargs, which are fully supported in JSweet, the general concept of an optional parameter does not exits in Java. To simulate optional parameters, JSweet supports overloading as long as it is for implementing optional parameters -- a very commonly used idiom. Here are some example of valid and invalid overloading in JSweet:
+
+\begin{lstlisting}
+String m(String s, double n) { return s + n; }
+// valid overloading (JSweet transpiles to optional parameter)
+String m(String s) { return m(s, 0); }
+// invalid overloading (JSweet error)
+String m(String s) { return s; }
+\end{lstlisting}
+
+\chapter{Types}
+
+JSweet uses most Java typing features (including functional types) but also extends the Java type system with so-called \emph{auxiliary types}. The idea behind auxiliary types is to create classes or interfaces that can hold the typing information through the use of type parameters (a.k.a \emph{generics}), so that the JSweet transpiler can cover more typing scenarios. These types have been mapped from TypeScript type system, which is much richer than the Java one (mostly because JavaScript is a dynamic language and request more typing scenarios than Java). 
+
+\section{Functional types}
+
+For functional types, JSweet reuses the \texttt{java.\-Runnable} and \texttt{java.\-util.\-function} functional interfaces of Java 8. These interfaces only support up to 2-parameter functions. Thus, JSweet adds some support for more parameters in \texttt{jsweet.\-util.\-function}, since it is a common case in JavaScript APIs.
+
+// To be completed
+
+\section{Object types}
+
+// Todo
+
+\section{String types}
+
+For string types, the use of specific types and final instances of these types is the way to simulate string types in Java. For instance, if a \texttt{"span"} string type needs to be defined, a Java interface called \texttt{span} and a static final field called \texttt{span} in a \texttt{StringTypes} class will do the job. 
+
+// To be completed
+
+\section{Tuple types}
+
+Tuple types represent JavaScript arrays with individually tracked element types. For tuple types, JSweet defines parameterized auxiliary classes \texttt{TupleN<T0, ... TN-1>}, which define \texttt{\$0}, \texttt{\$1}, ... \texttt{\$N-1} public fields to simulate typed array accessed (field \texttt{\$i} is typed with \texttt{Ti}).
+
+// To be completed
+
+\section{Union types}
+
+Union types represent values that may have one of several distinct representations. For union types, JSweet takes advantage of the \texttt{method overloading} mechanism available in Java~\cite{gil2010use}. For more general cases, it defines an auxiliary interface \texttt{Union<T1, T2>} (and \texttt{UnionN<T1, ... TN>}) in the \texttt{jsweet.\-util.\-union} package. By using this auxiliary type and a \texttt{union} utility method, programmer can cast back and forth between union types and union-ed type, so that JSweet can ensure similar properties as TypeScript union types. 
+
+The following code shows a typical use of union types in JSweet. It simply declares a variable as a union between a string and a number, which means that the variable can actually be of one of that types (but of no other types). The switch from a union type to a regular type is done through the \texttt{jsweet\-.util\-.Globals\-.union} helper method. This helper method is completely untyped, allowing from a Java perspective any union to be transformed to another type. It is actually the JSweet transpiler that checks that the union type is consistently used.
+
+\begin{lstlisting}
+import static jsweet.util.Globals.union;
+import jsweet.util.union.Union;
+[...]
+Union<String, Number> u = ...;
+// u can be used as a String
+String s = union(u);
+// or a number
+Number n = union(u);
+// but nothing else
+Date d = union(u); // JSweet error
+\end{lstlisting}
+
+The \texttt{union} helper can also be used the other way, to switch from a regular type back to a union type, when expected.
+
+\begin{lstlisting}
+import static jsweet.util.Globals.union;
+import jsweet.util.union.Union3;
+[...]
+public void m(Union3<String, Number, Date>> u) { ... }
+[...]
+// u can be a String, a Number or a Date
+m(union("a string"));
+// but nothing else
+m(union(new RegExp(".*"))); // compile error
+\end{lstlisting}
+
+Note: the use of Java function overloading is preferred over union types when typing function parameters. For example:
+
+\begin{lstlisting}
+// with union types (discouraged)
+native public void m(Union3<String, Number, Date>> u);
+// with overloading (preferred way)
+native public void m(String s);
+native public void m(Number n);
+native public void m(Date d);
+\end{lstlisting}
+
+\chapter{Semantics}
+\label{sec:semantics}
+
+Semantics designate how a given program behaves when executed. Although JSweet relies on the Java syntax, programs are transpiled to JavaScript and do not run in a JRE. As a consequence, the JavaScript semantics will impact the final semantics of a JSweet program compared to a Java program. In this section, we discuss the semantics of some tricky programming constructs.
+
+\section{Main methods}
+
+Main methods are the program execution entry points and will be invoked globally when a class containing a \texttt{main} method is evaluated.
+
+\section{Initializers}
+
+Initializers behave like in Java.
+
+To be completed...
+
+\section{Name clashes}
+
+On contrary to Java, methods and fields of the same name are not allowed within the same class or within classes having a subclassing link.
+
+As an example:
+
+\begin{lstlisting}
+public class NameClashes {
+
+	// error: field name clashes with existing method name
+	public String a;
+
+	// error: method name clashes with existing field name
+	public void a() {
+	}
+
+}
+\end{lstlisting}
+
+
+\subsection{Variable scoping in lambda expressions}
+
+Variables in JSweet are dealt with like final Java variables. In the following code, the element variable is re-scoped in the lambda expression so that the enclosing loop does not change its value.
+
+\begin{lstlisting}
+NodeList nodes = document.querySelectorAll(".control");
+for (int i = 0; i < nodes.length; i++) {
+	HTMLElement element = (HTMLElement) nodes.$get(i); // final
+	element.addEventListener("keyup", (evt) -> {
+	    // this element variable will not change here 
+		element.classList.add("hit");
+	});
+}
+\end{lstlisting}
+
+\subsection{Scope of \emph{this}}
+
+On contrary to JavaScript and similarly to Java, using a method as a lambda will prevent loosing the reference to \texttt{this}. For instance, at line 10 of the following program, \texttt{this} holds the right value, even when \texttt{action} was called as a lambda (line 14). Although this seem logical to Java programmers, it is not a given that the JavaScript semantics ensures this behavior. 
+
+\begin{lstlisting}[numbers=left]
+package example;
+import static jsweet.dom.Globals.console;
+
+public class Example {
+	private int i = 8;
+	public Runnable getAction() {
+		return this::action;
+	}
+	public void action() {
+		console.log(this.i); // this.i is 8
+	}
+	public static void main(String[] args) {
+		Example instance = new Example();
+		instance.getAction().run();
+	}
+}
+\end{lstlisting}
+
+\chapter{Packaging}
+
+\section{Packages and modules}
+
+Todo...
+
+\section{Globals}
+
+In Java, on contrary to JavaScript, there is no such thing as global variables or functions. Thus, JSweet introduces reserved \texttt{Globals} classes and \texttt{globals} packages. These have two purposes:
+
+\begin{itemize}
+\item Generate code that has global variables and functions (this is discouraged in Java)
+\item Bind to existing JavaScript code that defines global variables and functions (as many JavaScript framework do)
+\end{itemize}
+
+In Globals classes, only static fields (global variables) and static methods (global functions) are allowed. Here are the main constraints applying to Globals classes:
+
+\begin{itemize}
+\item no non-static members
+\item no super class
+\item cannot be extended
+\item cannot be used as types like regular classes
+\item no public constructor (empty private constructor is OK)
+\item cannot use \$get, \$set and \$delete within the methods
+\end{itemize}
+
+For instance, the following code snippets will raise transpilation errors.
+
+\begin{lstlisting}
+class Globals {
+	public int a;
+	// error: public constructors are not allowed
+	public Globals() {
+		this.a = 3;
+	}
+	public static void test() {
+		// error: no instance is available
+		$delete("key");
+	}
+}
+\end{lstlisting}
+
+\begin{lstlisting}
+// error: Globals classes cannot be used as types
+Globals myVariable = null;
+\end{lstlisting}
+
+
+\section{Root packages}
+
+Todo...
+
+\section{Modules}
+
+Todo...
+
+\section{Bundles}
+
+Todo...
+
+
+\end{document}
