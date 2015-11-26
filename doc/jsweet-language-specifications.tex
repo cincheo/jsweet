@@ -491,7 +491,7 @@ for (Node node : nodes) {
 \end{lstlisting}
 
 \section{Optional parameters} 
-\label{sec:optional}
+\label{optional-parameters}
 
 In JavaScript, parameters can be optional, in the sense that a parameter value does not need to be provided when calling a function. Except for varargs, which are fully supported in JSweet, the general concept of an optional parameter does not exits in Java. To simulate optional parameters, JSweet supports overloading as long as it is for implementing optional parameters -- a very commonly used idiom. Here are some example of valid and invalid overloading in JSweet:
 
@@ -574,7 +574,7 @@ native public void m(Date d);
 \end{lstlisting}
 
 \chapter{Semantics}
-\label{sec:semantics}
+\label{semantics}
 
 Semantics designate how a given program behaves when executed. Although JSweet relies on the Java syntax, programs are transpiled to JavaScript and do not run in a JRE. As a consequence, the JavaScript semantics will impact the final semantics of a JSweet program compared to a Java program. In this section, we discuss the semantics of some tricky programming constructs.
 
