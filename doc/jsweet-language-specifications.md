@@ -21,15 +21,17 @@ JSweet allows the use of Java primitive types (and associated literals).
 
 Examples of valid statements:
 
-    // warning '==' behaves like the JavaScript one at runtime
-    int i = 2;
-    assert i == 2;
-    double d = i + 4;
-    assert d == 6;
-    String s = "string" + '0' + i;
-    assert s == "string02"; // JavaScript '=='
-    boolean b = false;
-    assert !b;
+``` java
+// warning '==' behaves like the JavaScript one at runtime
+int i = 2;
+assert i == 2;
+double d = i + 4;
+assert d == 6;
+String s = "string" + '0' + i;
+assert s == "string02"; // JavaScript '=='
+boolean b = false;
+assert !b;
+```
 
 #### Allowed Java objects
 
@@ -125,26 +127,30 @@ Here follows the list of allowed Java classes in JSweet:
 
 Examples of valid statements:
 
-    // warning '==' behaves like the JavaScript one at runtime
-    Integer i = 2;
-    assert i == 2; // JavaScript '=='
-    Double d = i + 4;
-    assert d.toString() == "6"; // JavaScript '=='
-    assert d == "6"; // JavaScript '=='
-    BiFunction<String, Integer, String> f = (s, i) -> { return s.substring(i); };
-    assert "bc" == f.apply("abc", 1); // JavaScript '=='
+``` java
+// warning '==' behaves like the JavaScript one at runtime
+Integer i = 2;
+assert i == 2; // JavaScript '=='
+Double d = i + 4;
+assert d.toString() == "6"; // JavaScript '=='
+assert d == "6"; // JavaScript '=='
+BiFunction<String, Integer, String> f = (s, i) -> { return s.substring(i); };
+assert "bc" == f.apply("abc", 1); // JavaScript '=='
+```
 
 #### Java arrays
 
 Arrays can be used in JSweet and are transpiled to JavaScript arrays. Array initialization, accesses and and iteration are all valid statements.
 
-    int[] arrayOfInts = { 1, 2, 3, 4};
-    assert arrayOfInts.length == 4;  
-    assert arrayOfInts[0] == 1;
-    for(int i : arrayOfInts) {
-        arrayOfInts[i] = arrayOfInts[i] - 1;
-        assert arrayOfInts[i] == i;
-    }
+``` java
+int[] arrayOfInts = { 1, 2, 3, 4};
+assert arrayOfInts.length == 4;  
+assert arrayOfInts[0] == 1;
+for(int i : arrayOfInts) {
+    arrayOfInts[i] = arrayOfInts[i] - 1;
+    assert arrayOfInts[i] == i;
+}
+```
 
 #### Core JavaScript API
 

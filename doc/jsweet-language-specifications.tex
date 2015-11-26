@@ -96,7 +96,7 @@ JSweet allows the use of Java primitive types (and associated literals).
 \noindent
 Examples of valid statements:
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Java]
 // warning '==' behaves like the JavaScript one at runtime
 int i = 2;
 assert i == 2;
@@ -194,7 +194,7 @@ Here follows the list of allowed Java classes in JSweet:
 \noindent
 Examples of valid statements:
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Java]
 // warning '==' behaves like the JavaScript one at runtime
 Integer i = 2;
 assert i == 2; // JavaScript '=='
@@ -209,7 +209,7 @@ assert "bc" == f.apply("abc", 1); // JavaScript '=='
 
 Arrays can be used in JSweet and are transpiled to JavaScript arrays. Array initialization, accesses and and iteration are all valid statements.
 
-\begin{lstlisting}
+\begin{lstlisting}[language=Java]
 int[] arrayOfInts = { 1, 2, 3, 4};
 assert arrayOfInts.length == 4;  
 assert arrayOfInts[0] == 1;
