@@ -211,7 +211,7 @@ The core JavaScript API is defined in `jsweet.lang` (the full documentation can 
 
 -   `jsweet.lang.Error`: this class implements `java.lang.RuntimeException` and can be thrown and caught with `try` ... `catch` statements.
 
-Programmers should use this API most of the time. However, for objects that need to be used with Java literals (numbers, booleans, and strings), the use of the `java.lang` package classes is recommended. For instance, the jQuery API declares `$(java.lang.String)` instead of `$(jsweet.lang.String)`. This allows the programmer to write expressions using literals, such as `$(ä)` (for selecting all links in a document).
+Programmers should use this API most of the time. However, for objects that need to be used with Java literals (numbers, booleans, and strings), the use of the `java.lang` package classes is recommended. For instance, the jQuery API declares `$(java.lang.String)` instead of `$(jsweet.lang.String)`. This allows the programmer to write expressions using literals, such as `$(”a”)` (for selecting all links in a document).
 
 As a consequence, programmers need to be able to switch to the JavaScript API when coming from a Java object. The `jsweet.util.Globals` class defines convenient static methods to cast back and forth core Java objects to their corresponding JSweet objects. For instance the `string(...)` method will allow the programmer to switch from the Java to the JSweet strings and conversely.
 
