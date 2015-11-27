@@ -33,6 +33,7 @@ Content
     -   [Packages and modules](#packages-and-modules)
     -   [Root packages](#root-packages)
     -   [External modules](#external-modules)
+-   [Appendix 1: JSweet transpiler options](#appendix-1-jsweet-transpiler-options)
 
 Basic concepts
 --------------
@@ -769,6 +770,8 @@ package a.b.c;
 
 The above declaration means that the `c` package is a root package, i.e. it will be erased in the generated code, as well as all its parent packages. Thus, if `c` contains a package `d`, and a class `C`, these will be top-level objects at runtime. In other words, `a.b.c.d` becomes `d`, and `a.b.c.C` becomes `C`.
 
+Note that root packages do not change the folder hierarchy of the generated files. For instance, the `a.b.c.C` class will still be generated in the `<jsout>/a/b/c/C.js` file (relatively to the `<jsout>` output directory). However, switching on the `noRootDirectories` option will remove the root directories so that the `a.b.c.C` class gets generated to the `<jsout>/C.js` file.
+
 ### External modules
 
 When compiling JSweet programs with the `module` options, all external libraries and components must be required as external modules. JSweet can automatically require modules, simply by using the `@Module(name)` annotation. In JSweet, importing or using a class or a member annotated with `@Module(name)` will automatically require the corresponding module at runtime. Please not that it is true only when the code is generated with the `module` option. If the `module` option is off, the `@Module` annotations are ignored.
@@ -786,3 +789,60 @@ public final class Globals extends jsweet.lang.Object {
 The above code shows an excerpt of the JSweet jQuery API. As we can notice, the $ function is annotated with `@Module(jquery)`. As a consequence, any call to this function will trigger the require of the `jquery` module.
 
 Note: the notion of manual require of a module may be available in future releases. However, automatic require is sufficient for most programmers and hides the complexity of having to require modules explicitly. It also brings the advantage of having the same code whether modules are used or not.
+
+Appendix 1: JSweet transpiler options
+-------------------------------------
+
+      [-h|--help]
+
+      [-v|--verbose]
+            Turn on all levels of logging.
+
+      [--encoding <encoding>]
+            Force the Java compiler to use a specific encoding (UTF-8, UTF-16, ...).
+            (default: UTF-8)
+
+      [--jdkHome <jdkHome>]
+            Set the JDK home directory to be used to find the Java compiler. If not
+            set, the transpiler will try to use the JAVA_HOME environment variable.
+            Note that the expected JDK version is greater or equals to version 8.
+
+      (-i|--input) <input>
+            An input dir containing Java files to be transpiled.
+
+      [--noRootDirectories]
+            Skip the root directories (i.e. packages annotated with
+            @jsweet.lang.Root) so that the generated file hierarchy starts at the
+            root directories rather than including the entire directory structure.
+
+      [--tsout <tsout>]
+            Specify where to place generated TypeScript files. (default: .ts)
+
+      [(-o|--jsout) <jsout>]
+            Specify where to place generated JavaScript files (ignored if jsFile is
+            specified). (default: js)
+
+      [--classpath <classpath>]
+            The JSweet transpilation classpath (candy jars). This classpath should
+            at least contain the core candy.
+
+      [(-m|--module) <module>]
+            The module kind (none, commonjs, amd, system or umd). (default: none)
+
+      [-b|--bundle]
+            Bundle up the generated files and used modules to bundle files, which
+            can be used in the browser. Bundles contain all the dependencies and are
+            thus standalone. There is one bundle generated per entry (a Java 'main'
+            method) in the program. By default, bundles are generated in the entry
+            directory, but the output directory can be set by using the
+            --bundlesDirectory option. NOTE: bundles will be generated only when
+            choosing the commonjs module kind.
+
+      [--bundlesDirectory <bundlesDirectory>]
+            Generate all the bundles (see option --bundle) within the given
+            directory.
+
+      [-d|--debug]
+            Set the transpiler to debug mode. In debug mode, source map files are
+            generated so that it is possible to debug them in the browser. This
+            feature is not available yet when using the --module option.
