@@ -234,7 +234,7 @@ The core JavaScript API is defined in \texttt{jsweet.lang} (the full documentati
 \item \texttt{jsweet.lang.Error}: this class implements \texttt{java.lang.RuntimeException} and can be thrown and caught with \texttt{try} ... \texttt{catch} statements.
 \end{itemize}
 
-Programmers should use this API most of the time. However, for objects that need to be used with Java literals (numbers, booleans, and strings), the use of the \texttt{java.lang} package classes is recommended. For instance, the jQuery API declares \texttt{\$(java.lang.String)} instead of \texttt{\$(jsweet.\-lang.\-String)}. This allows the programmer to write expressions using literals, such as \texttt{\$(''a'')} (for selecting all links in a document).
+Programmers should use this API most of the time. However, for objects that need to be used with Java literals (numbers, booleans, and strings), the use of the \texttt{java.lang} package classes is recommended. For instance, the jQuery API declares \texttt{\$(java.lang.String)} instead of \texttt{\$(jsweet.\-lang.\-String)}. This allows the programmer to write expressions using literals, such as \texttt{\$(\"a\")} (for selecting all links in a document).
 
 As a consequence, programmers need to be able to switch to the JavaScript API when coming from a Java object. The \texttt{jsweet.util.Globals} class defines convenient static methods to cast back and forth core Java objects to their corresponding JSweet objects. For instance the \texttt{string(...)} method will allow the programmer to switch from the Java to the JSweet strings and conversely.
 
