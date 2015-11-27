@@ -16,7 +16,8 @@ Content
     -   [Indexed objects](#indexed-objects)
     -   [Globals](#globals)
     -   [Optional parameters](#optional-parameters)
--   [Types](#types)
+    -   [Ambient declarations](#ambient-declarations)
+-   [Auxiliary types](#auxiliary-types)
     -   [Functional types](#functional-types)
     -   [Object types](#object-types)
     -   [String types](#string-types)
@@ -26,11 +27,12 @@ Content
     -   [Main methods](#main-methods)
     -   [Initializers](#initializers)
     -   [Name clashes](#name-clashes)
+    -   [Variable scoping in lambda expressions](#variable-scoping-in-lambda-expressions)
+    -   [Scope of *this*](#scope-of-this)
 -   [Packaging](#packaging)
     -   [Packages and modules](#packages-and-modules)
     -   [Root packages](#root-packages)
-    -   [Modules](#modules)
-    -   [Bundles](#bundles)
+    -   [External modules](#external-modules)
 
 Basic concepts
 --------------
@@ -515,8 +517,19 @@ String m(String s) { return m(s, 0); }
 String m(String s) { return s; }
 ```
 
-Types
------
+### Ambient declarations
+
+It can be the case that programmers need to use existing libraries from JSweet. In most cases, one should look up in the available candies (<http://www.jsweet.org/candies-releases/>, which are automatically generated from TypeScript’s DefinitelyTyped. When the candy does not exist, or does not entirely cover what is needed, one can use the `@jsweet.lang.Ambient` annotation, which will make available to the programmers a class definition or an interface. The following example, shows the backbone store classes made accessible to the JSweet programmer with a simple ambiant declaration. This class will be erased during the JavaScript generation.
+
+``` java
+@Ambient
+class Store {
+    public Store(String dbName) {}
+}
+```
+
+Auxiliary types
+---------------
 
 JSweet uses most Java typing features (including functional types) but also extends the Java type system with so-called *auxiliary types*. The idea behind auxiliary types is to create classes or interfaces that can hold the typing information through the use of type parameters (a.k.a *generics*), so that the JSweet transpiler can cover more typing scenarios. These types have been mapped from TypeScript type system, which is much richer than the Java one (mostly because JavaScript is a dynamic language and request more typing scenarios than Java).
 
@@ -618,7 +631,7 @@ Main methods do not behave exactly like in Java and depend on the way the progra
 
 -   **Module packaging**. With module packaging (module option), one Java package corresponds to one module. With modules, it is mandatory to have only one main method in the program, which will be the global entry point from which the module dependency graph will be calculated. The main module will use directly or transitively all the other modules.
 
-Because of modules, it is good practice to have only one method in an application.
+Because of modules, it is good practice to have only one main method in an application.
 
 ### Initializers
 
@@ -678,7 +691,7 @@ String m(String s) { return m(s, 0); }
 
 In that case, JSweet will generate JavaScript code with only one method having default values for the optional parameters, so that the behavior of the generated program corresponds to the original one. In this case:
 
-```
+``` java
 function m(s, n = 0) { return s + n; }
 ```
 
@@ -690,7 +703,7 @@ String m(String s, double n) { return s + n; }
 String m(String s) { return s; }
 ```
 
-#### Variable scoping in lambda expressions
+### Variable scoping in lambda expressions
 
 JavaScript variable scope is known to pose some problems to the programmers, because it is possible to change the reference to a variable from outside of a lambda that would use this variable. As a consequence, a JavaScript programmer cannot rely on a variable declared outside of a lambda scope, because when the lambda is executed, the variable may have been modified somewhere else in the program. For instance, the following program shows a typical case:
 
@@ -707,7 +720,7 @@ for (int i = 0; i < nodes.length; i++) {
 
 In JavaScript (note that EcmaScript 6 fixes this issue), such a program would fail its purpose because the `element` variable used in the event listener is modified by the for loop and does not hold the expected value. In JSweet, such problems are dealt with similarly to final Java variables. In our example, the `element` variable is re-scoped in the lambda expression so that the enclosing loop does not change its value and so that the program behaves like in Java (as expected by most programmers).
 
-#### Scope of *this*
+### Scope of *this*
 
 On contrary to JavaScript and similarly to Java, using a method as a lambda will prevent loosing the reference to `this`. For instance, in the `action` method of the following program, `this` holds the right value, even when `action` was called as a lambda in the `main` method. Although this seem logical to Java programmers, it is not a given that the JavaScript semantics ensures this behavior.
 
@@ -747,12 +760,29 @@ JSweet uses the Java package concept for namespaces. Modules are a deployment co
 
 ### Root packages
 
-Todo...
+Root packages are a way to tune the generated code so that JSweet packages are erased in the generated code and thus at runtime. To set a root package, just define a package-info.java file and use the @Root annotation on the package, as follows:
 
-### Modules
+``` java
+@Root
+package a.b.c;
+```
 
-Todo...
+The above declaration means that the `c` package is a root package, i.e. it will be erased in the generated code, as well as all its parent packages. Thus, if `c` contains a package `d`, and a class `C`, these will be top-level objects at runtime. In other words, `a.b.c.d` becomes `d`, and `a.b.c.C` becomes `C`.
 
-### Bundles
+### External modules
 
-Todo...
+When compiling JSweet programs with the `module` options, all external libraries and components must be required as external modules. JSweet can automatically require modules, simply by using the `@Module(name)` annotation. In JSweet, importing or using a class or a member annotated with `@Module(name)` will automatically require the corresponding module at runtime. Please not that it is true only when the code is generated with the `module` option. If the `module` option is off, the `@Module` annotations are ignored.
+
+``` java
+package def.jquery;
+public final class Globals extends jsweet.lang.Object {
+    ...
+    @jsweet.lang.Module("jquery")
+    native public static def.jquery.JQuery $(java.lang.String selector);
+    ...
+}
+```
+
+The above code shows an excerpt of the JSweet jQuery API. As we can notice, the $ function is annotated with `@Module(jquery)`. As a consequence, any call to this function will trigger the require of the `jquery` module.
+
+Note: the notion of manual require of a module may be available in future releases. However, automatic require is sufficient for most programmers and hides the complexity of having to require modules explicitly. It also brings the advantage of having the same code whether modules are used or not.
