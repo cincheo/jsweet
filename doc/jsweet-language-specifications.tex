@@ -550,7 +550,7 @@ String m(String s) { return s; }
 
 \section{Ambient declarations}
 
-It can be the case that programmers need to use existing libraries from JSweet. In most cases, one should look up in the available candies (\url{http://www.jsweet.org/candies-releases/}, which are automatically generated from TypeScript's DefinitelyTyped. When the candy does not exist, or does not entirely cover what is needed, one can use the \texttt{@jsweet.lang.Ambient} annotation, which will make available to the programmers a class definition or an interface. The following example, shows the backbone store classes made accessible to the JSweet programmer with a simple ambiant declaration. This class will be erased during the JavaScript generation.
+It can be the case that programmers need to use existing libraries from JSweet. In most cases, one should look up in the available candies (\url{http://www.jsweet.org/candies-releases/}), which are automatically generated from TypeScript's DefinitelyTyped. When the candy does not exist, or does not entirely cover what is needed, one can use the \texttt{@jsweet.lang.Ambient} annotation, which will make available to the programmers a class definition or an interface. The following example, shows the backbone store classes made accessible to the JSweet programmer with a simple ambiant declaration. This class will be erased during the JavaScript generation.
 
 \begin{lstlisting}[language=Java]
 @Ambient

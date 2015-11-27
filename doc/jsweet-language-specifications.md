@@ -5,6 +5,8 @@ Version: 1.0.0
 
 Author: Renaud Pawlak
 
+JSweet JavaDoc API: http://www.jsweet.org/core-api-javadoc/
+
 Content
 -------
 
@@ -520,7 +522,7 @@ String m(String s) { return s; }
 
 ### Ambient declarations
 
-It can be the case that programmers need to use existing libraries from JSweet. In most cases, one should look up in the available candies (<http://www.jsweet.org/candies-releases/>, which are automatically generated from TypeScript’s DefinitelyTyped. When the candy does not exist, or does not entirely cover what is needed, one can use the `@jsweet.lang.Ambient` annotation, which will make available to the programmers a class definition or an interface. The following example, shows the backbone store classes made accessible to the JSweet programmer with a simple ambiant declaration. This class will be erased during the JavaScript generation.
+It can be the case that programmers need to use existing libraries from JSweet. In most cases, one should look up in the available candies (<http://www.jsweet.org/candies-releases/>), which are automatically generated from TypeScript’s DefinitelyTyped. When the candy does not exist, or does not entirely cover what is needed, one can use the `@jsweet.lang.Ambient` annotation, which will make available to the programmers a class definition or an interface. The following example, shows the backbone store classes made accessible to the JSweet programmer with a simple ambiant declaration. This class will be erased during the JavaScript generation.
 
 ``` java
 @Ambient
