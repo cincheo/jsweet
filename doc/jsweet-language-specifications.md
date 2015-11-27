@@ -14,6 +14,7 @@ Content
     -   [Interfaces](#interfaces)
     -   [Enums](#enums)
     -   [Indexed objects](#indexed-objects)
+    -   [Globals](#globals)
     -   [Optional parameters](#optional-parameters)
 -   [Types](#types)
     -   [Functional types](#functional-types)
@@ -27,7 +28,6 @@ Content
     -   [Name clashes](#name-clashes)
 -   [Packaging](#packaging)
     -   [Packages and modules](#packages-and-modules)
-    -   [Globals](#globals)
     -   [Root packages](#root-packages)
     -   [Modules](#modules)
     -   [Bundles](#bundles)
@@ -456,6 +456,53 @@ for (Node node : nodes) {
 }
 ```
 
+### Globals
+
+In Java, on contrary to JavaScript, there is no such thing as global variables or functions (there are only static members, but even those must belong to a class). Thus, JSweet introduces reserved `Globals` classes and `globals` packages. These have two purposes:
+
+-   Generate code that has global variables and functions (this is discouraged in Java)
+
+-   Bind to existing JavaScript code that defines global variables and functions (as many JavaScript frameworks do)
+
+In Globals classes, only static fields (global variables) and static methods (global functions) are allowed. Here are the main constraints applying to Globals classes:
+
+-   no non-static members
+
+-   no super class
+
+-   cannot be extended
+
+-   cannot be used as types like regular classes
+
+-   no public constructor (empty private constructor is OK)
+
+-   cannot use $get, $set and $delete within the methods
+
+For instance, the following code snippets will raise transpilation errors.
+
+``` java
+class Globals {
+    public int a;
+    // error: public constructors are not allowed
+    public Globals() {
+        this.a = 3;
+    }
+    public static void test() {
+        // error: no instance is available
+        $delete("key");
+    }
+}
+```
+
+``` java
+// error: Globals classes cannot be used as types
+Globals myVariable = null;
+```
+
+One must remember that `Globals` classes and `global` packages are erased at runtime so that their members will be directly accessible. For instance `mypackage.Globals.m()` in a JSweet program corresponds to the `mypackage.m()` function in the generated code and in the JavaScript VM at runtime. Also, `mypackage.globals.Globals.m()` corresponds to *m()*.
+
+In order to erase packages in the generated code, programmers can also use the `@Root` annotation, which will be explained in Section \[packaging\].
+
 ### Optional parameters
 
 In JavaScript, parameters can be optional, in the sense that a parameter value does not need to be provided when calling a function. Except for varargs, which are fully supported in JSweet, the general concept of an optional parameter does not exits in Java. To simulate optional parameters, JSweet supports overloading as long as it is for implementing optional parameters – a very commonly used idiom. Here are some example of valid and invalid overloading in JSweet:
@@ -542,23 +589,70 @@ native public void m(Date d);
 Semantics
 ---------
 
-Semantics designate how a given program behaves when executed. Although JSweet relies on the Java syntax, programs are transpiled to JavaScript and do not run in a JRE. As a consequence, the JavaScript semantics will impact the final semantics of a JSweet program compared to a Java program. In this section, we discuss the semantics of some tricky programming constructs.
+Semantics designate how a given program behaves when executed. Although JSweet relies on the Java syntax, programs are transpiled to JavaScript and do not run in a JRE. As a consequence, the JavaScript semantics will impact the final semantics of a JSweet program compared to a Java program. In this section, we discuss the semantics by focusing on differences or commonalities between Java/JavaSript and JSweet.
 
 ### Main methods
 
-Main methods are the program execution entry points and will be invoked globally when a class containing a `main` method is evaluated.
+Main methods are the program execution entry points and will be invoked globally when a class containing a `main` method is evaluated. For instance:
+
+``` java
+public class C {
+    private int n;
+    public static C instance;
+    public static main(String[] args) {
+        instance = new C();
+        instance.n = 4;
+    }
+    public int getN() {
+        return n;
+    }
+}
+// when the source file containing C has been evaluated:
+assert C.instance != null;
+assert C.instance.getN() == 4;
+```
+
+Main methods do not behave exactly like in Java and depend on the way the program is packaged and deployed.
+
+-   **Regular packaging (no modules)**. With regular packaging, one Java source file corresponds to one generated JavaScript file. In that case, when loading a file in the browser, all the main methods will be invoked, right after the file is evaluated.
+
+-   **Module packaging**. With module packaging (module option), one Java package corresponds to one module. With modules, it is mandatory to have only one main method in the program, which will be the global entry point from which the module dependency graph will be calculated. The main module will use directly or transitively all the other modules.
+
+Because of modules, it is good practice to have only one method in an application.
 
 ### Initializers
 
 Initializers behave like in Java.
 
-To be completed...
+For example:
+
+``` java
+public class C1 {
+    int n;
+    {
+        n = 4;
+    }
+}
+assert new C1().n == 4;
+```
+
+And similarly with static initializers:
+
+``` java
+public class C2 {
+    static int n;
+    static {
+        n = 4;
+    }
+}
+assert new C2.n == 4;
+```
 
 ### Name clashes
 
-On contrary to Java, methods and fields of the same name are not allowed within the same class or within classes having a subclassing link.
+On contrary to Java, methods and fields of the same name are not allowed within the same class or within classes having a subclassing link. The reason behind this behavior is that in JavaScript, object variables and functions are stored within the same object map, which basically means that you cannot have the same key for several object members (this also explains that method overloading in the Java sense is not possible in JavaScript).
 
-As an example:
+In order to avoid programming mistakes due to this JavaScript behavior, which is not necessarily known by Java programmers, JSweet adds a semantics check to avoid duplicate names in classes (this also takes into account members defined in parent classes). As an example:
 
 ``` java
 public class NameClashes {
@@ -568,14 +662,37 @@ public class NameClashes {
 
     // error: method name clashes with existing field name
     public void a() {
+        return a;
     }
 
 }
 ```
 
+In general, it also not possible to have two methods with the same name but with different parameters (so-called overloads). An exception to this behavior is the use of method overloading for defining optional parameters. JSweet allows this idiom under the condition that it corresponds to the following template:
+
+``` java
+String m(String s, double n) { return s + n; }
+// valid overloading (JSweet transpiles to optional parameter)
+String m(String s) { return m(s, 0); }
+```
+
+In that case, JSweet will generate JavaScript code with only one method having default values for the optional parameters, so that the behavior of the generated program corresponds to the original one. In this case:
+
+```
+function m(s, n = 0) { return s + n; }
+```
+
+If the programmer tries to use overloading differently, for example by defining two different implementations for the same method name, JSweet will raise a compile error.
+
+``` java
+String m(String s, double n) { return s + n; }
+// invalid overloading (JSweet error)
+String m(String s) { return s; }
+```
+
 #### Variable scoping in lambda expressions
 
-Variables in JSweet are dealt with like final Java variables. In the following code, the element variable is re-scoped in the lambda expression so that the enclosing loop does not change its value.
+JavaScript variable scope is known to pose some problems to the programmers, because it is possible to change the reference to a variable from outside of a lambda that would use this variable. As a consequence, a JavaScript programmer cannot rely on a variable declared outside of a lambda scope, because when the lambda is executed, the variable may have been modified somewhere else in the program. For instance, the following program shows a typical case:
 
 ``` java
 NodeList nodes = document.querySelectorAll(".control");
@@ -588,9 +705,11 @@ for (int i = 0; i < nodes.length; i++) {
 }
 ```
 
+In JavaScript (note that EcmaScript 6 fixes this issue), such a program would fail its purpose because the `element` variable used in the event listener is modified by the for loop and does not hold the expected value. In JSweet, such problems are dealt with similarly to final Java variables. In our example, the `element` variable is re-scoped in the lambda expression so that the enclosing loop does not change its value and so that the program behaves like in Java (as expected by most programmers).
+
 #### Scope of *this*
 
-On contrary to JavaScript and similarly to Java, using a method as a lambda will prevent loosing the reference to `this`. For instance, at line 10 of the following program, `this` holds the right value, even when `action` was called as a lambda (line 14). Although this seem logical to Java programmers, it is not a given that the JavaScript semantics ensures this behavior.
+On contrary to JavaScript and similarly to Java, using a method as a lambda will prevent loosing the reference to `this`. For instance, in the `action` method of the following program, `this` holds the right value, even when `action` was called as a lambda in the `main` method. Although this seem logical to Java programmers, it is not a given that the JavaScript semantics ensures this behavior.
 
 ``` java
 package example;
@@ -614,52 +733,17 @@ public class Example {
 Packaging
 ---------
 
+Packaging is one of the complex point of JavaScript, especially when coming from Java. Complexity with JavaScript packaging boils down to the fact that JavaScript did not define any packaging natively. As a consequence, many *de facto* solutions and quidelines came up along the years, making the understanding of packaging uneasy for regular Java programmers. In spite EcmaScript UMS is supposed to bring a standard for modules in Java, other *de facto* standards remain and the notion of a namespace/package is still not handled by JavaScript, making the notion of a module and a namespace confusing for JavaScript and TypeScript developers themselves.
+
 ### Packages and modules
 
-Todo...
+Packages and modules are two similar concepts but for different contexts.
 
-### Globals
+Java packages must be understood as compile-time *namespaces*. They allow a compile-time structuration of the programs through name paths, with implicit or explicit visibility rules. Packages have usually not much impact on how the program is actually bundled and deployed.
 
-In Java, on contrary to JavaScript, there is no such thing as global variables or functions. Thus, JSweet introduces reserved `Globals` classes and `globals` packages. These have two purposes:
+Modules must be understood as deployment and runtime *bundles*. The closest concept to a module in the Java world would probably be an OSGi bundle. A module defines imported and exported elements so that they create a strong runtime structure that can be used for deploying software components independently and thus avoiding name clashes. For instance, with modules, two different libraries may define a `util.List` class and be actually running and used on the same VM with no naming issues (as long as the libraries are bundled in different modules).
 
--   Generate code that has global variables and functions (this is discouraged in Java)
-
--   Bind to existing JavaScript code that defines global variables and functions (as many JavaScript framework do)
-
-In Globals classes, only static fields (global variables) and static methods (global functions) are allowed. Here are the main constraints applying to Globals classes:
-
--   no non-static members
-
--   no super class
-
--   cannot be extended
-
--   cannot be used as types like regular classes
-
--   no public constructor (empty private constructor is OK)
-
--   cannot use $get, $set and $delete within the methods
-
-For instance, the following code snippets will raise transpilation errors.
-
-``` java
-class Globals {
-    public int a;
-    // error: public constructors are not allowed
-    public Globals() {
-        this.a = 3;
-    }
-    public static void test() {
-        // error: no instance is available
-        $delete("key");
-    }
-}
-```
-
-``` java
-// error: Globals classes cannot be used as types
-Globals myVariable = null;
-```
+JSweet uses the Java package concept for namespaces. Modules are a deployment concept and should be created with some deployment scripts involving third party tools. However, for easy deployment, JSweet defines a `module` option that automatically creates a default module organization following the simple rule: one package = one module. With this rule, it is actually possible to run a JSweet program on Node.js without requiring extra work from the programmer. Also, using both the `bundle` and `module` options of JSweet creates a bundle file containing the application modules, and which can be deployed on a browser with no extra packaging.
 
 ### Root packages
 
