@@ -211,7 +211,7 @@ The core JavaScript API is defined in `jsweet.lang` (the full documentation can 
 
 -   `jsweet.lang.Error`: this class implements `java.lang.RuntimeException` and can be thrown and caught with `try` ... `catch` statements.
 
-Programmers should use this API most of the time. However, for objects that need to be used with Java literals (numbers, booleans, and strings), the use of the `java.lang` package classes is recommended. For instance, the jQuery API declares `$(java.lang.String)` instead of `$(jsweet.lang.String)`. This allows the programmer to write expressions using literals, such as `$(”a”)` (for selecting all links in a document).
+Programmers should use this API most of the time. However, for objects that need to be used with Java literals (numbers, booleans, and strings), the use of the `java.lang` package classes is recommended. For instance, the jQuery API declares `$(java.lang.String)` instead of `$(jsweet.lang.String)`. This allows the programmer to write expressions using literals, such as `$("a")` (for selecting all links in a document).
 
 As a consequence, programmers need to be able to switch to the JavaScript API when coming from a Java object. The `jsweet.util.Globals` class defines convenient static methods to cast back and forth core Java objects to their corresponding JSweet objects. For instance the `string(...)` method will allow the programmer to switch from the Java to the JSweet strings and conversely.
 
@@ -548,7 +548,7 @@ For functional types, JSweet reuses the `java.Runnable` and `java.util.function`
 
 ### String types
 
-For string types, the use of specific types and final instances of these types is the way to simulate string types in Java. For instance, if a `”span”` string type needs to be defined, a Java interface called `span` and a static final field called `span` in a `StringTypes` class will do the job.
+For string types, the use of specific types and final instances of these types is the way to simulate string types in Java. For instance, if a `"span"` string type needs to be defined, a Java interface called `span` and a static final field called `span` in a `StringTypes` class will do the job.
 
 // To be completed
 
@@ -788,7 +788,7 @@ public final class Globals extends jsweet.lang.Object {
 }
 ```
 
-The above code shows an excerpt of the JSweet jQuery API. As we can notice, the $ function is annotated with `@Module(”jquery”)`. As a consequence, any call to this function will trigger the require of the `jquery` module.
+The above code shows an excerpt of the JSweet jQuery API. As we can notice, the $ function is annotated with `@Module("jquery")`. As a consequence, any call to this function will trigger the require of the `jquery` module.
 
 Note: the notion of manual require of a module may be available in future releases. However, automatic require is sufficient for most programmers and hides the complexity of having to require modules explicitly. It also brings the advantage of having the same code whether modules are used or not.
 
