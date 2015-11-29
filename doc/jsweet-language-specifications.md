@@ -67,7 +67,7 @@ assert i == 2;
 double d = i + 4;
 assert d == 6;
 String s = "string" + '0' + i;
-assert s == "string02"; // JavaScript '=='
+assert s == "string02";
 boolean b = false;
 assert !b;
 ```
@@ -169,12 +169,12 @@ Examples of valid statements:
 ``` java
 // warning '==' behaves like the JavaScript one at runtime
 Integer i = 2;
-assert i == 2; // JavaScript '=='
+assert i == 2;
 Double d = i + 4;
-assert d.toString() == "6"; // JavaScript '=='
-assert d == "6"; // JavaScript '=='
+assert d.toString() == "6";
+assert d == "6";
 BiFunction<String, Integer, String> f = (s, i) -> { return s.substring(i); };
-assert "bc" == f.apply("abc", 1); // JavaScript '=='
+assert "bc" == f.apply("abc", 1);
 ```
 
 #### Java arrays
@@ -195,23 +195,23 @@ for(int i : arrayOfInts) {
 
 The core JavaScript API is defined in `jsweet.lang` (the full documentation can be found at <http://www.jsweet.org/core-api-javadoc/>). Main JavaScript classes are:
 
--   `jsweet.lang.Object`: common ancestor for JavaScript objects functions and properties.
+-   `jsweet.lang.Object`: JavaScript Object class. Common ancestor for JavaScript objects functions and properties.
 
--   `jsweet.lang.Boolean`: a wrapper for boolean values.
+-   `jsweet.lang.Boolean`: JavaScript Boolean class. A wrapper for boolean values.
 
--   `jsweet.lang.Number`: a wrapper for numerical values.
+-   `jsweet.lang.Number`: JavaScript Number class. A wrapper for numerical values.
 
--   `jsweet.lang.String`: a wrapper and constructor for strings.
+-   `jsweet.lang.String`: JavaScript String class. A wrapper and constructor for strings.
 
--   `jsweet.lang.Function`: a constructor for functions.
+-   `jsweet.lang.Function`: JavaScript Function class. A constructor for functions.
 
--   `jsweet.lang.Date`: enables basic storage and retrieval of dates and times.
+-   `jsweet.lang.Date`: JavaScript Date class, which enables basic storage and retrieval of dates and times.
 
--   `jsweet.lang.Array<T>`: used in the construction of arrays, which are high-level, list-like objects.
+-   `jsweet.lang.Array<T>`: JavaScript Array class. It is used in the construction of arrays, which are high-level, list-like objects.
 
--   `jsweet.lang.Error`: this class implements `java.lang.RuntimeException` and can be thrown and caught with `try` ... `catch` statements.
+-   `jsweet.lang.Error`: JavaScript Error class. This class implements `java.lang.RuntimeException` and can be thrown and caught with `try` ... `catch` statements.
 
-Programmers should use this API most of the time. However, for objects that need to be used with Java literals (numbers, booleans, and strings), the use of the `java.lang` package classes is recommended. For instance, the jQuery API declares `$(java.lang.String)` instead of `$(jsweet.lang.String)`. This allows the programmer to write expressions using literals, such as `$("a")` (for selecting all links in a document).
+Programmers should use this API most of the time, which is HTML5 compatible and follows the JavaScript latest supported versions. However, for objects that need to be used with Java literals (numbers, booleans, and strings), the use of the `java.lang` package classes is recommended. For instance, the jQuery API declares `$(java.lang.String)` instead of `$(jsweet.lang.String)`. This allows the programmer to write expressions using literals, such as `$("a")` (for selecting all links in a document).
 
 As a consequence, programmers need to be able to switch to the JavaScript API when coming from a Java object. The `jsweet.util.Globals` class defines convenient static methods to cast back and forth core Java objects to their corresponding JSweet objects. For instance the `string(...)` method will allow the programmer to switch from the Java to the JSweet strings and conversely.
 
@@ -395,29 +395,17 @@ public enum WrongConstructsInEnums {
     
     // error: fields are not allowed
     public long l = 4;
-    // error: fields are not allowed
-    static String s1;
-    // error: fields are not allowed
-    private String s2;
     // error: constructors are not allowed  
     private WrongConstructsInEnums() {
         l = 4;
     }
-    // error: methods are not allowed   
-    native public void m1();
     // error: methods are not allowed
     public void m2() {
         l = 4;
     }
-    // error: methods are not allowed
-    native static void m3();
     // error: initializers are not allowed
     {
         l = 4;
-    }
-    // error: initializers are not allowed
-    static {
-        s1 = "";
     }
 }
 ```
@@ -510,7 +498,7 @@ In order to erase packages in the generated code, programmers can also use the `
 
 ### Optional parameters
 
-In JavaScript, parameters can be optional, in the sense that a parameter value does not need to be provided when calling a function. Except for varargs, which are fully supported in JSweet, the general concept of an optional parameter does not exits in Java. To simulate optional parameters, JSweet supports overloading as long as it is for implementing optional parameters – a very commonly used idiom. Here are some example of valid and invalid overloading in JSweet:
+In JavaScript, parameters can be optional, in the sense that a parameter value does not need to be provided when calling a function. Except for varargs, which are fully supported in JSweet, the general concept of an optional parameter does not exist in Java. To simulate optional parameters, JSweet supports overloading as long as it is for implementing optional parameters – a very commonly used idiom. Here are some examples of valid and invalid overloading in JSweet:
 
 ``` java
 String m(String s, double n) { return s + n; }
@@ -522,7 +510,7 @@ String m(String s) { return s; }
 
 ### Ambient declarations
 
-It can be the case that programmers need to use existing libraries from JSweet. In most cases, one should look up in the available candies (<http://www.jsweet.org/candies-releases/>), which are automatically generated from TypeScript’s DefinitelyTyped. When the candy does not exist, or does not entirely cover what is needed, one can use the `@jsweet.lang.Ambient` annotation, which will make available to the programmers a class definition or an interface. The following example, shows the backbone store classes made accessible to the JSweet programmer with a simple ambiant declaration. This class will be erased during the JavaScript generation.
+It can be the case that programmers need to use existing libraries from JSweet. In most cases, one should look up in the available candies (<http://www.jsweet.org/candies-releases/>), which are automatically generated from TypeScript’s DefinitelyTyped. When the candy does not exist, or does not entirely cover what is needed, one can use the `@jsweet.lang.Ambient` annotation, which will make available to the programmers a class definition or an interface. The following example shows the backbone store class made accessible to the JSweet programmer with a simple ambient declaration. This class will be erased during the JavaScript generation.
 
 ``` java
 @Ambient
@@ -534,7 +522,7 @@ class Store {
 Auxiliary types
 ---------------
 
-JSweet uses most Java typing features (including functional types) but also extends the Java type system with so-called *auxiliary types*. The idea behind auxiliary types is to create classes or interfaces that can hold the typing information through the use of type parameters (a.k.a *generics*), so that the JSweet transpiler can cover more typing scenarios. These types have been mapped from TypeScript type system, which is much richer than the Java one (mostly because JavaScript is a dynamic language and request more typing scenarios than Java).
+JSweet uses most Java typing features (including functional types) but also extends the Java type system with so-called *auxiliary types*. The idea behind auxiliary types is to create classes or interfaces that can hold the typing information through the use of type parameters (a.k.a *generics*), so that the JSweet transpiler can cover more typing scenarios. These types have been mapped from TypeScript type system, which is much richer than the Java one (mostly because JavaScript is a dynamic language and requests more typing scenarios than Java).
 
 ### Functional types
 
@@ -560,7 +548,7 @@ Tuple types represent JavaScript arrays with individually tracked element types.
 
 ### Union types
 
-Union types represent values that may have one of several distinct representations. For union types, JSweet takes advantage of the `method overloading` mechanism available in Java . For more general cases, it defines an auxiliary interface `Union<T1, T2>` (and `UnionN<T1, ... TN>`) in the `jsweet.util.union` package. By using this auxiliary type and a `union` utility method, programmer can cast back and forth between union types and union-ed type, so that JSweet can ensure similar properties as TypeScript union types.
+Union types represent values that may have one of several distinct representations. For union types, JSweet takes advantage of the `method overloading` mechanism available in Java. For more general cases, it defines an auxiliary interface `Union<T1, T2>` (and `UnionN<T1, ... TN>`) in the `jsweet.util.union` package. By using this auxiliary type and a `union` utility method, programmers can cast back and forth between union types and union-ed type, so that JSweet can ensure similar properties as TypeScript union types.
 
 The following code shows a typical use of union types in JSweet. It simply declares a variable as a union between a string and a number, which means that the variable can actually be of one of that types (but of no other types). The switch from a union type to a regular type is done through the `jsweet.util.Globals.union` helper method. This helper method is completely untyped, allowing from a Java perspective any union to be transformed to another type. It is actually the JSweet transpiler that checks that the union type is consistently used.
 
@@ -848,3 +836,7 @@ Appendix 1: JSweet transpiler options
             Set the transpiler to debug mode. In debug mode, source map files are
             generated so that it is possible to debug them in the browser. This
             feature is not available yet when using the --module option.
+
+      [--ignoreAssertions]
+            Set the transpiler to ignore 'assert' statements, i.e. no code is
+            generated for assertions.
