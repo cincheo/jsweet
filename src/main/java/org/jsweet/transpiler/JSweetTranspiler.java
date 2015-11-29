@@ -87,7 +87,7 @@ public class JSweetTranspiler {
 	static {
 		JSweetConfig.initClassPath(null);
 	}
-	
+
 	/**
 	 * The constant for the name of the directory that stores temporary files.
 	 */
@@ -139,6 +139,7 @@ public class JSweetTranspiler {
 	private File bundlesDirectory;
 	private String encoding = null;
 	private boolean noRootDirectories = false;
+	private boolean ignoreAssertions = false;
 
 	/**
 	 * Creates a JSweet transpiler, with the default values.
@@ -267,6 +268,7 @@ public class JSweetTranspiler {
 
 	private void initJavac(final TranspilationHandler transpilationHandler) {
 		context = new JSweetContext();
+		context.ignoreAssertions = isIgnoreAssertions();
 		options = Options.instance(context);
 		if (classPath != null) {
 			options.put(Option.CLASSPATH, classPath);
@@ -1267,6 +1269,22 @@ public class JSweetTranspiler {
 	 */
 	public void setNoRootDirectories(boolean noRootDirectories) {
 		this.noRootDirectories = noRootDirectories;
+	}
+
+	/**
+	 * Tells if the transpiler should ignore the 'assert' statements or generate
+	 * appropriate code.
+	 */
+	public boolean isIgnoreAssertions() {
+		return ignoreAssertions;
+	}
+
+	/**
+	 * Sets the transpiler to ignore the 'assert' statements or generate
+	 * appropriate code.
+	 */
+	public void setIgnoreAssertions(boolean ignoreAssertions) {
+		this.ignoreAssertions = ignoreAssertions;
 	}
 
 }

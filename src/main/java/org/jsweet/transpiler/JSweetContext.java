@@ -169,7 +169,8 @@ public class JSweetContext extends Context {
 
 	/**
 	 * Stores the root package namee (i.e. packages contained in the default
-	 * package or in a package annotated with the {@link jsweet.lang.Root} annotation).
+	 * package or in a package annotated with the {@link jsweet.lang.Root}
+	 * annotation).
 	 */
 	public Set<String> topLevelPackageNames = new HashSet<>();
 
@@ -177,5 +178,11 @@ public class JSweetContext extends Context {
 	 * Globally imported name (in the global namespace).
 	 */
 	public Set<String> globalImports = new HashSet<>();
-	
+
+	/**
+	 * A flag to tell if the transpiler should ignore the 'assert' statement or
+	 * generate appropriate code.
+	 */
+	public boolean ignoreAssertions = false;
+
 }

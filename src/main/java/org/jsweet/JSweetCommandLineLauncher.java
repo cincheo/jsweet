@@ -111,6 +111,7 @@ public class JSweetCommandLineLauncher {
 				transpiler.setPreserveSourceLineNumbers(jsapArgs.getBoolean("debug"));
 				transpiler.setModuleKind(ModuleKind.valueOf(jsapArgs.getString("module")));
 				transpiler.setEncoding(jsapArgs.getString("encoding"));
+				transpiler.setIgnoreAssertions(jsapArgs.getBoolean("ignoreAssertions"));
 
 				transpiler.transpile(transpilationHandler, SourceFile.toSourceFiles(files));
 			} catch (NoClassDefFoundError error) {
@@ -253,6 +254,14 @@ public class JSweetCommandLineLauncher {
 		switchArg.setDefault("false");
 		jsap.registerParameter(switchArg);
 
+		// Ignore assertions
+		switchArg = new Switch("ignoreAssertions");
+		switchArg.setLongFlag("ignoreAssertions");
+		switchArg.setHelp(
+				"Set the transpiler to ignore 'assert' statements, i.e. no code is generated for assertions.");
+		switchArg.setDefault("false");
+		jsap.registerParameter(switchArg);
+		
 		return jsap;
 	}
 

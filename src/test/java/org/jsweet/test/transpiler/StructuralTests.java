@@ -28,11 +28,6 @@ import org.jsweet.transpiler.JSweetProblem;
 import org.junit.Assert;
 import org.junit.Test;
 
-import source.root.noroot.a.GlobalsInNoRoot;
-import source.root.root.a.GlobalsInRoot;
-import source.root.rootparent1.InvalidClassLocation;
-import source.root.rootparent1.root.NoClassesInRootParent;
-import source.root.rootparent2.root.NoRootInRoot;
 import source.structural.AbstractClass;
 import source.structural.AutoImportClassesInSamePackage;
 import source.structural.AutoImportClassesInSamePackageUsed;

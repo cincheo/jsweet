@@ -57,6 +57,7 @@ import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCArrayAccess;
 import com.sun.tools.javac.tree.JCTree.JCArrayTypeTree;
+import com.sun.tools.javac.tree.JCTree.JCAssert;
 import com.sun.tools.javac.tree.JCTree.JCAssign;
 import com.sun.tools.javac.tree.JCTree.JCAssignOp;
 import com.sun.tools.javac.tree.JCTree.JCBinary;
@@ -180,7 +181,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						rootPackage.getQualifiedName().toString());
 			}
 		}
-		checkRootPackageParent(topLevel, rootPackage, (PackageSymbol)parentPackage.owner);
+		checkRootPackageParent(topLevel, rootPackage, (PackageSymbol) parentPackage.owner);
 	}
 
 	@Override
@@ -188,7 +189,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		printIndent().print("\"Generated from Java with JSweet " + JSweetConfig.getVersionNumber() + " - http://www.jsweet.org\";").println();
 		PackageSymbol rootPackage = Util.getFirstEnclosingRootPackage(topLevel.packge);
 		if (rootPackage != null) {
-			checkRootPackageParent(topLevel, rootPackage, (PackageSymbol)rootPackage.owner);
+			checkRootPackageParent(topLevel, rootPackage, (PackageSymbol) rootPackage.owner);
 		}
 
 		topLevelPackage = Util.getTopLevelPackage(topLevel.packge);
@@ -1669,6 +1670,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	@Override
 	public void visitThrow(JCThrow throwStatement) {
 		print("throw ").print(throwStatement.expr);
+	}
+
+	@Override
+	public void visitAssert(JCAssert assertion) {
+		if (!context.ignoreAssertions) {
+			print("if(!(").print(assertion.cond).print(")) throw new Error(\"Assertion error\");");
+		}
 	}
 
 }
