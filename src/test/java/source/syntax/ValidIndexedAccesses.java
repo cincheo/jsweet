@@ -16,7 +16,6 @@
  */
 package source.syntax;
 
-import static jsweet.util.Globals.$delete;
 import static jsweet.util.Globals.$export;
 import static jsweet.util.Globals.$get;
 import static jsweet.util.Globals.$set;
@@ -59,7 +58,7 @@ public class ValidIndexedAccesses {
 		};
 
 	}
-	
+
 	public static void m1() {
 		new ValidIndexedAccesses() {
 			{
@@ -70,22 +69,29 @@ public class ValidIndexedAccesses {
 	}
 
 	public static void main(String[] args) {
-		
+
 		jsweet.lang.Object validAccesses = new jsweet.lang.Object() {
 			{
 				$set("field1", "value");
 				$set("field2", "to be deleted");
 			}
 		};
-		
+
 		validAccesses.$delete("field2");
-		
+
 		validAccesses.$set("field3", "to be deleted");
 		validAccesses.$delete("field3");
-		
+
 		$export("field1", validAccesses.$get("field1"));
 		$export("field2", validAccesses.$get("field2"));
 		$export("field3", validAccesses.$get("field3"));
+
+		Object validAccesses2 = new Object();
+
+		$set(validAccesses2, "field4", "value4");
+
+		$export("field4", $get(validAccesses2, "field4"));
+
 	}
 }
 

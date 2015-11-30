@@ -23,9 +23,10 @@ import static def.serve_static.Globals.serve_static;
 import static def.socket_io.Globals.socket_io;
 import static def.errorhandler.Globals.errorhandler;
 import static def.jquery.Globals.$;
+import static jsweet.util.Globals.union;
 
 import def.body_parser.body_parser.OptionsDto;
-import def.errorhandler.Options;
+import def.errorhandler.errorhandler.Options;
 import def.express.express.Express;
 import def.express.express.RequestHandler;
 import def.node.http.Server;
@@ -50,7 +51,7 @@ public class GlobalsImport {
 
 		errorhandler(new Options() {
 			{
-				log = true;
+				log = union(true);
 			}
 		});
 

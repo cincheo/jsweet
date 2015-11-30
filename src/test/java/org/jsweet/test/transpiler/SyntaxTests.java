@@ -138,6 +138,7 @@ public class SyntaxTests extends AbstractTest {
 			assertEquals("value", r.get("field1"));
 			assertNull(r.get("field2"));
 			assertNull(r.get("field3"));
+			assertEquals("value4", r.get("field4"));
 		} , getSourceFile(ValidIndexedAccesses.class));
 	}
 
