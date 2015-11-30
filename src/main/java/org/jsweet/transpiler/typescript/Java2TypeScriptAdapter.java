@@ -290,7 +290,11 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			if (fieldAccess != null && !fieldAccess.toString().equals(UTIL_CLASSNAME + "." + INDEXED_GET_FUCTION_NAME)) {
 				getPrinter().print(fieldAccess.selected).print("[").print(invocation.args.head).print("]");
 			} else {
-				getPrinter().print("this[").print(invocation.args.head).print("]");
+				if (invocation.args.length() == 1) {
+					getPrinter().print("this[").print(invocation.args.head).print("]");
+				} else {
+					getPrinter().print(invocation.args.head).print("[").print(invocation.args.tail.head).print("]");
+				}
 			}
 			return true;
 		}
@@ -326,7 +330,12 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 
 				getPrinter().print(fieldAccess.selected).print("[").print(invocation.args.head).print("] = ").print(invocation.args.tail.head);
 			} else {
-				getPrinter().print("this[").print(invocation.args.head).print("] = <any>").print(invocation.args.tail.head);
+				if (invocation.args.length() == 2) {
+					getPrinter().print("this[").print(invocation.args.head).print("] = <any>").print(invocation.args.tail.head);
+				} else {
+					getPrinter().print(invocation.args.head).print("[").print(invocation.args.tail.head).print("] = <any>")
+							.print(invocation.args.tail.tail.head);
+				}
 			}
 			return true;
 		}
@@ -362,7 +371,15 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				return true;
 			}
 
-			getPrinter().print("delete ").print(fieldAccess.selected).print("[").print(invocation.args.head).print("]");
+			if (fieldAccess != null && !fieldAccess.toString().equals(UTIL_CLASSNAME + "." + INDEXED_GET_FUCTION_NAME)) {
+				getPrinter().print("delete ").print(fieldAccess.selected).print("[").print(invocation.args.head).print("]");
+			} else {
+				if (invocation.args.length() == 1) {
+					getPrinter().print("delete ").print("this[").print(invocation.args.head).print("]");
+				} else {
+					getPrinter().print("delete ").print(invocation.args.head).print("[").print(invocation.args.tail.head).print("]");
+				}
+			}
 			return true;
 		}
 
