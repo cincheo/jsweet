@@ -186,6 +186,10 @@ public abstract class JSweetConfig {
 	/** The constant for indexed assignment function. */
 	public static final String INDEXED_SET_FUCTION_NAME = "$set";
 	public static final String INDEXED_DELETE_FUCTION_NAME = "$delete";
+	public static final String INDEXED_GET_STATIC_FUCTION_NAME = "$getStatic";
+	/** The constant for indexed assignment function. */
+	public static final String INDEXED_SET_STATIC_FUCTION_NAME = "$setStatic";
+	public static final String INDEXED_DELETE_STATIC_FUCTION_NAME = "$deleteStatic";
 	public static final String NEW_FUNCTION_NAME = "$new";
 	public static final String ANONYMOUS_FUNCTION_NAME = "$apply";
 	public static final String ANONYMOUS_STATIC_FUNCTION_NAME = "$applyStatic";

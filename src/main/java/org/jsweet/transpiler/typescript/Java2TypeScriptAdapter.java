@@ -26,6 +26,9 @@ import static org.jsweet.JSweetConfig.GLOBALS_PACKAGE_NAME;
 import static org.jsweet.JSweetConfig.INDEXED_DELETE_FUCTION_NAME;
 import static org.jsweet.JSweetConfig.INDEXED_GET_FUCTION_NAME;
 import static org.jsweet.JSweetConfig.INDEXED_SET_FUCTION_NAME;
+import static org.jsweet.JSweetConfig.INDEXED_DELETE_STATIC_FUCTION_NAME;
+import static org.jsweet.JSweetConfig.INDEXED_GET_STATIC_FUCTION_NAME;
+import static org.jsweet.JSweetConfig.INDEXED_SET_STATIC_FUCTION_NAME;
 import static org.jsweet.JSweetConfig.LANG_PACKAGE;
 import static org.jsweet.JSweetConfig.TUPLE_CLASSES_PACKAGE;
 import static org.jsweet.JSweetConfig.UNION_CLASS_NAME;
@@ -291,6 +294,16 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			}
 			return true;
 		}
+		if (matchesMethod(targetClassName, targetMethodName, null, INDEXED_GET_STATIC_FUCTION_NAME)) {
+			if (isWithinGlobals(targetClassName)) {
+				report(invocation, JSweetProblem.GLOBAL_INDEXER_GET);
+				return true;
+			}
+
+			getPrinter().print(fieldAccess.selected).print("[").print(invocation.args.head).print("]");
+			return true;
+		}
+
 		if (matchesMethod(targetClassName, targetMethodName, null, INDEXED_SET_FUCTION_NAME)) {
 
 			if (isWithinGlobals(targetClassName)) {
@@ -317,6 +330,18 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			}
 			return true;
 		}
+
+		if (matchesMethod(targetClassName, targetMethodName, null, INDEXED_SET_STATIC_FUCTION_NAME)) {
+
+			if (isWithinGlobals(targetClassName)) {
+				report(invocation, JSweetProblem.GLOBAL_INDEXER_SET);
+				return true;
+			}
+
+			getPrinter().print(fieldAccess.selected).print("[").print(invocation.args.head).print("] = ").print(invocation.args.tail.head);
+			return true;
+		}
+
 		if (matchesMethod(targetClassName, targetMethodName, null, INDEXED_DELETE_FUCTION_NAME)) {
 			if (isWithinGlobals(targetClassName)) {
 				report(invocation, JSweetProblem.GLOBAL_DELETE);
@@ -328,6 +353,16 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			} else {
 				getPrinter().print("delete this[").print(invocation.args.head).print("]");
 			}
+			return true;
+		}
+
+		if (matchesMethod(targetClassName, targetMethodName, null, INDEXED_DELETE_STATIC_FUCTION_NAME)) {
+			if (isWithinGlobals(targetClassName)) {
+				report(invocation, JSweetProblem.GLOBAL_DELETE);
+				return true;
+			}
+
+			getPrinter().print("delete ").print(fieldAccess.selected).print("[").print(invocation.args.head).print("]");
 			return true;
 		}
 

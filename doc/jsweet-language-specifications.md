@@ -494,7 +494,7 @@ Globals myVariable = null;
 
 One must remember that `Globals` classes and `global` packages are erased at runtime so that their members will be directly accessible. For instance `mypackage.Globals.m()` in a JSweet program corresponds to the `mypackage.m()` function in the generated code and in the JavaScript VM at runtime. Also, `mypackage.globals.Globals.m()` corresponds to *m()*.
 
-In order to erase packages in the generated code, programmers can also use the `@Root` annotation, which will be explained in Section \[packaging\].
+In order to erase packages in the generated code, programmers can also use the `@Root` annotation, which will be explained in Section \[packaging\].
 
 ### Optional parameters
 
