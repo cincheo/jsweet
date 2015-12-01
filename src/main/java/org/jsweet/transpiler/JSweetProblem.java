@@ -212,6 +212,10 @@ public enum JSweetProblem {
 	 */
 	INVALID_MODIFIER_IN_AMBIENT(Severity.ERROR),
 	/**
+	 * Raised when an @Ambient is used on a method or a field.
+	 */
+	WRONG_USE_OF_AMBIENT(Severity.WARNING),
+	/**
 	 * Raised when an indexed set goes against indexed get type.
 	 */
 	INDEXED_SET_TYPE_MISMATCH(Severity.ERROR),
@@ -376,6 +380,8 @@ public enum JSweetProblem {
 			return String.format("invalid package hierarchy: @Root package %s cannot be enclosed in @Root package %s", params);
 		case CLASS_OUT_OF_ROOT_PACKAGE_SCOPE:
 			return String.format("invalid package hierarchy: type %s is declared in a parent of @Root package %s", params);
+		case WRONG_USE_OF_AMBIENT:
+			return String.format("wrong use of @Ambient on %s: only types and globals can be declared as ambients", params);
 		}
 		return null;
 	}

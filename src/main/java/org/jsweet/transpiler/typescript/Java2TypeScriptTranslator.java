@@ -638,8 +638,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 		}
 
+		boolean ambient = Util.hasAnnotationType(methodDecl.sym, JSweetConfig.ANNOTATION_AMBIENT);
+
 		if (methodDecl.mods.getFlags().contains(Modifier.NATIVE)) {
-			if (!declareClassScope) {
+			if (!declareClassScope && !ambient) {
 				report(methodDecl, methodDecl.name, JSweetProblem.NATIVE_MODIFIER_IS_NOT_ALLOWED, methodDecl.name);
 			}
 		} else {
@@ -670,18 +672,17 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				return;
 			}
 
-			if (Util.hasAnnotationType(methodDecl.sym, JSweetConfig.ANNOTATION_AMBIENT)) {
-				print("declare ");
-			} else {
-				if (context.useModules) {
-					if (methodDecl.mods.getFlags().contains(Modifier.PUBLIC)) {
-						print("export ");
-					}
-				} else {
-					if (!globalModule) {
-						print("export ");
-					}
+			if (context.useModules) {
+				if (!methodDecl.mods.getFlags().contains(Modifier.PRIVATE)) {
+					print("export ");
 				}
+			} else {
+				if (!globalModule) {
+					print("export ");
+				}
+			}
+			if (ambient) {
+				print("declare ");
 			}
 			print("function ");
 		} else {
@@ -703,6 +704,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				} else {
 					report(methodDecl, methodDecl.name, JSweetProblem.INVALID_STATIC_IN_INTERFACE, methodDecl.name, parent.name);
 				}
+			}
+			if (ambient) {
+				report(methodDecl, methodDecl.name, JSweetProblem.WRONG_USE_OF_AMBIENT, methodDecl.name);
 			}
 		}
 		printIdentifier(getTSMethodName(methodDecl));
@@ -864,11 +868,27 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					report(varDecl, varDecl.name, JSweetProblem.USELESS_OPTIONAL_ANNOTATION, varDecl.name, ((JCClassDecl) parent).name);
 				}
 			}
+			boolean ambient = Util.hasAnnotationType(varDecl.sym, JSweetConfig.ANNOTATION_AMBIENT);
 			if (globals || !(parent instanceof JCClassDecl || parent instanceof JCMethodDecl || parent instanceof JCLambda)) {
-				if (Util.hasAnnotationType(varDecl.sym, JSweetConfig.ANNOTATION_AMBIENT)) {
-					print("declare ");
+				if (globals) {
+					if (context.useModules) {
+						if (!varDecl.mods.getFlags().contains(Modifier.PRIVATE)) {
+							print("export ");
+						}
+					} else {
+						if (!globalModule) {
+							print("export ");
+						}
+					}
+					if (ambient) {
+						print("declare ");
+					}
 				}
 				print("var ");
+			} else {
+				if (ambient) {
+					report(varDecl, varDecl.name, JSweetProblem.WRONG_USE_OF_AMBIENT, varDecl.name);
+				}
 			}
 
 			if (isVarargs(varDecl)) {

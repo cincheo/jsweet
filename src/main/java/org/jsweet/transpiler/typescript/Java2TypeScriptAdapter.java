@@ -24,10 +24,10 @@ import static org.jsweet.JSweetConfig.ANNOTATION_STRING_TYPE;
 import static org.jsweet.JSweetConfig.GLOBALS_CLASS_NAME;
 import static org.jsweet.JSweetConfig.GLOBALS_PACKAGE_NAME;
 import static org.jsweet.JSweetConfig.INDEXED_DELETE_FUCTION_NAME;
-import static org.jsweet.JSweetConfig.INDEXED_GET_FUCTION_NAME;
-import static org.jsweet.JSweetConfig.INDEXED_SET_FUCTION_NAME;
 import static org.jsweet.JSweetConfig.INDEXED_DELETE_STATIC_FUCTION_NAME;
+import static org.jsweet.JSweetConfig.INDEXED_GET_FUCTION_NAME;
 import static org.jsweet.JSweetConfig.INDEXED_GET_STATIC_FUCTION_NAME;
+import static org.jsweet.JSweetConfig.INDEXED_SET_FUCTION_NAME;
 import static org.jsweet.JSweetConfig.INDEXED_SET_STATIC_FUCTION_NAME;
 import static org.jsweet.JSweetConfig.LANG_PACKAGE;
 import static org.jsweet.JSweetConfig.TUPLE_CLASSES_PACKAGE;
@@ -37,7 +37,6 @@ import static org.jsweet.JSweetConfig.UTIL_PACKAGE;
 import static org.jsweet.JSweetConfig.isJDKPath;
 import static org.jsweet.JSweetConfig.isJSweetPath;
 import static org.jsweet.transpiler.util.Util.getFirstAnnotationValue;
-import static org.jsweet.transpiler.util.Util.getRootRelativeJavaName;
 import static org.jsweet.transpiler.util.Util.getRootRelativeName;
 
 import java.util.HashMap;
@@ -119,7 +118,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		if (importDecl.isStatic()) {
 			if (importDecl.getQualifiedIdentifier() instanceof JCFieldAccess) {
 				JCFieldAccess fa = (JCFieldAccess) importDecl.getQualifiedIdentifier();
-				String name = getRootRelativeJavaName(fa.selected.type.tsym);
+				String name = getRootRelativeName(fa.selected.type.tsym, getPrinter().getContext().useModules);
 				String methodName = fa.name.toString();
 
 				// function is a top-level global function (no need to import)
@@ -141,7 +140,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				}
 				// function belong to the current package (no need to
 				// import)
-				String current = Util.getRootRelativeJavaName(getPrinter().getCompilationUnit().packge);
+				String current = Util.getRootRelativeName(getPrinter().getCompilationUnit().packge, getPrinter().getContext().useModules);
 				if (getPrinter().getContext().useModules) {
 					if (current.equals(name)) {
 						return null;

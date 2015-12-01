@@ -19,16 +19,20 @@ package org.jsweet.test.transpiler;
 import java.io.File;
 
 import org.apache.commons.io.FileUtils;
+import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.ModuleKind;
 import org.jsweet.transpiler.SourceFile;
 import org.junit.Assert;
 import org.junit.Test;
 
+import source.ambient.GlobalsAccess;
 import source.ambient.LibAccess;
 import source.ambient.LibAccessSubModule;
+import source.ambient.WrongUseOfAmbientAnnotations;
 import source.ambient.lib.Base;
 import source.ambient.lib.Extension;
 import source.ambient.lib.sub.C;
+import source.ambient.three.Globals;
 
 public class AmbientTests extends AbstractTest {
 
@@ -90,6 +94,20 @@ public class AmbientTests extends AbstractTest {
 			Assert.assertTrue("test was not executed", result.get("baseExecuted"));
 			Assert.assertTrue("extension was not executed", result.get("extensionExecuted"));
 		} , libJs, getSourceFile(LibAccessSubModule.class), getSourceFile(Base.class), getSourceFile(Extension.class), getSourceFile(C.class));
+	}
+
+	@Test
+	public void testGlobalsAccess() {
+		transpile(logHandler -> {
+			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+		} , getSourceFile(GlobalsAccess.class), getSourceFile(Globals.class));
+	}
+
+	@Test
+	public void testWrongUseOfAmbientAnnotations() {
+		transpile(ModuleKind.none, logHandler -> {
+			logHandler.assertReportedProblems(JSweetProblem.WRONG_USE_OF_AMBIENT, JSweetProblem.WRONG_USE_OF_AMBIENT);
+		} , getSourceFile(WrongUseOfAmbientAnnotations.class));
 	}
 
 }

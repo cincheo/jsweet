@@ -456,6 +456,25 @@ public class Util {
 
 	/**
 	 * Gets the qualified name of a symbol relatively to the root package
+	 * (potentially annotated with <code>jsweet.lang.Root</code>).
+	 * 
+	 * @param symbol
+	 *            the symbol to get the name of
+	 * @param useJavaNames
+	 *            if true uses plain Java names, if false uses
+	 *            <code>jsweet.lang.Name</code> annotations
+	 * @return
+	 */
+	public static String getRootRelativeName(Symbol symbol, boolean useJavaNames) {
+		if (useJavaNames) {
+			return getRootRelativeJavaName(symbol);
+		} else {
+			return getRootRelativeName(symbol);
+		}
+	}
+
+	/**
+	 * Gets the qualified name of a symbol relatively to the root package
 	 * (potentially annotated with <code>jsweet.lang.Root</code>). This function
 	 * takes into account potential <code>jsweet.lang.Name</code> annotations).
 	 */
