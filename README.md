@@ -12,13 +12,18 @@ JSweet is *not* Java, it is Java syntax only and the APIs and programs run in Ja
 - An Eclipse plugin for easy installation and use.
 - A simple Maven integration to use JSweet from any other IDE or from the command line.
 - A debug mode to enable Java code debugging within your favorite browser.
-- A set of nice WEB/Mobile HTML5 examples to get started and get used to JSweet and the most common JavaScript APIs (https://github.com/cincheo/jsweet-examples). 
+- A set of nice WEB/Mobile HTML5 examples to get started and get used to JSweet and the most common JavaScript APIs (see the Examples section). 
 - Support for JavaScript modules (commonjs, amd, umd). JSweet programs *can* run in a browser or in Node.js.
 - Support for various EcmaScript target versions (ES3 to ES6).
 - Support for bundles to run the generated programs in the most simple way.
 - ...
 
 Visit JSweet's web site (http://www.jsweet.org) to get started with JSweet.
+
+## Examples
+
+- [Various examples](https://github.com/cincheo/jsweet-examples) illustrating the use of various frameworks in Java (jQuery, Underscore, Backbone, Angular, Knockout, ...).
+- [Threejs examples](https://github.com/cincheo/jsweet-examples-threejs) illustrating the use of the Threejs framework in Java.
 
 ## License
 
