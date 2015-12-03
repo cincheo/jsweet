@@ -100,7 +100,7 @@ class Promise<R> {
 
 @java.lang.FunctionalInterface
 interface Callback<T1,T2> {
-    public void $apply(T1 p1, T2 p2);
+    public void apply(T1 p1, T2 p2);
 }
 
 

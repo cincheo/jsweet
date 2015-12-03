@@ -18,10 +18,10 @@ package source.varargs;
 
 public class VarargsOnAnonymous {
 	public static void main(String[] args) {
-		B.$apply(args);
+		B.apply(args);
 	}
 }
 
 class B {
-	public static native B $apply(String... args);
+	public static native B apply(String... args);
 }

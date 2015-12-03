@@ -19,8 +19,8 @@ package source.syntax;
 public class SpecialFunctions {
 
 	void m(ApplyI1 a1, ConstrI1 c1) {
-		a1.$apply();
-		a1.$apply("test");
+		a1.apply();
+		a1.apply("test");
 		c1.$new("test");
 	}
 	
@@ -28,8 +28,8 @@ public class SpecialFunctions {
 
 @jsweet.lang.Interface
 abstract class ApplyI1 extends jsweet.lang.Object {
-    abstract public String $apply();
-    abstract public ApplyI1 $apply(String a);
+    abstract public String apply();
+    abstract public ApplyI1 apply(String a);
 }
 
 @jsweet.lang.Interface
