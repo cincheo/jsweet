@@ -62,11 +62,10 @@ public class CandiesMerger {
 	private static final List<String> BUILTIN_MIXINS = asList(UTIL_PACKAGE + "." + STRING_TYPES_INTERFACE_NAME);
 
 	private File targetDir;
-	private List<String> candyClassPathEntries;
 	private URLClassLoader candyClassLoader;
 	private ClassPool classPool;
 
-	private Map<String, ClassPool> candyClassPools;
+	private Map<File, ClassPool> candyClassPools;
 
 	/**
 	 * Overrides the default behavior so that it never uses any other class
@@ -98,15 +97,14 @@ public class CandiesMerger {
 	 * Creates a new candies merger that will merge the candies found in the
 	 * classpath and output the result to the given target directory.
 	 */
-	public CandiesMerger(File targetDir, List<String> candyClassPathEntries) {
+	public CandiesMerger(File targetDir, List<File> candyClassPathEntries) {
 		logger.debug("new candies merger");
 		logger.debug("targetDir: " + targetDir.getAbsolutePath());
 		logger.debug("candies classpath entries: " + candyClassPathEntries);
 		this.targetDir = targetDir;
-		this.candyClassPathEntries = candyClassPathEntries;
-		this.candyClassLoader = new CandyClassLoader(candyClassPathEntries.stream().map((entry) -> {
+		this.candyClassLoader = new CandyClassLoader(candyClassPathEntries.stream().map(entry -> {
 			try {
-				return new File(entry).toURI().toURL();
+				return entry.toURI().toURL();
 			} catch (Exception e) {
 				logger.error("wrong class path entry " + entry, e);
 				return null;
@@ -116,12 +114,12 @@ public class CandiesMerger {
 
 		this.candyClassPools = new HashMap<>();
 		this.classPool = new ClassPool(ClassPool.getDefault());
-		for (String entry : candyClassPathEntries) {
+		for (File entry : candyClassPathEntries) {
 			try {
-				this.classPool.appendClassPath(entry);
+				this.classPool.appendClassPath(entry.getAbsolutePath());
 
 				ClassPool candyClassPool = new ClassPool();
-				candyClassPool.appendClassPath(entry);
+				candyClassPool.appendClassPath(entry.getAbsolutePath());
 				candyClassPools.put(entry, candyClassPool);
 			} catch (Exception e) {
 				logger.error("wrong class path entry " + entry, e);
@@ -331,12 +329,4 @@ public class CandiesMerger {
 		if (verbose)
 			logger.debug("merged " + memberCount + " member(s) and ignored " + ignoredDuplicates + " duplicates");
 	}
-
-	/**
-	 * Gets the classpath entries that correspond to JSweet candies.
-	 */
-	public List<String> getCandyClassPathEntries() {
-		return candyClassPathEntries;
-	}
-
 }
