@@ -57,8 +57,8 @@ public class JSweetCommandLineLauncher {
 	 */
 	public static void main(String[] args) {
 		try {
-			JSAP jsapSpec;
-			JSAPResult jsapArgs = parseArgs(jsapSpec = defineArgs(), args);
+			JSAP jsapSpec = defineArgs();
+			JSAPResult jsapArgs = parseArgs(jsapSpec, args);
 
 			if (!jsapArgs.success()) {
 				printUsage(jsapSpec);

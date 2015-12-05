@@ -1,7 +1,7 @@
 /* 
  * JSweet - http://www.jsweet.org
  * Copyright (C) 2015 CINCHEO SAS <renaud.pawlak@cincheo.fr>
- * 
+ *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -20,8 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
@@ -80,8 +79,6 @@ public class CandiesProcessor {
 	private File candiesProcessedDir;
 	private File candiesStoreFile;
 	private File candiesTsdefsDir;
-	private List<String> candyClassPathEntries;
-	private boolean forceCandiesCompatibility;
 
 	/**
 	 * Create a candies processor.
@@ -97,10 +94,6 @@ public class CandiesProcessor {
 		String[] cp = this.classPath.split(File.pathSeparator);
 		int[] indices = new int[0];
 		for (int i = 0; i < cp.length; i++) {
-			if (cp[i].replace('\\', '/').endsWith("org/jsweet/lib/core-bin/latest/core-bin-latest.jar")) {
-				logger.warn("candies processor ignores classpath entry: " + cp[i]);
-				indices = ArrayUtils.add(indices, i);
-			}
 			if (cp[i].replace('\\', '/').matches(".*org/jsweet/lib/.*-testbundle/.*/.*-testbundle-.*\\.jar")) {
 				logger.warn("candies processor ignores classpath entry: " + cp[i]);
 				indices = ArrayUtils.add(indices, i);
@@ -137,8 +130,8 @@ public class CandiesProcessor {
 	public void processCandies() throws IOException {
 		CandiesStore candiesStore = getCandiesStore();
 
-		List<CandyDescriptor> newCandiesDescriptors = getCandiesDescriptorsFromClassPath(new HashMap<CandyDescriptor, File>());
-		CandiesStore newStore = new CandiesStore(newCandiesDescriptors);
+		LinkedHashMap<File, CandyDescriptor> newCandiesDescriptors = getCandiesDescriptorsFromClassPath();
+		CandiesStore newStore = new CandiesStore(new ArrayList<>(newCandiesDescriptors.values()));
 		if (newStore.equals(candiesStore)) {
 			logger.info("candies are up to date");
 			return;
@@ -148,9 +141,9 @@ public class CandiesProcessor {
 		logger.info("candies changed, processing candies: " + this.candiesStore);
 
 		try {
-			extractCandies();
+			extractCandies(newCandiesDescriptors);
 
-			mergeCandies();
+			mergeCandies(newCandiesDescriptors);
 
 			writeCandiesStore();
 
@@ -160,27 +153,18 @@ public class CandiesProcessor {
 		}
 	}
 
-	/**
-	 * Ignore candies version check and tries to transpile anyway
-	 * 
-	 * @param force
-	 *            whether check should be disabled or not<
-	 */
-	public void setForceCandiesCompatibility(boolean force) {
-		this.forceCandiesCompatibility = force;
-	}
-
-	private void mergeCandies() {
+	private void mergeCandies(Map<File, CandyDescriptor> candies) {
 		logger.info("merging candies");
-		CandiesMerger merger = new CandiesMerger(candiesProcessedDir, candyClassPathEntries);
+		CandiesMerger merger = new CandiesMerger(candiesProcessedDir, new ArrayList<>(candies.keySet()));
 		Map<Class<?>, List<Class<?>>> mergedMixins = merger.merge();
-		extractSourcesForClasses(mergedMixins.keySet());
+		extractSourcesForClasses(candies, mergedMixins.keySet());
 	}
 
-	private List<CandyDescriptor> getCandiesDescriptorsFromClassPath(Map<CandyDescriptor, File> jarFilesCollector) throws IOException {
-		List<CandyDescriptor> candiesDescriptors = new LinkedList<>();
+	private LinkedHashMap<File, CandyDescriptor> getCandiesDescriptorsFromClassPath() throws IOException {
+		LinkedHashMap<File, CandyDescriptor> jarFilesCollector = new LinkedHashMap<>();
 		for (String classPathEntry : classPath.split("[" + System.getProperty("path.separator") + "]")) {
 			if (classPathEntry.endsWith(".jar")) {
+				logger.info("builds candy descriptor for: " + classPathEntry);
 				File jarFile = new File(classPathEntry);
 				try (JarFile jarFileHandle = new JarFile(jarFile)) {
 					JarEntry candySpecificEntry = jarFileHandle.getJarEntry("META-INF/maven/" + JSweetConfig.MAVEN_CANDIES_GROUP);
@@ -189,15 +173,14 @@ public class CandiesProcessor {
 						CandyDescriptor descriptor = CandyDescriptor.fromCandyJar(jarFileHandle);
 
 						checkCandyVersion(descriptor);
-						candiesDescriptors.add(descriptor);
-						jarFilesCollector.put(descriptor, jarFile);
+						jarFilesCollector.put(jarFile, descriptor);
 					}
 				}
 
 			}
 		}
 
-		return candiesDescriptors;
+		return jarFilesCollector;
 	}
 
 	private void checkCandyVersion(CandyDescriptor candy) {
@@ -206,7 +189,7 @@ public class CandiesProcessor {
 		// versions changes
 	}
 
-	private void extractCandies() throws IOException {
+	private void extractCandies(Map<File, CandyDescriptor> candies) throws IOException {
 		File extractedSourcesDir = candiesSourceDir;
 		File extractedTsDefsDir = candiesTsdefsDir;
 		File extractedClassesDir = candiesProcessedDir;
@@ -216,32 +199,19 @@ public class CandiesProcessor {
 		extractedSourcesDir.mkdirs();
 		extractedTsDefsDir.mkdirs();
 		extractedClassesDir.mkdirs();
-		candyClassPathEntries = new ArrayList<>();
+		for (Map.Entry<File, CandyDescriptor> candy : candies.entrySet()) {
 
-		for (String classPathEntry : classPath.split("[" + System.getProperty("path.separator") + "]")) {
-			if (classPathEntry.endsWith(".jar")) {
-				File jarFileDescriptor = new File(classPathEntry);
-				logger.info("scanning sources in jar: " + classPathEntry);
-				try (JarFile jarFile = new JarFile(jarFileDescriptor)) {
-					JarEntry candySpecificEntry = jarFile.getJarEntry("META-INF/maven/" + JSweetConfig.MAVEN_CANDIES_GROUP);
-					boolean isCandy = candySpecificEntry != null;
-					if (isCandy) {
-						candyClassPathEntries.add(classPathEntry);
-						String groupName = FilenameUtils.getBaseName(jarFile.getName());
-						String versionName = jarFileDescriptor.getParentFile().getName();
+			CandyDescriptor candyDescriptor = candy.getValue();
+			File jarFile = candy.getKey();
 
-						// remove version
-						groupName = groupName.substring(0, groupName.lastIndexOf("-" + versionName));
-						int i = groupName.indexOf("--");
-						if (i > 0) {
-							groupName = groupName.substring(0, i);
-						}
-
-						boolean isCore = "core".equals(groupName);
-						extractCandy(jarFile, new File(extractedSourcesDir, FilenameUtils.getBaseName(jarFile.getName())), extractedTsDefsDir,
-								isCore ? tsDefName -> false : null, extractedClassesDir);
-					}
-				}
+			String candyName = candyDescriptor.name;
+			boolean isCore = "jsweet-core".equals(candyName);
+			try (JarFile jarFileHandle = new JarFile(jarFile)) {
+				extractCandy( //
+						jarFileHandle, //
+						new File(extractedSourcesDir, FilenameUtils.getBaseName(jarFile.getName())), //
+						extractedTsDefsDir, //
+						isCore ? tsDefName -> false : null, extractedClassesDir);
 			}
 		}
 	}
@@ -275,11 +245,11 @@ public class CandiesProcessor {
 				});
 	}
 
-	private void extractSourcesForClasses(Collection<Class<?>> classes) {
+	private void extractSourcesForClasses(Map<File, CandyDescriptor> candies, Collection<Class<?>> classes) {
 		logger.info("extract sources for: " + classes);
 
 		List<String> files = classes.stream().map(c -> "src/" + c.getName().replace('.', '/') + ".java").collect(Collectors.toList());
-		for (String candyClassPathEntry : candyClassPathEntries) {
+		for (File candyClassPathEntry : candies.keySet()) {
 			try (JarFile jarFile = new JarFile(candyClassPathEntry)) {
 				jarFile.stream().filter(entry -> files.contains(entry.getName())) //
 						.forEach(entry -> {

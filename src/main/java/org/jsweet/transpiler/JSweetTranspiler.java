@@ -1177,14 +1177,6 @@ public class JSweetTranspiler {
 	}
 
 	/**
-	 * Sets the transpiler to raise an error when not compatible with a given
-	 * candy version.
-	 */
-	public void setForceCandiesCompatibility(boolean force) {
-		candiesProcessor.setForceCandiesCompatibility(force);
-	}
-
-	/**
 	 * Gets the module kind when transpiling to code using JavaScript modules.
 	 */
 	public ModuleKind getModuleKind() {
