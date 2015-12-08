@@ -1035,6 +1035,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			MethodType type = (MethodType) inv.meth.type;
 			MethodSymbol methSym = null;
 			String methodName = null;
+			boolean keywordHandled = false;
 			if (targetIsThisOrStaticImported) {
 				JCImport staticImport = getStaticImport(methName);
 				if (staticImport == null) {
@@ -1068,6 +1069,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						if (!isBlank(targetClass)) {
 							print(targetClass);
 							print(".");
+							keywordHandled = true;
 						}
 						if (JSweetConfig.isLibPath(methSym.getEnclosingElement().getQualifiedName().toString())) {
 							methodName = methName.toLowerCase();
@@ -1104,11 +1106,38 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					print("(");
 					print(targetVarName + " = ");
 					print(((JCFieldAccess) inv.meth).selected);
-					print(")." + ((JCFieldAccess) inv.meth).name);
+					print(").");
+					if (keywordHandled) {
+						print(((JCFieldAccess) inv.meth).name.toString());
+					} else {
+						if (methSym == null) {
+							methSym = (MethodSymbol) ((JCFieldAccess) inv.meth).sym;
+						}
+						if (methSym != null) {
+							print(Util.getActualName(methSym));
+						} else {
+							print(((JCFieldAccess) inv.meth).name.toString());
+						}
+					}
 				} else if (methodName != null) {
 					print(methodName);
 				} else {
-					print(inv.meth);
+					if (keywordHandled) {
+						print(inv.meth);
+					} else {
+						if (methSym == null && inv.meth instanceof JCFieldAccess) {
+							methSym = (MethodSymbol) ((JCFieldAccess) inv.meth).sym;
+						}
+						if (methSym != null && inv.meth instanceof JCFieldAccess) {
+							JCExpression selected = ((JCFieldAccess) inv.meth).selected;
+							print(selected).print(".");
+						}
+						if (methSym != null) {
+							print(Util.getActualName(methSym));
+						} else {
+							print(inv.meth);
+						}
+					}
 				}
 			}
 

@@ -37,6 +37,7 @@ import source.structural.ExtendsObject;
 import source.structural.GlobalsAccess;
 import source.structural.Inheritance;
 import source.structural.InnerClass;
+import source.structural.Name;
 import source.structural.NameClashes;
 import source.structural.NoInstanceofForInterfaces;
 import source.structural.NoWildcardsInImports;
@@ -213,6 +214,13 @@ public class StructuralTests extends AbstractTest {
 		} , getSourceFile(NoWildcardsInImports.class));
 	}
 
+	@Test
+	public void testName() {
+		transpile((logHandler) -> {
+			logHandler.assertReportedProblems();
+		} , getSourceFile(Name.class));
+	}
+	
 	@Test
 	public void testAutoImportClassesInSamePackage() {
 		eval((logHandler, r) -> {
