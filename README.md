@@ -22,8 +22,8 @@ Visit JSweet's web site (http://www.jsweet.org) to get started with JSweet.
 
 ## Examples
 
-- [Various examples](https://github.com/cincheo/jsweet-examples) illustrating the use of various frameworks in Java (jQuery, Underscore, Backbone, Angular, Knockout, ...).
-- [Threejs examples](https://github.com/cincheo/jsweet-examples-threejs) illustrating the use of the Threejs framework in Java.
+- Examples illustrating the use of various frameworks in Java (jQuery, Underscore, Backbone, Angular, Knockout). [Go to project](https://github.com/cincheo/jsweet-examples).
+- Examples illustrating the use of the Threejs framework in Java. [Go to project](https://github.com/cincheo/jsweet-examples-threejs).
 
 ## License
 
