@@ -622,7 +622,7 @@ public class Util {
 		if (to.equals(from)) {
 			return true;
 		} else {
-			return from.isSubClass(to, types);
+			return types.isAssignable(from.asType(), to.asType());
 		}
 	}
 
