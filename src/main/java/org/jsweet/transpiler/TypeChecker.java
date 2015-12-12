@@ -94,7 +94,6 @@ public class TypeChecker {
 		NUMBER_TYPE_NAMES.add(Byte.class.getSimpleName());
 		NUMBER_TYPE_NAMES.add(Short.class.getSimpleName());
 
-		// TODO: remove runnable?
 		AUTHORIZED_DECLARED_TYPES.add(Runnable.class.getName());
 
 		AUTHORIZED_OBJECT_METHODS.add("toString");
@@ -139,7 +138,7 @@ public class TypeChecker {
 					translator.report(invocation, JSweetProblem.JDK_METHOD, methSym);
 					return false;
 				}
-				if (AUTHORIZED_OBJECT_METHODS.contains(methSym.name.toString())) {
+				if (translator.getContext().strictMode || AUTHORIZED_OBJECT_METHODS.contains(methSym.name.toString())) {
 					return true;
 				}
 				if (methSym.owner.toString().equals(String.class.getName()) && AUTHORIZED_STRING_METHODS.contains(methSym.toString())) {
@@ -161,7 +160,7 @@ public class TypeChecker {
 				return checkType(declaringElement, declaringElementName, ((JCArrayTypeTree) typeExpression).elemtype);
 			}
 			String type = typeExpression.type.tsym.toString();
-			if (type.startsWith("java.")) {
+			if (!translator.getContext().strictMode && type.startsWith("java.")) {
 				if (!(AUTHORIZED_DECLARED_TYPES.contains(type) || NUMBER_TYPES.contains(type) || type.startsWith("java.util.function"))) {
 					translator.report(declaringElement, declaringElementName, JSweetProblem.JDK_TYPE, type);
 					return false;

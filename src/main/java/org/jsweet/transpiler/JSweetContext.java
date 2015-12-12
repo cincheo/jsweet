@@ -185,4 +185,10 @@ public class JSweetContext extends Context {
 	 */
 	public boolean ignoreAssertions = false;
 
+	/**
+	 * A flag that indicates if the transpilation is in "strict" mode, which
+	 * means that the <code>jsweet-core-strict</code> jar is in the classpath.
+	 */
+	public boolean strictMode = false;
+
 }

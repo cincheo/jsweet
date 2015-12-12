@@ -23,8 +23,8 @@ import static jsweet.util.Globals.$set;
 class Globals  {
 
 	public void test() {
-		Object val = $get("ttest");
-		$set("ttest", val);
+		Object val = $get(this, "ttest");
+		$set(this, "ttest", val);
 	}
 }
 

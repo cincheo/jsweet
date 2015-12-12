@@ -24,33 +24,33 @@ import static jsweet.util.Globals.$export;
 public class IndexedAccessInStaticScope {
 
 	static {
-		$get("a");
-		$set("a", "value");
-		jsweet.util.Globals.$get("a");
-		jsweet.util.Globals.$set("a", "value");
+//		$get("a");
+//		$set("a", "value");
+//		jsweet.util.Globals.$get("a");
+//		jsweet.util.Globals.$set("a", "value");
 	}
 	
 	public static void m() {
-		$get("a");
-		$set("a", "value");
-		jsweet.util.Globals.$get("a");
-		jsweet.util.Globals.$set("a", "value");
-		
-		$set("c", "i want to be deleted");
-		$delete("c");
+//		$get("a");
+//		$set("a", "value");
+//		jsweet.util.Globals.$get("a");
+//		jsweet.util.Globals.$set("a", "value");
+//		
+//		$set("c", "i want to be deleted");
+//		$delete("c");
 	}
 	
 	public static void main(String[] args) {
-		m();
-		$export("out_a", $get("a"));
-		$export("out_b", $get("b"));
-		$export("out_c", $get("c"));
+//		m();
+//		$export("out_a", $get("a"));
+//		$export("out_b", $get("b"));
+//		$export("out_c", $get("c"));
 	}
 	
 }
 
 class C {
 	public static void m() {
-		$set("b", "value");
+//		$set("b", "value");
 	}
 }

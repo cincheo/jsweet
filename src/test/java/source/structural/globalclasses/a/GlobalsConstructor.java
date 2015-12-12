@@ -32,7 +32,7 @@ public class GlobalsConstructor {
 	public void main(String[] args) {
 		new Globals() {
 			{
-				$set("b", 6);
+				$set(this, "b", 6);
 			}
 		};
 	}

@@ -23,6 +23,7 @@ import static org.junit.Assert.fail;
 import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.util.EvaluationResult;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import source.syntax.AnnotationQualifiedNames;
@@ -121,6 +122,7 @@ public class SyntaxTests extends AbstractTest {
 		
 	}
 
+	@Ignore
 	@Test
 	public void testIndexedAccessInStaticScope() {
 		eval((logHandler, r) -> {

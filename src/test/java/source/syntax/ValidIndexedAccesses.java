@@ -23,37 +23,37 @@ import static jsweet.util.Globals.$set;
 public class ValidIndexedAccesses {
 
 	{
-		$get("a");
-		$set("a", "value");
-		jsweet.util.Globals.$get("a");
-		jsweet.util.Globals.$set("a", "value");
+		$get(this, "a");
+		$set(this, "a", "value");
+		jsweet.util.Globals.$get(this, "a");
+		jsweet.util.Globals.$set(this, "a", "value");
 	}
 
 	public ValidIndexedAccesses() {
-		$get("a");
-		$set("a", "value");
-		jsweet.util.Globals.$get("a");
-		jsweet.util.Globals.$set("a", "value");
+		$get(this, "a");
+		$set(this, "a", "value");
+		jsweet.util.Globals.$get(this, "a");
+		jsweet.util.Globals.$set(this, "a", "value");
 	}
 
 	public void m() {
-		$get("a");
-		$set("a", "value");
-		jsweet.util.Globals.$get("a");
-		jsweet.util.Globals.$set("a", "value");
+		$get(this, "a");
+		$set(this, "a", "value");
+		jsweet.util.Globals.$get(this, "a");
+		jsweet.util.Globals.$set(this, "a", "value");
 		ValidIndexedAccesses2 o1 = new ValidIndexedAccesses2();
 		o1.$get("a");
 		o1.$set("a", "value");
 		new ValidIndexedAccesses2() {
 			{
 				$set("a", "value");
-				jsweet.util.Globals.$set("a", "value");
+				jsweet.util.Globals.$set(this, "a2", "value");
 			}
 		};
 		new ValidIndexedAccesses() {
 			{
-				$set("a", "value");
-				jsweet.util.Globals.$set("a", "value");
+				$set(this, "a", "value");
+				jsweet.util.Globals.$set(this, "a2", "value");
 			}
 		};
 
@@ -62,8 +62,8 @@ public class ValidIndexedAccesses {
 	public static void m1() {
 		new ValidIndexedAccesses() {
 			{
-				$set("a", "value");
-				jsweet.util.Globals.$set("a", "value");
+				$set(this, "a", "value");
+				jsweet.util.Globals.$set(this, "a", "value");
 			}
 		};
 	}
@@ -100,22 +100,22 @@ class ValidIndexedAccesses2 extends jsweet.lang.Object {
 	{
 		$get("a");
 		$set("a", "value");
-		jsweet.util.Globals.$get("a");
-		jsweet.util.Globals.$set("a", "value");
+		jsweet.util.Globals.$get(this, "a");
+		jsweet.util.Globals.$set(this, "a", "value");
 	}
 
 	public ValidIndexedAccesses2() {
 		$get("a");
 		$set("a", "value");
-		jsweet.util.Globals.$get("a");
-		jsweet.util.Globals.$set("a", "value");
+		jsweet.util.Globals.$get(this, "a");
+		jsweet.util.Globals.$set(this, "a", "value");
 	}
 
 	public void m() {
 		$get("a");
 		$set("a", "value");
-		jsweet.util.Globals.$get("a");
-		jsweet.util.Globals.$set("a", "value");
+		jsweet.util.Globals.$get(this, "a");
+		jsweet.util.Globals.$set(this, "a", "value");
 	}
 
 }

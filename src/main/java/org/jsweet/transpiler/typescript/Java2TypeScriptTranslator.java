@@ -1268,9 +1268,18 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 									String meth = invocation.meth.toString();
 									if (meth.equals(JSweetConfig.INDEXED_SET_FUCTION_NAME)
 											|| meth.equals(JSweetConfig.UTIL_CLASSNAME + "." + JSweetConfig.INDEXED_SET_FUCTION_NAME)) {
-										printIndent().print(invocation.args.head).print(": ").print(invocation.args.tail.head).print(",").println();
-										currentStatementPrinted = true;
-										statementPrinted = true;
+										if (invocation.getArguments().size() == 3) {
+											if ("this".equals(invocation.getArguments().get(0).toString())) {
+												printIndent().print(invocation.args.tail.head).print(": ").print(invocation.args.tail.tail.head).print(",")
+														.println();
+											}
+											currentStatementPrinted = true;
+											statementPrinted = true;
+										} else {
+											printIndent().print(invocation.args.head).print(": ").print(invocation.args.tail.head).print(",").println();
+											currentStatementPrinted = true;
+											statementPrinted = true;
+										}
 									}
 								}
 								if (!currentStatementPrinted) {
@@ -1324,9 +1333,17 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 								String meth = invocation.meth.toString();
 								if (meth.equals(JSweetConfig.INDEXED_SET_FUCTION_NAME)
 										|| meth.equals(JSweetConfig.UTIL_CLASSNAME + "." + JSweetConfig.INDEXED_SET_FUCTION_NAME)) {
-									printIndent().print("target[").print(invocation.args.head).print("]").print(" = ").print(invocation.args.tail.head)
-											.print(";").println();
-									currentStatementPrinted = true;
+									if (invocation.getArguments().size() == 3) {
+										if ("this".equals(invocation.getArguments().get(0).toString())) {
+											printIndent().print("target[").print(invocation.args.tail.head).print("]").print(" = ")
+													.print(invocation.args.tail.tail.head).print(";").println();
+										}
+										currentStatementPrinted = true;
+									} else {
+										printIndent().print("target[").print(invocation.args.head).print("]").print(" = ").print(invocation.args.tail.head)
+												.print(";").println();
+										currentStatementPrinted = true;
+									}
 								}
 							}
 							if (!currentStatementPrinted) {

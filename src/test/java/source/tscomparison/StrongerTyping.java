@@ -39,7 +39,7 @@ public class StrongerTyping {
 		func.accept(new Options() {
 			{
 				field = "foo";
-				$set("whatever", "bar");
+				$set(this, "whatever", "bar");
 			}
 		});
 	}

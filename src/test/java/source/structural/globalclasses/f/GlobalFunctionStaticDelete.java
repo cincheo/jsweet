@@ -22,7 +22,7 @@ import static jsweet.util.Globals.$delete;
 class Globals  {
 
 	public void test() {
-		$delete("key2s");
+		$delete(this, "key2s");
 	}
 }
 

@@ -141,6 +141,11 @@ public abstract class JSweetConfig {
 	 */
 	public static String MAVEN_CANDIES_GROUP = "org.jsweet.candies";
 
+	/**
+	 * The Maven artifact full name for the Java override project.
+	 */
+	public static String MAVEN_JAVA_OVERRIDE_ARTIFACT = "jsweet-core-strict";
+
 	private final static String JAVA_PACKAGE = "java";
 	private final static String ROOT_PACKAGE = "jsweet";
 	/** The constant for the JSweet lang package. */
