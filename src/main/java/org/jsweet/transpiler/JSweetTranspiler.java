@@ -194,7 +194,7 @@ public class JSweetTranspiler {
 			e.printStackTrace();
 			throw new RuntimeException("cannot locate output dirs", e);
 		}
-		this.classPath = classPath;
+		this.classPath = classPath == null ? System.getProperty("java.class.path") : classPath;
 		logger.info("creating transpiler version " + JSweetConfig.getVersionNumber() + " (build date: " + JSweetConfig.getBuildDate() + ")");
 		logger.info("curent dir: " + new File(".").getAbsolutePath());
 		logger.info("tsOut: " + tsOutputDir + (tsOutputDir == null ? "" : " - " + tsOutputDir.getAbsolutePath()));
@@ -272,14 +272,14 @@ public class JSweetTranspiler {
 		options = Options.instance(context);
 		if (classPath != null) {
 			options.put(Option.CLASSPATH, classPath);
-			for(String s : classPath.split(File.pathSeparator)) {
-				if(s.contains(JSweetConfig.MAVEN_JAVA_OVERRIDE_ARTIFACT)) {
+			for (String s : classPath.split(File.pathSeparator)) {
+				if (s.contains(JSweetConfig.MAVEN_JAVA_OVERRIDE_ARTIFACT)) {
 					context.strictMode = true;
 					options.put(Option.BOOTCLASSPATH, s);
 				}
 			}
 		}
-		logger.debug("bootclasspath: "+options.get(Option.BOOTCLASSPATH));
+		logger.debug("bootclasspath: " + options.get(Option.BOOTCLASSPATH));
 		options.put(Option.XLINT, "path");
 		JavacFileManager.preRegister(context);
 		fileManager = context.get(JavaFileManager.class);
