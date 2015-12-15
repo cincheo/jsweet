@@ -20,6 +20,27 @@ JSweet is *not* Java, it is Java syntax only and the APIs and programs run in Ja
 
 Visit JSweet's web site (http://www.jsweet.org) to get started with JSweet.
 
+## Getting started
+
+- Step 1: Install (or check that you have installed) [Git](https://git-scm.com/downloads), [Node.js](https://nodejs.org) and [Maven](https://maven.apache.org/) (commands `git`, `node`, `npm` and `mvn` should be in your path).
+- Step 2: Clone the `jsweet-quickstart` project from Github:
+```
+> git clone https://github.com/cincheo/jsweet-quickstart.git
+```
+- Step 3: Run the transpiler to generate the JavaScript code:
+```
+> cd jsweet-quickstart
+> mvn generate-sources
+```
+- Step 4: Check out the result in your browser:
+```
+> firefox webapp/index.html
+```
+- Step 5: Edit the project and start programming:
+	- Checkout the examples to see various use cases 
+	- Refer to the [language specifications](http://www.jsweet.org/language-specifications/) to know more about programming with JSweet
+	- Eclipse users: install the [Eclipse plugin](http://www.jsweet.org/eclipse-plugin/) to get inline error reporting, build-on-save, and easy configuration UI
+
 ## Examples
 
 - Examples illustrating the use of various frameworks in Java (jQuery, Underscore, Backbone, Angular, Knockout). [Go to project](https://github.com/cincheo/jsweet-examples).
