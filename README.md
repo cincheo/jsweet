@@ -7,7 +7,7 @@ JSweet is *not* Java, it is Java syntax only and the APIs and programs run in Ja
 ## Features
 
 - Full syntax mapping between Java and TypeScript, including classes, interfaces, functional types, union types, tuple types, object types, string types, and so on.
-- *Over 1000 JavaScript libraries*, frameworks and plugins to write Web and Mobile HTML5 applications (JQuery, Underscore, Angular, Backbone, Cordova, Node.js, and so on).
+- *Over 1000 JavaScript libraries*, frameworks and plugins to write Web and Mobile HTML5 applications (JQuery, Underscore, Angular, Backbone, Cordova, Node.js, and much [more](http://www.jsweet.org/candies-snapshots/)).
 - A Maven repository containing all the available libraries in Maven artifacts (a.k.a. candies).
 - An Eclipse plugin for easy installation and use.
 - A simple Maven integration to use JSweet from any other IDE or from the command line.
@@ -17,8 +17,6 @@ JSweet is *not* Java, it is Java syntax only and the APIs and programs run in Ja
 - Support for various EcmaScript target versions (ES3 to ES6).
 - Support for bundles to run the generated programs in the most simple way.
 - ...
-
-Visit JSweet's web site (http://www.jsweet.org) to get started with JSweet.
 
 ## Getting started
 
@@ -38,8 +36,10 @@ Visit JSweet's web site (http://www.jsweet.org) to get started with JSweet.
 ```
 - Step 5: Edit the project and start programming:
 	- Checkout the examples to see various use cases 
-	- Refer to the [language specifications](http://www.jsweet.org/language-specifications/) to know more about programming with JSweet
+	- Refer to the [language specifications](https://github.com/cincheo/jsweet/blob/master/doc/jsweet-language-specifications.md) to know more about programming with JSweet
 	- Eclipse users: install the [Eclipse plugin](http://www.jsweet.org/eclipse-plugin/) to get inline error reporting, build-on-save, and easy configuration UI
+
+More info at http://www.jsweet.org.
 
 ## Examples
 
