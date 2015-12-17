@@ -29,6 +29,7 @@ import org.junit.Test;
 import source.syntax.AnnotationQualifiedNames;
 import source.syntax.FinalVariables;
 import source.syntax.FinalVariablesRuntime;
+import source.syntax.GlobalsCastMethod;
 import source.syntax.GlobalsInvocation;
 import source.syntax.IndexedAccessInStaticScope;
 import source.syntax.Keywords;
@@ -143,5 +144,13 @@ public class SyntaxTests extends AbstractTest {
 			assertEquals("value4", r.get("field4"));
 		} , getSourceFile(ValidIndexedAccesses.class));
 	}
+	
+	@Test
+	public void testGlobalCastMethod() {
+		transpile((logHandler) -> {
+			logHandler.assertReportedProblems();
+		} , getSourceFile(GlobalsCastMethod.class));
+	}
 
+	
 }
