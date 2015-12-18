@@ -45,7 +45,7 @@ More info at http://www.jsweet.org.
 
 - Examples illustrating the use of various frameworks in Java (jQuery, Underscore, Backbone, AngularJS, Knockout). [Go to project](https://github.com/cincheo/jsweet-examples).
 - Examples illustrating the use of the Threejs framework in Java. [Go to project](https://github.com/cincheo/jsweet-examples-threejs).
-- Node.js + Socket.IO + AngularJS. [Go to project](https://github.com/lgrignon/jsweet-node-examples).
+- Node.js + Socket.IO + AngularJS. [Go to project](https://github.com/lgrignon/jsweet-node-example).
 
 ## License
 
