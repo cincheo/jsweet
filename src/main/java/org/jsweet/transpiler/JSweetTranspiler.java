@@ -922,7 +922,7 @@ public class JSweetTranspiler {
 			args.add("--watch");
 		}
 		if (isPreserveSourceLineNumbers()) {
-			args.add("--sourcemap");
+			args.add("--sourceMap");
 		}
 
 		args.addAll(asList("--rootDir", tsOutputDir.getAbsolutePath()));

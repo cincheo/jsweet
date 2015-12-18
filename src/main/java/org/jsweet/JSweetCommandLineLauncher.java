@@ -108,7 +108,7 @@ public class JSweetCommandLineLauncher {
 				}
 				logger.info("bundles directory: " + bundlesDirectory);
 				transpiler.setBundlesDirectory(bundlesDirectory);
-				transpiler.setPreserveSourceLineNumbers(jsapArgs.getBoolean("debug"));
+				transpiler.setPreserveSourceLineNumbers(jsapArgs.getBoolean("sourceMap"));
 				transpiler.setModuleKind(ModuleKind.valueOf(jsapArgs.getString("module")));
 				transpiler.setEncoding(jsapArgs.getString("encoding"));
 				transpiler.setIgnoreAssertions(jsapArgs.getBoolean("ignoreAssertions"));
@@ -246,11 +246,10 @@ public class JSweetCommandLineLauncher {
 		jsap.registerParameter(optionArg);
 
 		// Debug
-		switchArg = new Switch("debug");
-		switchArg.setLongFlag("debug");
-		switchArg.setShortFlag('d');
+		switchArg = new Switch("sourceMap");
+		switchArg.setLongFlag("sourceMap");
 		switchArg.setHelp(
-				"Set the transpiler to debug mode. In debug mode, source map files are generated so that it is possible to debug them in the browser. This feature is not available yet when using the --module option.");
+				"Set the transpiler to generate source map files for the Java files, so that it is possible to debug them in the browser. This feature is not available yet when using the --module option. Currently, when this option is on, the generated TypeScript file is not pretty printed in a programmer-friendly way (disable it in order to generate readable TypeScript code).");
 		switchArg.setDefault("false");
 		jsap.registerParameter(switchArg);
 
