@@ -41,11 +41,11 @@ JSweet is *not* Java, it is Java syntax only and the APIs and programs run in Ja
 
 More info at http://www.jsweet.org.
 
-## Examples
+## Examples [![Build Status](https://jenkins.jsweet.org/buildStatus/icon?job=jsweet-uitests-web)](https://jenkins.jsweet.org/job/jsweet-uitests-web/)
 
-- Examples illustrating the use of various frameworks in Java (jQuery, Underscore, Backbone, AngularJS, Knockout). [Go to project](https://github.com/cincheo/jsweet-examples). [![Build Status](https://jenkins.jsweet.org/buildStatus/icon?job=jsweet-examples)](https://jenkins.jsweet.org/job/jsweet-examples/)
-- Examples illustrating the use of the Threejs framework in Java. [Go to project](https://github.com/cincheo/jsweet-examples-threejs). [![Build Status](https://jenkins.jsweet.org/buildStatus/icon?job=jsweet-examples-threejs)](https://jenkins.jsweet.org/job/jsweet-examples-threejs/)
-- Node.js + Socket.IO + AngularJS. [Go to project](https://github.com/lgrignon/jsweet-node-example). [![Build Status](https://jenkins.jsweet.org/buildStatus/icon?job=jsweet-node-examples)](https://jenkins.jsweet.org/job/jsweet-node-examples/)
+- [![Build Status](https://jenkins.jsweet.org/buildStatus/icon?job=jsweet-examples)](https://jenkins.jsweet.org/job/jsweet-examples/) Examples illustrating the use of various frameworks in Java (jQuery, Underscore, Backbone, AngularJS, Knockout). [Go to project](https://github.com/cincheo/jsweet-examples). 
+- [![Build Status](https://jenkins.jsweet.org/buildStatus/icon?job=jsweet-examples-threejs)](https://jenkins.jsweet.org/job/jsweet-examples-threejs/) Examples illustrating the use of the Threejs framework in Java. [Go to project](https://github.com/cincheo/jsweet-examples-threejs).
+- [![Build Status](https://jenkins.jsweet.org/buildStatus/icon?job=jsweet-node-example)](https://jenkins.jsweet.org/job/jsweet-node-example/) Node.js + Socket.IO + AngularJS. [Go to project](https://github.com/lgrignon/jsweet-node-example). 
 
 ## License
 
