@@ -47,6 +47,12 @@ More info at http://www.jsweet.org.
 - Examples illustrating the use of the Threejs framework in Java. [Go to project](https://github.com/cincheo/jsweet-examples-threejs). [![Build Status](https://jenkins.jsweet.org/buildStatus/icon?job=jsweet-examples-threejs)](https://jenkins.jsweet.org/job/jsweet-examples-threejs/)
 - Node.js + Socket.IO + AngularJS. [Go to project](https://github.com/lgrignon/jsweet-node-example). [![Build Status](https://jenkins.jsweet.org/buildStatus/icon?job=jsweet-node-example)](https://jenkins.jsweet.org/job/jsweet-node-example/)
 
+## Tooling
+
+- [Eclipse plugin](https://github.com/cincheo/jsweet-eclipse-plugin)
+- [Maven plugin](https://github.com/lgrignon/jsweet-maven-plugin)
+- [Graddle plugin](https://github.com/lgrignon/jsweet-gradle-plugin)
+
 ## License
 
 JSweet is under the Apache 2.0 Open Source license.
