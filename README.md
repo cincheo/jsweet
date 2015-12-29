@@ -51,7 +51,7 @@ More info at http://www.jsweet.org.
 
 - [Eclipse plugin](https://github.com/cincheo/jsweet-eclipse-plugin)
 - [Maven plugin](https://github.com/lgrignon/jsweet-maven-plugin)
-- [Graddle plugin](https://github.com/lgrignon/jsweet-gradle-plugin)
+- [Gradle plugin](https://github.com/lgrignon/jsweet-gradle-plugin)
 
 ## License
 
