@@ -140,6 +140,7 @@ public class JSweetTranspiler {
 	private String encoding = null;
 	private boolean noRootDirectories = false;
 	private boolean ignoreAssertions = false;
+	private boolean ignoreJavaFileNameError = false;
 
 	/**
 	 * Creates a JSweet transpiler, with the default values.
@@ -297,8 +298,8 @@ public class JSweetTranspiler {
 		Writer w = new StringWriter() {
 			@Override
 			public void write(String str) {
-//				TranspilationHandler.OUTPUT_LOGGER.error(getBuffer());
-//				getBuffer().delete(0, getBuffer().length());
+				// TranspilationHandler.OUTPUT_LOGGER.error(getBuffer());
+				// getBuffer().delete(0, getBuffer().length());
 			}
 
 		};
@@ -308,8 +309,12 @@ public class JSweetTranspiler {
 			@Override
 			public String format(JCDiagnostic diagnostic, Locale locale) {
 				if (diagnostic.getKind() == Kind.ERROR) {
-					transpilationHandler.report(JSweetProblem.INTERNAL_JAVA_ERROR, new SourcePosition(new File(diagnostic.getSource().getName()), null,
-							(int)diagnostic.getStartPosition(), (int)diagnostic.getEndPosition(), (int)diagnostic.getLineNumber(), (int)diagnostic.getColumnNumber(), -1, -1), diagnostic.getMessage(locale));
+					if (!(ignoreJavaFileNameError && "compiler.err.class.public.should.be.in.file".equals(diagnostic.getCode()))) {
+						transpilationHandler.report(JSweetProblem.INTERNAL_JAVA_ERROR,
+								new SourcePosition(new File(diagnostic.getSource().getName()), null, (int) diagnostic.getStartPosition(),
+										(int) diagnostic.getEndPosition(), (int) diagnostic.getLineNumber(), (int) diagnostic.getColumnNumber(), -1, -1),
+								diagnostic.getMessage(locale));
+					}
 				}
 				if (diagnostic.getSource() != null) {
 					return diagnostic.getMessage(locale) + " at " + diagnostic.getSource().getName() + "(" + diagnostic.getLineNumber() + ")";
@@ -1283,6 +1288,14 @@ public class JSweetTranspiler {
 	 */
 	public void setIgnoreAssertions(boolean ignoreAssertions) {
 		this.ignoreAssertions = ignoreAssertions;
+	}
+
+	public boolean isIgnoreJavaFileNameError() {
+		return ignoreJavaFileNameError;
+	}
+
+	public void setIgnoreJavaFileNameError(boolean ignoreJavaFileNameError) {
+		this.ignoreJavaFileNameError = ignoreJavaFileNameError;
 	}
 
 }
