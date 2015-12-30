@@ -517,6 +517,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			print(" {").println().startIndent();
 		}
 
+		if (enumScope) {
+			printIndent();
+		}
+		if (globals) {
+			removeLastIndent();
+		}
+
 		for (JCTree def : classdecl.defs) {
 			if (def instanceof JCVariableDecl) {
 				if (enumScope && ((JCVariableDecl) def).type.tsym != classdecl.type.tsym) {
@@ -527,28 +534,35 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					continue;
 				}
 			}
-			printIndent();
+			if (!enumScope) {
+				printIndent();
+			}
 			int pos = getCurrentPosition();
 			print(def);
 			if (getCurrentPosition() == pos) {
-				removeLastIndent();
+				if (!enumScope) {
+					removeLastIndent();
+				}
 				continue;
 			}
 			if (def instanceof JCVariableDecl) {
 				if (enumScope) {
-					print(",");
+					print(", ");
 				} else {
-					print(";");
-					println();
-					println();
+					print(";").println().println();
 				}
 			} else {
-				println();
-				println();
+				println().println();
 			}
 		}
+
+		removeLastChar();
+
+		if (enumScope) {
+			removeLastChar().println();
+		}
 		if (!globals) {
-			removeLastChar().endIndent().printIndent().print("}");
+			endIndent().printIndent().print("}");
 		}
 
 		if (mainMethod != null && mainMethod.getParameters().size() < 2) {
@@ -1392,13 +1406,20 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	@Override
 	public void visitForeachLoop(JCEnhancedForLoop foreachLoop) {
-		String itVarName = "__it_" + Util.getId();
-		String exprVarName = "__expr_" + Util.getId();
-		print("var " + exprVarName + " = ").print(foreachLoop.expr).print("; ");
-		print("for(var " + itVarName + "=0;" + itVarName + "<" + exprVarName + ".length;" + itVarName + "++) { ")
-				.print("var " + foreachLoop.var.name.toString() + "=" + exprVarName + "[" + itVarName + "];").println();
-		startIndent().printIndent().print(foreachLoop.body);
-		endIndent().print("}");
+		String indexVarName = "index" + Util.getId();
+		if (foreachLoop.expr instanceof JCIdent || foreachLoop.expr instanceof JCFieldAccess) {
+			print("for(var " + indexVarName + "=0; " + indexVarName + " < ").print(foreachLoop.expr).print(".length; " + indexVarName + "++) {").println()
+					.startIndent().printIndent();
+			print("var " + foreachLoop.var.name.toString() + " = ").print(foreachLoop.expr).print("[" + indexVarName + "];").println();
+		} else {
+			String arrayVarName = "array" + Util.getId();
+			print("var " + arrayVarName + " = ").print(foreachLoop.expr).print(";").println().printIndent();
+			print("for(var " + indexVarName + "=0; " + indexVarName + " < " + arrayVarName + ".length; " + indexVarName + "++) {").println().startIndent()
+					.printIndent();
+			print("var " + foreachLoop.var.name.toString() + " = " + arrayVarName + "[" + indexVarName + "];").println();
+		}
+		printIndent().print(foreachLoop.body);
+		endIndent().println().printIndent().print("}");
 	}
 
 	@Override
@@ -1652,7 +1673,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				print(var.name.toString()).print(",");
 			}
 			removeLastChar();
-			print(") => { return ");
+			print(") => {").println().startIndent().printIndent().print("return ");
 		}
 		this.skipTypeAnnotations = true;
 		print("(").printArgList(lamba.params).print(") => ");
@@ -1660,7 +1681,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		print(lamba.body);
 
 		if (!finalVars.isEmpty()) {
-			print("})(");
+			endIndent().println().printIndent().print("})(");
 			for (VarSymbol var : finalVars) {
 				print(var.name.toString()).print(",");
 			}
