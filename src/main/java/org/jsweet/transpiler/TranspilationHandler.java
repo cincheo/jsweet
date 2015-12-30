@@ -124,9 +124,4 @@ public interface TranspilationHandler {
 	 */
 	public void onCompleted(JSweetTranspiler transpiler, boolean fullPass, SourceFile[] files);
 
-	/**
-	 * Reports an error that will be hidden to the user.
-	 */
-	public void reportSilentError();
-
 }

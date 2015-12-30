@@ -297,8 +297,8 @@ public class JSweetTranspiler {
 		Writer w = new StringWriter() {
 			@Override
 			public void write(String str) {
-				TranspilationHandler.OUTPUT_LOGGER.error(getBuffer());
-				getBuffer().delete(0, getBuffer().length());
+//				TranspilationHandler.OUTPUT_LOGGER.error(getBuffer());
+//				getBuffer().delete(0, getBuffer().length());
 			}
 
 		};
@@ -308,7 +308,8 @@ public class JSweetTranspiler {
 			@Override
 			public String format(JCDiagnostic diagnostic, Locale locale) {
 				if (diagnostic.getKind() == Kind.ERROR) {
-					transpilationHandler.reportSilentError();
+					transpilationHandler.report(JSweetProblem.INTERNAL_JAVA_ERROR, new SourcePosition(new File(diagnostic.getSource().getName()), null,
+							(int)diagnostic.getStartPosition(), (int)diagnostic.getEndPosition(), (int)diagnostic.getLineNumber(), (int)diagnostic.getColumnNumber(), -1, -1), diagnostic.getMessage(locale));
 				}
 				if (diagnostic.getSource() != null) {
 					return diagnostic.getMessage(locale) + " at " + diagnostic.getSource().getName() + "(" + diagnostic.getLineNumber() + ")";
@@ -713,22 +714,20 @@ public class JSweetTranspiler {
 		}
 	}
 
-	private void java2ts(TranspilationHandler transpilationHandler, SourceFile[] files) throws IOException {
+	private void java2ts(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files) throws IOException {
 
 		initJavac(transpilationHandler);
 		List<JavaFileObject> fileObjects = toJavaFileObjects(fileManager, Arrays.asList(SourceFile.toFiles(files)));
 
 		logger.info("parsing: " + fileObjects);
 		List<JCCompilationUnit> compilationUnits = compiler.enterTrees(compiler.parseFiles(fileObjects));
-		if (log.nerrors > 0) {
-			transpilationHandler.report(JSweetProblem.JAVA_ERRORS, null, JSweetProblem.JAVA_ERRORS.getMessage(log.nerrors));
+		if (transpilationHandler.getErrorCount() > 0) {
 			return;
 		}
 		logger.info("attribution phase");
 		compiler.attribute(compiler.todo);
 
-		if (log.nerrors > 0) {
-			transpilationHandler.report(JSweetProblem.JAVA_ERRORS, null, JSweetProblem.JAVA_ERRORS.getMessage(log.nerrors));
+		if (transpilationHandler.getErrorCount() > 0) {
 			return;
 		}
 		context.useModules = isUsingModules();
