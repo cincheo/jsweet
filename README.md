@@ -55,7 +55,7 @@ More info at http://www.jsweet.org.
 
 ## How to build
 
-Prerequisites: `node` and `npm` executables must be in the path (https://nodejs.org)].
+Prerequisites: `node` and `npm` executables must be in the path (https://nodejs.org).
 
 To build the `jsweet-transpiler` jars (in the project's directory):
 
