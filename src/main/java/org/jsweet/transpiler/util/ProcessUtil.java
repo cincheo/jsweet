@@ -44,6 +44,12 @@ public class ProcessUtil {
 
 	private static List<String> nodeCommands = Arrays.asList("tsc", "browserify");
 
+	public static String NODE_COMMAND = "node";
+
+	public static String NPM_COMMAND = "npm";
+
+	public static String EXTRA_PATH;
+
 	/**
 	 * Gets the full path of a command installed with npm.
 	 */
@@ -149,7 +155,10 @@ public class ProcessUtil {
 			if (directory != null) {
 				processBuilder.directory(directory);
 			}
-
+			if (!StringUtils.isBlank(EXTRA_PATH)) {
+				processBuilder.environment().put("PATH", processBuilder.environment().get("PATH") + File.pathSeparator + EXTRA_PATH);
+			}
+			
 			process[0] = processBuilder.start();
 
 			Runnable runnable = new Runnable() {
@@ -213,9 +222,9 @@ public class ProcessUtil {
 	public static void installNodePackage(String nodePackageName, boolean global) {
 		logger.debug("installing " + nodePackageName + " with npm");
 		if (global) {
-			runCommand("npm", USER_HOME_DIR, false, null, null, null, "install", "--prefix", NPM_DIR.getPath(), nodePackageName, "-g");
+			runCommand(NPM_COMMAND, USER_HOME_DIR, false, null, null, null, "install", "--prefix", NPM_DIR.getPath(), nodePackageName, "-g");
 		} else {
-			runCommand("npm", USER_HOME_DIR, false, null, null, null, "install", nodePackageName);
+			runCommand(NPM_COMMAND, USER_HOME_DIR, false, null, null, null, "install", nodePackageName);
 		}
 	}
 
@@ -231,9 +240,9 @@ public class ProcessUtil {
 	public static void uninstallNodePackage(String nodePackageName, boolean global) {
 		logger.debug("uninstalling " + nodePackageName + " with npm");
 		if (global) {
-			runCommand("npm", USER_HOME_DIR, false, null, null, null, "uninstall", "--prefix", NPM_DIR.getPath(), nodePackageName, "-g");
+			runCommand(NPM_COMMAND, USER_HOME_DIR, false, null, null, null, "uninstall", "--prefix", NPM_DIR.getPath(), nodePackageName, "-g");
 		} else {
-			runCommand("npm", USER_HOME_DIR, false, null, null, null, "uninstall", nodePackageName);
+			runCommand(NPM_COMMAND, USER_HOME_DIR, false, null, null, null, "uninstall", nodePackageName);
 		}
 	}
 

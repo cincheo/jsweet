@@ -214,10 +214,14 @@ public class JSweetTranspiler {
 	}
 
 	private void initNode(TranspilationHandler transpilationHandler) throws Exception {
+		// hack for OSX Eclipse's path issue
+		if (!System.getenv("PATH").contains("/usr/local/bin") && new File("/usr/local/bin/node").exists()) {
+			ProcessUtil.EXTRA_PATH = "/usr/local/bin";
+		}
 		File initFile = new File(workingDir, ".node-init");
 		boolean initialized = initFile.exists();
 		if (!initialized) {
-			ProcessUtil.runCommand("node", null, () -> {
+			ProcessUtil.runCommand(ProcessUtil.NODE_COMMAND, null, () -> {
 				transpilationHandler.report(JSweetProblem.NODE_CANNOT_START, null, JSweetProblem.NODE_CANNOT_START.getMessage());
 				throw new RuntimeException("cannot find node.js");
 			} , "--version");
@@ -476,7 +480,7 @@ public class JSweetTranspiler {
 			if (context.useModules) {
 				File f = sourceFiles[sourceFiles.length - 1].getJsFile();
 				logger.debug("eval file: " + f);
-				ProcessUtil.runCommand("node", line -> trace.append(line + "\n"), null, f.getPath());
+				ProcessUtil.runCommand(ProcessUtil.NODE_COMMAND, line -> trace.append(line + "\n"), null, f.getPath());
 			} else {
 				File tmpFile = new File(new File(TMP_WORKING_DIR_NAME), "eval.tmp.js");
 				FileUtils.deleteQuietly(tmpFile);
@@ -485,7 +489,7 @@ public class JSweetTranspiler {
 					FileUtils.write(tmpFile, script + "\n", true);
 				}
 				logger.debug("eval file: " + tmpFile);
-				ProcessUtil.runCommand("node", line -> trace.append(line + "\n"), null, tmpFile.getPath());
+				ProcessUtil.runCommand(ProcessUtil.NODE_COMMAND, line -> trace.append(line + "\n"), null, tmpFile.getPath());
 			}
 
 			return new TraceBasedEvaluationResult(trace.getBuffer().toString());
