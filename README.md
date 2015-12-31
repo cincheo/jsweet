@@ -53,6 +53,40 @@ More info at http://www.jsweet.org.
 - [Maven plugin](https://github.com/lgrignon/jsweet-maven-plugin)
 - [Gradle plugin](https://github.com/lgrignon/jsweet-gradle-plugin)
 
+## How to build
+
+To build the `jsweet-transpiler` jars (in the project's directory):
+
+```
+> mvn package
+```
+
+To install the `jsweet-transpiler` artifact in your local Maven repository:
+
+```
+> mvn install
+```
+
+Note that current JUnit tests launch a Node.js instance for each test and will be quite slow (this will be improved). In order to easily test some changes locally without having to run all the tests, use the following command:
+
+```
+> mvn package -Dmaven.test.skip=true
+```
+
+or
+
+```
+> mvn install -Dmaven.test.skip=true
+```
+
+To generate the specifications from the Latex source file with [Pandoc](http://pandoc.org/):
+
+```
+> cd doc
+> pandoc -r latex -w markdown_github --base-header-level=2 -s --toc --number-sections -B header.md -o jsweet-language-specifications.md jsweet-language-specifications.tex
+> pandoc -r latex -w html5 --base-header-level=3 -o jsweet-language-specifications.html jsweet-language-specifications.tex
+```
+
 ## License
 
 JSweet is under the Apache 2.0 Open Source license.
