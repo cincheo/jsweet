@@ -21,7 +21,7 @@ JSweet is *not* Java, it is Java syntax only and the APIs and programs run in Ja
 ## Getting started
 
 - Step 1: Install (or check that you have installed) [Git](https://git-scm.com/downloads), [Node.js](https://nodejs.org) and [Maven](https://maven.apache.org/) (commands `git`, `node`, `npm` and `mvn` should be in your path).
-- Step 2: Clone the `jsweet-quickstart` project from Github:
+- Step 2: Clone the [jsweet-quickstart](https://github.com/cincheo/jsweet-quickstart) project from Github:
 ```
 > git clone https://github.com/cincheo/jsweet-quickstart.git
 ```
