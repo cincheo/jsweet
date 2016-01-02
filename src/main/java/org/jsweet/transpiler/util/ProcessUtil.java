@@ -44,10 +44,21 @@ public class ProcessUtil {
 
 	private static List<String> nodeCommands = Arrays.asList("tsc", "browserify");
 
+	/**
+	 * The node command name (can be full path in some environments).
+	 */
 	public static String NODE_COMMAND = "node";
 
+	/**
+	 * The npm command name (can be full path in some environments).
+	 */
 	public static String NPM_COMMAND = "npm";
 
+	/**
+	 * Some extra paths to be added to the PATH environment variable in some
+	 * environments. Typically Eclipse on Mac OSX misses the /usr/local/bin
+	 * path, which is required to run node.
+	 */
 	public static String EXTRA_PATH;
 
 	/**
@@ -158,7 +169,7 @@ public class ProcessUtil {
 			if (!StringUtils.isBlank(EXTRA_PATH)) {
 				processBuilder.environment().put("PATH", processBuilder.environment().get("PATH") + File.pathSeparator + EXTRA_PATH);
 			}
-			
+
 			process[0] = processBuilder.start();
 
 			Runnable runnable = new Runnable() {

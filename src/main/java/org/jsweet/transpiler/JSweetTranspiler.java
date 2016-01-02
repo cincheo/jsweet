@@ -217,7 +217,10 @@ public class JSweetTranspiler {
 		// hack for OSX Eclipse's path issue
 		if (!System.getenv("PATH").contains("/usr/local/bin") && new File("/usr/local/bin/node").exists()) {
 			ProcessUtil.EXTRA_PATH = "/usr/local/bin";
+			ProcessUtil.NODE_COMMAND = "/usr/local/bin/node";
+			ProcessUtil.NPM_COMMAND = "/usr/local/bin/npm";
 		}
+		logger.debug("extra path: " + ProcessUtil.EXTRA_PATH);
 		File initFile = new File(workingDir, ".node-init");
 		boolean initialized = initFile.exists();
 		if (!initialized) {
