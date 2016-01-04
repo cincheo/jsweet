@@ -26,10 +26,6 @@
 	</properties>
 	<repositories>
 		<repository>
-			<id>diff_match_patch</id>
-			<url>http://google-diff-match-patch.googlecode.com/svn/trunk/maven</url>
-		</repository>
-		<repository>
 			<id>jsweet-central</id>
 			<name>libs-release</name>
 			<url>http://repository.jsweet.org/artifactory/libs-release-local</url>
@@ -142,11 +138,6 @@
 			<artifactId>junit</artifactId>
 			<version>4.12</version>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>diff_match_patch</groupId>
-			<artifactId>diff_match_patch</artifactId>
-			<version>current</version>
 		</dependency>
 		<dependency>
 			<groupId>log4j</groupId>
