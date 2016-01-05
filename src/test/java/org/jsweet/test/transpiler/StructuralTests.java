@@ -39,6 +39,7 @@ import source.structural.Inheritance;
 import source.structural.InnerClass;
 import source.structural.Name;
 import source.structural.NameClashes;
+import source.structural.NameClashesWithMethodInvocations;
 import source.structural.NoInstanceofForInterfaces;
 import source.structural.NoWildcardsInImports;
 import source.structural.TwoClassesInSameFile;
@@ -63,6 +64,13 @@ public class StructuralTests extends AbstractTest {
 			assertTrue("Missing expected problem: " + JSweetProblem.METHOD_CONFLICTS_FIELD,
 					logHandler.reportedProblems.contains(JSweetProblem.METHOD_CONFLICTS_FIELD));
 		} , getSourceFile(NameClashes.class));
+	}
+
+	@Test
+	public void testVariableMethodNameClashes() {
+		transpile(logHandler -> {
+			logHandler.assertReportedProblems(JSweetProblem.HIDDEN_INVOCATION, JSweetProblem.HIDDEN_INVOCATION);
+		} , getSourceFile(NameClashesWithMethodInvocations.class));
 	}
 
 	@Test
@@ -203,8 +211,7 @@ public class StructuralTests extends AbstractTest {
 			Assert.assertEquals("invoked", r.get("test"));
 			Assert.assertEquals("invoked1_2", r.get("Static"));
 			Assert.assertEquals("invoked1_2", r.get("test2"));
-		} , getSourceFile(Globals.class), getSourceFile(source.structural.globalclasses.e.Globals.class),
-				getSourceFile(GlobalFunctionAccessFromMain.class));
+		} , getSourceFile(Globals.class), getSourceFile(source.structural.globalclasses.e.Globals.class), getSourceFile(GlobalFunctionAccessFromMain.class));
 	}
 
 	@Test
@@ -220,7 +227,7 @@ public class StructuralTests extends AbstractTest {
 			logHandler.assertReportedProblems();
 		} , getSourceFile(Name.class));
 	}
-	
+
 	@Test
 	public void testAutoImportClassesInSamePackage() {
 		eval((logHandler, r) -> {

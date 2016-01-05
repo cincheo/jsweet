@@ -1075,6 +1075,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				} else {
 					JCFieldAccess staticFieldAccess = (JCFieldAccess) staticImport.qualid;
 					methSym = Util.findMethodDeclarationInType(context.types, staticFieldAccess.selected.type.tsym, methName, type);
+					if (methSym != null) {
+						Map<String, VarSymbol> vars = new HashMap<>();
+						Util.fillAllVariablesInScope(vars, getStack(), inv, getParent(JCMethodDecl.class));
+						if(vars.containsKey(methSym.getSimpleName().toString())) {
+							report(inv, JSweetProblem.HIDDEN_INVOCATION, methSym.getSimpleName());
+						}
+					}
 					// staticImported = true;
 					if (JSweetConfig.TS_STRICT_MODE_KEYWORDS.contains(methName.toLowerCase())) {
 						// if method is a reserved TS keyword, no "static

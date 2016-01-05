@@ -82,6 +82,10 @@ public enum JSweetProblem {
 	 */
 	FIELD_CONFLICTS_METHOD(Severity.ERROR),
 	/**
+	 * Raised when a method invocation is hidden by a local variable or parameter.
+	 */
+	HIDDEN_INVOCATION(Severity.ERROR),
+	/**
 	 * Raised when an inner class is found.
 	 */
 	INNER_CLASS(Severity.ERROR),
@@ -298,6 +302,8 @@ public enum JSweetProblem {
 			return String.format("synchronization is not allowed in JSweet", params);
 		case METHOD_CONFLICTS_FIELD:
 			return String.format("method %s has the same name as a field in %s", params);
+		case HIDDEN_INVOCATION:
+			return String.format("invocation of '%s' is hidden by a local variable", params);
 		case FIELD_CONFLICTS_METHOD:
 			return String.format("field %s has the same name as a method in %s", params);
 		case INNER_CLASS:
