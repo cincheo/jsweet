@@ -282,7 +282,12 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			getPrinter().print(")");
 			return true;
 		}
+		if (matchesMethod(targetClassName, targetMethodName, String.class.getName(), "length")) {
+			getPrinter().print(invocation.meth);
+			return true;
+		}
 
+		
 		if (matchesMethod(targetClassName, targetMethodName, null, INDEXED_GET_FUCTION_NAME)) {
 			if (isWithinGlobals(targetClassName)) {
 				report(invocation, JSweetProblem.GLOBAL_INDEXER_GET);
