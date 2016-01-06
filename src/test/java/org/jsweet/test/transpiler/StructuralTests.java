@@ -69,7 +69,7 @@ public class StructuralTests extends AbstractTest {
 	@Test
 	public void testVariableMethodNameClashes() {
 		transpile(logHandler -> {
-			logHandler.assertReportedProblems(JSweetProblem.HIDDEN_INVOCATION, JSweetProblem.HIDDEN_INVOCATION);
+			logHandler.assertReportedProblems(JSweetProblem.HIDDEN_INVOCATION, JSweetProblem.HIDDEN_INVOCATION, JSweetProblem.HIDDEN_INVOCATION);
 		} , getSourceFile(NameClashesWithMethodInvocations.class));
 	}
 

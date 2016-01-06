@@ -30,12 +30,19 @@ public class NameClashesWithMethodInvocations {
 		String alert = "test";
 		alert(alert);
 	}
-
+	
 	public void m3() {
-		// name clash between local variable and method call
+		// not a name clash
 		@SuppressWarnings("unused")
 		String m2 = "test";
 		m2();
 	}
+
+	public void m4(boolean alert) {
+		// name clash between local variable and qualified method call
+		//String alert = "test";
+		jsweet.dom.Globals.alert(alert);
+	}
+	
 	
 }

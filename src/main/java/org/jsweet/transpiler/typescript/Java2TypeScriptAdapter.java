@@ -61,12 +61,14 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.PackageSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
+import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCImport;
+import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.JCTree.JCTypeApply;
@@ -388,6 +390,11 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				if (JSweetConfig.GLOBALS_PACKAGE_NAME.equals(targetType.getEnclosingElement().getSimpleName().toString())) {
 					getPrinter().print(JSweetConfig.GLOBALS_PACKAGE_NAME).print(".");
 				}
+			}
+			Map<String, VarSymbol> vars = new HashMap<>();
+			Util.fillAllVariablesInScope(vars, getPrinter().getStack(), invocation, getPrinter().getParent(JCMethodDecl.class));
+			if(vars.containsKey(targetMethodName)) {
+				report(invocation, JSweetProblem.HIDDEN_INVOCATION, targetMethodName);
 			}
 			getPrinter().printIdentifier(targetMethodName).print("(").printArgList(invocation.args).print(")");
 			return true;
