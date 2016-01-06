@@ -64,11 +64,11 @@ public class JSweetCommandLineLauncher {
 				printUsage(jsapSpec);
 				System.exit(-1);
 			}
-			
+
 			if (jsapArgs.getBoolean("help")) {
 				printUsage(jsapSpec);
 			}
-			
+
 			if (jsapArgs.getBoolean("verbose")) {
 				LogManager.getLogger("org.jsweet").setLevel(Level.ALL);
 			}
@@ -78,25 +78,26 @@ public class JSweetCommandLineLauncher {
 			String classPath = jsapArgs.getString("classpath");
 			logger.info("classpath: " + classPath);
 
-			File tsOutputDir = jsapArgs.getFile("tsout");
-			tsOutputDir.mkdirs();
-			logger.info("ts output dir: " + tsOutputDir);
-
-			File jsOutputDir = null;
-			if (jsapArgs.getFile("jsout") != null) {
-				jsOutputDir = jsapArgs.getFile("jsout");
-				jsOutputDir.mkdirs();
-			}
-			logger.info("js output dir: " + jsOutputDir);
-
-			File inputDir = new File(jsapArgs.getString("input"));
-			logger.info("input dir: " + inputDir);
-
-			LinkedList<File> files = new LinkedList<File>();
-			Util.addFiles(".java", inputDir, files);
-
 			ErrorCountTranspilationHandler transpilationHandler = new ErrorCountTranspilationHandler(new ConsoleTranspilationHandler());
+
 			try {
+				File tsOutputDir = jsapArgs.getFile("tsout");
+				tsOutputDir.mkdirs();
+				logger.info("ts output dir: " + tsOutputDir);
+
+				File jsOutputDir = null;
+				if (jsapArgs.getFile("jsout") != null) {
+					jsOutputDir = jsapArgs.getFile("jsout");
+					jsOutputDir.mkdirs();
+				}
+				logger.info("js output dir: " + jsOutputDir);
+
+				File inputDir = new File(jsapArgs.getString("input"));
+				logger.info("input dir: " + inputDir);
+
+				LinkedList<File> files = new LinkedList<File>();
+				Util.addFiles(".java", inputDir, files);
+
 				JSweetTranspiler transpiler = new JSweetTranspiler(tsOutputDir, jsOutputDir, classPath);
 
 				transpiler.setBundle(jsapArgs.getBoolean("bundle"));
@@ -256,11 +257,10 @@ public class JSweetCommandLineLauncher {
 		// Ignore assertions
 		switchArg = new Switch("ignoreAssertions");
 		switchArg.setLongFlag("ignoreAssertions");
-		switchArg.setHelp(
-				"Set the transpiler to ignore 'assert' statements, i.e. no code is generated for assertions.");
+		switchArg.setHelp("Set the transpiler to ignore 'assert' statements, i.e. no code is generated for assertions.");
 		switchArg.setDefault("false");
 		jsap.registerParameter(switchArg);
-		
+
 		return jsap;
 	}
 
