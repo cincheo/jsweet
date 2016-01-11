@@ -61,12 +61,14 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.PackageSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
+import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCImport;
+import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.JCTree.JCTypeApply;
@@ -246,40 +248,46 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			return true;
 		}
 		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "array")) {
-			getPrinter().print(invocation.args.head);
+			printCastMethodInvocation(invocation);
 			return true;
 		}
 		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "function")) {
-			getPrinter().printArgList(invocation.args);
+			printCastMethodInvocation(invocation);
 			return true;
 		}
 		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "string")) {
-			getPrinter().printArgList(invocation.args);
+			printCastMethodInvocation(invocation);
 			return true;
 		}
 		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "bool")) {
-			getPrinter().printArgList(invocation.args);
+			printCastMethodInvocation(invocation);
 			return true;
 		}
 		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "number")) {
-			getPrinter().printArgList(invocation.args);
+			printCastMethodInvocation(invocation);
 			return true;
 		}
 		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "integer")) {
-			getPrinter().printArgList(invocation.args);
+			printCastMethodInvocation(invocation);
 			return true;
 		}
 		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "object")) {
-			getPrinter().printArgList(invocation.args);
+			printCastMethodInvocation(invocation);
 			return true;
 		}
 		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "union")) {
 			getPrinter().typeChecker.checkUnionTypeAssignment(getPrinter().getContext().types, getPrinter().getParent(), invocation);
-			getPrinter().print("<any>");
-			getPrinter().printArgList(invocation.args);
+			getPrinter().print("(<any>");
+			printCastMethodInvocation(invocation);
+			getPrinter().print(")");
+			return true;
+		}
+		if (matchesMethod(targetClassName, targetMethodName, String.class.getName(), "length")) {
+			getPrinter().print(invocation.meth);
 			return true;
 		}
 
+		
 		if (matchesMethod(targetClassName, targetMethodName, null, INDEXED_GET_FUCTION_NAME)) {
 			if (isWithinGlobals(targetClassName)) {
 				report(invocation, JSweetProblem.GLOBAL_INDEXER_GET);
@@ -388,6 +396,11 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					getPrinter().print(JSweetConfig.GLOBALS_PACKAGE_NAME).print(".");
 				}
 			}
+			Map<String, VarSymbol> vars = new HashMap<>();
+			Util.fillAllVariablesInScope(vars, getPrinter().getStack(), invocation, getPrinter().getParent(JCMethodDecl.class));
+			if(vars.containsKey(targetMethodName)) {
+				report(invocation, JSweetProblem.HIDDEN_INVOCATION, targetMethodName);
+			}
 			getPrinter().printIdentifier(targetMethodName).print("(").printArgList(invocation.args).print(")");
 			return true;
 		}
@@ -418,6 +431,16 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		return super.substituteMethodInvocation(invocation);
 	}
 
+	private void printCastMethodInvocation(JCMethodInvocation invocation) {
+		if(getPrinter().getParent() instanceof JCMethodInvocation) {
+			getPrinter().print("(");
+		}
+		getPrinter().print(invocation.args.head);
+		if(getPrinter().getParent() instanceof JCMethodInvocation) {
+			getPrinter().print(")");
+		}
+	}
+	
 	@Override
 	public boolean substituteFieldAccess(JCFieldAccess fieldAccess) {
 		String name = fieldAccess.name.toString();

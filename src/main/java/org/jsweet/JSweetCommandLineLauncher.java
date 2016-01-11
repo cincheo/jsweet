@@ -64,11 +64,11 @@ public class JSweetCommandLineLauncher {
 				printUsage(jsapSpec);
 				System.exit(-1);
 			}
-			
+
 			if (jsapArgs.getBoolean("help")) {
 				printUsage(jsapSpec);
 			}
-			
+
 			if (jsapArgs.getBoolean("verbose")) {
 				LogManager.getLogger("org.jsweet").setLevel(Level.ALL);
 			}
@@ -78,25 +78,26 @@ public class JSweetCommandLineLauncher {
 			String classPath = jsapArgs.getString("classpath");
 			logger.info("classpath: " + classPath);
 
-			File tsOutputDir = jsapArgs.getFile("tsout");
-			tsOutputDir.mkdirs();
-			logger.info("ts output dir: " + tsOutputDir);
-
-			File jsOutputDir = null;
-			if (jsapArgs.getFile("jsout") != null) {
-				jsOutputDir = jsapArgs.getFile("jsout");
-				jsOutputDir.mkdirs();
-			}
-			logger.info("js output dir: " + jsOutputDir);
-
-			File inputDir = new File(jsapArgs.getString("input"));
-			logger.info("input dir: " + inputDir);
-
-			LinkedList<File> files = new LinkedList<File>();
-			Util.addFiles(".java", inputDir, files);
-
 			ErrorCountTranspilationHandler transpilationHandler = new ErrorCountTranspilationHandler(new ConsoleTranspilationHandler());
+
 			try {
+				File tsOutputDir = jsapArgs.getFile("tsout");
+				tsOutputDir.mkdirs();
+				logger.info("ts output dir: " + tsOutputDir);
+
+				File jsOutputDir = null;
+				if (jsapArgs.getFile("jsout") != null) {
+					jsOutputDir = jsapArgs.getFile("jsout");
+					jsOutputDir.mkdirs();
+				}
+				logger.info("js output dir: " + jsOutputDir);
+
+				File inputDir = new File(jsapArgs.getString("input"));
+				logger.info("input dir: " + inputDir);
+
+				LinkedList<File> files = new LinkedList<File>();
+				Util.addFiles(".java", inputDir, files);
+
 				JSweetTranspiler transpiler = new JSweetTranspiler(tsOutputDir, jsOutputDir, classPath);
 
 				transpiler.setBundle(jsapArgs.getBoolean("bundle"));
@@ -108,7 +109,7 @@ public class JSweetCommandLineLauncher {
 				}
 				logger.info("bundles directory: " + bundlesDirectory);
 				transpiler.setBundlesDirectory(bundlesDirectory);
-				transpiler.setPreserveSourceLineNumbers(jsapArgs.getBoolean("debug"));
+				transpiler.setPreserveSourceLineNumbers(jsapArgs.getBoolean("sourceMap"));
 				transpiler.setModuleKind(ModuleKind.valueOf(jsapArgs.getString("module")));
 				transpiler.setEncoding(jsapArgs.getString("encoding"));
 				transpiler.setIgnoreAssertions(jsapArgs.getBoolean("ignoreAssertions"));
@@ -246,22 +247,20 @@ public class JSweetCommandLineLauncher {
 		jsap.registerParameter(optionArg);
 
 		// Debug
-		switchArg = new Switch("debug");
-		switchArg.setLongFlag("debug");
-		switchArg.setShortFlag('d');
+		switchArg = new Switch("sourceMap");
+		switchArg.setLongFlag("sourceMap");
 		switchArg.setHelp(
-				"Set the transpiler to debug mode. In debug mode, source map files are generated so that it is possible to debug them in the browser. This feature is not available yet when using the --module option.");
+				"Set the transpiler to generate source map files for the Java files, so that it is possible to debug them in the browser. This feature is not available yet when using the --module option. Currently, when this option is on, the generated TypeScript file is not pretty printed in a programmer-friendly way (disable it in order to generate readable TypeScript code).");
 		switchArg.setDefault("false");
 		jsap.registerParameter(switchArg);
 
 		// Ignore assertions
 		switchArg = new Switch("ignoreAssertions");
 		switchArg.setLongFlag("ignoreAssertions");
-		switchArg.setHelp(
-				"Set the transpiler to ignore 'assert' statements, i.e. no code is generated for assertions.");
+		switchArg.setHelp("Set the transpiler to ignore 'assert' statements, i.e. no code is generated for assertions.");
 		switchArg.setDefault("false");
 		jsap.registerParameter(switchArg);
-		
+
 		return jsap;
 	}
 

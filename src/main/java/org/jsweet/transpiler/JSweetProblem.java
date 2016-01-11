@@ -29,9 +29,9 @@ public enum JSweetProblem {
 	 */
 	JAVA_COMPILER_NOT_FOUND(Severity.ERROR),
 	/**
-	 * Raised when the Java compiler reports errors.
+	 * Raised when the Java compiler reports an error.
 	 */
-	JAVA_ERRORS(Severity.ERROR),
+	INTERNAL_JAVA_ERROR(Severity.ERROR),
 	/**
 	 * Raised when the Tsc transpiler reports an error.
 	 */
@@ -81,6 +81,10 @@ public enum JSweetProblem {
 	 * defined in superclasses.
 	 */
 	FIELD_CONFLICTS_METHOD(Severity.ERROR),
+	/**
+	 * Raised when a method invocation is hidden by a local variable or parameter.
+	 */
+	HIDDEN_INVOCATION(Severity.ERROR),
 	/**
 	 * Raised when an inner class is found.
 	 */
@@ -282,8 +286,8 @@ public enum JSweetProblem {
 			return String.format(
 					"Java compiler cannot be found: make sure that JAVA_HOME points to a JDK (version>=8) and not a JRE, or sets the transpiler jdkHome option",
 					params);
-		case JAVA_ERRORS:
-			return String.format("Java compiler reports %s error(s) that should be fixed before transpiling", params);
+		case INTERNAL_JAVA_ERROR:
+			return String.format("%s", params);
 		case INTERNAL_TSC_ERROR:
 			return String.format("internal TypeScript error: %s", params);
 		case NODE_CANNOT_START:
@@ -302,6 +306,8 @@ public enum JSweetProblem {
 			return String.format("synchronization is not allowed in JSweet", params);
 		case METHOD_CONFLICTS_FIELD:
 			return String.format("method %s has the same name as a field in %s", params);
+		case HIDDEN_INVOCATION:
+			return String.format("invocation of '%s' is hidden by a local variable", params);
 		case FIELD_CONFLICTS_METHOD:
 			return String.format("field %s has the same name as a method in %s", params);
 		case INNER_CLASS:

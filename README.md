@@ -1,4 +1,4 @@
-# JSweet: a Java to JavaScript transpiler
+# JSweet: a Java to JavaScript transpiler [![Build Status](https://jenkins.jsweet.org/buildStatus/icon?job=jsweet)](https://jenkins.jsweet.org/job/jsweet/)
 
 JSweet is built on the top of TypeScript to bring the most up-to-date JavaScript APIs right to the Java world.
 
@@ -21,7 +21,7 @@ JSweet is *not* Java, it is Java syntax only and the APIs and programs run in Ja
 ## Getting started
 
 - Step 1: Install (or check that you have installed) [Git](https://git-scm.com/downloads), [Node.js](https://nodejs.org) and [Maven](https://maven.apache.org/) (commands `git`, `node`, `npm` and `mvn` should be in your path).
-- Step 2: Clone the `jsweet-quickstart` project from Github:
+- Step 2: Clone the [jsweet-quickstart](https://github.com/cincheo/jsweet-quickstart) project from Github:
 ```
 > git clone https://github.com/cincheo/jsweet-quickstart.git
 ```
@@ -41,10 +41,58 @@ JSweet is *not* Java, it is Java syntax only and the APIs and programs run in Ja
 
 More info at http://www.jsweet.org.
 
-## Examples
+## Examples [![Build Status](https://jenkins.jsweet.org/buildStatus/icon?job=jsweet-uitests-web)](https://jenkins.jsweet.org/job/jsweet-uitests-web/)
 
-- Examples illustrating the use of various frameworks in Java (jQuery, Underscore, Backbone, Angular, Knockout). [Go to project](https://github.com/cincheo/jsweet-examples).
-- Examples illustrating the use of the Threejs framework in Java. [Go to project](https://github.com/cincheo/jsweet-examples-threejs).
+- Examples illustrating the use of various frameworks in Java (jQuery, Underscore, Backbone, AngularJS, Knockout). [Go to project](https://github.com/cincheo/jsweet-examples). [![Build Status](https://jenkins.jsweet.org/buildStatus/icon?job=jsweet-examples)](https://jenkins.jsweet.org/job/jsweet-examples/)
+- Examples illustrating the use of the Threejs framework in Java. [Go to project](https://github.com/cincheo/jsweet-examples-threejs). [![Build Status](https://jenkins.jsweet.org/buildStatus/icon?job=jsweet-examples-threejs)](https://jenkins.jsweet.org/job/jsweet-examples-threejs/)
+- Node.js + Socket.IO + AngularJS. [Go to project](https://github.com/lgrignon/jsweet-node-example). [![Build Status](https://jenkins.jsweet.org/buildStatus/icon?job=jsweet-node-example)](https://jenkins.jsweet.org/job/jsweet-node-example/)
+
+## Tooling
+
+- [Eclipse plugin](https://github.com/cincheo/jsweet-eclipse-plugin)
+- [Maven plugin](https://github.com/lgrignon/jsweet-maven-plugin)
+- [Gradle plugin](https://github.com/lgrignon/jsweet-gradle-plugin)
+
+## How to build
+
+Prerequisites: `node` and `npm` executables must be in the path (https://nodejs.org). Note that there seem to be an issue with the `node` executable on some Unix-based machines, which should be fixed (see for instance: http://askubuntu.com/questions/235655/node-js-conflicts-sbin-node-vs-usr-bin-node).
+
+To build the `jsweet-transpiler` jars (in the project's directory):
+
+```
+> mvn package
+```
+
+To install the `jsweet-transpiler` artifact in your local Maven repository:
+
+```
+> mvn install
+```
+
+Note that current JUnit tests launch a Node.js instance for each test and will be quite slow (this will be improved). In order to easily test some changes locally without having to run all the tests, use the following command:
+
+```
+> mvn package -Dmaven.test.skip=true
+```
+
+or
+
+```
+> mvn install -Dmaven.test.skip=true
+```
+
+To generate the markdown language specifications from the Latex source file with [Pandoc](http://pandoc.org/):
+
+```
+> cd doc
+> pandoc -r latex -w markdown_github --base-header-level=2 -s --toc --number-sections -B header.md -o jsweet-language-specifications.md jsweet-language-specifications.tex
+```
+
+Note that the following command will output the document in HTML:
+
+```
+> pandoc -r latex -w html5 --base-header-level=3 -o jsweet-language-specifications.html jsweet-language-specifications.tex
+```
 
 ## License
 

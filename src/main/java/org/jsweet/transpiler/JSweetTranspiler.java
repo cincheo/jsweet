@@ -140,6 +140,7 @@ public class JSweetTranspiler {
 	private String encoding = null;
 	private boolean noRootDirectories = false;
 	private boolean ignoreAssertions = false;
+	private boolean ignoreJavaFileNameError = false;
 
 	/**
 	 * Creates a JSweet transpiler, with the default values.
@@ -213,10 +214,17 @@ public class JSweetTranspiler {
 	}
 
 	private void initNode(TranspilationHandler transpilationHandler) throws Exception {
+		// hack for OSX Eclipse's path issue
+		if (!System.getenv("PATH").contains("/usr/local/bin") && new File("/usr/local/bin/node").exists()) {
+			ProcessUtil.EXTRA_PATH = "/usr/local/bin";
+			ProcessUtil.NODE_COMMAND = "/usr/local/bin/node";
+			ProcessUtil.NPM_COMMAND = "/usr/local/bin/npm";
+		}
+		logger.debug("extra path: " + ProcessUtil.EXTRA_PATH);
 		File initFile = new File(workingDir, ".node-init");
 		boolean initialized = initFile.exists();
 		if (!initialized) {
-			ProcessUtil.runCommand("node", null, () -> {
+			ProcessUtil.runCommand(ProcessUtil.NODE_COMMAND, null, () -> {
 				transpilationHandler.report(JSweetProblem.NODE_CANNOT_START, null, JSweetProblem.NODE_CANNOT_START.getMessage());
 				throw new RuntimeException("cannot find node.js");
 			} , "--version");
@@ -297,8 +305,8 @@ public class JSweetTranspiler {
 		Writer w = new StringWriter() {
 			@Override
 			public void write(String str) {
-				TranspilationHandler.OUTPUT_LOGGER.error(getBuffer());
-				getBuffer().delete(0, getBuffer().length());
+				// TranspilationHandler.OUTPUT_LOGGER.error(getBuffer());
+				// getBuffer().delete(0, getBuffer().length());
 			}
 
 		};
@@ -308,7 +316,12 @@ public class JSweetTranspiler {
 			@Override
 			public String format(JCDiagnostic diagnostic, Locale locale) {
 				if (diagnostic.getKind() == Kind.ERROR) {
-					transpilationHandler.reportSilentError();
+					if (!(ignoreJavaFileNameError && "compiler.err.class.public.should.be.in.file".equals(diagnostic.getCode()))) {
+						transpilationHandler.report(JSweetProblem.INTERNAL_JAVA_ERROR,
+								new SourcePosition(new File(diagnostic.getSource().getName()), null, (int) diagnostic.getStartPosition(),
+										(int) diagnostic.getEndPosition(), (int) diagnostic.getLineNumber(), (int) diagnostic.getColumnNumber(), -1, -1),
+								diagnostic.getMessage(locale));
+					}
 				}
 				if (diagnostic.getSource() != null) {
 					return diagnostic.getMessage(locale) + " at " + diagnostic.getSource().getName() + "(" + diagnostic.getLineNumber() + ")";
@@ -470,7 +483,7 @@ public class JSweetTranspiler {
 			if (context.useModules) {
 				File f = sourceFiles[sourceFiles.length - 1].getJsFile();
 				logger.debug("eval file: " + f);
-				ProcessUtil.runCommand("node", line -> trace.append(line + "\n"), null, f.getPath());
+				ProcessUtil.runCommand(ProcessUtil.NODE_COMMAND, line -> trace.append(line + "\n"), null, f.getPath());
 			} else {
 				File tmpFile = new File(new File(TMP_WORKING_DIR_NAME), "eval.tmp.js");
 				FileUtils.deleteQuietly(tmpFile);
@@ -479,7 +492,7 @@ public class JSweetTranspiler {
 					FileUtils.write(tmpFile, script + "\n", true);
 				}
 				logger.debug("eval file: " + tmpFile);
-				ProcessUtil.runCommand("node", line -> trace.append(line + "\n"), null, tmpFile.getPath());
+				ProcessUtil.runCommand(ProcessUtil.NODE_COMMAND, line -> trace.append(line + "\n"), null, tmpFile.getPath());
 			}
 
 			return new TraceBasedEvaluationResult(trace.getBuffer().toString());
@@ -713,22 +726,20 @@ public class JSweetTranspiler {
 		}
 	}
 
-	private void java2ts(TranspilationHandler transpilationHandler, SourceFile[] files) throws IOException {
+	private void java2ts(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files) throws IOException {
 
 		initJavac(transpilationHandler);
 		List<JavaFileObject> fileObjects = toJavaFileObjects(fileManager, Arrays.asList(SourceFile.toFiles(files)));
 
 		logger.info("parsing: " + fileObjects);
 		List<JCCompilationUnit> compilationUnits = compiler.enterTrees(compiler.parseFiles(fileObjects));
-		if (log.nerrors > 0) {
-			transpilationHandler.report(JSweetProblem.JAVA_ERRORS, null, JSweetProblem.JAVA_ERRORS.getMessage(log.nerrors));
+		if (transpilationHandler.getErrorCount() > 0) {
 			return;
 		}
 		logger.info("attribution phase");
 		compiler.attribute(compiler.todo);
 
-		if (log.nerrors > 0) {
-			transpilationHandler.report(JSweetProblem.JAVA_ERRORS, null, JSweetProblem.JAVA_ERRORS.getMessage(log.nerrors));
+		if (transpilationHandler.getErrorCount() > 0) {
 			return;
 		}
 		context.useModules = isUsingModules();
@@ -922,7 +933,7 @@ public class JSweetTranspiler {
 			args.add("--watch");
 		}
 		if (isPreserveSourceLineNumbers()) {
-			args.add("--sourcemap");
+			args.add("--sourceMap");
 		}
 
 		args.addAll(asList("--rootDir", tsOutputDir.getAbsolutePath()));
@@ -1284,6 +1295,14 @@ public class JSweetTranspiler {
 	 */
 	public void setIgnoreAssertions(boolean ignoreAssertions) {
 		this.ignoreAssertions = ignoreAssertions;
+	}
+
+	public boolean isIgnoreJavaFileNameError() {
+		return ignoreJavaFileNameError;
+	}
+
+	public void setIgnoreJavaFileNameError(boolean ignoreJavaFileNameError) {
+		this.ignoreJavaFileNameError = ignoreJavaFileNameError;
 	}
 
 }

@@ -55,6 +55,7 @@ public class ApiTests extends AbstractTest {
 			assertEquals("testc", result.<String> get("s4"));
 			assertEquals(2, result.<Number> get("i1").intValue());
 			assertEquals(-1, result.<Number> get("i2").intValue());
+			assertEquals(4, result.<Number> get("l").intValue());
 		}, getSourceFile(JdkInvocations.class));
 	}
 

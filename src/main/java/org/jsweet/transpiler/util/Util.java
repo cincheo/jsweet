@@ -260,6 +260,11 @@ public class Util {
 		case ENHANCED_FOR_LOOP:
 			putVar(vars, ((JCEnhancedForLoop) parent).var.sym);
 			break;
+		case METHOD:
+			for(JCVariableDecl var : ((JCMethodDecl)parent).params) {
+				putVar(vars, var.sym);
+			}
+			break;
 		default:
 
 		}

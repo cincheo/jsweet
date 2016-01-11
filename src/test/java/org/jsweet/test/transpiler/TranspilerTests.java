@@ -129,7 +129,7 @@ public class TranspilerTests extends AbstractTest {
 				JSweetCommandLineLauncher.class.getName(), //
 				"--tsout", outDir.getPath(), //
 				"--jsout", outDir.getPath(), //
-				"--debug", //
+				"--sourceMap", //
 				"-i", TEST_DIRECTORY_NAME + "/org/jsweet/test/transpiler/source/blocksgame");
 
 		assertTrue(process.exitValue() == 0);

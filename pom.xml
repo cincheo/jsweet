@@ -26,10 +26,6 @@
 	</properties>
 	<repositories>
 		<repository>
-			<id>diff_match_patch</id>
-			<url>http://google-diff-match-patch.googlecode.com/svn/trunk/maven</url>
-		</repository>
-		<repository>
 			<id>jsweet-central</id>
 			<name>libs-release</name>
 			<url>http://repository.jsweet.org/artifactory/libs-release-local</url>
@@ -114,96 +110,7 @@
 					<stylesheetfile>/var/www/apidocs/stylesheet.css</stylesheetfile>
 				</configuration>
 			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>exec-maven-plugin</artifactId>
-				<version>1.4.0</version>
-				<executions>
-					<execution>
-						<id>doc-markdown</id>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-						<phase>generate-sources</phase>
-						<configuration>
-							<executable>pandoc</executable>
-							<workingDirectory>doc</workingDirectory>
-							<arguments>
-								<argument>-r</argument>
-								<argument>latex</argument>
-								<argument>-w</argument>
-								<argument>markdown_github</argument>
-								<argument>--base-header-level=2</argument>
-								<argument>-s</argument>
-								<argument>--toc</argument>
-								<argument>--number-sections</argument>
-								<argument>-B</argument>
-								<argument>header.md</argument>
-								<argument>-o</argument>
-								<argument>jsweet-language-specifications.md</argument>
-								<argument>jsweet-language-specifications.tex</argument>
-							</arguments>
-						</configuration>
-					</execution>
-					<execution>
-						<id>doc-html</id>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-						<phase>generate-sources</phase>
-						<configuration>
-							<executable>pandoc</executable>
-							<workingDirectory>doc</workingDirectory>
-							<arguments>
-								<argument>-r</argument>
-								<argument>latex</argument>
-								<argument>-w</argument>
-								<argument>html5</argument>
-								<argument>--base-header-level=3</argument>
-								<argument>-o</argument>
-								<argument>jsweet-language-specifications.html</argument>
-								<argument>jsweet-language-specifications.tex</argument>
-							</arguments>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
 		</plugins>
-		<pluginManagement>
-			<plugins>
-				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
-				<plugin>
-					<groupId>org.eclipse.m2e</groupId>
-					<artifactId>lifecycle-mapping</artifactId>
-					<version>1.0.0</version>
-					<configuration>
-						<lifecycleMappingMetadata>
-							<pluginExecutions>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>
-											org.codehaus.mojo
-										</groupId>
-										<artifactId>
-											exec-maven-plugin
-										</artifactId>
-										<versionRange>
-											[1.4.0,)
-										</versionRange>
-										<goals>
-											<goal>exec</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore></ignore>
-									</action>
-								</pluginExecution>
-							</pluginExecutions>
-						</lifecycleMappingMetadata>
-					</configuration>
-				</plugin>
-			</plugins>
-		</pluginManagement>
 	</build>
 	<dependencies>
 		<dependency>
@@ -231,11 +138,6 @@
 			<artifactId>junit</artifactId>
 			<version>4.12</version>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>diff_match_patch</groupId>
-			<artifactId>diff_match_patch</artifactId>
-			<version>current</version>
 		</dependency>
 		<dependency>
 			<groupId>log4j</groupId>

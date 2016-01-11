@@ -126,6 +126,7 @@ Here follows the list of allowed Java classes in JSweet:
 				\item \texttt{indexOf(java.lang.String)}
 				\item \texttt{lastIndexOf(java.lang.String)}
 				\item \texttt{lastIndexOf(java.lang.String,int)}
+				\item \texttt{length()} (transpiles to \texttt{length})
 				\item \texttt{substring(int)}
 				\item \texttt{substring(int,int)} (with the JavaScript behavior)
 				\item \texttt{replace(java.lang.String,java.lang.String)}
@@ -725,6 +726,28 @@ String m(String s, double n) { return s + n; }
 // invalid overloading (JSweet error)
 String m(String s) { return s; }
 \end{lstlisting}
+
+Local variables can also clash with the use of a global method. For instance, using the \texttt{alert} global method from the DOM (\texttt{jsweet.dom.Globals.alert}) requires that no local variable hides it. For instance:
+
+\begin{lstlisting}[language=Java]
+import static jsweet.dom.Globals.alert;
+
+[...]
+
+public void m1(boolean alert) {
+	// JSweet compile error: name clash between parameter and method call
+	alert("test");
+}
+
+public void m2() {
+	// JSweet compile error: name clash between local variable and method call
+	String alert = "test";
+	alert(alert);
+}
+\end{lstlisting}
+
+Note that this problem only happens with global functions invocations. With regular static or instance methods, clashes does not occur because the target (which can be implicit) differentiates the method from the variable. For instance:
+
 
 
 \section{Variable scoping in lambda expressions}

@@ -109,6 +109,7 @@ public class TypeChecker {
 		AUTHORIZED_STRING_METHODS.add("trim()");
 		AUTHORIZED_STRING_METHODS.add("toLowerCase()");
 		AUTHORIZED_STRING_METHODS.add("toUpperCase()");
+		AUTHORIZED_STRING_METHODS.add("length()");
 
 		FORBIDDEN_JDK_FUNCTIONAL_METHODS.add("and");
 		FORBIDDEN_JDK_FUNCTIONAL_METHODS.add("negate");

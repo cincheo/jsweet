@@ -45,6 +45,23 @@ public class ProcessUtil {
 	private static List<String> nodeCommands = Arrays.asList("tsc", "browserify");
 
 	/**
+	 * The node command name (can be full path in some environments).
+	 */
+	public static String NODE_COMMAND = "node";
+
+	/**
+	 * The npm command name (can be full path in some environments).
+	 */
+	public static String NPM_COMMAND = "npm";
+
+	/**
+	 * Some extra paths to be added to the PATH environment variable in some
+	 * environments. Typically Eclipse on Mac OSX misses the /usr/local/bin
+	 * path, which is required to run node.
+	 */
+	public static String EXTRA_PATH;
+
+	/**
 	 * Gets the full path of a command installed with npm.
 	 */
 	private static String getNpmPath(String command) {
@@ -149,6 +166,9 @@ public class ProcessUtil {
 			if (directory != null) {
 				processBuilder.directory(directory);
 			}
+			if (!StringUtils.isBlank(EXTRA_PATH)) {
+				processBuilder.environment().put("PATH", processBuilder.environment().get("PATH") + File.pathSeparator + EXTRA_PATH);
+			}
 
 			process[0] = processBuilder.start();
 
@@ -213,9 +233,9 @@ public class ProcessUtil {
 	public static void installNodePackage(String nodePackageName, boolean global) {
 		logger.debug("installing " + nodePackageName + " with npm");
 		if (global) {
-			runCommand("npm", USER_HOME_DIR, false, null, null, null, "install", "--prefix", NPM_DIR.getPath(), nodePackageName, "-g");
+			runCommand(NPM_COMMAND, USER_HOME_DIR, false, null, null, null, "install", "--prefix", NPM_DIR.getPath(), nodePackageName, "-g");
 		} else {
-			runCommand("npm", USER_HOME_DIR, false, null, null, null, "install", nodePackageName);
+			runCommand(NPM_COMMAND, USER_HOME_DIR, false, null, null, null, "install", nodePackageName);
 		}
 	}
 
@@ -231,9 +251,9 @@ public class ProcessUtil {
 	public static void uninstallNodePackage(String nodePackageName, boolean global) {
 		logger.debug("uninstalling " + nodePackageName + " with npm");
 		if (global) {
-			runCommand("npm", USER_HOME_DIR, false, null, null, null, "uninstall", "--prefix", NPM_DIR.getPath(), nodePackageName, "-g");
+			runCommand(NPM_COMMAND, USER_HOME_DIR, false, null, null, null, "uninstall", "--prefix", NPM_DIR.getPath(), nodePackageName, "-g");
 		} else {
-			runCommand("npm", USER_HOME_DIR, false, null, null, null, "uninstall", nodePackageName);
+			runCommand(NPM_COMMAND, USER_HOME_DIR, false, null, null, null, "uninstall", nodePackageName);
 		}
 	}
 
