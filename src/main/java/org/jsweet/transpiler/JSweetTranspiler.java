@@ -563,7 +563,7 @@ public class JSweetTranspiler {
 			logger.error(e.getMessage(), e);
 			return;
 		}
-		candiesProcessor.processCandies();
+		candiesProcessor.processCandies(transpilationHandler);
 		addTsDefDir(candiesProcessor.getCandiesTsdefsDir());
 		if (classPath != null && !ArrayUtils.contains(classPath.split(File.pathSeparator), candiesProcessor.getCandiesProcessedDir().getPath())) {
 			classPath = candiesProcessor.getCandiesProcessedDir() + File.pathSeparator + classPath;

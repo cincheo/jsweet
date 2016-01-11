@@ -254,7 +254,11 @@ public enum JSweetProblem {
 	/**
 	 * Raised when a class is declared in a parent of a @Root package.
 	 */
-	CLASS_OUT_OF_ROOT_PACKAGE_SCOPE(Severity.ERROR);
+	CLASS_OUT_OF_ROOT_PACKAGE_SCOPE(Severity.ERROR), 
+	/**
+	 * Raised when using a candy which was generated for an older / newer version of the transpiler 
+	 */
+	CANDY_VERSION_DISCREPANCY(Severity.WARNING);
 
 	private Severity severity;
 
@@ -382,6 +386,8 @@ public enum JSweetProblem {
 			return String.format("invalid package hierarchy: type %s is declared in a parent of @Root package %s", params);
 		case WRONG_USE_OF_AMBIENT:
 			return String.format("wrong use of @Ambient on %s: only types and globals can be declared as ambients", params);
+		case CANDY_VERSION_DISCREPANCY:
+			return String.format("candy %s:%s was generated for an older / newer version of the transpiler. current:%s previous:%s", params);
 		}
 		return null;
 	}
