@@ -1,4 +1,4 @@
-# JSweet: a Java to JavaScript transpiler
+# JSweet: a Java to JavaScript transpiler [![Build Status](https://travis-ci.org/cincheo/jsweet.svg?branch=master)](https://travis-ci.org/cincheo/jsweet)
 
 JSweet is built on the top of TypeScript to bring the most up-to-date JavaScript APIs right to the Java world.
 
