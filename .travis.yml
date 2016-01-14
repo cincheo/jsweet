@@ -6,7 +6,7 @@ jdk:
   - oraclejdk8
 
 script:
-  - rm -rf .jsweet; mvn clean javadoc:javadoc deploy
+  - mvn javadoc:javadoc
 
 cache:
   directories:
