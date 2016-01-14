@@ -1,4 +1,4 @@
-# JSweet: a Java to JavaScript transpiler [![Build Status](http://jsweet.org:8080/buildStatus/icon?job=jsweet)](https://jenkins.jsweet.org/job/jsweet/)
+# JSweet: a Java to JavaScript transpiler [![Build Status](http://jenkins.jsweet.org/buildStatus/icon?job=jsweet)](http://jenkins.jsweet.org/buildStatus/icon?job=jsweet)
 
 JSweet is built on the top of TypeScript to bring the most up-to-date JavaScript APIs right to the Java world.
 
