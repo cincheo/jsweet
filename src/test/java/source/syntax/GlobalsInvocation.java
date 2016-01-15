@@ -35,7 +35,13 @@ public class GlobalsInvocation {
 	}
 }
 
+/**
+ * This is a doc comment to test comments.
+ */
 class Globals {
+	/**
+	 * A global method.
+	 */
 	public static String toTitleCase(String str) {
 		return string(str).replace(new RegExp("/\\w\\S*/g"), (tok, i) -> {
 			jsweet.lang.String txt = string(tok);

@@ -18,15 +18,19 @@ package org.jsweet.test.transpiler;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import org.apache.commons.io.FileUtils;
 import org.jsweet.transpiler.JSweetProblem;
+import org.jsweet.transpiler.SourceFile;
 import org.jsweet.transpiler.util.EvaluationResult;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import source.syntax.AnnotationQualifiedNames;
+import source.syntax.DocComments;
 import source.syntax.FinalVariables;
 import source.syntax.FinalVariablesRuntime;
 import source.syntax.GlobalsCastMethod;
@@ -152,5 +156,21 @@ public class SyntaxTests extends AbstractTest {
 		} , getSourceFile(GlobalsCastMethod.class));
 	}
 
+	@Test
+	public void testDocComments() {
+		SourceFile f = getSourceFile(DocComments.class);
+		transpile(logHandler -> {
+			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+			try {
+				String generatedCode = FileUtils.readFileToString(f.getTsFile());
+				assertTrue(generatedCode.contains("This is a test of comment."));
+				assertTrue(generatedCode.contains("A method, which has some doc comment."));
+				assertTrue(generatedCode.contains("This is a constant field."));
+			} catch(Exception e) {
+				e.printStackTrace();
+				fail(e.getMessage());
+			}
+		} , f);
+	}
 	
 }

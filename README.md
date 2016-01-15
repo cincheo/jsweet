@@ -1,4 +1,4 @@
-# JSweet: a Java to JavaScript transpiler [![Build Status](https://jenkins.jsweet.org/buildStatus/icon?job=jsweet)](https://jenkins.jsweet.org/job/jsweet/)
+# JSweet: a Java to JavaScript transpiler [![Build Status](https://travis-ci.org/cincheo/jsweet.svg?branch=master)](https://travis-ci.org/cincheo/jsweet)
 
 JSweet is built on the top of TypeScript to bring the most up-to-date JavaScript APIs right to the Java world.
 
@@ -41,11 +41,11 @@ JSweet is *not* Java, it is Java syntax only and the APIs and programs run in Ja
 
 More info at http://www.jsweet.org.
 
-## Examples [![Build Status](https://jenkins.jsweet.org/buildStatus/icon?job=jsweet-uitests-web)](https://jenkins.jsweet.org/job/jsweet-uitests-web/)
+## Examples
 
-- Examples illustrating the use of various frameworks in Java (jQuery, Underscore, Backbone, AngularJS, Knockout). [Go to project](https://github.com/cincheo/jsweet-examples). [![Build Status](https://jenkins.jsweet.org/buildStatus/icon?job=jsweet-examples)](https://jenkins.jsweet.org/job/jsweet-examples/)
-- Examples illustrating the use of the Threejs framework in Java. [Go to project](https://github.com/cincheo/jsweet-examples-threejs). [![Build Status](https://jenkins.jsweet.org/buildStatus/icon?job=jsweet-examples-threejs)](https://jenkins.jsweet.org/job/jsweet-examples-threejs/)
-- Node.js + Socket.IO + AngularJS. [Go to project](https://github.com/lgrignon/jsweet-node-example). [![Build Status](https://jenkins.jsweet.org/buildStatus/icon?job=jsweet-node-example)](https://jenkins.jsweet.org/job/jsweet-node-example/)
+- Examples illustrating the use of various frameworks in Java (jQuery, Underscore, Backbone, AngularJS, Knockout). [Go to project](https://github.com/cincheo/jsweet-examples). 
+- Examples illustrating the use of the Threejs framework in Java. [Go to project](https://github.com/cincheo/jsweet-examples-threejs). 
+- Node.js + Socket.IO + AngularJS. [Go to project](https://github.com/lgrignon/jsweet-node-example). 
 
 ## Tooling
 
