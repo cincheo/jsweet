@@ -54,6 +54,7 @@ import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.code.Type.MethodType;
 import com.sun.tools.javac.code.TypeTag;
+import com.sun.tools.javac.parser.Tokens.Comment;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCArrayAccess;
 import com.sun.tools.javac.tree.JCTree.JCArrayTypeTree;
@@ -461,6 +462,25 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	private boolean declareClassScope;
 
+	private void printDocComment(JCTree element, boolean indent) {
+		if (compilationUnit.docComments != null && compilationUnit.docComments.hasComment(element)) {
+			Comment comment = compilationUnit.docComments.getComment(element);
+			String[] lines = comment.getText().split("\n");
+			if (indent) {
+				printIndent();
+			}
+			print("/**").println();
+			for (String line : lines) {
+				printIndent().print(" * ").print(line.trim()).print("\n");
+			}
+			removeLastChar();
+			println().printIndent().print(" ").print("*/\n");
+			if (!indent) {
+				printIndent();
+			}
+		}
+	}
+
 	@Override
 	public void visitClassDef(JCClassDecl classdecl) {
 		if (getParent() instanceof JCClassDecl) {
@@ -474,6 +494,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		enumScope = false;
 		boolean globals = JSweetConfig.GLOBALS_CLASS_NAME.equals(classdecl.name.toString());
 		if (!globals) {
+			printDocComment(classdecl, false);
 			if (!globalModule) {
 				print("export ");
 			}
@@ -680,6 +701,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 
 		boolean globals = JSweetConfig.GLOBALS_CLASS_NAME.equals(parent.name.toString());
+		printDocComment(methodDecl, false);
 		if (globals) {
 			if (constructor) {
 				report(methodDecl, methodDecl.name, JSweetProblem.GLOBAL_CONSTRUCTOR_DEF);
@@ -856,6 +878,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 			boolean globals = (parent instanceof JCClassDecl) && JSweetConfig.GLOBALS_CLASS_NAME.equals(((JCClassDecl) parent).name.toString());
 
+			printDocComment(varDecl, false);
 			if (!globals && parent instanceof JCClassDecl) {
 				if (varDecl.mods.getFlags().contains(Modifier.PUBLIC)) {
 					if (!interfaceScope) {
@@ -1078,7 +1101,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					if (methSym != null) {
 						Map<String, VarSymbol> vars = new HashMap<>();
 						Util.fillAllVariablesInScope(vars, getStack(), inv, getParent(JCMethodDecl.class));
-						if(vars.containsKey(methSym.getSimpleName().toString())) {
+						if (vars.containsKey(methSym.getSimpleName().toString())) {
 							report(inv, JSweetProblem.HIDDEN_INVOCATION, methSym.getSimpleName());
 						}
 					}

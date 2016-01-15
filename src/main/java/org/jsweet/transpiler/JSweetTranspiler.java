@@ -296,6 +296,7 @@ public class JSweetTranspiler {
 		compiler.attrParseOnly = true;
 		compiler.verbose = false;
 		compiler.genEndPos = true;
+		compiler.keepComments = true;
 
 		log = Log.instance(context);
 
