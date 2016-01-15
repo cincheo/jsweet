@@ -17,12 +17,18 @@
 package org.jsweet.transpiler.candies;
 
 import java.io.IOException;
+import java.util.Enumeration;
+import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
 
 import org.apache.commons.io.IOUtils;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 /**
  * A candy descriptor for the candies store.
@@ -34,12 +40,14 @@ class CandyDescriptor {
 	String version;
 	long lastUpdateTimestamp;
 	String modelVersion;
+	String transpilerVersion;
 
-	public CandyDescriptor(String name, String version, long lastUpdateTimestamp, String modelVersion) {
+	public CandyDescriptor(String name, String version, long lastUpdateTimestamp, String modelVersion, String transpilerVersion) {
 		this.name = name;
 		this.version = version;
 		this.lastUpdateTimestamp = lastUpdateTimestamp;
 		this.modelVersion = modelVersion;
+		this.transpilerVersion = transpilerVersion;
 	}
 
 	@Override
@@ -63,10 +71,17 @@ class CandyDescriptor {
 	private final static Pattern ARTIFACT_ID_PATTERN = Pattern.compile("[\\<]artifactId[\\>](.*)[\\<]/artifactId[\\>]");
 	private final static Pattern VERSION_PATTERN = Pattern.compile("[\\<]version[\\>](.*)[\\<]/version[\\>]");
 
+	private final static Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
 	public static CandyDescriptor fromCandyJar(JarFile jarFile) throws IOException {
-		JarEntry pomEntry = jarFile.stream() //
-				.filter(e -> e.getName().endsWith("pom.xml")) //
-				.findFirst().get();
+		JarEntry pomEntry = null;
+		Enumeration<JarEntry> entries = jarFile.entries();
+		while (entries.hasMoreElements()) {
+			JarEntry current = entries.nextElement();
+			if (current.getName().endsWith("pom.xml")) {
+				pomEntry = current;
+			}
+		}
 
 		String pomContent = IOUtils.toString(jarFile.getInputStream(pomEntry));
 
@@ -95,7 +110,19 @@ class CandyDescriptor {
 
 		long lastUpdateTimestamp = jarFile.getEntry("META-INF/MANIFEST.MF").getTime();
 
-		return new CandyDescriptor(name, version, lastUpdateTimestamp, modelVersion);
+		String transpilerVersion = null;
+
+		ZipEntry metadataEntry = jarFile.getEntry("META-INF/candy-metadata.json");
+		if (metadataEntry != null) {
+			String metadataContent = IOUtils.toString(jarFile.getInputStream(metadataEntry));
+
+			@SuppressWarnings("unchecked")
+			Map<String, ?> metadata = gson.fromJson(metadataContent, Map.class);
+
+			transpilerVersion = (String) metadata.get("transpilerVersion");
+		}
+
+		return new CandyDescriptor(name, version, lastUpdateTimestamp, modelVersion, transpilerVersion);
 	}
 
 	@Override

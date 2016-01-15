@@ -34,6 +34,8 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.jsweet.JSweetConfig;
+import org.jsweet.transpiler.JSweetProblem;
+import org.jsweet.transpiler.TranspilationHandler;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -127,10 +129,10 @@ public class CandiesProcessor {
 	/**
 	 * Do the processing for the candies jars found in the classpath.
 	 */
-	public void processCandies() throws IOException {
+	public void processCandies(TranspilationHandler transpilationHandler) throws IOException {
 		CandiesStore candiesStore = getCandiesStore();
 
-		LinkedHashMap<File, CandyDescriptor> newCandiesDescriptors = getCandiesDescriptorsFromClassPath();
+		LinkedHashMap<File, CandyDescriptor> newCandiesDescriptors = getCandiesDescriptorsFromClassPath(transpilationHandler);
 		CandiesStore newStore = new CandiesStore(new ArrayList<>(newCandiesDescriptors.values()));
 		if (newStore.equals(candiesStore)) {
 			logger.info("candies are up to date");
@@ -160,7 +162,7 @@ public class CandiesProcessor {
 		extractSourcesForClasses(candies, mergedMixins.keySet());
 	}
 
-	private LinkedHashMap<File, CandyDescriptor> getCandiesDescriptorsFromClassPath() throws IOException {
+	private LinkedHashMap<File, CandyDescriptor> getCandiesDescriptorsFromClassPath(TranspilationHandler transpilationHandler) throws IOException {
 		LinkedHashMap<File, CandyDescriptor> jarFilesCollector = new LinkedHashMap<>();
 		for (String classPathEntry : classPath.split("[" + System.getProperty("path.separator") + "]")) {
 			if (classPathEntry.endsWith(".jar")) {
@@ -172,7 +174,7 @@ public class CandiesProcessor {
 					if (isCandy) {
 						CandyDescriptor descriptor = CandyDescriptor.fromCandyJar(jarFileHandle);
 
-						checkCandyVersion(descriptor);
+						checkCandyVersion(descriptor, transpilationHandler);
 						jarFilesCollector.put(jarFile, descriptor);
 					}
 				}
@@ -183,12 +185,18 @@ public class CandiesProcessor {
 		return jarFilesCollector;
 	}
 
-	private void checkCandyVersion(CandyDescriptor candy) {
-		// TODO : check major version change
-		// we assume candies will always remain compatible with jsweet minor
-		// versions changes
+	private void checkCandyVersion(CandyDescriptor candy, TranspilationHandler transpilationHandler) {
+		
+		String actualTranspilerVersion = JSweetConfig.getVersionNumber().replace("-SNAPSHOT", "");
+		
+		if (candy.transpilerVersion == null || !candy.transpilerVersion.equals(actualTranspilerVersion)) {
+			transpilationHandler.report(
+					JSweetProblem.CANDY_VERSION_DISCREPANCY, null, 
+					JSweetProblem.CANDY_VERSION_DISCREPANCY.getMessage(
+							candy.name, candy.version, actualTranspilerVersion, candy.transpilerVersion));
+		}
 	}
-
+	
 	private void extractCandies(Map<File, CandyDescriptor> candies) throws IOException {
 		File extractedSourcesDir = candiesSourceDir;
 		File extractedTsDefsDir = candiesTsdefsDir;
