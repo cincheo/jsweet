@@ -11,3 +11,11 @@ script:
 cache:
   directories:
     - $HOME/.m2
+
+notifications:
+  email:
+    recipients:
+      - renaud.pawlak@gmail.com
+      - louis.grignon@gmail.com
+    on_success: change # default: change
+    on_failure: always # default: always
