@@ -26,7 +26,6 @@ import static org.junit.Assert.assertTrue;
 
 import org.jsweet.transpiler.JSweetProblem;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import source.structural.AbstractClass;
@@ -48,9 +47,9 @@ import source.structural.WrongConstructsInEnums;
 import source.structural.WrongConstructsInInterfaces;
 import source.structural.globalclasses.Globals;
 import source.structural.globalclasses.a.GlobalsConstructor;
-import source.structural.globalclasses.c.GlobalFunctionGetSet;
+import source.structural.globalclasses.c.GlobalFunctionGetSetDelete;
 import source.structural.globalclasses.d.GlobalFunctionAccessFromMain;
-import source.structural.globalclasses.f.GlobalFunctionStaticDelete;
+import source.structural.globalclasses.f.InvalidGlobalSetGetDelete;
 
 public class StructuralTests extends AbstractTest {
 
@@ -178,15 +177,14 @@ public class StructuralTests extends AbstractTest {
 	public void testNoGetSetInGlobalFunction() {
 		transpile(logHandler -> {
 			logHandler.assertReportedProblems();
-		} , getSourceFile(GlobalFunctionGetSet.class));
+		} , getSourceFile(GlobalFunctionGetSetDelete.class));
 	}
 
-	@Ignore
 	@Test
 	public void testNoStaticDeleteInGlobalFunction() {
 		transpile(logHandler -> {
-			logHandler.assertReportedProblems(GLOBAL_DELETE);
-		} , getSourceFile(GlobalFunctionStaticDelete.class));
+			logHandler.assertReportedProblems(GLOBAL_INDEXER_GET, GLOBAL_INDEXER_SET, GLOBAL_DELETE);
+		} , getSourceFile(InvalidGlobalSetGetDelete.class));
 	}
 
 	@Test

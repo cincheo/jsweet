@@ -17,16 +17,22 @@
 package source.structural.globalclasses.f;
 
 import static jsweet.util.Globals.$delete;
+import static jsweet.util.Globals.$get;
+import static jsweet.util.Globals.$set;
 
 @SuppressWarnings("all")
 class Globals  {
 
 	public static void test() {
-		$delete(Globals.class, "key2s");
+		Object val;
+		// TODO: invalid
+		val = $get(Globals.class, "ttest");
+		$set(Globals.class, "ttest", val);
+		$delete(Globals.class, "ttest");
 	}
 }
 
-public class GlobalFunctionStaticDelete {
+public class InvalidGlobalSetGetDelete {
 
 	public void main(String[] args) {
 	}

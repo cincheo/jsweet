@@ -287,12 +287,19 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			return true;
 		}
 
-		
 		if (matchesMethod(targetClassName, targetMethodName, null, INDEXED_GET_FUCTION_NAME)) {
-			if (invocation.getArguments().size()==1 && isWithinGlobals(targetClassName)) {
-				report(invocation, JSweetProblem.GLOBAL_INDEXER_GET);
-				return true;
+			if (isWithinGlobals(targetClassName)) {
+				if (invocation.getArguments().size() == 1) {
+					report(invocation, JSweetProblem.GLOBAL_INDEXER_GET);
+					return true;
+				} else {
+					if (invocation.args.head.toString().endsWith(GLOBALS_CLASS_NAME + ".class")) {
+						report(invocation, JSweetProblem.GLOBAL_INDEXER_GET);
+						return true;
+					}
+				}
 			}
+			
 
 			if (fieldAccess != null && !fieldAccess.toString().equals(UTIL_CLASSNAME + "." + INDEXED_GET_FUCTION_NAME)) {
 				getPrinter().print(fieldAccess.selected).print("[").print(invocation.args.head).print("]");
@@ -306,7 +313,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			return true;
 		}
 		if (matchesMethod(targetClassName, targetMethodName, null, INDEXED_GET_STATIC_FUCTION_NAME)) {
-			if (invocation.getArguments().size()==1 && isWithinGlobals(targetClassName)) {
+			if (invocation.getArguments().size() == 1 && isWithinGlobals(targetClassName)) {
 				report(invocation, JSweetProblem.GLOBAL_INDEXER_GET);
 				return true;
 			}
@@ -317,9 +324,16 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 
 		if (matchesMethod(targetClassName, targetMethodName, null, INDEXED_SET_FUCTION_NAME)) {
 
-			if (invocation.getArguments().size()==2 && isWithinGlobals(targetClassName)) {
-				report(invocation, JSweetProblem.GLOBAL_INDEXER_SET);
-				return true;
+			if (isWithinGlobals(targetClassName)) {
+				if (invocation.getArguments().size() == 2) {
+					report(invocation, JSweetProblem.GLOBAL_INDEXER_SET);
+					return true;
+				} else {
+					if (invocation.args.head.toString().endsWith(GLOBALS_CLASS_NAME + ".class")) {
+						report(invocation, JSweetProblem.GLOBAL_INDEXER_SET);
+						return true;
+					}
+				}
 			}
 
 			if (fieldAccess != null && !fieldAccess.toString().equals(UTIL_CLASSNAME + "." + INDEXED_SET_FUCTION_NAME)) {
@@ -349,7 +363,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 
 		if (matchesMethod(targetClassName, targetMethodName, null, INDEXED_SET_STATIC_FUCTION_NAME)) {
 
-			if (invocation.getArguments().size()==2 && isWithinGlobals(targetClassName)) {
+			if (invocation.getArguments().size() == 2 && isWithinGlobals(targetClassName)) {
 				report(invocation, JSweetProblem.GLOBAL_INDEXER_SET);
 				return true;
 			}
@@ -359,21 +373,32 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		}
 
 		if (matchesMethod(targetClassName, targetMethodName, null, INDEXED_DELETE_FUCTION_NAME)) {
-			if (invocation.getArguments().size()==1 && isWithinGlobals(targetClassName)) {
-				report(invocation, JSweetProblem.GLOBAL_DELETE);
-				return true;
+			if (isWithinGlobals(targetClassName)) {
+				if (invocation.getArguments().size() == 1) {
+					report(invocation, JSweetProblem.GLOBAL_DELETE);
+					return true;
+				} else {
+					if (invocation.args.head.toString().endsWith(GLOBALS_CLASS_NAME + ".class")) {
+						report(invocation, JSweetProblem.GLOBAL_DELETE);
+						return true;
+					}
+				}
 			}
 
 			if (fieldAccess != null && !fieldAccess.toString().equals(UTIL_CLASSNAME + "." + INDEXED_DELETE_FUCTION_NAME)) {
 				getPrinter().print("delete ").print(fieldAccess.selected).print("[").print(invocation.args.head).print("]");
 			} else {
-				getPrinter().print("delete this[").print(invocation.args.head).print("]");
+				if (invocation.args.length() == 1) {
+					getPrinter().print("delete this[").print(invocation.args.head).print("]");
+				} else {
+					getPrinter().print("delete ").print(invocation.args.head).print("[").print(invocation.args.tail.head).print("]");
+				}
 			}
 			return true;
 		}
 
 		if (matchesMethod(targetClassName, targetMethodName, null, INDEXED_DELETE_STATIC_FUCTION_NAME)) {
-			if (invocation.getArguments().size()==1 && isWithinGlobals(targetClassName)) {
+			if (invocation.getArguments().size() == 1 && isWithinGlobals(targetClassName)) {
 				report(invocation, JSweetProblem.GLOBAL_DELETE);
 				return true;
 			}
@@ -398,7 +423,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			}
 			Map<String, VarSymbol> vars = new HashMap<>();
 			Util.fillAllVariablesInScope(vars, getPrinter().getStack(), invocation, getPrinter().getParent(JCMethodDecl.class));
-			if(vars.containsKey(targetMethodName)) {
+			if (vars.containsKey(targetMethodName)) {
 				report(invocation, JSweetProblem.HIDDEN_INVOCATION, targetMethodName);
 			}
 			getPrinter().printIdentifier(targetMethodName).print("(").printArgList(invocation.args).print(")");
@@ -432,15 +457,15 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 	}
 
 	private void printCastMethodInvocation(JCMethodInvocation invocation) {
-		if(getPrinter().getParent() instanceof JCMethodInvocation) {
+		if (getPrinter().getParent() instanceof JCMethodInvocation) {
 			getPrinter().print("(");
 		}
 		getPrinter().print(invocation.args.head);
-		if(getPrinter().getParent() instanceof JCMethodInvocation) {
+		if (getPrinter().getParent() instanceof JCMethodInvocation) {
 			getPrinter().print(")");
 		}
 	}
-	
+
 	@Override
 	public boolean substituteFieldAccess(JCFieldAccess fieldAccess) {
 		String name = fieldAccess.name.toString();

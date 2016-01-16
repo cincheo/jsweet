@@ -16,6 +16,7 @@
  */
 package source.structural.globalclasses.c;
 
+import static jsweet.util.Globals.$delete;
 import static jsweet.util.Globals.$get;
 import static jsweet.util.Globals.$set;
 
@@ -24,22 +25,22 @@ class Globals {
 
 	public static void test() {
 		Object val;
-		// TODO: invalid
-		//val = $get(Globals.class, "ttest");
-		//$set(Globals.class, "ttest", val);
-		val = $get(new GlobalFunctionGetSet(), "ttest");
-		$set(new GlobalFunctionGetSet(), "ttest", val);
-		val = $get(GlobalFunctionGetSet.class, "ttest");
-		$set(GlobalFunctionGetSet.class, "ttest", val);
-
+		val = $get(new GlobalFunctionGetSetDelete(), "ttest");
+		$set(new GlobalFunctionGetSetDelete(), "ttest", val);
+		$delete(new GlobalFunctionGetSetDelete(), "ttest");
+		val = $get(GlobalFunctionGetSetDelete.class, "ttest");
+		$set(GlobalFunctionGetSetDelete.class, "ttest", val);
+		$delete(GlobalFunctionGetSetDelete.class, "ttest");
+		
 		// valid
 		jsweet.lang.Object otherObject = null;
 		otherObject.$get("test");
 		otherObject.$set("test", val);
+		otherObject.$delete("test");
 	}
 }
 
-public class GlobalFunctionGetSet {
+public class GlobalFunctionGetSetDelete {
 
 	public void main(String[] args) {
 	}
