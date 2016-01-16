@@ -199,9 +199,9 @@ Examples of valid statements:
 // warning '==' behaves like the JavaScript one at runtime
 Integer i = 2;
 assert i == 2;
-Double d = i + 4;
+Double d = i + 4d;
 assert d.toString() == "6";
-assert d == "6";
+assert (Object) d == "6";
 BiFunction<String, Integer, String> f = (s, i) -> { return s.substring(i); };
 assert "bc" == f.apply("abc", 1);
 \end{lstlisting}
@@ -214,9 +214,9 @@ Arrays can be used in JSweet and are transpiled to JavaScript arrays. Array init
 int[] arrayOfInts = { 1, 2, 3, 4};
 assert arrayOfInts.length == 4;  
 assert arrayOfInts[0] == 1;
-for(int i : arrayOfInts) {
-	arrayOfInts[i] = arrayOfInts[i] - 1;
-	assert arrayOfInts[i] == i;
+int i = 0;
+for (int intItem : arrayOfInts) { 
+	assert arrayOfInts[i++] == intItem;
 }
 \end{lstlisting}
 
@@ -240,7 +240,7 @@ Programmers should use this API most of the time, which is HTML5 compatible and 
 As a consequence, programmers need to be able to switch to the JavaScript API when coming from a Java object. The \texttt{jsweet.util.Globals} class defines convenient static methods to cast back and forth core Java objects to their corresponding JSweet objects. For instance the \texttt{string(...)} method will allow the programmer to switch from the Java to the JSweet strings and conversely.
 
 \begin{lstlisting}[language=Java]
-import jsweet.util.Globals.string;
+import static jsweet.util.Globals.string;
 String str = "This is a test string";
 str.toLowerCase(); // valid: toLowerCase it defined both in Java and JavaScript
 str.substr(1); // compile error: substr is not a Java method
@@ -251,7 +251,7 @@ string(str).substr(1); // valid: string(str) is a jsweet.lang.String.
 Here is another example that shows the use of the \texttt{array} method to access the \texttt{push} method available on JavaScript arrays.
 
 \begin{lstlisting}[language=Java]
-import jsweet.util.Globals.array;
+import static jsweet.util.Globals.array;
 String[] strings = { "a", "b", "c" };
 array(strings).push("d");
 assert strings[3] == "d";
@@ -410,7 +410,7 @@ The following statements are valid statements in JSweet.
 \begin{lstlisting}[language=Java]
 MyEnum e = MyEnum.A;
 assert MyEnum.A == e;
-assert e.name().equals("A");
+assert e.name() == "A";
 assert e.ordinal() == 0;
 assert MyEnum.valueOf("A") == e;
 assert array(MyEnum.values()).indexOf(MyEnum.valueOf("C")) == 2;
@@ -631,7 +631,7 @@ Main methods are the program execution entry points and will be invoked globally
 public class C {
 	private int n;
 	public static C instance;
-	public static main(String[] args) {
+	public static void main(String[] args) {
 		instance = new C();
 		instance.n = 4;
 	}
@@ -680,7 +680,7 @@ public class C2 {
 		n = 4;
 	}
 }
-assert new C2.n == 4;
+assert C2.n == 4;
 \end{lstlisting}
 
 
