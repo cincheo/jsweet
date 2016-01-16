@@ -21,8 +21,8 @@ import static jsweet.util.Globals.$delete;
 @SuppressWarnings("all")
 class Globals  {
 
-	public void test() {
-		$delete(this, "key2s");
+	public static void test() {
+		$delete(Globals.class, "key2s");
 	}
 }
 

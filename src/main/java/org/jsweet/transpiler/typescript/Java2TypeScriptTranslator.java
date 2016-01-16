@@ -493,6 +493,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		removedSuperclass = false;
 		enumScope = false;
 		boolean globals = JSweetConfig.GLOBALS_CLASS_NAME.equals(classdecl.name.toString());
+		if(globals && classdecl.extending!=null) {
+			report(classdecl, JSweetProblem.GLOBALS_CLASS_CANNOT_HAVE_SUPERCLASS);
+		}
 		if (!globals) {
 			printDocComment(classdecl, false);
 			if (!globalModule) {
@@ -708,6 +711,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				return;
 			}
 
+			if (!methodDecl.mods.getFlags().contains(Modifier.STATIC)) {
+				report(methodDecl, methodDecl.name, JSweetProblem.GLOBALS_CAN_ONLY_HAVE_STATIC_MEMBERS);
+				return;
+			}
+
 			if (context.useModules) {
 				if (!methodDecl.mods.getFlags().contains(Modifier.PRIVATE)) {
 					print("export ");
@@ -877,6 +885,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 
 			boolean globals = (parent instanceof JCClassDecl) && JSweetConfig.GLOBALS_CLASS_NAME.equals(((JCClassDecl) parent).name.toString());
+
+			if (globals && !varDecl.mods.getFlags().contains(Modifier.STATIC)) {
+				report(varDecl, varDecl.name, JSweetProblem.GLOBALS_CAN_ONLY_HAVE_STATIC_MEMBERS);
+				return;
+			}
 
 			printDocComment(varDecl, false);
 			if (!globals && parent instanceof JCClassDecl) {
