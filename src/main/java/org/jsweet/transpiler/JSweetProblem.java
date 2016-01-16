@@ -270,7 +270,11 @@ public enum JSweetProblem {
 	/**
 	 * Raised when a Globals class declares a superclass.
 	 */
-	GLOBALS_CLASS_CANNOT_HAVE_SUPERCLASS(Severity.ERROR); 
+	GLOBALS_CLASS_CANNOT_HAVE_SUPERCLASS(Severity.ERROR), 
+	/**
+	 * Raised when a class tries to extend a Globals class.
+	 */
+	GLOBALS_CLASS_CANNOT_BE_SUBCLASSED(Severity.ERROR); 
 	
 	private Severity severity;
 
@@ -406,6 +410,8 @@ public enum JSweetProblem {
 			return String.format("Globals classes can only define static members", params);
 		case GLOBALS_CLASS_CANNOT_HAVE_SUPERCLASS:
 			return String.format("Globals classes cannot extend any class", params);
+		case GLOBALS_CLASS_CANNOT_BE_SUBCLASSED:
+			return String.format("Globals classes cannot be subclassed", params);
 		}
 		return null;
 	}

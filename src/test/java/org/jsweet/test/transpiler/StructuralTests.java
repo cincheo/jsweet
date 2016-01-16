@@ -16,8 +16,6 @@
  */
 package org.jsweet.test.transpiler;
 
-import static org.jsweet.transpiler.JSweetProblem.GLOBAL_CANNOT_BE_INSTANTIATED;
-import static org.jsweet.transpiler.JSweetProblem.GLOBAL_CONSTRUCTOR_DEF;
 import static org.jsweet.transpiler.JSweetProblem.GLOBAL_DELETE;
 import static org.jsweet.transpiler.JSweetProblem.GLOBAL_INDEXER_GET;
 import static org.jsweet.transpiler.JSweetProblem.GLOBAL_INDEXER_SET;
@@ -168,8 +166,10 @@ public class StructuralTests extends AbstractTest {
 	public void testNoConstructorInGlobalsClass() {
 		transpile(logHandler -> {
 			logHandler.assertReportedProblems(//
-					GLOBAL_CONSTRUCTOR_DEF, //
-					GLOBAL_CANNOT_BE_INSTANTIATED);
+					JSweetProblem.GLOBAL_CONSTRUCTOR_DEF, //
+					JSweetProblem.GLOBAL_CANNOT_BE_INSTANTIATED, //
+					JSweetProblem.GLOBAL_CANNOT_BE_INSTANTIATED, //
+					JSweetProblem.GLOBALS_CLASS_CANNOT_BE_SUBCLASSED);
 		} , getSourceFile(GlobalsConstructor.class));
 	}
 
