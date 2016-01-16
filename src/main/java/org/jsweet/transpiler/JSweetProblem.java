@@ -262,8 +262,16 @@ public enum JSweetProblem {
 	/**
 	 * Raised when using a candy which was generated for an older / newer version of the transpiler 
 	 */
-	CANDY_VERSION_DISCREPANCY(Severity.WARNING);
-
+	CANDY_VERSION_DISCREPANCY(Severity.WARNING),
+	/**
+	 * Raised when a Globals class declares a non static member.
+	 */
+	GLOBALS_CAN_ONLY_HAVE_STATIC_MEMBERS(Severity.ERROR),
+	/**
+	 * Raised when a Globals class declares a superclass.
+	 */
+	GLOBALS_CLASS_CANNOT_HAVE_SUPERCLASS(Severity.ERROR); 
+	
 	private Severity severity;
 
 	/**
@@ -394,6 +402,10 @@ public enum JSweetProblem {
 			return String.format("wrong use of @Ambient on %s: only types and globals can be declared as ambients", params);
 		case CANDY_VERSION_DISCREPANCY:
 			return String.format("candy %s:%s was generated for an older / newer version of the transpiler. current:%s previous:%s", params);
+		case GLOBALS_CAN_ONLY_HAVE_STATIC_MEMBERS:
+			return String.format("Globals classes can only define static members", params);
+		case GLOBALS_CLASS_CANNOT_HAVE_SUPERCLASS:
+			return String.format("Globals classes cannot extend any class", params);
 		}
 		return null;
 	}

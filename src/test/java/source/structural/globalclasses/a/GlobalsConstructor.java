@@ -20,10 +20,10 @@ import static jsweet.util.Globals.$set;
 
 class Globals {
 
-	public int a;
+	public static int a;
 
 	public Globals() {
-		this.a = 3;
+		a = 3;
 	}
 }
 

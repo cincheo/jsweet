@@ -289,7 +289,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 
 		
 		if (matchesMethod(targetClassName, targetMethodName, null, INDEXED_GET_FUCTION_NAME)) {
-			if (isWithinGlobals(targetClassName)) {
+			if (invocation.getArguments().size()==1 && isWithinGlobals(targetClassName)) {
 				report(invocation, JSweetProblem.GLOBAL_INDEXER_GET);
 				return true;
 			}
@@ -306,7 +306,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			return true;
 		}
 		if (matchesMethod(targetClassName, targetMethodName, null, INDEXED_GET_STATIC_FUCTION_NAME)) {
-			if (isWithinGlobals(targetClassName)) {
+			if (invocation.getArguments().size()==1 && isWithinGlobals(targetClassName)) {
 				report(invocation, JSweetProblem.GLOBAL_INDEXER_GET);
 				return true;
 			}
@@ -317,7 +317,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 
 		if (matchesMethod(targetClassName, targetMethodName, null, INDEXED_SET_FUCTION_NAME)) {
 
-			if (isWithinGlobals(targetClassName)) {
+			if (invocation.getArguments().size()==2 && isWithinGlobals(targetClassName)) {
 				report(invocation, JSweetProblem.GLOBAL_INDEXER_SET);
 				return true;
 			}
@@ -349,7 +349,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 
 		if (matchesMethod(targetClassName, targetMethodName, null, INDEXED_SET_STATIC_FUCTION_NAME)) {
 
-			if (isWithinGlobals(targetClassName)) {
+			if (invocation.getArguments().size()==2 && isWithinGlobals(targetClassName)) {
 				report(invocation, JSweetProblem.GLOBAL_INDEXER_SET);
 				return true;
 			}
@@ -359,7 +359,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		}
 
 		if (matchesMethod(targetClassName, targetMethodName, null, INDEXED_DELETE_FUCTION_NAME)) {
-			if (isWithinGlobals(targetClassName)) {
+			if (invocation.getArguments().size()==1 && isWithinGlobals(targetClassName)) {
 				report(invocation, JSweetProblem.GLOBAL_DELETE);
 				return true;
 			}
@@ -373,7 +373,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		}
 
 		if (matchesMethod(targetClassName, targetMethodName, null, INDEXED_DELETE_STATIC_FUCTION_NAME)) {
-			if (isWithinGlobals(targetClassName)) {
+			if (invocation.getArguments().size()==1 && isWithinGlobals(targetClassName)) {
 				report(invocation, JSweetProblem.GLOBAL_DELETE);
 				return true;
 			}

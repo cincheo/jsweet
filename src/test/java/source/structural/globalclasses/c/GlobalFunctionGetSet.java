@@ -16,15 +16,21 @@
  */
 package source.structural.globalclasses.c;
 
-@SuppressWarnings("all")
-class Globals extends jsweet.lang.Object {
+import static jsweet.util.Globals.$get;
+import static jsweet.util.Globals.$set;
 
-	public void test() {
-		// invalid
-		Object val = this.$get("ttest");
-		this.$set("ttest", val);
-		val = $get("ttest");
-		$set("ttest", val);
+@SuppressWarnings("all")
+class Globals {
+
+	public static void test() {
+		Object val;
+		// TODO: invalid
+		//val = $get(Globals.class, "ttest");
+		//$set(Globals.class, "ttest", val);
+		val = $get(new GlobalFunctionGetSet(), "ttest");
+		$set(new GlobalFunctionGetSet(), "ttest", val);
+		val = $get(GlobalFunctionGetSet.class, "ttest");
+		$set(GlobalFunctionGetSet.class, "ttest", val);
 
 		// valid
 		jsweet.lang.Object otherObject = null;

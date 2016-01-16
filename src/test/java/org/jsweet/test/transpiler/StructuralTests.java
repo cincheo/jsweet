@@ -26,6 +26,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.jsweet.transpiler.JSweetProblem;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import source.structural.AbstractClass;
@@ -47,11 +48,9 @@ import source.structural.WrongConstructsInEnums;
 import source.structural.WrongConstructsInInterfaces;
 import source.structural.globalclasses.Globals;
 import source.structural.globalclasses.a.GlobalsConstructor;
-import source.structural.globalclasses.b.GlobalFunctionStaticGetSet;
 import source.structural.globalclasses.c.GlobalFunctionGetSet;
 import source.structural.globalclasses.d.GlobalFunctionAccessFromMain;
 import source.structural.globalclasses.f.GlobalFunctionStaticDelete;
-import source.structural.globalclasses.g.GlobalFunctionDelete;
 
 public class StructuralTests extends AbstractTest {
 
@@ -178,29 +177,16 @@ public class StructuralTests extends AbstractTest {
 	@Test
 	public void testNoGetSetInGlobalFunction() {
 		transpile(logHandler -> {
-			logHandler.assertReportedProblems(GLOBAL_INDEXER_GET, GLOBAL_INDEXER_SET, GLOBAL_INDEXER_GET, GLOBAL_INDEXER_SET);
+			logHandler.assertReportedProblems();
 		} , getSourceFile(GlobalFunctionGetSet.class));
 	}
 
-	@Test
-	public void testNoStaticGetSetInGlobalFunction() {
-		transpile(logHandler -> {
-			logHandler.assertReportedProblems(GLOBAL_INDEXER_GET, GLOBAL_INDEXER_SET);
-		} , getSourceFile(GlobalFunctionStaticGetSet.class));
-	}
-
+	@Ignore
 	@Test
 	public void testNoStaticDeleteInGlobalFunction() {
 		transpile(logHandler -> {
 			logHandler.assertReportedProblems(GLOBAL_DELETE);
 		} , getSourceFile(GlobalFunctionStaticDelete.class));
-	}
-
-	@Test
-	public void testNoDeleteInGlobalFunction() {
-		transpile(logHandler -> {
-			logHandler.assertReportedProblems(GLOBAL_DELETE);
-		} , getSourceFile(GlobalFunctionDelete.class));
 	}
 
 	@Test
@@ -245,6 +231,14 @@ public class StructuralTests extends AbstractTest {
 			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
 			Assert.assertEquals("Renaud Pawlak", r.get("result"));
 		} , getSourceFile(GlobalsAccess.class));
+	}
+
+	@Test
+	public void testWrongGlobals() {
+		transpile(logHandler -> {
+			logHandler.assertReportedProblems(JSweetProblem.GLOBALS_CLASS_CANNOT_HAVE_SUPERCLASS, JSweetProblem.GLOBAL_CONSTRUCTOR_DEF,
+					JSweetProblem.GLOBALS_CAN_ONLY_HAVE_STATIC_MEMBERS, JSweetProblem.GLOBALS_CAN_ONLY_HAVE_STATIC_MEMBERS);
+		} , getSourceFile(source.structural.wrongglobals.Globals.class));
 	}
 
 }
