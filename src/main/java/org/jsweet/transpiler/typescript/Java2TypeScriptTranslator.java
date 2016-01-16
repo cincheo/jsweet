@@ -1812,7 +1812,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	@Override
 	public void visitAssert(JCAssert assertion) {
 		if (!context.ignoreAssertions) {
-			print("if(!(").print(assertion.cond).print(")) throw new Error(\"Assertion error\");");
+			String assertCode = assertion.toString().replace("\"", "'");
+			print("if(!(").print(assertion.cond).print(")) throw new Error(\"Assertion error line " + getCurrentLine() + ": " + assertCode + "\");");
 		}
 	}
 

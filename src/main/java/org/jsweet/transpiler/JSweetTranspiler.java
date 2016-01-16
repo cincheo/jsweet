@@ -481,10 +481,11 @@ public class JSweetTranspiler {
 
 			StringWriter trace = new StringWriter();
 
+			Process runProcess;
 			if (context.useModules) {
 				File f = sourceFiles[sourceFiles.length - 1].getJsFile();
 				logger.debug("eval file: " + f);
-				ProcessUtil.runCommand(ProcessUtil.NODE_COMMAND, line -> trace.append(line + "\n"), null, f.getPath());
+				runProcess = ProcessUtil.runCommand(ProcessUtil.NODE_COMMAND, line -> trace.append(line + "\n"), null, f.getPath());
 			} else {
 				File tmpFile = new File(new File(TMP_WORKING_DIR_NAME), "eval.tmp.js");
 				FileUtils.deleteQuietly(tmpFile);
@@ -493,9 +494,14 @@ public class JSweetTranspiler {
 					FileUtils.write(tmpFile, script + "\n", true);
 				}
 				logger.debug("eval file: " + tmpFile);
-				ProcessUtil.runCommand(ProcessUtil.NODE_COMMAND, line -> trace.append(line + "\n"), null, tmpFile.getPath());
+				runProcess = ProcessUtil.runCommand(ProcessUtil.NODE_COMMAND, line -> trace.append(line + "\n"), null, tmpFile.getPath());
 			}
 
+			int returnCode = runProcess.exitValue();
+			logger.info("return code=" + returnCode);
+			if (returnCode != 0) {
+				throw new Exception("evaluation error (code=" + returnCode + ") - trace=" + trace);
+			}
 			return new TraceBasedEvaluationResult(trace.getBuffer().toString());
 		}
 	}
