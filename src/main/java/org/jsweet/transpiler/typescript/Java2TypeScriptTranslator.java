@@ -495,7 +495,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		boolean globals = JSweetConfig.GLOBALS_CLASS_NAME.equals(classdecl.name.toString());
 		if (globals && classdecl.extending != null) {
 			report(classdecl, JSweetProblem.GLOBALS_CLASS_CANNOT_HAVE_SUPERCLASS);
-			return;
 		}
 		if (!globals) {
 			if (classdecl.extending != null && JSweetConfig.GLOBALS_CLASS_NAME.equals(classdecl.extending.type.tsym.getSimpleName().toString())) {
