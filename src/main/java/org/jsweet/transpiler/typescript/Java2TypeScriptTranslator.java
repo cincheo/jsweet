@@ -1454,12 +1454,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	@Override
 	public void visitForeachLoop(JCEnhancedForLoop foreachLoop) {
 		String indexVarName = "index" + Util.getId();
-		if (foreachLoop.expr instanceof JCIdent || foreachLoop.expr instanceof JCFieldAccess) {
+		boolean noVariable = foreachLoop.expr instanceof JCIdent || foreachLoop.expr instanceof JCFieldAccess;
+		if (noVariable) {
 			print("for(var " + indexVarName + "=0; " + indexVarName + " < ").print(foreachLoop.expr).print(".length; " + indexVarName + "++) {").println()
 					.startIndent().printIndent();
 			print("var " + foreachLoop.var.name.toString() + " = ").print(foreachLoop.expr).print("[" + indexVarName + "];").println();
 		} else {
 			String arrayVarName = "array" + Util.getId();
+			print("{").println().startIndent().printIndent();
 			print("var " + arrayVarName + " = ").print(foreachLoop.expr).print(";").println().printIndent();
 			print("for(var " + indexVarName + "=0; " + indexVarName + " < " + arrayVarName + ".length; " + indexVarName + "++) {").println().startIndent()
 					.printIndent();
@@ -1467,6 +1469,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 		printIndent().print(foreachLoop.body);
 		endIndent().println().printIndent().print("}");
+		if (!noVariable) {
+			endIndent().println().printIndent().print("}");
+		}
 	}
 
 	@Override
@@ -1496,9 +1501,19 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	public void visitIf(JCIf ifStatement) {
 		print("if(").print(ifStatement.cond).print(") ");
 		print(ifStatement.thenpart);
+		if(!(ifStatement.thenpart instanceof JCBlock)) {
+			if(!statementsWithNoSemis.contains(ifStatement.thenpart.getClass())) {
+				print(";");
+			}
+		}
 		if (ifStatement.elsepart != null) {
 			print(" else ");
 			print(ifStatement.elsepart);
+			if(!(ifStatement.elsepart instanceof JCBlock)) {
+				if(!statementsWithNoSemis.contains(ifStatement.elsepart.getClass())) {
+					print(";");
+				}
+			}
 		}
 	}
 

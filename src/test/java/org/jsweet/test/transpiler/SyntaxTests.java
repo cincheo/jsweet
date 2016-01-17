@@ -35,6 +35,7 @@ import source.syntax.FinalVariables;
 import source.syntax.FinalVariablesRuntime;
 import source.syntax.GlobalsCastMethod;
 import source.syntax.GlobalsInvocation;
+import source.syntax.StatementsWithNoBlocks;
 import source.syntax.IndexedAccessInStaticScope;
 import source.syntax.Keywords;
 import source.syntax.Labels;
@@ -64,6 +65,13 @@ public class SyntaxTests extends AbstractTest {
 		} , getSourceFile(Keywords.class));
 	}
 
+	@Test
+	public void testStatementsWithNoBlocks() {
+		transpile((logHandler) -> {
+			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+		} , getSourceFile(StatementsWithNoBlocks.class));
+	}
+	
 	@Test
 	public void testQualifiedNames() {
 		transpile((logHandler) -> {
