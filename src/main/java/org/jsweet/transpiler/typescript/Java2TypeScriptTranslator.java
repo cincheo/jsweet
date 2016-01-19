@@ -483,6 +483,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	@Override
 	public void visitClassDef(JCClassDecl classdecl) {
+		if(Util.hasAnnotationType(classdecl.type.tsym, JSweetConfig.ANNOTATION_OBJECT_TYPE)) {
+			// object types are ignored
+			return;
+		}
 		if (getParent() instanceof JCClassDecl) {
 			report(classdecl, JSweetProblem.INNER_CLASS, classdecl.name);
 			return;

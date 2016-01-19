@@ -40,6 +40,7 @@ import source.structural.NameClashes;
 import source.structural.NameClashesWithMethodInvocations;
 import source.structural.NoInstanceofForInterfaces;
 import source.structural.NoWildcardsInImports;
+import source.structural.ObjectTypes;
 import source.structural.TwoClassesInSameFile;
 import source.structural.WrongConstructsInEnums;
 import source.structural.WrongConstructsInInterfaces;
@@ -237,6 +238,13 @@ public class StructuralTests extends AbstractTest {
 			logHandler.assertReportedProblems(JSweetProblem.GLOBALS_CLASS_CANNOT_HAVE_SUPERCLASS, JSweetProblem.GLOBAL_CONSTRUCTOR_DEF,
 					JSweetProblem.GLOBALS_CAN_ONLY_HAVE_STATIC_MEMBERS, JSweetProblem.GLOBALS_CAN_ONLY_HAVE_STATIC_MEMBERS);
 		} , getSourceFile(source.structural.wrongglobals.Globals.class));
+	}
+
+	@Test
+	public void testObjectTypes() {
+		transpile(logHandler -> {
+			logHandler.assertReportedProblems();
+		} , getSourceFile(ObjectTypes.class));
 	}
 
 }
