@@ -261,7 +261,7 @@ public class Util {
 			putVar(vars, ((JCEnhancedForLoop) parent).var.sym);
 			break;
 		case METHOD:
-			for(JCVariableDecl var : ((JCMethodDecl)parent).params) {
+			for (JCVariableDecl var : ((JCMethodDecl) parent).params) {
 				putVar(vars, var.sym);
 			}
 			break;
@@ -486,6 +486,9 @@ public class Util {
 	public static String getRootRelativeName(Symbol symbol) {
 		StringBuilder sb = new StringBuilder();
 		getRootRelativeName(sb, symbol);
+		if (sb.length() > 0 && sb.charAt(0) == '.') {
+			sb.deleteCharAt(0);
+		}
 		return sb.toString();
 	}
 
