@@ -25,6 +25,7 @@ Content
     -   [String types](#string-types)
     -   [Tuple types](#tuple-types)
     -   [Union types](#union-types)
+    -   [Intersection types](#intersection-types)
 -   [Semantics](#semantics)
     -   [Main methods](#main-methods)
     -   [Initializers](#initializers)
@@ -93,6 +94,8 @@ Here follows the list of allowed Java classes in JSweet:
         -   `lastIndexOf(java.lang.String)`
 
         -   `lastIndexOf(java.lang.String,int)`
+
+        -   `length()` (transpiles to `length`)
 
         -   `substring(int)`
 
@@ -170,9 +173,9 @@ Examples of valid statements:
 // warning '==' behaves like the JavaScript one at runtime
 Integer i = 2;
 assert i == 2;
-Double d = i + 4;
+Double d = i + 4d;
 assert d.toString() == "6";
-assert d == "6";
+assert (Object) d == "6";
 BiFunction<String, Integer, String> f = (s, i) -> { return s.substring(i); };
 assert "bc" == f.apply("abc", 1);
 ```
@@ -185,9 +188,9 @@ Arrays can be used in JSweet and are transpiled to JavaScript arrays. Array init
 int[] arrayOfInts = { 1, 2, 3, 4};
 assert arrayOfInts.length == 4;  
 assert arrayOfInts[0] == 1;
-for(int i : arrayOfInts) {
-    arrayOfInts[i] = arrayOfInts[i] - 1;
-    assert arrayOfInts[i] == i;
+int i = 0;
+for (int intItem : arrayOfInts) { 
+    assert arrayOfInts[i++] == intItem;
 }
 ```
 
@@ -216,7 +219,7 @@ Programmers should use this API most of the time, which is HTML5 compatible and 
 As a consequence, programmers need to be able to switch to the JavaScript API when coming from a Java object. The `jsweet.util.Globals` class defines convenient static methods to cast back and forth core Java objects to their corresponding JSweet objects. For instance the `string(...)` method will allow the programmer to switch from the Java to the JSweet strings and conversely.
 
 ``` java
-import jsweet.util.Globals.string;
+import static jsweet.util.Globals.string;
 String str = "This is a test string";
 str.toLowerCase(); // valid: toLowerCase it defined both in Java and JavaScript
 str.substr(1); // compile error: substr is not a Java method
@@ -226,7 +229,7 @@ string(str).substr(1); // valid: string(str) is a jsweet.lang.String.
 Here is another example that shows the use of the `array` method to access the `push` method available on JavaScript arrays.
 
 ``` java
-import jsweet.util.Globals.array;
+import static jsweet.util.Globals.array;
 String[] strings = { "a", "b", "c" };
 array(strings).push("d");
 assert strings[3] == "d";
@@ -261,7 +264,7 @@ var BankAccount = (function () {
 })();
 ```
 
-Classes can define constructors, have super classes and be instantiated exactly like in Java. The only restriction compared to Java is that inner classes or anonymous classes are not allowed in JSweet. For instance, the following code will raise an error.
+Classes can define constructors, have super classes and be instantiated exactly like in Java. The only restriction compared to Java is that inner classes or anonymous classes are not allowed in JSweet (in the general case). For instance, the following code will raise an error.
 
 ``` java
 public class ContainerClass {
@@ -270,6 +273,8 @@ public class ContainerClass {
     }
 }
 ```
+
+Exceptions: inner classes annotated with `@ObjectType` or `@Erased` are allowed (see the part on Auxiliary Types).
 
 ### Interfaces
 
@@ -310,7 +315,7 @@ public class WrongConstructsInInterfaces {
 
 #### Object typing
 
-In JSweet, typed object can be constructed out of interfaces. If we take the following interface:
+In JSweet, typed objects can be constructed out of interfaces. If we take the following interface:
 
 ``` java
 @Interface
@@ -329,10 +334,10 @@ Point p1 = new Point() {{ x=1; y=1; }};
 As a direct consequence, in JSweet it is not allowed to check an instance against an interface type.
 
 ``` java
-if (p1 instanceof Point) { ... } // compile error 
+if (p1 instanceof Point) { ... } // compile error
 ```
 
-This may seems quite confusing for Java programmers, but you have to remember that, on contrary to Java where interfaces are available as special classes at runtime, in JSweet, interfaces have no reality at runtime. Think of generics, which are of the same kind in Java. As a consequence, the `instanceof` operator is not applicable on interfaces at runtime (like it is not applicable on generics).
+This may seems quite confusing for Java programmers, but you have to remember that, on contrary to Java where interfaces are available as special classes at runtime, in JSweet, interfaces have no reality at runtime. Think of generics, which are of the same kind in Java. As a consequence, the `instanceof` operator is applicable to classes, but not to interfaces at runtime (like it is not applicable on generics).
 
 #### Optional fields
 
@@ -361,7 +366,7 @@ Point p2 = new Point() {{ x=1; z=1; }};
 
 In JavaScript, objects can have properties and functions, but can also (not exclusively), be used as constructors and functions themselves. This is not possible in Java, so JSweet defines special functions for handling these cases.
 
--   `$apply` is used to state that the object can be used as a function.
+-   `apply` is used to state that the object can be used as a function.
 
 -   `$new` is used to state that the object can be used as a constructor.
 
@@ -380,7 +385,7 @@ The following statements are valid statements in JSweet.
 ``` java
 MyEnum e = MyEnum.A;
 assert MyEnum.A == e;
-assert e.name().equals("A");
+assert e.name() == "A";
 assert e.ordinal() == 0;
 assert MyEnum.valueOf("A") == e;
 assert array(MyEnum.values()).indexOf(MyEnum.valueOf("C")) == 2;
@@ -433,7 +438,7 @@ class NodeList implements java.lang.Iterable {
 }
 ```
 
-In JSweet, you can access the node list elements with the `$get` function, and your can also iterate with the *foreach* syntax. The following code generates fully valid JavaScript code.
+In JSweet, you can access the node list elements with the `$get` function, and you can also iterate with the *foreach* syntax. The following code generates fully valid JavaScript code.
 
 ``` java
 NodeList nodes = ...
@@ -510,7 +515,7 @@ String m(String s) { return s; }
 
 ### Ambient declarations
 
-It can be the case that programmers need to use existing libraries from JSweet. In most cases, one should look up in the available candies (<http://www.jsweet.org/candies-releases/>), which are automatically generated from TypeScript’s DefinitelyTyped. When the candy does not exist, or does not entirely cover what is needed, one can use the `@jsweet.lang.Ambient` annotation, which will make available to the programmers a class definition or an interface. The following example shows the backbone store class made accessible to the JSweet programmer with a simple ambient declaration. This class will be erased during the JavaScript generation.
+It can be the case that programmers need to use existing libraries from JSweet. In most cases, one should look up in the available candies (<http://www.jsweet.org/candies-releases/> and <http://www.jsweet.org/candies-snapshots/>), which are automatically generated from TypeScript’s DefinitelyTyped. When the candy does not exist, or does not entirely cover what is needed, one can use the `@jsweet.lang.Ambient` annotation, which will make available to the programmers a class definition or an interface. The following example shows the backbone store class made accessible to the JSweet programmer with a simple ambient declaration. This class is only for typing and will be erased during the JavaScript generation.
 
 ``` java
 @Ambient
@@ -522,33 +527,215 @@ class Store {
 Auxiliary types
 ---------------
 
-JSweet uses most Java typing features (including functional types) but also extends the Java type system with so-called *auxiliary types*. The idea behind auxiliary types is to create classes or interfaces that can hold the typing information through the use of type parameters (a.k.a *generics*), so that the JSweet transpiler can cover more typing scenarios. These types have been mapped from TypeScript type system, which is much richer than the Java one (mostly because JavaScript is a dynamic language and requests more typing scenarios than Java).
+JSweet uses most Java typing features (including functional types) but also extends the Java type system with so-called *auxiliary types*. The idea behind auxiliary types is to create classes or interfaces that can hold the typing information through the use of type parameters (a.k.a *generics*), so that the JSweet transpiler can cover more typing scenarios. These types have been mapped from TypeScript type system, which is much richer than the Java one (mostly because JavaScript is a dynamic language and requires more typing scenarios than Java).
 
 ### Functional types
 
-For functional types, JSweet reuses the `java.Runnable` and `java.util.function` functional interfaces of Java 8. These interfaces only support up to 2-parameter functions. Thus, JSweet adds some support for more parameters in `jsweet.util.function`, since it is a common case in JavaScript APIs.
+For functional types, JSweet reuses the `java.Runnable` and `java.util.function` functional interfaces of Java 8. These interfaces are generic but only support up to 2-parameter functions. Thus, JSweet adds some support for more parameters in `jsweet.util.function`, since it is a common case in JavaScript APIs.
 
-// To be completed
+Here is an example using the `Function` generic functional type:
+
+``` java
+import java.util.function.Function;
+
+public class C {
+
+    String test(Function<String, String> f) {
+        f.apply("a");
+    }
+
+    public static void main(String[] args) {
+        String s = new C().test(p -> p);
+        assert s == "a";
+    }
+}
+```
+
+We encourage programmers to use the generic functional interfaces defined in the `jsweet.util.function` and `java.util.function` (besides `java.lang.Runnable`). When requiring functions with more parameters, programmers can define their own generic functional types in `jsweet.util.function` by following the same template as the existing ones.
+
+In some cases, programmers will prefer defining their own specific functional interfaces. This is supported by JSweet. For example:
+
+``` java
+@FunctionalInterface
+interface MyFunction {
+    void run(int i, String s);
+}
+
+public class C {
+    void m(MyFunction f) {
+        f.run(1, "test");
+    }
+    public static void main(String[] args) {
+        new C().m((i, s) -> {
+            // do something with i and s
+        });
+    }
+}
+```
+
+Important warning: it is to be noted here that, on contrary to Java, the use of the `@FunctionInterface` annotation is mandatory.
+
+Note also the possible use of the `apply` function, which is by convention always a functional definition on the target object (unless if `apply` is annotated with the `@Name` annotation). Defining/invoking `apply` can done on any class/object (because in JavaScript any object can become a functional object).
 
 ### Object types
 
-// Todo
+Object types are similar to interfaces: they define a set of fields and methods that are applicable to an object (but remember that it is a compile-time contract). In TypeScript, object types are inlined and anonymous. For instance, in TypeScript, the following method `m` takes a parameter, which is an object containing an `index` field:
+
+``` java
+// TypeScript:
+public class C {
+    public m(param : { index : number }) { ... }
+}
+```
+
+Object types are a convenient way to write shorter code. One can pass an object that is correctly typed by constructing an object on the fly:
+
+``` java
+// TypeScript:
+var c : C = ...;
+c.m({ index : 2 });
+```
+
+Obviously, object types are a way to make the typing of JavaScript programs very easy to programmers, which is one of the main goals of TypeScript. It makes the typing concise, intuitive and straightforward to JavaScript programmers. In Java/JSweet, no similar inlined types exist and Java programmers are used to defining classes or interfaces for such cases. So, in JSweet, programmers have to define auxiliary classes annotated with `@ObjectType` for object types. This may seem more complicated, but it has the advantage to force the programmers to name all the types, which, in the end, can lead to more readable and maintenable code depending on the context. Note that similarily to interfaces, object types are erased at runtime. Also `@ObjectType` annotated classes can be inner classes so that they are used locally.
+
+Here is the JSweet version of the previous TypeScript program.
+
+``` java
+public class C {
+    @ObjectType
+    public static class Indexed {
+        int index;
+    }
+    public void m(Indexed param) { ... }
+}
+```
+
+Using an object type is similar to using an interface:
+
+``` java
+C c = ...;
+c.m(new Indexed() {{ index = 2; }});
+```
+
+When object types are shared objects and represent a typing entity that can be used in several contexts, it is recommended to use the `@Interface` annotation instead of `@ObjectType`. Here is the interface-based version.
+
+``` java
+@Interface
+public class Indexed {
+    int index;
+}
+
+public class C {
+    public m(Indexed param) { ... }
+}
+
+C c = ...;
+c.m(new Indexed {{ index = 2; }});
+```
 
 ### String types
 
-For string types, the use of specific types and final instances of these types is the way to simulate string types in Java. For instance, if a `"span"` string type needs to be defined, a Java interface called `span` and a static final field called `span` in a `StringTypes` class will do the job.
+In TypeScript, string types are a way to simulate function overloading depending on the value of a string parameter. For instance, here is a simplified excerpt of the DOM TypeScript definition file:
 
-// To be completed
+``` java
+// TypeScript:
+interface Document {
+    [...]
+    getElementsByTagName(tagname: "a"): NodeListOf<HTMLAnchorElement>;
+    getElementsByTagName(tagname: "b"): NodeListOf<HTMLPhraseElement>;
+    getElementsByTagName(tagname: "body"): NodeListOf<HTMLBodyElement>;
+    getElementsByTagName(tagname: "button"): NodeListOf<HTMLButtonElement>;
+    [...]
+}
+```
+
+In this code, the `getElementsByTagName` functions are all overloads that depend on the strings passed to the `tagname` parameter. Not only string types allow function overloading (which is in general not allowed in TypeScript/JavaScript), but they also constrain the string values (similarly to an enumeration), so that the compiler can automatically detect typos in string values and raise errors.
+
+This feature being useful for code quality, JSweet provides a mechanism to simulate string types with the same level of type safety. A string type is a public static field annotated with `@StringType`. It must be typed with an interface of the same name declared in the same container type.
+
+For JSweet translated libraries (candies), all string types are declared in a the `jsweet.util.StringTypes` class, so that it is easy for the programmers to find them. For instance, if a `"body"` string type needs to be defined, a Java interface called `body` and a static final field called `body` are defined in a `jsweet.util.StringTypes`.
+
+Note that each candy may have its own string types defined in the `jsweet.util.StringTypes` class. The JSweet transpiler merges all these classes at the bytecode level so that all the string types of all candies are available in the same `jsweet.util.StringTypes` utility class. As a result, the JSweet DOM API will look like:
+
+``` java
+@Interface
+public class Document {
+    [...]
+    public native NodeListOf<HTMLAnchorElement> getElementsByTagName(a tagname);
+    public native NodeListOf<HTMLPhraseElement> getElementsByTagName(b tagname);
+    public native NodeListOf<HTMLBodyElement> getElementsByTagName(body tagname);
+    public native NodeListOf<HTMLButtonElement> getElementsByTagName(button tagname);
+    [...]
+}
+```
+
+In this API, `a`, `b`, `body` and `button` are interfaces defined in the `jsweet.util.StringTypes` class. When using one the method of `Document`, the programmer just need to use the corresponding type instance (of the same name). For instance:
+
+``` java
+Document doc = ...;
+NodeListOf<HTMLAnchorElement> elts = doc.getElementsByTagName(StringTypes.a);
+```
+
+Note: if the string value is not a valid Java identifier (for instance `"2d"` or `"string-with-dashes"`), it is then translated to a valid one and annotated with `@Name("originalName")`, so that the JSweet transpiler knows what actual string value must be used in the generated code. For instance, by default, `"2d"` and `"string-with-dashes"` will correspond to the interfaces `StringTypes._2d` and `StringTypes.string_with_dashes` with `@Name` annotations.
+
+Programmers can define string types for their own needs, as shown below:
+
+``` java
+import jsweet.lang.Erased;
+import jsweet.lang.StringType;
+
+public class CustomStringTypes {
+    @Erased
+    public interface abc {}
+    
+    @StringType
+    public static final abc abc = null;
+
+    // This method takes a string type parameter
+    void m2(abc arg) {
+    }
+    
+    public static void main(String[] args) {
+        new CustomStringTypes().m2(abc);
+    }
+}
+```
+
+Note the use of the `@Erased` annotation, which allows the declaration of the `abc` inner interface. This interface is used to type the string type field `abc`. In general, we advise the programmer to group all the string types of a program in the same utility class so that it is easy to find them.
 
 ### Tuple types
 
 Tuple types represent JavaScript arrays with individually tracked element types. For tuple types, JSweet defines parameterized auxiliary classes `TupleN<T0, ... TN-1>`, which define `$0`, `$1`, ... `$N-1` public fields to simulate typed array accessed (field `$i` is typed with `Ti`).
 
-// To be completed
+For instance, given the following tuple of size 2:
+
+``` java
+Tuple2<String, Integer> tuple = new Tuple2<String, Integer>("test", 10);
+```
+
+We can expect the following (well-typed) behavior:
+
+``` java
+assert tuple.$0 == "test";
+assert tuple.$1 == 10;
+tuple.$0 = "ok";
+tuple.$1--;
+assert tuple.$0 == "ok";
+assert tuple.$1 == 9;
+```
+
+Tuple types are all defined (and must be defined) in the `jsweet.util.tuple` package. By default classes `Tuple[2..6]` are defined. Other tuples (\(>6\)) are automatically generated when encountered in the candy APIs. Of course, when requiring larger tuples that cannot be found in the `jsweet.util.tuple` package, programmers can add their own tuples in that package depending on their needs, just by following the same template as existing tuples.
 
 ### Union types
 
-Union types represent values that may have one of several distinct representations. For union types, JSweet takes advantage of the `method overloading` mechanism available in Java. For more general cases, it defines an auxiliary interface `Union<T1, T2>` (and `UnionN<T1, ... TN>`) in the `jsweet.util.union` package. By using this auxiliary type and a `union` utility method, programmers can cast back and forth between union types and union-ed type, so that JSweet can ensure similar properties as TypeScript union types.
+Union types represent values that may have one of several distinct representations. When such a case happens within a method signature (for instance a method allowing several types for a given parameter), JSweet takes advantage of the *method overloading* mechanism available in Java. For instance, the following `m` method accept a parameter `p`, which can be either a `String` or a `Integer`.
+
+``` java
+public void m(String p) {...}
+public void m(Integer p) {...}
+```
+
+In the previous case, the use of explicit union types is not required. For more general cases, JSweet defines an auxiliary interface `Union<T1, T2>` (and `UnionN<T1, ... TN>`) in the `jsweet.util.union` package. By using this auxiliary type and a `union` utility method, programmers can cast back and forth between union types and union-ed type, so that JSweet can ensure similar properties as TypeScript union types.
 
 The following code shows a typical use of union types in JSweet. It simply declares a variable as a union between a string and a number, which means that the variable can actually be of one of that types (but of no other types). The switch from a union type to a regular type is done through the `jsweet.util.Globals.union` helper method. This helper method is completely untyped, allowing from a Java perspective any union to be transformed to another type. It is actually the JSweet transpiler that checks that the union type is consistently used.
 
@@ -590,6 +777,12 @@ native public void m(Number n);
 native public void m(Date d);
 ```
 
+### Intersection types
+
+TypeScript defines the notion of type intersection. When types are intersected, it means that the resulting type is a larger type, which is the sum of all the intersected types. For instance, in TypeScript, `A & B` corresponds to a type that defines both `A` and `B` members.
+
+Intersection types in Java cannot be implemented easily for many reasons. So, the practical choice being made here is to use union types in place of intersection types. In JSweet, `A & B` is thus defined as `Union<A, B>`, which means that the programmer can access both `A` and `B` members by using the `jsweet.util.Globals.union` helper method. It is of course less convenient than the TypeScript version, but it is still type safe.
+
 Semantics
 ---------
 
@@ -603,7 +796,7 @@ Main methods are the program execution entry points and will be invoked globally
 public class C {
     private int n;
     public static C instance;
-    public static main(String[] args) {
+    public static void main(String[] args) {
         instance = new C();
         instance.n = 4;
     }
@@ -649,7 +842,7 @@ public class C2 {
         n = 4;
     }
 }
-assert new C2.n == 4;
+assert C2.n == 4;
 ```
 
 ### Name clashes
@@ -694,9 +887,30 @@ String m(String s, double n) { return s + n; }
 String m(String s) { return s; }
 ```
 
+Local variables can also clash with the use of a global method. For instance, using the `alert` global method from the DOM (`jsweet.dom.Globals.alert`) requires that no local variable hides it. For instance:
+
+``` java
+import static jsweet.dom.Globals.alert;
+
+[...]
+
+public void m1(boolean alert) {
+    // JSweet compile error: name clash between parameter and method call
+    alert("test");
+}
+
+public void m2() {
+    // JSweet compile error: name clash between local variable and method call
+    String alert = "test";
+    alert(alert);
+}
+```
+
+Note that this problem also happens when using fully qualified names when calling the global methods (that because the qualification gets erased in TypeScript/JavaScript). In any case, JSweet will report sound errors when such problems happen so that programmers can adjust local variable names to avoid clashes with globals.
+
 ### Variable scoping in lambda expressions
 
-JavaScript variable scope is known to pose some problems to the programmers, because it is possible to change the reference to a variable from outside of a lambda that would use this variable. As a consequence, a JavaScript programmer cannot rely on a variable declared outside of a lambda scope, because when the lambda is executed, the variable may have been modified somewhere else in the program. For instance, the following program shows a typical case:
+JavaScript variable scoping is known to pose some problems to the programmers, because it is possible to change the reference to a variable from outside of a lambda that would use this variable. As a consequence, a JavaScript programmer cannot rely on a variable declared outside of a lambda scope, because when the lambda is executed, the variable may have been modified somewhere else in the program. For instance, the following program shows a typical case:
 
 ``` java
 NodeList nodes = document.querySelectorAll(".control");
@@ -832,10 +1046,13 @@ Appendix 1: JSweet transpiler options
             Generate all the bundles (see option --bundle) within the given
             directory.
 
-      [-d|--debug]
-            Set the transpiler to debug mode. In debug mode, source map files are
-            generated so that it is possible to debug them in the browser. This
-            feature is not available yet when using the --module option.
+      [--sourceMap]
+            Set the transpiler to generate source map files for the Java files, so
+            that it is possible to debug them in the browser. This feature is not
+            available yet when using the --module option. Currently, when this
+            option is on, the generated TypeScript file is not pretty printed in a
+            programmer-friendly way (disable it in order to generate readable
+            TypeScript code).
 
       [--ignoreAssertions]
             Set the transpiler to ignore 'assert' statements, i.e. no code is
