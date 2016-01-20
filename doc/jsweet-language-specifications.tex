@@ -247,6 +247,8 @@ str.substr(1); // compile error: substr is not a Java method
 string(str).substr(1); // valid: string(str) is a jsweet.lang.String.
 \end{lstlisting}
 
+Note: using the \texttt{jsweet.util.Globals} class to access the JavaScript API can be avoided in some cases when working in \emph{strict} mode (see Appendix 2).
+
 \noindent
 Here is another example that shows the use of the \texttt{array} method to access the \texttt{push} method available on JavaScript arrays.
 
@@ -1090,5 +1092,29 @@ Note: the notion of manual require of a module may be available in future releas
         generated for assertions.
 
 \end{verbatim}
+
+\chapter*{Appendix 2: JSweet strict mode}
+
+For programmers developing JavaScript-only application (no Java at all), JSweet proposes an optional \emph{strict} mode. In strict mode, Java APIs are not accessible at all anymore and are substituted by the JavaScript APIs. This is possible through a technique invented by Peter Kriens consisting in replacing the core Java classes at compile-time. To enable strict mode, just add to your dependencies (in first position) the \texttt{jsweet-core-strict} artifact (group \texttt{org.jsweet}).
+
+The advantage of using the strict mode is that Java core objects become JavaScript object directly and expose the JavaScript API, so that programmers do not need to switch from Java to JSweet API anymore (through the \texttt{jsweet.util.Globals} utilities). This means for instance that the \texttt{\$get}, \texttt{\$set} and \texttt{\$delete} functions are directly accessible on all objects.
+
+Here is an example with a native Java string:
+
+\begin{lstlisting}[language=Java]
+String str = "This is a test string";
+// compile error in non strict mode: substr is not a Java method
+// but OK with strict mode! 
+str.substr(1); 
+\end{lstlisting}
+
+The main benefit in using strict mode is when manipulating objects and strings. However, it has limitations. For instance, Java arrays still need to be cast to JSweet arrays to access the JavaScript API. Moreover, programmers have to be aware that using strict mode within an IDE will prevent from having JSweet and Java code mixed within the same project (they may be in different projects though). Here is a list of tips about using strict mode.
+
+\begin{itemize}
+\item You can use strict mode on full JavaScript projects, for instance pure client-side applications or full-stack applications with a Node.js server.
+\item You can use strict mode on small pure JavaScript components with very few interactions with the outside world (almost no data exchanged).
+\item Avoid using strict mode when wanting to share some data between JavaScript and some Java tiers (typically trough DTOs).
+\item Avoid using strict mode when you feel that one day, your code may collaborate closer with a Java application (typically a Java server).
+\end{itemize}
         
 \end{document}

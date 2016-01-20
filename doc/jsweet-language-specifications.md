@@ -39,6 +39,7 @@ Content
     -   [Root packages](#root-packages)
     -   [External modules](#external-modules)
 -   [Appendix 1: JSweet transpiler options](#appendix-1-jsweet-transpiler-options)
+-   [Appendix 2: JSweet strict mode](#appendix-2-jsweet-strict-mode)
 
 Basic concepts
 --------------
@@ -227,6 +228,8 @@ str.toLowerCase(); // valid: toLowerCase it defined both in Java and JavaScript
 str.substr(1); // compile error: substr is not a Java method
 string(str).substr(1); // valid: string(str) is a jsweet.lang.String.
 ```
+
+Note: using the `jsweet.util.Globals` class to access the JavaScript API can be avoided in some cases when working in *strict* mode (see Appendix 2).
 
 Here is another example that shows the use of the `array` method to access the `push` method available on JavaScript arrays.
 
@@ -1059,3 +1062,29 @@ Appendix 1: JSweet transpiler options
       [--ignoreAssertions]
             Set the transpiler to ignore 'assert' statements, i.e. no code is
             generated for assertions.
+
+Appendix 2: JSweet strict mode
+------------------------------
+
+For programmers developing JavaScript-only application (no Java at all), JSweet proposes an optional *strict* mode. In strict mode, Java APIs are not accessible at all anymore and are substituted by the JavaScript APIs. This is possible through a technique invented by Peter Kriens consisting in replacing the core Java classes at compile-time. To enable strict mode, just add to your dependencies (in first position) the `jsweet-core-strict` artifact (group `org.jsweet`).
+
+The advantage of using the strict mode is that Java core objects become JavaScript object directly and expose the JavaScript API, so that programmers do not need to switch from Java to JSweet API anymore (through the `jsweet.util.Globals` utilities). This means for instance that the `$get`, `$set` and `$delete` functions are directly accessible on all objects.
+
+Here is an example with a native Java string:
+
+``` java
+String str = "This is a test string";
+// compile error in non strict mode: substr is not a Java method
+// but OK with strict mode! 
+str.substr(1); 
+```
+
+The main benefit in using strict mode is when manipulating objects and strings. However, it has limitations. For instance, Java arrays still need to be cast to JSweet arrays to access the JavaScript API. Moreover, programmers have to be aware that using strict mode within an IDE will prevent from having JSweet and Java code mixed within the same project (they may be in different projects though). Here is a list of tips about using strict mode.
+
+-   You can use strict mode on full JavaScript projects, for instance pure client-side applications or full-stack applications with a Node.js server.
+
+-   You can use strict mode on small pure JavaScript components with very few interactions with the outside world (almost no data exchanged).
+
+-   Avoid using strict mode when wanting to share some data between JavaScript and some Java tiers (typically trough DTOs).
+
+-   Avoid using strict mode when you feel that one day, your code may collaborate closer with a Java application (typically a Java server).
