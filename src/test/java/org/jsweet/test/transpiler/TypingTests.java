@@ -26,6 +26,7 @@ import org.junit.Test;
 import source.typing.ArraysOfLambdas;
 import source.typing.ClassTypeAsFunction;
 import source.typing.ClassTypeAsTypeOf;
+import source.typing.CustomStringTypes;
 import source.typing.InvalidIndexedAccesses;
 import source.typing.Lambdas;
 import source.typing.Numbers;
@@ -122,6 +123,18 @@ public class TypingTests extends AbstractTest {
 		}
 	}
 
+	@Test
+	public void testCustomStringTypes() {
+		TestTranspilationHandler logHandler = new TestTranspilationHandler();
+		try {
+			transpiler.transpile(logHandler, getSourceFile(CustomStringTypes.class));
+			logHandler.assertReportedProblems();
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail("Exception occured while running test");
+		}
+	}
+	
 	@Test
 	public void testTuples() {
 		TestTranspilationHandler logHandler = new TestTranspilationHandler();

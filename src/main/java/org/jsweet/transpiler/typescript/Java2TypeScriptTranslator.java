@@ -487,6 +487,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			// object types are ignored
 			return;
 		}
+		if(Util.hasAnnotationType(classdecl.type.tsym, JSweetConfig.ANNOTATION_ERASED)) {
+			// erased types are ignored
+			return;
+		}
 		if (getParent() instanceof JCClassDecl) {
 			report(classdecl, JSweetProblem.INNER_CLASS, classdecl.name);
 			return;
@@ -657,6 +661,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	@Override
 	public void visitMethodDef(JCMethodDecl methodDecl) {
+		if(Util.hasAnnotationType(methodDecl.sym, JSweetConfig.ANNOTATION_ERASED)) {
+			// erased elements are ignored
+			return;
+		}
 		JCClassDecl parent = (JCClassDecl) getParent();
 
 		boolean constructor = methodDecl.name.toString().equals("<init>");
@@ -871,6 +879,15 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	@Override
 	public void visitVarDef(JCVariableDecl varDecl) {
+		if(Util.hasAnnotationType(varDecl.sym, JSweetConfig.ANNOTATION_ERASED)) {
+			// erased elements are ignored
+			return;
+		}
+		if(Util.hasAnnotationType(varDecl.sym, JSweetConfig.ANNOTATION_STRING_TYPE)) {
+			// string type fields are ignored
+			return;
+		}
+		
 		if (getParent().getKind() == Kind.ENUM) {
 			print(varDecl.name.toString());
 		} else {
