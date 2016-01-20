@@ -769,7 +769,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				report(methodDecl, methodDecl.name, JSweetProblem.WRONG_USE_OF_AMBIENT, methodDecl.name);
 			}
 		}
-		printIdentifier(getTSMethodName(methodDecl));
+		if(!Util.hasAnnotationType(parent.sym, FunctionalInterface.class.getName())) {
+			printIdentifier(getTSMethodName(methodDecl));
+		}
 		if (methodDecl.typarams != null && !methodDecl.typarams.isEmpty()) {
 			print("<").printArgList(methodDecl.typarams).print(">");
 		}
@@ -1161,6 +1163,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			} else {
 				if (inv.meth instanceof JCFieldAccess) {
 					JCExpression selected = ((JCFieldAccess) inv.meth).selected;
+					if(Util.hasAnnotationType(selected.type.tsym, FunctionalInterface.class.getName())) {
+						anonymous = true;
+					}
 					methSym = Util.findMethodDeclarationInType(context.types, selected.type.tsym, methName, type);
 					if (methSym != null) {
 						typeChecker.checkApply(inv, methSym);

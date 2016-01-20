@@ -26,6 +26,7 @@ import org.junit.Test;
 import source.typing.ArraysOfLambdas;
 import source.typing.ClassTypeAsFunction;
 import source.typing.ClassTypeAsTypeOf;
+import source.typing.CustomLambdas;
 import source.typing.CustomStringTypes;
 import source.typing.InvalidIndexedAccesses;
 import source.typing.Lambdas;
@@ -192,4 +193,13 @@ public class TypingTests extends AbstractTest {
 		}
 	}
 
+	@Test
+	public void testCustomLambdas() {
+		eval((logHandler, r) -> {
+			logHandler.assertReportedProblems();
+			Assert.assertEquals("test1", r.get("lambda"));
+		} , getSourceFile(CustomLambdas.class));
+	}
+
+	
 }
