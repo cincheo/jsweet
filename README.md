@@ -53,6 +53,10 @@ More info at http://www.jsweet.org.
 - [Maven plugin](https://github.com/lgrignon/jsweet-maven-plugin)
 - [Gradle plugin](https://github.com/lgrignon/jsweet-gradle-plugin)
 
+## News and more information
+
+Most information are available on the http://www.jsweet.org. Developers, check out the [wiki](https://github.com/cincheo/jsweet/wiki).
+
 ## How to build
 
 Prerequisites: `node` and `npm` executables must be in the path (https://nodejs.org). Note that there seem to be an issue with the `node` executable on some Unix-based machines, which should be fixed (see for instance: http://askubuntu.com/questions/235655/node-js-conflicts-sbin-node-vs-usr-bin-node).

@@ -1,4 +1,8 @@
 
+## What to contribute?
+
+Check out the issues and [wiki](https://github.com/cincheo/jsweet/wiki) for bugs, sub-projects and features where your contributions could be useful.
+
 ## Your contributions
 
 Your contributions are most welcome. Bugs and features should be first reported in the Github issues space, so that we all know who is working on what, and so that we avoid duplicate efforts.
