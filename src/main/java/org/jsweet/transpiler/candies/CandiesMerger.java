@@ -256,9 +256,27 @@ public class CandiesMerger {
 		}
 	}
 
-	private boolean hasMethod(CtClass clazz, String name) {
+	private boolean hasMethod(CtClass clazz, CtMethod candidateMethod) {
 		try {
-			return clazz.getDeclaredMethod(name) != null;
+			CtMethod existing = clazz.getDeclaredMethod(candidateMethod.getName());
+			if (existing == null) {
+				return false;
+			}
+			
+			CtClass[] existingParamTypes = existing.getParameterTypes();
+			CtClass[] candidateParamTypes = candidateMethod.getParameterTypes();
+			if (existingParamTypes.length != candidateParamTypes.length) {
+				return false;
+			}
+			
+			for (int i = 0; i < existingParamTypes.length; i++) {
+				if (!existingParamTypes[i].getName().equals(candidateParamTypes[i].getName())) {
+					return false;
+				}
+			}
+			
+			return true;
+			
 		} catch (Exception e) {
 			return false;
 		}
@@ -285,7 +303,7 @@ public class CandiesMerger {
 		}
 		for (CtMethod ctMethod : ctMixin.getDeclaredMethods()) {
 			try {
-				if (!hasMethod(ctTarget, ctMethod.getName())) {
+				if (!hasMethod(ctTarget, ctMethod)) {
 					ctTarget.addMethod(CtNewMethod.copy(ctMethod, ctTarget, null));
 					memberCount++;
 				} else {
