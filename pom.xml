@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.jsweet</groupId>
 	<artifactId>jsweet-transpiler</artifactId>
-	<version>1.0.0</version>
+	<version>1.0.0-SNAPSHOT</version>
 	<name>JSweet transpiler</name>
 	<description>Programming Web applications with Java 8</description>
 	<developers>
