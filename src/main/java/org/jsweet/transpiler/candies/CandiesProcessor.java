@@ -186,17 +186,16 @@ public class CandiesProcessor {
 	}
 
 	private void checkCandyVersion(CandyDescriptor candy, TranspilationHandler transpilationHandler) {
-		
+
 		String actualTranspilerVersion = JSweetConfig.getVersionNumber().replace("-SNAPSHOT", "");
-		
-		if (candy.transpilerVersion == null || !candy.transpilerVersion.equals(actualTranspilerVersion)) {
-			transpilationHandler.report(
-					JSweetProblem.CANDY_VERSION_DISCREPANCY, null, 
-					JSweetProblem.CANDY_VERSION_DISCREPANCY.getMessage(
-							candy.name, candy.version, actualTranspilerVersion, candy.transpilerVersion));
+		String candyTranspilerVersion = candy.transpilerVersion == null ? null : candy.transpilerVersion.replace("-SNAPSHOT", "");
+
+		if (candyTranspilerVersion == null || !candyTranspilerVersion.equals(actualTranspilerVersion)) {
+			transpilationHandler.report(JSweetProblem.CANDY_VERSION_DISCREPANCY, null,
+					JSweetProblem.CANDY_VERSION_DISCREPANCY.getMessage(candy.name, candy.version, actualTranspilerVersion, candyTranspilerVersion));
 		}
 	}
-	
+
 	private void extractCandies(Map<File, CandyDescriptor> candies) throws IOException {
 		File extractedSourcesDir = candiesSourceDir;
 		File extractedTsDefsDir = candiesTsdefsDir;
