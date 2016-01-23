@@ -55,7 +55,7 @@ More info at http://www.jsweet.org.
 
 ## News and more information
 
-Most information are available on the http://www.jsweet.org. Developers, check out the [wiki](https://github.com/cincheo/jsweet/wiki).
+Most information is available on the http://www.jsweet.org. Developers, check out the [wiki](https://github.com/cincheo/jsweet/wiki).
 
 ## How to build
 
