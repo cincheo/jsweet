@@ -170,7 +170,8 @@ public class CandiesProcessor {
 				File jarFile = new File(classPathEntry);
 				try (JarFile jarFileHandle = new JarFile(jarFile)) {
 					JarEntry candySpecificEntry = jarFileHandle.getJarEntry("META-INF/maven/" + JSweetConfig.MAVEN_CANDIES_GROUP);
-					boolean isCandy = candySpecificEntry != null;
+					JarEntry candySpecificEntry2 = jarFileHandle.getJarEntry("META-INF/candy-metadata.json");
+					boolean isCandy = candySpecificEntry != null || candySpecificEntry2 != null;
 					if (isCandy) {
 						CandyDescriptor descriptor = CandyDescriptor.fromCandyJar(jarFileHandle);
 
