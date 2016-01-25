@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.jsweet</groupId>
 	<artifactId>jsweet-transpiler</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
+	<version>1.0.0-RC1</version>
 	<name>JSweet transpiler</name>
 	<description>Programming Web applications with Java 8</description>
 	<developers>
@@ -179,56 +179,56 @@
 		<dependency>
 			<groupId>org.jsweet.candies</groupId>
 			<artifactId>jsweet-core</artifactId>
-			<version>1.0.2-SNAPSHOT</version>
+			<version>1.0.0-SNAPSHOT</version>
 			<scope>test</scope>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.jsweet.candies</groupId>
 			<artifactId>body-parser</artifactId>
-			<version>0.0.2-SNAPSHOT</version>
+			<version>0.0.0-SNAPSHOT</version>
 			<scope>test</scope>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.jsweet.candies</groupId>
 			<artifactId>node</artifactId>
-			<version>4.0.2-SNAPSHOT</version>
+			<version>4.0.0-SNAPSHOT</version>
 			<scope>test</scope>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.jsweet.candies</groupId>
 			<artifactId>errorhandler</artifactId>
-			<version>0.0.2-SNAPSHOT</version>
+			<version>0.0.0-SNAPSHOT</version>
 			<scope>test</scope>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.jsweet.candies</groupId>
 			<artifactId>socket.io</artifactId>
-			<version>1.3.50002-SNAPSHOT</version>
+			<version>1.4.4-SNAPSHOT</version>
 			<scope>test</scope>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.jsweet.candies</groupId>
 			<artifactId>jquery</artifactId>
-			<version>1.10.2-SNAPSHOT</version>
+			<version>1.10.0-SNAPSHOT</version>
 			<scope>test</scope>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.jsweet.candies</groupId>
 			<artifactId>angular</artifactId>
-			<version>1.4.2-SNAPSHOT</version>
+			<version>1.4.0-SNAPSHOT</version>
 			<scope>test</scope>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.jsweet.candies</groupId>
 			<artifactId>angular-route</artifactId>
-			<version>1.3.2-SNAPSHOT</version>
+			<version>1.3.0-SNAPSHOT</version>
 			<scope>test</scope>
 			<optional>true</optional>
 		</dependency>
