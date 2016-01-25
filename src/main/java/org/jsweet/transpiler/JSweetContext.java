@@ -40,6 +40,22 @@ import com.sun.tools.javac.util.Names;
  * @author Renaud Pawlak
  */
 public class JSweetContext extends Context {
+
+	/**
+	 * Creates a new JSweet transpilation context.
+	 * 
+	 * @param options
+	 *            the JSweet transpilation options
+	 */
+	public JSweetContext(JSweetOptions options) {
+		this.options = options;
+	}
+
+	/**
+	 * JSweet transpilation options.
+	 */
+	public final JSweetOptions options;
+
 	/**
 	 * A cache of method overloads.
 	 * 
@@ -178,12 +194,6 @@ public class JSweetContext extends Context {
 	 * Globally imported name (in the global namespace).
 	 */
 	public Set<String> globalImports = new HashSet<>();
-
-	/**
-	 * A flag to tell if the transpiler should ignore the 'assert' statement or
-	 * generate appropriate code.
-	 */
-	public boolean ignoreAssertions = false;
 
 	/**
 	 * A flag that indicates if the transpilation is in "strict" mode, which

@@ -27,6 +27,7 @@ import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 
 import org.jsweet.transpiler.JSweetContext;
+import org.jsweet.transpiler.JSweetOptions;
 
 import com.sun.tools.javac.code.Lint.LintCategory;
 import com.sun.tools.javac.code.Symtab;
@@ -42,14 +43,19 @@ import com.sun.tools.javac.util.Options;
 /**
  * This utility class encapsulates a <code>javac</code> compilation environment.
  * 
+ * <p>
+ * Note that this class is not used yet... we should refactor so that the
+ * transpiler uses it instead of inlined javac management.
+ * 
  * @author Renaud Pawlak
  */
 public class JavaCompilationEnvironment {
 	/**
-	 * Creates a new compilation environment with the given classpath.
+	 * Creates a new compilation environment with the given options and
+	 * classpath.
 	 */
-	public static JavaCompilationEnvironment create(String classPath) {
-		JSweetContext context = new JSweetContext();
+	public static JavaCompilationEnvironment create(JSweetOptions jsweetOptions, String classPath) {
+		JSweetContext context = new JSweetContext(jsweetOptions);
 		Options options = Options.instance(context);
 		options.put(Option.CLASSPATH, classPath);
 		options.put(Option.XLINT, "path");

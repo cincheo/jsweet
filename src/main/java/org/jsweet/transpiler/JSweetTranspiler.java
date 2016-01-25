@@ -82,7 +82,7 @@ import com.sun.tools.javac.util.Options;
  * 
  * @author Renaud Pawlak
  */
-public class JSweetTranspiler {
+public class JSweetTranspiler implements JSweetOptions {
 
 	static {
 		JSweetConfig.initClassPath(null);
@@ -124,6 +124,7 @@ public class JSweetTranspiler {
 	private JavaFileManager fileManager;
 	private JavaCompiler compiler;
 	private Log log;
+	private CandiesProcessor candiesProcessor;
 	private boolean preserveSourceLineNumbers = false;
 	private File workingDir;
 	private File tsOutputDir;
@@ -132,7 +133,6 @@ public class JSweetTranspiler {
 	private boolean generateJsFiles = true;
 	private boolean tscWatchMode = false;
 	private File[] tsDefDirs = {};
-	private CandiesProcessor candiesProcessor;
 	private ModuleKind moduleKind = ModuleKind.none;
 	private EcmaScriptComplianceLevel ecmaTargetVersion = EcmaScriptComplianceLevel.ES3;
 	private boolean bundle = false;
@@ -275,8 +275,7 @@ public class JSweetTranspiler {
 	}
 
 	private void initJavac(final TranspilationHandler transpilationHandler) {
-		context = new JSweetContext();
-		context.ignoreAssertions = isIgnoreAssertions();
+		context = new JSweetContext(this);
 		options = Options.instance(context);
 		if (classPath != null) {
 			options.put(Option.CLASSPATH, classPath);
@@ -415,7 +414,7 @@ public class JSweetTranspiler {
 		logger.info("[" + engineName + " engine] eval files: " + Arrays.asList(sourceFiles));
 		if ("Java".equals(engineName)) {
 			// search for main functions
-			JSweetContext context = new JSweetContext();
+			JSweetContext context = new JSweetContext(this);
 			Options options = Options.instance(context);
 			if (classPath != null) {
 				options.put(Option.CLASSPATH, classPath);
@@ -1066,11 +1065,10 @@ public class JSweetTranspiler {
 		}
 	}
 
-	/**
-	 * Tells if the transpiler preserves the generated TypeScript source line
-	 * numbers wrt the Java original source file (allows for Java debugging
-	 * through js.map files).
+	/* (non-Javadoc)
+	 * @see org.jsweet.transpiler.JSweetOptions#isPreserveSourceLineNumbers()
 	 */
+	@Override
 	public boolean isPreserveSourceLineNumbers() {
 		return preserveSourceLineNumbers;
 	}
@@ -1084,9 +1082,10 @@ public class JSweetTranspiler {
 		this.preserveSourceLineNumbers = preserveSourceLineNumbers;
 	}
 
-	/**
-	 * Gets the current TypeScript output directory.
+	/* (non-Javadoc)
+	 * @see org.jsweet.transpiler.JSweetOptions#getTsOutputDir()
 	 */
+	@Override
 	public File getTsOutputDir() {
 		return tsOutputDir;
 	}
@@ -1098,9 +1097,10 @@ public class JSweetTranspiler {
 		this.tsOutputDir = tsOutputDir;
 	}
 
-	/**
-	 * Gets the current JavaScript output directory.
+	/* (non-Javadoc)
+	 * @see org.jsweet.transpiler.JSweetOptions#getJsOutputDir()
 	 */
+	@Override
 	public File getJsOutputDir() {
 		return jsOutputDir;
 	}
@@ -1201,9 +1201,10 @@ public class JSweetTranspiler {
 		this.ecmaTargetVersion = ecmaTargetVersion;
 	}
 
-	/**
-	 * Gets the module kind when transpiling to code using JavaScript modules.
+	/* (non-Javadoc)
+	 * @see org.jsweet.transpiler.JSweetOptions#getModuleKind()
 	 */
+	@Override
 	public ModuleKind getModuleKind() {
 		return moduleKind;
 	}
@@ -1222,10 +1223,10 @@ public class JSweetTranspiler {
 		return moduleKind != null && moduleKind != ModuleKind.none;
 	}
 
-	/**
-	 * Gets the directory where JavaScript bundles are generated when the bundle
-	 * option is activated.
+	/* (non-Javadoc)
+	 * @see org.jsweet.transpiler.JSweetOptions#getBundlesDirectory()
 	 */
+	@Override
 	public File getBundlesDirectory() {
 		return bundlesDirectory;
 	}
@@ -1238,10 +1239,10 @@ public class JSweetTranspiler {
 		this.bundlesDirectory = bundlesDirectory;
 	}
 
-	/**
-	 * Tells if this transpiler generates JavaScript bundles for running in a
-	 * Web browser.
+	/* (non-Javadoc)
+	 * @see org.jsweet.transpiler.JSweetOptions#isBundle()
 	 */
+	@Override
 	public boolean isBundle() {
 		return bundle;
 	}
@@ -1254,9 +1255,10 @@ public class JSweetTranspiler {
 		this.bundle = bundle;
 	}
 
-	/**
-	 * Gets the expected Java source code encoding.
+	/* (non-Javadoc)
+	 * @see org.jsweet.transpiler.JSweetOptions#getEncoding()
 	 */
+	@Override
 	public String getEncoding() {
 		return encoding;
 	}
@@ -1268,12 +1270,10 @@ public class JSweetTranspiler {
 		this.encoding = encoding;
 	}
 
-	/**
-	 * Tells if this transpiler skips the root directories (packages annotated
-	 * with @jsweet.lang.Root) so that the generated file hierarchy starts at
-	 * the root directories rather than including the entire directory
-	 * structure.
+	/* (non-Javadoc)
+	 * @see org.jsweet.transpiler.JSweetOptions#isNoRootDirectories()
 	 */
+	@Override
 	public boolean isNoRootDirectories() {
 		return noRootDirectories;
 	}
@@ -1288,10 +1288,10 @@ public class JSweetTranspiler {
 		this.noRootDirectories = noRootDirectories;
 	}
 
-	/**
-	 * Tells if the transpiler should ignore the 'assert' statements or generate
-	 * appropriate code.
+	/* (non-Javadoc)
+	 * @see org.jsweet.transpiler.JSweetOptions#isIgnoreAssertions()
 	 */
+	@Override
 	public boolean isIgnoreAssertions() {
 		return ignoreAssertions;
 	}
@@ -1304,6 +1304,10 @@ public class JSweetTranspiler {
 		this.ignoreAssertions = ignoreAssertions;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jsweet.transpiler.JSweetOptions#isIgnoreJavaFileNameError()
+	 */
+	@Override
 	public boolean isIgnoreJavaFileNameError() {
 		return ignoreJavaFileNameError;
 	}

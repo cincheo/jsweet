@@ -466,28 +466,36 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (compilationUnit.docComments != null && compilationUnit.docComments.hasComment(element)) {
 			Comment comment = compilationUnit.docComments.getComment(element);
 			String[] lines = comment.getText().split("\n");
-			if (indent) {
-				printIndent();
-			}
-			print("/**").println();
-			for (String line : lines) {
-				printIndent().print(" * ").print(line.trim()).print("\n");
-			}
-			removeLastChar();
-			println().printIndent().print(" ").print("*/\n");
-			if (!indent) {
-				printIndent();
+			if (isPreserveLineNumbers()) {
+				print("/**").print("\n");
+				for (String line : lines) {
+					print(" * ").print(line.trim()).print("\n");
+				}
+				print(" ").print("*/\n");
+			} else {
+				if (indent) {
+					printIndent();
+				}
+				print("/**").println();
+				for (String line : lines) {
+					printIndent().print(" * ").print(line.trim()).print("\n");
+				}
+				removeLastChar();
+				println().printIndent().print(" ").print("*/\n");
+				if (!indent) {
+					printIndent();
+				}
 			}
 		}
 	}
 
 	@Override
 	public void visitClassDef(JCClassDecl classdecl) {
-		if(Util.hasAnnotationType(classdecl.type.tsym, JSweetConfig.ANNOTATION_OBJECT_TYPE)) {
+		if (Util.hasAnnotationType(classdecl.type.tsym, JSweetConfig.ANNOTATION_OBJECT_TYPE)) {
 			// object types are ignored
 			return;
 		}
-		if(Util.hasAnnotationType(classdecl.type.tsym, JSweetConfig.ANNOTATION_ERASED)) {
+		if (Util.hasAnnotationType(classdecl.type.tsym, JSweetConfig.ANNOTATION_ERASED)) {
 			// erased types are ignored
 			return;
 		}
@@ -661,7 +669,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	@Override
 	public void visitMethodDef(JCMethodDecl methodDecl) {
-		if(Util.hasAnnotationType(methodDecl.sym, JSweetConfig.ANNOTATION_ERASED)) {
+		if (Util.hasAnnotationType(methodDecl.sym, JSweetConfig.ANNOTATION_ERASED)) {
 			// erased elements are ignored
 			return;
 		}
@@ -769,7 +777,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				report(methodDecl, methodDecl.name, JSweetProblem.WRONG_USE_OF_AMBIENT, methodDecl.name);
 			}
 		}
-		if(!Util.hasAnnotationType(parent.sym, FunctionalInterface.class.getName())) {
+		if (!Util.hasAnnotationType(parent.sym, FunctionalInterface.class.getName())) {
 			printIdentifier(getTSMethodName(methodDecl));
 		}
 		if (methodDecl.typarams != null && !methodDecl.typarams.isEmpty()) {
@@ -881,15 +889,15 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	@Override
 	public void visitVarDef(JCVariableDecl varDecl) {
-		if(Util.hasAnnotationType(varDecl.sym, JSweetConfig.ANNOTATION_ERASED)) {
+		if (Util.hasAnnotationType(varDecl.sym, JSweetConfig.ANNOTATION_ERASED)) {
 			// erased elements are ignored
 			return;
 		}
-		if(Util.hasAnnotationType(varDecl.sym, JSweetConfig.ANNOTATION_STRING_TYPE)) {
+		if (Util.hasAnnotationType(varDecl.sym, JSweetConfig.ANNOTATION_STRING_TYPE)) {
 			// string type fields are ignored
 			return;
 		}
-		
+
 		if (getParent().getKind() == Kind.ENUM) {
 			print(varDecl.name.toString());
 		} else {
@@ -1163,7 +1171,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			} else {
 				if (inv.meth instanceof JCFieldAccess) {
 					JCExpression selected = ((JCFieldAccess) inv.meth).selected;
-					if(Util.hasAnnotationType(selected.type.tsym, FunctionalInterface.class.getName())) {
+					if (Util.hasAnnotationType(selected.type.tsym, FunctionalInterface.class.getName())) {
 						anonymous = true;
 					}
 					methSym = Util.findMethodDeclarationInType(context.types, selected.type.tsym, methName, type);
@@ -1527,16 +1535,16 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	public void visitIf(JCIf ifStatement) {
 		print("if(").print(ifStatement.cond).print(") ");
 		print(ifStatement.thenpart);
-		if(!(ifStatement.thenpart instanceof JCBlock)) {
-			if(!statementsWithNoSemis.contains(ifStatement.thenpart.getClass())) {
+		if (!(ifStatement.thenpart instanceof JCBlock)) {
+			if (!statementsWithNoSemis.contains(ifStatement.thenpart.getClass())) {
 				print(";");
 			}
 		}
 		if (ifStatement.elsepart != null) {
 			print(" else ");
 			print(ifStatement.elsepart);
-			if(!(ifStatement.elsepart instanceof JCBlock)) {
-				if(!statementsWithNoSemis.contains(ifStatement.elsepart.getClass())) {
+			if (!(ifStatement.elsepart instanceof JCBlock)) {
+				if (!statementsWithNoSemis.contains(ifStatement.elsepart.getClass())) {
 					print(";");
 				}
 			}
@@ -1856,7 +1864,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	@Override
 	public void visitAssert(JCAssert assertion) {
-		if (!context.ignoreAssertions) {
+		if (!context.options.isIgnoreAssertions()) {
 			String assertCode = assertion.toString().replace("\"", "'");
 			print("if(!(").print(assertion.cond).print(")) throw new Error(\"Assertion error line " + getCurrentLine() + ": " + assertCode + "\");");
 		}
