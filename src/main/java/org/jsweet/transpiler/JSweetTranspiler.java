@@ -1033,7 +1033,15 @@ public class JSweetTranspiler implements JSweetOptions {
 					Util.addFiles(".d.ts", rootDir, dtsFiles);
 					for (File dtsFile : dtsFiles) {
 						String relativePath = Util.getRelativePath(rootDir.getAbsolutePath(), dtsFile.getAbsolutePath());
-						FileUtils.moveFile(dtsFile, new File(getDeclarationsOutputDir(), relativePath));
+						File targetFile = new File(getDeclarationsOutputDir(), relativePath);
+						if (targetFile.exists()) {
+							FileUtils.deleteQuietly(targetFile);
+						}
+						try {
+							FileUtils.moveFile(dtsFile, targetFile);
+						} catch (Exception e) {
+							logger.error(e.getMessage(), e);
+						}
 					}
 				}
 			}
