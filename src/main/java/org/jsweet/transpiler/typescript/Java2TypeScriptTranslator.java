@@ -760,10 +760,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 			}
 			if (methodDecl.mods.getFlags().contains(Modifier.PRIVATE)) {
-				if (!interfaceScope) {
-					print("private ");
-				} else {
-					report(methodDecl, methodDecl.name, JSweetProblem.INVALID_PRIVATE_IN_INTERFACE, methodDecl.name, parent.name);
+				if (!constructor) {
+					if (!interfaceScope) {
+						print("private ");
+					} else {
+						report(methodDecl, methodDecl.name, JSweetProblem.INVALID_PRIVATE_IN_INTERFACE, methodDecl.name, parent.name);
+					}
 				}
 			}
 			if (methodDecl.mods.getFlags().contains(Modifier.STATIC)) {
