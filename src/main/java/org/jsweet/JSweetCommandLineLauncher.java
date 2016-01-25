@@ -92,6 +92,11 @@ public class JSweetCommandLineLauncher {
 				}
 				logger.info("js output dir: " + jsOutputDir);
 
+				File dtsOutputDir = null;
+				if (jsapArgs.getFile("dtsout") != null) {
+					dtsOutputDir = jsapArgs.getFile("dtsout");
+				}
+
 				File inputDir = new File(jsapArgs.getString("input"));
 				logger.info("input dir: " + inputDir);
 
@@ -113,6 +118,8 @@ public class JSweetCommandLineLauncher {
 				transpiler.setModuleKind(ModuleKind.valueOf(jsapArgs.getString("module")));
 				transpiler.setEncoding(jsapArgs.getString("encoding"));
 				transpiler.setIgnoreAssertions(jsapArgs.getBoolean("ignoreAssertions"));
+				transpiler.setGenerateDeclarations(jsapArgs.getBoolean("declaration"));
+				transpiler.setDeclarationsOutputDir(dtsOutputDir);
 
 				transpiler.transpile(transpilationHandler, SourceFile.toSourceFiles(files));
 			} catch (NoClassDefFoundError error) {
@@ -207,6 +214,21 @@ public class JSweetCommandLineLauncher {
 		optionArg.setLongFlag("jsout");
 		optionArg.setDefault("js");
 		optionArg.setHelp("Specify where to place generated JavaScript files (ignored if jsFile is specified).");
+		optionArg.setStringParser(FileStringParser.getParser());
+		optionArg.setRequired(false);
+		jsap.registerParameter(optionArg);
+
+		// Generates declarations
+		switchArg = new Switch("declaration");
+		switchArg.setLongFlag("declaration");
+		switchArg.setHelp("Tells the transpiler to generate the d.ts files along with the js files, so that other programs can use them to compile.");
+		jsap.registerParameter(switchArg);
+
+		// Declarations output directory
+		optionArg = new FlaggedOption("dtsout");
+		optionArg.setLongFlag("dtsout");
+		optionArg.setHelp(
+				"Specify where to place generated d.ts files when the declaration option is set (by default, d.ts files are generated in the JavaScript output directory - next to the corresponding js files).");
 		optionArg.setStringParser(FileStringParser.getParser());
 		optionArg.setRequired(false);
 		jsap.registerParameter(optionArg);

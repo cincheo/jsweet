@@ -141,6 +141,8 @@ public class JSweetTranspiler implements JSweetOptions {
 	private boolean noRootDirectories = false;
 	private boolean ignoreAssertions = false;
 	private boolean ignoreJavaFileNameError = false;
+	private boolean generateDeclarations = false;
+	private File declarationsOutputDir;
 
 	/**
 	 * Creates a JSweet transpiler, with the default values.
@@ -941,7 +943,9 @@ public class JSweetTranspiler implements JSweetOptions {
 		if (isPreserveSourceLineNumbers()) {
 			args.add("--sourceMap");
 		}
-
+		if (isGenerateDeclarations()) {
+			args.add("--declaration");
+		}
 		args.addAll(asList("--rootDir", tsOutputDir.getAbsolutePath()));
 		// args.addAll(asList("--sourceRoot", tsOutputDir.toString()));
 
@@ -1022,6 +1026,17 @@ public class JSweetTranspiler implements JSweetOptions {
 
 	private void onTsTranspilationCompleted(boolean fullPass, ErrorCountTranspilationHandler handler, SourceFile[] files) {
 		try {
+			if (isGenerateDeclarations()) {
+				if (getDeclarationsOutputDir() != null) {
+					LinkedList<File> dtsFiles = new LinkedList<File>();
+					File rootDir = jsOutputDir == null ? tsOutputDir : jsOutputDir;
+					Util.addFiles(".d.ts", rootDir, dtsFiles);
+					for (File dtsFile : dtsFiles) {
+						String relativePath = Util.getRelativePath(rootDir.getAbsolutePath(), dtsFile.getAbsolutePath());
+						FileUtils.moveFile(dtsFile, new File(getDeclarationsOutputDir(), relativePath));
+					}
+				}
+			}
 			if (handler.getErrorCount() == 0) {
 				Set<File> handledFiles = new HashSet<>();
 				for (SourceFile sourceFile : files) {
@@ -1065,7 +1080,9 @@ public class JSweetTranspiler implements JSweetOptions {
 		}
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.jsweet.transpiler.JSweetOptions#isPreserveSourceLineNumbers()
 	 */
 	@Override
@@ -1082,7 +1099,9 @@ public class JSweetTranspiler implements JSweetOptions {
 		this.preserveSourceLineNumbers = preserveSourceLineNumbers;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.jsweet.transpiler.JSweetOptions#getTsOutputDir()
 	 */
 	@Override
@@ -1097,7 +1116,9 @@ public class JSweetTranspiler implements JSweetOptions {
 		this.tsOutputDir = tsOutputDir;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.jsweet.transpiler.JSweetOptions#getJsOutputDir()
 	 */
 	@Override
@@ -1201,7 +1222,9 @@ public class JSweetTranspiler implements JSweetOptions {
 		this.ecmaTargetVersion = ecmaTargetVersion;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.jsweet.transpiler.JSweetOptions#getModuleKind()
 	 */
 	@Override
@@ -1223,7 +1246,9 @@ public class JSweetTranspiler implements JSweetOptions {
 		return moduleKind != null && moduleKind != ModuleKind.none;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.jsweet.transpiler.JSweetOptions#getBundlesDirectory()
 	 */
 	@Override
@@ -1239,7 +1264,9 @@ public class JSweetTranspiler implements JSweetOptions {
 		this.bundlesDirectory = bundlesDirectory;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.jsweet.transpiler.JSweetOptions#isBundle()
 	 */
 	@Override
@@ -1255,7 +1282,9 @@ public class JSweetTranspiler implements JSweetOptions {
 		this.bundle = bundle;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.jsweet.transpiler.JSweetOptions#getEncoding()
 	 */
 	@Override
@@ -1270,7 +1299,9 @@ public class JSweetTranspiler implements JSweetOptions {
 		this.encoding = encoding;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.jsweet.transpiler.JSweetOptions#isNoRootDirectories()
 	 */
 	@Override
@@ -1288,7 +1319,9 @@ public class JSweetTranspiler implements JSweetOptions {
 		this.noRootDirectories = noRootDirectories;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.jsweet.transpiler.JSweetOptions#isIgnoreAssertions()
 	 */
 	@Override
@@ -1304,7 +1337,9 @@ public class JSweetTranspiler implements JSweetOptions {
 		this.ignoreAssertions = ignoreAssertions;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.jsweet.transpiler.JSweetOptions#isIgnoreJavaFileNameError()
 	 */
 	@Override
@@ -1314,6 +1349,24 @@ public class JSweetTranspiler implements JSweetOptions {
 
 	public void setIgnoreJavaFileNameError(boolean ignoreJavaFileNameError) {
 		this.ignoreJavaFileNameError = ignoreJavaFileNameError;
+	}
+
+	@Override
+	public boolean isGenerateDeclarations() {
+		return generateDeclarations;
+	}
+
+	public void setGenerateDeclarations(boolean generateDeclarations) {
+		this.generateDeclarations = generateDeclarations;
+	}
+
+	@Override
+	public File getDeclarationsOutputDir() {
+		return declarationsOutputDir;
+	}
+
+	public void setDeclarationsOutputDir(File declarationsOutputDir) {
+		this.declarationsOutputDir = declarationsOutputDir;
 	}
 
 }

@@ -22,6 +22,13 @@ public interface JSweetOptions {
 	File getJsOutputDir();
 
 	/**
+	 * Gets the current .d.ts output directory (only if the declaration option is set).
+	 * 
+	 * <p>By default, declarations are placed in the JavaScript output directory.
+	 */
+	File getDeclarationsOutputDir();
+	
+	/**
 	 * Gets the module kind when transpiling to code using JavaScript modules.
 	 */
 	ModuleKind getModuleKind();
@@ -57,6 +64,15 @@ public interface JSweetOptions {
 	 */
 	boolean isIgnoreAssertions();
 
+	/**
+	 * Generates output code even if the main class is not placed within a file
+	 * of the same name.
+	 */
 	boolean isIgnoreJavaFileNameError();
 
+	/**
+	 * Generates d.ts files along with the js files.
+	 */
+	boolean isGenerateDeclarations();
+	
 }
