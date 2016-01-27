@@ -1028,12 +1028,14 @@ public class JSweetTranspiler implements JSweetOptions {
 		try {
 			if (isGenerateDeclarations()) {
 				if (getDeclarationsOutputDir() != null) {
+					logger.info("moving d.ts files to " + getDeclarationsOutputDir());
 					LinkedList<File> dtsFiles = new LinkedList<File>();
 					File rootDir = jsOutputDir == null ? tsOutputDir : jsOutputDir;
 					Util.addFiles(".d.ts", rootDir, dtsFiles);
 					for (File dtsFile : dtsFiles) {
 						String relativePath = Util.getRelativePath(rootDir.getAbsolutePath(), dtsFile.getAbsolutePath());
 						File targetFile = new File(getDeclarationsOutputDir(), relativePath);
+						logger.info("moving " + dtsFile + " to " + targetFile);
 						if (targetFile.exists()) {
 							FileUtils.deleteQuietly(targetFile);
 						}
