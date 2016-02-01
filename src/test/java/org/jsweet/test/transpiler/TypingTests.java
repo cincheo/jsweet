@@ -135,7 +135,7 @@ public class TypingTests extends AbstractTest {
 			fail("Exception occured while running test");
 		}
 	}
-	
+
 	@Test
 	public void testTuples() {
 		TestTranspilationHandler logHandler = new TestTranspilationHandler();
@@ -171,9 +171,9 @@ public class TypingTests extends AbstractTest {
 		TestTranspilationHandler logHandler = new TestTranspilationHandler();
 		try {
 			transpiler.transpile(logHandler, getSourceFile(WrongUnions.class));
-			Assert.assertEquals("Wrong number of errors", 6, logHandler.reportedProblems.size());
 			logHandler.assertReportedProblems(JSweetProblem.UNION_TYPE_MISMATCH, JSweetProblem.UNION_TYPE_MISMATCH, JSweetProblem.UNION_TYPE_MISMATCH,
-					JSweetProblem.UNION_TYPE_MISMATCH, JSweetProblem.UNION_TYPE_MISMATCH, JSweetProblem.UNION_TYPE_MISMATCH);
+					JSweetProblem.UNION_TYPE_MISMATCH, JSweetProblem.UNION_TYPE_MISMATCH, JSweetProblem.UNION_TYPE_MISMATCH, JSweetProblem.UNION_TYPE_MISMATCH,
+					JSweetProblem.UNION_TYPE_MISMATCH);
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail("Exception occured while running test");
@@ -201,5 +201,4 @@ public class TypingTests extends AbstractTest {
 		} , getSourceFile(CustomLambdas.class));
 	}
 
-	
 }

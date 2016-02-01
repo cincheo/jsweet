@@ -17,7 +17,11 @@
 package source.typing;
 
 import static jsweet.util.Globals.union;
+
+import jsweet.lang.Date;
+import jsweet.lang.Function;
 import jsweet.util.union.Union;
+import jsweet.util.union.Union3;
 
 public class WrongUnions {
 
@@ -43,8 +47,11 @@ public class WrongUnions {
 		m(union(true)); // wrong
 		Union<String, Integer> u1 = union("test");
 		Union<String, Integer> u2 = union(false); // wrong
+		Union3<String, Integer, Function> u3 = union(false); // wrong
 		u1 = union("test");
 		u2 = union(false); // wrong
+		u3 = union("test");
+		u3 = union(new Date()); // wrong
 	}
 
 }

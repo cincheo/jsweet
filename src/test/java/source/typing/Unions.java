@@ -18,9 +18,16 @@ package source.typing;
 
 import static jsweet.util.Globals.$export;
 import static jsweet.util.Globals.union;
+import static jsweet.util.Globals.function;
+
+import jsweet.lang.Function;
 import jsweet.util.union.Union;
+import jsweet.util.union.Union4;
 
 public class Unions {
+
+	static Union<String, Integer> u;
+	static Union4<String, Integer, Boolean, Function> u4;
 
 	static void m(Union<String, Integer> union) {
 		$export("union", union);
@@ -30,6 +37,12 @@ public class Unions {
 
 	public static void main(String[] args) {
 		m(union("test"));
+		u = union("test");
+		u4 = union("test");
+		u4 = union(1);
+		u4 = union(true);
+		u4 = union(function(() -> {
+		}));
 	}
 
 }
