@@ -105,7 +105,7 @@ Here follows the list of allowed Java classes in JSweet:
 
         -   `substring(int,int)` (with the JavaScript behavior)
 
-        -   `replace(java.lang.String,java.lang.String)`
+        -   `replace(java.lang.CharSequence,java.lang.CharSequence)`
 
         -   `split(java.lang.String)`
 
