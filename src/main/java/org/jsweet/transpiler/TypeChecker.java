@@ -104,7 +104,7 @@ public class TypeChecker {
 		AUTHORIZED_STRING_METHODS.add("lastIndexOf(java.lang.String,int)");
 		AUTHORIZED_STRING_METHODS.add("substring(int)");
 		AUTHORIZED_STRING_METHODS.add("substring(int,int)");
-		AUTHORIZED_STRING_METHODS.add("replace(java.lang.String,java.lang.String)");
+		AUTHORIZED_STRING_METHODS.add("replace(java.lang.CharSequence,java.lang.CharSequence)");
 		AUTHORIZED_STRING_METHODS.add("split(java.lang.String)");
 		AUTHORIZED_STRING_METHODS.add("trim()");
 		AUTHORIZED_STRING_METHODS.add("toLowerCase()");
