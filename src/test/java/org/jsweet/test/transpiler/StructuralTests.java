@@ -23,6 +23,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.jsweet.transpiler.JSweetProblem;
+import org.jsweet.transpiler.ModuleKind;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -44,6 +45,7 @@ import source.structural.ObjectTypes;
 import source.structural.TwoClassesInSameFile;
 import source.structural.WrongConstructsInEnums;
 import source.structural.WrongConstructsInInterfaces;
+import source.structural.WrongThisAccessOnStatic;
 import source.structural.globalclasses.Globals;
 import source.structural.globalclasses.a.GlobalsConstructor;
 import source.structural.globalclasses.c.GlobalFunctionGetSetDelete;
@@ -245,6 +247,13 @@ public class StructuralTests extends AbstractTest {
 		transpile(logHandler -> {
 			logHandler.assertReportedProblems();
 		} , getSourceFile(ObjectTypes.class));
+	}
+
+	@Test
+	public void testWrongThisAccessOnStatic() {
+		transpile(ModuleKind.none, logHandler -> {
+			logHandler.assertReportedProblems(JSweetProblem.CANNOT_ACCESS_STATIC_MEMBER_ON_THIS, JSweetProblem.CANNOT_ACCESS_STATIC_MEMBER_ON_THIS);
+		} , getSourceFile(WrongThisAccessOnStatic.class));
 	}
 
 }

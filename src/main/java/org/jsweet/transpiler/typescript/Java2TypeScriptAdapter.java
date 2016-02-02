@@ -299,7 +299,6 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					}
 				}
 			}
-			
 
 			if (fieldAccess != null && !fieldAccess.toString().equals(UTIL_CLASSNAME + "." + INDEXED_GET_FUCTION_NAME)) {
 				getPrinter().print(fieldAccess.selected).print("[").print(invocation.args.head).print("]");
@@ -469,6 +468,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 	@Override
 	public boolean substituteFieldAccess(JCFieldAccess fieldAccess) {
 		String name = fieldAccess.name.toString();
+
 		// translate tuple accesses
 		if (name.startsWith("$") && name.length() > 1 && Character.isDigit(name.charAt(1))) {
 			try {
@@ -504,6 +504,13 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				return true;
 			}
 		}
+
+		if (fieldAccess.selected.toString().equals("this")) {
+			if (fieldAccess.sym.isStatic()) {
+				report(fieldAccess, JSweetProblem.CANNOT_ACCESS_STATIC_MEMBER_ON_THIS, fieldAccess.name);
+			}
+		}
+
 		return super.substituteFieldAccess(fieldAccess);
 	}
 

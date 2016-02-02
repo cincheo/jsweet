@@ -1117,7 +1117,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 			boolean anonymous = JSweetConfig.ANONYMOUS_FUNCTION_NAME.equals(methName) || JSweetConfig.ANONYMOUS_STATIC_FUNCTION_NAME.equals(methName)
 					|| JSweetConfig.NEW_FUNCTION_NAME.equals(methName);
-			boolean targetIsThisOrStaticImported = meth.startsWith(methName) || meth.startsWith("this.");
+			boolean targetIsThisOrStaticImported = meth.startsWith(methName) || meth.startsWith("this."+methName);
 
 			MethodType type = (MethodType) inv.meth.type;
 			MethodSymbol methSym = null;
@@ -1137,6 +1137,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 								}
 							}
 						} else {
+							if(meth.startsWith("this.") && methSym.getModifiers().contains(Modifier.STATIC)) {
+								report(inv, JSweetProblem.CANNOT_ACCESS_STATIC_MEMBER_ON_THIS, methSym.getSimpleName());
+							}
 							if (!JSweetConfig.GLOBALS_CLASS_NAME.equals(methSym.owner.getSimpleName().toString())) {
 								print("" + methSym.owner.getSimpleName());
 								if (!anonymous) {
