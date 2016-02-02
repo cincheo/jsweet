@@ -188,8 +188,8 @@ public class CandiesProcessor {
 
 	private void checkCandyVersion(CandyDescriptor candy, TranspilationHandler transpilationHandler) {
 
-		String actualTranspilerVersion = JSweetConfig.getVersionNumber().replace("-SNAPSHOT", "");
-		String candyTranspilerVersion = candy.transpilerVersion == null ? null : candy.transpilerVersion.replace("-SNAPSHOT", "");
+		String actualTranspilerVersion = JSweetConfig.getVersionNumber().split("-")[0];
+		String candyTranspilerVersion = candy.transpilerVersion == null ? null : candy.transpilerVersion.split("-")[0];
 
 		if (candyTranspilerVersion == null || !candyTranspilerVersion.equals(actualTranspilerVersion)) {
 			transpilationHandler.report(JSweetProblem.CANDY_VERSION_DISCREPANCY, null,
