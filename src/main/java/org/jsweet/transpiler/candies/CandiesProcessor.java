@@ -92,7 +92,7 @@ public class CandiesProcessor {
 	 *            the classpath where the processor will seek for JSweet candies
 	 */
 	public CandiesProcessor(File workingDir, String classPath) {
-		this.classPath = (classPath == null ? System.getProperty("java.class.path") : classPath);
+		this.classPath = classPath == null ? System.getProperty("java.class.path") : classPath;
 		String[] cp = this.classPath.split(File.pathSeparator);
 		int[] indices = new int[0];
 		for (int i = 0; i < cp.length; i++) {

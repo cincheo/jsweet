@@ -1331,7 +1331,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	@Override
 	public void visitNewClass(JCNewClass newClass) {
-		ClassSymbol clazz = ((ClassSymbol) newClass.clazz.type.tsym);
+		ClassSymbol clazz = (ClassSymbol) newClass.clazz.type.tsym;
 		if (clazz.name.toString().endsWith(JSweetConfig.GLOBALS_CLASS_NAME)) {
 			report(newClass, JSweetProblem.GLOBAL_CANNOT_BE_INSTANTIATED);
 			return;

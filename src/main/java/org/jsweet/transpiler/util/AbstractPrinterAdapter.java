@@ -150,7 +150,7 @@ public abstract class AbstractPrinterAdapter {
 	}
 
 	public boolean matchesField(JCFieldAccess fieldAccess, Class<?> targetClass, String fieldName) {
-		return (fieldName.equals(fieldAccess.name.toString()) && targetClass.getName().equals(fieldAccess.selected.type.getModelType().toString()));
+		return fieldName.equals(fieldAccess.name.toString()) && targetClass.getName().equals(fieldAccess.selected.type.getModelType().toString());
 	}
 
 	public JCFieldAccess matchesField(JCAssign assignment, Class<?> targetClass, String fieldName) {
@@ -195,7 +195,7 @@ public abstract class AbstractPrinterAdapter {
 
 	public AbstractTreePrinter substituteAndPrintType(JCTree typeTree, boolean arrayComponent) {
 		if (typeTree instanceof JCTypeApply) {
-			JCTypeApply typeApply = ((JCTypeApply) typeTree);
+			JCTypeApply typeApply = (JCTypeApply) typeTree;
 			substituteAndPrintType(typeApply.clazz, arrayComponent);
 			if (!typeApply.arguments.isEmpty()) {
 				getPrinter().print("<");

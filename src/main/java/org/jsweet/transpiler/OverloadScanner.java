@@ -160,7 +160,7 @@ public class OverloadScanner extends TreeScanner {
 		if (!(e instanceof ClassSymbol)) {
 			return;
 		}
-		Overload overload = context.getOverload(((ClassSymbol) e), methodDecl.name.toString());
+		Overload overload = context.getOverload((ClassSymbol) e, methodDecl.name.toString());
 		if (overload != null && overload.methods.size() > 1 && overload.isValid) {
 			if (!methodDecl.sym.equals(overload.coreMethod)) {
 				if (methodDecl.body != null && methodDecl.body.stats.size() == 1) {
