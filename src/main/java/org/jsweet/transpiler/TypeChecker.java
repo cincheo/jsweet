@@ -72,7 +72,6 @@ public class TypeChecker {
 	public static final Set<String> FORBIDDEN_JDK_FUNCTIONAL_METHODS = new HashSet<String>();
 
 	static {
-		// AUTHORIZED_ACCESSED_TYPES.add(String.class.getName());
 
 		AUTHORIZED_DECLARED_TYPES.add(String.class.getName());
 		AUTHORIZED_DECLARED_TYPES.add(Object.class.getName());

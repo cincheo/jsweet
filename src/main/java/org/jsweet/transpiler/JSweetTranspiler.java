@@ -307,8 +307,6 @@ public class JSweetTranspiler implements JSweetOptions {
 		Writer w = new StringWriter() {
 			@Override
 			public void write(String str) {
-				// TranspilationHandler.OUTPUT_LOGGER.error(getBuffer());
-				// getBuffer().delete(0, getBuffer().length());
 			}
 
 		};
@@ -947,7 +945,6 @@ public class JSweetTranspiler implements JSweetOptions {
 			args.add("--declaration");
 		}
 		args.addAll(asList("--rootDir", tsOutputDir.getAbsolutePath()));
-		// args.addAll(asList("--sourceRoot", tsOutputDir.toString()));
 
 		if (jsOutputDir != null) {
 			args.addAll(asList("--outDir", jsOutputDir.getAbsolutePath()));
@@ -1012,12 +1009,6 @@ public class JSweetTranspiler implements JSweetOptions {
 				}
 			} , args.toArray(new String[0]));
 
-			// tsCompilationProcess.waitFor();
-			// if (tsCompilationProcess != null &&
-			// tsCompilationProcess.exitValue() == 1) {
-			// transpilationHandler.report(JSweetProblem.TSC_CANNOT_START, null,
-			// JSweetProblem.TSC_CANNOT_START.getMessage());
-			// }
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -61,10 +61,6 @@ public class JavaCompilationEnvironment {
 		options.put(Option.XLINT, "path");
 		context.put(Log.outKey, new PrintWriter(System.out));
 
-		// options.put(Option.XLINT_CUSTOM.text + "-" +
-		// LintCategory.OPTIONS.option, "true");
-		// options.remove(Option.XLINT_CUSTOM.text +
-		// LintCategory.OPTIONS.option);
 
 		options.put(Option.XLINT_CUSTOM.text + "-" + LintCategory.OVERRIDES.option, "true");
 

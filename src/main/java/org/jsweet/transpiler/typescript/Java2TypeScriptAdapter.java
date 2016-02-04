@@ -152,10 +152,6 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 						return null;
 					}
 				}
-				// MethodSymbol staticMethSymbol =
-				// Util.findMethodDeclarationInType(getPrinter().getContext().types,
-				// fa.selected.type.tsym, "" + fa.name, null);
-				// String methodName = Util.getActualName(staticMethSymbol);
 				return StringUtils.isBlank(name) ? null : name + "." + getIdentifier(methodName);
 			} else {
 				return null;
@@ -204,10 +200,6 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			targetMethodName = invocation.getMethodSelect().toString();
 		}
 
-		// System.out.println(invocation+" ===> "+fieldAccess+" :
-		// targetClassName="+targetClassName+"
-		// targetMethodName="+targetMethodName+
-		// " ownerClassName="+ownerClassName);
 
 		if (targetType != null && targetType.getKind() == ElementKind.ENUM) {
 			// TODO: enum type simple name will not be valid when uses as fully
@@ -541,10 +533,6 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 
 	@Override
 	public AbstractTreePrinter substituteAndPrintType(JCTree typeTree, boolean arrayComponent) {
-		// String fullName=typeTree.type.getModelType().toString();
-		// if(fullName.startsWith(Console.class.getPackage().getName())) {
-		// return "any";
-		// }
 		if (Util.hasAnnotationType(typeTree.type.tsym, ANNOTATION_ERASED)) {
 			return getPrinter().print("any");
 		}

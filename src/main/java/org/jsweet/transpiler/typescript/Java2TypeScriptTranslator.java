@@ -314,7 +314,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 								"/" + targetRootPackageName);
 						if (pathToReachRootPackage == null) {
 							pathToReachRootPackage = ".";
-							// continue;
 						}
 						File moduleFile = new File(new File(pathToReachRootPackage), JSweetConfig.MODULE_FILE_NAME);
 						useModule((PackageSymbol) qualified.sym.getEnclosingElement(), importDecl, targetRootPackageName,
@@ -1088,10 +1087,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			if (compilationUnit.packge.getQualifiedName().toString().startsWith(name)) {
 				return null;
 			}
-			// MethodSymbol staticMethSymbol =
-			// Util.findMethodDeclarationInType(printer.context.types,
-			// fa.selected.type.tsym, "" + fa.name, null);
-			// String methodName = Util.getActualName(staticMethSymbol);
 			return name;
 		}
 
@@ -1158,7 +1153,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							report(inv, JSweetProblem.HIDDEN_INVOCATION, methSym.getSimpleName());
 						}
 					}
-					// staticImported = true;
 					if (JSweetConfig.TS_STRICT_MODE_KEYWORDS.contains(methName.toLowerCase())) {
 						// if method is a reserved TS keyword, no "static
 						// import" possible, fully qualified mode
@@ -1304,8 +1298,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (!getAdapter().substituteIdentifier(ident)) {
 			// add this of class name if ident is a field
 			if (ident.sym instanceof VarSymbol && !ident.sym.name.equals(context.names._this) && !ident.sym.name.equals(context.names._super)) {
-				VarSymbol varSym = (VarSymbol) ident.sym; // findFieldDeclaration(currentClass,
-				// ident.name);
+				VarSymbol varSym = (VarSymbol) ident.sym;
 				if (varSym != null) {
 					if (varSym.owner instanceof ClassSymbol) {
 						if (!varSym.getModifiers().contains(Modifier.STATIC)) {
@@ -1404,11 +1397,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				println().endIndent().printIndent().print("}");
 			} else {
 
-				// ((target : DataStruct3) => {
-				// target['i'] = 1;
-				// target['s2'] = "";
-				// return target
-				// })(new DataStruct3());
 
 				print("((target:").print(newClass.clazz).print(") => {").println().startIndent();
 				for (JCTree m : newClass.def.getMembers()) {
@@ -1615,19 +1603,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (newArray.elemtype != null) {
 			typeChecker.checkType(newArray, null, newArray.elemtype);
 		}
-		// if (newArray.elemtype != null) {
-		// print("new ");
-		// newArray.elemtype.accept(this);
-		// }
-		// if (newArray.dims.isEmpty()) {
-		// print("[]");
-		// } else {
-		// for (JCExpression dim : newArray.dims) {
-		// print("[");
-		// dim.accept(this);
-		// print("]");
-		// }
-		// }
 		print("[");
 		if (newArray.elems != null) {
 			printArgList(newArray.elems);
