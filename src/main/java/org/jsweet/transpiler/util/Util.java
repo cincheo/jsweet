@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -107,7 +106,7 @@ public class Util {
 	 * @param files
 	 *            the list to add the files matching the extension
 	 */
-	public static void addFiles(String extension, File file, LinkedList<File> files) {
+	public static void addFiles(String extension, File file, List<File> files) {
 		if (file.isDirectory()) {
 			for (File f : file.listFiles()) {
 				addFiles(extension, f, files);
