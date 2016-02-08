@@ -1,8 +1,8 @@
 # JSweet: a Java to JavaScript transpiler [![Build Status](https://travis-ci.org/cincheo/jsweet.svg?branch=master)](https://travis-ci.org/cincheo/jsweet)
 
-JSweet is built on the top of TypeScript to bring the most up-to-date JavaScript APIs right to the Java world.
+JSweet is built on the top of TypeScript to bring the most up-to-date JavaScript APIs right to the Java world. JSweet can be seen as a Java syntax layer to TypeScript.
 
-JSweet is *not* Java, it is Java syntax only and the APIs and programs run in JavaScript. With JSweet, your take advantage of all the Java tooling to program *real* JavaScript applications using the *latest* JavaScript libraries. JSweet is designed to be as safe as possible and generate fully type-checked JavaScript programs.
+JSweet is *not* Java, it is Java syntax only. JavaScript APIs are accessible, but Java APIs are not. JSweet programs run in JavaScript. With JSweet, you take advantage of all the Java tooling to program *real* JavaScript applications using the *latest* JavaScript libraries. JSweet is designed to be as safe as possible and generate fully type-checked JavaScript programs.
 
 ## Features
 
