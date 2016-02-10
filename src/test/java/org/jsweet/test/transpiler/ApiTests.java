@@ -23,6 +23,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import source.api.CastMethods;
+import source.api.ErasingJava;
 import source.api.ForeachIteration;
 import source.api.JdkInvocations;
 import source.api.PrimitiveInstantiation;
@@ -42,7 +43,7 @@ public class ApiTests extends AbstractTest {
 			Assert.assertEquals("Unexpected error", JSweetProblem.JDK_METHOD, logHandler.reportedProblems.get(4));
 			Assert.assertEquals("Unexpected error", JSweetProblem.JDK_METHOD, logHandler.reportedProblems.get(5));
 			Assert.assertEquals("Unexpected error", JSweetProblem.JDK_METHOD, logHandler.reportedProblems.get(6));
-		}, getSourceFile(WrongJdkInvocations.class));
+		} , getSourceFile(WrongJdkInvocations.class));
 	}
 
 	@Test
@@ -57,7 +58,7 @@ public class ApiTests extends AbstractTest {
 			assertEquals(-1, result.<Number> get("i2").intValue());
 			assertEquals(4, result.<Number> get("l").intValue());
 			assertEquals("t1st", result.<String> get("r"));
-		}, getSourceFile(JdkInvocations.class));
+		} , getSourceFile(JdkInvocations.class));
 	}
 
 	@Test
@@ -65,28 +66,35 @@ public class ApiTests extends AbstractTest {
 		eval((logHandler, r) -> {
 			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
 			Assert.assertEquals("Wrong behavior output trace", "abc", r.get("out"));
-		}, getSourceFile(ForeachIteration.class));
+		} , getSourceFile(ForeachIteration.class));
 	}
 
 	@Test
 	public void testPrimitiveInstantiation() {
 		transpile(logHandler -> {
 			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-		}, getSourceFile(PrimitiveInstantiation.class));
+		} , getSourceFile(PrimitiveInstantiation.class));
 	}
 
 	@Test
 	public void testQualifiedInstantiation() {
 		transpile(logHandler -> {
 			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-		}, getSourceFile(QualifiedInstantiation.class));
+		} , getSourceFile(QualifiedInstantiation.class));
 	}
 
 	@Test
 	public void testCastMethods() {
 		transpile(logHandler -> {
 			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-		}, getSourceFile(CastMethods.class));
+		} , getSourceFile(CastMethods.class));
+	}
+
+	@Test
+	public void testErasingJava() {
+		transpile(logHandler -> {
+			logHandler.assertReportedProblems();
+		} , getSourceFile(ErasingJava.class));
 	}
 
 }

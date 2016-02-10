@@ -147,6 +147,7 @@ public abstract class JSweetConfig {
 	public static String MAVEN_JAVA_OVERRIDE_ARTIFACT = "jsweet-core-strict";
 
 	private final static String JAVA_PACKAGE = "java";
+	private final static String JAVAX_PACKAGE = "javax";
 	private final static String ROOT_PACKAGE = "jsweet";
 	/** The constant for the JSweet lang package. */
 	public final static String LANG_PACKAGE = ROOT_PACKAGE + ".lang";
@@ -366,10 +367,10 @@ public abstract class JSweetConfig {
 
 	/**
 	 * Tells if this qualified name belongs to the JDK (starts with
-	 * {@value #JAVA_PACKAGE}).
+	 * {@value #JAVA_PACKAGE} or {@value #JAVAX_PACKAGE}).
 	 */
 	public static boolean isJDKPath(String qualifiedName) {
-		return qualifiedName.startsWith(JAVA_PACKAGE + ".");
+		return qualifiedName.startsWith(JAVA_PACKAGE + ".") || qualifiedName.startsWith(JAVAX_PACKAGE + ".");
 	}
 
 	/**

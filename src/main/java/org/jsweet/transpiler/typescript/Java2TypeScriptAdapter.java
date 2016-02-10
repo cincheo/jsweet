@@ -114,7 +114,8 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		if (isJSweetPath(qualifiedName) || isJDKPath(qualifiedName) || qualifiedName.endsWith(GLOBALS_PACKAGE_NAME + "." + GLOBALS_CLASS_NAME)) {
 			return null;
 		}
-		if (importDecl.qualid.type != null && Util.hasAnnotationType(importDecl.qualid.type.tsym, ANNOTATION_ERASED, ANNOTATION_OBJECT_TYPE)) {
+		if (importDecl.qualid.type != null && (Util.hasAnnotationType(importDecl.qualid.type.tsym, ANNOTATION_ERASED, ANNOTATION_OBJECT_TYPE)
+				|| importDecl.qualid.type.tsym.getKind() == ElementKind.ANNOTATION_TYPE)) {
 			return null;
 		}
 		if (importDecl.isStatic()) {
