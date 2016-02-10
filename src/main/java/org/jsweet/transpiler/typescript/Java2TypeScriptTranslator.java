@@ -1117,7 +1117,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 			boolean anonymous = JSweetConfig.ANONYMOUS_FUNCTION_NAME.equals(methName) || JSweetConfig.ANONYMOUS_STATIC_FUNCTION_NAME.equals(methName)
 					|| JSweetConfig.NEW_FUNCTION_NAME.equals(methName);
-			boolean targetIsThisOrStaticImported = meth.startsWith(methName) || meth.startsWith("this."+methName);
+			boolean targetIsThisOrStaticImported = meth.startsWith(methName) || meth.startsWith("this." + methName);
 
 			MethodType type = (MethodType) inv.meth.type;
 			MethodSymbol methSym = null;
@@ -1137,7 +1137,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 								}
 							}
 						} else {
-							if(meth.startsWith("this.") && methSym.getModifiers().contains(Modifier.STATIC)) {
+							if (meth.startsWith("this.") && methSym.getModifiers().contains(Modifier.STATIC)) {
 								report(inv, JSweetProblem.CANNOT_ACCESS_STATIC_MEMBER_ON_THIS, methSym.getSimpleName());
 							}
 							if (!JSweetConfig.GLOBALS_CLASS_NAME.equals(methSym.owner.getSimpleName().toString())) {
@@ -1339,6 +1339,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		boolean isInterface = Util.isInterface(clazz);
 		if (newClass.def != null || isInterface) {
 			if (isInterface || Util.hasAnnotationType(newClass.clazz.type.tsym, JSweetConfig.ANNOTATION_OBJECT_TYPE)) {
+				if (isInterface) {
+					print("<").print(newClass.clazz).print(">");
+				}
 				print("{").println().startIndent();
 				if (newClass.def != null) {
 					for (JCTree m : newClass.def.getMembers()) {
