@@ -35,6 +35,7 @@ import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.JCTree.JCTypeApply;
 import com.sun.tools.javac.tree.JCTree.JCTypeCast;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
+import com.sun.tools.javac.tree.JCTree.JCWildcard;
 import com.sun.tools.javac.util.Name;
 
 /**
@@ -208,6 +209,9 @@ public abstract class AbstractPrinterAdapter {
 				getPrinter().print(">");
 			}
 			return getPrinter();
+		} else if(typeTree instanceof JCWildcard) {
+			//JCWildcard wildCard = ((JCWildcard) typeTree);
+			return getPrinter().print("any");
 		} else {
 			if (typeTree instanceof JCArrayTypeTree) {
 				return substituteAndPrintType(((JCArrayTypeTree) typeTree).elemtype, true).print("[]");

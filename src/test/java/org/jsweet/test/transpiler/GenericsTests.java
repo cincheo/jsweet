@@ -21,6 +21,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 import source.generics.InstantiationWithGenerics;
+import source.generics.Wildcards;
 
 public class GenericsTests extends AbstractTest {
 
@@ -31,4 +32,11 @@ public class GenericsTests extends AbstractTest {
 		} , getSourceFile(InstantiationWithGenerics.class));
 	}
 
+	@Test
+	public void testWildcards() {
+		transpile(logHandler -> {
+			logHandler.assertReportedProblems();
+		} , getSourceFile(Wildcards.class));
+	}
+	
 }
