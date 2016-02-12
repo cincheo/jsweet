@@ -94,7 +94,7 @@ public class Util {
 	 */
 	public static boolean isSourceType(ClassSymbol clazz) {
 		// hack to know if it is a source file or a class file
-		return (clazz.sourcefile != null && clazz.sourcefile.getClass().getName().equals("com.sun.tools.javac.file.RegularFileObject"));
+		return clazz.sourcefile != null && clazz.sourcefile.getClass().getName().equals("com.sun.tools.javac.file.RegularFileObject");
 	}
 
 	/**
@@ -218,7 +218,7 @@ public class Util {
 	 * Tells if the given type is a Java interface.
 	 */
 	public static boolean isInterface(TypeSymbol typeSymbol) {
-		return (typeSymbol.type.isInterface() || Util.hasAnnotationType(typeSymbol, JSweetConfig.ANNOTATION_INTERFACE));
+		return typeSymbol.type.isInterface() || Util.hasAnnotationType(typeSymbol, JSweetConfig.ANNOTATION_INTERFACE);
 	}
 
 	private static void putVar(Map<String, VarSymbol> vars, VarSymbol varSymbol) {

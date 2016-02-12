@@ -566,7 +566,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			return getPrinter();
 		}
 		if (typeTree instanceof JCTypeApply) {
-			JCTypeApply typeApply = ((JCTypeApply) typeTree);
+			JCTypeApply typeApply = (JCTypeApply) typeTree;
 			String typeName = typeApply.clazz.toString();
 			if (typeFullName.startsWith(TUPLE_CLASSES_PACKAGE + ".")) {
 				getPrinter().print("[");
