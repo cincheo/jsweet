@@ -153,7 +153,7 @@ public class JSweetTranspiler implements JSweetOptions {
 	 * to <code>System.getProperty("java.class.path")</code>.
 	 */
 	public JSweetTranspiler() {
-		this(new File(System.getProperty("java.io.tmpdir")), null, System.getProperty("java.class.path"));
+		this(new File(System.getProperty("java.io.tmpdir")), null, null, System.getProperty("java.class.path"));
 	}
 
 	/**
@@ -163,12 +163,14 @@ public class JSweetTranspiler implements JSweetOptions {
 	 *            the directory where TypeScript files are written
 	 * @param jsOutputDir
 	 *            the directory where JavaScript files are written
+	 * @param extractedCandiesJavascriptDir
+	 *            see {@link #getExtractedCandyJavascriptDir()}
 	 * @param classPath
 	 *            the classpath as a string (check out system-specific
 	 *            requirements for Java classpathes)
 	 */
-	public JSweetTranspiler(File tsOutputDir, File jsOutputDir, String classPath) {
-		this(new File(TMP_WORKING_DIR_NAME), tsOutputDir, jsOutputDir, classPath);
+	public JSweetTranspiler(File tsOutputDir, File jsOutputDir, File extractedCandiesJavascriptDir, String classPath) {
+		this(new File(TMP_WORKING_DIR_NAME), tsOutputDir, jsOutputDir, extractedCandiesJavascriptDir, classPath);
 	}
 
 	/**
@@ -180,12 +182,15 @@ public class JSweetTranspiler implements JSweetOptions {
 	 *            the directory where TypeScript files are written
 	 * @param jsOutputDir
 	 *            the directory where JavaScript files are written
+	 * @param extractedCandiesJavascriptDir
+	 *            see {@link #getExtractedCandyJavascriptDir()}
 	 * @param classPath
 	 *            the classpath as a string (check out system-specific
 	 *            requirements for Java classpaths)
 	 */
-	public JSweetTranspiler(File workingDir, File tsOutputDir, File jsOutputDir, String classPath) {
+	public JSweetTranspiler(File workingDir, File tsOutputDir, File jsOutputDir, File extractedCandiesJavascriptDir, String classPath) {
 		this.workingDir = workingDir.getAbsoluteFile();
+		this.extractedCandyJavascriptDir = extractedCandiesJavascriptDir;
 		try {
 			tsOutputDir.mkdirs();
 			this.tsOutputDir = tsOutputDir.getCanonicalFile();
@@ -204,7 +209,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		logger.info("jsOut: " + jsOutputDir + (jsOutputDir == null ? "" : " - " + jsOutputDir.getAbsolutePath()));
 		logger.debug("compile classpath: " + classPath);
 		logger.debug("runtime classpath: " + System.getProperty("java.class.path"));
-		this.candiesProcessor = new CandiesProcessor(workingDir, classPath);
+		this.candiesProcessor = new CandiesProcessor(workingDir, classPath, extractedCandyJavascriptDir);
 	}
 
 	/**
@@ -872,6 +877,8 @@ public class JSweetTranspiler implements JSweetOptions {
 	private Process tsCompilationProcess;
 	private SourceFile[] watchedFiles;
 
+	private File extractedCandyJavascriptDir;
+
 	private Path relativizeTsFile(File file) {
 		try {
 			return getTsOutputDir().getAbsoluteFile().getCanonicalFile().toPath().relativize(file.getAbsoluteFile().getCanonicalFile().toPath());
@@ -1379,4 +1386,12 @@ public class JSweetTranspiler implements JSweetOptions {
 		this.declarationsOutputDir = declarationsOutputDir;
 	}
 
+	/**
+	 * The directory where the transpiler should put the extracted javascript
+	 * files from candies. Candies could bundle one or more javascript files
+	 * which will be extracted to this directory.
+	 */
+	public File getExtractedCandyJavascriptDir() {
+		return extractedCandyJavascriptDir;
+	}
 }
