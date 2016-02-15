@@ -164,7 +164,7 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 				currentLine--;
 			}
 			if (currentLine != line) {
-				logger.warn("cannot adjust line for: " + tree.getClass() + " at line " + line);
+				logger.warn ("cannot adjust line for: " + tree.getClass() + " at line " + line);
 			}
 			// adjusting columns... (TODO: does not work)
 			// int column =
