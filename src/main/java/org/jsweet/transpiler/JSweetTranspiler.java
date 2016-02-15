@@ -775,7 +775,7 @@ public class JSweetTranspiler implements JSweetOptions {
 				sb.append(printer.getOutput());
 			}
 			for (Entry<PackageSymbol, StringBuilder> e : modules.entrySet()) {
-				String outputFileRelativePathNoExt = Util.getRootRelativeName(e.getKey()).replace(".", File.separator) + File.separator
+				String outputFileRelativePathNoExt = Util.getRootRelativeJavaName(e.getKey()).replace(".", File.separator) + File.separator
 						+ JSweetConfig.MODULE_FILE_NAME;
 				String outputFileRelativePath = outputFileRelativePathNoExt + ".ts";
 				logger.info("output file: " + outputFileRelativePath);
