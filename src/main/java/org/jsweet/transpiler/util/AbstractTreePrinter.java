@@ -166,25 +166,6 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 			if (currentLine != line) {
 				logger.warn ("cannot adjust line for: " + tree.getClass() + " at line " + line);
 			}
-			// adjusting columns... (TODO: does not work)
-			// int column =
-			// compilationUnit.lineMap.getColumnNumber(stack.peek().pos);
-			// while (currentColumn < column) {
-			// // System.out.println("adding a column on "+tree.getClass());
-			// out.append(" ");
-			// currentColumn++;
-			// }
-			// while (currentColumn > column
-			// && ((currentColumn == 1 && out.charAt(out.length() - 1) == ' ')
-			// || (currentColumn > 1 && out.charAt(out.length() - 2) == ' '))) {
-			// out.deleteCharAt(out.length() - 1);
-			// currentColumn--;
-			// }
-			// if (currentColumn != column) {
-			// System.out.println("cannot adjust column for: " + tree.getClass()
-			// + " at position " + line + ", " + column + " - " + (currentColumn
-			// - column));
-			// }
 		}
 		positionStack.push(new Position(getCurrentPosition(), currentLine, currentColumn));
 	}

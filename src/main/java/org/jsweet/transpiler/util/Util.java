@@ -202,9 +202,6 @@ public class Util {
 					continue;
 				}
 				return true;
-				// if (method.body != null) {
-				// return true;
-				// }
 			} else if (member instanceof JCVariableDecl) {
 				if (((JCVariableDecl) member).mods.getFlags().contains(Modifier.STATIC)) {
 					return true;

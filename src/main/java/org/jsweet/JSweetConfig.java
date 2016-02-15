@@ -261,20 +261,17 @@ public abstract class JSweetConfig {
 		// note TS keywords are removed from that list
 		JAVA_KEYWORDS.add("abstract");
 		JAVA_KEYWORDS.add("assert");
-		// JAVA_KEYWORDS.add("boolean");
 		JAVA_KEYWORDS.add("break");
 		JAVA_KEYWORDS.add("byte");
 		JAVA_KEYWORDS.add("case");
 		JAVA_KEYWORDS.add("catch");
 		JAVA_KEYWORDS.add("char");
-		// JAVA_KEYWORDS.add("class");
 		JAVA_KEYWORDS.add("const");
 		JAVA_KEYWORDS.add("continue");
 		JAVA_KEYWORDS.add("default");
 		JAVA_KEYWORDS.add("do");
 		JAVA_KEYWORDS.add("double");
 		JAVA_KEYWORDS.add("else");
-		// JAVA_KEYWORDS.add("enum");
 		JAVA_KEYWORDS.add("extends");
 		JAVA_KEYWORDS.add("final");
 		JAVA_KEYWORDS.add("finally");
@@ -282,11 +279,9 @@ public abstract class JSweetConfig {
 		JAVA_KEYWORDS.add("for");
 		JAVA_KEYWORDS.add("goto");
 		JAVA_KEYWORDS.add("if");
-		// JAVA_KEYWORDS.add("implements");
 		JAVA_KEYWORDS.add("import");
 		JAVA_KEYWORDS.add("instanceof");
 		JAVA_KEYWORDS.add("int");
-		// JAVA_KEYWORDS.add("interface");
 		JAVA_KEYWORDS.add("long");
 		JAVA_KEYWORDS.add("native");
 		JAVA_KEYWORDS.add("new");
@@ -306,7 +301,6 @@ public abstract class JSweetConfig {
 		JAVA_KEYWORDS.add("throws");
 		JAVA_KEYWORDS.add("transient");
 		JAVA_KEYWORDS.add("try");
-		// JAVA_KEYWORDS.add("void");
 		JAVA_KEYWORDS.add("volatile");
 		JAVA_KEYWORDS.add("while");
 
