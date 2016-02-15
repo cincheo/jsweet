@@ -18,6 +18,8 @@ package org.jsweet.transpiler.candies;
 
 import java.io.IOException;
 import java.util.Enumeration;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -36,18 +38,33 @@ import com.google.gson.GsonBuilder;
  * @see CandiesStore
  */
 class CandyDescriptor {
-	String name;
-	String version;
-	long lastUpdateTimestamp;
-	String modelVersion;
-	String transpilerVersion;
+	final String name;
+	final String version;
+	final long lastUpdateTimestamp;
+	final String modelVersion;
+	final String transpilerVersion;
+	final String jsDirPath;
+	final List<String> jsFilesPaths;
 
-	public CandyDescriptor(String name, String version, long lastUpdateTimestamp, String modelVersion, String transpilerVersion) {
+	public CandyDescriptor( //
+			String name, //
+			String version, //
+			long lastUpdateTimestamp, //
+			String modelVersion, //
+			String transpilerVersion, //
+			String jsDirPath, //
+			List<String> jsFilesPaths) {
 		this.name = name;
 		this.version = version;
 		this.lastUpdateTimestamp = lastUpdateTimestamp;
 		this.modelVersion = modelVersion;
 		this.transpilerVersion = transpilerVersion;
+		this.jsDirPath = jsDirPath;
+		this.jsFilesPaths = jsFilesPaths;
+	}
+
+	public boolean hasJsFiles() {
+		return jsFilesPaths.size() > 0;
 	}
 
 	@Override
@@ -122,7 +139,25 @@ class CandyDescriptor {
 			transpilerVersion = (String) metadata.get("transpilerVersion");
 		}
 
-		return new CandyDescriptor(name, version, lastUpdateTimestamp, modelVersion, transpilerVersion);
+		String jsDirPath = "META-INF/resources/webjars/" + name + "/" + version;
+		ZipEntry jsDirEntry = jarFile.getEntry(jsDirPath);
+		List<String> jsFilesPaths = new LinkedList<>();
+		if (jsDirEntry != null) {
+			// collects js files
+			jarFile.stream() //
+					.filter(entry -> entry.getName().startsWith(jsDirPath) && entry.getName().endsWith(".js")) //
+					.map(entry -> entry.getName()) //
+					.forEach(jsFilesPaths::add);
+		}
+
+		return new CandyDescriptor( //
+				name, //
+				version, //
+				lastUpdateTimestamp, //
+				modelVersion, //
+				transpilerVersion, //
+				jsDirPath, //
+				jsFilesPaths);
 	}
 
 	@Override

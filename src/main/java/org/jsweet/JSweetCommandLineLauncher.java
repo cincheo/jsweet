@@ -96,6 +96,11 @@ public class JSweetCommandLineLauncher {
 				if (jsapArgs.getFile("dtsout") != null) {
 					dtsOutputDir = jsapArgs.getFile("dtsout");
 				}
+				
+				File candiesJsOutputDir = null;
+				if (jsapArgs.getFile("candiesJsOut") != null) {
+					candiesJsOutputDir = jsapArgs.getFile("candiesJsOut");
+				}
 
 				File inputDir = new File(jsapArgs.getString("input"));
 				logger.info("input dir: " + inputDir);
@@ -103,7 +108,7 @@ public class JSweetCommandLineLauncher {
 				LinkedList<File> files = new LinkedList<File>();
 				Util.addFiles(".java", inputDir, files);
 
-				JSweetTranspiler transpiler = new JSweetTranspiler(tsOutputDir, jsOutputDir, classPath);
+				JSweetTranspiler transpiler = new JSweetTranspiler(tsOutputDir, jsOutputDir, candiesJsOutputDir, classPath);
 
 				transpiler.setBundle(jsapArgs.getBoolean("bundle"));
 				transpiler.setNoRootDirectories(jsapArgs.getBoolean("noRootDirectories"));
@@ -229,6 +234,15 @@ public class JSweetCommandLineLauncher {
 		optionArg.setLongFlag("dtsout");
 		optionArg.setHelp(
 				"Specify where to place generated d.ts files when the declaration option is set (by default, d.ts files are generated in the JavaScript output directory - next to the corresponding js files).");
+		optionArg.setStringParser(FileStringParser.getParser());
+		optionArg.setRequired(false);
+		jsap.registerParameter(optionArg);
+		
+		// Candies javascript output directory
+		optionArg = new FlaggedOption("candiesJsOut");
+		optionArg.setLongFlag("candiesJsOut");
+		optionArg.setDefault("js/candies");
+		optionArg.setHelp("Specify where to place extracted JavaScript files from candies.");
 		optionArg.setStringParser(FileStringParser.getParser());
 		optionArg.setRequired(false);
 		jsap.registerParameter(optionArg);

@@ -76,11 +76,17 @@ public class CandiesProcessor {
 	 * The name of the directory that contains the TypeScript source files.
 	 */
 	public static final String CANDIES_TSDEFS_DIR_NAME = CANDIES_DIR_NAME + File.separator + JSweetConfig.TS_LIBS_DIR_NAME;
+	/**
+	 * Default directory for extracted candies' javascript.
+	 */
+	private static final String CANDIES_DEFAULT_JS_DIR_NAME = CANDIES_DIR_NAME + File.separator + "js";
 
 	private File candiesSourceDir;
 	private File candiesProcessedDir;
 	private File candiesStoreFile;
 	private File candiesTsdefsDir;
+	private File candiesJavascriptOutDir;
+	private File workingDir;
 
 	/**
 	 * Create a candies processor.
@@ -90,8 +96,11 @@ public class CandiesProcessor {
 	 *            temporary data for processing
 	 * @param classPath
 	 *            the classpath where the processor will seek for JSweet candies
+	 * @param extractedCandiesJavascriptDir
+	 *            see JSweetTranspiler.extractedCandyJavascriptDir
 	 */
-	public CandiesProcessor(File workingDir, String classPath) {
+	public CandiesProcessor(File workingDir, String classPath, File extractedCandiesJavascriptDir) {
+		this.workingDir = workingDir;
 		this.classPath = (classPath == null ? System.getProperty("java.class.path") : classPath);
 		String[] cp = this.classPath.split(File.pathSeparator);
 		int[] indices = new int[0];
@@ -109,6 +118,17 @@ public class CandiesProcessor {
 		candiesStoreFile = new File(workingDir, CANDIES_STORE_FILE_NAME);
 		candiesTsdefsDir = new File(workingDir, CANDIES_TSDEFS_DIR_NAME);
 		logger.debug("processed classes dir: " + getCandiesProcessedDir() + " - " + getCandiesProcessedDir().getAbsolutePath());
+		
+		setCandiesJavascriptOutDir(extractedCandiesJavascriptDir);
+	}
+	
+	private void setCandiesJavascriptOutDir(File extractedCandiesJavascriptDir) {
+		this.candiesJavascriptOutDir = extractedCandiesJavascriptDir;
+		if (this.candiesJavascriptOutDir == null) {
+			this.candiesJavascriptOutDir = new File(workingDir, CANDIES_DEFAULT_JS_DIR_NAME);
+		}
+		logger.info("extracted candies directory: " + extractedCandiesJavascriptDir);
+		this.candiesJavascriptOutDir.mkdirs();
 	}
 
 	/**
@@ -215,16 +235,29 @@ public class CandiesProcessor {
 			String candyName = candyDescriptor.name;
 			boolean isCore = "jsweet-core".equals(candyName);
 			try (JarFile jarFileHandle = new JarFile(jarFile)) {
+				String candyJarName = FilenameUtils.getBaseName(jarFile.getName());
+				File candyExtractedSourcesDir = new File(extractedSourcesDir, candyJarName);
+				File candyExtractedJsDir = new File(candiesJavascriptOutDir, candyJarName);
+
 				extractCandy( //
+						candyDescriptor, //
 						jarFileHandle, //
-						new File(extractedSourcesDir, FilenameUtils.getBaseName(jarFile.getName())), //
+						candyExtractedSourcesDir, //
 						extractedTsDefsDir, //
-						isCore ? tsDefName -> false : null, extractedClassesDir);
+						candyExtractedJsDir, //
+						isCore ? tsDefName -> false : null, //
+						extractedClassesDir);
 			}
 		}
 	}
 
-	private void extractCandy(JarFile jarFile, File javaOutputDirectory, File tsDefOutputDirectory, Predicate<String> isTsDefToBeExtracted,
+	private void extractCandy( //
+			CandyDescriptor descriptor, //
+			JarFile jarFile, //
+			File javaOutputDirectory, //
+			File tsDefOutputDirectory, //
+			File jsOutputDirectory, //
+			Predicate<String> isTsDefToBeExtracted, //
 			File classesOutputDirectory) {
 		logger.info("extract candy: " + jarFile.getName() + " javaOutputDirectory=" + javaOutputDirectory + " tsDefOutputDirectory=" + tsDefOutputDirectory
 				+ " classesOutputDirectory=" + classesOutputDirectory);
@@ -232,6 +265,7 @@ public class CandiesProcessor {
 		jarFile.stream()
 				.filter(entry -> entry.getName().endsWith(".d.ts") && entry.getName().startsWith("src/") || entry.getName().endsWith("package-info.class")) //
 				.forEach(entry -> {
+
 					File out;
 					if (entry.getName().endsWith(".java")) {
 						out = new File(javaOutputDirectory + "/" + entry.getName().substring(4));
@@ -244,13 +278,26 @@ public class CandiesProcessor {
 					} else {
 						out = new File(classesOutputDirectory + "/" + entry.getName());
 					}
-					out.getParentFile().mkdirs();
-					try {
-						FileUtils.copyInputStreamToFile(jarFile.getInputStream(entry), out);
-					} catch (Exception e) {
-						throw new RuntimeException(e);
-					}
+					extractEntry(jarFile, entry, out);
 				});
+
+		for (String jsFilePath : descriptor.jsFilesPaths) {
+			JarEntry entry = jarFile.getJarEntry(jsFilePath);
+			String relativeJsPath = jsFilePath.substring(descriptor.jsDirPath.length());
+
+			File out = new File(jsOutputDirectory, relativeJsPath);
+			extractEntry(jarFile, entry, out);
+		}
+	}
+
+	private void extractEntry(JarFile jarFile, JarEntry entry, File out) {
+		logger.info("extract " + entry.getName() + " to " + out);
+		out.getParentFile().mkdirs();
+		try {
+			FileUtils.copyInputStreamToFile(jarFile.getInputStream(entry), out);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	private void extractSourcesForClasses(Map<File, CandyDescriptor> candies, Collection<Class<?>> classes) {
