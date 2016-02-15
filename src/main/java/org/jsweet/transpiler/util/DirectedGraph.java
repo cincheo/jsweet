@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 
 /**
@@ -347,10 +348,10 @@ public class DirectedGraph<T> implements Collection<T> {
 	public static class Node<T> {
 		private DirectedGraph<T> graph;
 		public final T element;
-		public final HashSet<Edge<T>> inEdges;
-		public final HashSet<Edge<T>> usedInEdges;
-		public final HashSet<Edge<T>> outEdges;
-		public final HashSet<Edge<T>> usedOutEdges;
+		public final Set<Edge<T>> inEdges;
+		public final Set<Edge<T>> usedInEdges;
+		public final Set<Edge<T>> outEdges;
+		public final Set<Edge<T>> usedOutEdges;
 
 		public Node(DirectedGraph<T> graph, T element) {
 			this.graph = graph;
