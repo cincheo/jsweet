@@ -19,11 +19,15 @@ package org.jsweet.test.transpiler;
 import static org.junit.Assert.assertEquals;
 
 import org.jsweet.transpiler.JSweetProblem;
+import org.jsweet.transpiler.ModuleKind;
 import org.junit.Assert;
 import org.junit.Test;
 
+import source.root.noroot.a.B;
 import source.root.noroot.a.GlobalsInNoRoot;
 import source.root.root.a.GlobalsInRoot;
+import source.root.root2.AccessFromClassInRoot;
+import source.root.root2.a.A;
 import source.root.rootparent1.InvalidClassLocation;
 import source.root.rootparent1.root.NoClassesInRootParent;
 import source.root.rootparent2.root.NoRootInRoot;
@@ -32,7 +36,7 @@ public class RootTests extends AbstractTest {
 
 	@Test
 	public void testGlobalsInRoot() {
-		eval((logHandler, r) -> {
+		eval(ModuleKind.commonjs, (logHandler, r) -> {
 			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
 			Assert.assertEquals(true, r.get("m1"));
 			Assert.assertEquals(true, r.get("m2"));
@@ -60,6 +64,16 @@ public class RootTests extends AbstractTest {
 		transpile((logHandler) -> {
 			logHandler.assertReportedProblems(JSweetProblem.ENCLOSED_ROOT_PACKAGES);
 		} , getSourceFile(NoRootInRoot.class));
+	}
+
+	@Test
+	public void testAccessFromClassInRoot() {
+		transpile(ModuleKind.none, (logHandler) -> {
+			logHandler.assertReportedProblems();
+		} , getSourceFile(AccessFromClassInRoot.class), getSourceFile(A.class), getSourceFile(B.class));
+		transpile(ModuleKind.commonjs, (logHandler) -> {
+			logHandler.assertReportedProblems(JSweetProblem.MULTIPLE_ROOT_PACKAGES_NOT_ALLOWED_WITH_MODULES);
+		} , getSourceFile(AccessFromClassInRoot.class), getSourceFile(A.class), getSourceFile(B.class));
 	}
 
 }

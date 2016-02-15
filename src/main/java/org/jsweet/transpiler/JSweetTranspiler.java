@@ -241,7 +241,8 @@ public class JSweetTranspiler implements JSweetOptions {
 		}
 		if (!ProcessUtil.isInstalledWithNpm("browserify")) {
 			ProcessUtil.installNodePackage("browserify", true);
-			// make sure that jquery is installed because sometime it fails to be installed
+			// make sure that jquery is installed because sometime it fails to
+			// be installed
 			ProcessUtil.installNodePackage("jquery", true);
 		}
 	}
@@ -706,18 +707,6 @@ public class JSweetTranspiler implements JSweetOptions {
 				}
 				createModuleFile = !isTsFromSourceFile;
 			}
-			if (createModuleFile) {
-				createModuleFile = false;
-				// create only auxiliary module files on modules within a root
-				// package
-				for (String roots : context.topLevelPackageNames) {
-					File root = new File(tsOutputDir, roots.replace('.', File.separatorChar));
-					if (rootDir.getPath().startsWith(root.getPath())) {
-						createModuleFile = true;
-						break;
-					}
-				}
-			}
 
 			if (createModuleFile) {
 				FileUtils.deleteQuietly(moduleFile);
@@ -781,7 +770,7 @@ public class JSweetTranspiler implements JSweetOptions {
 				sb.append(printer.getOutput());
 			}
 			for (Entry<PackageSymbol, StringBuilder> e : modules.entrySet()) {
-				String outputFileRelativePathNoExt = e.getKey().fullname.toString().replace(".", File.separator) + File.separator
+				String outputFileRelativePathNoExt = Util.getRootRelativeName(e.getKey()).replace(".", File.separator) + File.separator
 						+ JSweetConfig.MODULE_FILE_NAME;
 				String outputFileRelativePath = outputFileRelativePathNoExt + ".ts";
 				logger.info("output file: " + outputFileRelativePath);

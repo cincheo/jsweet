@@ -184,11 +184,18 @@ public class JSweetContext extends Context {
 	public DirectedGraph<PackageSymbol> packageDependencies = new DirectedGraph<>();
 
 	/**
-	 * Stores the root package namee (i.e. packages contained in the default
+	 * Stores the root package names (i.e. packages contained in the default
 	 * package or in a package annotated with the {@link jsweet.lang.Root}
 	 * annotation).
 	 */
 	public Set<String> topLevelPackageNames = new HashSet<>();
+
+	/**
+	 * Store root packages (i.e. packages contained in the default package or in
+	 * a package annotated with the {@link jsweet.lang.Root} annotation,
+	 * including null, i.e. default package).
+	 */
+	public HashSet<PackageSymbol> rootPackages = new HashSet<>();
 
 	/**
 	 * Globally imported name (in the global namespace).

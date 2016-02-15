@@ -82,7 +82,8 @@ public enum JSweetProblem {
 	 */
 	FIELD_CONFLICTS_METHOD(Severity.ERROR),
 	/**
-	 * Raised when a method invocation is hidden by a local variable or parameter.
+	 * Raised when a method invocation is hidden by a local variable or
+	 * parameter.
 	 */
 	HIDDEN_INVOCATION(Severity.ERROR),
 	/**
@@ -257,9 +258,15 @@ public enum JSweetProblem {
 	/**
 	 * Raised when a class is declared in a parent of a @Root package.
 	 */
-	CLASS_OUT_OF_ROOT_PACKAGE_SCOPE(Severity.ERROR), 
+	CLASS_OUT_OF_ROOT_PACKAGE_SCOPE(Severity.ERROR),
 	/**
-	 * Raised when using a candy which was generated for an older / newer version of the transpiler 
+	 * Raised when several @Root packages are used with the module option (the
+	 * default package being considered as a @Root package).
+	 */
+	MULTIPLE_ROOT_PACKAGES_NOT_ALLOWED_WITH_MODULES(Severity.ERROR),
+	/**
+	 * Raised when using a candy which was generated for an older / newer
+	 * version of the transpiler
 	 */
 	CANDY_VERSION_DISCREPANCY(Severity.WARNING),
 	/**
@@ -269,16 +276,17 @@ public enum JSweetProblem {
 	/**
 	 * Raised when a Globals class declares a superclass.
 	 */
-	GLOBALS_CLASS_CANNOT_HAVE_SUPERCLASS(Severity.ERROR), 
+	GLOBALS_CLASS_CANNOT_HAVE_SUPERCLASS(Severity.ERROR),
 	/**
 	 * Raised when a class tries to extend a Globals class.
 	 */
 	GLOBALS_CLASS_CANNOT_BE_SUBCLASSED(Severity.ERROR),
 	/**
-	 * Raised when invoking a static method on this (this is allowed in Java, but not in JSweet).
+	 * Raised when invoking a static method on this (this is allowed in Java,
+	 * but not in JSweet).
 	 */
-	CANNOT_ACCESS_STATIC_MEMBER_ON_THIS(Severity.ERROR); 
-	
+	CANNOT_ACCESS_STATIC_MEMBER_ON_THIS(Severity.ERROR);
+
 	private Severity severity;
 
 	/**
@@ -403,6 +411,8 @@ public enum JSweetProblem {
 			return String.format("imports cannot use * wildcards: please import a specific element", params);
 		case ENCLOSED_ROOT_PACKAGES:
 			return String.format("invalid package hierarchy: @Root package '%s' cannot be enclosed in @Root package '%s'", params);
+		case MULTIPLE_ROOT_PACKAGES_NOT_ALLOWED_WITH_MODULES:
+			return String.format("multipe @Root packages (including the default 'null' package) are not allowed when using modules, found packages: %s", params);
 		case CLASS_OUT_OF_ROOT_PACKAGE_SCOPE:
 			return String.format("invalid package hierarchy: type '%s' is declared in a parent of @Root package '%s'", params);
 		case WRONG_USE_OF_AMBIENT:

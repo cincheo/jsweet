@@ -754,4 +754,29 @@ public class Util {
 		}
 	}
 
+	/**
+	 * Tells if the given directory or any of its sub-directory contains one of
+	 * the given files.
+	 * 
+	 * @param dir
+	 *            the directory to look into
+	 * @param files
+	 *            the files to be found
+	 * @return true if one of the given files is found
+	 */
+	public static boolean containsFile(File dir, File[] files) {
+		for (File child : dir.listFiles()) {
+			if (child.isDirectory()) {
+				return containsFile(child, files);
+			} else {
+				for (File file : files) {
+					if (child.getAbsolutePath().equals(file.getAbsolutePath())) {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+
 }

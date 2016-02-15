@@ -168,21 +168,23 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 	}
 
-	private void checkRootPackageParent(JCCompilationUnit topLevel, PackageSymbol rootPackage, PackageSymbol parentPackage) {
+	private boolean checkRootPackageParent(JCCompilationUnit topLevel, PackageSymbol rootPackage, PackageSymbol parentPackage) {
 		if (parentPackage == null) {
-			return;
+			return true;
 		}
 		if (Util.hasAnnotationType(parentPackage, JSweetConfig.ANNOTATION_ROOT)) {
 			report(topLevel.getPackageName(), JSweetProblem.ENCLOSED_ROOT_PACKAGES, rootPackage.getQualifiedName().toString(),
 					parentPackage.getQualifiedName().toString());
+			return false;
 		}
 		for (Symbol s : parentPackage.getEnclosedElements()) {
 			if (!(s instanceof PackageSymbol)) {
 				report(topLevel.getPackageName(), JSweetProblem.CLASS_OUT_OF_ROOT_PACKAGE_SCOPE, s.getQualifiedName().toString(),
 						rootPackage.getQualifiedName().toString());
+				return false;
 			}
 		}
-		checkRootPackageParent(topLevel, rootPackage, (PackageSymbol) parentPackage.owner);
+		return checkRootPackageParent(topLevel, rootPackage, (PackageSymbol) parentPackage.owner);
 	}
 
 	@Override
@@ -190,7 +192,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		printIndent().print("\"Generated from Java with JSweet " + JSweetConfig.getVersionNumber() + " - http://www.jsweet.org\";").println();
 		PackageSymbol rootPackage = Util.getFirstEnclosingRootPackage(topLevel.packge);
 		if (rootPackage != null) {
-			checkRootPackageParent(topLevel, rootPackage, (PackageSymbol) rootPackage.owner);
+			if (!checkRootPackageParent(topLevel, rootPackage, (PackageSymbol) rootPackage.owner)) {
+				return;
+			}
+		}
+		context.rootPackages.add(rootPackage);
+		if (context.useModules && context.rootPackages.size() > 1) {
+			report(topLevel.getPackageName(), JSweetProblem.MULTIPLE_ROOT_PACKAGES_NOT_ALLOWED_WITH_MODULES, context.rootPackages.toString());
+			return;
 		}
 
 		topLevelPackage = Util.getTopLevelPackage(topLevel.packge);
@@ -227,16 +236,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			File parent = new File(compilationUnit.getSourceFile().getName()).getParentFile();
 			for (File file : parent.listFiles()) {
 				if (file.isDirectory() && !file.getName().startsWith(".")) {
-					boolean containsSourceFile = false;
-					for (File child : file.listFiles()) {
-						for (File sourceFile : SourceFile.toFiles(context.sourceFiles)) {
-							if (child.getAbsolutePath().equals(sourceFile.getAbsolutePath())) {
-								containsSourceFile = true;
-								break;
-							}
-						}
-					}
-					if (containsSourceFile) {
+					if (Util.containsFile(file, SourceFile.toFiles(context.sourceFiles))) {
 						Set<String> importedNames = context.getImportedNames(compilationUnit.packge);
 						if (!importedNames.contains(file.getName())) {
 							print("export import " + file.getName() + " = require('./" + file.getName() + "/" + JSweetConfig.MODULE_FILE_NAME + "');")
@@ -518,7 +518,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				return;
 			}
 			printDocComment(classdecl, false);
-			if (!globalModule) {
+			if (!globalModule || context.useModules) {
 				print("export ");
 			}
 			if (Util.isInterface(classdecl.sym)) {
