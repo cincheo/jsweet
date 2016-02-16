@@ -971,7 +971,7 @@ JSweet uses the Java package concept for namespaces. Modules are a deployment co
 
 ### Root packages
 
-Root packages are a way to tune the generated code so that JSweet packages are erased in the generated code and thus at runtime. To set a root package, just define a package-info.java file and use the @Root annotation on the package, as follows:
+Root packages are a way to tune the generated code so that JSweet packages are erased in the generated code and thus at runtime. To set a root package, just define a package-info.java file and use the *@Root* annotation on the package, as follows:
 
 ``` java
 @Root
@@ -980,7 +980,17 @@ package a.b.c;
 
 The above declaration means that the `c` package is a root package, i.e. it will be erased in the generated code, as well as all its parent packages. Thus, if `c` contains a package `d`, and a class `C`, these will be top-level objects at runtime. In other words, `a.b.c.d` becomes `d`, and `a.b.c.C` becomes `C`.
 
-Note that root packages do not change the folder hierarchy of the generated files. For instance, the `a.b.c.C` class will still be generated in the `<jsout>/a/b/c/C.js` file (relatively to the `<jsout>` output directory). However, switching on the `noRootDirectories` option will remove the root directories so that the `a.b.c.C` class gets generated to the `<jsout>/C.js` file.
+Note that since that packaged placed before the *@Root* package are erased, there cannot be any type defined before a *@Root* package. In the previous example, the *a* and *b* packages are necessarily empty packages.
+
+#### Behavior when not using modules (default)
+
+By default, root packages do not change the folder hierarchy of the generated files. For instance, the `a.b.c.C` class will still be generated in the `<jsout>/a/b/c/C.js` file (relatively to the `<jsout>` output directory). However, switching on the `noRootDirectories` option will remove the root directories so that the `a.b.c.C` class gets generated to the `<jsout>/C.js` file.
+
+When not using modules (default), it is possible to have several *@Root* packages (but a *@Root* package can never contain another *@Root* package).
+
+#### Behavior when using modules
+
+When using modules (see the *module* option), only one *@Root* package is allowed, and when having one *@Root* package, no other package or type can be outside of the scope of that *@Root* package. The generated folder/file hierarchy then starts at the root package so that all the folders before it are actually erased.
 
 ### External modules
 

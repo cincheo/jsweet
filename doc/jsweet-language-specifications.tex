@@ -998,7 +998,7 @@ JSweet uses the Java package concept for namespaces. Modules are a deployment co
 
 \section{Root packages}
 
-Root packages are a way to tune the generated code so that JSweet packages are erased in the generated code and thus at runtime. To set a root package, just define a package-info.java file and use the @Root annotation on the package, as follows:
+Root packages are a way to tune the generated code so that JSweet packages are erased in the generated code and thus at runtime. To set a root package, just define a package-info.java file and use the \emph{@Root} annotation on the package, as follows:
 
 \begin{lstlisting}[language=Java]
 @Root
@@ -1007,7 +1007,17 @@ package a.b.c;
 
 The above declaration means that the \texttt{c} package is a root package, i.e. it will be erased in the generated code, as well as all its parent packages. Thus, if \texttt{c} contains a package \texttt{d}, and a class \texttt{C}, these will be top-level objects at runtime. In other words, \texttt{a.b.c.d} becomes \texttt{d}, and \texttt{a.b.c.C} becomes \texttt{C}.
 
-Note that root packages do not change the folder hierarchy of the generated files. For instance, the \texttt{a.b.c.C} class will still be generated in the \texttt{<jsout>/a/b/c/C.js} file (relatively to the \texttt{<jsout>} output directory). However, switching on the \texttt{noRootDirectories} option will remove the root directories so that the \texttt{a.b.c.C} class gets generated to the \texttt{<jsout>/C.js} file.
+Note that since that packaged placed before the \emph{@Root} package are erased, there cannot be any type defined before a \emph{@Root} package. In the previous example, the \emph{a} and \emph{b} packages are necessarily empty packages.
+
+\subsection{Behavior when not using modules (default)}
+
+By default, root packages do not change the folder hierarchy of the generated files. For instance, the \texttt{a.b.c.C} class will still be generated in the \texttt{<jsout>/a/b/c/C.js} file (relatively to the \texttt{<jsout>} output directory). However, switching on the \texttt{noRootDirectories} option will remove the root directories so that the \texttt{a.b.c.C} class gets generated to the \texttt{<jsout>/C.js} file.
+
+When not using modules (default), it is possible to have several \emph{@Root} packages (but a \emph{@Root} package can never contain another \emph{@Root} package).
+
+\subsection{Behavior when using modules}
+
+When using modules (see the \emph{module} option), only one \emph{@Root} package is allowed, and when having one \emph{@Root} package, no other package or type can be outside of the scope of that \emph{@Root} package. The generated folder/file hierarchy then starts at the root package so that all the folders before it are actually erased.
 
 \section{External modules}
 
