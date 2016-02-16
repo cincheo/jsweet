@@ -238,15 +238,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			// export-import submodules
 			File parent = new File(compilationUnit.getSourceFile().getName()).getParentFile();
 			File[] sourceFiles = SourceFile.toFiles(context.sourceFiles);
-			logger.debug("source files: " + Arrays.asList(sourceFiles));
 			for (File file : parent.listFiles()) {
 				if (file.isDirectory() && !file.getName().startsWith(".")) {
-					logger.debug(topLevel.getSourceFile().getName() + " is checking for export import: " + file);
 					if (Util.containsFile(file, sourceFiles)) {
-						logger.debug(file + " contains a source file");
 						Set<String> importedNames = context.getImportedNames(compilationUnit.packge);
 						if (!importedNames.contains(file.getName())) {
-							logger.debug(file + " is imported");
+							logger.debug(topLevel.getSourceFile().getName() + " export import: " + file);
 							print("export import " + file.getName() + " = require('./" + file.getName() + "/" + JSweetConfig.MODULE_FILE_NAME + "');")
 									.println();
 							importedNames.add(file.getName());
