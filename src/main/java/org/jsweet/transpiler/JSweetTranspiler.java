@@ -246,9 +246,6 @@ public class JSweetTranspiler implements JSweetOptions {
 		}
 		if (!ProcessUtil.isInstalledWithNpm("browserify")) {
 			ProcessUtil.installNodePackage("browserify", true);
-			// make sure that jquery is installed because sometime it fails to
-			// be installed
-			ProcessUtil.installNodePackage("jquery", true);
 		}
 	}
 
