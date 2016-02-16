@@ -22,6 +22,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -40,7 +41,9 @@ import javax.lang.model.element.Modifier;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
 import org.jsweet.JSweetConfig;
 
 import com.sun.tools.javac.code.Attribute;
@@ -79,6 +82,8 @@ import com.sun.tools.javac.util.Name;
  * @author Renaud Pawlak
  */
 public class Util {
+
+	private static Logger logger = Logger.getLogger(Util.class);
 
 	private static long id = 121;
 
@@ -769,6 +774,7 @@ public class Util {
 			if (child.isDirectory()) {
 				return containsFile(child, files);
 			} else {
+				logger.debug("checking: " + child.getAbsolutePath() + " - " + ArrayUtils.contains(files, child) + " - " + Arrays.asList(files));
 				for (File file : files) {
 					if (child.getAbsolutePath().equals(file.getAbsolutePath())) {
 						return true;

@@ -243,7 +243,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (file.isDirectory() && !file.getName().startsWith(".")) {
 					logger.debug(topLevel.getSourceFile().getName() + " is checking for export import: " + file);
 					if (Util.containsFile(file, sourceFiles)) {
-						logger.debug(file + " is a source file");
+						logger.debug(file + " contains a source file");
 						Set<String> importedNames = context.getImportedNames(compilationUnit.packge);
 						if (!importedNames.contains(file.getName())) {
 							logger.debug(file + " is imported");
