@@ -1374,11 +1374,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		this.declarationsOutputDir = declarationsOutputDir;
 	}
 
-	/**
-	 * The directory where the transpiler should put the extracted javascript
-	 * files from candies. Candies could bundle one or more javascript files
-	 * which will be extracted to this directory.
-	 */
+	@Override
 	public File getExtractedCandyJavascriptDir() {
 		return extractedCandyJavascriptDir;
 	}

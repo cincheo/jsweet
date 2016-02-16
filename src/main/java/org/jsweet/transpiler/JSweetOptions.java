@@ -74,5 +74,12 @@ public interface JSweetOptions {
 	 * Generates d.ts files along with the js files.
 	 */
 	boolean isGenerateDeclarations();
+
+	/**
+	 * The directory where the transpiler should put the extracted JavaScript
+	 * files from candies. Candies can bundle one or more JavaScript files
+	 * that will be extracted to this directory.
+	 */
+	File getExtractedCandyJavascriptDir();
 	
 }
