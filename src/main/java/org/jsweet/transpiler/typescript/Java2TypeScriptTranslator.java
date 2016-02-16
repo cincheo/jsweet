@@ -34,6 +34,7 @@ import java.util.Stack;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
 
+import org.apache.log4j.Logger;
 import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetProblem;
@@ -111,6 +112,8 @@ import com.sun.tools.javac.tree.TreeScanner;
  * @author Renaud Pawlak
  */
 public class Java2TypeScriptTranslator extends AbstractTreePrinter {
+
+	protected static Logger logger = Logger.getLogger(Java2TypeScriptTranslator.class);
 
 	private boolean skipTypeAnnotations = false;
 
@@ -234,11 +237,16 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (context.useModules) {
 			// export-import submodules
 			File parent = new File(compilationUnit.getSourceFile().getName()).getParentFile();
+			File[] sourceFiles = SourceFile.toFiles(context.sourceFiles);
+			logger.debug("source files: " + Arrays.asList(sourceFiles));
 			for (File file : parent.listFiles()) {
 				if (file.isDirectory() && !file.getName().startsWith(".")) {
-					if (Util.containsFile(file, SourceFile.toFiles(context.sourceFiles))) {
+					logger.debug(topLevel.getSourceFile().getName() + " is checking for export import: " + file);
+					if (Util.containsFile(file, sourceFiles)) {
+						logger.debug(file + " is a source file");
 						Set<String> importedNames = context.getImportedNames(compilationUnit.packge);
 						if (!importedNames.contains(file.getName())) {
+							logger.debug(file + " is imported");
 							print("export import " + file.getName() + " = require('./" + file.getName() + "/" + JSweetConfig.MODULE_FILE_NAME + "');")
 									.println();
 							importedNames.add(file.getName());
