@@ -31,6 +31,7 @@ import source.structural.AbstractClass;
 import source.structural.AutoImportClassesInSamePackage;
 import source.structural.AutoImportClassesInSamePackageUsed;
 import source.structural.Enums;
+import source.structural.WrongConstructsInSharedInterfaces;
 import source.structural.ExtendsClassInSameFile;
 import source.structural.ExtendsObject;
 import source.structural.GlobalsAccess;
@@ -104,19 +105,23 @@ public class StructuralTests extends AbstractTest {
 	@Test
 	public void testWrongConstructsInInterfaces() {
 		transpile(logHandler -> {
-			assertEquals("There should be 11 errors", 11, logHandler.reportedProblems.size());
-			assertEquals("Wrong error type", JSweetProblem.INTERFACE_MUST_BE_ABSTRACT, logHandler.reportedProblems.get(0));
-			assertEquals("Wrong error type", JSweetProblem.INVALID_FIELD_INITIALIZER_IN_INTERFACE, logHandler.reportedProblems.get(1));
-			assertEquals("Wrong error type", JSweetProblem.INVALID_STATIC_IN_INTERFACE, logHandler.reportedProblems.get(2));
-			assertEquals("Wrong error type", JSweetProblem.INVALID_PRIVATE_IN_INTERFACE, logHandler.reportedProblems.get(3));
-			assertEquals("Wrong error type", JSweetProblem.INVALID_METHOD_BODY_IN_INTERFACE, logHandler.reportedProblems.get(4));
-			assertEquals("Wrong error type", JSweetProblem.NATIVE_MODIFIER_IS_NOT_ALLOWED, logHandler.reportedProblems.get(5));
-			assertEquals("Wrong error type", JSweetProblem.INVALID_METHOD_BODY_IN_INTERFACE, logHandler.reportedProblems.get(6));
-			assertEquals("Wrong error type", JSweetProblem.NATIVE_MODIFIER_IS_NOT_ALLOWED, logHandler.reportedProblems.get(7));
-			assertEquals("Wrong error type", JSweetProblem.INVALID_STATIC_IN_INTERFACE, logHandler.reportedProblems.get(8));
-			assertEquals("Wrong error type", JSweetProblem.INVALID_INITIALIZER_IN_INTERFACE, logHandler.reportedProblems.get(9));
-			assertEquals("Wrong error type", JSweetProblem.INVALID_INITIALIZER_IN_INTERFACE, logHandler.reportedProblems.get(10));
+			logHandler.assertReportedProblems(JSweetProblem.INTERFACE_MUST_BE_ABSTRACT, //
+					JSweetProblem.INVALID_FIELD_INITIALIZER_IN_INTERFACE, //
+					JSweetProblem.INVALID_STATIC_IN_INTERFACE, //
+					JSweetProblem.INVALID_PRIVATE_IN_INTERFACE, //
+					JSweetProblem.INVALID_METHOD_BODY_IN_INTERFACE, //
+					JSweetProblem.INVALID_METHOD_BODY_IN_INTERFACE, //
+					JSweetProblem.INVALID_STATIC_IN_INTERFACE, //
+					JSweetProblem.INVALID_INITIALIZER_IN_INTERFACE, //
+					JSweetProblem.INVALID_INITIALIZER_IN_INTERFACE);
 		} , getSourceFile(WrongConstructsInInterfaces.class));
+	}
+
+	@Test
+	public void testWrongConstructsInSharedInterfaces() {
+		transpile(logHandler -> {
+			logHandler.assertReportedProblems();
+		} , getSourceFile(WrongConstructsInSharedInterfaces.class));
 	}
 
 	@Test

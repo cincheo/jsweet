@@ -37,9 +37,9 @@ import source.init.InitializerStatementError;
 import source.init.InterfaceRawConstruction;
 import source.init.MultipleMains;
 import source.init.NoOptionalFieldsInClass;
+import source.init.OptionalField;
+import source.init.OptionalFieldError;
 import source.init.StaticInitializer;
-import source.structural.OptionalField;
-import source.structural.OptionalFieldError;
 
 public class InitTests extends AbstractTest {
 
@@ -100,7 +100,7 @@ public class InitTests extends AbstractTest {
 		TestTranspilationHandler logHandler = new TestTranspilationHandler();
 		try {
 			transpiler.transpile(logHandler, getSourceFile(OptionalField.class));
-			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+			logHandler.assertReportedProblems();
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail("Exception occured while running test");
@@ -112,8 +112,7 @@ public class InitTests extends AbstractTest {
 		TestTranspilationHandler logHandler = new TestTranspilationHandler();
 		try {
 			transpiler.transpile(logHandler, getSourceFile(OptionalFieldError.class));
-			assertEquals("There should be 1 problem", 1, logHandler.reportedProblems.size());
-			assertTrue("Missing expected error on optional field", logHandler.reportedProblems.contains(JSweetProblem.UNINITIALIZED_FIELD));
+			logHandler.assertReportedProblems(JSweetProblem.UNINITIALIZED_FIELD);
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail("Exception occured while running test");

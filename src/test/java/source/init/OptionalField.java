@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package source.structural;
+package source.init;
 
 import jsweet.lang.Interface;
 import jsweet.lang.Optional;
@@ -34,4 +34,5 @@ abstract class DataStruct {
 	public String s;
 	@Optional
 	public int i;
+	native public void test();
 }

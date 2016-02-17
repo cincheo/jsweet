@@ -17,19 +17,43 @@
 package source.structural;
 
 import jsweet.lang.Interface;
+import jsweet.lang.Mode;
 
-public class OptionalFieldError {
+@Interface(Mode.SHARED)
+public class WrongConstructsInSharedInterfaces {
 
-	DataStruct2 d = new DataStruct2() {
-		{
-			s = "test";
-		}
-	};
+	// field initializers are erased
+	public long l = 4;
+	
+	// statics are erased
+	static String s1;
 
-}
+	// private are made public
+	private String s2;
+	
+	// constructors are erased
+	public WrongConstructsInSharedInterfaces() {
+		l = 4;
+	}
+	
+	native public void m1();
+	
+	// bodies are erased
+	public void m2() {
+		l = 4;
+	}
 
-@Interface
-abstract class DataStruct2 {
-	public String s;
-	public int i;
+	// statics are erased
+	native static void m3();
+	
+	// initializers are erased
+	{
+		l = 4;
+	}
+	
+	// static initializers are erased
+	static {
+		s1 = "";
+	}
+	
 }
