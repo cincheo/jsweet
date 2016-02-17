@@ -628,15 +628,14 @@ public class JSweetTranspiler implements JSweetOptions {
 				return;
 			}
 
-			File prefix = getNpmPrefix();
 			logger.info("checking for used modules: " + context.getUsedModules());
 			for (String module : context.getUsedModules()) {
 				if (module.endsWith(JSweetConfig.MODULE_FILE_NAME)) {
 					continue;
 				}
-				File moduleDir = new File(new File(prefix, "node_modules"), module);
-				if (!moduleDir.exists()) {
-					logger.debug("installing " + module + " in " + moduleDir + "...");
+				logger.debug("cheking for module " + module);
+				if (!ProcessUtil.isNodePackageInstalled(module)) {
+					logger.debug("installing " + module + "...");
 					// TODO: error reporting
 					ProcessUtil.installNodePackage(module, false);
 				}
@@ -670,28 +669,6 @@ public class JSweetTranspiler implements JSweetOptions {
 
 		}
 
-	}
-
-	private File getNpmPrefix() {
-		File cache = new File(workingDir, ".npm-prefix");
-		if (cache.exists()) {
-			try {
-				return new File(FileUtils.readFileToString(cache));
-			} catch (Exception e) {
-				logger.warn("error reading cache file for npm prefix");
-			}
-		}
-		StringBuilder sb = new StringBuilder();
-		ProcessUtil.runCommand("npm", ProcessUtil.USER_HOME_DIR, false, line -> {
-			if (!StringUtils.isBlank(line))
-				sb.append(line);
-		} , null, null, "prefix");
-		try {
-			FileUtils.write(cache, sb.toString().trim(), false);
-		} catch (Exception e) {
-			logger.warn("error writing cache file for npm prefix");
-		}
-		return new File(sb.toString().trim());
 	}
 
 	private void createAuxiliaryModuleFiles(File rootDir) throws IOException {

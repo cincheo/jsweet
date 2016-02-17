@@ -240,6 +240,23 @@ public class ProcessUtil {
 	}
 
 	/**
+	 * Checks if a node package has been installed locally.
+	 * 
+	 * @param nodePackageName the node module to be tested
+	 * @return true if already installed locally
+	 */
+	public static boolean isNodePackageInstalled(String nodePackageName) {
+		logger.debug("checking installation of " + nodePackageName + " with npm");
+		boolean[] installed = { false };
+		runCommand(NPM_COMMAND, USER_HOME_DIR, false, line -> {
+			if (!installed[0]) {
+				installed[0] = line.endsWith("/" + nodePackageName);
+			}
+		} , null, null, "ls", "--parseable", nodePackageName);
+		return installed[0];
+	}
+
+	/**
 	 * Uninstalls a <code>node<code> package with <code>npm</code> (assumes that
 	 * <code>node</code> is installed).
 	 * 
