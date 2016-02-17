@@ -235,7 +235,7 @@ public class ProcessUtil {
 		if (global) {
 			runCommand(NPM_COMMAND, USER_HOME_DIR, false, null, null, null, "install", "--prefix", NPM_DIR.getPath(), nodePackageName, "-g");
 		} else {
-			runCommand(NPM_COMMAND, USER_HOME_DIR, false, null, null, null, "install", nodePackageName);
+			runCommand(NPM_COMMAND, USER_HOME_DIR, false, null, null, null, "install", nodePackageName, "--save");
 		}
 	}
 
