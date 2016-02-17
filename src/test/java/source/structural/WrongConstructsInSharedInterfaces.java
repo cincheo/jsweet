@@ -24,36 +24,44 @@ public class WrongConstructsInSharedInterfaces {
 
 	// field initializers are erased
 	public long l = 4;
-	
+
 	// statics are erased
 	static String s1;
 
 	// private are made public
 	private String s2;
-	
+
 	// constructors are erased
 	public WrongConstructsInSharedInterfaces() {
 		l = 4;
 	}
-	
-	native public void m1();
-	
+
+	native public int m1();
+
 	// bodies are erased
-	public void m2() {
+	public String m2() {
 		l = 4;
+		return "";
 	}
 
 	// statics are erased
 	native static void m3();
-	
+
+	native public void m4();
+
+	// bodies are erased
+	public void m5() {
+		l = 4;
+	}
+
 	// initializers are erased
 	{
 		l = 4;
 	}
-	
+
 	// static initializers are erased
 	static {
 		s1 = "";
 	}
-	
+
 }

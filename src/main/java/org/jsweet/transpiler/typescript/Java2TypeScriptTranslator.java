@@ -816,9 +816,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (!methodDecl.params.isEmpty()) {
 			removeLastChars(2);
 		}
-		print(") ");
+		print(")");
 		if (methodDecl.restype != null && methodDecl.restype.type.getTag() != TypeTag.VOID) {
-			print(": ");
+			print(" : ");
 			getAdapter().substituteAndPrintType(methodDecl.restype);
 		}
 		if (methodDecl.getBody() == null) {
@@ -836,7 +836,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			boolean hasStatements = methodDecl.getBody().getStatements().isEmpty();
 			if (interfaceScope) {
 				if (sharedMode) {
-					removeLastChar().print(";");
+					print(";");
 					return;
 				} else {
 					report(methodDecl, methodDecl.name, JSweetProblem.INVALID_METHOD_BODY_IN_INTERFACE, methodDecl.name, parent.name);
@@ -1021,7 +1021,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 			if (!skipTypeAnnotations) {
 				if (typeChecker.checkType(varDecl, varDecl.name, varDecl.vartype)) {
-					print(": ");
+					print(" : ");
 					getAdapter().substituteAndPrintType(varDecl.vartype);
 				}
 			}
