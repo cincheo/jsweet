@@ -1091,7 +1091,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			if ("class".equals(fieldAccess.name.toString())) {
 				print(fieldAccess.selected);
 			} else {
+				// if (Util.isIntegral(fieldAccess.type)) {
+				// print("(");
+				// }
 				print(fieldAccess.selected).print(".").printIdentifier(fieldAccess.name.toString());
+				// if (Util.isIntegral(fieldAccess.type)) {
+				// print("|0)");
+				// }
 			}
 		}
 	}
@@ -1335,6 +1341,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	@Override
 	public void visitIdent(JCIdent ident) {
+		// if (Util.isIntegral(ident.type) && getParent() instanceof JCBinary) {
+		// print("(");
+		// }
 		String name = ident.toString();
 		if (!getAdapter().substituteIdentifier(ident)) {
 			// add this of class name if ident is a field
@@ -1357,6 +1366,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 			printIdentifier(name);
 		}
+		// if (Util.isIntegral(ident.type) && getParent() instanceof JCBinary) {
+		// print("|0)");
+		// }
 	}
 
 	@Override
@@ -1525,7 +1537,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	@Override
 	public void visitIndexed(JCArrayAccess arrayAccess) {
+		// if (Util.isIntegral(arrayAccess.type)) {
+		// print("(");
+		// }
 		print(arrayAccess.indexed).print("[").print(arrayAccess.index).print("]");
+		// if (Util.isIntegral(arrayAccess.type)) {
+		// print("|0)");
+		// }
 	}
 
 	@Override
@@ -1569,9 +1587,15 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	@Override
 	public void visitBinary(JCBinary binary) {
+		if (Util.isIntegral(binary.type) && binary.getKind() == Kind.DIVIDE) {
+			print("(");
+		}
 		print(binary.lhs);
 		space().print(binary.operator.name.toString()).space();
 		print(binary.rhs);
+		if (Util.isIntegral(binary.type) && binary.getKind() == Kind.DIVIDE) {
+			print("|0)");
+		}
 	}
 
 	@Override
@@ -1733,10 +1757,16 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	@Override
 	public void visitTypeCast(JCTypeCast cast) {
+		if (Util.isIntegral(cast.type)) {
+			print("(");
+		}
 		if (getAdapter().needsTypeCast(cast)) {
 			print("<").getAdapter().substituteAndPrintType(cast.clazz).print(">");
 		}
 		print(cast.expr);
+		if (Util.isIntegral(cast.type)) {
+			print("|0)");
+		}
 	}
 
 	@Override

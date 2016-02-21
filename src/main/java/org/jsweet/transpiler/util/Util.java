@@ -43,6 +43,7 @@ import javax.tools.JavaFileObject;
 import org.apache.commons.lang3.StringUtils;
 import org.jsweet.JSweetConfig;
 
+import com.sun.source.tree.Tree.Kind;
 import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.Attribute.Compound;
 import com.sun.tools.javac.code.Flags;
@@ -767,7 +768,7 @@ public class Util {
 	public static boolean containsFile(File dir, File[] files) {
 		for (File child : dir.listFiles()) {
 			if (child.isDirectory()) {
-				if(containsFile(child, files)) {
+				if (containsFile(child, files)) {
 					return true;
 				}
 			} else {
@@ -779,6 +780,39 @@ public class Util {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Returns true is the type is an integral numeric value.
+	 */
+	public static boolean isIntegral(Type type) {
+		if (type == null) {
+			return false;
+		}
+		switch (type.getKind()) {
+		case BYTE:
+		case SHORT:
+		case INT:
+		case LONG:
+			return true;
+		default:
+			return false;
+		}
+	}
+
+	/**
+	 * Returns true is an arithmetic operator.
+	 */
+	public static boolean isArithmeticOperator(Kind kind) {
+		switch (kind) {
+		case MINUS:
+		case PLUS:
+		case MULTIPLY:
+		case DIVIDE:
+			return true;
+		default:
+			return false;
+		}
 	}
 
 }
