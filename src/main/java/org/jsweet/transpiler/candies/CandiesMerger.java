@@ -166,7 +166,7 @@ public class CandiesMerger {
 
 		logger.debug("mixin classes: " + mixinsClasses);
 		Map<Class<?>, List<Class<?>>> toBeMerged = new HashMap<>();
-			// adds mixins from @Root annotation infos
+		// adds mixins from @Root annotation infos
 		for (Class<?> mixin : mixinsClasses) {
 			Class<?> target = getProperty(getAnnotation(mixin, ANNOTATION_MIXIN), "target");
 			List<Class<?>> mixins = toBeMerged.get(target);
@@ -225,21 +225,22 @@ public class CandiesMerger {
 		if (packageInfo != null) {
 			for (Map.Entry<File, ClassPool> candyClassPoolEntry : candyClassPools.entrySet()) {
 				try {
-					ClassPool candyClassPool = candyClassPoolEntry.getValue(); 
+					ClassPool candyClassPool = candyClassPoolEntry.getValue();
 					CtClass packageCtClass = candyClassPool.get(packageInfo.getName());
-					
+
 					if (packageCtClass.hasAnnotation(getAnnotationClass(ANNOTATION_ROOT))) {
 						logger.debug("root package " + packageInfo.getName() + " found in candy" + candyClassPoolEntry.getKey());
-						
-						Class<?> packageClass = candyClassPool.toClass(packageCtClass, new URLClassLoader(new URL[] { candyClassPoolEntry.getKey().toURI().toURL() }, candyClassLoader), null);
+
+						Class<?> packageClass = candyClassPool.toClass(packageCtClass,
+								new URLClassLoader(new URL[] { candyClassPoolEntry.getKey().toURI().toURL() }, candyClassLoader), null);
 						Annotation rootAnno = packageClass.getAnnotation(getAnnotationClass(ANNOTATION_ROOT));
 						mixinClasses.addAll(asList(getProperty(rootAnno, "mixins")));
 					}
 				} catch (NotFoundException e) {
 					// not found in candy, not a problem
-				} catch (Exception e) { 
-					logger.error("cannot read mixins info for " + packageInfo+ " in " + candyClassPoolEntry.getKey(), e);
-				} 
+				} catch (Exception e) {
+					logger.error("cannot read mixins info for " + packageInfo + " in " + candyClassPoolEntry.getKey(), e);
+				}
 			}
 		}
 		File[] children = dir.listFiles();
@@ -311,13 +312,37 @@ public class CandiesMerger {
 		int ignoredDuplicates = 0;
 		for (CtClass ctInnerClass : ctMixin.getDeclaredClasses()) {
 			try {
-				if (!ctTarget.getSimpleName().equals(JSweetConfig.STRING_TYPES_INTERFACE_NAME)
-						|| !hasField(ctTarget, ctInnerClass.getSimpleName().substring(ctInnerClass.getSimpleName().indexOf('$') + 1))) {
-					// TODO : ouch, not the good way
-					CtClass ctTargetInner = ctTarget.makeNestedClass(ctInnerClass.getSimpleName(), true);
+				String innerClassSimpleName = ctInnerClass.getSimpleName();
+				if (innerClassSimpleName.lastIndexOf('$') != -1) {
+					innerClassSimpleName = innerClassSimpleName.substring(innerClassSimpleName.lastIndexOf('$') + 1);
+				}
+
+				if (!ctTarget.getSimpleName().equals(JSweetConfig.STRING_TYPES_INTERFACE_NAME) || !hasField(ctTarget, innerClassSimpleName)) {
+					// classic inner class merge of string types field does not
+					// exist
+
+					String innerClassName = ctTarget.getName() + "$" + innerClassSimpleName;
+
+					boolean newInnerClass = false;
+					CtClass ctTargetInner;
+					try {
+						ctTargetInner = classPool.get(innerClassName);
+					} catch (NotFoundException e) {
+						newInnerClass = true;
+						logger.debug("adding " + innerClassName + " to pool");
+						ctTarget.makeNestedClass(innerClassSimpleName, true);
+						ctTargetInner = classPool.makeClass(innerClassName);
+					}
+
 					mergeMixin(ctTargetInner, ctInnerClass, false);
+
+					if (newInnerClass) {
+						ctTargetInner.writeFile(targetDir.getAbsolutePath());
+						logger.debug("inner class file written to " + targetDir.getAbsolutePath());
+					}
+
 					memberCount++;
-					logger.debug("merged inner class " + ctInnerClass.getSimpleName());
+					logger.debug("merged inner class " + ctInnerClass.getName());
 				}
 			} catch (Exception e) {
 				logger.warn("error merging inner class: " + ctInnerClass, e);
