@@ -26,6 +26,7 @@ import org.jsweet.transpiler.util.EvaluationResult;
 import org.junit.Assert;
 import org.junit.Test;
 
+import source.init.ArrayNew;
 import source.init.Constructor;
 import source.init.ConstructorField;
 import source.init.ConstructorFieldInInterface;
@@ -55,7 +56,7 @@ public class InitTests extends AbstractTest {
 			fail("Exception occured while running test");
 		}
 	}
-
+	
 	@Test
 	public void testInitializer() {
 		TestTranspilationHandler logHandler = new TestTranspilationHandler();
@@ -223,4 +224,18 @@ public class InitTests extends AbstractTest {
 		}
 	}
 
+	@Test
+	public void testArrayNew() {
+		TestTranspilationHandler logHandler = new TestTranspilationHandler();
+		try {
+			EvaluationResult result = transpiler.eval(logHandler, getSourceFile(ArrayNew.class));
+			logHandler.assertReportedProblems();
+			assertEquals("..........", result.get("result"));
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail("Exception occured while running test");
+		}
+	}
+	
+	
 }

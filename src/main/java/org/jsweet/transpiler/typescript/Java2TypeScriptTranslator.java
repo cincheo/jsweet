@@ -1690,11 +1690,15 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		// print("]");
 		// }
 		// }
-		print("[");
-		if (newArray.elems != null) {
-			printArgList(newArray.elems);
+		if (newArray.dims != null && !newArray.dims.isEmpty()) {
+			print("new Array(").print(newArray.dims.head).print(")");
+		} else {
+			print("[");
+			if (newArray.elems != null) {
+				printArgList(newArray.elems);
+			}
+			print("]");
 		}
-		print("]");
 	}
 
 	@Override
