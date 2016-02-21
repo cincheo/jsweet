@@ -717,7 +717,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				report(methodDecl, methodDecl.name, JSweetProblem.NATIVE_MODIFIER_IS_NOT_ALLOWED, methodDecl.name);
 			}
 		} else {
-			if (declareClassScope && !constructor) {
+			if (declareClassScope && !constructor && !interfaceScope) {
 				report(methodDecl, methodDecl.name, JSweetProblem.INVALID_METHOD_BODY_IN_INTERFACE, methodDecl.name, parent.name);
 			}
 		}
