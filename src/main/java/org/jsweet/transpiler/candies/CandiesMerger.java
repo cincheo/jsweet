@@ -351,7 +351,9 @@ public class CandiesMerger {
 		for (CtMethod ctMethod : ctMixin.getDeclaredMethods()) {
 			try {
 				if (!hasMethod(ctTarget, ctMethod)) {
-					ctTarget.addMethod(CtNewMethod.copy(ctMethod, ctTarget, null));
+					CtMethod copy = CtNewMethod.copy(ctMethod, ctTarget, null);
+					copy.setGenericSignature(ctMethod.getGenericSignature());
+					ctTarget.addMethod(copy);
 					memberCount++;
 				} else {
 					// ignore duplicate members
