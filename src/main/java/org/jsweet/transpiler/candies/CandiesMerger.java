@@ -131,11 +131,20 @@ public class CandiesMerger {
 
 	private Annotation getAnnotation(AnnotatedElement element, String annotationName) {
 		try {
-			@SuppressWarnings("unchecked")
-			Class<? extends Annotation> annotationClass = (Class<? extends Annotation>) candyClassLoader.loadClass(annotationName);
-			return element.getAnnotation(annotationClass);
+			return element.getAnnotation(getAnnotationClass(annotationName));
 		} catch (Exception e) {
 			logger.error("error retreiving annotation " + annotationName, e);
+			return null;
+		}
+	}
+
+	private Class<? extends Annotation> getAnnotationClass(String annotationName) {
+		try {
+			@SuppressWarnings("unchecked")
+			Class<? extends Annotation> annotationClass = (Class<? extends Annotation>) candyClassLoader.loadClass(annotationName);
+			return annotationClass;
+		} catch (Exception e) {
+			logger.error("error retreiving annotation class " + annotationName, e);
 			return null;
 		}
 	}
@@ -152,22 +161,20 @@ public class CandiesMerger {
 
 	public Map<Class<?>, List<Class<?>>> merge() {
 		File defDir = new File(targetDir, JSweetConfig.LIBS_PACKAGE);
-		List<Class<?>> libPackages = new ArrayList<Class<?>>();
-		findLibPackages(defDir, libPackages);
-		logger.debug("lib packages: " + libPackages);
+		List<Class<?>> mixinsClasses = new ArrayList<Class<?>>();
+		findMixinClasses(defDir, mixinsClasses);
+
+		logger.debug("mixin classes: " + mixinsClasses);
 		Map<Class<?>, List<Class<?>>> toBeMerged = new HashMap<>();
-		for (Class<?> libPackage : libPackages) {
 			// adds mixins from @Root annotation infos
-			Class<?>[] libMixins = getProperty(getAnnotation(libPackage, ANNOTATION_ROOT), "mixins");
-			for (Class<?> mixin : libMixins) {
-				Class<?> target = getProperty(getAnnotation(mixin, ANNOTATION_MIXIN), "target");
-				List<Class<?>> mixins = toBeMerged.get(target);
-				if (mixins == null) {
-					mixins = new ArrayList<>();
-					toBeMerged.put(target, mixins);
-				}
-				mixins.add(mixin);
+		for (Class<?> mixin : mixinsClasses) {
+			Class<?> target = getProperty(getAnnotation(mixin, ANNOTATION_MIXIN), "target");
+			List<Class<?>> mixins = toBeMerged.get(target);
+			if (mixins == null) {
+				mixins = new ArrayList<>();
+				toBeMerged.put(target, mixins);
 			}
+			mixins.add(mixin);
 		}
 		logger.debug("mixins to be merged: " + toBeMerged);
 		for (Entry<Class<?>, List<Class<?>>> e : toBeMerged.entrySet()) {
@@ -203,7 +210,7 @@ public class CandiesMerger {
 		return toBeMerged;
 	}
 
-	private void findLibPackages(File dir, List<Class<?>> libPackages) {
+	private void findMixinClasses(File dir, List<Class<?>> mixinClasses) {
 		logger.debug("findLibPackages: " + dir + " - " + dir.getAbsolutePath());
 		String packageName = dir.getPath().substring(targetDir.getPath().length() + 1).replace(File.separatorChar, '.');
 		Class<?> packageInfo = null;
@@ -216,15 +223,30 @@ public class CandiesMerger {
 			// swallow
 		}
 		if (packageInfo != null) {
-			if (getAnnotation(packageInfo, ANNOTATION_ROOT) != null) {
-				libPackages.add(packageInfo);
+			for (Map.Entry<File, ClassPool> candyClassPoolEntry : candyClassPools.entrySet()) {
+				try {
+					ClassPool candyClassPool = candyClassPoolEntry.getValue(); 
+					CtClass packageCtClass = candyClassPool.get(packageInfo.getName());
+					
+					if (packageCtClass.hasAnnotation(getAnnotationClass(ANNOTATION_ROOT))) {
+						logger.debug("root package " + packageInfo.getName() + " found in candy" + candyClassPoolEntry.getKey());
+						
+						Class<?> packageClass = candyClassPool.toClass(packageCtClass, new URLClassLoader(new URL[] { candyClassPoolEntry.getKey().toURI().toURL() }, candyClassLoader), null);
+						Annotation rootAnno = packageClass.getAnnotation(getAnnotationClass(ANNOTATION_ROOT));
+						mixinClasses.addAll(asList(getProperty(rootAnno, "mixins")));
+					}
+				} catch (NotFoundException e) {
+					// not found in candy, not a problem
+				} catch (Exception e) { 
+					logger.error("cannot read mixins info for " + packageInfo+ " in " + candyClassPoolEntry.getKey(), e);
+				} 
 			}
 		}
 		File[] children = dir.listFiles();
 		if (children != null) {
 			for (File f : children) {
 				if (f.isDirectory()) {
-					findLibPackages(f, libPackages);
+					findMixinClasses(f, mixinClasses);
 				}
 			}
 		}
@@ -262,21 +284,21 @@ public class CandiesMerger {
 			if (existing == null) {
 				return false;
 			}
-			
+
 			CtClass[] existingParamTypes = existing.getParameterTypes();
 			CtClass[] candidateParamTypes = candidateMethod.getParameterTypes();
 			if (existingParamTypes.length != candidateParamTypes.length) {
 				return false;
 			}
-			
+
 			for (int i = 0; i < existingParamTypes.length; i++) {
 				if (!existingParamTypes[i].getName().equals(candidateParamTypes[i].getName())) {
 					return false;
 				}
 			}
-			
+
 			return true;
-			
+
 		} catch (Exception e) {
 			return false;
 		}

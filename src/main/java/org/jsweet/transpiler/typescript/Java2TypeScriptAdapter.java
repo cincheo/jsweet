@@ -339,11 +339,18 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			if (fieldAccess != null && !fieldAccess.toString().equals(UTIL_CLASSNAME + "." + INDEXED_SET_FUCTION_NAME)) {
 				// check the type through the getter
 				for (Symbol e : fieldAccess.selected.type.tsym.getEnclosedElements()) {
-					if (e instanceof MethodSymbol && INDEXED_GET_FUCTION_NAME.equals(e.getSimpleName().toString())) {
+					if (e instanceof MethodSymbol 
+							&& INDEXED_GET_FUCTION_NAME.equals(e.getSimpleName().toString())) {
 						MethodSymbol getMethod = (MethodSymbol) e;
 						TypeSymbol getterType = getMethod.getReturnType().tsym;
-						TypeSymbol argType = invocation.args.tail.head.type.tsym;
-						if (!Util.isAssignable(getPrinter().getContext().types, getterType, argType)) {
+						TypeSymbol getterIndexType = getMethod.getParameters().get(0).type.tsym;
+						
+						TypeSymbol invokedIndexType = invocation.args.head.type.tsym;
+						TypeSymbol invokedValueType = invocation.args.tail.head.type.tsym;
+						
+						boolean sameIndexType = getterIndexType.equals(invokedIndexType);
+						
+						if (sameIndexType && !Util.isAssignable(getPrinter().getContext().types, getterType, invokedValueType)) {
 							report(invocation.args.tail.head, JSweetProblem.INDEXED_SET_TYPE_MISMATCH, getterType);
 						}
 					}
