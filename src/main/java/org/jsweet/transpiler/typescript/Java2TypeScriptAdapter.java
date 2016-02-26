@@ -228,7 +228,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			}
 			if (targetMethodName.equals("values")) {
 				getPrinter().print("function() { var result: number[] = []; for(var val in ").print(relTarget)
-						.print(") { if(!isNaN(val)) { result.push(parseInt(val,10)); } } return result; }()");
+						.print(") { if(!isNaN(<any>val)) { result.push(parseInt(val,10)); } } return result; }()");
 				return true;
 			}
 		}
@@ -238,7 +238,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				getPrinter().report(invocation.args.head, JSweetProblem.STRING_LITERAL_EXPECTED);
 			}
 			String varName = "_exportedVar_" + StringUtils.strip(invocation.args.head.toString(), "\"");
-			getPrinter().footer.append("declare var " + varName + ";\n");
+			getPrinter().footer.append("var " + varName + ";\n");
 			if (invocation.args.size() == 1) {
 				getPrinter().print(varName);
 			} else {
