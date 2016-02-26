@@ -42,6 +42,8 @@ public class AbstractTest {
 
 	protected static final String TEST_DIRECTORY_NAME = "src/test/java";
 
+	protected static final String JSWEET_TEST_DIRECTORY_NAME = "src/test/jsweet";
+
 	protected static final Logger staticLogger = Logger.getLogger(AbstractTest.class);
 
 	protected final Logger logger = Logger.getLogger(getClass());
@@ -120,6 +122,11 @@ public class AbstractTest {
 		return new SourceFile(new File(TEST_DIRECTORY_NAME + "/" + mainClass.getName().replace(".", "/") + ".java"));
 	}
 
+	protected SourceFile getJSweetSourceFile(String className) {
+		return new SourceFile(new File(JSWEET_TEST_DIRECTORY_NAME + "/" + className.replace(".", "/") + ".java"));
+	}
+
+	
 	protected EvaluationResult eval(SourceFile sourceFile, JSweetProblem... expectedProblems) {
 		EvaluationResult res = null;
 		TestTranspilationHandler logHandler = new TestTranspilationHandler();

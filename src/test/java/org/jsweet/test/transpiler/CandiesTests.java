@@ -25,21 +25,25 @@ import source.candies.Angular;
 import source.candies.ExpressLib;
 import source.candies.GlobalsImport;
 import source.candies.JQuery;
-import source.candies.Mixins;
 import source.candies.QualifiedNames;
 
 public class CandiesTests extends AbstractTest {
 
 	@Test
 	public void testGlobalsImport() {
-//		transpile(ModuleKind.none, logHandler -> {
-//			logHandler.assertReportedProblems(JSweetProblem.INTERNAL_TSC_ERROR, //
-//					JSweetProblem.INTERNAL_TSC_ERROR, JSweetProblem.INTERNAL_TSC_ERROR, //
-//					JSweetProblem.INTERNAL_TSC_ERROR, JSweetProblem.INTERNAL_TSC_ERROR, //
-//					JSweetProblem.INTERNAL_TSC_ERROR, JSweetProblem.INTERNAL_TSC_ERROR, //
-//					JSweetProblem.INTERNAL_TSC_ERROR, JSweetProblem.INTERNAL_TSC_ERROR, //
-//					JSweetProblem.INTERNAL_TSC_ERROR, JSweetProblem.INTERNAL_TSC_ERROR);
-//		} , getSourceFile(GlobalsImport.class));
+		// transpile(ModuleKind.none, logHandler -> {
+		// logHandler.assertReportedProblems(JSweetProblem.INTERNAL_TSC_ERROR,
+		// //
+		// JSweetProblem.INTERNAL_TSC_ERROR, JSweetProblem.INTERNAL_TSC_ERROR,
+		// //
+		// JSweetProblem.INTERNAL_TSC_ERROR, JSweetProblem.INTERNAL_TSC_ERROR,
+		// //
+		// JSweetProblem.INTERNAL_TSC_ERROR, JSweetProblem.INTERNAL_TSC_ERROR,
+		// //
+		// JSweetProblem.INTERNAL_TSC_ERROR, JSweetProblem.INTERNAL_TSC_ERROR,
+		// //
+		// JSweetProblem.INTERNAL_TSC_ERROR, JSweetProblem.INTERNAL_TSC_ERROR);
+		// } , getSourceFile(GlobalsImport.class));
 		transpile(ModuleKind.commonjs, logHandler -> {
 			assertEquals(0, logHandler.getReportedProblems().size());
 		} , getSourceFile(GlobalsImport.class));
@@ -65,7 +69,7 @@ public class CandiesTests extends AbstractTest {
 			assertEquals(0, logHandler.getReportedProblems().size());
 		} , getSourceFile(JQuery.class));
 	}
-	
+
 	@Test
 	public void testExpressLib() {
 		transpile(ModuleKind.commonjs, logHandler -> {
@@ -77,8 +81,7 @@ public class CandiesTests extends AbstractTest {
 	public void testMixins() {
 		transpile(logHandler -> {
 			logHandler.assertReportedProblems();
-		} , getSourceFile(Mixins.class));
+		} , getJSweetSourceFile("source.candies.Mixins"));
 	}
 
-	
 }
