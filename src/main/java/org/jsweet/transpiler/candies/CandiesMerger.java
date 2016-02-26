@@ -330,8 +330,9 @@ public class CandiesMerger {
 					} catch (NotFoundException e) {
 						newInnerClass = true;
 						logger.debug("adding " + innerClassName + " to pool");
-						ctTarget.makeNestedClass(innerClassSimpleName, true);
-						ctTargetInner = classPool.makeClass(innerClassName);
+						ctTargetInner = ctTarget.makeNestedClass(innerClassSimpleName, true);
+						// RP: This line did not work for me.
+						//ctTargetInner = classPool.makeClass(innerClassName);
 					}
 
 					mergeMixin(ctTargetInner, ctInnerClass, false);
@@ -352,7 +353,11 @@ public class CandiesMerger {
 			try {
 				if (!hasMethod(ctTarget, ctMethod)) {
 					CtMethod copy = CtNewMethod.copy(ctMethod, ctTarget, null);
-					copy.setGenericSignature(ctMethod.getGenericSignature());
+					try {
+						copy.setGenericSignature(ctMethod.getGenericSignature());
+					} catch(Exception e) {
+						// swallow
+					}
 					ctTarget.addMethod(copy);
 					memberCount++;
 				} else {

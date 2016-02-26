@@ -25,6 +25,7 @@ import source.candies.Angular;
 import source.candies.ExpressLib;
 import source.candies.GlobalsImport;
 import source.candies.JQuery;
+import source.candies.Mixins;
 import source.candies.QualifiedNames;
 
 public class CandiesTests extends AbstractTest {
@@ -72,4 +73,12 @@ public class CandiesTests extends AbstractTest {
 		} , getSourceFile(ExpressLib.class));
 	}
 
+	@Test
+	public void testMixins() {
+		transpile(logHandler -> {
+			logHandler.assertReportedProblems();
+		} , getSourceFile(Mixins.class));
+	}
+
+	
 }
