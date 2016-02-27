@@ -293,7 +293,9 @@ public class JSweetTranspiler implements JSweetOptions {
 				}
 			}
 		}
+		logger.debug("classpath: " + options.get(Option.CLASSPATH));
 		logger.debug("bootclasspath: " + options.get(Option.BOOTCLASSPATH));
+		logger.debug("strict mode: " + context.strictMode);
 		options.put(Option.XLINT, "path");
 		JavacFileManager.preRegister(context);
 		fileManager = context.get(JavaFileManager.class);
