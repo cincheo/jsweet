@@ -200,7 +200,7 @@ public class CandiesMerger {
 					for (CtClass ctMixin : mixinClasses.subList(1, mixinClasses.size())) {
 						mergeMixin(ctTarget, ctMixin);
 					}
-					ctTarget.writeFile(targetDir.getPath());
+					ctTarget.debugWriteFile(targetDir.getPath());
 				}
 			} catch (Exception e) {
 				logger.warn("error merging mixin " + builtinMixinClassName, e);
@@ -261,7 +261,7 @@ public class CandiesMerger {
 				CtClass ctMixin = classPool.get(mixin.getName());
 				mergeMixin(ctTarget, ctMixin);
 			}
-			ctTarget.writeFile(targetDir.getPath());
+			ctTarget.debugWriteFile(targetDir.getPath());
 		} catch (Exception e) {
 			logger.warn("error merging mixin", e);
 		}
@@ -338,7 +338,7 @@ public class CandiesMerger {
 					mergeMixin(ctTargetInner, ctInnerClass, false);
 
 					if (newInnerClass) {
-						ctTargetInner.writeFile(targetDir.getAbsolutePath());
+						ctTargetInner.debugWriteFile(targetDir.getAbsolutePath());
 						logger.debug("inner class file written to " + targetDir.getAbsolutePath());
 					}
 
