@@ -20,7 +20,10 @@ Content
     -   [Indexed objects](#indexed-objects)
     -   [Globals](#globals)
     -   [Optional parameters](#optional-parameters)
+-   [Bridging to external JavaScript elements](#bridging-to-external-javascript-elements)
     -   [Ambient declarations](#ambient-declarations)
+    -   [Definitions (`def.*` packages)](#definitions-def.-packages)
+    -   [Mixins](#mixins)
 -   [Auxiliary types](#auxiliary-types)
     -   [Functional types](#functional-types)
     -   [Object types](#object-types)
@@ -519,9 +522,14 @@ String m(String s) { return m(s, 0); }
 String m(String s) { return s; }
 ```
 
+Bridging to external JavaScript elements
+----------------------------------------
+
+It can be the case that programmers need to use existing libraries from JSweet. In most cases, one should look up in the available candies (<http://www.jsweet.org/candies-releases/> and <http://www.jsweet.org/candies-snapshots/>), which are automatically generated from TypeScript’s DefinitelyTyped. When the candy does not exist, or does not entirely cover what is needed, one can use the `@jsweet.lang.Ambient` annotation, which will make available to the programmers a class definition or an interface.
+
 ### Ambient declarations
 
-It can be the case that programmers need to use existing libraries from JSweet. In most cases, one should look up in the available candies (<http://www.jsweet.org/candies-releases/> and <http://www.jsweet.org/candies-snapshots/>), which are automatically generated from TypeScript’s DefinitelyTyped. When the candy does not exist, or does not entirely cover what is needed, one can use the `@jsweet.lang.Ambient` annotation, which will make available to the programmers a class definition or an interface. The following example shows the backbone store class made accessible to the JSweet programmer with a simple ambient declaration. This class is only for typing and will be erased during the JavaScript generation.
+The following example shows the backbone store class made accessible to the JSweet programmer with a simple ambient declaration. This class is only for typing and will be erased during the JavaScript generation.
 
 ``` java
 @Ambient
@@ -529,6 +537,99 @@ class Store {
     public Store(String dbName) {}
 }
 ```
+
+Note that ambient classes constructors cannot have a body. Also, ambient classes methods must be `abstract` or `native`. For instance:
+
+``` java
+@Ambient
+class MyExternalJavaScriptClass {
+    public native myExternalJavaScriptMethod();
+}
+```
+
+### Definitions (`def.*` packages)
+
+By convention, putting the classes in a `def.libname` package defines a set of definitions for the `libname` external JavaScript library called `libname`. Definitions are by default all ambient declarations and do not need to be annotated with `@jsweet.lang.Ambient` annotations since they are implicit in `def.*` packages and sub-packages. Note that this mechanism is similar to the TypeScript `d.ts` definition files.
+
+Candies (bridges to external JavaScript libraries) use definitions. For instance, the jQuery candy defines all the jQuery API in the `def.jquery` package.
+
+### Mixins
+
+In JavaScript, it is common practice to enhance an existing class with news elements (field and methods). It is an extension mechanism used when a framework defines plugins for instance. Typically, jQuery plugins add new elements to the `JQuery` class. For example the jQuery timer plugin adds a `timer` field to the `JQuery` class. As a consequence, the `JQuery` class does not have the same prototype if you are using jQuery alone, or jQuery enhanced with its timer plugin.
+
+In Java, this extension mechanism is problematic because Java cannot dynamically enhance a given class.
+
+#### Untyped accesses
+
+Programmers can access the added element with `$get` accessors and/or with brute-force casting.
+
+Here is an example using `$get` for the timer plugin case:
+
+``` java
+((Timer)$("#myId").$get("timer")).pause();
+```
+
+Here is an other way to do it exampled through the use of the jQuery UI plugin (note that this solution forces the use of `def.jqueryui.JQuery` instead of `def.jquery.JQuery` in order to access the `menu()` function, added by the UI plugin):
+
+``` java
+import def.jqueryui.JQuery;
+[...]
+Object obj = $("#myMenu");
+JQuery jq = (JQuery) obj;
+jq.menu();
+```
+
+However, these solutions are not satisfying because clearly unsafe in terms of typing.
+
+#### Typed accesses with mixins
+
+When cross-candy dynamic extension is needed, JSweet defines the notion of a mixin. A mixin is a class that defines members that will end up being directly accessible within a target class (mixin-ed class). Mixins are defined with a `@Mixin` annotation. Here is the excerpt of the `def.jqueryui.JQuery` mixin:
+
+``` java
+package def.jqueryui;
+import jsweet.dom.MouseEvent;
+import jsweet.lang.Function;
+import jsweet.lang.Date;
+import jsweet.lang.Array;
+import jsweet.lang.RegExp;
+import jsweet.dom.Element;
+import def.jquery.JQueryEventObject;
+@jsweet.lang.Interface
+@jsweet.lang.Mixin(target=def.jquery.JQuery.class)
+public abstract class JQuery extends jsweet.lang.Object {
+    native public JQuery accordion();
+    native public void accordion(jsweet.util.StringTypes.destroy methodName);
+    native public void accordion(jsweet.util.StringTypes.disable methodName);
+    native public void accordion(jsweet.util.StringTypes.enable methodName);
+    native public void accordion(jsweet.util.StringTypes.refresh methodName);
+    ...
+    native public def.jqueryui.JQuery menu();
+    ...
+```
+
+One can notice the `@jsweet.lang.Mixin(target=def.jquery.JQuery.class)` that states that this mixin will be merged to the `def.jquery.JQuery` so that users will be able to use all the UI plugin members directly and in a well-typed way.
+
+#### Implementation and how to use
+
+JSweet merges mixins using a bytecode manipulation tool called Javassist. It takes the mixin classes bytecode, copies all the members to the target classes, and writes the resulting merged classes bytecode to the `.jsweet/candies/processed` directory. As a consequence, in order to benefit the JSweet mixin mechanism, one must add the `.jsweet/candies/processed` directory to the compilation classpath. This directory should be placed before all the other classpath elements so that the mixined results override the original classes (for example the `def.jquery.JQuery` should be overridden and, as a consequence, `.jsweet/candies/processed/def/jquery/JQuery.class` must be found first in the classpath).
+
+The JSweet transpiler automatically adds the `.jsweet/candies/processed` directory to the compilation classpath so that you do not have to do anything special when using JSweet with Maven. However, when using mixins within an IDE, you must force your project classpath to include this directory in order to ensure compilation of mixin-ed elements. When using the JSweet Eclipse plugin for instance, this is done automatically and transparently for the user. But when not using any plugins, this configuration must be done manually.
+
+For example, with Eclipse (similar configuration can be made with other IDEs):
+
+1.  Right-click on the project \(>\) Build path \(>\) Configure build path... \(>\) Libraries (tab) \(>\) Add class folder (button). Then choose the `.jsweet/candies/processed` directory.
+
+2.  In the “order and export” tab of the build path dialog, make sure that the `.jsweet/candies/processed` directory appears at the top of the list (or at least before the Maven dependencies).
+
+NOTE: you do not have to configure anything if you are not using mixins or if you are using the Eclipse plugin.
+
+Once this configuration is done, you can safely use mixins. For instance, if using the jQuery candy along with jQuery UI, you will be able to write statements such as:
+
+``` java
+$("#myMenu").menu();
+```
+
+This is neat compared to the untyped access solution because it is checked by the Java compiler (and you will also have completion on mixin-ed elements).
 
 Auxiliary types
 ---------------
