@@ -344,7 +344,7 @@ public enum JSweetProblem {
 		case JS_KEYWORD_CONFLICT:
 			return String.format("local variable name '%s' is not allowed and is automatically generated to '_jsweet_%s'", params);
 		case INVALID_METHOD_BODY_IN_INTERFACE:
-			return String.format("method '%s' cannot define a body in interface '%s'", params);
+			return String.format("method '%s' cannot define a body in interface '%s' (try 'abstract' or 'native' modifiers)", params);
 		case INVALID_PRIVATE_IN_INTERFACE:
 			return String.format("member '%s' cannot be private in interface '%s'", params);
 		case INVALID_STATIC_IN_INTERFACE:
