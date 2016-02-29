@@ -22,7 +22,7 @@ Content
     -   [Optional parameters](#optional-parameters)
 -   [Bridging to external JavaScript elements](#bridging-to-external-javascript-elements)
     -   [Ambient declarations](#ambient-declarations)
-    -   [Definitions (`def.*` packages)](#definitions-def.-packages)
+    -   [Definitions](#definitions)
     -   [Mixins](#mixins)
 -   [Auxiliary types](#auxiliary-types)
     -   [Functional types](#functional-types)
@@ -538,7 +538,7 @@ class Store {
 }
 ```
 
-Note that ambient classes constructors cannot have a body. Also, ambient classes methods must be `abstract` or `native`. For instance:
+Note that ambient classes constructors must have an empty body. Also, ambient classes methods must be `abstract` or `native`. For instance:
 
 ``` java
 @Ambient
@@ -547,7 +547,7 @@ class MyExternalJavaScriptClass {
 }
 ```
 
-### Definitions (`def.*` packages)
+### Definitions
 
 By convention, putting the classes in a `def.libname` package defines a set of definitions for the `libname` external JavaScript library called `libname`. Definitions are by default all ambient declarations and do not need to be annotated with `@jsweet.lang.Ambient` annotations since they are implicit in `def.*` packages and sub-packages. Note that this mechanism is similar to the TypeScript `d.ts` definition files.
 
@@ -617,7 +617,7 @@ The JSweet transpiler automatically adds the `.jsweet/candies/processed` directo
 
 For example, with Eclipse (similar configuration can be made with other IDEs):
 
-1.  Right-click on the project \(>\) Build path \(>\) Configure build path... \(>\) Libraries (tab) \(>\) Add class folder (button). Then choose the `.jsweet/candies/processed` directory.
+1.  Right-click on the project &gt;Build path &gt;Configure build path... &gt;Libraries (tab) &gt;Add class folder (button). Then choose the `.jsweet/candies/processed` directory.
 
 2.  In the “order and export” tab of the build path dialog, make sure that the `.jsweet/candies/processed` directory appears at the top of the list (or at least before the Maven dependencies).
 

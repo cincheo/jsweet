@@ -63,7 +63,7 @@
 
 \begin{document}
 
-\title{JSweet Language Specifications\\{\large Version 1.0.0}}
+\title{JSweet Language Specifications\\{\large Version 1.1.0}}
 \author{%
 Renaud Pawlak\\
 {\normalsize renaud.pawlak@jsweet.org}\\
@@ -556,7 +556,7 @@ class Store {
 }
 \end{lstlisting}
 
-Note that ambient classes constructors cannot have a body. Also, ambient classes methods must be \texttt{abstract} or \texttt{native}. For instance:
+Note that ambient classes constructors must have an empty body. Also, ambient classes methods must be \texttt{abstract} or \texttt{native}. For instance:
 
 \begin{lstlisting}[language=Java]
 @Ambient
@@ -565,7 +565,7 @@ class MyExternalJavaScriptClass {
 }
 \end{lstlisting}
 
-\section{Definitions (\texttt{def.*} packages)}
+\section{Definitions}
 
 By convention, putting the classes in a \texttt{def.libname} package defines a set of definitions for the \texttt{libname} external JavaScript library called \texttt{libname}. Definitions are by default all ambient declarations and do not need to be annotated with \texttt{@jsweet.lang.Ambient} annotations since they are implicit in \texttt{def.*} packages and sub-packages. Note that this mechanism is similar to the TypeScript \texttt{d.ts} definition files.
 
@@ -636,7 +636,7 @@ The JSweet transpiler automatically adds the \texttt{.jsweet/candies/processed} 
 For example, with Eclipse (similar configuration can be made with other IDEs):
 
 \begin{enumerate}
-\item Right-click on the project $>$ Build path $>$ Configure build path... $>$ Libraries (tab) $>$ Add class folder (button). Then choose the \texttt{.jsweet/candies/processed} directory.
+\item Right-click on the project \textgreater Build path \textgreater Configure build path... \textgreater Libraries (tab) \textgreater Add class folder (button). Then choose the \texttt{.jsweet/candies/processed} directory.
 \item In the "order and export" tab of the build path dialog, make sure that the \texttt{.jsweet/candies/processed} directory appears at the top of the list (or at least before the Maven dependencies).
 \end{enumerate}
 
