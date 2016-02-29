@@ -213,11 +213,10 @@ public class JSweetTranspiler implements JSweetOptions {
 	}
 
 	/**
-	 * Cleans temporary files.
+	 * Gets this transpiler working directory (where the temporary files are stored).
 	 */
-	public void cleanWorkingDirectory() {
-		FileUtils.deleteQuietly(this.workingDir);
-		candiesProcessor.touch();
+	public File getWorkingDirectory() {
+		return this.workingDir;
 	}
 
 	private void initNode(TranspilationHandler transpilationHandler) throws Exception {

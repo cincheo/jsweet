@@ -99,7 +99,8 @@ public class AbstractTest {
 			staticLogger.info("*** create tranpiler ***");
 			transpiler = new JSweetTranspiler(outDir, null, null, System.getProperty("java.class.path"));
 			transpiler.setModuleKind(ModuleKind.none);
-			transpiler.cleanWorkingDirectory();
+			FileUtils.deleteQuietly(transpiler.getWorkingDirectory());
+			transpiler.getCandiesProcessor().touch();
 			testSuiteInitialized = true;
 		}
 	}
