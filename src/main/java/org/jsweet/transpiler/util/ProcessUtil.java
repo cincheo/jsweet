@@ -35,6 +35,23 @@ import org.apache.log4j.Logger;
 public class ProcessUtil {
 	private final static Logger logger = Logger.getLogger(ProcessUtil.class);
 
+	private static boolean initialized = false;
+
+	/**
+	 * Initializes the node command paths (OS-specific initializations).
+	 */
+	public static void initNode() {
+		if (!initialized) {
+			// hack for OSX Eclipse's path issue
+			if (!System.getenv("PATH").contains("/usr/local/bin") && new File("/usr/local/bin/node").exists()) {
+				ProcessUtil.EXTRA_PATH = "/usr/local/bin";
+				ProcessUtil.NODE_COMMAND = "/usr/local/bin/node";
+				ProcessUtil.NPM_COMMAND = "/usr/local/bin/npm";
+			}
+			initialized = true;
+		}
+	}
+
 	/**
 	 * A static field that stores the user home directory.
 	 */
@@ -232,6 +249,7 @@ public class ProcessUtil {
 	 */
 	public static void installNodePackage(String nodePackageName, boolean global) {
 		logger.debug("installing " + nodePackageName + " with npm");
+		initNode();
 		if (global) {
 			runCommand(NPM_COMMAND, USER_HOME_DIR, false, null, null, null, "install", "--prefix", NPM_DIR.getPath(), nodePackageName, "-g");
 		} else {
@@ -242,11 +260,13 @@ public class ProcessUtil {
 	/**
 	 * Checks if a node package has been installed locally.
 	 * 
-	 * @param nodePackageName the node module to be tested
+	 * @param nodePackageName
+	 *            the node module to be tested
 	 * @return true if already installed locally
 	 */
 	public static boolean isNodePackageInstalled(String nodePackageName) {
 		logger.debug("checking installation of " + nodePackageName + " with npm");
+		initNode();
 		boolean[] installed = { false };
 		runCommand(NPM_COMMAND, USER_HOME_DIR, false, line -> {
 			if (!installed[0]) {
@@ -267,6 +287,7 @@ public class ProcessUtil {
 	 */
 	public static void uninstallNodePackage(String nodePackageName, boolean global) {
 		logger.debug("uninstalling " + nodePackageName + " with npm");
+		initNode();
 		if (global) {
 			runCommand(NPM_COMMAND, USER_HOME_DIR, false, null, null, null, "uninstall", "--prefix", NPM_DIR.getPath(), nodePackageName, "-g");
 		} else {

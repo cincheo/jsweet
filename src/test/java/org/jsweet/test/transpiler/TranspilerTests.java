@@ -111,12 +111,12 @@ public class TranspilerTests extends AbstractTest {
 		}
 	}
 
-	@Ignore
 	@Test
-	public void testTscInstallation() {
+	public void testTscInstallation() throws Exception {
 		ProcessUtil.uninstallNodePackage("typescript", true);
 		assertFalse(ProcessUtil.isInstalledWithNpm("tsc"));
-		transpiler.cleanWorkingDirectory();
+		globalSetUp();
+		//transpiler.cleanWorkingDirectory();
 		transpile(ModuleKind.none, h -> h.assertReportedProblems(), getSourceFile(Overload.class));
 	}
 
