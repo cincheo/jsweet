@@ -24,6 +24,8 @@ package source.require.b;
 //import source.require.a.b.B1;
 //import source.require.a.b.B2;
 
+// TODO: fix
+
 public class ClassImportImplicitRequire {
 
 //	public static void main(String[] args) {
