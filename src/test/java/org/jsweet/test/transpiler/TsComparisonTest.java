@@ -23,11 +23,15 @@ import static org.junit.Assert.fail;
 import java.io.File;
 
 import org.apache.commons.io.FileUtils;
+import org.jsweet.transpiler.ModuleKind;
 import org.jsweet.transpiler.SourceFile;
 import org.jsweet.transpiler.util.EvaluationResult;
+import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import source.structural.globalclasses.Globals;
+import source.structural.globalclasses.d.GlobalFunctionAccessFromMain;
 import source.tscomparison.AbstractClasses;
 import source.tscomparison.ActualScoping;
 import source.tscomparison.CompileTimeWarnings;
@@ -94,13 +98,12 @@ public class TsComparisonTest extends AbstractTest {
 
 	@Test
 	public void otherThisExampleTest() {
-		// jsweet part
-		SourceFile file = getSourceFile(OtherThisExample.class);
-		eval(file);
+		eval(ModuleKind.none, (logHandler, r) -> {
+			logHandler.assertReportedProblems();
+			System.out.println(""+r.get("results"));
+			Assert.assertEquals("3,4,5", ""+r.get("results"));
+		} , getSourceFile(Globals.class), getSourceFile(OtherThisExample.class));
 		
-
-		// ts part (to be done)
-		//evalTs(getTsSourceFile(file));
 	}
 	
 	@Ignore

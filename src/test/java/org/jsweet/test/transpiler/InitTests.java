@@ -41,6 +41,8 @@ import source.init.NoOptionalFieldsInClass;
 import source.init.OptionalField;
 import source.init.OptionalFieldError;
 import source.init.StaticInitializer;
+import source.init.UntypedObject;
+import source.init.UntypedObjectWrongUses;
 
 public class InitTests extends AbstractTest {
 
@@ -56,7 +58,7 @@ public class InitTests extends AbstractTest {
 			fail("Exception occured while running test");
 		}
 	}
-	
+
 	@Test
 	public void testInitializer() {
 		TestTranspilationHandler logHandler = new TestTranspilationHandler();
@@ -236,6 +238,37 @@ public class InitTests extends AbstractTest {
 			fail("Exception occured while running test");
 		}
 	}
-	
-	
+
+	@Test
+	public void testUntypedObject() {
+		TestTranspilationHandler logHandler = new TestTranspilationHandler();
+		try {
+			EvaluationResult result = transpiler.eval(logHandler, getSourceFile(UntypedObject.class));
+			logHandler.assertReportedProblems();
+
+			assertEquals(1, result.<Number> get("a").intValue());
+			assertEquals(true, result.<Boolean> get("b"));
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail("Exception occured while running test");
+		}
+	}
+
+	@Test
+	public void testUntypedObjectWrongUses() {
+		TestTranspilationHandler logHandler = new TestTranspilationHandler();
+		try {
+			transpiler.transpile(logHandler, getSourceFile(UntypedObjectWrongUses.class));
+			logHandler.assertReportedProblems( //
+					JSweetProblem.UNTYPED_OBJECT_ODD_PARAMETER_COUNT, //
+					JSweetProblem.UNTYPED_OBJECT_WRONG_KEY, //
+					JSweetProblem.UNTYPED_OBJECT_WRONG_KEY, //
+					JSweetProblem.UNTYPED_OBJECT_WRONG_KEY, //
+					JSweetProblem.UNTYPED_OBJECT_WRONG_KEY);
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail("Exception occured while running test");
+		}
+	}
+
 }

@@ -285,7 +285,15 @@ public enum JSweetProblem {
 	 * Raised when invoking a static method on this (this is allowed in Java,
 	 * but not in JSweet).
 	 */
-	CANNOT_ACCESS_STATIC_MEMBER_ON_THIS(Severity.ERROR);
+	CANNOT_ACCESS_STATIC_MEMBER_ON_THIS(Severity.ERROR),
+	/**
+	 * Raised when a <code>$object</code> method is invoked with an odd number of parameters.
+	 */
+	UNTYPED_OBJECT_ODD_PARAMETER_COUNT(Severity.ERROR),
+	/**
+	 * Raised when a <code>$object</code> method is invoked with a key that is not a string literal.
+	 */
+	UNTYPED_OBJECT_WRONG_KEY(Severity.ERROR);
 
 	private Severity severity;
 
@@ -420,13 +428,17 @@ public enum JSweetProblem {
 		case CANDY_VERSION_DISCREPANCY:
 			return String.format("candy %s:%s was generated for a different version of the transpiler (current:%s, candy:%s)", params);
 		case GLOBALS_CAN_ONLY_HAVE_STATIC_MEMBERS:
-			return String.format("Globals classes can only define static members", params);
+			return String.format("globals classes can only define static members", params);
 		case GLOBALS_CLASS_CANNOT_HAVE_SUPERCLASS:
-			return String.format("Globals classes cannot extend any class", params);
+			return String.format("globals classes cannot extend any class", params);
 		case GLOBALS_CLASS_CANNOT_BE_SUBCLASSED:
-			return String.format("Globals classes cannot be subclassed", params);
+			return String.format("globals classes cannot be subclassed", params);
 		case CANNOT_ACCESS_STATIC_MEMBER_ON_THIS:
-			return String.format("Member '%s' is static and cannot be accessed on 'this'", params);
+			return String.format("member '%s' is static and cannot be accessed on 'this'", params);
+		case UNTYPED_OBJECT_ODD_PARAMETER_COUNT:
+			return String.format("wrong parameter count: method '$object' expects a list of key/value pairs as parameters", params);
+		case UNTYPED_OBJECT_WRONG_KEY:
+			return String.format("wrong key: method '$object' expects a list of key/value pairs as parameters, where keys are string literals holding valid identifiers", params);
 		}
 		return null;
 	}

@@ -56,23 +56,27 @@ import org.jsweet.transpiler.util.AbstractPrinterAdapter;
 import org.jsweet.transpiler.util.AbstractTreePrinter;
 import org.jsweet.transpiler.util.Util;
 
+import com.sun.codemodel.internal.JJavaName;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.PackageSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
+import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCImport;
+import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.JCTree.JCTypeApply;
 import com.sun.tools.javac.tree.JCTree.JCTypeCast;
+import com.sun.tools.javac.tree.JCTree.Tag;
 import com.sun.tools.javac.util.Log;
 
 /**
@@ -283,6 +287,35 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			getPrinter().print(")");
 			return true;
 		}
+		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "$object")) {
+			if (invocation.args.size() % 2 != 0) {
+				report(invocation, JSweetProblem.UNTYPED_OBJECT_ODD_PARAMETER_COUNT);
+			}
+			getPrinter().print("{");
+			com.sun.tools.javac.util.List<JCExpression> args = invocation.args;
+			while (args != null && args.head != null) {
+				String key = args.head.toString();
+				if (args.head.getTag() == Tag.LITERAL && key.startsWith("\"")) {
+					key = key.substring(1, key.length() - 1);
+					if(JJavaName.isJavaIdentifier(key)) {
+						getPrinter().print(key);
+					} else {
+						report(args.head, JSweetProblem.UNTYPED_OBJECT_WRONG_KEY, args.head.toString());
+					}
+				} else {
+					report(args.head, JSweetProblem.UNTYPED_OBJECT_WRONG_KEY, args.head.toString());
+					break;
+				}
+				getPrinter().print(": ");
+				getPrinter().print(args.tail.head);
+				args = args.tail.tail;
+				if (args != null && args.head != null) {
+					getPrinter().print(",");
+				}
+			}
+			getPrinter().print("}");
+			return true;
+		}
 		if (matchesMethod(targetClassName, targetMethodName, String.class.getName(), "length")) {
 			getPrinter().print(invocation.meth);
 			return true;
@@ -339,17 +372,16 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			if (fieldAccess != null && !fieldAccess.toString().equals(UTIL_CLASSNAME + "." + INDEXED_SET_FUCTION_NAME)) {
 				// check the type through the getter
 				for (Symbol e : fieldAccess.selected.type.tsym.getEnclosedElements()) {
-					if (e instanceof MethodSymbol 
-							&& INDEXED_GET_FUCTION_NAME.equals(e.getSimpleName().toString())) {
+					if (e instanceof MethodSymbol && INDEXED_GET_FUCTION_NAME.equals(e.getSimpleName().toString())) {
 						MethodSymbol getMethod = (MethodSymbol) e;
 						TypeSymbol getterType = getMethod.getReturnType().tsym;
 						TypeSymbol getterIndexType = getMethod.getParameters().get(0).type.tsym;
-						
+
 						TypeSymbol invokedIndexType = invocation.args.head.type.tsym;
 						TypeSymbol invokedValueType = invocation.args.tail.head.type.tsym;
-						
+
 						boolean sameIndexType = getterIndexType.equals(invokedIndexType);
-						
+
 						if (sameIndexType && !Util.isAssignable(getPrinter().getContext().types, getterType, invokedValueType)) {
 							report(invocation.args.tail.head, JSweetProblem.INDEXED_SET_TYPE_MISMATCH, getterType);
 						}
