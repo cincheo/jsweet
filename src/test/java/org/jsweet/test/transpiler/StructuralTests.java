@@ -105,7 +105,7 @@ public class StructuralTests extends AbstractTest {
 	@Test
 	public void testWrongConstructsInInterfaces() {
 		transpile(logHandler -> {
-			logHandler.assertReportedProblems(JSweetProblem.INTERFACE_MUST_BE_ABSTRACT, //
+			logHandler.assertReportedProblems( //
 					JSweetProblem.INVALID_FIELD_INITIALIZER_IN_INTERFACE, //
 					JSweetProblem.INVALID_STATIC_IN_INTERFACE, //
 					JSweetProblem.INVALID_PRIVATE_IN_INTERFACE, //

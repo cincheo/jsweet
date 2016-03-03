@@ -138,10 +138,6 @@ public enum JSweetProblem {
 	 */
 	CONSTRUCTOR_MEMBER(Severity.ERROR),
 	/**
-	 * Raised when a class annotated with @Interface is not abstract.
-	 */
-	INTERFACE_MUST_BE_ABSTRACT(Severity.ERROR),
-	/**
 	 * Raised when a native modifier is used at the wrong place (only allowed in
 	 * definitions).
 	 */
@@ -365,8 +361,6 @@ public enum JSweetProblem {
 			return String.format("invalid overload of method '%s'", params);
 		case CONSTRUCTOR_MEMBER:
 			return String.format("invalid member name 'constructor'", params);
-		case INTERFACE_MUST_BE_ABSTRACT:
-			return String.format("@Interface '%s' must be abstract", params);
 		case NATIVE_MODIFIER_IS_NOT_ALLOWED:
 			return String.format("method '%s' cannot be native", params);
 		case INVALID_INSTANCEOF_INTERFACE:

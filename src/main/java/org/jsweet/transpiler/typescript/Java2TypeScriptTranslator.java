@@ -546,11 +546,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 			}
 			print(classdecl.name.toString());
-			if (interfaceScope && !sharedMode && classdecl.getKind() == Kind.CLASS) {
-				if (!classdecl.mods.getFlags().contains(Modifier.ABSTRACT)) {
-					report(classdecl, JSweetProblem.INTERFACE_MUST_BE_ABSTRACT, classdecl.name);
-				}
-			}
 			if (classdecl.typarams != null && classdecl.typarams.size() > 0) {
 				print("<").printArgList(classdecl.typarams).print(">");
 			}
