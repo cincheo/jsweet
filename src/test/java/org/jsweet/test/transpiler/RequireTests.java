@@ -52,10 +52,9 @@ public class RequireTests extends AbstractTest {
 
 	@Test
 	public void testClassImportImplicitRequire() {
-		// TODO: fix
-//		transpile(ModuleKind.none, (logHandler) -> {
-//			assertTrue(logHandler.getReportedProblems().size() > 0);
-//		} , getSourceFile(A.class), getSourceFile(B1.class), getSourceFile(B2.class), getSourceFile(ClassImportImplicitRequire.class));
+		transpile(ModuleKind.none, (logHandler) -> {
+			assertTrue(logHandler.getReportedProblems().size() > 0);
+		} , getSourceFile(A.class), getSourceFile(B1.class), getSourceFile(B2.class), getSourceFile(ClassImportImplicitRequire.class));
 
 		// we cannot evaluate this test without the express module
 		transpile(ModuleKind.commonjs, (logHandler) -> {

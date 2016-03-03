@@ -16,30 +16,28 @@
  */
 package source.require.b;
 
-//import static def.express.Globals.express;
-//import static jsweet.util.Globals.$export;
-//
-//import def.express.express.Express;
-//import source.require.a.A;
-//import source.require.a.b.B1;
-//import source.require.a.b.B2;
+import static def.express.Globals.express;
+import static jsweet.util.Globals.$export;
 
-// TODO: fix
+import def.express.express.Express;
+import source.require.a.A;
+import source.require.a.b.B1;
+import source.require.a.b.B2;
 
 public class ClassImportImplicitRequire {
 
-//	public static void main(String[] args) {
-//		$export("mainInvoked", true);
-//
-//		Express app = express();
-//
-//		A a = new A();
-//		a.m();
-//		B1 b1 = new B1();
-//		b1.m();
-//		B2 b2 = new B2();
-//		b2.m();
-//
-//	}
+	public static void main(String[] args) {
+		$export("mainInvoked", true);
+
+		Express app = express();
+
+		A a = new A();
+		a.m();
+		B1 b1 = new B1();
+		b1.m();
+		B2 b2 = new B2();
+		b2.m();
+
+	}
 
 }
