@@ -285,7 +285,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			getPrinter().print(")");
 			return true;
 		}
-		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "$object")) {
+		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "$map")) {
 			if (invocation.args.size() % 2 != 0) {
 				report(invocation, JSweetProblem.UNTYPED_OBJECT_ODD_PARAMETER_COUNT);
 			}
