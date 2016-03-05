@@ -432,7 +432,7 @@ public enum JSweetProblem {
 		case UNTYPED_OBJECT_ODD_PARAMETER_COUNT:
 			return String.format("wrong parameter count: method '$object' expects a list of key/value pairs as parameters", params);
 		case UNTYPED_OBJECT_WRONG_KEY:
-			return String.format("wrong key: method '$object' expects a list of key/value pairs as parameters, where keys are string literals holding valid identifiers", params);
+			return String.format("wrong key: method '$object' expects a list of key/value pairs as parameters, where keys are string literals", params);
 		}
 		return null;
 	}

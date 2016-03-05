@@ -63,14 +63,12 @@ import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.PackageSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
-import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCImport;
-import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
@@ -300,7 +298,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					if(JJavaName.isJavaIdentifier(key)) {
 						getPrinter().print(key);
 					} else {
-						report(args.head, JSweetProblem.UNTYPED_OBJECT_WRONG_KEY, args.head.toString());
+						getPrinter().print("\""+key+"\"");
 					}
 				} else {
 					report(args.head, JSweetProblem.UNTYPED_OBJECT_WRONG_KEY, args.head.toString());
