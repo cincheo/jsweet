@@ -302,7 +302,6 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					}
 				} else {
 					report(args.head, JSweetProblem.UNTYPED_OBJECT_WRONG_KEY, args.head.toString());
-					break;
 				}
 				getPrinter().print(": ");
 				getPrinter().print(args.tail.head);

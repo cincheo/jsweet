@@ -263,7 +263,6 @@ public class InitTests extends AbstractTest {
 					JSweetProblem.UNTYPED_OBJECT_ODD_PARAMETER_COUNT, //
 					JSweetProblem.UNTYPED_OBJECT_WRONG_KEY, //
 					JSweetProblem.UNTYPED_OBJECT_WRONG_KEY, //
-					JSweetProblem.UNTYPED_OBJECT_WRONG_KEY, //
 					JSweetProblem.UNTYPED_OBJECT_WRONG_KEY);
 		} catch (Exception e) {
 			e.printStackTrace();
