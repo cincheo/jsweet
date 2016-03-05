@@ -16,8 +16,8 @@ Content
     -   [Core types and objects](#core-types-and-objects)
     -   [Classes](#classes)
     -   [Interfaces](#interfaces)
+    -   [Untyped objects (maps)](#untyped-objects-maps)
     -   [Enums](#enums)
-    -   [Indexed objects](#indexed-objects)
     -   [Globals](#globals)
     -   [Optional parameters](#optional-parameters)
 -   [Bridging to external JavaScript elements](#bridging-to-external-javascript-elements)
@@ -379,6 +379,77 @@ In JavaScript, objects can have properties and functions, but can also (not excl
 
 -   `$new` is used to state that the object can be used as a constructor.
 
+### Untyped objects (maps)
+
+In JavaScript, object can be seen as maps containing key-value pairs (key is often called *index*, especially when it is a number). So, in JSweet, all objects define the special functions (defined on `jsweet.lang.Object`):
+
+-   `$get(key)` accesses a value with the given key.
+
+-   `$set(key,value)` sets or replace a value for the given key.
+
+-   `$delete(key)` deletes the value for the given key.
+
+#### Reflective/untyped accesses
+
+The functions `$get(key)`, `$set(key,value)` and `$delete(key)` can be seen as a simple reflective API to access object fields and state. Note also the static method `jsweet.lang.Object.keys(object)`, which returns all the keys defined on a given object.
+
+The following code uses this API to introspect the state of an object `o`.
+
+``` java
+for(String key : jsweet.lang.Object.keys(o)) {
+  console.log("key=" + key +  " value=" + o.$get(key));
+});
+```
+
+When not having the typed API of a given object, this API can be useful to manipulate the object in an untyped way (of course it should be avoided as much as possible).
+
+#### Untyped objects initialization
+
+One can use the `$set(key,value)` function to create new untyped object. For instance:
+
+``` java
+Object point = new jsweet.lang.Object() {{ $set("x", 1); $set("y", 1); }};
+```
+
+As a shortcut, one can use the `jsweet.util.Global.$map` function:
+
+``` java
+import static jsweet.util.Global.$map;
+[...]
+Object point = $map("x", 1, "y", 1);
+```
+
+#### Indexed objects
+
+The type of keys and values can be overloaded for every object. For example, the `Array<T>` class, will define keys as numbers and values as objects conforming to type `T`.
+
+In the case of objects indexed with number keys, it is allowed to implement the `java.lang.Iterable` interface so that it is possible to use they in *foreach* loops. For instance, the `NodeList` type (from the DOM) defines an indexed function:
+
+``` java
+@Interface
+class NodeList implements java.lang.Iterable {
+    public double length;
+    public Node item(double index);
+    public Node $get(double index);
+}
+```
+
+In JSweet, you can access the node list elements with the `$get` function, and you can also iterate with the *foreach* syntax. The following code generates fully valid JavaScript code.
+
+``` java
+NodeList nodes = ...
+for (int i = 0; i < nodes.length; i++) {
+    HTMLElement element = (HTMLElement) nodes.$get(i);
+    [...]
+}
+// same as:
+NodeList nodes = ...
+for (Node node : nodes) {
+    HTMLElement element = (HTMLElement) node;
+    [...]
+}
+```
+
 ### Enums
 
 JSweet allows the definition of enums similarly to Java, but with some restrictions. The following code declares an enum with tree possible values (`A`, `B`, and `C`).
@@ -421,45 +492,6 @@ public enum WrongConstructsInEnums {
     {
         l = 4;
     }
-}
-```
-
-### Indexed objects
-
-In JavaScript, object can be seen as maps containing key-value pairs (key is often called *index*, especially when it is a number). So, in JSweet, all objects define the special functions (defined on `jsweet.lang.Object`):
-
--   `$get(key)` accesses a value with the given key.
-
--   `$set(key,value)` sets or replace a value for the given key.
-
--   `$delete(key)` deletes the value for the given key.
-
-The type of keys and values can be overloaded for every object. For example, the `Array<T>` class, will define keys as numbers and values as objects conforming to type `T`.
-
-In the case of objects indexed with number keys, it is allowed to implement the `java.lang.Iterable` interface so that it is possible to use they in *foreach* loops. For instance, the `NodeList` type (from the DOM) defines an indexed function:
-
-``` java
-@Interface
-class NodeList implements java.lang.Iterable {
-    public double length;
-    public Node item(double index);
-    public Node $get(double index);
-}
-```
-
-In JSweet, you can access the node list elements with the `$get` function, and you can also iterate with the *foreach* syntax. The following code generates fully valid JavaScript code.
-
-``` java
-NodeList nodes = ...
-for (int i = 0; i < nodes.length; i++) {
-    HTMLElement element = (HTMLElement) nodes.$get(i);
-    [...]
-}
-// same as:
-NodeList nodes = ...
-for (Node node : nodes) {
-    HTMLElement element = (HTMLElement) node;
-    [...]
 }
 ```
 

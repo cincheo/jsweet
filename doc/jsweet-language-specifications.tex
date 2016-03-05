@@ -399,6 +399,77 @@ In JavaScript, objects can have properties and functions, but can also (not excl
 \item \texttt{\$new} is used to state that the object can be used as a constructor.
 \end{itemize}
 
+\section{Untyped objects (maps)}
+
+In JavaScript, object can be seen as maps containing key-value pairs (key is often called \emph{index}, especially when it is a number). So, in JSweet, all objects define the special functions (defined on \texttt{jsweet.lang.Object}):
+
+\begin{itemize}
+\item \texttt{\$get(key)} accesses a value with the given key.
+\item \texttt{\$set(key,value)} sets or replace a value for the given key.
+\item \texttt{\$delete(key)} deletes the value for the given key.
+\end{itemize}
+
+\subsection{Reflective/untyped accesses}
+
+The functions \texttt{\$get(key)}, \texttt{\$set(key,value)} and \texttt{\$delete(key)} can be seen as a simple reflective API to access object fields and state. Note also the static method \texttt{jsweet.lang.Object.keys(object)}, which returns all the keys defined on a given object. 
+
+The following code uses this API to introspect the state of an object \texttt{o}.
+
+\begin{lstlisting}[language=Java]
+for(String key : jsweet.lang.Object.keys(o)) {
+  console.log("key=" + key +  " value=" + o.$get(key));
+});
+\end{lstlisting}
+
+When not having the typed API of a given object, this API can be useful to manipulate the object in an untyped way (of course it should be avoided as much as possible).
+
+\subsection{Untyped objects initialization}
+
+One can use the \texttt{\$set(key,value)} function to create new untyped object. For instance:
+
+\begin{lstlisting}[language=Java]
+Object point = new jsweet.lang.Object() {{ $set("x", 1); $set("y", 1); }};
+\end{lstlisting}
+
+As a shortcut, one can use the \texttt{jsweet.util.Global.\$map} function:
+
+\begin{lstlisting}[language=Java]
+import static jsweet.util.Global.$map;
+[...]
+Object point = $map("x", 1, "y", 1);
+\end{lstlisting}
+
+\subsection{Indexed objects}
+
+The type of keys and values can be overloaded for every object. For example, the \texttt{Array<T>} class, will define keys as numbers and values as objects conforming to type \texttt{T}.
+
+In the case of objects indexed with number keys, it is allowed to implement the \texttt{java.lang.Iterable} interface so that it is possible to use they in \emph{foreach} loops. For instance, the \texttt{NodeList} type (from the DOM) defines an indexed function:
+
+\begin{lstlisting}[language=Java]
+@Interface
+class NodeList implements java.lang.Iterable {
+    public double length;
+    public Node item(double index);
+    public Node $get(double index);
+}
+\end{lstlisting}
+
+In JSweet, you can access the node list elements with the \texttt{\$get} function, and you can also iterate with the \emph{foreach} syntax. The following code generates fully valid JavaScript code.
+
+\begin{lstlisting}[language=Java]
+NodeList nodes = ...
+for (int i = 0; i < nodes.length; i++) {
+	HTMLElement element = (HTMLElement) nodes.$get(i);
+	[...]
+}
+// same as:
+NodeList nodes = ...
+for (Node node : nodes) {
+	HTMLElement element = (HTMLElement) node;
+	[...]
+}
+\end{lstlisting}
+
 \section{Enums} 
 
 JSweet allows the definition of enums similarly to Java, but with some restrictions. The following code declares an enum with tree possible values (\texttt{A}, \texttt{B}, and \texttt{C}).
@@ -441,45 +512,6 @@ public enum WrongConstructsInEnums {
 	{
 		l = 4;
 	}
-}
-\end{lstlisting}
-
-\section{Indexed objects}
-
-In JavaScript, object can be seen as maps containing key-value pairs (key is often called \emph{index}, especially when it is a number). So, in JSweet, all objects define the special functions (defined on \texttt{jsweet.lang.Object}):
-
-\begin{itemize}
-\item \texttt{\$get(key)} accesses a value with the given key.
-\item \texttt{\$set(key,value)} sets or replace a value for the given key.
-\item \texttt{\$delete(key)} deletes the value for the given key.
-\end{itemize}
-
-The type of keys and values can be overloaded for every object. For example, the \texttt{Array<T>} class, will define keys as numbers and values as objects conforming to type \texttt{T}.
-
-In the case of objects indexed with number keys, it is allowed to implement the \texttt{java.lang.Iterable} interface so that it is possible to use they in \emph{foreach} loops. For instance, the \texttt{NodeList} type (from the DOM) defines an indexed function:
-
-\begin{lstlisting}[language=Java]
-@Interface
-class NodeList implements java.lang.Iterable {
-    public double length;
-    public Node item(double index);
-    public Node $get(double index);
-}
-\end{lstlisting}
-
-In JSweet, you can access the node list elements with the \texttt{\$get} function, and you can also iterate with the \emph{foreach} syntax. The following code generates fully valid JavaScript code.
-
-\begin{lstlisting}[language=Java]
-NodeList nodes = ...
-for (int i = 0; i < nodes.length; i++) {
-	HTMLElement element = (HTMLElement) nodes.$get(i);
-	[...]
-}
-// same as:
-NodeList nodes = ...
-for (Node node : nodes) {
-	HTMLElement element = (HTMLElement) node;
-	[...]
 }
 \end{lstlisting}
 
