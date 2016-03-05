@@ -147,6 +147,16 @@ public class SourceFile {
 	File jsMapFile;
 
 	/**
+	 * The Java source directory.
+	 */
+	File javaSourceDir;
+	
+	/**
+	 * The Java file relatively to the source directory.
+	 */
+	File javaSourceDirRelativeFile;
+	
+	/**
 	 * Internally used by {@link JSweetTranspiler}.
 	 */
 	long jsFileLastTranspiled = 0;

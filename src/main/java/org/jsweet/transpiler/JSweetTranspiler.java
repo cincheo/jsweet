@@ -213,7 +213,8 @@ public class JSweetTranspiler implements JSweetOptions {
 	}
 
 	/**
-	 * Gets this transpiler working directory (where the temporary files are stored).
+	 * Gets this transpiler working directory (where the temporary files are
+	 * stored).
 	 */
 	public File getWorkingDirectory() {
 		return this.workingDir;
@@ -778,6 +779,11 @@ public class JSweetTranspiler implements JSweetOptions {
 				String cuName = s[s.length - 1];
 				s = cuName.split("\\.");
 				cuName = s[0];
+				String javaSourceFileRelativeFullName = (cu.packge.getQualifiedName().toString().replace(".", File.separator) + File.separator + cuName
+						+ ".java");
+				files[i].javaSourceDirRelativeFile = new File(javaSourceFileRelativeFullName);
+				files[i].javaSourceDir = new File(
+						cu.getSourceFile().getName().substring(0, cu.getSourceFile().getName().length() - javaSourceFileRelativeFullName.length()));
 				String packageName = isNoRootDirectories() ? Util.getRootRelativeJavaName(cu.packge) : cu.packge.getQualifiedName().toString();
 				String outputFileRelativePathNoExt = packageName.replace(".", File.separator) + File.separator + cuName;
 				String outputFileRelativePath = outputFileRelativePathNoExt + printer.getTargetFilesExtension();
@@ -1035,15 +1041,16 @@ public class JSweetTranspiler implements JSweetOptions {
 							sourceFile.jsMapFile = mapFile;
 							logger.info("redirecting map file: " + mapFile);
 							String map = FileUtils.readFileToString(mapFile);
-							String relativeJavaFilePath = "";
 							try {
-								Path relativePath = outputFile.getParentFile().getCanonicalFile().toPath()
-										.relativize(sourceFile.getJavaFile().getCanonicalFile().toPath());
-								relativeJavaFilePath = relativePath.toString().replace('\\', '/');
-							} catch (IllegalArgumentException e) {
+								if (sourceFile.javaSourceDir != null) {
+									map = StringUtils.replacePattern(map, "\"sourceRoot\":\"\"", "\"sourceRoot\":\"" + sourceFile.getJsFile().getParentFile()
+											.getCanonicalFile().toPath().relativize(sourceFile.javaSourceDir.getCanonicalFile().toPath()) + "/\"");
+									map = StringUtils.replacePattern(map, "\"sources\":\\[\".*\"\\]",
+											"\"sources\":\\[\"" + sourceFile.javaSourceDirRelativeFile.getPath() + "\"\\]");
+								}
+							} catch (Exception e) {
 								logger.warn("cannot resolve path to source file for .map", e);
 							}
-							map = StringUtils.replacePattern(map, "\"sources\":\\[\".*\"\\]", "\"sources\":\\[\"" + relativeJavaFilePath + "\"\\]");
 							FileUtils.writeStringToFile(mapFile, map);
 							// mapFile.setLastModified(sourceFile)
 							sourceFile.jsFileLastTranspiled = outputFile.lastModified();
