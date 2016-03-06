@@ -15,6 +15,7 @@ Content
 -   [Basic concepts](#basic-concepts)
     -   [Core types and objects](#core-types-and-objects)
     -   [Classes](#classes)
+    -   [Testing the type of an object](#testing-the-type-of-an-object)
     -   [Interfaces](#interfaces)
     -   [Untyped objects (maps)](#untyped-objects-maps)
     -   [Enums](#enums)
@@ -78,6 +79,17 @@ String s = "string" + '0' + i;
 assert s == "string02";
 boolean b = false;
 assert !b;
+```
+
+Note that in JSweet the `==` operator behaves like in JavaScript on primitive types, so that when comparing a string and an integer, it will try to match the two without taking the types in consideration. For instance, `2 == 2` evaluates to `true`. In JavaScript, one can use the `===` operator to strictly compare the objects, so that `2 === 2` evaluates to `false`. To use the `===` operator in JSweet, use the `jsweet.util.Globals.equalsStrict` utility method as follows.
+
+``` java
+import static jsweet.util.Globals.equalsStrict;
+[...]
+int i = 2;
+assert i == 2;
+assert "2" == i;
+assert !(equalsStrict("2", i);
 ```
 
 #### Allowed Java objects
@@ -284,6 +296,37 @@ public class ContainerClass {
 ```
 
 Exceptions: inner classes annotated with `@ObjectType` or `@Erased` are allowed (see the part on Auxiliary Types).
+
+### Testing the type of an object
+
+To test the type of a given object at runtime, one can use the `instanceof` Java operator. It is the advised and preferred way to test types at runtime. JSweet will transpile to a regular `instanceof` or to a `typeof` operator depending on the tested type (it will fallback in `typeof` for `number`, `string`, and `boolean` core types).
+
+It is also possible to directly use the `typeof` operator from JSweet with the `jsweet.util.Globals.typeof` utility method. In general, it is not necessary to use it and the `instanceof` operator is preferred and more general.
+
+Here are some examples of valid type tests:
+
+``` java
+import static jsweet.util.Globals.typeof;
+import static jsweet.util.Globals.equalsStrict;
+[...]
+Number n1 = 2;
+Object n2 = 2;
+int n3 = 2;
+Object s = "test";
+MyClass c = new MyClass();
+
+assert n1 instanceof Number; // transpiles to a typeof
+assert n2 instanceof Number; // transpiles to a typeof
+assert n2 instanceof Integer; // transpiles to a typeof
+assert !(n2 instanceof String); // transpiles to a typeof
+assert s instanceof String; // transpiles to a typeof
+assert !(s instanceof Integer); // transpiles to a typeof
+assert c instanceof MyClass;
+assert typeof(n3) == "number";
+assert equalsStrict(typeof(n3), "number");
+```
+
+Note: the `instanceof` operator is not allowed in interfaces, for reasons that will be explained in the following sections.
 
 ### Interfaces
 
