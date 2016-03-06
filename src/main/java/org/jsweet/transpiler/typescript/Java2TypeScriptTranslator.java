@@ -146,6 +146,19 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	private static java.util.List<Class<?>> statementsWithNoSemis = Arrays
 			.asList(new Class<?>[] { JCIf.class, JCForLoop.class, JCEnhancedForLoop.class, JCSwitch.class });
 
+	private static Map<String, String> instanceOfTypeMapping = new HashMap<String, String>();
+
+	static {
+		instanceOfTypeMapping.put("java.lang.String", "String");
+		instanceOfTypeMapping.put("java.lang.Number", "Number");
+		instanceOfTypeMapping.put("java.lang.Integer", "Number");
+		instanceOfTypeMapping.put("java.lang.Float", "Number");
+		instanceOfTypeMapping.put("java.lang.Double", "Number");
+		instanceOfTypeMapping.put("java.lang.Short", "Number");
+		instanceOfTypeMapping.put("java.lang.Character", "String");
+		instanceOfTypeMapping.put("java.lang.Boolean", "Boolean");
+	}
+
 	private List<String> compilationUnitMainCalls = new LinkedList<String>();
 	private JCMethodDecl mainMethod;
 
@@ -1926,7 +1939,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (Util.isInterface(instanceOf.clazz.type.tsym)) {
 			report(instanceOf, JSweetProblem.INVALID_INSTANCEOF_INTERFACE);
 		}
-		print(instanceOf.expr).print(" instanceof ").print(instanceOf.clazz);
+		if (instanceOfTypeMapping.containsKey(instanceOf.clazz.type.toString())) {
+			print("(").print("typeof ").print(instanceOf.expr).print(" === ")
+					.print("'" + instanceOfTypeMapping.get(instanceOf.clazz.type.toString()).toLowerCase() + "'").print(")");
+		} else {
+			print(instanceOf.expr).print(" instanceof ").print(instanceOf.clazz);
+		}
 	}
 
 	@Override

@@ -31,12 +31,12 @@ import source.structural.AbstractClass;
 import source.structural.AutoImportClassesInSamePackage;
 import source.structural.AutoImportClassesInSamePackageUsed;
 import source.structural.Enums;
-import source.structural.WrongConstructsInSharedInterfaces;
 import source.structural.ExtendsClassInSameFile;
 import source.structural.ExtendsObject;
 import source.structural.GlobalsAccess;
 import source.structural.Inheritance;
 import source.structural.InnerClass;
+import source.structural.InstanceOf;
 import source.structural.Name;
 import source.structural.NameClashes;
 import source.structural.NameClashesWithMethodInvocations;
@@ -46,6 +46,7 @@ import source.structural.ObjectTypes;
 import source.structural.TwoClassesInSameFile;
 import source.structural.WrongConstructsInEnums;
 import source.structural.WrongConstructsInInterfaces;
+import source.structural.WrongConstructsInSharedInterfaces;
 import source.structural.WrongThisAccessOnStatic;
 import source.structural.globalclasses.Globals;
 import source.structural.globalclasses.a.GlobalsConstructor;
@@ -261,4 +262,12 @@ public class StructuralTests extends AbstractTest {
 		} , getSourceFile(WrongThisAccessOnStatic.class));
 	}
 
+	@Test
+	public void testInstanceOf() {
+		eval((logHandler, r) -> {
+			logHandler.assertReportedProblems();
+		} , getSourceFile(InstanceOf.class));
+	}
+	
+	
 }

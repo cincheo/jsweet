@@ -285,6 +285,14 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			getPrinter().print(")");
 			return true;
 		}
+		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "typeof")) {
+			getPrinter().print("typeof ").print(invocation.getArguments().head);
+			return true;
+		}
+		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "equalsStrict")) {
+			getPrinter().print("(").print(invocation.getArguments().head).print(" === ").print(invocation.getArguments().tail.head).print(")");
+			return true;
+		}
 		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "$map")) {
 			if (invocation.args.size() % 2 != 0) {
 				report(invocation, JSweetProblem.UNTYPED_OBJECT_ODD_PARAMETER_COUNT);
@@ -295,10 +303,10 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				String key = args.head.toString();
 				if (args.head.getTag() == Tag.LITERAL && key.startsWith("\"")) {
 					key = key.substring(1, key.length() - 1);
-					if(JJavaName.isJavaIdentifier(key)) {
+					if (JJavaName.isJavaIdentifier(key)) {
 						getPrinter().print(key);
 					} else {
-						getPrinter().print("\""+key+"\"");
+						getPrinter().print("\"" + key + "\"");
 					}
 				} else {
 					report(args.head, JSweetProblem.UNTYPED_OBJECT_WRONG_KEY, args.head.toString());
