@@ -15,7 +15,6 @@ Content
 -   [Basic concepts](#basic-concepts)
     -   [Core types and objects](#core-types-and-objects)
     -   [Classes](#classes)
-    -   [Testing the type of an object](#testing-the-type-of-an-object)
     -   [Interfaces](#interfaces)
     -   [Untyped objects (maps)](#untyped-objects-maps)
     -   [Enums](#enums)
@@ -36,6 +35,7 @@ Content
     -   [Main methods](#main-methods)
     -   [Initializers](#initializers)
     -   [Name clashes](#name-clashes)
+    -   [Testing the type of an object (`instanceof`)](#testing-the-type-of-an-object-instanceof)
     -   [Variable scoping in lambda expressions](#variable-scoping-in-lambda-expressions)
     -   [Scope of *this*](#scope-of-this)
 -   [Packaging](#packaging)
@@ -297,37 +297,6 @@ public class ContainerClass {
 
 Exceptions: inner classes annotated with `@ObjectType` or `@Erased` are allowed (see the part on Auxiliary Types).
 
-### Testing the type of an object
-
-To test the type of a given object at runtime, one can use the `instanceof` Java operator. It is the advised and preferred way to test types at runtime. JSweet will transpile to a regular `instanceof` or to a `typeof` operator depending on the tested type (it will fallback in `typeof` for `number`, `string`, and `boolean` core types).
-
-It is also possible to directly use the `typeof` operator from JSweet with the `jsweet.util.Globals.typeof` utility method. In general, it is not necessary to use it and the `instanceof` operator is preferred and more general.
-
-Here are some examples of valid type tests:
-
-``` java
-import static jsweet.util.Globals.typeof;
-import static jsweet.util.Globals.equalsStrict;
-[...]
-Number n1 = 2;
-Object n2 = 2;
-int n3 = 2;
-Object s = "test";
-MyClass c = new MyClass();
-
-assert n1 instanceof Number; // transpiles to a typeof
-assert n2 instanceof Number; // transpiles to a typeof
-assert n2 instanceof Integer; // transpiles to a typeof
-assert !(n2 instanceof String); // transpiles to a typeof
-assert s instanceof String; // transpiles to a typeof
-assert !(s instanceof Integer); // transpiles to a typeof
-assert c instanceof MyClass;
-assert typeof(n3) == "number";
-assert equalsStrict(typeof(n3), "number");
-```
-
-Note: the `instanceof` operator is not allowed in interfaces, for reasons that will be explained in the following sections.
-
 ### Interfaces
 
 In JSweet, an interface (a.k.a. object type) can be seen as object signature, that is to say the accessible functions and properties of an object (without specifying any implementation). An interface is defined for typing only and has no runtime representation (no instances), however, they can be used to type objects.
@@ -382,14 +351,6 @@ We can create an object typed after the interface. Note that the following code 
 ``` java
 Point p1 = new Point() {{ x=1; y=1; }};
 ```
-
-As a direct consequence, in JSweet it is not allowed to check an instance against an interface type.
-
-``` java
-if (p1 instanceof Point) { ... } // compile error
-```
-
-This may seems quite confusing for Java programmers, but you have to remember that, on contrary to Java where interfaces are available as special classes at runtime, in JSweet, interfaces have no reality at runtime. Think of generics, which are of the same kind in Java. As a consequence, the `instanceof` operator is applicable to classes, but not to interfaces at runtime (like it is not applicable on generics).
 
 #### Optional fields
 
@@ -1089,6 +1050,45 @@ public void m2() {
 ```
 
 Note that this problem also happens when using fully qualified names when calling the global methods (that because the qualification gets erased in TypeScript/JavaScript). In any case, JSweet will report sound errors when such problems happen so that programmers can adjust local variable names to avoid clashes with globals.
+
+### Testing the type of an object (`instanceof`)
+
+To test the type of a given object at runtime, one can use the `instanceof` Java operator. It is the advised and preferred way to test types at runtime. JSweet will transpile to a regular `instanceof` or to a `typeof` operator depending on the tested type (it will fallback on `typeof` for `number`, `string`, and `boolean` core types).
+
+Although not necessary, it is also possible to directly use the `typeof` operator from JSweet with the `jsweet.util.Globals.typeof` utility method. Here are some examples of valid type tests:
+
+``` java
+import static jsweet.util.Globals.typeof;
+import static jsweet.util.Globals.equalsStrict;
+[...]
+Number n1 = 2;
+Object n2 = 2;
+int n3 = 2;
+Object s = "test";
+MyClass c = new MyClass();
+
+assert n1 instanceof Number; // transpiles to a typeof
+assert n2 instanceof Number; // transpiles to a typeof
+assert n2 instanceof Integer; // transpiles to a typeof
+assert !(n2 instanceof String); // transpiles to a typeof
+assert s instanceof String; // transpiles to a typeof
+assert !(s instanceof Integer); // transpiles to a typeof
+assert c instanceof MyClass;
+assert typeof(n3) == "number";
+assert equalsStrict(typeof(n3), "number");
+```
+
+In JSweet, the `instanceof` operator is not allowed on interfaces, since an interface has no runtime existence in JavaScript (it is for typing only and is erased during the transpilation process). For example, the following code is not actually creating an instance of the `Point` interface, it is creating an object that conforms to the interface, and it is not allowed to check an instance against this interface type.
+
+``` java
+Point p1 = new Point() {{ x=1; y=1; }};
+[...]
+if (p1 instanceof Point) { ... } // compile error
+```
+
+This may seems quite confusing for Java programmers, but you have to remember that, on contrary to Java where interfaces are available as special classes at runtime, in JSweet, interfaces have no reality at runtime. Think of generics, which are of the same kind in Java. As a consequence, the `instanceof` operator is applicable to classes, but not to interfaces at runtime (like it is not applicable on generics).
+
+In the future, JSweet might implement a small mechanism to simulate that semantics for simple cases.
 
 ### Variable scoping in lambda expressions
 
