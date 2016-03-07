@@ -18,6 +18,7 @@ package source.structural;
 
 import static jsweet.util.Globals.typeof;
 import static jsweet.util.Globals.equalsStrict;
+import static jsweet.lang.Globals.eval;
 
 public class InstanceOf {
 	public static void main(String[] args) {
@@ -36,6 +37,8 @@ public class InstanceOf {
 		assert c instanceof C2;
 		assert typeof(n3) == "number";
 		assert equalsStrict(typeof(n3), "number");
+
+		assert ((String) eval("typeof n3")) == "number";
 
 	}
 
