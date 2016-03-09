@@ -37,6 +37,11 @@ public enum JSweetProblem {
 	 */
 	INTERNAL_TSC_ERROR(Severity.ERROR),
 	/**
+	 * Raised when the Tsc transpiler reports an error that can be mapped to the
+	 * original source file.
+	 */
+	MAPPED_TSC_ERROR(Severity.ERROR),
+	/**
 	 * Raised when the Tsc transpiler (or the expected version) is not found if
 	 * required.
 	 */
@@ -283,11 +288,13 @@ public enum JSweetProblem {
 	 */
 	CANNOT_ACCESS_STATIC_MEMBER_ON_THIS(Severity.ERROR),
 	/**
-	 * Raised when a <code>$object</code> method is invoked with an odd number of parameters.
+	 * Raised when a <code>$object</code> method is invoked with an odd number
+	 * of parameters.
 	 */
 	UNTYPED_OBJECT_ODD_PARAMETER_COUNT(Severity.ERROR),
 	/**
-	 * Raised when a <code>$object</code> method is invoked with a key that is not a string literal.
+	 * Raised when a <code>$object</code> method is invoked with a key that is
+	 * not a string literal.
 	 */
 	UNTYPED_OBJECT_WRONG_KEY(Severity.ERROR);
 
@@ -317,6 +324,8 @@ public enum JSweetProblem {
 			return String.format("%s", params);
 		case INTERNAL_TSC_ERROR:
 			return String.format("internal TypeScript error: %s", params);
+		case MAPPED_TSC_ERROR:
+			return String.format("%s", params);
 		case NODE_CANNOT_START:
 			return String.format("cannot find Node.js: install first and make sure that the 'node' command is in your execution path", params);
 		case TSC_CANNOT_START:
@@ -414,7 +423,8 @@ public enum JSweetProblem {
 		case ENCLOSED_ROOT_PACKAGES:
 			return String.format("invalid package hierarchy: @Root package '%s' cannot be enclosed in @Root package '%s'", params);
 		case MULTIPLE_ROOT_PACKAGES_NOT_ALLOWED_WITH_MODULES:
-			return String.format("multipe @Root packages (including the default 'null' package) are not allowed when using modules, found packages: %s", params);
+			return String.format("multipe @Root packages (including the default 'null' package) are not allowed when using modules, found packages: %s",
+					params);
 		case CLASS_OUT_OF_ROOT_PACKAGE_SCOPE:
 			return String.format("invalid package hierarchy: type '%s' is declared in a parent of @Root package '%s'", params);
 		case WRONG_USE_OF_AMBIENT:

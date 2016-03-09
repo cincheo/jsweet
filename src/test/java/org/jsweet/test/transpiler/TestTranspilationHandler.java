@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.jsweet.transpiler.JSweetProblem;
+import org.jsweet.transpiler.SourcePosition;
 import org.jsweet.transpiler.util.ConsoleTranspilationHandler;
 
 public class TestTranspilationHandler extends ConsoleTranspilationHandler {

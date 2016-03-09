@@ -113,7 +113,9 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 
 	@Override
 	public String needsImport(JCImport importDecl, String qualifiedName) {
-		if (isJSweetPath(qualifiedName) || isJDKPath(qualifiedName) || qualifiedName.endsWith(GLOBALS_PACKAGE_NAME + "." + GLOBALS_CLASS_NAME)) {
+		if (isJSweetPath(qualifiedName) || qualifiedName.startsWith("java.lang.") || qualifiedName.startsWith("java.util.function.")
+				|| (isJDKPath(qualifiedName) && !getPrinter().getContext().options.isJDKAllowed())
+				|| qualifiedName.endsWith(GLOBALS_PACKAGE_NAME + "." + GLOBALS_CLASS_NAME)) {
 			return null;
 		}
 		if (importDecl.qualid.type != null && (Util.hasAnnotationType(importDecl.qualid.type.tsym, ANNOTATION_ERASED, ANNOTATION_OBJECT_TYPE)
@@ -479,7 +481,8 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		}
 		if (fieldAccess != null && targetClassName != null
 				&& (targetClassName.startsWith(UTIL_PACKAGE + ".function.") || targetClassName.startsWith(Function.class.getPackage().getName()))) {
-			if (targetClassName.startsWith(Function.class.getPackage().getName()) && TypeChecker.FORBIDDEN_JDK_FUNCTIONAL_METHODS.contains(targetMethodName)) {
+			if (!getPrinter().getContext().options.isJDKAllowed() && targetClassName.startsWith(Function.class.getPackage().getName())
+					&& TypeChecker.FORBIDDEN_JDK_FUNCTIONAL_METHODS.contains(targetMethodName)) {
 				getPrinter().report(invocation, JSweetProblem.JDK_METHOD, targetMethodName);
 			}
 			getPrinter().print(fieldAccess.getExpression()).print("(").printArgList(invocation.args).print(")");

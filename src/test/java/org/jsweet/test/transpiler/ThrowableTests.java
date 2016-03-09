@@ -48,11 +48,8 @@ public class ThrowableTests extends AbstractTest {
 		TestTranspilationHandler logHandler = new TestTranspilationHandler();
 		try {
 			transpiler.transpile(logHandler, getSourceFile(InvalidTryCatchTest.class));
-			Assert.assertEquals("There should be 4 errors", 4, logHandler.reportedProblems.size());
-			Assert.assertEquals("Unexpected error", JSweetProblem.TRY_WITH_MULTIPLE_CATCHES, logHandler.reportedProblems.get(0));
-			Assert.assertEquals("Unexpected error", JSweetProblem.UNSUPPORTED_TRY_WITH_RESOURCE, logHandler.reportedProblems.get(1));
-			Assert.assertEquals("Unexpected error", JSweetProblem.TRY_WITHOUT_CATCH_OR_FINALLY, logHandler.reportedProblems.get(2));
-			Assert.assertEquals("Unexpected error", JSweetProblem.JDK_METHOD, logHandler.reportedProblems.get(3));
+			logHandler.assertReportedProblems(JSweetProblem.TRY_WITH_MULTIPLE_CATCHES, JSweetProblem.UNSUPPORTED_TRY_WITH_RESOURCE,
+					JSweetProblem.TRY_WITHOUT_CATCH_OR_FINALLY);
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail("Exception occured while running test");

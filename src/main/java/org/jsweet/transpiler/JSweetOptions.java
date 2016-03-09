@@ -82,4 +82,9 @@ public interface JSweetOptions {
 	 */
 	File getExtractedCandyJavascriptDir();
 	
+	/**
+	 * Returns true if the JDK accesses are allowed.
+	 */
+	boolean isJDKAllowed();
+	
 }

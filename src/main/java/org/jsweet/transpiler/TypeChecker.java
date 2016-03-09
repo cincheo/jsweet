@@ -41,8 +41,8 @@ import com.sun.tools.javac.util.Name;
  * (additionally to Java default type checking).
  * 
  * <p>
- * It checks that JSweet authorized APIs are used, and that auxiliary types
- * such as unions are valid.
+ * It checks that JSweet authorized APIs are used, and that auxiliary types such
+ * as unions are valid.
  * 
  * @author Renaud Pawlak
  */
@@ -67,7 +67,8 @@ public class TypeChecker {
 	 */
 	public static final Set<String> AUTHORIZED_STRING_METHODS = new HashSet<String>();
 	/**
-	 * Methods that cannot be invoked on <code>java.util.function</code> classes from JSweet.
+	 * Methods that cannot be invoked on <code>java.util.function</code> classes
+	 * from JSweet.
 	 */
 	public static final Set<String> FORBIDDEN_JDK_FUNCTIONAL_METHODS = new HashSet<String>();
 
@@ -130,10 +131,10 @@ public class TypeChecker {
 	 * Checks that the given invocation conforms to JSweet contraints.
 	 */
 	public boolean checkApply(JCMethodInvocation invocation, MethodSymbol methSym) {
-		if (Util.hasAnnotationType(methSym, JSweetConfig.ANNOTATION_ERASED)) {
-			translator.report(invocation, JSweetProblem.ERASED_METHOD, methSym);
-		}
-		if (!JSweetConfig.isJDKReplacementMode()) {
+//		if (Util.hasAnnotationType(methSym, JSweetConfig.ANNOTATION_ERASED)) {
+//			translator.report(invocation, JSweetProblem.ERASED_METHOD, methSym);
+//		}
+		if (!JSweetConfig.isJDKReplacementMode() && !translator.getContext().options.isJDKAllowed()) {
 			if (methSym.owner.toString().startsWith("java.")) {
 				if (invocation.meth instanceof JCFieldAccess && "super".equals(((JCFieldAccess) invocation.meth).selected.toString())) {
 					translator.report(invocation, JSweetProblem.JDK_METHOD, methSym);
@@ -161,7 +162,7 @@ public class TypeChecker {
 				return checkType(declaringElement, declaringElementName, ((JCArrayTypeTree) typeExpression).elemtype);
 			}
 			String type = typeExpression.type.tsym.toString();
-			if (!translator.getContext().strictMode && type.startsWith("java.")) {
+			if (!translator.getContext().options.isJDKAllowed() && !translator.getContext().strictMode && type.startsWith("java.")) {
 				if (!(AUTHORIZED_DECLARED_TYPES.contains(type) || NUMBER_TYPES.contains(type) || type.startsWith("java.util.function"))) {
 					translator.report(declaringElement, declaringElementName, JSweetProblem.JDK_TYPE, type);
 					return false;
@@ -179,7 +180,8 @@ public class TypeChecker {
 			if (select.selected.type instanceof ClassType) {
 				String type = select.selected.type.tsym.toString();
 				if (type.startsWith("java.")) {
-					if (!(AUTHORIZED_ACCESSED_TYPES.contains(type) || type.startsWith("java.util.function"))) {
+					if (!translator.getContext().options.isJDKAllowed()
+							&& !(AUTHORIZED_ACCESSED_TYPES.contains(type) || type.startsWith("java.util.function"))) {
 						translator.report(select, JSweetProblem.JDK_TYPE, type);
 						return false;
 					}
@@ -205,7 +207,8 @@ public class TypeChecker {
 	}
 
 	/**
-	 * Checks that the given union type assignment conforms to JSweet contraints.
+	 * Checks that the given union type assignment conforms to JSweet
+	 * contraints.
 	 */
 	public boolean checkUnionTypeAssignment(Types types, JCTree parent, JCMethodInvocation union) {
 		if (parent instanceof JCVariableDecl) {

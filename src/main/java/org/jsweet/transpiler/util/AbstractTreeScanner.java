@@ -22,6 +22,7 @@ import java.util.function.Consumer;
 
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetProblem;
+import org.jsweet.transpiler.SourcePosition;
 import org.jsweet.transpiler.TranspilationHandler;
 
 import com.sun.tools.javac.code.Symtab;
@@ -59,9 +60,9 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 				e += name.length();
 			}
 			logHandler.report(problem,
-					new TranspilationHandler.SourcePosition(new File(compilationUnit.sourcefile.getName()), tree, s, e, diagnosticSource.getLineNumber(s),
-							diagnosticSource.getColumnNumber(s, false), diagnosticSource.getLineNumber(e), diagnosticSource.getColumnNumber(e, false)), problem
-							.getMessage(params));
+					new SourcePosition(new File(compilationUnit.sourcefile.getName()), tree, diagnosticSource.getLineNumber(s),
+							diagnosticSource.getColumnNumber(s, false), diagnosticSource.getLineNumber(e), diagnosticSource.getColumnNumber(e, false)),
+					problem.getMessage(params));
 		}
 	}
 

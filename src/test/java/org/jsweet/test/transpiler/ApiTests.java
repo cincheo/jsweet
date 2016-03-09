@@ -19,12 +19,14 @@ package org.jsweet.test.transpiler;
 import static org.junit.Assert.assertEquals;
 
 import org.jsweet.transpiler.JSweetProblem;
+import org.jsweet.transpiler.ModuleKind;
 import org.junit.Assert;
 import org.junit.Test;
 
 import source.api.CastMethods;
 import source.api.ErasingJava;
 import source.api.ForeachIteration;
+import source.api.J4TSInvocations;
 import source.api.JdkInvocations;
 import source.api.PrimitiveInstantiation;
 import source.api.QualifiedInstantiation;
@@ -35,15 +37,16 @@ public class ApiTests extends AbstractTest {
 	@Test
 	public void testWrongJdkInvocations() {
 		transpile(logHandler -> {
-			Assert.assertEquals("There should be 7 errors", 7, logHandler.reportedProblems.size());
-			Assert.assertEquals("Unexpected error", JSweetProblem.JDK_TYPE, logHandler.reportedProblems.get(0));
-			Assert.assertEquals("Unexpected error", JSweetProblem.JDK_METHOD, logHandler.reportedProblems.get(1));
-			Assert.assertEquals("Unexpected error", JSweetProblem.JDK_TYPE, logHandler.reportedProblems.get(2));
-			Assert.assertEquals("Unexpected error", JSweetProblem.ERASED_METHOD, logHandler.reportedProblems.get(3));
-			Assert.assertEquals("Unexpected error", JSweetProblem.JDK_METHOD, logHandler.reportedProblems.get(4));
-			Assert.assertEquals("Unexpected error", JSweetProblem.JDK_METHOD, logHandler.reportedProblems.get(5));
-			Assert.assertEquals("Unexpected error", JSweetProblem.JDK_METHOD, logHandler.reportedProblems.get(6));
-		} , getSourceFile(WrongJdkInvocations.class));
+			logHandler.assertReportedProblems(JSweetProblem.MAPPED_TSC_ERROR, JSweetProblem.MAPPED_TSC_ERROR, JSweetProblem.MAPPED_TSC_ERROR,
+					JSweetProblem.MAPPED_TSC_ERROR, JSweetProblem.MAPPED_TSC_ERROR);
+		} , getSourceFile(J4TSInvocations.class), getSourceFile(WrongJdkInvocations.class));
+	}
+
+	@Test
+	public void testJ4TSInvocations() {
+		transpile(ModuleKind.none, logHandler -> {
+			logHandler.assertReportedProblems();
+		} , getSourceFile(J4TSInvocations.class));
 	}
 
 	@Test

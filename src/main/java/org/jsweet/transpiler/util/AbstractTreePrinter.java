@@ -39,36 +39,6 @@ import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 
 	private static final Logger logger = Logger.getLogger(AbstractTreePrinter.class);
-	
-	/**
-	 * Represents a position in the source file.
-	 * 
-	 * @author Renaud Pawlak
-	 */
-	public static class Position {
-		/**
-		 * The character position.
-		 */
-		public int position;
-		/**
-		 * The position's line.
-		 */
-		public int line;
-		/**
-		 * The position's column.
-		 */
-		public int column;
-
-		/**
-		 * Creates a new position.
-		 */
-		public Position(int position, int line, int column) {
-			super();
-			this.position = position;
-			this.line = line;
-			this.column = column;
-		}
-	}
 
 	private Stack<Position> positionStack = new Stack<>();
 
@@ -105,6 +75,8 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	private int currentColumn = 0;
 
 	private boolean preserveSourceLineNumbers = true;
+
+	public SourceMap sourceMap = new SourceMap();
 
 	/**
 	 * Creates a new printer.
@@ -164,7 +136,7 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 				currentLine--;
 			}
 			if (currentLine != line) {
-				logger.warn ("cannot adjust line for: " + tree.getClass() + " at line " + line);
+				logger.warn("cannot adjust line for: " + tree.getClass() + " at line " + line);
 			}
 			// adjusting columns... (TODO: does not work)
 			// int column =
@@ -187,15 +159,18 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 			// }
 		}
 		positionStack.push(new Position(getCurrentPosition(), currentLine, currentColumn));
+		sourceMap.addEntry(new Position(tree.pos, //
+				compilationUnit.lineMap.getLineNumber(tree.pos), //
+				compilationUnit.lineMap.getColumnNumber(tree.pos)), positionStack.peek());
 	}
 
 	@Override
 	protected void onRollbacked(JCTree target) {
 		super.onRollbacked(target);
 		Position position = positionStack.peek();
-		out.delete(position.position, out.length());
-		currentColumn = position.column;
-		currentLine = position.line;
+		out.delete(position.getPosition(), out.length());
+		currentColumn = position.getColumn();
+		currentLine = position.getLine();
 	}
 
 	/**

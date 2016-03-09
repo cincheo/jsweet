@@ -103,7 +103,8 @@ class CandyDescriptor {
 		String pomContent = IOUtils.toString(jarFile.getInputStream(pomEntry));
 
 		// take only general part
-		String pomGeneralPart = pomContent.substring(0, pomContent.indexOf("<dependencies>"));
+		int dependenciesIndex = pomContent.indexOf("<dependencies>");
+		String pomGeneralPart = dependenciesIndex > 0 ? pomContent.substring(0, dependenciesIndex) : pomContent;
 
 		// extract candy model version from <groupId></groupId>
 		Matcher matcher = MODEL_VERSION_PATTERN.matcher(pomGeneralPart);

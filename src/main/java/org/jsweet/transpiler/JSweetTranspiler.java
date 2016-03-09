@@ -49,12 +49,12 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.jsweet.JSweetConfig;
-import org.jsweet.transpiler.TranspilationHandler.SourcePosition;
 import org.jsweet.transpiler.candies.CandiesProcessor;
 import org.jsweet.transpiler.typescript.Java2TypeScriptTranslator;
 import org.jsweet.transpiler.util.AbstractTreePrinter;
 import org.jsweet.transpiler.util.ErrorCountTranspilationHandler;
 import org.jsweet.transpiler.util.EvaluationResult;
+import org.jsweet.transpiler.util.Position;
 import org.jsweet.transpiler.util.ProcessUtil;
 import org.jsweet.transpiler.util.Util;
 
@@ -143,6 +143,7 @@ public class JSweetTranspiler implements JSweetOptions {
 	private boolean ignoreJavaFileNameError = false;
 	private boolean generateDeclarations = false;
 	private File declarationsOutputDir;
+	private boolean jdkAllowed = true;
 
 	/**
 	 * Creates a JSweet transpiler, with the default values.
@@ -321,10 +322,8 @@ public class JSweetTranspiler implements JSweetOptions {
 			public String format(JCDiagnostic diagnostic, Locale locale) {
 				if (diagnostic.getKind() == Kind.ERROR) {
 					if (!(ignoreJavaFileNameError && "compiler.err.class.public.should.be.in.file".equals(diagnostic.getCode()))) {
-						transpilationHandler.report(JSweetProblem.INTERNAL_JAVA_ERROR,
-								new SourcePosition(new File(diagnostic.getSource().getName()), null, (int) diagnostic.getStartPosition(),
-										(int) diagnostic.getEndPosition(), (int) diagnostic.getLineNumber(), (int) diagnostic.getColumnNumber(), -1, -1),
-								diagnostic.getMessage(locale));
+						transpilationHandler.report(JSweetProblem.INTERNAL_JAVA_ERROR, new SourcePosition(new File(diagnostic.getSource().getName()), null,
+								(int) diagnostic.getLineNumber(), (int) diagnostic.getColumnNumber()), diagnostic.getMessage(locale));
 					}
 				}
 				if (diagnostic.getSource() != null) {
@@ -743,6 +742,8 @@ public class JSweetTranspiler implements JSweetOptions {
 					fileIndexes.put(cu.packge, indexes);
 				}
 				indexes.add(i);
+				files[i].sourceMap = printer.sourceMap;
+				files[i].sourceMap.shiftOutputPositions(StringUtils.countMatches(sb, "\n"));
 				sb.append(printer.getOutput());
 			}
 			for (Entry<PackageSymbol, StringBuilder> e : modules.entrySet()) {
@@ -799,6 +800,7 @@ public class JSweetTranspiler implements JSweetOptions {
 				}
 				files[i].tsFile = outputFile;
 				files[i].javaFileLastTranspiled = files[i].getJavaFile().lastModified();
+				files[i].sourceMap = printer.sourceMap;
 				logger.info("created " + outputFilePath);
 			}
 		}
@@ -824,17 +826,37 @@ public class JSweetTranspiler implements JSweetOptions {
 		public String toString() {
 			return message + " - " + position;
 		}
+
+		public SourcePosition findOriginalPosition(Collection<SourceFile> sourceFiles) {
+			for (SourceFile sourceFile : sourceFiles) {
+				if (sourceFile.tsFile != null && sourceFile.tsFile.getAbsolutePath().endsWith(position.getFile().getPath())) {
+					if (sourceFile.sourceMap != null) {
+						Position inputPosition = sourceFile.sourceMap.findInputPosition(position.getStartLine(), position.getStartColumn());
+						if (inputPosition != null) {
+							return new SourcePosition(sourceFile.getJavaFile(), null, inputPosition);
+						}
+					}
+				}
+			}
+			return null;
+		}
+
 	}
 
-	private static Pattern errorRE = Pattern.compile("(.*)\\((.*)\\): error .*: (.*)");
+	private static Pattern errorRE = Pattern.compile("(.*)\\((.*)\\): error TS[0-9]+: (.*)");
 
 	private static TscOutput parseTscOutput(String outputString) {
 		Matcher m = errorRE.matcher(outputString);
 		TscOutput error = new TscOutput();
 		if (m.matches()) {
 			String[] pos = m.group(2).split(",");
-			error.position = new SourcePosition(new File(m.group(1)), null, -1, -1, Integer.parseInt(pos[0]), Integer.parseInt(pos[1]), -1, -1);
-			error.message = m.group(3);
+			error.position = new SourcePosition(new File(m.group(1)), null, Integer.parseInt(pos[0]), Integer.parseInt(pos[1]));
+			StringBuilder sb = new StringBuilder(m.group(3));
+			sb.setCharAt(0, Character.toLowerCase(sb.charAt(0)));
+			if (sb.charAt(sb.length() - 1) == '.') {
+				sb.deleteCharAt(sb.length() - 1);
+			}
+			error.message = sb.toString();
 		} else {
 			error.message = outputString;
 		}
@@ -963,7 +985,12 @@ public class JSweetTranspiler implements JSweetOptions {
 				logger.info(line);
 				TscOutput output = parseTscOutput(line);
 				if (output.position != null) {
-					transpilationHandler.report(JSweetProblem.INTERNAL_TSC_ERROR, output.position, output.message);
+					SourcePosition position = output.findOriginalPosition(Arrays.asList(files));
+					if (position == null) {
+						transpilationHandler.report(JSweetProblem.INTERNAL_TSC_ERROR, output.position, output.message);
+					} else {
+						transpilationHandler.report(JSweetProblem.MAPPED_TSC_ERROR, position, output.message);
+					}
 				} else {
 					if (output.message.startsWith("message TS6042:")) {
 						onTsTranspilationCompleted(fullPass[0], transpilationHandler, files);
@@ -1357,5 +1384,10 @@ public class JSweetTranspiler implements JSweetOptions {
 	@Override
 	public File getExtractedCandyJavascriptDir() {
 		return extractedCandyJavascriptDir;
+	}
+
+	@Override
+	public boolean isJDKAllowed() {
+		return jdkAllowed;
 	}
 }

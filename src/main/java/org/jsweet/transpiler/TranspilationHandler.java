@@ -16,11 +16,7 @@
  */
 package org.jsweet.transpiler;
 
-import java.io.File;
-
 import org.apache.log4j.Logger;
-
-import com.sun.tools.javac.tree.JCTree;
 
 /**
  * Objects implementing this interface handle transpilation errors and warnings.
@@ -30,71 +26,6 @@ import com.sun.tools.javac.tree.JCTree;
 public interface TranspilationHandler {
 
 	Logger OUTPUT_LOGGER = Logger.getLogger("output");
-
-	/**
-	 * A position in a source file.
-	 * 
-	 * @author Renaud Pawlak
-	 */
-	static class SourcePosition {
-		public SourcePosition(File file, JCTree sourceElement, int startPosition, int endPosition, int startLine, int startColumn, int endLine, int endColumn) {
-			super();
-			this.file = file;
-			this.startPosition = startPosition;
-			this.endPosition = endPosition;
-			this.startLine = startLine;
-			this.startColumn = startColumn;
-			this.endLine = endLine;
-			this.endColumn = endColumn;
-			this.sourceElement = sourceElement;
-		}
-
-		private File file;
-		private int startPosition;
-		private int endPosition;
-		private int startLine;
-		private int startColumn;
-		private int endLine;
-		private int endColumn;
-		private JCTree sourceElement;
-
-		public File getFile() {
-			return file;
-		}
-
-		public int getStartPosition() {
-			return startPosition;
-		}
-
-		public int getEndPosition() {
-			return endPosition;
-		}
-
-		public int getStartLine() {
-			return startLine;
-		}
-
-		public int getStartColumn() {
-			return startColumn;
-		}
-
-		public int getEndLine() {
-			return endLine;
-		}
-
-		public int getEndColumn() {
-			return endColumn;
-		}
-
-		public JCTree getSourceElement() {
-			return sourceElement;
-		}
-
-		@Override
-		public String toString() {
-			return "" + file + "(" + getStartLine() + "," + getStartColumn() + ")";
-		}
-	}
 
 	/**
 	 * This method is called by the transpiler when a problem needs to be
