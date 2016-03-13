@@ -34,6 +34,7 @@ Content
 -   [Semantics](#semantics)
     -   [Main methods](#main-methods)
     -   [Initializers](#initializers)
+    -   [Arrays initialization and allocation](#arrays-initialization-and-allocation)
     -   [Name clashes](#name-clashes)
     -   [Testing the type of an object (`instanceof`)](#testing-the-type-of-an-object-instanceof)
     -   [Variable scoping in lambda expressions](#variable-scoping-in-lambda-expressions)
@@ -988,6 +989,49 @@ public class C2 {
 assert C2.n == 4;
 ```
 
+### Arrays initialization and allocation
+
+Arrays can be used like in Java.
+
+``` java
+String[] strings = { "a", "b", "c" };
+assert strings[1] == "b";
+```
+
+When specifying dimensions, arrays are pre-allocated (like in Java), so that they are initialized with the right length, and with the right sub-arrays in case of multiple-dimensions arrays.
+
+``` java
+String[][] strings = new String[2][2];
+assert strings.length == 2;
+assert strings[0].length == 2;
+strings[0][0] = "a";
+assert strings[0][0] == "a";
+```
+
+The JavaScript API can be used on an array by casting to a `jsweet.lang.Array` with `jsweet.util.Globals.array`.
+
+``` java
+import static jsweet.util.Globals.array;
+[...]
+String[] strings = { "a", "b", "c" };
+assert strings.length == 3;
+array(strings).push("d");
+assert strings.length == 4;
+assert strings[3] == "d";
+```
+
+In some cases it is preferable to use the `jsweet.lang.Array` class directly.
+
+``` java
+Array<String> strings = new Array<String>("a", "b", "c");
+// same as: Array<String> strings = array(new String[] { "a", "b", "c" });
+// same as: Array<String> strings = new Array<String>(); string.push("a", "b", "c");
+assert strings.length == 3;
+strings.push("d");
+assert strings.length == 4;
+assert strings.$get(3) == "d";
+```
+
 ### Name clashes
 
 On contrary to Java, methods and fields of the same name are not allowed within the same class or within classes having a subclassing link. The reason behind this behavior is that in JavaScript, object variables and functions are stored within the same object map, which basically means that you cannot have the same key for several object members (this also explains that method overloading in the Java sense is not possible in JavaScript).
@@ -1129,6 +1173,8 @@ public class Example {
     }
 }
 ```
+
+It is important to stress that the `this` correct value is ensured thanks to a similar mechanism as the ES5 `bind` function. A consequence is that function references are wrapped in functions, which means that function pointers (such as `this::action`) create wrapping functions on the fly. It has side effects when manipulating function pointers, which are well described in this issue <https://github.com/cincheo/jsweet/issues/65>.
 
 Packaging
 ---------

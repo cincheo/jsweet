@@ -1007,6 +1007,48 @@ public class C2 {
 assert C2.n == 4;
 \end{lstlisting}
 
+\section{Arrays initialization and allocation}
+
+Arrays can be used like in Java. 
+
+\begin{lstlisting}[language=Java]
+String[] strings = { "a", "b", "c" };
+assert strings[1] == "b";
+\end{lstlisting}
+
+When specifying dimensions, arrays are pre-allocated (like in Java), so that they are initialized with the right length, and with the right sub-arrays in case of multiple-dimensions arrays.
+
+\begin{lstlisting}[language=Java]
+String[][] strings = new String[2][2];
+assert strings.length == 2;
+assert strings[0].length == 2;
+strings[0][0] = "a";
+assert strings[0][0] == "a";
+\end{lstlisting}
+
+The JavaScript API can be used on an array by casting to a \texttt{jsweet.\-lang.\-Array} with \texttt{jsweet.\-util.\-Globals.\-array}.
+
+\begin{lstlisting}[language=Java]
+import static jsweet.util.Globals.array;
+[...]
+String[] strings = { "a", "b", "c" };
+assert strings.length == 3;
+array(strings).push("d");
+assert strings.length == 4;
+assert strings[3] == "d";
+\end{lstlisting}
+
+In some cases it is preferable to use the \texttt{jsweet.\-lang.\-Array} class directly.
+
+\begin{lstlisting}[language=Java]
+Array<String> strings = new Array<String>("a", "b", "c");
+// same as: Array<String> strings = array(new String[] { "a", "b", "c" });
+// same as: Array<String> strings = new Array<String>(); string.push("a", "b", "c");
+assert strings.length == 3;
+strings.push("d");
+assert strings.length == 4;
+assert strings.$get(3) == "d";
+\end{lstlisting}
 
 \section{Name clashes}
 
@@ -1151,6 +1193,9 @@ public class Example {
 	}
 }
 \end{lstlisting}
+
+It is important to stress that the \texttt{this} correct value is ensured thanks to a similar mechanism as the ES5 \texttt{bind} function. A consequence is that 
+function references are wrapped in functions, which means that function pointers (such as \texttt{this::action}) create wrapping functions on the fly. It has side effects when manipulating function pointers, which are well described in this issue \url{https://github.com/cincheo/jsweet/issues/65}.
 
 \chapter{Packaging}
 \label{packaging}

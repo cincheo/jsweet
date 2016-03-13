@@ -1,6 +1,9 @@
 package source.init;
 
 import static jsweet.util.Globals.$export;
+import static jsweet.util.Globals.array;
+
+import jsweet.lang.Array;
 
 public class ArrayNew {
 
@@ -11,6 +14,41 @@ public class ArrayNew {
 			s += ".";
 		}
 		$export("result", s);
+
+		String[] strings1 = { "a", "b", "c" };
+		assert strings1[1] == "b";
+
+		String[][] strings = new String[2][2];
+		assert strings.length == 2;
+		assert strings[0].length == 2;
+		strings[0][0] = "a";
+		assert strings[0][0] == "a";
+
+		strings1 = new String[] { "a", "b", "c" };
+		assert strings1.length == 3;
+		array(strings1).push("d");
+		assert strings1.length == 4;
+		assert strings1[3] == "d";
+
+		Array<String> strings3 = array(new String[] { "a", "b", "c" });
+		assert strings3.length == 3;
+		strings3.push("d");
+		assert strings3.length == 4;
+		assert strings3.$get(3) == "d";
+		
+		strings3 = new Array<String>("a", "b", "c" );
+		assert strings3.length == 3;
+		strings3.push("d");
+		assert strings3.length == 4;
+		assert strings3.$get(3) == "d";
+
+		strings3 = new Array<String>();
+		strings3.push("a", "b", "c");
+		assert strings3.length == 3;
+		strings3.push("d");
+		assert strings3.length == 4;
+		assert strings3.$get(3) == "d";
+		
 	}
 
 }
