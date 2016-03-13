@@ -196,6 +196,11 @@
 		</dependency>
 		<dependency>
 			<groupId>org.jsweet.candies</groupId>
+			<artifactId>es6-promise</artifactId>
+			<version>0.0.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jsweet.candies</groupId>
 			<artifactId>body-parser</artifactId>
 			<version>0.0.0-SNAPSHOT</version>
 			<scope>test</scope>
@@ -204,7 +209,7 @@
 		<dependency>
 			<groupId>org.jsweet.candies</groupId>
 			<artifactId>j4ts</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>0.0.1</version>
 			<scope>test</scope>
 			<optional>true</optional>
 		</dependency>

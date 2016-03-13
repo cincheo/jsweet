@@ -18,7 +18,6 @@ package org.jsweet.test.transpiler;
 
 import static org.junit.Assert.assertEquals;
 
-import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.ModuleKind;
 import org.junit.Assert;
 import org.junit.Test;
@@ -37,8 +36,21 @@ public class ApiTests extends AbstractTest {
 	@Test
 	public void testWrongJdkInvocations() {
 		transpile(logHandler -> {
-			logHandler.assertReportedProblems(JSweetProblem.MAPPED_TSC_ERROR, JSweetProblem.MAPPED_TSC_ERROR, JSweetProblem.MAPPED_TSC_ERROR,
-					JSweetProblem.MAPPED_TSC_ERROR, JSweetProblem.MAPPED_TSC_ERROR);
+			assertEquals(14, logHandler.reportedProblems.size());
+			assertEquals(19, logHandler.reportedSourcePositions.get(0).getStartLine());
+			assertEquals(39, logHandler.reportedSourcePositions.get(1).getStartLine());
+			assertEquals(41, logHandler.reportedSourcePositions.get(2).getStartLine());
+			assertEquals(48, logHandler.reportedSourcePositions.get(3).getStartLine());
+			assertEquals(52, logHandler.reportedSourcePositions.get(4).getStartLine());
+			assertEquals(72, logHandler.reportedSourcePositions.get(5).getStartLine());
+			assertEquals(78, logHandler.reportedSourcePositions.get(6).getStartLine());
+			assertEquals(83, logHandler.reportedSourcePositions.get(7).getStartLine());
+			assertEquals(87, logHandler.reportedSourcePositions.get(8).getStartLine());
+			assertEquals(97, logHandler.reportedSourcePositions.get(9).getStartLine());
+			assertEquals(118, logHandler.reportedSourcePositions.get(10).getStartLine());
+			assertEquals(120, logHandler.reportedSourcePositions.get(11).getStartLine());
+			assertEquals(127, logHandler.reportedSourcePositions.get(12).getStartLine());
+			assertEquals(131, logHandler.reportedSourcePositions.get(13).getStartLine());
 		} , getSourceFile(J4TSInvocations.class), getSourceFile(WrongJdkInvocations.class));
 	}
 

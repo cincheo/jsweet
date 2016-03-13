@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.TranspilationHandler;
 import org.jsweet.transpiler.TypeChecker;
+import org.jsweet.transpiler.util.SourceMap.Entry;
 
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
@@ -253,8 +254,16 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	 * Removes the last output character.
 	 */
 	public AbstractTreePrinter removeLastChar() {
+		if (out.length() == 0) {
+			return this;
+		}
+		if (out.charAt(out.length() - 1) == '\n') {
+			currentLine--;
+			currentColumn = 0;
+		} else {
+			currentColumn--;
+		}
 		out.deleteCharAt(out.length() - 1);
-		currentColumn--;
 		return this;
 	}
 
@@ -262,10 +271,9 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	 * Removes the last output characters.
 	 */
 	public AbstractTreePrinter removeLastChars(int count) {
-		if (count > 0) {
-			out.delete(out.length() - count, out.length());
+		for (int i = 0; i < count; i++) {
+			removeLastChar();
 		}
-		currentColumn -= count;
 		return this;
 	}
 

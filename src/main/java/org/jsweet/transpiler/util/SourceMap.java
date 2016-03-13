@@ -16,10 +16,8 @@
  */
 package org.jsweet.transpiler.util;
 
-import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map.Entry;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * This object represents a source map between an input source file and an
@@ -29,7 +27,45 @@ import java.util.Map.Entry;
  */
 public class SourceMap {
 
-	private List<SimpleEntry<Position, Position>> entries = new ArrayList<>();
+	/**
+	 * An entry in the source map.
+	 * 
+	 * @see SourceMap
+	 */
+	public static final class Entry implements Comparable<Entry> {
+		private final Position inputPosition;
+		private Position outputPosition;
+
+		private Entry(Position inputPosition, Position outputPosition) {
+			super();
+			this.inputPosition = inputPosition;
+			this.outputPosition = outputPosition;
+		}
+
+		public final Position getInputPosition() {
+			return inputPosition;
+		}
+
+		public final Position getOutputPosition() {
+			return outputPosition;
+		}
+
+		public final void setOutputPosition(Position position) {
+			this.outputPosition = position;
+		}
+
+		@Override
+		public int compareTo(Entry entry) {
+			return this.getInputPosition().compareTo(entry.getInputPosition());
+		}
+
+		@Override
+		public String toString() {
+			return this.getInputPosition().toString() + "->" + this.getOutputPosition().toString();
+		}
+	}
+
+	private SortedSet<Entry> entries = new TreeSet<>();
 
 	/**
 	 * Adds an entry to the source map (entry must be added in order).
@@ -38,9 +74,12 @@ public class SourceMap {
 	 *            the input position in the input source file
 	 * @param outputPosition
 	 *            the output position in the output source file
+	 * @return the added entry (null if the entry cannot be added)
 	 */
-	public final void addEntry(Position inputPosition, Position outputPosition) {
-		entries.add(new SimpleEntry<>(inputPosition, outputPosition));
+	public final Entry addEntry(Position inputPosition, Position outputPosition) {
+		Entry entry = new Entry(inputPosition, outputPosition);
+		entries.add(entry);
+		return entry;
 	}
 
 	/**
@@ -67,16 +106,17 @@ public class SourceMap {
 		if (entries.isEmpty()) {
 			return null;
 		}
-		if (outputLine < entries.get(0).getValue().getLine()) {
+		if (outputLine < entries.first().getOutputPosition().getLine()) {
 			return null;
 		}
-		if (outputLine > entries.get(entries.size() - 1).getValue().getLine()) {
+		if (outputLine > entries.last().getOutputPosition().getLine()) {
 			return null;
 		}
 		if (entries != null) {
+			Entry[] e = entries.toArray(new Entry[0]);
 			for (int i = 0; i < entries.size(); i++) {
-				if (i == entries.size() - 1 || (entries.get(i).getValue().getLine() == outputLine || entries.get(i + 1).getValue().getLine() > outputLine)) {
-					return entries.get(i).getKey();
+				if (i == e.length - 1 || (e[i].getOutputPosition().getLine() == outputLine || e[i + 1].getOutputPosition().getLine() > outputLine)) {
+					return e[i].getInputPosition();
 				}
 			}
 		}
@@ -87,9 +127,19 @@ public class SourceMap {
 	 * Shifts the ouput positions by the given line offset.
 	 */
 	public final void shiftOutputPositions(int lineOffset) {
-		for (Entry<Position, Position> entry : entries) {
-			entry.setValue(new Position(entry.getValue().getLine() + lineOffset, entry.getValue().getColumn()));
+		for (Entry entry : entries) {
+			entry.setOutputPosition(new Position(entry.getOutputPosition().getLine() + lineOffset, entry.getOutputPosition().getColumn()));
 		}
+	}
+
+	@Override
+	public String toString() {
+		StringBuffer sb = new StringBuffer();
+		for (Entry entry : entries) {
+			sb.append(entry.toString());
+			sb.append(" ");
+		}
+		return sb.toString();
 	}
 
 }

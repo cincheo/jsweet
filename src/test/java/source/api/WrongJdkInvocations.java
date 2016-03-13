@@ -20,16 +20,44 @@ import java.io.FileInputStream;
 import java.util.Iterator;
 import java.util.function.Consumer;
 
+import def.es6_promise.Promise;
 import jsweet.lang.Array;
 
+class CC {
+
+}
+
+class CC2 {
+
+}
 
 public class WrongJdkInvocations {
+
+	void m2(Promise<String> p, String s2) {
+
+		p.thenOnFulfilledFunction(s -> {
+			return s.codePointAt(1);
+		}).catchOnRejectedFunction(o -> {
+			new Array<String>() //
+					.iterator();
+			return null;
+		});
+
+		Object o = new jsweet.lang.Object() {
+			{
+				$set("test", s2.codePointAt(1));
+			}
+		};
+
+		s2.codePointAt(2);
+
+	}
 
 	String s;
 	// illegal use of FileInputString
 	FileInputStream fis;
 	Consumer<String> c;
-	
+
 	void m() {
 		toString();
 		this.toString();
@@ -42,10 +70,10 @@ public class WrongJdkInvocations {
 		s.lastIndexOf("", 10);
 		// illegal use of codePointAt method
 		s.codePointAt(1);
-		Other1 o1 = new Other1();
-		o1.toString();
-		Other2 o2 = new Other2();
-		o2.toString();
+		// Other1 o1 = new Other1();
+		// o1.toString();
+		// Other2 o2 = new Other2();
+		// o2.toString();
 		// illegal use of Iterator
 		Iterator<String> i = new Array<String>().iterator();
 		// illegal use of Iterator method
@@ -56,9 +84,10 @@ public class WrongJdkInvocations {
 	}
 
 	String m1() {
+		s.codePointAt(1);
 		return "";
 	}
-	
+
 }
 
 class Other1 {
@@ -67,7 +96,7 @@ class Other1 {
 		// cannot call Object superclass
 		return super.toString();
 	}
-	
+
 	void m() {
 		toString();
 		this.toString();
@@ -79,4 +108,28 @@ class Other2 extends Object {
 		toString();
 		this.toString();
 	}
+}
+
+class Other3 {
+
+	void m(Promise<String> p, String s2) {
+
+		p.thenOnFulfilledFunction(s -> {
+			return s.codePointAt(1);
+		}).catchOnRejectedFunction(o -> {
+			new Array<String>() //
+					.iterator();
+			return null;
+		});
+
+		Object o = new jsweet.lang.Object() {
+			{
+				$set("test", s2.codePointAt(1));
+			}
+		};
+
+		s2.codePointAt(2);
+
+	}
+
 }
