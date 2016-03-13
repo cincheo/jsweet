@@ -1025,7 +1025,7 @@ In some cases it is preferable to use the `jsweet.lang.Array` class directly.
 ``` java
 Array<String> strings = new Array<String>("a", "b", "c");
 // same as: Array<String> strings = array(new String[] { "a", "b", "c" });
-// same as: Array<String> strings = new Array<String>(); string.push("a", "b", "c");
+// same as: Array<String> strings = new Array<String>(); strings.push("a", "b", "c");
 assert strings.length == 3;
 strings.push("d");
 assert strings.length == 4;
