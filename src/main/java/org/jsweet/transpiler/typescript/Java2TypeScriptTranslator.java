@@ -1699,7 +1699,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		// }
 		// }
 		if (newArray.dims != null && !newArray.dims.isEmpty()) {
-			print("new Array(").print(newArray.dims.head).print(")");
+			print("<any> (function(dims) { var allocate = function(dims) { if(dims.length==0) { return undefined; } else { var array = []; for(var i = 0; i < dims[0]; i++) { array.push(allocate(dims.slice(1))); } return array; }}; return allocate(dims);})");
+			print("([");
+			printArgList(newArray.dims);
+			print("])");
+			// print("new Array(").print(newArray.dims.head).print(")");
 		} else {
 			print("[");
 			if (newArray.elems != null) {
