@@ -738,7 +738,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		for (int i = 0; i < compilationUnits.length(); i++) {
 			JCCompilationUnit cu = compilationUnits.get(i);
 			logger.info("scanning " + cu.sourcefile.getName() + "...");
-			OverloadScanner overloadChecker = new OverloadScanner(context);
+			OverloadScanner overloadChecker = new OverloadScanner(transpilationHandler, context);
 			overloadChecker.process(cu);
 			AbstractTreePrinter printer = new Java2TypeScriptTranslator(transpilationHandler, context, cu, preserveSourceLineNumbers);
 			printer.print(cu);
@@ -801,7 +801,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		for (int i = 0; i < orderedCompilationUnits.size(); i++) {
 			JCCompilationUnit cu = orderedCompilationUnits.get(i);
 			logger.info("scanning " + cu.sourcefile.getName() + "...");
-			OverloadScanner overloadChecker = new OverloadScanner(context);
+			OverloadScanner overloadChecker = new OverloadScanner(transpilationHandler, context);
 			overloadChecker.process(cu);
 			AbstractTreePrinter printer = new Java2TypeScriptTranslator(transpilationHandler, context, cu, preserveSourceLineNumbers);
 			printer.print(cu);
@@ -875,7 +875,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		for (int i = 0; i < orderedCompilationUnits.size(); i++) {
 			JCCompilationUnit cu = orderedCompilationUnits.get(i);
 			logger.info("scanning " + cu.sourcefile.getName() + "...");
-			OverloadScanner overloadChecker = new OverloadScanner(context);
+			OverloadScanner overloadChecker = new OverloadScanner(transpilationHandler, context);
 			overloadChecker.process(cu);
 			AbstractTreePrinter printer = new Java2TypeScriptTranslator(transpilationHandler, context, cu, preserveSourceLineNumbers);
 			printer.print(cu);

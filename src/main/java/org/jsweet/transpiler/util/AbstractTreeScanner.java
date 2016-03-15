@@ -84,8 +84,17 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 		this.context.symtab = Symtab.instance(context);
 		this.context.names = Names.instance(context);
 		this.context.types = Types.instance(context);
-		this.compilationUnit = compilationUnit;
-		this.diagnosticSource = new DiagnosticSource(compilationUnit.sourcefile, Log.instance(context));
+		this.setCompilationUnit(compilationUnit);
+	}
+
+	protected final void setCompilationUnit(JCCompilationUnit compilationUnit) {
+		if (compilationUnit != null) {
+			this.compilationUnit = compilationUnit;
+			this.diagnosticSource = new DiagnosticSource(compilationUnit.sourcefile, Log.instance(context));
+		} else {
+			this.compilationUnit = null;
+			this.diagnosticSource = null;
+		}
 	}
 
 	@Override

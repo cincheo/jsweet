@@ -54,5 +54,18 @@ public class WrongOverloads {
 		draw();
 		draw("");
 	}
+
+	int test(int x, int y) {
+		return x + y;
+	}
+
+	int test(Data d) {
+		return test(d.x, d.y);
+	}
 	
+}
+
+class Data {
+	int x;
+	int y;
 }

@@ -24,12 +24,13 @@ import java.util.Map;
 import javax.lang.model.element.Element;
 
 import org.jsweet.JSweetConfig;
+import org.jsweet.transpiler.util.AbstractTreeScanner;
 import org.jsweet.transpiler.util.Util;
 
-import com.sun.tools.javac.code.Symbol.TypeSymbol;
-import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
+import com.sun.tools.javac.code.Symbol.TypeSymbol;
+import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
@@ -40,7 +41,6 @@ import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCReturn;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
-import com.sun.tools.javac.tree.TreeScanner;
 
 /**
  * This AST scanner detects method overloads and gather them into
@@ -48,9 +48,8 @@ import com.sun.tools.javac.tree.TreeScanner;
  * 
  * @author Renaud Pawlak
  */
-public class OverloadScanner extends TreeScanner {
+public class OverloadScanner extends AbstractTreeScanner {
 
-	JSweetContext context;
 	Types types;
 	int pass = 1;
 
@@ -107,8 +106,8 @@ public class OverloadScanner extends TreeScanner {
 	/**
 	 * Creates a new overload scanner.
 	 */
-	public OverloadScanner(JSweetContext context) {
-		this.context = context;
+	public OverloadScanner(TranspilationHandler logHandler, JSweetContext context) {
+		super(logHandler, context, null);
 		this.types = Types.instance(context);
 	}
 
@@ -185,6 +184,8 @@ public class OverloadScanner extends TreeScanner {
 									JCExpression expr = invocation.getArguments().get(i);
 									if (expr instanceof JCLiteral) {
 										overload.defaultValues[i] = (JCLiteral) expr;
+									} else {
+										report(expr, JSweetProblem.INVALID_OVERLOAD_PARAMETER, JSweetProblem.INVALID_OVERLOAD_PARAMETER.getMessage());
 									}
 								}
 							}
@@ -197,6 +198,13 @@ public class OverloadScanner extends TreeScanner {
 				}
 			}
 		}
+	}
+
+	@Override
+	public void visitTopLevel(JCCompilationUnit cu) {
+		setCompilationUnit(cu);
+		super.visitTopLevel(cu);
+		setCompilationUnit(null);
 	}
 
 	/**

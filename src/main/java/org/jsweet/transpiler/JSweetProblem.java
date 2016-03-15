@@ -139,6 +139,10 @@ public enum JSweetProblem {
 	 */
 	INVALID_OVERLOAD(Severity.ERROR),
 	/**
+	 * Raised when an overload parameter is not valid.
+	 */
+	INVALID_OVERLOAD_PARAMETER(Severity.ERROR),
+	/**
 	 * Raised when a member is named 'constructor'.
 	 */
 	CONSTRUCTOR_MEMBER(Severity.ERROR),
@@ -301,7 +305,6 @@ public enum JSweetProblem {
 	 * Raised when a cycle is detected in static initializers.
 	 */
 	CYCLE_IN_STATIC_INITIALIZER_DEPENDENCIES(Severity.ERROR);
-	
 
 	private Severity severity;
 
@@ -373,6 +376,8 @@ public enum JSweetProblem {
 			return String.format("no initialization blocks are allowed in interface '%s'", params);
 		case INVALID_OVERLOAD:
 			return String.format("invalid overload of method '%s'", params);
+		case INVALID_OVERLOAD_PARAMETER:
+			return String.format("overloaded methods can only be invoked with literal parameters (constants)", params);
 		case CONSTRUCTOR_MEMBER:
 			return String.format("invalid member name 'constructor'", params);
 		case NATIVE_MODIFIER_IS_NOT_ALLOWED:

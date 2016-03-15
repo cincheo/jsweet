@@ -55,14 +55,15 @@ public class OverloadTests extends AbstractTest {
 			fail("Exception occured while running test");
 		}
 	}
-	
+
 	@Test
 	public void testWrongOverloads() {
 		TestTranspilationHandler logHandler = new TestTranspilationHandler();
 		try {
 			transpiler.transpile(logHandler, getSourceFile(WrongOverloads.class));
-			logHandler.assertReportedProblems(JSweetProblem.INVALID_OVERLOAD, JSweetProblem.INVALID_OVERLOAD, JSweetProblem.INVALID_OVERLOAD,
-					JSweetProblem.INVALID_OVERLOAD, JSweetProblem.INVALID_OVERLOAD, JSweetProblem.INVALID_OVERLOAD);
+			logHandler.assertReportedProblems(JSweetProblem.INVALID_OVERLOAD_PARAMETER, JSweetProblem.INVALID_OVERLOAD_PARAMETER,
+					JSweetProblem.INVALID_OVERLOAD, JSweetProblem.INVALID_OVERLOAD, JSweetProblem.INVALID_OVERLOAD, JSweetProblem.INVALID_OVERLOAD,
+					JSweetProblem.INVALID_OVERLOAD, JSweetProblem.INVALID_OVERLOAD);
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail("Exception occured while running test");
