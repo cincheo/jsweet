@@ -20,6 +20,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -207,5 +208,28 @@ public class JSweetContext extends Context {
 	 * means that the <code>jsweet-core-strict</code> jar is in the classpath.
 	 */
 	public boolean strictMode = false;
+
+	private List<String> footerStatements = new LinkedList<String>();
+
+	/**
+	 * Gets and clears the footer statements.
+	 */
+	public String poolFooterStatements() {
+		StringBuilder sb = new StringBuilder();
+		for (String footerStatement : footerStatements) {
+			sb.append("\n");
+			sb.append(footerStatement);
+			sb.append("\n");
+		}
+		footerStatements.clear();
+		return sb.toString();
+	}
+
+	/**
+	 * Adds a footer statement.
+	 */
+	public void addFooterStatement(String footerStatement) {
+		footerStatements.add(footerStatement);
+	}
 
 }

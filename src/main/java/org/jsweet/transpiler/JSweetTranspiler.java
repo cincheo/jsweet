@@ -760,6 +760,7 @@ public class JSweetTranspiler implements JSweetOptions {
 			PrintWriter out = new PrintWriter(outputFilePath);
 			try {
 				out.println(printer.getResult());
+				out.print(context.poolFooterStatements());
 			} finally {
 				out.close();
 			}
@@ -775,6 +776,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		// when using modules, all classes of the same package are folded to
 		// one module file
 		Map<PackageSymbol, StringBuilder> modules = new HashMap<>();
+		Map<PackageSymbol, StringBuilder> moduleFooters = new HashMap<>();
 		Map<PackageSymbol, ArrayList<Integer>> fileIndexes = new HashMap<>();
 		StaticInitilializerAnalyzer analizer = new StaticInitilializerAnalyzer(context);
 		analizer.process(compilationUnits);
@@ -808,6 +810,11 @@ public class JSweetTranspiler implements JSweetOptions {
 				sb = new StringBuilder();
 				modules.put(cu.packge, sb);
 			}
+			StringBuilder sb2 = moduleFooters.get(cu.packge);
+			if (sb2 == null) {
+				sb2 = new StringBuilder();
+				moduleFooters.put(cu.packge, sb2);
+			}
 			ArrayList<Integer> indexes = fileIndexes.get(cu.packge);
 			if (indexes == null) {
 				indexes = new ArrayList<Integer>();
@@ -817,6 +824,7 @@ public class JSweetTranspiler implements JSweetOptions {
 			files[permutation[i]].sourceMap = printer.sourceMap;
 			files[permutation[i]].sourceMap.shiftOutputPositions(StringUtils.countMatches(sb, "\n"));
 			sb.append(printer.getOutput());
+			sb2.append(context.poolFooterStatements());
 		}
 		for (Entry<PackageSymbol, StringBuilder> e : modules.entrySet()) {
 			String outputFileRelativePathNoExt = Util.getRootRelativeJavaName(e.getKey()).replace(".", File.separator) + File.separator
@@ -829,6 +837,7 @@ public class JSweetTranspiler implements JSweetOptions {
 			PrintWriter out = new PrintWriter(outputFilePath);
 			try {
 				out.println(e.getValue().toString());
+				out.print(moduleFooters.get(e.getKey()));
 			} finally {
 				out.close();
 			}
@@ -889,6 +898,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		PrintWriter out = new PrintWriter(outputFilePath);
 		try {
 			out.println(sb.toString());
+			out.print(context.poolFooterStatements());
 		} finally {
 			out.close();
 		}

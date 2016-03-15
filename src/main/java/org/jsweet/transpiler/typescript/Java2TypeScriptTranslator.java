@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -159,7 +158,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		instanceOfTypeMapping.put("java.lang.Boolean", "Boolean");
 	}
 
-	private List<String> compilationUnitMainCalls = new LinkedList<String>();
 	private JCMethodDecl mainMethod;
 
 	private List<JCImport> imports = new ArrayList<JCImport>();
@@ -445,8 +443,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			printIndent().print("module ").print(rootRelativePackageName).print(" {").startIndent().println();
 		}
 
-		compilationUnitMainCalls.clear();
-
 		for (JCTree def : topLevel.defs) {
 			mainMethod = null;
 
@@ -465,9 +461,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 		if (footer.length() > 0) {
 			println().print(footer.toString());
-		}
-		for (String mainMethodCall : compilationUnitMainCalls) {
-			println().print(mainMethodCall).println();
 		}
 		globalModule = false;
 	}
@@ -646,8 +639,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				mainMethodQualifier = mainClassName + ".";
 			}
 			context.entryFiles.add(new File(compilationUnit.sourcefile.getName()));
-			compilationUnitMainCalls
-					.add(mainMethodQualifier + JSweetConfig.MAIN_FUNCTION_NAME + "(" + (mainMethod.getParameters().isEmpty() ? "" : "null") + ");");
+			context.addFooterStatement(
+					mainMethodQualifier + JSweetConfig.MAIN_FUNCTION_NAME + "(" + (mainMethod.getParameters().isEmpty() ? "" : "null") + ");");
 		}
 
 		interfaceScope = false;
