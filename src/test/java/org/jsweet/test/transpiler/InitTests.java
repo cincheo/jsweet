@@ -22,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.jsweet.transpiler.JSweetProblem;
+import org.jsweet.transpiler.ModuleKind;
 import org.jsweet.transpiler.util.EvaluationResult;
 import org.junit.Assert;
 import org.junit.Test;
@@ -137,14 +138,12 @@ public class InitTests extends AbstractTest {
 
 	@Test
 	public void testConstructors() {
-		TestTranspilationHandler logHandler = new TestTranspilationHandler();
-		try {
-			transpiler.transpile(logHandler, getSourceFile(Constructor.class));
-			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail("Exception occured while running test");
-		}
+		eval(ModuleKind.none, (handler, result) -> {
+			handler.assertReportedProblems();
+			assertEquals("abc", result.get("v1"));
+			assertEquals("default", result.get("v2"));
+			assertEquals("test", result.get("v3"));
+		}, getSourceFile(Constructor.class));
 	}
 
 	@Test

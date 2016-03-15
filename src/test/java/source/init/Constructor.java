@@ -16,18 +16,36 @@
  */
 package source.init;
 
+import static jsweet.util.Globals.$export;
+
 public class Constructor {
 
-	String s; 
-	
+	String s;
+
+	public Constructor() {
+		this("default");
+	}
+
 	public Constructor(String s) {
 		this.s = s;
 	}
 
 	public static void main(String[] args) {
-		@SuppressWarnings("unused")
 		Constructor c = new Constructor("abc");
+
+		$export("v1", c.s);
+
+		c = new Constructor();
+
+		$export("v2", c.s);
+
+		c = new Constructor() {
+			{
+				s = "test";
+			}
+		};
+
+		$export("v3", c.s);
 	}
 
-	
 }

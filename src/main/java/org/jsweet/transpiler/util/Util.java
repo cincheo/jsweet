@@ -322,7 +322,8 @@ public class Util {
 			return null;
 		}
 		for (Element element : typeSymbol.getEnclosedElements()) {
-			if ((element instanceof MethodSymbol) && methodName.equals(element.getSimpleName().toString())) {
+			if ((element instanceof MethodSymbol) && (methodName.equals(element.getSimpleName().toString())
+					|| ((MethodSymbol) element).getKind() == ElementKind.CONSTRUCTOR && "this".equals(methodName))) {
 				if (methodType == null) {
 					return (MethodSymbol) element;
 				}
