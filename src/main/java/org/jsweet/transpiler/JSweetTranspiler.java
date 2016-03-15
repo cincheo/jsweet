@@ -39,6 +39,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileManager;
@@ -52,6 +53,7 @@ import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.candies.CandiesProcessor;
 import org.jsweet.transpiler.typescript.Java2TypeScriptTranslator;
 import org.jsweet.transpiler.util.AbstractTreePrinter;
+import org.jsweet.transpiler.util.DirectedGraph;
 import org.jsweet.transpiler.util.ErrorCountTranspilationHandler;
 import org.jsweet.transpiler.util.EvaluationResult;
 import org.jsweet.transpiler.util.Position;
@@ -610,7 +612,7 @@ public class JSweetTranspiler implements JSweetOptions {
 	}
 
 	private void generateBundles(ErrorCountTranspilationHandler errorHandler, SourceFile... files) {
-		if (bundle && errorHandler.getErrorCount() == 0) {
+		if (bundle && context.useModules && errorHandler.getErrorCount() == 0) {
 			if (moduleKind != ModuleKind.commonjs) {
 				errorHandler.report(JSweetProblem.BUNDLE_WITH_COMMONJS, null, JSweetProblem.BUNDLE_WITH_COMMONJS.getMessage());
 			}
@@ -662,9 +664,7 @@ public class JSweetTranspiler implements JSweetOptions {
 				// http://stackoverflow.com/questions/23453160/keep-original-typescript-source-maps-after-using-browserify
 				ProcessUtil.runCommand("browserify", ProcessUtil.USER_HOME_DIR, false, null, null, null, args);
 			}
-
 		}
-
 	}
 
 	private void createAuxiliaryModuleFiles(File rootDir) throws IOException {
@@ -720,92 +720,184 @@ public class JSweetTranspiler implements JSweetOptions {
 		context.sourceFiles = files;
 
 		if (context.useModules) {
-			// when using modules, all classes of the same package are folded to
-			// one module file
-			Map<PackageSymbol, StringBuilder> modules = new HashMap<>();
-			Map<PackageSymbol, ArrayList<Integer>> fileIndexes = new HashMap<>();
-			for (int i = 0; i < compilationUnits.length(); i++) {
-				JCCompilationUnit cu = compilationUnits.get(i);
-				logger.info("scanning " + cu.sourcefile.getName() + "...");
-				OverloadScanner overloadChecker = new OverloadScanner(context);
-				overloadChecker.process(cu);
-				AbstractTreePrinter printer = new Java2TypeScriptTranslator(transpilationHandler, context, cu, preserveSourceLineNumbers);
-				printer.print(cu);
-				StringBuilder sb = modules.get(cu.packge);
-				if (sb == null) {
-					sb = new StringBuilder();
-					modules.put(cu.packge, sb);
-				}
-				ArrayList<Integer> indexes = fileIndexes.get(cu.packge);
-				if (indexes == null) {
-					indexes = new ArrayList<Integer>();
-					fileIndexes.put(cu.packge, indexes);
-				}
-				indexes.add(i);
-				files[i].sourceMap = printer.sourceMap;
-				files[i].sourceMap.shiftOutputPositions(StringUtils.countMatches(sb, "\n"));
-				sb.append(printer.getOutput());
-			}
-			for (Entry<PackageSymbol, StringBuilder> e : modules.entrySet()) {
-				String outputFileRelativePathNoExt = Util.getRootRelativeJavaName(e.getKey()).replace(".", File.separator) + File.separator
-						+ JSweetConfig.MODULE_FILE_NAME;
-				String outputFileRelativePath = outputFileRelativePathNoExt + ".ts";
-				logger.info("output file: " + outputFileRelativePath);
-				File outputFile = new File(tsOutputDir, outputFileRelativePath);
-				outputFile.getParentFile().mkdirs();
-				String outputFilePath = outputFile.getPath();
-				PrintWriter out = new PrintWriter(outputFilePath);
-				try {
-					out.println(e.getValue().toString());
-				} finally {
-					out.close();
-				}
-				for (Integer i : fileIndexes.get(e.getKey())) {
-					files[i].tsFile = outputFile;
-					files[i].javaFileLastTranspiled = files[i].getJavaFile().lastModified();
-				}
-				logger.info("created " + outputFilePath);
-			}
-
+			generateTsModules(transpilationHandler, files, compilationUnits);
 		} else {
-			// regular file-to-file generation
-			for (int i = 0; i < compilationUnits.length(); i++) {
-				JCCompilationUnit cu = compilationUnits.get(i);
-				logger.info("scanning " + cu.sourcefile.getName() + "...");
-				OverloadScanner overloadChecker = new OverloadScanner(context);
-				overloadChecker.process(cu);
-				AbstractTreePrinter printer = new Java2TypeScriptTranslator(transpilationHandler, context, cu, preserveSourceLineNumbers);
-				printer.print(cu);
-				String[] s = cu.getSourceFile().getName().split(File.separator.equals("\\") ? "\\\\" : File.separator);
-				String cuName = s[s.length - 1];
-				s = cuName.split("\\.");
-				cuName = s[0];
-				String javaSourceFileRelativeFullName = (cu.packge.getQualifiedName().toString().replace(".", File.separator) + File.separator + cuName
-						+ ".java");
-				files[i].javaSourceDirRelativeFile = new File(javaSourceFileRelativeFullName);
-				files[i].javaSourceDir = new File(
-						cu.getSourceFile().getName().substring(0, cu.getSourceFile().getName().length() - javaSourceFileRelativeFullName.length()));
-				String packageName = isNoRootDirectories() ? Util.getRootRelativeJavaName(cu.packge) : cu.packge.getQualifiedName().toString();
-				String outputFileRelativePathNoExt = packageName.replace(".", File.separator) + File.separator + cuName;
-				String outputFileRelativePath = outputFileRelativePathNoExt + printer.getTargetFilesExtension();
-				logger.info("output file: " + outputFileRelativePath);
-				File outputFile = new File(tsOutputDir, outputFileRelativePath);
-				outputFile.getParentFile().mkdirs();
-				String outputFilePath = outputFile.getPath();
-				PrintWriter out = new PrintWriter(outputFilePath);
-				try {
-					out.println(printer.getResult());
-				} finally {
-					out.close();
-				}
-				files[i].tsFile = outputFile;
-				files[i].javaFileLastTranspiled = files[i].getJavaFile().lastModified();
-				files[i].sourceMap = printer.sourceMap;
-				logger.info("created " + outputFilePath);
+			if (bundle) {
+				generateTsBundle(transpilationHandler, files, compilationUnits);
+			} else {
+				generateTsFiles(transpilationHandler, files, compilationUnits);
 			}
 		}
 		log.flush();
 		getOrCreateTscRootFile();
+	}
+
+	private void generateTsFiles(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files, List<JCCompilationUnit> compilationUnits)
+			throws IOException {
+		// regular file-to-file generation
+		for (int i = 0; i < compilationUnits.length(); i++) {
+			JCCompilationUnit cu = compilationUnits.get(i);
+			logger.info("scanning " + cu.sourcefile.getName() + "...");
+			OverloadScanner overloadChecker = new OverloadScanner(context);
+			overloadChecker.process(cu);
+			AbstractTreePrinter printer = new Java2TypeScriptTranslator(transpilationHandler, context, cu, preserveSourceLineNumbers);
+			printer.print(cu);
+			String[] s = cu.getSourceFile().getName().split(File.separator.equals("\\") ? "\\\\" : File.separator);
+			String cuName = s[s.length - 1];
+			s = cuName.split("\\.");
+			cuName = s[0];
+			String javaSourceFileRelativeFullName = (cu.packge.getQualifiedName().toString().replace(".", File.separator) + File.separator + cuName + ".java");
+			files[i].javaSourceDirRelativeFile = new File(javaSourceFileRelativeFullName);
+			files[i].javaSourceDir = new File(
+					cu.getSourceFile().getName().substring(0, cu.getSourceFile().getName().length() - javaSourceFileRelativeFullName.length()));
+			String packageName = isNoRootDirectories() ? Util.getRootRelativeJavaName(cu.packge) : cu.packge.getQualifiedName().toString();
+			String outputFileRelativePathNoExt = packageName.replace(".", File.separator) + File.separator + cuName;
+			String outputFileRelativePath = outputFileRelativePathNoExt + printer.getTargetFilesExtension();
+			logger.info("output file: " + outputFileRelativePath);
+			File outputFile = new File(tsOutputDir, outputFileRelativePath);
+			outputFile.getParentFile().mkdirs();
+			String outputFilePath = outputFile.getPath();
+			PrintWriter out = new PrintWriter(outputFilePath);
+			try {
+				out.println(printer.getResult());
+			} finally {
+				out.close();
+			}
+			files[i].tsFile = outputFile;
+			files[i].javaFileLastTranspiled = files[i].getJavaFile().lastModified();
+			files[i].sourceMap = printer.sourceMap;
+			logger.info("created " + outputFilePath);
+		}
+	}
+
+	private void generateTsModules(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files, List<JCCompilationUnit> compilationUnits)
+			throws IOException {
+		// when using modules, all classes of the same package are folded to
+		// one module file
+		Map<PackageSymbol, StringBuilder> modules = new HashMap<>();
+		Map<PackageSymbol, ArrayList<Integer>> fileIndexes = new HashMap<>();
+		StaticInitilializerAnalyzer analizer = new StaticInitilializerAnalyzer(context);
+		analizer.process(compilationUnits);
+		java.util.List<JCCompilationUnit> orderedCompilationUnits = new ArrayList<>();
+		for (Entry<PackageSymbol, DirectedGraph<JCCompilationUnit>> pkgCus : analizer.staticInitializersDependencies.entrySet()) {
+			orderedCompilationUnits.addAll(pkgCus.getValue().topologicalSort(n -> {
+				transpilationHandler.report(JSweetProblem.CYCLE_IN_STATIC_INITIALIZER_DEPENDENCIES, null,
+						JSweetProblem.CYCLE_IN_STATIC_INITIALIZER_DEPENDENCIES.getMessage(n.element.sourcefile.getName()));
+			}));
+		}
+		logger.debug("ordered compilation units: " + orderedCompilationUnits.stream().map(cu -> {
+			return cu.sourcefile.getName();
+		}).collect(Collectors.toList()));
+		int[] permutation = new int[orderedCompilationUnits.size()];
+		StringBuilder permutationString = new StringBuilder();
+		for (int i = 0; i < orderedCompilationUnits.size(); i++) {
+			permutation[i] = compilationUnits.indexOf(orderedCompilationUnits.get(i));
+			permutationString.append("" + i + "=" + permutation[i] + ";");
+		}
+		logger.debug("permutation: " + permutationString.toString());
+
+		for (int i = 0; i < orderedCompilationUnits.size(); i++) {
+			JCCompilationUnit cu = orderedCompilationUnits.get(i);
+			logger.info("scanning " + cu.sourcefile.getName() + "...");
+			OverloadScanner overloadChecker = new OverloadScanner(context);
+			overloadChecker.process(cu);
+			AbstractTreePrinter printer = new Java2TypeScriptTranslator(transpilationHandler, context, cu, preserveSourceLineNumbers);
+			printer.print(cu);
+			StringBuilder sb = modules.get(cu.packge);
+			if (sb == null) {
+				sb = new StringBuilder();
+				modules.put(cu.packge, sb);
+			}
+			ArrayList<Integer> indexes = fileIndexes.get(cu.packge);
+			if (indexes == null) {
+				indexes = new ArrayList<Integer>();
+				fileIndexes.put(cu.packge, indexes);
+			}
+			indexes.add(i);
+			files[permutation[i]].sourceMap = printer.sourceMap;
+			files[permutation[i]].sourceMap.shiftOutputPositions(StringUtils.countMatches(sb, "\n"));
+			sb.append(printer.getOutput());
+		}
+		for (Entry<PackageSymbol, StringBuilder> e : modules.entrySet()) {
+			String outputFileRelativePathNoExt = Util.getRootRelativeJavaName(e.getKey()).replace(".", File.separator) + File.separator
+					+ JSweetConfig.MODULE_FILE_NAME;
+			String outputFileRelativePath = outputFileRelativePathNoExt + ".ts";
+			logger.info("output file: " + outputFileRelativePath);
+			File outputFile = new File(tsOutputDir, outputFileRelativePath);
+			outputFile.getParentFile().mkdirs();
+			String outputFilePath = outputFile.getPath();
+			PrintWriter out = new PrintWriter(outputFilePath);
+			try {
+				out.println(e.getValue().toString());
+			} finally {
+				out.close();
+			}
+			for (Integer i : fileIndexes.get(e.getKey())) {
+				files[permutation[i]].tsFile = outputFile;
+				files[permutation[i]].javaFileLastTranspiled = files[permutation[i]].getJavaFile().lastModified();
+			}
+			logger.info("created " + outputFilePath);
+		}
+
+	}
+
+	private void generateTsBundle(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files, List<JCCompilationUnit> compilationUnits)
+			throws IOException {
+		if (context.useModules) {
+			return;
+		}
+		StaticInitilializerAnalyzer analizer = new StaticInitilializerAnalyzer(context);
+		analizer.process(compilationUnits);
+		java.util.List<JCCompilationUnit> orderedCompilationUnits = analizer.globalStaticInitializersDependencies.topologicalSort(n -> {
+			transpilationHandler.report(JSweetProblem.CYCLE_IN_STATIC_INITIALIZER_DEPENDENCIES, null,
+					JSweetProblem.CYCLE_IN_STATIC_INITIALIZER_DEPENDENCIES.getMessage(n.element.sourcefile.getName()));
+		});
+		logger.debug("ordered compilation units: " + orderedCompilationUnits.stream().map(cu -> {
+			return cu.sourcefile.getName();
+		}).collect(Collectors.toList()));
+		int[] permutation = new int[orderedCompilationUnits.size()];
+		StringBuilder permutationString = new StringBuilder();
+		for (int i = 0; i < orderedCompilationUnits.size(); i++) {
+			permutation[i] = compilationUnits.indexOf(orderedCompilationUnits.get(i));
+			permutationString.append("" + i + "=" + permutation[i] + ";");
+		}
+		logger.debug("permutation: " + permutationString.toString());
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < orderedCompilationUnits.size(); i++) {
+			JCCompilationUnit cu = orderedCompilationUnits.get(i);
+			logger.info("scanning " + cu.sourcefile.getName() + "...");
+			OverloadScanner overloadChecker = new OverloadScanner(context);
+			overloadChecker.process(cu);
+			AbstractTreePrinter printer = new Java2TypeScriptTranslator(transpilationHandler, context, cu, preserveSourceLineNumbers);
+			printer.print(cu);
+			files[permutation[i]].sourceMap = printer.sourceMap;
+			files[permutation[i]].sourceMap.shiftOutputPositions(StringUtils.countMatches(sb, "\n"));
+			sb.append(printer.getOutput());
+		}
+
+		File bundleDirectory = tsOutputDir;
+		if (!bundleDirectory.exists()) {
+			bundleDirectory.mkdirs();
+		}
+		String bundleName = "bundle.ts";
+
+		File outputFile = new File(bundleDirectory, bundleName);
+
+		logger.info("creating bundle file: " + outputFile);
+		outputFile.getParentFile().mkdirs();
+		String outputFilePath = outputFile.getPath();
+		PrintWriter out = new PrintWriter(outputFilePath);
+		try {
+			out.println(sb.toString());
+		} finally {
+			out.close();
+		}
+		for (int i = 0; i < orderedCompilationUnits.size(); i++) {
+			files[permutation[i]].tsFile = outputFile;
+			files[permutation[i]].javaFileLastTranspiled = files[permutation[i]].getJavaFile().lastModified();
+		}
+		logger.info("created " + outputFilePath);
+
 	}
 
 	private File getOrCreateTscRootFile() throws IOException {

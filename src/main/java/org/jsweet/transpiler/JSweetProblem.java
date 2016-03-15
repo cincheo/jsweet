@@ -296,7 +296,12 @@ public enum JSweetProblem {
 	 * Raised when a <code>$object</code> method is invoked with a key that is
 	 * not a string literal.
 	 */
-	UNTYPED_OBJECT_WRONG_KEY(Severity.ERROR);
+	UNTYPED_OBJECT_WRONG_KEY(Severity.ERROR),
+	/**
+	 * Raised when a cycle is detected in static initializers.
+	 */
+	CYCLE_IN_STATIC_INITIALIZER_DEPENDENCIES(Severity.ERROR);
+	
 
 	private Severity severity;
 
@@ -443,6 +448,8 @@ public enum JSweetProblem {
 			return String.format("wrong parameter count: method '$object' expects a list of key/value pairs as parameters", params);
 		case UNTYPED_OBJECT_WRONG_KEY:
 			return String.format("wrong key: method '$object' expects a list of key/value pairs as parameters, where keys are string literals", params);
+		case CYCLE_IN_STATIC_INITIALIZER_DEPENDENCIES:
+			return String.format("a cycle was detected in static intializers involving '%s'", params);
 		}
 		return null;
 	}
