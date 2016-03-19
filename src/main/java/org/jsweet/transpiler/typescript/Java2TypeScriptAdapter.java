@@ -323,6 +323,17 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			getPrinter().print("}");
 			return true;
 		}
+
+		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "$apply")) {
+			getPrinter().print("(<any>").print(invocation.args.head).print(")(").printArgList(invocation.args.tail).print(")");
+			return true;
+		}
+
+		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "$new")) {
+			getPrinter().print("new (<any>").print(invocation.args.head).print(")(").printArgList(invocation.args.tail).print(")");
+			return true;
+		}
+
 		if (matchesMethod(targetClassName, targetMethodName, String.class.getName(), "length")) {
 			getPrinter().print(invocation.meth);
 			return true;

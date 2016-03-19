@@ -16,6 +16,9 @@
  */
 package source.syntax;
 
+import static jsweet.util.Globals.$apply;
+import static jsweet.util.Globals.$new;
+
 public class SpecialFunctions {
 
 	void m(ApplyI1 a1, ConstrI1 c1) {
@@ -23,13 +26,21 @@ public class SpecialFunctions {
 		a1.apply("test");
 		c1.$new("test");
 	}
-	
+
+	void m2(Object o) {
+		@SuppressWarnings("unused")
+		Object result1 = $apply(o, "param");
+		@SuppressWarnings("unused")
+		Object result2 = $new(o, "param");
+	}
+
 }
 
 @jsweet.lang.Interface
 abstract class ApplyI1 extends jsweet.lang.Object {
-    abstract public String apply();
-    abstract public ApplyI1 apply(String a);
+	abstract public String apply();
+
+	abstract public ApplyI1 apply(String a);
 }
 
 @jsweet.lang.Interface
