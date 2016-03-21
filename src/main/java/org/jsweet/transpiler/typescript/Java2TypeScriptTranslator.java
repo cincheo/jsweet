@@ -33,6 +33,7 @@ import java.util.Stack;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.JSweetContext;
@@ -717,10 +718,21 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 
 		boolean ambient = Util.hasAnnotationType(methodDecl.sym, JSweetConfig.ANNOTATION_AMBIENT);
+		int jsniLine = -1;
+		String[] content = null;
 
 		if (methodDecl.mods.getFlags().contains(Modifier.NATIVE)) {
 			if (!declareClassScope && !ambient && !interfaceScope) {
-				report(methodDecl, methodDecl.name, JSweetProblem.NATIVE_MODIFIER_IS_NOT_ALLOWED, methodDecl.name);
+				content = getGetSource(getCompilationUnit());
+				if (content != null) {
+					int line = diagnosticSource.getLineNumber(methodDecl.getStartPosition()) - 1;
+					if (content[line].contains("/*-{")) {
+						jsniLine = line;
+					}
+				}
+				if (jsniLine == -1) {
+					report(methodDecl, methodDecl.name, JSweetProblem.NATIVE_MODIFIER_IS_NOT_ALLOWED, methodDecl.name);
+				}
 			}
 		} else {
 			if (declareClassScope && !constructor && !interfaceScope) {
@@ -828,15 +840,34 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			getAdapter().substituteAndPrintType(methodDecl.restype);
 		}
 		if (methodDecl.getBody() == null) {
-			if (!interfaceScope && methodDecl.mods.getFlags().contains(Modifier.ABSTRACT)) {
-				print(" {");
-				String typeName = methodDecl.restype.toString();
-				if (!"void".equals(typeName)) {
-					print(" return ").print(getTypeInitalValue(typeName)).print("; ");
+			if (jsniLine != -1) {
+				int line = jsniLine;
+				print(" {").println().startIndent();
+				String jsCode = content[line].substring(content[line].indexOf("/*-{") + 4).trim();
+				if (!StringUtils.isEmpty(jsCode)) {
+					printIndent().print(jsCode).println();
 				}
-				print("}");
+				line++;
+				while (!content[line].contains("}-*/")) {
+					jsCode = content[line++].trim();
+					printIndent().print(jsCode).println();
+				}
+				jsCode = content[line].substring(0, content[line].indexOf("}-*/")).trim();
+				if (!StringUtils.isEmpty(jsCode)) {
+					printIndent().print(jsCode).println();
+				}
+				endIndent().printIndent().print("}");
 			} else {
-				print(";");
+				if (!interfaceScope && methodDecl.mods.getFlags().contains(Modifier.ABSTRACT)) {
+					print(" {");
+					String typeName = methodDecl.restype.toString();
+					if (!"void".equals(typeName)) {
+						print(" return ").print(getTypeInitalValue(typeName)).print("; ");
+					}
+					print("}");
+				} else {
+					print(";");
+				}
 			}
 		} else {
 			boolean hasStatements = methodDecl.getBody().getStatements().isEmpty();

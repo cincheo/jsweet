@@ -17,9 +17,12 @@
 package org.jsweet.transpiler.util;
 
 import java.io.File;
+import java.util.AbstractMap;
+import java.util.Map.Entry;
 import java.util.Stack;
 import java.util.function.Consumer;
 
+import org.apache.commons.io.FileUtils;
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.SourcePosition;
@@ -77,6 +80,22 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 	}
 
 	protected DiagnosticSource diagnosticSource;
+
+	private Entry<String, String[]> sourceCache;
+
+	protected String[] getGetSource(JCCompilationUnit compilationUnit) {
+		if (sourceCache != null && sourceCache.getKey().equals(compilationUnit.getSourceFile().getName())) {
+			return sourceCache.getValue();
+		} else {
+			try {
+				sourceCache = new AbstractMap.SimpleEntry<>(compilationUnit.getSourceFile().getName(),
+						FileUtils.readFileToString(new File(compilationUnit.getSourceFile().getName())).split("\\n"));
+			} catch (Exception e) {
+				return null;
+			}
+			return sourceCache.getValue();
+		}
+	}
 
 	public AbstractTreeScanner(TranspilationHandler logHandler, JSweetContext context, JCCompilationUnit compilationUnit) {
 		this.logHandler = logHandler;

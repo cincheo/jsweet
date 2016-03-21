@@ -37,6 +37,7 @@ import source.structural.GlobalsAccess;
 import source.structural.Inheritance;
 import source.structural.InnerClass;
 import source.structural.InstanceOf;
+import source.structural.JSNI;
 import source.structural.Name;
 import source.structural.NameClashes;
 import source.structural.NameClashesWithMethodInvocations;
@@ -268,6 +269,12 @@ public class StructuralTests extends AbstractTest {
 			logHandler.assertReportedProblems();
 		} , getSourceFile(InstanceOf.class));
 	}
-	
-	
+
+	@Test
+	public void testJSNI() {
+		transpile(ModuleKind.none, logHandler -> {
+			logHandler.assertReportedProblems();
+		} , getSourceFile(JSNI.class));
+	}
+
 }
