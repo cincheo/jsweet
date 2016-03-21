@@ -36,6 +36,7 @@ import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCExpressionStatement;
+import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
@@ -185,7 +186,10 @@ public class OverloadScanner extends AbstractTreeScanner {
 									if (expr instanceof JCLiteral) {
 										overload.defaultValues[i] = (JCLiteral) expr;
 									} else {
-										report(expr, JSweetProblem.INVALID_OVERLOAD_PARAMETER, JSweetProblem.INVALID_OVERLOAD_PARAMETER.getMessage());
+										if (!(expr instanceof JCIdent
+												&& methodDecl.params.stream().map(p -> p.name).anyMatch(p -> p.equals(((JCIdent) expr).name)))) {
+											report(expr, JSweetProblem.INVALID_OVERLOAD_PARAMETER, JSweetProblem.INVALID_OVERLOAD_PARAMETER.getMessage());
+										}
 									}
 								}
 							}
