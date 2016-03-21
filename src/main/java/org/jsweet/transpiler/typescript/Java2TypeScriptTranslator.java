@@ -336,8 +336,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							// continue;
 						}
 						File moduleFile = new File(new File(pathToReachRootPackage), JSweetConfig.MODULE_FILE_NAME);
-						useModule((PackageSymbol) qualified.sym.getEnclosingElement(), importDecl, targetRootPackageName,
-								moduleFile.getPath().replace('\\', '/'));
+						if (qualified.sym.getEnclosingElement() instanceof PackageSymbol) {
+							useModule((PackageSymbol) qualified.sym.getEnclosingElement(), importDecl, targetRootPackageName,
+									moduleFile.getPath().replace('\\', '/'));
+						}
 					}
 				}
 			}
