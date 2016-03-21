@@ -212,7 +212,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 		context.rootPackages.add(rootPackage);
 		if (context.useModules && context.rootPackages.size() > 1) {
-			report(topLevel.getPackageName(), JSweetProblem.MULTIPLE_ROOT_PACKAGES_NOT_ALLOWED_WITH_MODULES, context.rootPackages.toString());
+			if (!context.reportedMultipleRootPackages) {
+				report(topLevel.getPackageName(), JSweetProblem.MULTIPLE_ROOT_PACKAGES_NOT_ALLOWED_WITH_MODULES, context.rootPackages.toString());
+				context.reportedMultipleRootPackages = true;
+			}
 			return;
 		}
 
@@ -1678,25 +1681,15 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (newArray.elemtype != null) {
 			typeChecker.checkType(newArray, null, newArray.elemtype);
 		}
-		// if (newArray.elemtype != null) {
-		// print("new ");
-		// newArray.elemtype.accept(this);
-		// }
-		// if (newArray.dims.isEmpty()) {
-		// print("[]");
-		// } else {
-		// for (JCExpression dim : newArray.dims) {
-		// print("[");
-		// dim.accept(this);
-		// print("]");
-		// }
-		// }
 		if (newArray.dims != null && !newArray.dims.isEmpty()) {
-			print("<any> (function(dims) { var allocate = function(dims) { if(dims.length==0) { return undefined; } else { var array = []; for(var i = 0; i < dims[0]; i++) { array.push(allocate(dims.slice(1))); } return array; }}; return allocate(dims);})");
-			print("([");
-			printArgList(newArray.dims);
-			print("])");
-			// print("new Array(").print(newArray.dims.head).print(")");
+			if (newArray.dims.size() == 1) {
+				print("new Array(").print(newArray.dims.head).print(")");
+			} else {
+				print("<any> (function(dims) { var allocate = function(dims) { if(dims.length==0) { return undefined; } else { var array = []; for(var i = 0; i < dims[0]; i++) { array.push(allocate(dims.slice(1))); } return array; }}; return allocate(dims);})");
+				print("([");
+				printArgList(newArray.dims);
+				print("])");
+			}
 		} else {
 			print("[");
 			if (newArray.elems != null) {

@@ -199,6 +199,12 @@ public class JSweetContext extends Context {
 	public HashSet<PackageSymbol> rootPackages = new HashSet<>();
 
 	/**
+	 * A flag to keep track of wether a multiple root packages problem was
+	 * already reported (shall report only once).
+	 */
+	public boolean reportedMultipleRootPackages = false;
+
+	/**
 	 * Globally imported name (in the global namespace).
 	 */
 	public Set<String> globalImports = new HashSet<>();
