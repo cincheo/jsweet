@@ -19,8 +19,6 @@ package org.jsweet.test.transpiler;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-import org.jsweet.transpiler.JSweetProblem;
-import org.jsweet.transpiler.util.EvaluationResult;
 import org.junit.Test;
 
 import source.overload.Overload;
@@ -31,43 +29,28 @@ public class OverloadTests extends AbstractTest {
 
 	@Test
 	public void testOverload() {
-		TestTranspilationHandler logHandler = new TestTranspilationHandler();
-		try {
-			EvaluationResult result = transpiler.eval(logHandler, getSourceFile(Overload.class));
-			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+		eval((logHandler, result) -> {
+			logHandler.assertReportedProblems();
 			assertEquals("default1", result.<String> get("res1"));
 			assertEquals("s11", result.<String> get("res2"));
 			assertEquals("s22", result.<String> get("res3"));
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail("Exception occured while running test");
-		}
+		} , getSourceFile(Overload.class));
 	}
 
 	@Test
 	public void testWrongOverload() {
-		TestTranspilationHandler logHandler = new TestTranspilationHandler();
-		try {
-			transpiler.transpile(logHandler, getSourceFile(WrongOverload.class));
-			logHandler.assertReportedProblems(JSweetProblem.INVALID_OVERLOAD, JSweetProblem.INVALID_OVERLOAD);
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail("Exception occured while running test");
-		}
+		eval((logHandler, r) -> {
+			logHandler.assertReportedProblems();
+			assertEquals("1,2,3,4,5,6,7", r.get("trace"));
+		} , getSourceFile(WrongOverload.class));
 	}
 
 	@Test
 	public void testWrongOverloads() {
-		TestTranspilationHandler logHandler = new TestTranspilationHandler();
-		try {
-			transpiler.transpile(logHandler, getSourceFile(WrongOverloads.class));
-			logHandler.assertReportedProblems(JSweetProblem.INVALID_OVERLOAD_PARAMETER, JSweetProblem.INVALID_OVERLOAD_PARAMETER,
-					JSweetProblem.INVALID_OVERLOAD, JSweetProblem.INVALID_OVERLOAD, JSweetProblem.INVALID_OVERLOAD, JSweetProblem.INVALID_OVERLOAD,
-					JSweetProblem.INVALID_OVERLOAD, JSweetProblem.INVALID_OVERLOAD);
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail("Exception occured while running test");
-		}
+		eval((logHandler, r) -> {
+			logHandler.assertReportedProblems();
+			assertEquals("1,5,2,3,2,4,2,4,6", r.get("trace"));
+		} , getSourceFile(WrongOverloads.class));
 	}
 
 }

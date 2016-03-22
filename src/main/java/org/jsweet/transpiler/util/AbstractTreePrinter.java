@@ -26,10 +26,10 @@ import org.apache.log4j.Logger;
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.TranspilationHandler;
 import org.jsweet.transpiler.TypeChecker;
-import org.jsweet.transpiler.util.SourceMap.Entry;
 
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
+import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 
 /**
  * A tree printer is a kind of tree scanner specialized in pretty printing the
@@ -322,7 +322,7 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	}
 
 	/**
-	 * Print a comma-separated list of subtrees.
+	 * Prints a comma-separated list of subtrees.
 	 */
 	public AbstractTreePrinter printArgList(List<? extends JCTree> args) {
 		for (JCTree arg : args) {
@@ -336,7 +336,21 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	}
 
 	/**
-	 * Print a comma-separated list of type subtrees.
+	 * Prints a comma-separated list of variable names (no types).
+	 */
+	public AbstractTreePrinter printVarNameList(List<JCVariableDecl> args) {
+		for (JCVariableDecl arg : args) {
+			print(arg.name.toString());
+			print(", ");
+		}
+		if (!args.isEmpty()) {
+			removeLastChars(2);
+		}
+		return this;
+	}
+
+	/**
+	 * Prints a comma-separated list of type subtrees.
 	 */
 	public AbstractTreePrinter printTypeArgList(List<? extends JCTree> args) {
 		for (JCTree arg : args) {

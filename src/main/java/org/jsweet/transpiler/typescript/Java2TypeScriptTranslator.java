@@ -53,7 +53,9 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.PackageSymbol;
+import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
+import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.code.Type.MethodType;
 import com.sun.tools.javac.code.TypeTag;
@@ -158,7 +160,15 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		instanceOfTypeMapping.put("java.lang.Double", "Number");
 		instanceOfTypeMapping.put("java.lang.Short", "Number");
 		instanceOfTypeMapping.put("java.lang.Character", "String");
+		instanceOfTypeMapping.put("java.lang.Byte", "Number");
 		instanceOfTypeMapping.put("java.lang.Boolean", "Boolean");
+		instanceOfTypeMapping.put("int", "Number");
+		instanceOfTypeMapping.put("float", "Number");
+		instanceOfTypeMapping.put("double", "Number");
+		instanceOfTypeMapping.put("short", "Number");
+		instanceOfTypeMapping.put("charr", "String");
+		instanceOfTypeMapping.put("boolean", "Boolean");
+		instanceOfTypeMapping.put("byte", "Number");
 	}
 
 	private JCMethodDecl mainMethod;
@@ -665,20 +675,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 
 		if (mainMethod != null && mainMethod.getParameters().size() < 2 && mainMethod.sym.getEnclosingElement().equals(classdecl.sym)) {
-			String mainClassName = getRootRelativeName(classdecl.sym);
-			if (context.useModules) {
-				int dotIndex = mainClassName.lastIndexOf(".");
-				mainClassName = mainClassName.substring(dotIndex + 1);
-			}
-			if (globals) {
-				int dotIndex = mainClassName.lastIndexOf(".");
-				if (dotIndex == -1) {
-					mainClassName = "";
-				} else {
-					mainClassName = mainClassName.substring(0, dotIndex);
-				}
-			}
-
+			String mainClassName = getQualifiedTypeName(classdecl.sym, globals);
 			String mainMethodQualifier = mainClassName;
 			if (!isBlank(mainClassName)) {
 				mainMethodQualifier = mainClassName + ".";
@@ -687,9 +684,25 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			context.addFooterStatement(
 					mainMethodQualifier + JSweetConfig.MAIN_FUNCTION_NAME + "(" + (mainMethod.getParameters().isEmpty() ? "" : "null") + ");");
 		}
-
 		interfaceScope = false;
 		sharedMode = false;
+	}
+
+	private String getQualifiedTypeName(TypeSymbol type, boolean globals) {
+		String qualifiedName = getRootRelativeName(type);
+		if (context.useModules) {
+			int dotIndex = qualifiedName.lastIndexOf(".");
+			qualifiedName = qualifiedName.substring(dotIndex + 1);
+		}
+		if (globals) {
+			int dotIndex = qualifiedName.lastIndexOf(".");
+			if (dotIndex == -1) {
+				qualifiedName = "";
+			} else {
+				qualifiedName = qualifiedName.substring(0, dotIndex);
+			}
+		}
+		return qualifiedName;
 	}
 
 	private String getTSMethodName(JCMethodDecl methodDecl) {
@@ -745,12 +758,18 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 		Overload overload = context.getOverload(parent.sym, methodDecl.name.toString());
 		boolean inOverload = overload != null && overload.methods.size() > 1;
+		boolean inCoreWrongOverload = false;
 		if (inOverload) {
 			if (!overload.isValid) {
-				report(methodDecl, methodDecl.name, JSweetProblem.INVALID_OVERLOAD, methodDecl.name);
-				return;
+				if (overload.coreMethod.equals(methodDecl)) {
+					inCoreWrongOverload = true;
+				} else {
+					if (methodDecl.sym.isConstructor()) {
+						return;
+					}
+				}
 			} else {
-				if (!overload.coreMethod.equals(methodDecl.sym)) {
+				if (!overload.coreMethod.equals(methodDecl)) {
 					return;
 				}
 			}
@@ -858,20 +877,31 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 		}
 		if (!Util.hasAnnotationType(parent.sym, FunctionalInterface.class.getName())) {
-			printIdentifier(getTSMethodName(methodDecl));
+			if (inOverload && !overload.isValid && !inCoreWrongOverload) {
+				print(getOverloadMethodName(methodDecl));
+			} else {
+				printIdentifier(getTSMethodName(methodDecl));
+			}
 		}
 		if (methodDecl.typarams != null && !methodDecl.typarams.isEmpty()) {
 			print("<").printArgList(methodDecl.typarams).print(">");
 		}
 		print("(");
-		int i = 0;
-		for (JCVariableDecl param : methodDecl.params) {
-			print(param);
-			if (inOverload && overload.defaultValues[i] != null) {
-				print(" = ").print(overload.defaultValues[i]);
+		if (inCoreWrongOverload) {
+			for (JCVariableDecl param : methodDecl.params) {
+				print(param.name.toString()).print("?").print(" : ").print("any");
+				print(", ");
 			}
-			print(", ");
-			i++;
+		} else {
+			int i = 0;
+			for (JCVariableDecl param : methodDecl.params) {
+				print(param);
+				if (inOverload && overload.isValid && overload.defaultValues[i] != null) {
+					print(" = ").print(overload.defaultValues[i]);
+				}
+				print(", ");
+				i++;
+			}
 		}
 		if (!methodDecl.params.isEmpty()) {
 			removeLastChars(2);
@@ -880,6 +910,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (methodDecl.restype != null && methodDecl.restype.type.getTag() != TypeTag.VOID) {
 			print(" : ");
 			getAdapter().substituteAndPrintType(methodDecl.restype);
+		} else if (inCoreWrongOverload && !methodDecl.sym.isConstructor()) {
+			print(" : any");
 		}
 		if (methodDecl.getBody() == null || (methodDecl.mods.getFlags().contains(Modifier.DEFAULT) && !defaultMethodScope)) {
 			if (jsniLine != -1) {
@@ -927,9 +959,123 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 				print(";");
 			} else {
-				print(" ").print(methodDecl.getBody());
+				if (inCoreWrongOverload) {
+					print(" {").println().startIndent().printIndent();
+					for (int i = 0; i < overload.methods.size(); i++) {
+						JCMethodDecl method = overload.methods.get(i);
+						if (i > 0) {
+							print(" else ");
+						}
+						print("if(");
+						printMethodParamsTest(methodDecl, method);
+						print(") ");
+						if (i == 0 || method.sym.isConstructor()) {
+							printInlinedConstructorBody(overload, method, methodDecl.params);
+						} else {
+							print("{").println().startIndent().printIndent();
+							if (!method.sym.isConstructor()) {
+								print("return ");
+							}
+							if (method.sym.isStatic()) {
+								print(getQualifiedTypeName(parent.sym, false).toString());
+							} else {
+								print("this");
+							}
+							print(".").print(getOverloadMethodName(method)).print("(");
+							for (int j = 0; j < method.params.size(); j++) {
+								print(overload.coreMethod.params.get(j).name.toString()).print(", ");
+							}
+							if (!method.params.isEmpty()) {
+								removeLastChars(2);
+							}
+							print(");");
+							println().endIndent().printIndent().print("}");
+						}
+					}
+					print(" else throw new Error('invalid overload');");
+					endIndent().println().printIndent().print("}");
+				} else {
+					print(" ").print(methodDecl.getBody());
+				}
 			}
 		}
+	}
+
+	private void printInlinedConstructorBody(Overload overload, JCMethodDecl method, List<? extends JCTree> args) {
+		print("{").println().startIndent();
+		for (int j = 0; j < method.params.size(); j++) {
+			if (args.get(j) instanceof JCVariableDecl) {
+				if (method.params.get(j).name.equals(((JCVariableDecl) args.get(j)).name)) {
+					continue;
+				} else {
+					printIndent().print("var ").print(method.params.get(j)).print(" = ").print(((JCVariableDecl) args.get(j)).name.toString()).print(";")
+							.println();
+				}
+			} else {
+				printIndent().print("var ").print(method.params.get(j)).print(" = ").print(args.get(j)).print(";").println();
+			}
+		}
+		boolean skipFirst = false;
+		if (!method.getBody().stats.isEmpty() && method.getBody().stats.get(0).toString().startsWith("this(")) {
+			skipFirst = true;
+			JCMethodInvocation inv = (JCMethodInvocation) ((JCExpressionStatement) method.getBody().stats.get(0)).expr;
+			MethodSymbol ms = Util.findMethodDeclarationInType(context.types, (TypeSymbol) overload.coreMethod.sym.getEnclosingElement(), inv);
+			for (JCMethodDecl md : overload.methods) {
+				if (md.sym.equals(ms)) {
+					printIndent();
+					printInlinedConstructorBody(overload, md, inv.args);
+					println();
+				}
+			}
+
+		}
+		printBlockStatements(skipFirst ? method.getBody().stats.tail : method.getBody().stats);
+		endIndent().printIndent().print("}");
+	}
+
+	private void printBlockStatements(List<JCStatement> statements) {
+		for (JCStatement statement : statements) {
+			printIndent();
+			int pos = getCurrentPosition();
+			print(statement);
+			if (getCurrentPosition() == pos) {
+				removeLastIndent();
+				continue;
+			}
+			if (!statementsWithNoSemis.contains(statement.getClass())) {
+				print(";");
+			}
+			println();
+		}
+	}
+
+	private String getOverloadMethodName(JCMethodDecl method) {
+		if (method.sym.isConstructor()) {
+			return "constructor";
+		}
+		StringBuilder sb = new StringBuilder(method.getName().toString());
+		sb.append("$");
+		for (JCVariableDecl p : method.params) {
+			sb.append(p.type.tsym.getSimpleName());
+			sb.append("_");
+		}
+		if (!method.params.isEmpty()) {
+			sb.deleteCharAt(sb.length() - 1);
+		}
+		return sb.toString();
+	}
+
+	private void printMethodParamsTest(JCMethodDecl coreMethod, JCMethodDecl m) {
+		int i = 0;
+		for (; i < m.params.size(); i++) {
+			printInstanceOf(coreMethod.params.get(i).name.toString(), null, m.params.get(i).type);
+			print(" && ");
+		}
+		for (; i < coreMethod.params.size(); i++) {
+			print(coreMethod.params.get(i).name.toString()).print(" == null");
+			print(" && ");
+		}
+		removeLastChars(4);
 	}
 
 	@Override
@@ -969,19 +1115,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			print("{").println().startIndent();
 		}
 
-		for (JCStatement statement : block.stats) {
-			printIndent();
-			int pos = getCurrentPosition();
-			print(statement);
-			if (getCurrentPosition() == pos) {
-				removeLastIndent();
-				continue;
-			}
-			if (!statementsWithNoSemis.contains(statement.getClass())) {
-				print(";");
-			}
-			println();
-		}
+		printBlockStatements(block.stats);
+
 		if (!globals) {
 			endIndent().printIndent().print("}");
 		}
@@ -1999,17 +2134,31 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 	}
 
+	private void printInstanceOf(String exprStr, JCTree expr, Type type) {
+		if (instanceOfTypeMapping.containsKey(type.toString())) {
+			print("(").print("typeof ");
+			if (exprStr == null) {
+				print(expr);
+			} else {
+				print(exprStr);
+			}
+			print(" === ").print("'" + instanceOfTypeMapping.get(type.toString()).toLowerCase() + "'").print(")");
+		} else {
+			if (exprStr == null) {
+				print(expr);
+			} else {
+				print(exprStr);
+			}
+			print(" instanceof ").print(getQualifiedTypeName(type.tsym, false));
+		}
+	}
+
 	@Override
 	public void visitTypeTest(JCInstanceOf instanceOf) {
 		if (Util.isInterface(instanceOf.clazz.type.tsym)) {
 			report(instanceOf, JSweetProblem.INVALID_INSTANCEOF_INTERFACE);
 		}
-		if (instanceOfTypeMapping.containsKey(instanceOf.clazz.type.toString())) {
-			print("(").print("typeof ").print(instanceOf.expr).print(" === ")
-					.print("'" + instanceOfTypeMapping.get(instanceOf.clazz.type.toString()).toLowerCase() + "'").print(")");
-		} else {
-			print(instanceOf.expr).print(" instanceof ").print(instanceOf.clazz);
-		}
+		printInstanceOf(null, instanceOf.expr, instanceOf.clazz.type);
 	}
 
 	@Override

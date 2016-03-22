@@ -18,21 +18,27 @@ package source.structural;
 
 import static jsweet.util.Globals.$export;
 
-public class InnerClassWrong {
+public class InnerClassNotStatic {
 
 	public static void main(String[] args) {
+		new InnerClassNotStatic().m();
 	}
-	
+
+	void m() {
+		// TODO: automatically add the prefix
+		new InnerClassNotStatic.InnerClass1().m();
+	}
+
 	public class InnerClass1 {
-		
+
 		public void m() {
 			$export("value", "test");
 		}
-		
+
 	}
 
 	public interface I {
-		
+
 	}
-	
+
 }

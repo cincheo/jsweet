@@ -67,7 +67,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 		/**
 		 * The methods carrying the same name.
 		 */
-		public List<MethodSymbol> methods = new ArrayList<>();
+		public List<JCMethodDecl> methods = new ArrayList<>();
 		/**
 		 * Tells if this overload is valid wrt to JSweet conventions.
 		 */
@@ -76,7 +76,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 		 * The core method of the overload, that is to say the one holding the
 		 * implementation.
 		 */
-		public MethodSymbol coreMethod;
+		public JCMethodDecl coreMethod;
 		/**
 		 * The default values for the parameters of the core method.
 		 */
@@ -97,8 +97,8 @@ public class OverloadScanner extends AbstractTreeScanner {
 				}
 				return i;
 			});
+			coreMethod = methods.get(0);
 			if (isValid) {
-				coreMethod = methods.get(0);
 				defaultValues = new JCLiteral[coreMethod.getParameters().size()];
 			}
 		}
@@ -115,13 +115,13 @@ public class OverloadScanner extends AbstractTreeScanner {
 	/**
 	 * Gets an overload instance for the given class and method.
 	 */
-	public Overload getOverload(ClassSymbol clazz, MethodSymbol method) {
+	public Overload getOverload(ClassSymbol clazz, JCMethodDecl method) {
 		Map<String, Overload> m = context.overloads.get(clazz);
 		if (m == null) {
 			m = new HashMap<>();
 			context.overloads.put(clazz, m);
 		}
-		String name = method.getSimpleName().toString();
+		String name = method.name.toString();
 		Overload overload = m.get(name);
 		if (overload == null) {
 			overload = new Overload();
@@ -138,13 +138,20 @@ public class OverloadScanner extends AbstractTreeScanner {
 		}
 		if (pass == 1) {
 			ClassSymbol clazz = classdecl.sym;
-			for (Element e : clazz.getEnclosedElements()) {
-				if (e instanceof MethodSymbol) {
-					MethodSymbol method = (MethodSymbol) e;
+			for (JCTree member : classdecl.defs) {
+				if (member instanceof JCMethodDecl) {
+					JCMethodDecl method = (JCMethodDecl) member;
 					Overload overload = getOverload(clazz, method);
 					overload.methods.add(method);
 				}
 			}
+			// for (Element e : clazz.getEnclosedElements()) {
+			// if (e instanceof MethodSymbol) {
+			// MethodSymbol method = (MethodSymbol) e;
+			// Overload overload = getOverload(clazz, method);
+			// overload.methods.add(method);
+			// }
+			// }
 		} else {
 			for (JCTree member : classdecl.defs) {
 				if (member instanceof JCMethodDecl) {
@@ -162,7 +169,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 		}
 		Overload overload = context.getOverload(((ClassSymbol) e), methodDecl.name.toString());
 		if (overload != null && overload.methods.size() > 1 && overload.isValid) {
-			if (!methodDecl.sym.equals(overload.coreMethod)) {
+			if (!methodDecl.equals(overload.coreMethod)) {
 				if (methodDecl.body != null && methodDecl.body.stats.size() == 1) {
 					JCMethodInvocation invocation = null;
 					JCStatement stat = methodDecl.body.stats.get(0);
@@ -188,7 +195,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 									} else {
 										if (!(expr instanceof JCIdent
 												&& methodDecl.params.stream().map(p -> p.name).anyMatch(p -> p.equals(((JCIdent) expr).name)))) {
-											report(expr, JSweetProblem.INVALID_OVERLOAD_PARAMETER, JSweetProblem.INVALID_OVERLOAD_PARAMETER.getMessage());
+											overload.isValid = false;
 										}
 									}
 								}
