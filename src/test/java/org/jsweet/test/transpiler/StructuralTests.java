@@ -30,6 +30,7 @@ import org.junit.Test;
 import source.structural.AbstractClass;
 import source.structural.AutoImportClassesInSamePackage;
 import source.structural.AutoImportClassesInSamePackageUsed;
+import source.structural.DefaultMethods;
 import source.structural.Enums;
 import source.structural.ExtendsClassInSameFile;
 import source.structural.ExtendsObject;
@@ -275,6 +276,14 @@ public class StructuralTests extends AbstractTest {
 		transpile(ModuleKind.none, logHandler -> {
 			logHandler.assertReportedProblems();
 		} , getSourceFile(JSNI.class));
+	}
+
+	@Test
+	public void testDefaultMethods() {
+		eval(ModuleKind.none, (logHandler, r) -> {
+			logHandler.assertReportedProblems();
+			assertEquals("test", r.get("value"));
+		} , getSourceFile(DefaultMethods.class));
 	}
 
 }

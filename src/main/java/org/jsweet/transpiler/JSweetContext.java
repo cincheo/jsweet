@@ -17,12 +17,14 @@
 package org.jsweet.transpiler;
 
 import java.io.File;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.jsweet.transpiler.OverloadScanner.Overload;
@@ -30,8 +32,11 @@ import org.jsweet.transpiler.util.DirectedGraph;
 
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.PackageSymbol;
+import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Types;
+import com.sun.tools.javac.tree.JCTree.JCClassDecl;
+import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Names;
 
@@ -236,6 +241,27 @@ public class JSweetContext extends Context {
 	 */
 	public void addFooterStatement(String footerStatement) {
 		footerStatements.add(footerStatement);
+	}
+
+	private Map<TypeSymbol, Set<Entry<JCClassDecl, JCMethodDecl>>> defaultMethods = new HashMap<>();
+
+	/**
+	 * Gets the default methods declared in the given type.
+	 */
+	public Set<Entry<JCClassDecl, JCMethodDecl>> getDefaultMethods(TypeSymbol type) {
+		return defaultMethods.get(type);
+	}
+
+	/**
+	 * Stores a default method AST for the given type.
+	 */
+	public void addDefaultMethod(JCClassDecl type, JCMethodDecl defaultMethod) {
+		Set<Entry<JCClassDecl, JCMethodDecl>> methods = defaultMethods.get(type);
+		if (methods == null) {
+			methods = new HashSet<>();
+			defaultMethods.put(type.sym, methods);
+		}
+		methods.add(new AbstractMap.SimpleEntry<>(type, defaultMethod));
 	}
 
 }

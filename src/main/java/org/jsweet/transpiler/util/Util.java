@@ -27,6 +27,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -42,6 +44,7 @@ import javax.tools.JavaFileObject;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jsweet.JSweetConfig;
+import org.jsweet.transpiler.JSweetContext;
 
 import com.sun.source.tree.Tree.Kind;
 import com.sun.tools.javac.code.Attribute;
@@ -336,6 +339,19 @@ public class Util {
 			return findMethodDeclarationInType(types, ((ClassSymbol) typeSymbol).getSuperclass().tsym, methodName, methodType);
 		}
 		return null;
+	}
+
+	/**
+	 * Fills the given set with all the default methods found in the current
+	 * type and super interfaces.
+	 */
+	public static void findDefaultMethodsInType(Set<Entry<JCClassDecl,JCMethodDecl>> defaultMethods, JSweetContext context, ClassSymbol classSymbol) {
+		if (context.getDefaultMethods(classSymbol) != null) {
+			defaultMethods.addAll(context.getDefaultMethods(classSymbol));
+		}
+		for (Type t : classSymbol.getInterfaces()) {
+			findDefaultMethodsInType(defaultMethods, context, (ClassSymbol) t.tsym);
+		}
 	}
 
 	/**

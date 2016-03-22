@@ -25,8 +25,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 
@@ -166,6 +168,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	private boolean globalModule = false;
 
 	private PackageSymbol topLevelPackage;
+
+	private boolean defaultMethodScope = false;
 
 	private void useModule(PackageSymbol targetPackage, JCTree sourceTree, String targetName, String moduleName) {
 		if (context.useModules) {
@@ -527,6 +531,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		interfaceScope = false;
 		removedSuperclass = false;
 		enumScope = false;
+		HashSet<Entry<JCClassDecl, JCMethodDecl>> defaultMethods = null;
 		boolean globals = JSweetConfig.GLOBALS_CLASS_NAME.equals(classdecl.name.toString());
 		if (globals && classdecl.extending != null) {
 			report(classdecl, JSweetProblem.GLOBALS_CLASS_CANNOT_HAVE_SUPERCLASS);
@@ -553,7 +558,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					if (declareClassScope) {
 						print("declare ");
 					}
-
+					defaultMethods = new HashSet<>();
+					Util.findDefaultMethodsInType(defaultMethods, context, classdecl.sym);
 					print("class ");
 				}
 			}
@@ -575,6 +581,16 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 			}
 			print(" {").println().startIndent();
+		}
+
+		if (defaultMethods != null && !defaultMethods.isEmpty()) {
+			defaultMethodScope = true;
+			for (Entry<JCClassDecl, JCMethodDecl> entry : defaultMethods) {
+				stack.push(entry.getKey());
+				printIndent().print(entry.getValue()).println();
+				stack.pop();
+			}
+			defaultMethodScope = false;
 		}
 
 		if (enumScope) {
@@ -735,7 +751,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 			}
 		} else {
-			if (declareClassScope && !constructor && !interfaceScope) {
+			if (declareClassScope && !constructor && !interfaceScope && !methodDecl.mods.getFlags().contains(Modifier.DEFAULT)) {
 				report(methodDecl, methodDecl.name, JSweetProblem.INVALID_METHOD_BODY_IN_INTERFACE, methodDecl.name, parent.name);
 			}
 		}
@@ -839,7 +855,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			print(" : ");
 			getAdapter().substituteAndPrintType(methodDecl.restype);
 		}
-		if (methodDecl.getBody() == null) {
+		if (methodDecl.getBody() == null || (methodDecl.mods.getFlags().contains(Modifier.DEFAULT) && !defaultMethodScope)) {
 			if (jsniLine != -1) {
 				int line = jsniLine;
 				print(" {").println().startIndent();
