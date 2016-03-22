@@ -18,21 +18,17 @@ package source.structural;
 
 import static jsweet.util.Globals.$export;
 
-public class InnerClass {
+public class InnerClassWrong {
 
 	public static void main(String[] args) {
-		new InnerClass.InnerClass1().m();
 	}
 	
-	public static class InnerClass1 {
+	public class InnerClass1 {
 		
 		public void m() {
 			$export("value", "test");
 		}
 		
-		public static void main(String[] args) {
-			
-		}
 	}
 
 	public interface I {

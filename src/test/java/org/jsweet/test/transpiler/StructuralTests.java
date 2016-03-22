@@ -37,6 +37,7 @@ import source.structural.ExtendsObject;
 import source.structural.GlobalsAccess;
 import source.structural.Inheritance;
 import source.structural.InnerClass;
+import source.structural.InnerClassWrong;
 import source.structural.InstanceOf;
 import source.structural.JSNI;
 import source.structural.Name;
@@ -92,10 +93,18 @@ public class StructuralTests extends AbstractTest {
 
 	@Test
 	public void testInnerClass() {
+		eval((logHandler, r) -> {
+			logHandler.assertReportedProblems();
+			assertEquals("test", r.get("value"));
+		} , getSourceFile(InnerClass.class));
+	}
+
+	@Test
+	public void testInnerClassWrong() {
 		transpile(logHandler -> {
 			assertEquals("There should be 1 problem", 1, logHandler.reportedProblems.size());
 			assertTrue("Missing expected problem: " + JSweetProblem.INNER_CLASS, logHandler.reportedProblems.contains(JSweetProblem.INNER_CLASS));
-		} , getSourceFile(InnerClass.class));
+		} , getSourceFile(InnerClassWrong.class));
 	}
 
 	@Test

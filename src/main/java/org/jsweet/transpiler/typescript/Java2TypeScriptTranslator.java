@@ -171,6 +171,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	private boolean defaultMethodScope = false;
 
+	private boolean innerClassScope = false;
+
 	private void useModule(PackageSymbol targetPackage, JCTree sourceTree, String targetName, String moduleName) {
 		if (context.useModules) {
 			context.packageDependencies.add(targetPackage);
@@ -450,7 +452,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		inlinedModuleScanner.scan(compilationUnit);
 
 		if (!globalModule && !context.useModules) {
-			printIndent().print("module ").print(rootRelativePackageName).print(" {").startIndent().println();
+			printIndent().print("namespace ").print(rootRelativePackageName).print(" {").startIndent().println();
 		}
 
 		for (JCTree def : topLevel.defs) {
@@ -522,8 +524,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			// erased types are ignored
 			return;
 		}
-		if (getParent() instanceof JCClassDecl) {
-			report(classdecl, JSweetProblem.INNER_CLASS, classdecl.name);
+		if (getParent() instanceof JCClassDecl && !innerClassScope) {
+			if (!(classdecl.sym.isInterface() || classdecl.getModifiers().getFlags().contains(Modifier.STATIC))) {
+				report(classdecl, JSweetProblem.INNER_CLASS, classdecl.name);
+			}
 			return;
 		}
 
@@ -641,7 +645,27 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			endIndent().printIndent().print("}");
 		}
 
-		if (mainMethod != null && mainMethod.getParameters().size() < 2) {
+		// print valid inner classes
+		boolean nameSpace = false;
+		for (JCTree def : classdecl.defs) {
+			if (def instanceof JCClassDecl) {
+				JCClassDecl cdef = (JCClassDecl) def;
+				if (cdef.sym.isInterface() || cdef.getModifiers().getFlags().contains(Modifier.STATIC)) {
+					if (!nameSpace) {
+						nameSpace = true;
+						println().printIndent().print("export namespace ").print(classdecl.getSimpleName().toString()).print(" {").startIndent();
+					}
+					innerClassScope = true;
+					println().printIndent().print(cdef);
+					innerClassScope = false;
+				}
+			}
+		}
+		if (nameSpace) {
+			println().endIndent().printIndent().print("}").println();
+		}
+
+		if (mainMethod != null && mainMethod.getParameters().size() < 2 && mainMethod.sym.getEnclosingElement().equals(classdecl.sym)) {
 			String mainClassName = getRootRelativeName(classdecl.sym);
 			if (context.useModules) {
 				int dotIndex = mainClassName.lastIndexOf(".");
@@ -765,7 +789,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 		if (JSweetConfig.MAIN_FUNCTION_NAME.equals(methodDecl.name.toString()) && methodDecl.mods.getFlags().contains(Modifier.STATIC)
 				&& !Util.hasAnnotationType(methodDecl.sym, JSweetConfig.ANNOTATION_DISABLED)) {
-			mainMethod = methodDecl;
+			// ignore main methods in inner classes
+			if (!innerClassScope) {
+				mainMethod = methodDecl;
+			}
 		}
 		if (methodDecl.pos == parent.pos) {
 			return;
