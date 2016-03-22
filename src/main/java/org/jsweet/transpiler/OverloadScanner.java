@@ -145,13 +145,6 @@ public class OverloadScanner extends AbstractTreeScanner {
 					overload.methods.add(method);
 				}
 			}
-			// for (Element e : clazz.getEnclosedElements()) {
-			// if (e instanceof MethodSymbol) {
-			// MethodSymbol method = (MethodSymbol) e;
-			// Overload overload = getOverload(clazz, method);
-			// overload.methods.add(method);
-			// }
-			// }
 		} else {
 			for (JCTree member : classdecl.defs) {
 				if (member instanceof JCMethodDecl) {
