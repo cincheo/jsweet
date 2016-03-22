@@ -525,9 +525,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			return;
 		}
 		if (getParent() instanceof JCClassDecl && !innerClassScope) {
-			if (!(classdecl.sym.isInterface() || classdecl.getModifiers().getFlags().contains(Modifier.STATIC))) {
-				report(classdecl, JSweetProblem.INNER_CLASS, classdecl.name);
-			}
+			// if (!(classdecl.sym.isInterface() ||
+			// classdecl.getModifiers().getFlags().contains(Modifier.STATIC))) {
+			// report(classdecl, JSweetProblem.INNER_CLASS, classdecl.name);
+			// }
 			return;
 		}
 
@@ -650,15 +651,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		for (JCTree def : classdecl.defs) {
 			if (def instanceof JCClassDecl) {
 				JCClassDecl cdef = (JCClassDecl) def;
-				if (cdef.sym.isInterface() || cdef.getModifiers().getFlags().contains(Modifier.STATIC)) {
-					if (!nameSpace) {
-						nameSpace = true;
-						println().printIndent().print("export namespace ").print(classdecl.getSimpleName().toString()).print(" {").startIndent();
-					}
-					innerClassScope = true;
-					println().printIndent().print(cdef);
-					innerClassScope = false;
+				if (!nameSpace) {
+					nameSpace = true;
+					println().printIndent().print("export namespace ").print(classdecl.getSimpleName().toString()).print(" {").startIndent();
 				}
+				innerClassScope = true;
+				println().printIndent().print(cdef);
+				innerClassScope = false;
 			}
 		}
 		if (nameSpace) {

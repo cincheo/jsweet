@@ -95,7 +95,8 @@ public class StructuralTests extends AbstractTest {
 	public void testInnerClass() {
 		eval((logHandler, r) -> {
 			logHandler.assertReportedProblems();
-			assertEquals("test", r.get("value"));
+			assertEquals("test1", r.get("value1"));
+			assertEquals("test2", r.get("value2"));
 		} , getSourceFile(InnerClass.class));
 	}
 
