@@ -652,6 +652,15 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (enumScope) {
 			removeLastChar().println();
 		}
+
+		if (!enumScope) {
+			if (!Util.isInterface(classdecl.sym)) {
+				if (printInterfacesField(classdecl.sym, " = ", "")) {
+					print(";").println();
+				}
+			}
+		}
+
 		if (!globals) {
 			endIndent().printIndent().print("}");
 		}
@@ -1590,6 +1599,24 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		getAdapter().substituteAndPrintType(typeApply);
 	}
 
+	private boolean printInterfacesField(TypeSymbol type, String separator, String prefix) {
+		Set<String> interfaces = new HashSet<>();
+		Util.grabSupportedInterfaceNames(interfaces, type);
+		if (!interfaces.isEmpty()) {
+			print(prefix);
+			println().printIndent().print("__interfaces");
+			print(separator);
+			print("[");
+			for (String i : interfaces) {
+				print("\"").print(i).print("\",");
+			}
+			removeLastChar();
+			print("]");
+			return true;
+		}
+		return false;
+	}
+
 	@Override
 	public void visitNewClass(JCNewClass newClass) {
 		ClassSymbol clazz = ((ClassSymbol) newClass.clazz.type.tsym);
@@ -1604,11 +1631,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					print("<").print(newClass.clazz).print(">");
 				}
 				print("{").println().startIndent();
+				boolean statementPrinted = false;
 				if (newClass.def != null) {
 					for (JCTree m : newClass.def.getMembers()) {
 						if (m instanceof JCBlock) {
 							List<VarSymbol> initializedVars = new ArrayList<>();
-							boolean statementPrinted = false;
 							for (JCTree s : ((JCBlock) m).stats) {
 								boolean currentStatementPrinted = false;
 								if (s instanceof JCExpressionStatement && ((JCExpressionStatement) s).expr instanceof JCAssign) {
@@ -1665,6 +1692,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						}
 					}
 				}
+
+				printInterfacesField(clazz, " : ", statementPrinted ? "," : "");
+
 				println().endIndent().printIndent().print("}");
 			} else {
 
@@ -1814,7 +1844,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	@Override
 	public void visitIf(JCIf ifStatement) {
-		print("if(").print(ifStatement.cond).print(") ");
+		print("if").print(ifStatement.cond).print(" ");
 		print(ifStatement.thenpart);
 		if (!(ifStatement.thenpart instanceof JCBlock)) {
 			if (!statementsWithNoSemis.contains(ifStatement.thenpart.getClass())) {
@@ -2135,29 +2165,51 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	}
 
 	private void printInstanceOf(String exprStr, JCTree expr, Type type) {
+		if (!(getParent() instanceof JCParens)) {
+			print("(");
+		}
 		if (instanceOfTypeMapping.containsKey(type.toString())) {
-			print("(").print("typeof ");
+			print("typeof ");
 			if (exprStr == null) {
 				print(expr);
 			} else {
 				print(exprStr);
 			}
-			print(" === ").print("'" + instanceOfTypeMapping.get(type.toString()).toLowerCase() + "'").print(")");
+			print(" === ").print("'" + instanceOfTypeMapping.get(type.toString()).toLowerCase() + "'");
 		} else {
 			if (exprStr == null) {
 				print(expr);
 			} else {
 				print(exprStr);
 			}
-			print(" instanceof ").print(getQualifiedTypeName(type.tsym, false));
+			if (Util.isInterface(type.tsym)) {
+				print(" != null && ");
+				if (exprStr == null) {
+					print(expr);
+				} else {
+					print(exprStr);
+				}
+				print("[\"__interfaces\"]").print(" != null && ");
+				if (exprStr == null) {
+					print(expr);
+				} else {
+					print(exprStr);
+				}
+				print("[\"__interfaces\"].indexOf(\"").print(type.tsym.getQualifiedName().toString()).print("\") >= 0");
+			} else {
+				print(" instanceof ").print(getQualifiedTypeName(type.tsym, false));
+			}
+		}
+		if (!(getParent() instanceof JCParens)) {
+			print(")");
 		}
 	}
 
 	@Override
 	public void visitTypeTest(JCInstanceOf instanceOf) {
-		if (Util.isInterface(instanceOf.clazz.type.tsym)) {
-			report(instanceOf, JSweetProblem.INVALID_INSTANCEOF_INTERFACE);
-		}
+		// if (Util.isInterface(instanceOf.clazz.type.tsym)) {
+		// report(instanceOf, JSweetProblem.INVALID_INSTANCEOF_INTERFACE);
+		// }
 		printInstanceOf(null, instanceOf.expr, instanceOf.clazz.type);
 	}
 

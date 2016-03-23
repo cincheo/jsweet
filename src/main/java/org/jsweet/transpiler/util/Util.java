@@ -345,7 +345,7 @@ public class Util {
 	 * Fills the given set with all the default methods found in the current
 	 * type and super interfaces.
 	 */
-	public static void findDefaultMethodsInType(Set<Entry<JCClassDecl,JCMethodDecl>> defaultMethods, JSweetContext context, ClassSymbol classSymbol) {
+	public static void findDefaultMethodsInType(Set<Entry<JCClassDecl, JCMethodDecl>> defaultMethods, JSweetContext context, ClassSymbol classSymbol) {
 		if (context.getDefaultMethods(classSymbol) != null) {
 			defaultMethods.addAll(context.getDefaultMethods(classSymbol));
 		}
@@ -829,6 +829,25 @@ public class Util {
 			return true;
 		default:
 			return false;
+		}
+	}
+
+	/**
+	 * Grabs the names of all the support interfaces in the class and interface
+	 * hierarchy.
+	 */
+	public static void grabSupportedInterfaceNames(Set<String> interfaces, TypeSymbol type) {
+		if (type == null) {
+			return;
+		}
+		if (Util.isInterface(type)) {
+			interfaces.add(type.getQualifiedName().toString());
+		}
+		if (type instanceof ClassSymbol) {
+			for (Type t : ((ClassSymbol) type).getInterfaces()) {
+				grabSupportedInterfaceNames(interfaces, t.tsym);
+			}
+			grabSupportedInterfaceNames(interfaces, ((ClassSymbol) type).getSuperclass().tsym);
 		}
 	}
 

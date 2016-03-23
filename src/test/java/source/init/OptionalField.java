@@ -34,5 +34,6 @@ abstract class DataStruct {
 	public String s;
 	@Optional
 	public int i;
-	native public void test();
+	// TODO: deal with functions in interfaces
+	//native public void test();
 }

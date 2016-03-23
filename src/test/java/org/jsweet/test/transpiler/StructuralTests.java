@@ -43,7 +43,7 @@ import source.structural.JSNI;
 import source.structural.Name;
 import source.structural.NameClashes;
 import source.structural.NameClashesWithMethodInvocations;
-import source.structural.NoInstanceofForInterfaces;
+import source.structural.InstanceofForInterfaces;
 import source.structural.NoWildcardsInImports;
 import source.structural.ObjectTypes;
 import source.structural.TwoClassesInSameFile;
@@ -161,14 +161,11 @@ public class StructuralTests extends AbstractTest {
 	}
 
 	@Test
-	public void testNoInstanceofForInterfaces() {
-		transpile(logHandler -> {
-			assertEquals("There should be 2 problems", 2, logHandler.reportedProblems.size());
-			assertEquals("Missing expected problem: " + JSweetProblem.INVALID_INSTANCEOF_INTERFACE, JSweetProblem.INVALID_INSTANCEOF_INTERFACE,
-					logHandler.reportedProblems.get(0));
-			assertEquals("Missing expected problem: " + JSweetProblem.INVALID_INSTANCEOF_INTERFACE, JSweetProblem.INVALID_INSTANCEOF_INTERFACE,
-					logHandler.reportedProblems.get(1));
-		} , getSourceFile(NoInstanceofForInterfaces.class));
+	public void testInstanceofForInterfaces() {
+		eval((logHandler, r) -> {
+			logHandler.assertReportedProblems();
+			Assert.assertEquals("1,2,1,3", r.get("trace"));
+		} , getSourceFile(InstanceofForInterfaces.class));
 	}
 
 	@Test

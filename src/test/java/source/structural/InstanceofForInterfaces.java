@@ -16,29 +16,55 @@
  */
 package source.structural;
 
-import jsweet.lang.Interface;
+import static jsweet.util.Globals.$export;
 
-public class NoInstanceofForInterfaces {
+import jsweet.lang.Array;
+import jsweet.lang.Interface;
+import jsweet.lang.Optional;
+
+public class InstanceofForInterfaces {
+
+	static Array<String> trace = new Array<>();
 
 	void m(Object o) {
 		if (o instanceof I1) {
+			@SuppressWarnings("unused")
+			I1 i1 = (I1) o;
+			trace.push("1");
 		}
 		if (o instanceof I2) {
+			trace.push("2");
 		}
 		if (o instanceof C3) {
+			trace.push("3");
 		}
+	}
+
+	public static void main(String[] args) {
+		I1 i1 = new I1() {
+		};
+		new InstanceofForInterfaces().m(i1);
+		I2 i2 = new I2() {
+			{
+				s = "s";
+			}
+		};
+		new InstanceofForInterfaces().m(i2);
+		new InstanceofForInterfaces().m(new C3());
+		$export("trace", trace.join());
 	}
 
 }
 
 interface I1 {
-
 }
 
 @Interface
 abstract class I2 {
+	@Optional
+	int f;
+	String s;
 }
 
-class C3 {
+class C3 implements I1 {
 }
-
