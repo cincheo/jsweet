@@ -1942,6 +1942,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	@Override
 	public void visitContinue(JCContinue continueStatement) {
 		print("continue");
+		if (continueStatement.label != null) {
+			print(" ").print(continueStatement.label.toString());
+		}
 	}
 
 	@Override

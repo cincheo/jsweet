@@ -22,6 +22,8 @@ public class Labels {
 		a: for (int i = 0; i < 100; i++) {
 			if (i == 50) {
 				break a;
+			} else {
+				continue a;
 			}
 		}
 		System.out.println("a");
