@@ -152,10 +152,6 @@ public enum JSweetProblem {
 	 */
 	NATIVE_MODIFIER_IS_NOT_ALLOWED(Severity.ERROR),
 	/**
-	 * Raised when instanceof is applied to an interface.
-	 */
-	INVALID_INSTANCEOF_INTERFACE(Severity.ERROR),
-	/**
 	 * Raised when the program tries to use a label.
 	 */
 	LABELS_ARE_NOT_SUPPORTED(Severity.ERROR),
@@ -382,8 +378,6 @@ public enum JSweetProblem {
 			return String.format("invalid member name 'constructor'", params);
 		case NATIVE_MODIFIER_IS_NOT_ALLOWED:
 			return String.format("method '%s' cannot be native", params);
-		case INVALID_INSTANCEOF_INTERFACE:
-			return String.format("operator 'instanceof' cannot apply to interfaces", params);
 		case LABELS_ARE_NOT_SUPPORTED:
 			return String.format("labels are not supported", params);
 		case TRY_WITHOUT_CATCH_OR_FINALLY:
