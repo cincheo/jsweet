@@ -119,10 +119,6 @@ public enum JSweetProblem {
 	 */
 	INVALID_PRIVATE_IN_INTERFACE(Severity.ERROR),
 	/**
-	 * Raised when a static modifier is used in an interface.
-	 */
-	INVALID_STATIC_IN_INTERFACE(Severity.ERROR),
-	/**
 	 * Raised when a method body is defined in an interface.
 	 */
 	INVALID_METHOD_BODY_IN_INTERFACE(Severity.ERROR),
@@ -364,8 +360,6 @@ public enum JSweetProblem {
 			return String.format("method '%s' cannot define a body in interface '%s' (try 'abstract' or 'native' modifiers)", params);
 		case INVALID_PRIVATE_IN_INTERFACE:
 			return String.format("member '%s' cannot be private in interface '%s'", params);
-		case INVALID_STATIC_IN_INTERFACE:
-			return String.format("member '%s' cannot be static in interface '%s'", params);
 		case INVALID_FIELD_INITIALIZER_IN_INTERFACE:
 			return String.format("field '%s' cannot be initialized in interface '%s'", params);
 		case INVALID_INITIALIZER_IN_INTERFACE:

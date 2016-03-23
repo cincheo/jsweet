@@ -616,6 +616,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 
 		for (JCTree def : classdecl.defs) {
+			if (!sharedMode && interfaceScope && ((def instanceof JCMethodDecl && ((JCMethodDecl) def).sym.isStatic())
+					|| (def instanceof JCVariableDecl && ((JCVariableDecl) def).sym.isStatic()))) {
+				// static interface members will be printed at the end in a
+				// namespace
+				continue;
+			}
 			if (def instanceof JCVariableDecl) {
 				if (enumScope && ((JCVariableDecl) def).type.tsym != classdecl.type.tsym) {
 					report(def, ((JCVariableDecl) def).name, JSweetProblem.INVALID_FIELD_IN_ENUM);
@@ -681,6 +687,26 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 		if (nameSpace) {
 			println().endIndent().printIndent().print("}").println();
+		}
+
+		if (!sharedMode && interfaceScope) {
+			// print static members of interfaces
+			nameSpace = false;
+			for (JCTree def : classdecl.defs) {
+				if ((def instanceof JCMethodDecl && ((JCMethodDecl) def).sym.isStatic())
+						|| (def instanceof JCVariableDecl && ((JCVariableDecl) def).sym.isStatic())) {
+					if (!nameSpace) {
+						nameSpace = true;
+						println().printIndent().print("export namespace ").print(classdecl.getSimpleName().toString()).print(" {").startIndent();
+					}
+					// innerClassScope = true;
+					println().printIndent().print(def);
+					// innerClassScope = false;
+				}
+			}
+			if (nameSpace) {
+				println().endIndent().printIndent().print("}").println();
+			}
 		}
 
 		if (mainMethod != null && mainMethod.getParameters().size() < 2 && mainMethod.sym.getEnclosingElement().equals(classdecl.sym)) {
@@ -826,6 +852,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 
 		boolean globals = JSweetConfig.GLOBALS_CLASS_NAME.equals(parent.name.toString());
+		if(!sharedMode) {
+			globals = globals || (interfaceScope && methodDecl.mods.getFlags().contains(Modifier.STATIC));
+		}
 		printDocComment(methodDecl, false);
 		if (globals) {
 			if (constructor) {
@@ -876,8 +905,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				} else {
 					if (sharedMode) {
 						return;
-					} else {
-						report(methodDecl, methodDecl.name, JSweetProblem.INVALID_STATIC_IN_INTERFACE, methodDecl.name, parent.name);
 					}
 				}
 			}
@@ -959,7 +986,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					print(";");
 					return;
 				} else {
-					report(methodDecl, methodDecl.name, JSweetProblem.INVALID_METHOD_BODY_IN_INTERFACE, methodDecl.name, parent.name);
+					if (!methodDecl.mods.getFlags().contains(Modifier.STATIC)) {
+						report(methodDecl, methodDecl.name, JSweetProblem.INVALID_METHOD_BODY_IN_INTERFACE, methodDecl.name, parent.name);
+					}
 				}
 			}
 			if (declareClassScope) {
@@ -1181,6 +1210,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				return;
 			}
 
+			if (!sharedMode) {
+				globals = globals || (parent instanceof JCClassDecl && (((JCClassDecl) parent).sym.isInterface() || interfaceScope && varDecl.sym.isStatic()));
+			}
+
 			printDocComment(varDecl, false);
 			if (!globals && parent instanceof JCClassDecl) {
 				if (varDecl.mods.getFlags().contains(Modifier.PUBLIC)) {
@@ -1203,8 +1236,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					} else {
 						if (sharedMode) {
 							return;
-						} else {
-							report(varDecl, varDecl.name, JSweetProblem.INVALID_STATIC_IN_INTERFACE, varDecl.name, ((JCClassDecl) parent).name);
 						}
 					}
 				}

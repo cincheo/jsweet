@@ -45,6 +45,7 @@ import source.structural.NameClashesWithMethodInvocations;
 import source.structural.NoNameClashesWithFields;
 import source.structural.NoWildcardsInImports;
 import source.structural.ObjectTypes;
+import source.structural.StaticMembersInInterfaces;
 import source.structural.TwoClassesInSameFile;
 import source.structural.WrongConstructsInEnums;
 import source.structural.WrongConstructsInInterfaces;
@@ -120,11 +121,11 @@ public class StructuralTests extends AbstractTest {
 		transpile(logHandler -> {
 			logHandler.assertReportedProblems( //
 					JSweetProblem.INVALID_FIELD_INITIALIZER_IN_INTERFACE, //
-					JSweetProblem.INVALID_STATIC_IN_INTERFACE, //
+					// JSweetProblem.INVALID_STATIC_IN_INTERFACE, //
 					JSweetProblem.INVALID_PRIVATE_IN_INTERFACE, //
 					JSweetProblem.INVALID_METHOD_BODY_IN_INTERFACE, //
 					JSweetProblem.INVALID_METHOD_BODY_IN_INTERFACE, //
-					JSweetProblem.INVALID_STATIC_IN_INTERFACE, //
+					// JSweetProblem.INVALID_STATIC_IN_INTERFACE, //
 					JSweetProblem.INVALID_INITIALIZER_IN_INTERFACE, //
 					JSweetProblem.INVALID_INITIALIZER_IN_INTERFACE);
 		} , getSourceFile(WrongConstructsInInterfaces.class));
@@ -287,10 +288,21 @@ public class StructuralTests extends AbstractTest {
 
 	@Test
 	public void testDefaultMethods() {
-		eval(ModuleKind.none, (logHandler, r) -> {
+		eval((logHandler, r) -> {
 			logHandler.assertReportedProblems();
-			assertEquals("test", r.get("value"));
+			assertEquals("m,m1", r.get("trace"));
 		} , getSourceFile(DefaultMethods.class));
+	}
+
+	@Test
+	public void testStaticMembersInInterfaces() {
+		eval((logHandler, r) -> {
+			logHandler.assertReportedProblems();
+			assertEquals("test1", r.get("value1"));
+			assertEquals("test2", r.get("value2"));
+			assertEquals("test3", r.get("value3"));
+			assertEquals("test4", r.get("value4"));
+		} , getSourceFile(StaticMembersInInterfaces.class));
 	}
 
 }
