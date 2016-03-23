@@ -71,7 +71,7 @@ public class SyntaxTests extends AbstractTest {
 			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
 		} , getSourceFile(StatementsWithNoBlocks.class));
 	}
-	
+
 	@Test
 	public void testQualifiedNames() {
 		transpile((logHandler) -> {
@@ -104,9 +104,7 @@ public class SyntaxTests extends AbstractTest {
 	@Test
 	public void testLabels() {
 		transpile((logHandler) -> {
-			Assert.assertEquals("Missing expected errors", 2, logHandler.reportedProblems.size());
-			Assert.assertEquals("Wrong type of expected error", JSweetProblem.LABELS_ARE_NOT_SUPPORTED, logHandler.reportedProblems.get(0));
-			Assert.assertEquals("Wrong type of expected error", JSweetProblem.LABELS_ARE_NOT_SUPPORTED, logHandler.reportedProblems.get(1));
+			logHandler.assertReportedProblems();
 		} , getSourceFile(Labels.class));
 	}
 
@@ -132,7 +130,7 @@ public class SyntaxTests extends AbstractTest {
 			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
 			Assert.assertEquals("Wrong behavior output trace", "11223344", r.get("out").toString());
 		} , getSourceFile(FinalVariablesRuntime.class));
-		
+
 	}
 
 	@Ignore
@@ -149,14 +147,14 @@ public class SyntaxTests extends AbstractTest {
 	public void testValidIndexedAccesses() {
 		eval((logHandler, r) -> {
 			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-			
+
 			assertEquals("value", r.get("field1"));
 			assertNull(r.get("field2"));
 			assertNull(r.get("field3"));
 			assertEquals("value4", r.get("field4"));
 		} , getSourceFile(ValidIndexedAccesses.class));
 	}
-	
+
 	@Test
 	public void testGlobalCastMethod() {
 		transpile((logHandler) -> {
@@ -174,11 +172,11 @@ public class SyntaxTests extends AbstractTest {
 				assertTrue(generatedCode.contains("This is a test of comment."));
 				assertTrue(generatedCode.contains("A method, which has some doc comment."));
 				assertTrue(generatedCode.contains("This is a constant field."));
-			} catch(Exception e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 				fail(e.getMessage());
 			}
 		} , f);
 	}
-	
+
 }

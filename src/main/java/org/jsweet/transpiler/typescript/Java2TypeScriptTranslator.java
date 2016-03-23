@@ -852,7 +852,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 
 		boolean globals = JSweetConfig.GLOBALS_CLASS_NAME.equals(parent.name.toString());
-		if(!sharedMode) {
+		if (!sharedMode) {
 			globals = globals || (interfaceScope && methodDecl.mods.getFlags().contains(Modifier.STATIC));
 		}
 		printDocComment(methodDecl, false);
@@ -1081,7 +1081,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				continue;
 			}
 			if (!statementsWithNoSemis.contains(statement.getClass())) {
-				print(";");
+				if (statement instanceof JCLabeledStatement) {
+					if (!statementsWithNoSemis.contains(((JCLabeledStatement) statement).body.getClass())) {
+						print(";");
+					}
+				} else {
+					print(";");
+				}
 			}
 			println();
 		}
@@ -1940,16 +1946,16 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	@Override
 	public void visitBreak(JCBreak breakStatement) {
-		if (breakStatement.label != null) {
-			report(breakStatement, JSweetProblem.LABELS_ARE_NOT_SUPPORTED);
-		}
 		print("break");
+		if (breakStatement.label != null) {
+			print(" ").print(breakStatement.label.toString());
+		}
 	}
 
 	@Override
 	public void visitLabelled(JCLabeledStatement labelledStatement) {
-		report(labelledStatement, JSweetProblem.LABELS_ARE_NOT_SUPPORTED);
-		super.visitLabelled(labelledStatement);
+		print(labelledStatement.label.toString()).print(": ");
+		print(labelledStatement.body);
 	}
 
 	@Override

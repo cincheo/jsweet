@@ -19,11 +19,11 @@ package source.syntax;
 public class Labels {
 
 	void m() {
-		a:
-		for(int i=0;i<100;i++) {
-			if(i==50) {
+		a: for (int i = 0; i < 100; i++) {
+			if (i == 50) {
 				break a;
 			}
 		}
+		System.out.println("a");
 	}
 }

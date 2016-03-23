@@ -148,10 +148,6 @@ public enum JSweetProblem {
 	 */
 	NATIVE_MODIFIER_IS_NOT_ALLOWED(Severity.ERROR),
 	/**
-	 * Raised when the program tries to use a label.
-	 */
-	LABELS_ARE_NOT_SUPPORTED(Severity.ERROR),
-	/**
 	 * Raised when a try statement does not declare a catch or a finally clause.
 	 */
 	TRY_WITHOUT_CATCH_OR_FINALLY(Severity.ERROR),
@@ -372,8 +368,6 @@ public enum JSweetProblem {
 			return String.format("invalid member name 'constructor'", params);
 		case NATIVE_MODIFIER_IS_NOT_ALLOWED:
 			return String.format("method '%s' cannot be native", params);
-		case LABELS_ARE_NOT_SUPPORTED:
-			return String.format("labels are not supported", params);
 		case TRY_WITHOUT_CATCH_OR_FINALLY:
 			return String.format("try statement must define at least a catch or a finally clause", params);
 		case UNSUPPORTED_TRY_WITH_RESOURCE:
