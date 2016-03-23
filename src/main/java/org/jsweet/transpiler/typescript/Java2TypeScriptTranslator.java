@@ -811,7 +811,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			report(methodDecl, methodDecl.name, JSweetProblem.CONSTRUCTOR_MEMBER);
 		}
 		VarSymbol v = Util.findFieldDeclaration(parent.sym, methodDecl.name);
-		if (v != null) {
+		if (v != null && context.getFieldNameMapping(v) == null) {
 			report(methodDecl, methodDecl.name, JSweetProblem.METHOD_CONFLICTS_FIELD, methodDecl.name, v.owner);
 		}
 		if (JSweetConfig.MAIN_FUNCTION_NAME.equals(methodDecl.name.toString()) && methodDecl.mods.getFlags().contains(Modifier.STATIC)
@@ -1155,6 +1155,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		} else {
 			JCTree parent = getParent();
 			String name = varDecl.name.toString();
+			if (context.getFieldNameMapping(varDecl.sym) != null) {
+				name = context.getFieldNameMapping(varDecl.sym);
+			}
 
 			if (parent instanceof JCClassDecl) {
 				MethodSymbol m = Util.findMethodDeclarationInType(context.types, ((JCClassDecl) parent).sym, name, null);
@@ -1317,7 +1320,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				// if (Util.isIntegral(fieldAccess.type)) {
 				// print("(");
 				// }
-				print(fieldAccess.selected).print(".").printIdentifier(fieldAccess.name.toString());
+				if (fieldAccess.sym instanceof VarSymbol && context.getFieldNameMapping(fieldAccess.sym) != null) {
+					print(fieldAccess.selected).print(".").print(context.getFieldNameMapping(fieldAccess.sym));
+				} else {
+					print(fieldAccess.selected).print(".").printIdentifier(fieldAccess.name.toString());
+				}
 				// if (Util.isIntegral(fieldAccess.type)) {
 				// print("|0)");
 				// }
@@ -1575,6 +1582,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				// ident.name);
 				if (varSym != null) {
 					if (varSym.owner instanceof ClassSymbol) {
+						if (context.getFieldNameMapping(varSym) != null) {
+							name = context.getFieldNameMapping(varSym);
+						}
 						if (!varSym.getModifiers().contains(Modifier.STATIC)) {
 							print("this.");
 						} else {

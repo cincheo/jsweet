@@ -20,7 +20,6 @@ import static org.jsweet.transpiler.JSweetProblem.GLOBAL_DELETE;
 import static org.jsweet.transpiler.JSweetProblem.GLOBAL_INDEXER_GET;
 import static org.jsweet.transpiler.JSweetProblem.GLOBAL_INDEXER_SET;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.ModuleKind;
@@ -39,11 +38,11 @@ import source.structural.Inheritance;
 import source.structural.InnerClass;
 import source.structural.InnerClassNotStatic;
 import source.structural.InstanceOf;
+import source.structural.InstanceofForInterfaces;
 import source.structural.JSNI;
 import source.structural.Name;
-import source.structural.NameClashes;
 import source.structural.NameClashesWithMethodInvocations;
-import source.structural.InstanceofForInterfaces;
+import source.structural.NoNameClashesWithFields;
 import source.structural.NoWildcardsInImports;
 import source.structural.ObjectTypes;
 import source.structural.TwoClassesInSameFile;
@@ -60,14 +59,15 @@ import source.structural.globalclasses.f.InvalidGlobalSetGetDelete;
 public class StructuralTests extends AbstractTest {
 
 	@Test
-	public void testFieldMethodNameClashes() {
-		transpile(logHandler -> {
-			assertEquals("There should be two problems", 2, logHandler.reportedProblems.size());
-			assertTrue("Missing expected problem: " + JSweetProblem.FIELD_CONFLICTS_METHOD,
-					logHandler.reportedProblems.contains(JSweetProblem.FIELD_CONFLICTS_METHOD));
-			assertTrue("Missing expected problem: " + JSweetProblem.METHOD_CONFLICTS_FIELD,
-					logHandler.reportedProblems.contains(JSweetProblem.METHOD_CONFLICTS_FIELD));
-		} , getSourceFile(NameClashes.class));
+	public void testNoNameClashesWithFields() {
+		eval((logHandler, r) -> {
+			logHandler.assertReportedProblems();
+			assertEquals(2, (int) r.get("v1"));
+			assertEquals(2, (int) r.get("v2"));
+			assertEquals(3, (int) r.get("v3"));
+			assertEquals("hello", (String) r.get("v4"));
+			assertEquals("hello", (String) r.get("v5"));
+		} , getSourceFile(NoNameClashesWithFields.class));
 	}
 
 	@Test

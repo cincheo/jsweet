@@ -30,9 +30,11 @@ import java.util.Set;
 import org.jsweet.transpiler.OverloadScanner.Overload;
 import org.jsweet.transpiler.util.DirectedGraph;
 
+import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.PackageSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
+import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
@@ -262,6 +264,22 @@ public class JSweetContext extends Context {
 			defaultMethods.put(type.sym, methods);
 		}
 		methods.add(new AbstractMap.SimpleEntry<>(type, defaultMethod));
+	}
+
+	private Map<VarSymbol, String> fieldNameMapping = new HashMap<>();
+
+	/**
+	 * Adds a name mapping to a field (rename it to avoid name clashes).
+	 */
+	public void addFieldNameMapping(VarSymbol field, String name) {
+		fieldNameMapping.put(field, name);
+	}
+
+	/**
+	 * Gets a field name mapping if any (null otherwise).
+	 */
+	public String getFieldNameMapping(Symbol field) {
+		return fieldNameMapping.get(field);
 	}
 
 }

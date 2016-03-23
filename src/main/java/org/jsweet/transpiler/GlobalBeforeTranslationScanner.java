@@ -19,23 +19,41 @@ package org.jsweet.transpiler;
 import javax.lang.model.element.Modifier;
 
 import org.jsweet.transpiler.util.AbstractTreeScanner;
+import org.jsweet.transpiler.util.Util;
 
+import com.sun.tools.javac.code.Symbol.MethodSymbol;
+import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
-import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
+import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 
 /**
- * This AST scanner detects default methods for injecting them later on.
+ * This AST scanner performs global analysis and fills up the context with
+ * information that will be used by the translator.
  * 
  * @author Renaud Pawlak
  */
-public class DefaultMethodScanner extends AbstractTreeScanner {
+public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {
 
 	/**
-	 * Creates a new default method scanner.
+	 * Creates a new global scanner.
 	 */
-	public DefaultMethodScanner(TranspilationHandler logHandler, JSweetContext context, JCCompilationUnit compilationUnit) {
-		super(logHandler, context, compilationUnit);
+	public GlobalBeforeTranslationScanner(TranspilationHandler logHandler, JSweetContext context) {
+		super(logHandler, context, null);
+	}
+
+	@Override
+	public void visitClassDef(JCClassDecl classdecl) {
+		for (JCTree def : classdecl.defs) {
+			if (def instanceof JCVariableDecl) {
+				JCVariableDecl var = (JCVariableDecl) def;
+				MethodSymbol m = Util.findMethodDeclarationInType(context.types, classdecl.sym, var.name.toString(), null);
+				if (m != null) {
+					context.addFieldNameMapping(var.sym, "__" + var.name.toString());
+				}
+			}
+		}
+		super.visitClassDef(classdecl);
 	}
 
 	@Override

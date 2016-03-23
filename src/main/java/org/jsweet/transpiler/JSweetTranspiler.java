@@ -719,6 +719,12 @@ public class JSweetTranspiler implements JSweetOptions {
 		context.useModules = isUsingModules();
 		context.sourceFiles = files;
 
+		GlobalBeforeTranslationScanner globalScanner = new GlobalBeforeTranslationScanner(transpilationHandler, context);
+
+		for (int i = 0; i < compilationUnits.length(); i++) {
+			globalScanner.scan(compilationUnits.get(i));
+		}
+
 		if (context.useModules) {
 			generateTsModules(transpilationHandler, files, compilationUnits);
 		} else {
@@ -735,9 +741,6 @@ public class JSweetTranspiler implements JSweetOptions {
 	private void generateTsFiles(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files, List<JCCompilationUnit> compilationUnits)
 			throws IOException {
 		// regular file-to-file generation
-		for (int i = 0; i < compilationUnits.length(); i++) {
-			new DefaultMethodScanner(transpilationHandler, context, compilationUnits.get(i)).visitTopLevel(compilationUnits.get(i));
-		}
 		for (int i = 0; i < compilationUnits.length(); i++) {
 			JCCompilationUnit cu = compilationUnits.get(i);
 			logger.info("scanning " + cu.sourcefile.getName() + "...");
@@ -800,10 +803,6 @@ public class JSweetTranspiler implements JSweetOptions {
 			permutationString.append("" + i + "=" + permutation[i] + ";");
 		}
 		logger.debug("permutation: " + permutationString.toString());
-		for (int i = 0; i < orderedCompilationUnits.size(); i++) {
-			new DefaultMethodScanner(transpilationHandler, context, orderedCompilationUnits.get(i)).visitTopLevel(orderedCompilationUnits.get(i));
-		}
-
 		for (int i = 0; i < orderedCompilationUnits.size(); i++) {
 			JCCompilationUnit cu = orderedCompilationUnits.get(i);
 			logger.info("scanning " + cu.sourcefile.getName() + "...");
@@ -877,9 +876,6 @@ public class JSweetTranspiler implements JSweetOptions {
 			permutationString.append("" + i + "=" + permutation[i] + ";");
 		}
 		logger.debug("permutation: " + permutationString.toString());
-		for (int i = 0; i < orderedCompilationUnits.size(); i++) {
-			new DefaultMethodScanner(transpilationHandler, context, orderedCompilationUnits.get(i)).visitTopLevel(orderedCompilationUnits.get(i));
-		}
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < orderedCompilationUnits.size(); i++) {
 			JCCompilationUnit cu = orderedCompilationUnits.get(i);
