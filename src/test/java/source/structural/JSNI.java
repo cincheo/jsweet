@@ -6,5 +6,19 @@ public class JSNI {
 		var c = a + b;
 		return c;
 	}-*/;
+
+	public native int m2(int a, 
+			int b, 
+			int c) /*-{
+	    var c = a + b;
+	    return c;
+    }-*/;
+
+	public native int m3() 
+	/*-{
+	    var c = 2;
+	    return c;
+    }-*/;
 	
 }
+

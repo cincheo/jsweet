@@ -818,9 +818,18 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			if (!declareClassScope && !ambient && !interfaceScope) {
 				content = getGetSource(getCompilationUnit());
 				if (content != null) {
-					int line = diagnosticSource.getLineNumber(methodDecl.getStartPosition()) - 1;
+					int line = 0;
+					if (methodDecl.getParameters() != null && !methodDecl.getParameters().isEmpty()) {
+						line = diagnosticSource.getLineNumber(methodDecl.getParameters().last().getStartPosition()) - 1;
+					} else {
+						line = diagnosticSource.getLineNumber(methodDecl.getStartPosition()) - 1;
+					}
 					if (content[line].contains("/*-{")) {
 						jsniLine = line;
+					} else {
+						if (content[line + 1].contains("/*-{")) {
+							jsniLine = line + 1;
+						}
 					}
 				}
 				if (jsniLine == -1) {
