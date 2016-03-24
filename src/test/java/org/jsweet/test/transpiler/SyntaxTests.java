@@ -59,12 +59,10 @@ public class SyntaxTests extends AbstractTest {
 	@Test
 	public void testKeywords() {
 		transpile((logHandler) -> {
-			logHandler.assertReportedProblems(JSweetProblem.JS_KEYWORD_CONFLICT, JSweetProblem.JS_KEYWORD_CONFLICT, JSweetProblem.JS_KEYWORD_CONFLICT,
-					JSweetProblem.JS_KEYWORD_CONFLICT, JSweetProblem.JS_KEYWORD_CONFLICT, JSweetProblem.JS_KEYWORD_CONFLICT);
-//			Assert.assertEquals("There should be no errors", 5, logHandler.reportedProblems.size());
-//			for (int i = 0; i < 5; i++) {
-//				Assert.assertEquals("Error #" + i + " is not of the right kind", JSweetProblem.JS_KEYWORD_CONFLICT, logHandler.reportedProblems.get(i));
-//			}
+			Assert.assertEquals(8, logHandler.reportedProblems.size());
+			for (JSweetProblem problem : logHandler.reportedProblems) {
+				Assert.assertEquals(JSweetProblem.JS_KEYWORD_CONFLICT, problem);
+			}
 		} , getSourceFile(Keywords.class));
 	}
 
@@ -188,6 +186,5 @@ public class SyntaxTests extends AbstractTest {
 			logHandler.assertReportedProblems();
 		} , getSourceFile(Literals.class));
 	}
-	
-	
+
 }

@@ -31,8 +31,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
@@ -122,20 +120,21 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	protected static Logger logger = Logger.getLogger(Java2TypeScriptTranslator.class);
 
 	private static class Scope {
-		public boolean interfaceScope = false;
+		private boolean interfaceScope = false;
 
-		public boolean sharedMode = false;
+		private boolean sharedMode = false;
 
-		public boolean enumScope = false;
+		private boolean enumScope = false;
 
-		public boolean removedSuperclass = false;
+		private boolean removedSuperclass = false;
 
-		public boolean declareClassScope;
+		private boolean declareClassScope;
 
-		public boolean skipTypeAnnotations = false;
+		private boolean skipTypeAnnotations = false;
 
 		private boolean defaultMethodScope = false;
 
+		private boolean eraseVariableTypes = false;
 	}
 
 	private Stack<Scope> scope = new Stack<>();
@@ -951,20 +950,19 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 		print("(");
 		if (inCoreWrongOverload) {
-			for (JCVariableDecl param : methodDecl.params) {
-				printIdentifier(param.name.toString()).print("?").print(" : ").print("any");
-				print(", ");
+			getScope().eraseVariableTypes = true;
+		}
+		int i = 0;
+		for (JCVariableDecl param : methodDecl.params) {
+			print(param);
+			if (inOverload && overload.isValid && overload.defaultValues[i] != null) {
+				print(" = ").print(overload.defaultValues[i]);
 			}
-		} else {
-			int i = 0;
-			for (JCVariableDecl param : methodDecl.params) {
-				print(param);
-				if (inOverload && overload.isValid && overload.defaultValues[i] != null) {
-					print(" = ").print(overload.defaultValues[i]);
-				}
-				print(", ");
-				i++;
-			}
+			print(", ");
+			i++;
+		}
+		if (inCoreWrongOverload) {
+			getScope().eraseVariableTypes = false;
 		}
 		if (!methodDecl.params.isEmpty()) {
 			removeLastChars(2);
@@ -1026,7 +1024,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			} else {
 				if (inCoreWrongOverload) {
 					print(" {").println().startIndent().printIndent();
-					for (int i = 0; i < overload.methods.size(); i++) {
+					for (i = 0; i < overload.methods.size(); i++) {
 						JCMethodDecl method = overload.methods.get(i);
 						if (i > 0) {
 							print(" else ");
@@ -1048,7 +1046,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							}
 							print(".").print(getOverloadMethodName(method)).print("(");
 							for (int j = 0; j < method.params.size(); j++) {
-								print(overload.coreMethod.params.get(j).name.toString()).print(", ");
+								print(avoidJSKeyword(overload.coreMethod.params.get(j).name.toString())).print(", ");
 							}
 							if (!method.params.isEmpty()) {
 								removeLastChars(2);
@@ -1077,15 +1075,15 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (method.params.get(j).name.equals(((JCVariableDecl) args.get(j)).name)) {
 					continue;
 				} else {
-					printIndent().print("var ").printIdentifier(method.params.get(j).name.toString()).print(" : ").print("any").print(" = ")
-							.printIdentifier(((JCVariableDecl) args.get(j)).name.toString()).print(";").println();
+					printIndent().print("var ").printIdentifier(avoidJSKeyword(method.params.get(j).name.toString())).print(" : ").print("any").print(" = ")
+							.printIdentifier(avoidJSKeyword(((JCVariableDecl) args.get(j)).name.toString())).print(";").println();
 				}
 			} else {
 				if (method.params.get(j).name.toString().equals(args.get(j).toString())) {
 					continue;
 				} else {
-					printIndent().print("var ").printIdentifier(method.params.get(j).name.toString()).print(" : ").print("any").print(" = ").print(args.get(j))
-							.print(";").println();
+					printIndent().print("var ").printIdentifier(avoidJSKeyword(method.params.get(j).name.toString())).print(" : ").print("any").print(" = ")
+							.print(args.get(j)).print(";").println();
 				}
 			}
 		}
@@ -1148,11 +1146,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	private void printMethodParamsTest(JCMethodDecl coreMethod, JCMethodDecl m) {
 		int i = 0;
 		for (; i < m.params.size(); i++) {
-			printInstanceOf(coreMethod.params.get(i).name.toString(), null, m.params.get(i).type);
+			printInstanceOf(avoidJSKeyword(coreMethod.params.get(i).name.toString()), null, m.params.get(i).type);
 			print(" && ");
 		}
 		for (; i < coreMethod.params.size(); i++) {
-			print(coreMethod.params.get(i).name.toString()).print(" == null");
+			print(avoidJSKeyword(coreMethod.params.get(i).name.toString())).print(" == null");
 			print(" && ");
 		}
 		removeLastChars(4);
@@ -1210,6 +1208,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 	}
 
+	private String avoidJSKeyword(String name) {
+		if (JSweetConfig.JS_KEYWORDS.contains(name)) {
+			name = JSweetConfig.JS_KEYWORD_PREFIX + name;
+		}
+		return name;
+	}
+
 	@Override
 	public void visitVarDef(JCVariableDecl varDecl) {
 		if (Util.hasAnnotationType(varDecl.sym, JSweetConfig.ANNOTATION_ERASED)) {
@@ -1239,7 +1244,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					report(varDecl, varDecl.name, JSweetProblem.CONSTRUCTOR_MEMBER);
 				}
 			} else {
-				if (JSweetConfig.JS_KEYWORDS.contains(varDecl.name.toString())) {
+				if (JSweetConfig.JS_KEYWORDS.contains(name)) {
 					report(varDecl, varDecl.name, JSweetProblem.JS_KEYWORD_CONFLICT, name, name);
 					name = JSweetConfig.JS_KEYWORD_PREFIX + name;
 				}
@@ -1322,7 +1327,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			if (!getScope().skipTypeAnnotations) {
 				if (typeChecker.checkType(varDecl, varDecl.name, varDecl.vartype)) {
 					print(" : ");
-					getAdapter().substituteAndPrintType(varDecl.vartype);
+					if (getScope().eraseVariableTypes) {
+						print("any");
+					} else {
+						getAdapter().substituteAndPrintType(varDecl.vartype);
+					}
 				}
 			}
 			if (varDecl.init != null) {

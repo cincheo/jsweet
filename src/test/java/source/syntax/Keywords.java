@@ -19,13 +19,27 @@ package source.syntax;
 public class Keywords {
 
 	String in;
-	
+
 	Keywords(String in) {
-        super();
-        this.in = in;
-    }
-	
+		super();
+		this.in = in;
+	}
+
+	Keywords(String in, int i) {
+		super();
+		this.in = in;
+	}
+
 	void var(String s, int i) {
+	}
+
+	void f(String in) {
+		this.in = in;
+	}
+
+	void f(String in, String prefix) {
+		this.in = prefix + in;
+		var(in, in.length());
 	}
 
 	void function(String typeof, int i) {
