@@ -1323,7 +1323,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 
 			printIdentifier(name);
-			if (getScope().interfaceScope && Util.hasAnnotationType(varDecl.sym, JSweetConfig.ANNOTATION_OPTIONAL)) {
+			if (getScope().eraseVariableTypes || (getScope().interfaceScope && Util.hasAnnotationType(varDecl.sym, JSweetConfig.ANNOTATION_OPTIONAL))) {
 				print("?");
 			}
 			if (!getScope().skipTypeAnnotations) {
@@ -2256,9 +2256,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (typeParameter.bounds != null && !typeParameter.bounds.isEmpty()) {
 			print(" extends ");
 			for (JCExpression e : typeParameter.bounds) {
-				getAdapter().substituteAndPrintType(e).print(",");
+				getAdapter().substituteAndPrintType(e).print(" & ");
 			}
-			removeLastChar();
+			removeLastChars(3);
 		}
 	}
 
