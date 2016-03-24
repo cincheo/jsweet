@@ -31,6 +31,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
@@ -978,18 +980,18 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			if (jsniLine != -1) {
 				int line = jsniLine;
 				print(" {").println().startIndent();
-				String jsCode = content[line].substring(content[line].indexOf("/*-{") + 4).trim();
-				if (!StringUtils.isEmpty(jsCode)) {
-					printIndent().print(jsCode.replaceAll("@.*::", "")).println();
+				String jsniCode = content[line].substring(content[line].indexOf("/*-{") + 4).trim();
+				if (!StringUtils.isEmpty(jsniCode)) {
+					printIndent().print(parseJSNI(jsniCode)).println();
 				}
 				line++;
 				while (!content[line].contains("}-*/")) {
-					jsCode = content[line++].trim();
-					printIndent().print(jsCode.replaceAll("@.*::", "")).println();
+					jsniCode = content[line++].trim();
+					printIndent().print(parseJSNI(jsniCode)).println();
 				}
-				jsCode = content[line].substring(0, content[line].indexOf("}-*/")).trim();
-				if (!StringUtils.isEmpty(jsCode)) {
-					printIndent().print(jsCode.replaceAll("@.*::", "")).println();
+				jsniCode = content[line].substring(0, content[line].indexOf("}-*/")).trim();
+				if (!StringUtils.isEmpty(jsniCode)) {
+					printIndent().print(parseJSNI(jsniCode)).println();
 				}
 				endIndent().printIndent().print("}");
 			} else {
@@ -1062,6 +1064,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 			}
 		}
+	}
+
+	private String parseJSNI(String jsniCode) {
+		return jsniCode.replaceAll("@.*::([a-zA-Z_$][a-zA-Z\\d_$]*)\\([^)]*\\)", "$1").replaceAll("@.*::([a-zA-Z_$][a-zA-Z\\d_$]*)", "$1");
 	}
 
 	private void printInlinedConstructorBody(Overload overload, JCMethodDecl method, List<? extends JCTree> args) {
