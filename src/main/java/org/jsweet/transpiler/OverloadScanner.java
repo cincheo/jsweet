@@ -144,10 +144,14 @@ public class OverloadScanner extends AbstractTreeScanner {
 					Overload overload = getOverload(clazz, method);
 					overload.methods.add(method);
 				}
+				// scan inner classes
+				if (member instanceof JCClassDecl) {
+					scan(member);
+				}
 			}
 		} else {
 			for (JCTree member : classdecl.defs) {
-				if (member instanceof JCMethodDecl) {
+				if (member instanceof JCMethodDecl || member instanceof JCClassDecl) {
 					this.scan(member);
 				}
 			}
