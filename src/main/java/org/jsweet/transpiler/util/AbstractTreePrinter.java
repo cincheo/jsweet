@@ -321,6 +321,8 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 		this.adapter = adapter;
 	}
 
+	protected boolean inArgListTail = false;
+	
 	/**
 	 * Prints a comma-separated list of subtrees.
 	 */
@@ -328,7 +330,9 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 		for (JCTree arg : args) {
 			print(arg);
 			print(", ");
+			inArgListTail = true;
 		}
+		inArgListTail = false;
 		if (!args.isEmpty()) {
 			removeLastChars(2);
 		}

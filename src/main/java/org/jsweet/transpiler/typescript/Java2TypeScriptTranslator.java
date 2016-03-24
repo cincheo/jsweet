@@ -1309,7 +1309,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						print("declare ");
 					}
 				}
-				print("var ");
+				if (!(inArgListTail && (parent instanceof JCForLoop))) {
+					print("var ");
+				}
 			} else {
 				if (ambient) {
 					report(varDecl, varDecl.name, JSweetProblem.WRONG_USE_OF_AMBIENT, varDecl.name);

@@ -39,6 +39,7 @@ import source.syntax.IndexedAccessInStaticScope;
 import source.syntax.Keywords;
 import source.syntax.Labels;
 import source.syntax.Literals;
+import source.syntax.Looping;
 import source.syntax.QualifiedNames;
 import source.syntax.References;
 import source.syntax.SpecialFunctions;
@@ -187,4 +188,11 @@ public class SyntaxTests extends AbstractTest {
 		} , getSourceFile(Literals.class));
 	}
 
+	@Test
+	public void testLooping() {
+		transpile((logHandler) -> {
+			logHandler.assertReportedProblems();
+		} , getSourceFile(Looping.class));
+	}
+	
 }
