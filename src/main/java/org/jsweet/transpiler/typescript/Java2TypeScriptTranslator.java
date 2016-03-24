@@ -166,7 +166,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		instanceOfTypeMapping.put("float", "Number");
 		instanceOfTypeMapping.put("double", "Number");
 		instanceOfTypeMapping.put("short", "Number");
-		instanceOfTypeMapping.put("charr", "String");
+		instanceOfTypeMapping.put("char", "String");
 		instanceOfTypeMapping.put("boolean", "Boolean");
 		instanceOfTypeMapping.put("byte", "Number");
 	}
@@ -934,7 +934,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		print("(");
 		if (inCoreWrongOverload) {
 			for (JCVariableDecl param : methodDecl.params) {
-				print(param.name.toString()).print("?").print(" : ").print("any");
+				printIdentifier(param.name.toString()).print("?").print(" : ").print("any");
 				print(", ");
 			}
 		} else {
@@ -1055,11 +1055,16 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (method.params.get(j).name.equals(((JCVariableDecl) args.get(j)).name)) {
 					continue;
 				} else {
-					printIndent().print("var ").print(method.params.get(j)).print(" = ").print(((JCVariableDecl) args.get(j)).name.toString()).print(";")
-							.println();
+					printIndent().print("var ").printIdentifier(method.params.get(j).name.toString()).print(" : ").print("any").print(" = ")
+							.printIdentifier(((JCVariableDecl) args.get(j)).name.toString()).print(";").println();
 				}
 			} else {
-				printIndent().print("var ").print(method.params.get(j)).print(" = ").print(args.get(j)).print(";").println();
+				if (method.params.get(j).name.toString().equals(args.get(j).toString())) {
+					continue;
+				} else {
+					printIndent().print("var ").printIdentifier(method.params.get(j).name.toString()).print(" : ").print("any").print(" = ").print(args.get(j))
+							.print(";").println();
+				}
 			}
 		}
 		boolean skipFirst = false;
