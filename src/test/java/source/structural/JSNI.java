@@ -17,7 +17,7 @@ public class JSNI {
 	public native int m3() 
 	/*-{
 	    var c = 2;
-	    return c;
+	    return this.@JSNI::m(1, c);
     }-*/;
 	
 }

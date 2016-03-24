@@ -980,16 +980,16 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				print(" {").println().startIndent();
 				String jsCode = content[line].substring(content[line].indexOf("/*-{") + 4).trim();
 				if (!StringUtils.isEmpty(jsCode)) {
-					printIndent().print(jsCode).println();
+					printIndent().print(jsCode.replaceAll("@.*::", "")).println();
 				}
 				line++;
 				while (!content[line].contains("}-*/")) {
 					jsCode = content[line++].trim();
-					printIndent().print(jsCode).println();
+					printIndent().print(jsCode.replaceAll("@.*::", "")).println();
 				}
 				jsCode = content[line].substring(0, content[line].indexOf("}-*/")).trim();
 				if (!StringUtils.isEmpty(jsCode)) {
-					printIndent().print(jsCode).println();
+					printIndent().print(jsCode.replaceAll("@.*::", "")).println();
 				}
 				endIndent().printIndent().print("}");
 			} else {
