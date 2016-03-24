@@ -779,6 +779,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 		JCClassDecl parent = (JCClassDecl) getParent();
 
+		if (JSweetConfig.INDEXED_GET_FUCTION_NAME.equals(methodDecl.getName().toString()) && methodDecl.getParameters().size() == 1) {
+			print("[").print(methodDecl.getParameters().head).print("]: ");
+			getAdapter().substituteAndPrintType(methodDecl.restype).print(";");
+			return;
+		}
+
 		boolean constructor = methodDecl.name.toString().equals("<init>");
 		if (enumScope) {
 			if (constructor) {
@@ -1689,7 +1695,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (newClass.def != null || isInterface) {
 			if (isInterface || Util.hasAnnotationType(newClass.clazz.type.tsym, JSweetConfig.ANNOTATION_OBJECT_TYPE)) {
 				if (isInterface) {
-					print("<").print(newClass.clazz).print(">");
+					print("<").print(newClass.clazz).print(">").print("<any>");
 				}
 				print("{").println().startIndent();
 				boolean statementPrinted = false;

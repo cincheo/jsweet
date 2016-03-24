@@ -37,6 +37,7 @@ import source.init.Initializer;
 import source.init.InitializerStatementConditionError;
 import source.init.InitializerStatementError;
 import source.init.InterfaceRawConstruction;
+import source.init.InterfaceWithSuperInterface;
 import source.init.MultipleMains;
 import source.init.NoOptionalFieldsInClass;
 import source.init.OptionalField;
@@ -209,6 +210,18 @@ public class InitTests extends AbstractTest {
 		}
 	}
 
+	@Test
+	public void testInterfaceWithSuperInterface() {
+		TestTranspilationHandler logHandler = new TestTranspilationHandler();
+		try {
+			transpiler.transpile(logHandler, getSourceFile(InterfaceWithSuperInterface.class));
+			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail("Exception occured while running test");
+		}
+	}
+	
 	@Test
 	public void testMultipleMains() {
 		TestTranspilationHandler logHandler = new TestTranspilationHandler();

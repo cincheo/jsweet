@@ -32,4 +32,5 @@ public class InterfaceRawConstruction extends jsweet.lang.Object {
 
 @Interface
 abstract class DataStruct6 {
+	public native String $get(String userId);
 }
