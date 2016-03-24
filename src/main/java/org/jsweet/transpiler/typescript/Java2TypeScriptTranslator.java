@@ -1849,10 +1849,18 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	@Override
 	public void visitLiteral(JCLiteral literal) {
 		String s = literal.toString();
-		if (literal.typetag == TypeTag.FLOAT) {
+		switch (literal.typetag) {
+		case FLOAT:
 			if (s.endsWith("F")) {
 				s = s.substring(0, s.length() - 1);
 			}
+			break;
+		case LONG:
+			if (s.endsWith("L")) {
+				s = s.substring(0, s.length() - 1);
+			}
+			break;
+		default:
 		}
 		print(s);
 	}

@@ -35,13 +35,14 @@ import source.syntax.FinalVariables;
 import source.syntax.FinalVariablesRuntime;
 import source.syntax.GlobalsCastMethod;
 import source.syntax.GlobalsInvocation;
-import source.syntax.StatementsWithNoBlocks;
 import source.syntax.IndexedAccessInStaticScope;
 import source.syntax.Keywords;
 import source.syntax.Labels;
+import source.syntax.Literals;
 import source.syntax.QualifiedNames;
 import source.syntax.References;
 import source.syntax.SpecialFunctions;
+import source.syntax.StatementsWithNoBlocks;
 import source.syntax.ValidIndexedAccesses;
 
 public class SyntaxTests extends AbstractTest {
@@ -181,4 +182,12 @@ public class SyntaxTests extends AbstractTest {
 		} , f);
 	}
 
+	@Test
+	public void testLiterals() {
+		transpile((logHandler) -> {
+			logHandler.assertReportedProblems();
+		} , getSourceFile(Literals.class));
+	}
+	
+	
 }
