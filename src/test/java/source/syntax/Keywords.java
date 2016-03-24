@@ -18,6 +18,13 @@ package source.syntax;
 
 public class Keywords {
 
+	String in;
+	
+	Keywords(String in) {
+        super();
+        this.in = in;
+    }
+	
 	void var(String s, int i) {
 	}
 

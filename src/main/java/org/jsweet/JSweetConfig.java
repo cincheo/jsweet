@@ -257,6 +257,16 @@ public abstract class JSweetConfig {
 	 */
 	public static final Set<String> TS_TOP_LEVEL_KEYWORDS = new HashSet<String>();
 
+	/**
+	 * The prefix to add to variables that clash with JS keywords.
+	 */
+	public static final String JS_KEYWORD_PREFIX = "__";
+
+	/**
+	 * The prefix to add to variables that clash with methods.
+	 */
+	public static final String FIELD_METHOD_CLASH_RESOLVER_PREFIX = "__";
+	
 	static {
 		// note TS keywords are removed from that list
 		JAVA_KEYWORDS.add("abstract");
@@ -313,6 +323,7 @@ public abstract class JSweetConfig {
 		JS_KEYWORDS.add("function");
 		JS_KEYWORDS.add("var");
 		JS_KEYWORDS.add("typeof");
+		JS_KEYWORDS.add("in");
 
 		TS_STRICT_MODE_KEYWORDS.add("as");
 		TS_STRICT_MODE_KEYWORDS.add("implements");

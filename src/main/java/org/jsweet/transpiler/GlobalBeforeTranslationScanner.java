@@ -18,6 +18,7 @@ package org.jsweet.transpiler;
 
 import javax.lang.model.element.Modifier;
 
+import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.util.AbstractTreeScanner;
 import org.jsweet.transpiler.util.Util;
 
@@ -49,7 +50,7 @@ public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {
 				JCVariableDecl var = (JCVariableDecl) def;
 				MethodSymbol m = Util.findMethodDeclarationInType(context.types, classdecl.sym, var.name.toString(), null);
 				if (m != null) {
-					context.addFieldNameMapping(var.sym, "__" + var.name.toString());
+					context.addFieldNameMapping(var.sym, JSweetConfig.FIELD_METHOD_CLASH_RESOLVER_PREFIX + var.name.toString());
 				}
 			}
 		}

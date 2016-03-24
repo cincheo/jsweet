@@ -1214,7 +1214,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			} else {
 				if (JSweetConfig.JS_KEYWORDS.contains(varDecl.name.toString())) {
 					report(varDecl, varDecl.name, JSweetProblem.JS_KEYWORD_CONFLICT, name, name);
-					name = "_jsweet_" + name;
+					name = JSweetConfig.JS_KEYWORD_PREFIX + name;
 				}
 			}
 
@@ -1638,7 +1638,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						}
 					} else {
 						if (JSweetConfig.JS_KEYWORDS.contains(name)) {
-							name = "_jsweet_" + name;
+							name = JSweetConfig.JS_KEYWORD_PREFIX + name;
 						}
 					}
 				}
