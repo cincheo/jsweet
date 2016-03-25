@@ -1101,7 +1101,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 
 		}
+		stack.push(method.getBody());
 		printBlockStatements(skipFirst ? method.getBody().stats.tail : method.getBody().stats);
+		stack.pop();
 		endIndent().printIndent().print("}");
 	}
 
