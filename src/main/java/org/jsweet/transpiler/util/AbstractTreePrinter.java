@@ -21,6 +21,7 @@ import static org.apache.commons.lang3.StringUtils.join;
 
 import java.util.List;
 import java.util.Stack;
+import java.util.function.Consumer;
 
 import org.apache.log4j.Logger;
 import org.jsweet.transpiler.JSweetContext;
@@ -224,7 +225,7 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	}
 
 	/**
-	 * Outputs a string.
+	 * Outputs a string (new lines are not allowed).
 	 */
 	public AbstractTreePrinter print(String string) {
 		out.append(string);
@@ -322,13 +323,17 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	}
 
 	protected boolean inArgListTail = false;
-	
+
 	/**
 	 * Prints a comma-separated list of subtrees.
 	 */
-	public AbstractTreePrinter printArgList(List<? extends JCTree> args) {
+	public AbstractTreePrinter printArgList(List<? extends JCTree> args, Consumer<JCTree> printer) {
 		for (JCTree arg : args) {
-			print(arg);
+			if (printer != null) {
+				printer.accept(arg);
+			} else {
+				print(arg);
+			}
 			print(", ");
 			inArgListTail = true;
 		}
@@ -337,6 +342,10 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 			removeLastChars(2);
 		}
 		return this;
+	}
+
+	public AbstractTreePrinter printArgList(List<? extends JCTree> args) {
+		return printArgList(args, null);
 	}
 
 	/**
@@ -421,4 +430,5 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 
 		return this;
 	}
+
 }

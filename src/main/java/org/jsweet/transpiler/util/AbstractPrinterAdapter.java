@@ -49,6 +49,11 @@ public abstract class AbstractPrinterAdapter {
 	private AbstractTreePrinter printer;
 
 	/**
+	 * A flags that indicates if ths adapter is printing type parameters.
+	 */
+	public boolean inTypeParameters = false;
+
+	/**
 	 * Reports a problem during the printing phase.
 	 * 
 	 * @param tree
@@ -209,9 +214,20 @@ public abstract class AbstractPrinterAdapter {
 				getPrinter().print(">");
 			}
 			return getPrinter();
-		} else if(typeTree instanceof JCWildcard) {
-			//JCWildcard wildCard = ((JCWildcard) typeTree);
-			return getPrinter().print("any");
+		} else if (typeTree instanceof JCWildcard) {
+			JCWildcard wildcard = ((JCWildcard) typeTree);
+			String name = getPrinter().getContext().getWildcardName(wildcard);
+			if (name == null) {
+				return getPrinter().print("any");
+			} else {
+				getPrinter().print(name);
+				if (inTypeParameters) {
+					getPrinter().print(" extends ");
+					return substituteAndPrintType(wildcard.getBound(), arrayComponent);
+				} else {
+					return getPrinter();
+				}
+			}
 		} else {
 			if (typeTree instanceof JCArrayTypeTree) {
 				return substituteAndPrintType(((JCArrayTypeTree) typeTree).elemtype, true).print("[]");

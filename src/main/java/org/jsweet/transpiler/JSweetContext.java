@@ -39,6 +39,7 @@ import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
+import com.sun.tools.javac.tree.JCTree.JCWildcard;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Names;
 
@@ -280,6 +281,68 @@ public class JSweetContext extends Context {
 	 */
 	public String getFieldNameMapping(Symbol field) {
 		return fieldNameMapping.get(field);
+	}
+
+	/**
+	 * Tells JSweet to ignore wildcard bounds. For instance if ignored:
+	 * 
+	 * <pre>
+	 * void f(C<? extends String> c)
+	 * </pre>
+	 * 
+	 * will transpile to:
+	 * 
+	 * <pre>
+	 * f(c: C<any>)
+	 * </pre>
+	 * 
+	 * otherwise:
+	 * 
+	 * <pre>
+	 * void f(C<? extends String> c)
+	 * </pre>
+	 * 
+	 * will transpile to:
+	 * 
+	 * <pre>
+	 * f<__T1 extends string>(c: C<__T1>)
+	 * </pre>
+	 * 
+	 */
+	public boolean ignoreWildcardBounds = false;
+
+	private Map<JCWildcard, String> wildcardNames = new HashMap<>();
+
+	private Map<Symbol, List<JCWildcard>> wildcards = new HashMap<>();
+
+	/**
+	 * Registers a wilcard for a given container (type parameterized element).
+	 */
+	public void registerWildcard(Symbol holder, JCWildcard wildcard) {
+		if (wildcard.getBound() == null) {
+			return;
+		}
+		List<JCWildcard> l = wildcards.get(holder);
+		if (l == null) {
+			l = new ArrayList<>();
+			wildcards.put(holder, l);
+		}
+		l.add(wildcard);
+		wildcardNames.put(wildcard, "__T" + l.size());
+	}
+
+	/**
+	 * Gets the wildcard name if any.
+	 */
+	public String getWildcardName(JCWildcard wildcard) {
+		return wildcardNames.get(wildcard);
+	}
+
+	/**
+	 * Gets the registered wildcards for the given type parameter holder.
+	 */
+	public List<JCWildcard> getWildcards(Symbol holder) {
+		return wildcards.get(holder);
 	}
 
 }

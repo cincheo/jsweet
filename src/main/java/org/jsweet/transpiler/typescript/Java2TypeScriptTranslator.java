@@ -945,8 +945,20 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				printIdentifier(getTSMethodName(methodDecl));
 			}
 		}
-		if (methodDecl.typarams != null && !methodDecl.typarams.isEmpty()) {
-			print("<").printArgList(methodDecl.typarams).print(">");
+		if ((methodDecl.typarams != null && !methodDecl.typarams.isEmpty()) || (getContext().getWildcards(methodDecl.sym) != null)) {
+			getAdapter().inTypeParameters = true;
+			print("<");
+			if (methodDecl.typarams != null && !methodDecl.typarams.isEmpty()) {
+				printArgList(methodDecl.typarams);
+				if (getContext().getWildcards(methodDecl.sym) != null) {
+					print(", ");
+				}
+			}
+			if (getContext().getWildcards(methodDecl.sym) != null) {
+				printArgList(getContext().getWildcards(methodDecl.sym), getAdapter()::substituteAndPrintType);
+			}
+			print(">");
+			getAdapter().inTypeParameters = false;
 		}
 		print("(");
 		if (inCoreWrongOverload) {
@@ -955,8 +967,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		int i = 0;
 		for (JCVariableDecl param : methodDecl.params) {
 			print(param);
-			if (inOverload && overload.isValid && overload.defaultValues[i] != null) {
-				print(" = ").print(overload.defaultValues[i]);
+			if (inOverload && overload.isValid && overload.defaultValues.get(i) != null) {
+				print(" = ").print(overload.defaultValues.get(i));
 			}
 			print(", ");
 			i++;
@@ -1036,9 +1048,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							printInlinedConstructorBody(overload, method, methodDecl.params);
 						} else {
 							print("{").println().startIndent().printIndent();
-							if (!method.sym.isConstructor()) {
-								print("return ");
-							}
+							// temporary cast to enum because of Java generics bug
+							print("return <any>");
 							if (method.sym.isStatic()) {
 								print(getQualifiedTypeName(parent.sym, false).toString());
 							} else {

@@ -22,11 +22,13 @@ import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.util.AbstractTreeScanner;
 import org.jsweet.transpiler.util.Util;
 
+import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
+import com.sun.tools.javac.tree.JCTree.JCWildcard;
 
 /**
  * This AST scanner performs global analysis and fills up the context with
@@ -61,6 +63,22 @@ public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {
 	public void visitMethodDef(JCMethodDecl methodDecl) {
 		if (methodDecl.mods.getFlags().contains(Modifier.DEFAULT)) {
 			getContext().addDefaultMethod(getParent(JCClassDecl.class), methodDecl);
+		}
+		if (!getContext().ignoreWildcardBounds) {
+			scan(methodDecl.params);
+		}
+	}
+
+	@Override
+	public void visitWildcard(JCWildcard wildcard) {
+		Symbol container = null;
+		JCMethodDecl method = getParent(JCMethodDecl.class);
+		if (method != null) {
+			container = method.sym;
+		}
+		if (container != null) {
+			getContext().registerWildcard(container, wildcard);
+			scan(wildcard.getBound());
 		}
 	}
 
