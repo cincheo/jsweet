@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.Modifier;
 
 import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.util.AbstractTreeScanner;
@@ -36,6 +37,7 @@ import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCExpressionStatement;
+import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
@@ -80,7 +82,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 		/**
 		 * The default values for the parameters of the core method.
 		 */
-		public JCLiteral[] defaultValues;
+		public Map<Integer, JCTree> defaultValues;
 
 		/**
 		 * Checks the validity of the overload and calculates the default
@@ -99,7 +101,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 			});
 			coreMethod = methods.get(0);
 			if (isValid) {
-				defaultValues = new JCLiteral[coreMethod.getParameters().size()];
+				defaultValues = new HashMap<>();
 			}
 		}
 	}
@@ -187,8 +189,20 @@ public class OverloadScanner extends AbstractTreeScanner {
 							if (invocation.getArguments() != null) {
 								for (int i = 0; i < invocation.getArguments().size(); i++) {
 									JCExpression expr = invocation.getArguments().get(i);
+									boolean constant = false;
 									if (expr instanceof JCLiteral) {
-										overload.defaultValues[i] = (JCLiteral) expr;
+										constant = true;
+									} else if (expr instanceof JCFieldAccess) {
+										if (((JCFieldAccess) expr).sym.isStatic() && ((JCFieldAccess) expr).sym.getModifiers().contains(Modifier.FINAL)) {
+											constant = true;
+										}
+									} else if (expr instanceof JCIdent) {
+										if (((JCIdent) expr).sym.isStatic() && ((JCIdent) expr).sym.getModifiers().contains(Modifier.FINAL)) {
+											constant = true;
+										}
+									}
+									if (constant) {
+										overload.defaultValues.put(i, expr);
 									} else {
 										if (!(expr instanceof JCIdent
 												&& methodDecl.params.stream().map(p -> p.name).anyMatch(p -> p.equals(((JCIdent) expr).name)))) {
