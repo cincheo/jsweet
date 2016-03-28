@@ -135,6 +135,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		private boolean defaultMethodScope = false;
 
 		private boolean eraseVariableTypes = false;
+
+		private boolean hasDeclaredConstructor = false;
 	}
 
 	private Stack<Scope> scope = new Stack<>();
@@ -507,12 +509,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			removeLastChar().endIndent().printIndent().print("}");
 		}
 
-		println().print("interface ObjectConstructor { defineProperty<T>(o: T, p: string, a: PropertyDescriptor): T; }");
-
 		if (footer.length() > 0) {
 			println().print(footer.toString());
 		}
-		
+
 		globalModule = false;
 	}
 
@@ -666,6 +666,22 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 			} else {
 				println().println();
+			}
+		}
+
+		if (!getScope().hasDeclaredConstructor && !(getScope().interfaceScope || getScope().enumScope)) {
+			Set<String> interfaces = new HashSet<>();
+			Util.grabSupportedInterfaceNames(interfaces, classdecl.sym);
+			if (!interfaces.isEmpty()) {
+				printIndent().print("constructor() {").startIndent();
+				println().printIndent().print("Object.defineProperty(this, '__interfaces', { value: ");
+				print("[");
+				for (String i : interfaces) {
+					print("\"").print(i).print("\",");
+				}
+				removeLastChar();
+				print("] });");
+				println().endIndent().printIndent().print("}").println().println();
 			}
 		}
 
@@ -1031,6 +1047,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			} else {
 				if (inCoreWrongOverload) {
 					print(" {").println().startIndent().printIndent();
+					printInterfacesInitialization(parent.sym, methodDecl.sym);
+
 					for (i = 0; i < overload.methods.size(); i++) {
 						JCMethodDecl method = overload.methods.get(i);
 						if (i > 0) {
@@ -1043,7 +1061,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							printInlinedConstructorBody(overload, method, methodDecl.params);
 						} else {
 							print("{").println().startIndent().printIndent();
-							// temporary cast to enum because of Java generics
+							// temporary cast to any because of Java generics
 							// bug
 							print("return <any>");
 							if (method.sym.isStatic()) {
@@ -1065,8 +1083,37 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					print(" else throw new Error('invalid overload');");
 					endIndent().println().printIndent().print("}");
 				} else {
-					print(" ").print(methodDecl.getBody());
+					print(" ").print("{").println().startIndent();
+					stack.push(methodDecl.getBody());
+					if (!methodDecl.getBody().stats.isEmpty() && methodDecl.getBody().stats.head.toString().startsWith("super(")) {
+						printBlockStatement(methodDecl.getBody().stats.head);
+						printInterfacesInitialization(parent.sym, methodDecl.sym);
+						printBlockStatements(methodDecl.getBody().stats.tail);
+					} else {
+						printInterfacesInitialization(parent.sym, methodDecl.sym);
+						printBlockStatements(methodDecl.getBody().stats);
+					}
+					stack.pop();
+					endIndent().printIndent().print("}");
+
 				}
+			}
+		}
+	}
+
+	private void printInterfacesInitialization(ClassSymbol clazz, MethodSymbol method) {
+		if (method.isConstructor()) {
+			getScope().hasDeclaredConstructor = true;
+			Set<String> interfaces = new HashSet<>();
+			Util.grabSupportedInterfaceNames(interfaces, clazz);
+			if (!interfaces.isEmpty()) {
+				printIndent().print("Object.defineProperty(this, '__interfaces', { value: ");
+				print("[");
+				for (String itf : interfaces) {
+					print("\"").print(itf).print("\",");
+				}
+				removeLastChar();
+				print("] });").println();
 			}
 		}
 	}
@@ -1116,24 +1163,28 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	private void printBlockStatements(List<JCStatement> statements) {
 		for (JCStatement statement : statements) {
-			printIndent();
-			int pos = getCurrentPosition();
-			print(statement);
-			if (getCurrentPosition() == pos) {
-				removeLastIndent();
-				continue;
-			}
-			if (!statementsWithNoSemis.contains(statement.getClass())) {
-				if (statement instanceof JCLabeledStatement) {
-					if (!statementsWithNoSemis.contains(((JCLabeledStatement) statement).body.getClass())) {
-						print(";");
-					}
-				} else {
+			printBlockStatement(statement);
+		}
+	}
+
+	private void printBlockStatement(JCStatement statement) {
+		printIndent();
+		int pos = getCurrentPosition();
+		print(statement);
+		if (getCurrentPosition() == pos) {
+			removeLastIndent();
+			return;
+		}
+		if (!statementsWithNoSemis.contains(statement.getClass())) {
+			if (statement instanceof JCLabeledStatement) {
+				if (!statementsWithNoSemis.contains(((JCLabeledStatement) statement).body.getClass())) {
 					print(";");
 				}
+			} else {
+				print(";");
 			}
-			println();
 		}
+		println();
 	}
 
 	private String getOverloadMethodName(JCMethodDecl method) {
@@ -1710,16 +1761,16 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			report(newClass, JSweetProblem.GLOBAL_CANNOT_BE_INSTANTIATED);
 			return;
 		}
-		Set<String> interfaces = new HashSet<>();
-		Util.grabSupportedInterfaceNames(interfaces, clazz);
-		if (!interfaces.isEmpty()) {
-			print("Object.defineProperty(");
-		}
 		boolean isInterface = Util.isInterface(clazz);
 		if (newClass.def != null || isInterface) {
 			if (isInterface || Util.hasAnnotationType(newClass.clazz.type.tsym, JSweetConfig.ANNOTATION_OBJECT_TYPE)) {
 				if (isInterface) {
-					print("<").print(newClass.clazz).print(">"); //.print("<any>");
+					print("<").print(newClass.clazz).print(">"); // .print("<any>");
+				}
+				Set<String> interfaces = new HashSet<>();
+				Util.grabSupportedInterfaceNames(interfaces, clazz);
+				if (!interfaces.isEmpty()) {
+					print("Object.defineProperty(");
 				}
 
 				print("{").println().startIndent();
@@ -1786,6 +1837,16 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 
 				println().endIndent().printIndent().print("}");
+				if (!interfaces.isEmpty()) {
+					print(", '__interfaces', { value: ");
+					print("[");
+					for (String i : interfaces) {
+						print("\"").print(i).print("\",");
+					}
+					removeLastChar();
+					print("]");
+					print(" })");
+				}
 
 			} else {
 
@@ -1856,16 +1917,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					}
 				}
 			}
-		}
-		if (!interfaces.isEmpty()) {
-			print(", '__interfaces', {value: ");
-			print("[");
-			for (String i : interfaces) {
-				print("\"").print(i).print("\",");
-			}
-			removeLastChar();
-			print("]");
-			print("})");
 		}
 
 	}
@@ -2320,9 +2371,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	@Override
 	public void visitTypeTest(JCInstanceOf instanceOf) {
-		// if (Util.isInterface(instanceOf.clazz.type.tsym)) {
-		// report(instanceOf, JSweetProblem.INVALID_INSTANCEOF_INTERFACE);
-		// }
 		printInstanceOf(null, instanceOf.expr, instanceOf.clazz.type);
 	}
 
