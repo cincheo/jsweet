@@ -507,9 +507,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			removeLastChar().endIndent().printIndent().print("}");
 		}
 
+		println().print("interface ObjectConstructor { defineProperty<T>(o: T, p: string, a: PropertyDescriptor): T; }");
+
 		if (footer.length() > 0) {
 			println().print(footer.toString());
 		}
+		
 		globalModule = false;
 	}
 
@@ -670,14 +673,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 		if (getScope().enumScope) {
 			removeLastChar().println();
-		}
-
-		if (!getScope().enumScope) {
-			if (!Util.isInterface(classdecl.sym)) {
-				if (printInterfacesField(classdecl.sym, " = ", "")) {
-					print(";").println();
-				}
-			}
 		}
 
 		if (!globals) {
@@ -1048,7 +1043,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							printInlinedConstructorBody(overload, method, methodDecl.params);
 						} else {
 							print("{").println().startIndent().printIndent();
-							// temporary cast to enum because of Java generics bug
+							// temporary cast to enum because of Java generics
+							// bug
 							print("return <any>");
 							if (method.sym.isStatic()) {
 								print(getQualifiedTypeName(parent.sym, false).toString());
@@ -1707,24 +1703,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		getAdapter().substituteAndPrintType(typeApply);
 	}
 
-	private boolean printInterfacesField(TypeSymbol type, String separator, String prefix) {
-		Set<String> interfaces = new HashSet<>();
-		Util.grabSupportedInterfaceNames(interfaces, type);
-		if (!interfaces.isEmpty()) {
-			print(prefix);
-			println().printIndent().print("__interfaces");
-			print(separator);
-			print("[");
-			for (String i : interfaces) {
-				print("\"").print(i).print("\",");
-			}
-			removeLastChar();
-			print("]");
-			return true;
-		}
-		return false;
-	}
-
 	@Override
 	public void visitNewClass(JCNewClass newClass) {
 		ClassSymbol clazz = ((ClassSymbol) newClass.clazz.type.tsym);
@@ -1732,12 +1710,18 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			report(newClass, JSweetProblem.GLOBAL_CANNOT_BE_INSTANTIATED);
 			return;
 		}
+		Set<String> interfaces = new HashSet<>();
+		Util.grabSupportedInterfaceNames(interfaces, clazz);
+		if (!interfaces.isEmpty()) {
+			print("Object.defineProperty(");
+		}
 		boolean isInterface = Util.isInterface(clazz);
 		if (newClass.def != null || isInterface) {
 			if (isInterface || Util.hasAnnotationType(newClass.clazz.type.tsym, JSweetConfig.ANNOTATION_OBJECT_TYPE)) {
 				if (isInterface) {
-					print("<").print(newClass.clazz).print(">").print("<any>");
+					print("<").print(newClass.clazz).print(">"); //.print("<any>");
 				}
+
 				print("{").println().startIndent();
 				boolean statementPrinted = false;
 				if (newClass.def != null) {
@@ -1801,9 +1785,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					}
 				}
 
-				printInterfacesField(clazz, " : ", statementPrinted ? "," : "");
-
 				println().endIndent().printIndent().print("}");
+
 			} else {
 
 				// ((target : DataStruct3) => {
@@ -1874,6 +1857,17 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 			}
 		}
+		if (!interfaces.isEmpty()) {
+			print(", '__interfaces', {value: ");
+			print("[");
+			for (String i : interfaces) {
+				print("\"").print(i).print("\",");
+			}
+			removeLastChar();
+			print("]");
+			print("})");
+		}
+
 	}
 
 	@Override
