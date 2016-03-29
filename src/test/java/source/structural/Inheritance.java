@@ -16,17 +16,16 @@
  */
 package source.structural;
 
+import static jsweet.util.Globals.$export;
+import static jsweet.util.Globals.$get;
+
 import jsweet.lang.Interface;
+import jsweet.lang.JSON;
 
 class AloneInTheDarkClass extends jsweet.lang.Object {
 	public AloneInTheDarkClass() {
 		// super() call shouldn't be generated
-		
 		int i = 5;
-	}
-	
-	public static void main(String[] args) {
-		B b = new B();
 	}
 }
 
@@ -43,6 +42,21 @@ public class Inheritance extends SuperClass1 {
 	public Inheritance() {
 		super();
 	}
+
+	public static void main(String[] args) {
+		B b = new B();
+		$export("X", b instanceof X);
+		$export("Y", b instanceof Y);
+		$export("itfb", $get(b, "__interfaces") != null);
+		$export("s1b", $get(b, "s1"));
+		$export("s2b", $get(b, "s2"));
+		String s = JSON.stringify(b);
+		Object o = JSON.parse(s);
+		$export("itfo", $get(o, "__interfaces") != null);
+		$export("s1o", $get(o, "s1"));
+		$export("s2o", $get(o, "s2"));
+	}
+
 }
 
 @Interface
@@ -54,8 +68,16 @@ abstract class SubInterface extends SuperInterface1 {
 abstract class SubInterface1 extends SuperClass1 {
 }
 
-interface X {}
+interface X {
+}
 
-class A implements X {}
+interface Y {
+}
 
-class B extends A {}
+class A implements X {
+	String s2 = "s2";
+}
+
+class B extends A implements Y {
+	String s1 = "s1";
+}
