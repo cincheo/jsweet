@@ -111,7 +111,7 @@ public class StructuralTests extends AbstractTest {
 
 	@Test
 	public void testInheritance() {
-		transpile(logHandler -> {
+		eval((logHandler, r) -> {
 			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
 		} , getSourceFile(Inheritance.class));
 	}

@@ -24,12 +24,14 @@ class AloneInTheDarkClass extends jsweet.lang.Object {
 		
 		int i = 5;
 	}
+	
+	public static void main(String[] args) {
+		B b = new B();
+	}
 }
 
-public class Inheritance extends SuperClass1 {
-	public Inheritance() {
-		super();
-	}
+@Interface
+abstract class SuperInterface1 {
 }
 
 class SuperClass1 extends SuperInterface1 {
@@ -37,8 +39,10 @@ class SuperClass1 extends SuperInterface1 {
 	}
 }
 
-@Interface
-abstract class SuperInterface1 {
+public class Inheritance extends SuperClass1 {
+	public Inheritance() {
+		super();
+	}
 }
 
 @Interface
@@ -49,3 +53,9 @@ abstract class SubInterface extends SuperInterface1 {
 @Interface
 abstract class SubInterface1 extends SuperClass1 {
 }
+
+interface X {}
+
+class A implements X {}
+
+class B extends A {}

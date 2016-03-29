@@ -674,7 +674,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			Util.grabSupportedInterfaceNames(interfaces, classdecl.sym);
 			if (!interfaces.isEmpty()) {
 				printIndent().print("constructor() {").startIndent();
-				println().printIndent().print("Object.defineProperty(this, '__interfaces', { value: ");
+				if (classdecl.extending != null) {
+					println().printIndent().print("super();");
+				}
+				println().printIndent().print("Object.defineProperty(this, '__interfaces', { configurable: true, value: ");
 				print("[");
 				for (String i : interfaces) {
 					print("\"").print(i).print("\",");
@@ -1107,7 +1110,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			Set<String> interfaces = new HashSet<>();
 			Util.grabSupportedInterfaceNames(interfaces, clazz);
 			if (!interfaces.isEmpty()) {
-				printIndent().print("Object.defineProperty(this, '__interfaces', { value: ");
+				printIndent().print("Object.defineProperty(this, '__interfaces', { configurable: true, value: ");
 				print("[");
 				for (String itf : interfaces) {
 					print("\"").print(itf).print("\",");
@@ -1838,7 +1841,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 				println().endIndent().printIndent().print("}");
 				if (!interfaces.isEmpty()) {
-					print(", '__interfaces', { value: ");
+					print(", '__interfaces', { configurable: true, value: ");
 					print("[");
 					for (String i : interfaces) {
 						print("\"").print(i).print("\",");
