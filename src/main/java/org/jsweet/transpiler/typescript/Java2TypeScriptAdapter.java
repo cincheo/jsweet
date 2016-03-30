@@ -95,6 +95,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		typesMapping.put(Integer.class.getName(), "number");
 		typesMapping.put(Short.class.getName(), "number");
 		typesMapping.put(Float.class.getName(), "number");
+		typesMapping.put(Long.class.getName(), "number");
 		typesMapping.put(Byte.class.getName(), "number");
 		typesMapping.put(Double.class.getName(), "number");
 		typesMapping.put(Boolean.class.getName(), "boolean");
@@ -103,6 +104,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		typesMapping.put("double", "number");
 		typesMapping.put("int", "number");
 		typesMapping.put("float", "number");
+		typesMapping.put("long", "number");
 		typesMapping.put("byte", "number");
 		typesMapping.put("short", "number");
 		typesMapping.put("char", "string");

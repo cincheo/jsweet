@@ -194,6 +194,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		instanceOfTypeMapping.put("java.lang.Character", "String");
 		instanceOfTypeMapping.put("java.lang.Byte", "Number");
 		instanceOfTypeMapping.put("java.lang.Boolean", "Boolean");
+		instanceOfTypeMapping.put("java.lang.Long", "Number");
 		instanceOfTypeMapping.put("int", "Number");
 		instanceOfTypeMapping.put("float", "Number");
 		instanceOfTypeMapping.put("double", "Number");
@@ -201,6 +202,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		instanceOfTypeMapping.put("char", "String");
 		instanceOfTypeMapping.put("boolean", "Boolean");
 		instanceOfTypeMapping.put("byte", "Number");
+		instanceOfTypeMapping.put("long", "Number");
 	}
 
 	private JCMethodDecl mainMethod;

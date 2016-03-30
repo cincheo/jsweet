@@ -68,6 +68,10 @@ public class Numbers<T> {
 		return 1.0f;
 	}
 
+	Long getLong() {
+		return 1L;
+	}
+	
 	Integer getInt() {
 		return 1;
 	}
