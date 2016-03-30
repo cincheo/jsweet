@@ -81,3 +81,6 @@ class A implements X {
 class B extends A implements Y {
 	String s1 = "s1";
 }
+
+class D extends SubInterface {
+}

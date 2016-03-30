@@ -674,7 +674,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			Util.grabSupportedInterfaceNames(interfaces, classdecl.sym);
 			if (!interfaces.isEmpty()) {
 				printIndent().print("constructor() {").startIndent();
-				if (classdecl.extending != null) {
+				if (classdecl.extending != null && !getScope().removedSuperclass && !Util.isInterface(classdecl.extending.type.tsym)) {
 					println().printIndent().print("super();");
 				}
 				println().printIndent().print("Object.defineProperty(this, '__interfaces', { configurable: true, value: ");
@@ -1021,8 +1021,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					jsni.append(jsniCode);
 					jsni.append("\n");
 				}
-				if(!StringUtils.isEmpty(jsni)) {
-					jsni.deleteCharAt(jsni.length()-1);
+				if (!StringUtils.isEmpty(jsni)) {
+					jsni.deleteCharAt(jsni.length() - 1);
 				}
 				String mergedCode = parseJSNI(jsni.toString());
 				for (String s : mergedCode.split("\\n")) {
