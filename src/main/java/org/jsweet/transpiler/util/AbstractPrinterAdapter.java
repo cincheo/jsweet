@@ -196,17 +196,17 @@ public abstract class AbstractPrinterAdapter {
 	}
 
 	public AbstractTreePrinter substituteAndPrintType(JCTree typeTree) {
-		return substituteAndPrintType(typeTree, false);
+		return substituteAndPrintType(typeTree, false, inTypeParameters);
 	}
 
-	public AbstractTreePrinter substituteAndPrintType(JCTree typeTree, boolean arrayComponent) {
+	public AbstractTreePrinter substituteAndPrintType(JCTree typeTree, boolean arrayComponent, boolean inTypeParameters) {
 		if (typeTree instanceof JCTypeApply) {
 			JCTypeApply typeApply = ((JCTypeApply) typeTree);
-			substituteAndPrintType(typeApply.clazz, arrayComponent);
+			substituteAndPrintType(typeApply.clazz, arrayComponent, inTypeParameters);
 			if (!typeApply.arguments.isEmpty()) {
 				getPrinter().print("<");
 				for (JCExpression argument : typeApply.arguments) {
-					substituteAndPrintType(argument, arrayComponent).print(",");
+					substituteAndPrintType(argument, arrayComponent, false).print(",");
 				}
 				if (typeApply.arguments.length() > 0) {
 					getPrinter().removeLastChar();
@@ -223,16 +223,15 @@ public abstract class AbstractPrinterAdapter {
 				getPrinter().print(name);
 				if (inTypeParameters) {
 					getPrinter().print(" extends ");
-					return substituteAndPrintType(wildcard.getBound(), arrayComponent);
+					return substituteAndPrintType(wildcard.getBound(), arrayComponent, false);
 				} else {
 					return getPrinter();
 				}
 			}
 		} else {
 			if (typeTree instanceof JCArrayTypeTree) {
-				return substituteAndPrintType(((JCArrayTypeTree) typeTree).elemtype, true).print("[]");
+				return substituteAndPrintType(((JCArrayTypeTree) typeTree).elemtype, true, inTypeParameters).print("[]");
 			}
-
 			return getPrinter().print(typeTree);
 		}
 	}

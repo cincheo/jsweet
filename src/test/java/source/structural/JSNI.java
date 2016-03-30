@@ -21,6 +21,13 @@ public class JSNI {
 	    var c = 2;
 	    return this.@JSNI::m(*)(1, c);
     }-*/;
+
+	public native int m4() 
+	/*-{
+	    var c = 2;
+	    return this.@JSNI::
+	    m(*)(1, c);
+    }-*/;
 	
 }
 

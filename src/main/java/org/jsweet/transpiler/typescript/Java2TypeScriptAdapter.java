@@ -579,7 +579,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		int i = 1;
 		for (JCExpression argument : arguments) {
 			getPrinter().print("p" + (i++) + ": ");
-			substituteAndPrintType(argument, false).print(",");
+			substituteAndPrintType(argument, false, false).print(",");
 		}
 		if (arguments.size() > 0) {
 			getPrinter().removeLastChar();
@@ -601,7 +601,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 	}
 
 	@Override
-	public AbstractTreePrinter substituteAndPrintType(JCTree typeTree, boolean arrayComponent) {
+	public AbstractTreePrinter substituteAndPrintType(JCTree typeTree, boolean arrayComponent, boolean inTypeParameters) {
 		// String fullName=typeTree.type.getModelType().toString();
 		// if(fullName.startsWith(Console.class.getPackage().getName())) {
 		// return "any";
@@ -631,7 +631,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			if (typeFullName.startsWith(TUPLE_CLASSES_PACKAGE + ".")) {
 				getPrinter().print("[");
 				for (JCExpression argument : typeApply.arguments) {
-					substituteAndPrintType(argument, arrayComponent).print(",");
+					substituteAndPrintType(argument, arrayComponent, inTypeParameters).print(",");
 				}
 				if (typeApply.arguments.length() > 0) {
 					getPrinter().removeLastChar();
@@ -642,7 +642,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			if (typeFullName.startsWith(UNION_CLASS_NAME)) {
 				getPrinter().print("(");
 				for (JCExpression argument : typeApply.arguments) {
-					substituteAndPrintType(argument, arrayComponent).print("|");
+					substituteAndPrintType(argument, arrayComponent, inTypeParameters).print("|");
 				}
 				if (typeApply.arguments.length() > 0) {
 					getPrinter().removeLastChar();
@@ -669,7 +669,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					getPrinter().print("(");
 					printArguments(typeApply.arguments.subList(0, typeApply.arguments.length() - 1));
 					getPrinter().print(") => ");
-					substituteAndPrintType(typeApply.arguments.get(typeApply.arguments.length() - 1), arrayComponent);
+					substituteAndPrintType(typeApply.arguments.get(typeApply.arguments.length() - 1), arrayComponent, inTypeParameters);
 					if (arrayComponent) {
 						getPrinter().print(")");
 					}
@@ -680,7 +680,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					}
 					getPrinter().print("(");
 					getPrinter().print(") => ");
-					substituteAndPrintType(typeApply.arguments.get(0), arrayComponent);
+					substituteAndPrintType(typeApply.arguments.get(0), arrayComponent, inTypeParameters);
 					if (arrayComponent) {
 						getPrinter().print(")");
 					}
@@ -700,14 +700,14 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			}
 			if (typeFullName.startsWith(Class.class.getName() + "<")) {
 				getPrinter().print("typeof ");
-				return substituteAndPrintType(typeApply.arguments.head, arrayComponent);
+				return substituteAndPrintType(typeApply.arguments.head, arrayComponent, inTypeParameters);
 			}
 		} else {
 			if (typesMapping.containsKey(typeFullName)) {
 				return getPrinter().print(typesMapping.get(typeFullName));
 			}
 		}
-		return super.substituteAndPrintType(typeTree, arrayComponent);
+		return super.substituteAndPrintType(typeTree, arrayComponent, inTypeParameters);
 	}
 
 	@Override

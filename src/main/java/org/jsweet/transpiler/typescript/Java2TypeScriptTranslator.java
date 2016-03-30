@@ -1005,17 +1005,28 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				int line = jsniLine;
 				print(" {").println().startIndent();
 				String jsniCode = content[line].substring(content[line].indexOf("/*-{") + 4).trim();
+				StringBuilder jsni = new StringBuilder();
 				if (!StringUtils.isEmpty(jsniCode)) {
-					printIndent().print(parseJSNI(jsniCode)).println();
+					jsni.append(jsniCode);
+					jsni.append("\n");
 				}
 				line++;
 				while (!content[line].contains("}-*/")) {
 					jsniCode = content[line++].trim();
-					printIndent().print(parseJSNI(jsniCode)).println();
+					jsni.append(jsniCode);
+					jsni.append("\n");
 				}
 				jsniCode = content[line].substring(0, content[line].indexOf("}-*/")).trim();
 				if (!StringUtils.isEmpty(jsniCode)) {
-					printIndent().print(parseJSNI(jsniCode)).println();
+					jsni.append(jsniCode);
+					jsni.append("\n");
+				}
+				if(!StringUtils.isEmpty(jsni)) {
+					jsni.deleteCharAt(jsni.length()-1);
+				}
+				String mergedCode = parseJSNI(jsni.toString());
+				for (String s : mergedCode.split("\\n")) {
+					printIndent().print(s).println();
 				}
 				endIndent().printIndent().print("}");
 			} else {
@@ -1122,7 +1133,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	}
 
 	private String parseJSNI(String jsniCode) {
-		return jsniCode.replaceAll("@.*::([a-zA-Z_$][a-zA-Z\\d_$]*)\\([^)]*\\)", "$1").replaceAll("@.*::([a-zA-Z_$][a-zA-Z\\d_$]*)", "$1");
+		return jsniCode.replaceAll("@.*::[\\n]?([a-zA-Z_$][a-zA-Z\\d_$]*)[\\n]?\\([^)]*\\)", "$1").replaceAll("@.*::\\n?([a-zA-Z_$][a-zA-Z\\d_$]*)", "$1");
 	}
 
 	private void printInlinedConstructorBody(Overload overload, JCMethodDecl method, List<? extends JCTree> args) {
