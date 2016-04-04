@@ -142,6 +142,9 @@ public class OverloadScanner extends AbstractTreeScanner {
 			ClassSymbol clazz = classdecl.sym;
 			for (JCTree member : classdecl.defs) {
 				if (member instanceof JCMethodDecl) {
+					if (Util.hasAnnotationType(((JCMethodDecl) member).sym, JSweetConfig.ANNOTATION_ERASED)) {
+						continue;
+					}
 					JCMethodDecl method = (JCMethodDecl) member;
 					Overload overload = getOverload(clazz, method);
 					overload.methods.add(method);

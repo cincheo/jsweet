@@ -51,6 +51,12 @@ public class WrongOverloads extends SuperClass {
 	private void draw(String s) {
 	}
 
+	public void draw(String s, Object o) {
+	}
+
+	public void draw(String s, Integer i) {
+	}
+	
 	int i;
 
 	String getter() {

@@ -2345,6 +2345,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	}
 
 	private void printInstanceOf(String exprStr, JCTree expr, Type type) {
+		if (Object.class.getName().equals(type.tsym.getQualifiedName().toString())) {
+			print("true");
+			return;
+		}
 		if (!(getParent() instanceof JCParens)) {
 			print("(");
 		}
