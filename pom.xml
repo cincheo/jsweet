@@ -262,6 +262,13 @@
 			<scope>test</scope>
 			<optional>true</optional>
 		</dependency>
+		<dependency>
+			<groupId>org.jsweet.candies</groupId>
+			<artifactId>backbone</artifactId>
+			<version>1.0.0-SNAPSHOT</version>
+			<scope>test</scope>
+			<optional>true</optional>
+		</dependency>
 	</dependencies>
 	<organization>
 		<name>JSweet</name>
