@@ -184,7 +184,7 @@ public abstract class AbstractPrinterAdapter {
 		if (importDecl.isStatic()) {
 			return null;
 		} else {
-			return getRootRelativeName(importDecl.getQualifiedIdentifier().type.tsym);
+			return getRootRelativeName(importDecl.getQualifiedIdentifier().type.tsym, getPrinter().getContext().useModules);
 		}
 	}
 
