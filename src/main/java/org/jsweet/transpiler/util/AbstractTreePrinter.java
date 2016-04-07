@@ -203,7 +203,7 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	 */
 	public AbstractTreePrinter printIndent() {
 		for (int i = 0; i < indent; i++) {
-			out.append(INDENT);
+			print(INDENT);
 		}
 		return this;
 	}
@@ -238,17 +238,14 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	 */
 	public AbstractTreePrinter printIdentifier(String identifier) {
 		String adaptedIdentifier = getAdapter().getIdentifier(identifier);
-		out.append(adaptedIdentifier);
-		currentColumn += adaptedIdentifier.length();
-		return this;
+		return print(adaptedIdentifier);
 	}
 
 	/**
 	 * Adds a space to the output.
 	 */
 	public AbstractTreePrinter space() {
-		print(" ");
-		return this;
+		return print(" ");
 	}
 
 	/**
