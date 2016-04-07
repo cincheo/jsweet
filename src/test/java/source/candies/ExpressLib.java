@@ -24,8 +24,8 @@ import static def.node.Globals.__dirname;
 import static jsweet.util.Globals.string;
 
 import def.body_parser.body_parser.OptionsDto;
-import def.express.express.Express;
 import def.express.express.RequestHandler;
+import def.express_serve_static_core.express_serve_static_core.Express;
 
 public class ExpressLib {
 

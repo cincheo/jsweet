@@ -19,7 +19,7 @@ package source.require.b;
 import static def.express.Globals.express;
 import static jsweet.util.Globals.$export;
 
-import def.express.express.Express;
+import def.express_serve_static_core.express_serve_static_core.Express;
 import source.require.a.A;
 import source.require.a.b.B1;
 import source.require.a.b.B2;

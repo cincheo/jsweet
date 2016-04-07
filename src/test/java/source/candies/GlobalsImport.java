@@ -27,8 +27,8 @@ import static jsweet.util.Globals.union;
 
 import def.body_parser.body_parser.OptionsDto;
 import def.errorhandler.errorhandler.Options;
-import def.express.express.Express;
 import def.express.express.RequestHandler;
+import def.express_serve_static_core.express_serve_static_core.Express;
 import def.node.http.Server;
 
 public class GlobalsImport {
