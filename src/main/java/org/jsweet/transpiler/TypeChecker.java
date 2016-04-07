@@ -198,6 +198,11 @@ public class TypeChecker {
 				return false;
 			}
 		} else {
+			if((JSweetConfig.LANG_PACKAGE+".Function").equals(union.args.head.type.toString())) {
+				// type checking is ignored here!
+				// TODO: test betters (see Backbone test)
+				return true;
+			}
 			if (!Util.containsAssignableType(types, assigned.getTypeArguments(), union.args.head.type)) {
 				translator.report(parent, JSweetProblem.UNION_TYPE_MISMATCH);
 				return false;

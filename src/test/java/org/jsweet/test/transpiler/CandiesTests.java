@@ -22,6 +22,7 @@ import org.jsweet.transpiler.ModuleKind;
 import org.junit.Test;
 
 import source.candies.Angular;
+import source.candies.BackboneCandy;
 import source.candies.ExpressLib;
 import source.candies.GlobalsImport;
 import source.candies.JQuery;
@@ -68,6 +69,13 @@ public class CandiesTests extends AbstractTest {
 		transpile(logHandler -> {
 			assertEquals(0, logHandler.getReportedProblems().size());
 		} , getSourceFile(JQuery.class));
+	}
+
+	@Test
+	public void testBackbone() {
+		transpile(logHandler -> {
+			assertEquals(0, logHandler.getReportedProblems().size());
+		} , getSourceFile(BackboneCandy.class));
 	}
 
 	@Test
