@@ -1135,7 +1135,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	}
 
 	private String parseJSNI(String jsniCode) {
-		return jsniCode.replaceAll("@.*::[\\n]?([a-zA-Z_$][a-zA-Z\\d_$]*)[\\n]?\\([^)]*\\)", "$1").replaceAll("@.*::\\n?([a-zA-Z_$][a-zA-Z\\d_$]*)", "$1");
+		return jsniCode.replaceAll("@[^:]*::[\\n]?([a-zA-Z_$][a-zA-Z\\d_$]*)[\\n]?\\([^)]*\\)", "$1").replaceAll("@[^:]*::\\n?([a-zA-Z_$][a-zA-Z\\d_$]*)",
+				"$1");
 	}
 
 	private void printInlinedConstructorBody(Overload overload, JCMethodDecl method, List<? extends JCTree> args) {
@@ -1929,7 +1930,16 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			} else {
 				if (!getAdapter().substituteNewClass(newClass)) {
 					if (typeChecker.checkType(newClass, null, newClass.clazz)) {
-						print("new ").print(newClass.clazz).print("(").printArgList(newClass.args).print(")");
+						if (newClass.clazz instanceof JCTypeApply) {
+							JCTypeApply typeApply = (JCTypeApply) newClass.clazz;
+							print("new ").print(typeApply.clazz);
+							if (!typeApply.arguments.isEmpty()) {
+								print("<").printTypeArgList(typeApply.arguments).print(">");
+							}
+							print("(").printArgList(newClass.args).print(")");
+						} else {
+							print("new ").print(newClass.clazz).print("(").printArgList(newClass.args).print(")");
+						}
 					}
 				}
 			}
@@ -2009,13 +2019,21 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	@Override
 	public void visitBinary(JCBinary binary) {
 		if (Util.isIntegral(binary.type) && binary.getKind() == Kind.DIVIDE) {
-			print("(");
+			if (binary.type.getKind() == TypeKind.LONG) {
+				print("Math.round(");
+			} else {
+				print("(");
+			}
 		}
 		print(binary.lhs);
 		space().print(binary.operator.name.toString()).space();
 		print(binary.rhs);
 		if (Util.isIntegral(binary.type) && binary.getKind() == Kind.DIVIDE) {
-			print("|0)");
+			if (binary.type.getKind() == TypeKind.LONG) {
+				print(")");
+			} else {
+				print("|0)");
+			}
 		}
 	}
 
@@ -2180,14 +2198,22 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	@Override
 	public void visitTypeCast(JCTypeCast cast) {
 		if (Util.isIntegral(cast.type)) {
-			print("(");
+			if (cast.type.getKind() == TypeKind.LONG) {
+				print("Math.round(");
+			} else {
+				print("(");
+			}
 		}
 		if (getAdapter().needsTypeCast(cast)) {
 			print("<").getAdapter().substituteAndPrintType(cast.clazz).print(">");
 		}
 		print(cast.expr);
 		if (Util.isIntegral(cast.type)) {
-			print("|0)");
+			if (cast.type.getKind() == TypeKind.LONG) {
+				print(")");
+			} else {
+				print("|0)");
+			}
 		}
 	}
 

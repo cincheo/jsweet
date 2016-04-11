@@ -17,6 +17,7 @@
 package source.blocksgame;
 
 import static jsweet.dom.Globals.console;
+import static jsweet.util.Globals.union;
 
 import jsweet.dom.CanvasRenderingContext2D;
 import jsweet.lang.Math;
@@ -77,7 +78,7 @@ public class Player extends MobileElement {
 
 	public void render(CanvasRenderingContext2D ctx) {
 		ctx.save();
-		ctx.fillStyle = hit > 0 ? "rgb(255,0,0)" : "rgba(255,0,0,0.4)";
+		ctx.fillStyle = union(hit > 0 ? "rgb(255,0,0)" : "rgba(255,0,0,0.4)");
 		ctx.beginPath();
 		// ctx.arc(this.getPosition().x, this.getPosition().y, this.radius -
 		// hit, 0, Math.PI * 2);
@@ -90,7 +91,7 @@ public class Player extends MobileElement {
 		ctx.arc(position.x - radius, position.y - radius + radius / f, radius / f, Math.PI / 2, -Math.PI / 2);
 
 		ctx.fill();
-		ctx.strokeStyle = "white";
+		ctx.strokeStyle = union("white");
 		ctx.stroke();
 		ctx.beginPath();
 		ctx.restore();

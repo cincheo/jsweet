@@ -24,11 +24,12 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import source.calculus.Integers;
+import source.calculus.Longs;
 
 public class CalculusTests extends AbstractTest {
 
 	@Test
-	public void testCalculus() {
+	public void testIntegers() {
 		try {
 			TestTranspilationHandler logHandler = new TestTranspilationHandler();
 			EvaluationResult r = transpiler.eval("Java", logHandler, getSourceFile(Integers.class));
@@ -56,6 +57,14 @@ public class CalculusTests extends AbstractTest {
 			Assert.assertEquals((Integer) 7, r.get("i3"));
 			Assert.assertEquals((Integer) 7, r.get("i4"));
 		} , getSourceFile(Integers.class));
+	}
+
+	@Test
+	public void testLongs() {
+		eval(ModuleKind.none, (logHandler, r) -> {
+			logHandler.assertReportedProblems();
+			Assert.assertEquals(r.get("t1").toString(), r.get("t2").toString());
+		} , getSourceFile(Longs.class));
 	}
 
 }

@@ -17,6 +17,7 @@
 package source.blocksgame;
 
 import static jsweet.dom.Globals.document;
+import static jsweet.util.Globals.union;
 
 import jsweet.dom.CanvasRenderingContext2D;
 import jsweet.dom.HTMLImageElement;
@@ -77,7 +78,7 @@ public class BlockElement extends AnimatedElement {
 		if (this.hitstoBreak == -1) {
 			this.drawUnbreakable(animationCtx);
 			animationCtx.beginPath();
-			animationCtx.fillStyle = "rgba(255,255,255,0.4)";
+			animationCtx.fillStyle = union("rgba(255,255,255,0.4)");
 			animationCtx.rect(this.x, this.y, this.size, this.size);
 			animationCtx.fill();
 		} else {
