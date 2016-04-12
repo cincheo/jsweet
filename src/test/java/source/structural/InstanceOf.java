@@ -17,6 +17,9 @@
 package source.structural;
 
 import static jsweet.util.Globals.typeof;
+
+import jsweet.lang.Array;
+
 import static jsweet.util.Globals.equalsStrict;
 import static jsweet.lang.Globals.eval;
 
@@ -27,11 +30,14 @@ public class InstanceOf {
 		int n3 = 2;
 		Object s = "test";
 		C2 c = new C2();
-
+		Object anArray = new int[0];
+		InstanceOf object = new InstanceOf();
+		
 		assert n1 instanceof Number;
 		assert n2 instanceof Number;
 		assert n2 instanceof Integer;
 		assert !(n2 instanceof String);
+		assert !(n2 instanceof Array);
 		assert s instanceof String;
 		assert !(s instanceof Integer);
 		assert c instanceof C2;
@@ -39,6 +45,10 @@ public class InstanceOf {
 		assert equalsStrict(typeof(n3), "number");
 
 		assert ((String) eval("typeof n3")) == "number";
+
+		assert anArray instanceof Array;
+
+		assert object instanceof InstanceOf;
 
 	}
 
