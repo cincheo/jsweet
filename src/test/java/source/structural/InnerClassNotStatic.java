@@ -25,8 +25,8 @@ public class InnerClassNotStatic {
 	}
 
 	void m() {
-		// TODO: automatically add the prefix
 		new InnerClassNotStatic.InnerClass1().m();
+		new InnerClass1().m();
 	}
 
 	public class InnerClass1 {
@@ -34,11 +34,24 @@ public class InnerClassNotStatic {
 		public void m() {
 			$export("value", "test");
 		}
-
+		
 	}
 
 	public interface I {
 
 	}
 
+}
+
+class Sub extends InnerClassNotStatic {
+	void m2(InnerClass1 c) {
+	}
+	void m3(InnerClassNotStatic.InnerClass1 c) {
+	}
+}
+
+class Use {
+	void m2(InnerClassNotStatic.InnerClass1 c) {
+		
+	}
 }

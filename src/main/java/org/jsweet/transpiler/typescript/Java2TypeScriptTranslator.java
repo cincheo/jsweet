@@ -1759,6 +1759,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					}
 				}
 			}
+			// add parent class name is ident is an inner class
+			if (ident.sym instanceof ClassSymbol) {
+				ClassSymbol clazz = (ClassSymbol) ident.sym;
+				if (clazz.getEnclosingElement() instanceof ClassSymbol) {
+					print(clazz.getEnclosingElement().getSimpleName() + ".");
+				}
+			}
 			printIdentifier(name);
 		}
 		// if (Util.isIntegral(ident.type) && getParent() instanceof JCBinary) {

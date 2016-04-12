@@ -23,36 +23,41 @@ public class InnerClass {
 	public static void main(String[] args) {
 		new InnerClass.InnerClass1().m1();
 		new InnerClass().m();
+		InnerClass1.m2();
 	}
-	
+
 	public void m() {
 		new InnerClass.InnerClass2().m2();
 	}
-	
+
 	public static class InnerClass1 {
-		
+
 		public void m1() {
 			$export("value1", "test1");
 		}
-		
+
 		public static void main(String[] args) {
-			
+
+		}
+
+		public static void m2() {
+			$export("value3", "test3");
 		}
 	}
 
 	public static class InnerClass2 {
-		
+
 		public void m2() {
 			$export("value2", "test2");
 		}
-		
+
 		public static void main(String[] args) {
-			
+
 		}
 	}
-	
+
 	public interface I {
-		
+
 	}
-	
+
 }
