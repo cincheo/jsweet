@@ -266,7 +266,7 @@ public abstract class JSweetConfig {
 	 * The prefix to add to variables that clash with methods.
 	 */
 	public static final String FIELD_METHOD_CLASH_RESOLVER_PREFIX = "__";
-	
+
 	static {
 		// note TS keywords are removed from that list
 		JAVA_KEYWORDS.add("abstract");
@@ -358,9 +358,11 @@ public abstract class JSweetConfig {
 		// @Name
 		if (!identifier.isEmpty() //
 				&& Character.isUpperCase(identifier.charAt(0)) //
-				&& (identifier.length() <= 1 || Character.isLowerCase(identifier.charAt(1))) //
-				&& JSweetConfig.JAVA_KEYWORDS.contains(identifier.toLowerCase()) && !JSweetConfig.TS_STRICT_MODE_KEYWORDS.contains(identifier.toLowerCase())) {
-			return identifier.toLowerCase();
+				&& (identifier.length() <= 1 || Character.isLowerCase(identifier.charAt(1)))) {
+			String s = StringUtils.uncapitalize(identifier);
+			if (JSweetConfig.JAVA_KEYWORDS.contains(s) && !JSweetConfig.TS_STRICT_MODE_KEYWORDS.contains(s)) {
+				return s;
+			}
 		}
 		return identifier;
 	}
