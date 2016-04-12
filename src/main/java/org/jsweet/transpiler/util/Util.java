@@ -347,7 +347,7 @@ public class Util {
 			return false;
 		}
 		for (int i = 0; i < from.getParameterTypes().length(); i++) {
-			if (!types.isAssignable(types.erasure(target.getParameterTypes().get(i)), types.erasure(from.getParameterTypes().get(i)))) {
+			if (!types.isAssignable(types.erasure(from.getParameterTypes().get(i)), types.erasure(target.getParameterTypes().get(i)))) {
 				return false;
 			}
 		}

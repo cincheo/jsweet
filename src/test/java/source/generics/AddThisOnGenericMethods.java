@@ -2,6 +2,8 @@ package source.generics;
 
 import java.util.function.Consumer;
 
+import def.es6_promise.Promise;
+import def.es6_promise.Promise.CallbackBiConsumer;
 import jsweet.dom.Event;
 import jsweet.dom.XMLHttpRequest;
 
@@ -53,7 +55,7 @@ public class AddThisOnGenericMethods<T> {
 }
 
 class Server {
-	
+
 	protected <T> void installXMLHttpRequestListeners(XMLHttpRequest xhr, Consumer<T> resolve, Consumer<Object> reject) {
 		xhr.onload = (Event ev) -> {
 			// both should work
@@ -66,4 +68,30 @@ class Server {
 	private <U> void onXMLHttpRequestComplete(XMLHttpRequest request, Consumer<U> onSuccessCallback, Consumer<Object> onErrorCallback) {
 	}
 
+	<T> Promise<String> get(T t) {
+		return new Promise<String>((CallbackBiConsumer<Consumer<String>, Consumer<Object>>) (c1, c2) -> {
+		});
+	};
+
+}
+
+
+class AbstractController<T> {
+	
+	protected void fillTable(T[] t) {
+	}
+	
+}
+
+
+class Controller extends AbstractController<String> {
+
+	public void m() {
+		new Server().get("abc").thenOnFulfilledFunction(s -> {
+			fillTable(new String[] {s});
+			return null;
+		});
+	}
+
+	
 }
