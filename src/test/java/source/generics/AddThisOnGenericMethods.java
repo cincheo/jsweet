@@ -75,23 +75,59 @@ class Server {
 
 }
 
-
 class AbstractController<T> {
-	
+
 	protected void fillTable(T[] t) {
 	}
-	
-}
 
+}
 
 class Controller extends AbstractController<String> {
 
 	public void m() {
 		new Server().get("abc").thenOnFulfilledFunction(s -> {
-			fillTable(new String[] {s});
+			fillTable(new String[] { s });
 			return null;
 		});
 	}
+}
 
+interface SuperEntry<V> {
+
+	V getValue();
 	
+	int m();
+	
+}
+
+// test invocations on methods defined in an implemented interface
+interface Entry<K, V> extends SuperEntry<V> {
+	K getKey();
+
+	V getValue();
+
+	V setValue(V value);
+	
+	default void test() {
+		
+	}
+}
+
+abstract class AbstractMapEntry<K, V> implements Entry<K, V> {
+
+	@Override
+	public final boolean equals(Object other) {
+		if (!(other instanceof Entry)) {
+			return false;
+		}
+		Entry<?, ?> entry = (Entry<?, ?>) other;
+		return Objects.equals(getKey(), entry.getKey()) && Objects.equals(getValue(), entry.getValue());
+	}
+
+}
+
+class Objects {
+	public static boolean equals(Object o1, Object o2) {
+		return false;
+	}
 }

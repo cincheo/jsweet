@@ -108,6 +108,7 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.JCTree.JCWhileLoop;
 import com.sun.tools.javac.tree.TreeScanner;
+import com.sun.tools.javac.util.Name;
 
 /**
  * This is a TypeScript printer for translating the Java AST to a TypeScript
@@ -565,6 +566,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (globals && classdecl.extending != null) {
 			report(classdecl, JSweetProblem.GLOBALS_CLASS_CANNOT_HAVE_SUPERCLASS);
 		}
+		List<Type> implementedInterfaces = new ArrayList<>();
+
 		if (!globals) {
 			if (classdecl.extending != null && JSweetConfig.GLOBALS_CLASS_NAME.equals(classdecl.extending.type.tsym.getSimpleName().toString())) {
 				report(classdecl, JSweetProblem.GLOBALS_CLASS_CANNOT_BE_SUBCLASSED);
@@ -589,6 +592,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					}
 					defaultMethods = new HashSet<>();
 					Util.findDefaultMethodsInType(defaultMethods, context, classdecl.sym);
+					if (classdecl.getModifiers().getFlags().contains(Modifier.ABSTRACT)) {
+						print("abstract ");
+					}
 					print("class ");
 				}
 			}
@@ -596,11 +602,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			if (classdecl.typarams != null && classdecl.typarams.size() > 0) {
 				print("<").printArgList(classdecl.typarams).print(">");
 			}
+			boolean extendsInterface = false;
 			if (classdecl.extending != null) {
 				if (!JSweetConfig.isJDKReplacementMode() && !(JSweetConfig.OBJECT_CLASSNAME.equals(classdecl.extending.type.toString())
 						|| Object.class.getName().equals(classdecl.extending.type.toString()))) {
 					if (!getScope().interfaceScope && Util.isInterface(classdecl.extending.type.tsym)) {
+						extendsInterface = true;
 						print(" implements ");
+						implementedInterfaces.add(classdecl.extending.type);
 					} else {
 						print(" extends ");
 					}
@@ -608,6 +617,23 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				} else {
 					getScope().removedSuperclass = true;
 				}
+			}
+			if (classdecl.implementing != null && !classdecl.implementing.isEmpty()) {
+				if (!extendsInterface) {
+					if (getScope().interfaceScope) {
+						print(" extends ");
+					} else {
+						print(" implements ");
+					}
+				} else {
+					print(", ");
+				}
+				for (JCExpression itf : classdecl.implementing) {
+					print(itf);
+					implementedInterfaces.add(itf.type);
+					print(", ");
+				}
+				removeLastChars(2);
 			}
 			print(" {").println().startIndent();
 		}
@@ -627,6 +653,27 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 		if (globals) {
 			removeLastIndent();
+		}
+
+		if (classdecl.getModifiers().getFlags().contains(Modifier.ABSTRACT)) {
+			List<MethodSymbol> methods = new ArrayList<>();
+			for (Type t : implementedInterfaces) {
+				Util.grabMethodsToBeImplemented(methods, t.tsym);
+			}
+			Map<Name, String> signatures = new HashMap<>();
+			for (MethodSymbol meth : methods) {
+				if (meth.type instanceof MethodType) {
+					MethodSymbol s = Util.findMethodDeclarationInType(getContext().types, classdecl.sym, meth.getSimpleName().toString(),
+							(MethodType) meth.type, true);
+					if (s == null) {
+						String signature = getContext().types.erasure(meth.type).toString();
+						if (!(signatures.containsKey(meth.name) && signatures.get(meth.name).equals(signature))) {
+							printDefaultImplementation(meth);
+							signatures.put(meth.name, signature);
+						}
+					}
+				}
+			}
 		}
 
 		for (JCTree def : classdecl.defs) {
@@ -748,6 +795,20 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 
 		exitScope();
+	}
+
+	private void printDefaultImplementation(MethodSymbol method) {
+		printIndent().print("public abstract ").print(method.getSimpleName().toString());
+		print("(");
+		if (method.getParameters() != null && !method.getParameters().isEmpty()) {
+			for (VarSymbol var : method.getParameters()) {
+				print(var.name.toString()).print(": any");
+				print(", ");
+			}
+			removeLastChars(2);
+		}
+		print(")");
+		print(": any;").println();
 	}
 
 	private String getQualifiedTypeName(TypeSymbol type, boolean globals) {

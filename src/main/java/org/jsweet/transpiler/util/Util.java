@@ -316,30 +316,53 @@ public class Util {
 		return findMethodDeclarationInType(types, typeSymbol, methName, (MethodType) invocation.meth.type);
 	}
 
+	public static MethodSymbol findMethodDeclarationInType(Types types, TypeSymbol typeSymbol, String methodName, MethodType methodType) {
+		return findMethodDeclarationInType(types, typeSymbol, methodName, methodType, false);
+	}
+
 	/**
 	 * Finds the method in the given type that matches the given name and
 	 * signature.
 	 */
-	public static MethodSymbol findMethodDeclarationInType(Types types, TypeSymbol typeSymbol, String methodName, MethodType methodType) {
-		if (typeSymbol == null || typeSymbol.getEnclosedElements() == null) {
+	public static MethodSymbol findMethodDeclarationInType(Types types, TypeSymbol typeSymbol, String methodName, MethodType methodType,
+			boolean withImplementation) {
+		if (typeSymbol == null) {
 			return null;
 		}
-		for (Element element : typeSymbol.getEnclosedElements()) {
-			if ((element instanceof MethodSymbol) && (methodName.equals(element.getSimpleName().toString())
-					|| ((MethodSymbol) element).getKind() == ElementKind.CONSTRUCTOR && "this".equals(methodName))) {
-				MethodSymbol methodSymbol = (MethodSymbol) element;
-				if (methodType == null) {
-					return methodSymbol;
-				}
-				if (isInvocable(types, methodType, methodSymbol.type.asMethodType())) {
-					return methodSymbol;
+		if (typeSymbol.getEnclosedElements() != null) {
+			for (Element element : typeSymbol.getEnclosedElements()) {
+				if ((element instanceof MethodSymbol) && (methodName.equals(element.getSimpleName().toString())
+						|| ((MethodSymbol) element).getKind() == ElementKind.CONSTRUCTOR && "this".equals(methodName))) {
+					MethodSymbol methodSymbol = (MethodSymbol) element;
+					if (methodType == null) {
+						return methodSymbol;
+					}
+					if (isInvocable(types, methodType, methodSymbol.type.asMethodType())) {
+						boolean hasBody = methodSymbol.isDefault() || (!isInterface(typeSymbol) && !methodSymbol.getModifiers().contains(Modifier.ABSTRACT));
+						if (withImplementation && !hasBody) {
+							return null;
+						} else {
+							return methodSymbol;
+						}
+					}
 				}
 			}
 		}
+		MethodSymbol result = null;
 		if (typeSymbol instanceof ClassSymbol && ((ClassSymbol) typeSymbol).getSuperclass() != null) {
-			return findMethodDeclarationInType(types, ((ClassSymbol) typeSymbol).getSuperclass().tsym, methodName, methodType);
+			result = findMethodDeclarationInType(types, ((ClassSymbol) typeSymbol).getSuperclass().tsym, methodName, methodType, withImplementation);
 		}
-		return null;
+		if (result == null) {
+			if (typeSymbol instanceof ClassSymbol && ((ClassSymbol) typeSymbol).getInterfaces() != null) {
+				for (Type t : ((ClassSymbol) typeSymbol).getInterfaces()) {
+					result = findMethodDeclarationInType(types, t.tsym, methodName, methodType, withImplementation);
+					if (result != null) {
+						break;
+					}
+				}
+			}
+		}
+		return result;
 	}
 
 	public static boolean isInvocable(Types types, MethodType from, MethodType target) {
@@ -861,6 +884,25 @@ public class Util {
 				grabSupportedInterfaceNames(interfaces, t.tsym);
 			}
 			grabSupportedInterfaceNames(interfaces, ((ClassSymbol) type).getSuperclass().tsym);
+		}
+	}
+
+	public static void grabMethodsToBeImplemented(List<MethodSymbol> methods, TypeSymbol type) {
+		if (type == null) {
+			return;
+		}
+		if (Util.isInterface(type)) {
+			for (Symbol s : type.getEnclosedElements()) {
+				if (s instanceof MethodSymbol) {
+					methods.add((MethodSymbol) s);
+				}
+			}
+		}
+		if (type instanceof ClassSymbol) {
+			for (Type t : ((ClassSymbol) type).getInterfaces()) {
+				grabMethodsToBeImplemented(methods, t.tsym);
+			}
+			grabMethodsToBeImplemented(methods, ((ClassSymbol) type).getSuperclass().tsym);
 		}
 	}
 
