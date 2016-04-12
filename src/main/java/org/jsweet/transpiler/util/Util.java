@@ -327,11 +327,12 @@ public class Util {
 		for (Element element : typeSymbol.getEnclosedElements()) {
 			if ((element instanceof MethodSymbol) && (methodName.equals(element.getSimpleName().toString())
 					|| ((MethodSymbol) element).getKind() == ElementKind.CONSTRUCTOR && "this".equals(methodName))) {
+				MethodSymbol methodSymbol = (MethodSymbol) element;
 				if (methodType == null) {
-					return (MethodSymbol) element;
+					return methodSymbol;
 				}
-				if (types.isSubSignature(methodType, ((MethodSymbol) element).type)) {
-					return (MethodSymbol) element;
+				if (isInvocable(types, methodType, methodSymbol.type.asMethodType())) {
+					return methodSymbol;
 				}
 			}
 		}
@@ -339,6 +340,18 @@ public class Util {
 			return findMethodDeclarationInType(types, ((ClassSymbol) typeSymbol).getSuperclass().tsym, methodName, methodType);
 		}
 		return null;
+	}
+
+	public static boolean isInvocable(Types types, MethodType from, MethodType target) {
+		if (from.getParameterTypes().length() != target.getParameterTypes().length()) {
+			return false;
+		}
+		for (int i = 0; i < from.getParameterTypes().length(); i++) {
+			if (!types.isAssignable(types.erasure(target.getParameterTypes().get(i)), types.erasure(from.getParameterTypes().get(i)))) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	/**

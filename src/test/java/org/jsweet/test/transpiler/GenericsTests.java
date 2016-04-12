@@ -21,6 +21,7 @@ import static org.junit.Assert.assertEquals;
 import org.jsweet.transpiler.ModuleKind;
 import org.junit.Test;
 
+import source.generics.AddThisOnGenericMethods;
 import source.generics.GenericObjectStructure;
 import source.generics.InstantiationWithGenerics;
 import source.generics.Wildcards;
@@ -48,4 +49,12 @@ public class GenericsTests extends AbstractTest {
 			logHandler.assertReportedProblems();
 		} , getSourceFile(GenericObjectStructure.class));
 	}
+	
+	@Test
+	public void testAddThisOnGenericMethods() {
+		transpile(ModuleKind.none, logHandler -> {
+			logHandler.assertReportedProblems();
+		} , getSourceFile(AddThisOnGenericMethods.class));
+	}
+	
 }
