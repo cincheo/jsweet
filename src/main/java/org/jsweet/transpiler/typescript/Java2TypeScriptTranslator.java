@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 import java.util.Set;
 import java.util.Stack;
 
@@ -54,6 +55,7 @@ import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.PackageSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
+import com.sun.tools.javac.code.Symbol.TypeVariableSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.ArrayType;
@@ -557,6 +559,16 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			return;
 		}
 		enterScope();
+		JCClassDecl parent = getParent(JCClassDecl.class);
+		List<TypeVariableSymbol> parentTypeVars = new ArrayList<>();
+		if (parent != null) {
+			if (!classdecl.getModifiers().getFlags().contains(Modifier.STATIC)) {
+				if (parent.getTypeParameters() != null) {
+					parentTypeVars.addAll(parent.getTypeParameters().stream().map(t -> (TypeVariableSymbol) t.type.tsym).collect(Collectors.toList()));
+					getAdapter().typeVariablesToErase.addAll(parentTypeVars);
+				}
+			}
+		}
 		getScope().declareClassScope = Util.hasAnnotationType(classdecl.sym, JSweetConfig.ANNOTATION_AMBIENT);
 		getScope().interfaceScope = false;
 		getScope().removedSuperclass = false;
@@ -794,6 +806,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					mainMethodQualifier + JSweetConfig.MAIN_FUNCTION_NAME + "(" + (mainMethod.getParameters().isEmpty() ? "" : "null") + ");");
 		}
 
+		getAdapter().typeVariablesToErase.removeAll(parentTypeVars);
 		exitScope();
 	}
 

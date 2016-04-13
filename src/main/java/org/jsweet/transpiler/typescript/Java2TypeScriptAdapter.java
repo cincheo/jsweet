@@ -62,6 +62,7 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.PackageSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
+import com.sun.tools.javac.code.Symbol.TypeVariableSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
@@ -600,13 +601,19 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		}
 		return super.substituteNewClass(newClass);
 	}
-
+	
 	@Override
 	public AbstractTreePrinter substituteAndPrintType(JCTree typeTree, boolean arrayComponent, boolean inTypeParameters) {
 		// String fullName=typeTree.type.getModelType().toString();
 		// if(fullName.startsWith(Console.class.getPackage().getName())) {
 		// return "any";
 		// }
+		if(typeTree.type.tsym instanceof TypeVariableSymbol) {
+			if(typeVariablesToErase.contains(typeTree.type.tsym)) {
+				return getPrinter().print("any");
+			}
+		}
+		
 		if (Util.hasAnnotationType(typeTree.type.tsym, ANNOTATION_ERASED)) {
 			return getPrinter().print("any");
 		}

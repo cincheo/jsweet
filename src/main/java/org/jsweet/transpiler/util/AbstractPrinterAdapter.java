@@ -18,8 +18,12 @@ package org.jsweet.transpiler.util;
 
 import static org.jsweet.transpiler.util.Util.getRootRelativeName;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.jsweet.transpiler.JSweetProblem;
 
+import com.sun.tools.javac.code.Symbol.TypeVariableSymbol;
 import com.sun.tools.javac.code.Type.MethodType;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCArrayAccess;
@@ -53,6 +57,11 @@ public abstract class AbstractPrinterAdapter {
 	 */
 	public boolean inTypeParameters = false;
 
+	/**
+	 * A list of type variables to be erased (mapped to any).
+	 */
+	public Set<TypeVariableSymbol> typeVariablesToErase = new HashSet<>();
+	
 	/**
 	 * Reports a problem during the printing phase.
 	 * 

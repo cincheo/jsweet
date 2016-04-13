@@ -23,6 +23,7 @@ import org.junit.Test;
 
 import source.generics.AddThisOnGenericMethods;
 import source.generics.GenericObjectStructure;
+import source.generics.InnerClassNotStatic;
 import source.generics.InstantiationWithGenerics;
 import source.generics.Wildcards;
 
@@ -42,19 +43,25 @@ public class GenericsTests extends AbstractTest {
 		} , getSourceFile(Wildcards.class));
 	}
 
-	
 	@Test
 	public void testGenericObjectStructure() {
 		transpile(ModuleKind.none, logHandler -> {
 			logHandler.assertReportedProblems();
 		} , getSourceFile(GenericObjectStructure.class));
 	}
-	
+
 	@Test
 	public void testAddThisOnGenericMethods() {
 		transpile(ModuleKind.none, logHandler -> {
 			logHandler.assertReportedProblems();
 		} , getSourceFile(AddThisOnGenericMethods.class));
 	}
-	
+
+	@Test
+	public void testInnerClassNotStatic() {
+		transpile(ModuleKind.none, logHandler -> {
+			logHandler.assertReportedProblems();
+		} , getSourceFile(InnerClassNotStatic.class));
+	}
+
 }
