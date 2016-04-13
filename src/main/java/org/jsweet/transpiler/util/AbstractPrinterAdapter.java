@@ -61,7 +61,7 @@ public abstract class AbstractPrinterAdapter {
 	 * A list of type variables to be erased (mapped to any).
 	 */
 	public Set<TypeVariableSymbol> typeVariablesToErase = new HashSet<>();
-	
+
 	/**
 	 * Reports a problem during the printing phase.
 	 * 
@@ -205,20 +205,20 @@ public abstract class AbstractPrinterAdapter {
 	}
 
 	public AbstractTreePrinter substituteAndPrintType(JCTree typeTree) {
-		return substituteAndPrintType(typeTree, false, inTypeParameters);
+		return substituteAndPrintType(typeTree, false, inTypeParameters, true);
 	}
 
-	public AbstractTreePrinter substituteAndPrintType(JCTree typeTree, boolean arrayComponent, boolean inTypeParameters) {
+	public AbstractTreePrinter substituteAndPrintType(JCTree typeTree, boolean arrayComponent, boolean inTypeParameters, boolean completeRawTypes) {
 		if (typeTree instanceof JCTypeApply) {
 			JCTypeApply typeApply = ((JCTypeApply) typeTree);
-			substituteAndPrintType(typeApply.clazz, arrayComponent, inTypeParameters);
+			substituteAndPrintType(typeApply.clazz, arrayComponent, inTypeParameters, false);
 			if (!typeApply.arguments.isEmpty()) {
 				getPrinter().print("<");
 				for (JCExpression argument : typeApply.arguments) {
-					substituteAndPrintType(argument, arrayComponent, false).print(",");
+					substituteAndPrintType(argument, arrayComponent, false, completeRawTypes).print(", ");
 				}
 				if (typeApply.arguments.length() > 0) {
-					getPrinter().removeLastChar();
+					getPrinter().removeLastChars(2);
 				}
 				getPrinter().print(">");
 			}
@@ -232,16 +232,28 @@ public abstract class AbstractPrinterAdapter {
 				getPrinter().print(name);
 				if (inTypeParameters) {
 					getPrinter().print(" extends ");
-					return substituteAndPrintType(wildcard.getBound(), arrayComponent, false);
+					return substituteAndPrintType(wildcard.getBound(), arrayComponent, false, completeRawTypes);
 				} else {
 					return getPrinter();
 				}
 			}
 		} else {
 			if (typeTree instanceof JCArrayTypeTree) {
-				return substituteAndPrintType(((JCArrayTypeTree) typeTree).elemtype, true, inTypeParameters).print("[]");
+				return substituteAndPrintType(((JCArrayTypeTree) typeTree).elemtype, true, inTypeParameters, completeRawTypes).print("[]");
 			}
-			return getPrinter().print(typeTree);
+			if (completeRawTypes && typeTree.type.tsym.getTypeParameters() != null && !typeTree.type.tsym.getTypeParameters().isEmpty()) {
+				// raw type case (Java warning)
+				getPrinter().print(typeTree);
+				getPrinter().print("<");
+				for (int i = 0; i < typeTree.type.tsym.getTypeParameters().length(); i++) {
+					getPrinter().print("any, ");
+				}
+				getPrinter().removeLastChars(2);
+				getPrinter().print(">");
+				return getPrinter();
+			} else {
+				return getPrinter().print(typeTree);
+			}
 		}
 	}
 

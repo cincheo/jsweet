@@ -581,7 +581,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		int i = 1;
 		for (JCExpression argument : arguments) {
 			getPrinter().print("p" + (i++) + ": ");
-			substituteAndPrintType(argument, false, false).print(",");
+			substituteAndPrintType(argument, false, false, true).print(",");
 		}
 		if (arguments.size() > 0) {
 			getPrinter().removeLastChar();
@@ -601,19 +601,19 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		}
 		return super.substituteNewClass(newClass);
 	}
-	
+
 	@Override
-	public AbstractTreePrinter substituteAndPrintType(JCTree typeTree, boolean arrayComponent, boolean inTypeParameters) {
+	public AbstractTreePrinter substituteAndPrintType(JCTree typeTree, boolean arrayComponent, boolean inTypeParameters, boolean completeRawTypes) {
 		// String fullName=typeTree.type.getModelType().toString();
 		// if(fullName.startsWith(Console.class.getPackage().getName())) {
 		// return "any";
 		// }
-		if(typeTree.type.tsym instanceof TypeVariableSymbol) {
-			if(typeVariablesToErase.contains(typeTree.type.tsym)) {
+		if (typeTree.type.tsym instanceof TypeVariableSymbol) {
+			if (typeVariablesToErase.contains(typeTree.type.tsym)) {
 				return getPrinter().print("any");
 			}
 		}
-		
+
 		if (Util.hasAnnotationType(typeTree.type.tsym, ANNOTATION_ERASED)) {
 			return getPrinter().print("any");
 		}
@@ -639,7 +639,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			if (typeFullName.startsWith(TUPLE_CLASSES_PACKAGE + ".")) {
 				getPrinter().print("[");
 				for (JCExpression argument : typeApply.arguments) {
-					substituteAndPrintType(argument, arrayComponent, inTypeParameters).print(",");
+					substituteAndPrintType(argument, arrayComponent, inTypeParameters, completeRawTypes).print(",");
 				}
 				if (typeApply.arguments.length() > 0) {
 					getPrinter().removeLastChar();
@@ -650,7 +650,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			if (typeFullName.startsWith(UNION_CLASS_NAME)) {
 				getPrinter().print("(");
 				for (JCExpression argument : typeApply.arguments) {
-					substituteAndPrintType(argument, arrayComponent, inTypeParameters).print("|");
+					substituteAndPrintType(argument, arrayComponent, inTypeParameters, completeRawTypes).print("|");
 				}
 				if (typeApply.arguments.length() > 0) {
 					getPrinter().removeLastChar();
@@ -677,7 +677,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					getPrinter().print("(");
 					printArguments(typeApply.arguments.subList(0, typeApply.arguments.length() - 1));
 					getPrinter().print(") => ");
-					substituteAndPrintType(typeApply.arguments.get(typeApply.arguments.length() - 1), arrayComponent, inTypeParameters);
+					substituteAndPrintType(typeApply.arguments.get(typeApply.arguments.length() - 1), arrayComponent, inTypeParameters, completeRawTypes);
 					if (arrayComponent) {
 						getPrinter().print(")");
 					}
@@ -688,7 +688,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					}
 					getPrinter().print("(");
 					getPrinter().print(") => ");
-					substituteAndPrintType(typeApply.arguments.get(0), arrayComponent, inTypeParameters);
+					substituteAndPrintType(typeApply.arguments.get(0), arrayComponent, inTypeParameters, completeRawTypes);
 					if (arrayComponent) {
 						getPrinter().print(")");
 					}
@@ -708,14 +708,14 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			}
 			if (typeFullName.startsWith(Class.class.getName() + "<")) {
 				getPrinter().print("typeof ");
-				return substituteAndPrintType(typeApply.arguments.head, arrayComponent, inTypeParameters);
+				return substituteAndPrintType(typeApply.arguments.head, arrayComponent, inTypeParameters, completeRawTypes);
 			}
 		} else {
 			if (typesMapping.containsKey(typeFullName)) {
 				return getPrinter().print(typesMapping.get(typeFullName));
 			}
 		}
-		return super.substituteAndPrintType(typeTree, arrayComponent, inTypeParameters);
+		return super.substituteAndPrintType(typeTree, arrayComponent, inTypeParameters, completeRawTypes);
 	}
 
 	@Override

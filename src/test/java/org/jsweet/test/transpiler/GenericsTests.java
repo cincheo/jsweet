@@ -25,6 +25,7 @@ import source.generics.AddThisOnGenericMethods;
 import source.generics.GenericObjectStructure;
 import source.generics.InnerClassNotStatic;
 import source.generics.InstantiationWithGenerics;
+import source.generics.RawTypes;
 import source.generics.Wildcards;
 
 public class GenericsTests extends AbstractTest {
@@ -64,4 +65,11 @@ public class GenericsTests extends AbstractTest {
 		} , getSourceFile(InnerClassNotStatic.class));
 	}
 
+	@Test
+	public void testRawTypes() {
+		transpile(ModuleKind.none, logHandler -> {
+			logHandler.assertReportedProblems();
+		} , getSourceFile(RawTypes.class));
+	}
+	
 }
