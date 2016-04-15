@@ -625,7 +625,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					} else {
 						print(" extends ");
 					}
-					print(classdecl.extending);
+					getAdapter().substituteAndPrintType(classdecl.extending);
 				} else {
 					getScope().removedSuperclass = true;
 				}
@@ -641,7 +641,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					print(", ");
 				}
 				for (JCExpression itf : classdecl.implementing) {
-					print(itf);
+					getAdapter().substituteAndPrintType(itf);
 					implementedInterfaces.add(itf.type);
 					print(", ");
 				}
