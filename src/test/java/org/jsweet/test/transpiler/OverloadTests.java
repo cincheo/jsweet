@@ -23,6 +23,7 @@ import org.junit.Test;
 import source.overload.Overload;
 import source.overload.OverloadInInnerClass;
 import source.overload.WrongOverload;
+import source.overload.WrongOverloadWithArraysAndObjects;
 import source.overload.WrongOverloads;
 
 public class OverloadTests extends AbstractTest {
@@ -60,5 +61,12 @@ public class OverloadTests extends AbstractTest {
 			//assertEquals("1,5,2,3,2,4,2,4,6", r.get("trace"));
 		} , getSourceFile(OverloadInInnerClass.class));
 	}
-	
+
+	@Test
+	public void testWrongOverloadWithArraysAndObjects() {
+		eval((logHandler, r) -> {
+			logHandler.assertReportedProblems();
+		} , getSourceFile(WrongOverloadWithArraysAndObjects.class));
+	}
+
 }
