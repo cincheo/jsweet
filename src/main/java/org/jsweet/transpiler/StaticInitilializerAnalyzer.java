@@ -122,7 +122,7 @@ public class StaticInitilializerAnalyzer extends TreeScanner {
 						for (TypeSymbol type : refGrabber.referencedTypes) {
 							if (!context.useModules || currentTopLevel.packge.equals(type.packge())) {
 								JCCompilationUnit target = typesToCompilationUnits.get(type);
-								if (target != null && !currentTopLevel.equals(target)) {
+								if (target != null && !currentTopLevel.equals(target) && getGraph().contains(target)) {
 									logger.debug("adding static initializer dependency: " + currentTopLevel.getSourceFile() + " -> " + target.getSourceFile());
 									getGraph().addEdge(target, currentTopLevel);
 								}
@@ -142,7 +142,7 @@ public class StaticInitilializerAnalyzer extends TreeScanner {
 		}
 		if (!Util.isInterface(newClass.type.tsym) && currentTopLevelImportedTypes.contains(newClass.type)) {
 			JCCompilationUnit target = typesToCompilationUnits.get(newClass.type.tsym);
-			if (target != null && !currentTopLevel.equals(target)) {
+			if (target != null && !currentTopLevel.equals(target) && getGraph().contains(target)) {
 				logger.debug("adding object construction dependency: " + currentTopLevel.getSourceFile() + " -> " + target.getSourceFile());
 				getGraph().addEdge(target, currentTopLevel);
 			}
