@@ -18,19 +18,25 @@ package org.jsweet.transpiler;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.lang.model.element.Modifier;
 
 import org.apache.log4j.Logger;
 import org.jsweet.transpiler.util.DirectedGraph;
 import org.jsweet.transpiler.util.ReferenceGrabber;
+import org.jsweet.transpiler.util.Util;
 
 import com.sun.tools.javac.code.Symbol.PackageSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
+import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
+import com.sun.tools.javac.tree.JCTree.JCImport;
+import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.TreeScanner;
 
@@ -83,10 +89,21 @@ public class StaticInitilializerAnalyzer extends TreeScanner {
 		}
 	}
 
+	Set<Type> currentTopLevelImportedTypes = new HashSet<>();
+
 	@Override
 	public void visitTopLevel(JCCompilationUnit compilationUnit) {
 		currentTopLevel = compilationUnit;
-		getGraph().add(compilationUnit);
+		if (pass == 1) {
+			getGraph().add(compilationUnit);
+		} else {
+			currentTopLevelImportedTypes.clear();
+			for (JCImport i : compilationUnit.getImports()) {
+				if (i.qualid.type != null) {
+					currentTopLevelImportedTypes.add(i.qualid.type);
+				}
+			}
+		}
 		super.visitTopLevel(compilationUnit);
 		currentTopLevel = null;
 	}
@@ -105,7 +122,7 @@ public class StaticInitilializerAnalyzer extends TreeScanner {
 						for (TypeSymbol type : refGrabber.referencedTypes) {
 							if (!context.useModules || currentTopLevel.packge.equals(type.packge())) {
 								JCCompilationUnit target = typesToCompilationUnits.get(type);
-								if (!currentTopLevel.equals(target)) {
+								if (target != null && !currentTopLevel.equals(target)) {
 									logger.debug("adding static initializer dependency: " + currentTopLevel.getSourceFile() + " -> " + target.getSourceFile());
 									getGraph().addEdge(target, currentTopLevel);
 								}
@@ -114,7 +131,31 @@ public class StaticInitilializerAnalyzer extends TreeScanner {
 					}
 				}
 			}
+			super.visitClassDef(classdecl);
 		}
+	}
+
+	@Override
+	public void visitNewClass(JCNewClass newClass) {
+		if (pass == 1) {
+			return;
+		}
+		if (!Util.isInterface(newClass.type.tsym) && currentTopLevelImportedTypes.contains(newClass.type)) {
+			JCCompilationUnit target = typesToCompilationUnits.get(newClass.type.tsym);
+			if (target != null && !currentTopLevel.equals(target)) {
+				logger.debug("adding object construction dependency: " + currentTopLevel.getSourceFile() + " -> " + target.getSourceFile());
+				getGraph().addEdge(target, currentTopLevel);
+			}
+		}
+	}
+
+	boolean isImported(Type type) {
+		for (JCImport i : currentTopLevel.getImports()) {
+			if (i.type != null && i.type.tsym.equals(type.tsym)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
