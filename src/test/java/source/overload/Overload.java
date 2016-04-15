@@ -23,6 +23,13 @@ import jsweet.lang.Date;
 
 public class Overload {
 
+	public Overload() {
+		this(null);
+	}
+	
+	public Overload(String s) {
+	}
+	
 	String m() {
 		return this.m("default");
 	}
