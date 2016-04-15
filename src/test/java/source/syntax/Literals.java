@@ -25,5 +25,9 @@ public class Literals {
 		float f = 123f;
 		f = 1F;
 		System.out.println(f);
+		String s = "c'est l'été!";
+		System.out.println(s);
+		char c = 'é';
+		System.out.println(c);
 	}
 }
