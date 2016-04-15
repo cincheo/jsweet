@@ -2042,14 +2042,15 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				s = s.substring(0, s.length() - 1);
 			}
 			break;
-		case CLASS:
-			if (literal.value instanceof String) {
-				s = "\"" + literal.value + "\"";
-			}
-			break;
-		case CHAR:
-			s = "\"" + new String(Character.toChars((int) literal.value)) + "\"";
-			break;
+//		case CLASS:
+//			if (literal.value instanceof String) {
+//				//s = "\"" + StringEscapeUtils.escapeJava(((String) literal.value)) + "\"";
+//				//s = "\"" + s + "\"";
+//			}
+//			break;
+//		case CHAR:
+//			s = "\"" + new String(Character.toChars((int) literal.value)).replace("\\", "\\\\") + "\"";
+//			break;
 		default:
 		}
 		print(s);

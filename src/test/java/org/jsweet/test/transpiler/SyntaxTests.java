@@ -183,8 +183,12 @@ public class SyntaxTests extends AbstractTest {
 
 	@Test
 	public void testLiterals() {
-		transpile((logHandler) -> {
+		eval((logHandler, r) -> {
 			logHandler.assertReportedProblems();
+			Assert.assertEquals(1, r.<Number>get("l"));
+			Assert.assertEquals(1, r.<Number>get("f"));
+			Assert.assertEquals("c'est l'été!", r.<String>get("s"));
+			Assert.assertEquals("é", r.<String>get("c"));
 		} , getSourceFile(Literals.class));
 	}
 

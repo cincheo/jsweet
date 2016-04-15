@@ -16,18 +16,28 @@
  */
 package source.syntax;
 
+import static jsweet.util.Globals.$export;
+
 public class Literals {
 
-	public static void m1() {
+	public static void main(String[] args) {
 		long l = 3253l;
 		l = 1L;
+		$export("l", l);
 		System.out.println(l);
+
 		float f = 123f;
 		f = 1F;
+		$export("f", f);
 		System.out.println(f);
+
+		//String s = "c'est l'été!\n\\cool";
 		String s = "c'est l'été!";
+		$export("s", s);
 		System.out.println(s);
+
 		char c = 'é';
+		$export("c", c);
 		System.out.println(c);
 	}
 }
