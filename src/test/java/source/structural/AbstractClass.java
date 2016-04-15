@@ -16,6 +16,7 @@
  */
 package source.structural;
 
+import jsweet.lang.Interface;
 
 public abstract class AbstractClass {
 
@@ -33,4 +34,69 @@ public abstract class AbstractClass {
 		return "";
 	}
 
+}
+
+interface SuperEntry<V> {
+
+	V getValue();
+	
+	int m();
+	
+}
+
+//test invocations on methods defined in an implemented interface
+interface Entry<K, V> extends SuperEntry<V> {
+	K getKey();
+
+	V getValue();
+
+	V setValue(V value);
+	
+	default void test() {
+		
+	}
+}
+
+abstract class AbstractMapEntry<K, V> implements Entry<K, V> {
+
+	@Override
+	public final boolean equals(Object other) {
+		if (!(other instanceof Entry)) {
+			return false;
+		}
+		Entry<?, ?> entry = (Entry<?, ?>) other;
+		return Objects.equals(getKey(), entry.getKey()) && Objects.equals(getValue(), entry.getValue());
+	}
+
+}
+
+class Objects {
+	public static boolean equals(Object o1, Object o2) {
+		return false;
+	}
+}
+
+@Interface
+abstract class I {
+	String a;
+	public abstract void m1(String s);
+	public abstract void m2(int i);
+}
+
+abstract class AbstractImpl extends I {
+	String a;
+	@Override
+	public void m1(String s) {
+	}
+}
+
+class Impl extends AbstractImpl {
+	@Override
+	public void m2(int i) {
+	}
+	
+	@Override
+	public void m1(String s) {
+		super.m1(s);
+	}
 }
