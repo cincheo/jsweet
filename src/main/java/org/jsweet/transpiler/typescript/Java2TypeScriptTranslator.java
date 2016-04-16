@@ -1562,6 +1562,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (!getAdapter().substituteFieldAccess(fieldAccess)) {
 			if ("class".equals(fieldAccess.name.toString())) {
 				print(fieldAccess.selected);
+			} else if ("this".equals(fieldAccess.name.toString()) && getScope().innerClassNotStatic) {
+				print("this.__parent");
 			} else {
 				// if (Util.isIntegral(fieldAccess.type)) {
 				// print("(");

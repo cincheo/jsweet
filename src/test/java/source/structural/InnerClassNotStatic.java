@@ -50,9 +50,9 @@ public class InnerClassNotStatic {
 			trace.push("" + i + getI() + "a");
 		}
 
-//		public void m2() {
-//			trace.push("test" + InnerClassNotStatic.this.i + InnerClassNotStatic.this.getI() + "a");
-//		}
+		public void m2() {
+			trace.push("test" + InnerClassNotStatic.this.i + InnerClassNotStatic.this.getI() + "a");
+		}
 	}
 
 	public class InnerClass2 {
