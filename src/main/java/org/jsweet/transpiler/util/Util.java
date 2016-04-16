@@ -316,16 +316,11 @@ public class Util {
 		return findMethodDeclarationInType(types, typeSymbol, methName, (MethodType) invocation.meth.type);
 	}
 
-	public static MethodSymbol findMethodDeclarationInType(Types types, TypeSymbol typeSymbol, String methodName, MethodType methodType) {
-		return findMethodDeclarationInType(types, typeSymbol, methodName, methodType, false);
-	}
-
 	/**
 	 * Finds the method in the given type that matches the given name and
 	 * signature.
 	 */
-	public static MethodSymbol findMethodDeclarationInType(Types types, TypeSymbol typeSymbol, String methodName, MethodType methodType,
-			boolean withImplementation) {
+	public static MethodSymbol findMethodDeclarationInType(Types types, TypeSymbol typeSymbol, String methodName, MethodType methodType) {
 		if (typeSymbol == null) {
 			return null;
 		}
@@ -338,24 +333,19 @@ public class Util {
 						return methodSymbol;
 					}
 					if (isInvocable(types, methodType, methodSymbol.type.asMethodType())) {
-						boolean hasBody = methodSymbol.isDefault() || (!isInterface(typeSymbol) && !methodSymbol.getModifiers().contains(Modifier.ABSTRACT));
-						if (withImplementation && !hasBody) {
-							return null;
-						} else {
-							return methodSymbol;
-						}
+						return methodSymbol;
 					}
 				}
 			}
 		}
 		MethodSymbol result = null;
 		if (typeSymbol instanceof ClassSymbol && ((ClassSymbol) typeSymbol).getSuperclass() != null) {
-			result = findMethodDeclarationInType(types, ((ClassSymbol) typeSymbol).getSuperclass().tsym, methodName, methodType, withImplementation);
+			result = findMethodDeclarationInType(types, ((ClassSymbol) typeSymbol).getSuperclass().tsym, methodName, methodType);
 		}
 		if (result == null) {
 			if (typeSymbol instanceof ClassSymbol && ((ClassSymbol) typeSymbol).getInterfaces() != null) {
 				for (Type t : ((ClassSymbol) typeSymbol).getInterfaces()) {
-					result = findMethodDeclarationInType(types, t.tsym, methodName, methodType, withImplementation);
+					result = findMethodDeclarationInType(types, t.tsym, methodName, methodType);
 					if (result != null) {
 						break;
 					}
@@ -365,6 +355,18 @@ public class Util {
 		return result;
 	}
 
+	/**
+	 * Tells if a method can be invoked with some given parameter types.
+	 * 
+	 * @param types
+	 *            a reference to the types in the compilation scope
+	 * @param from
+	 *            the caller method signature to test (contains the parameter
+	 *            types)
+	 * @param target
+	 *            the callee method signature
+	 * @return true if the callee can be invoked by the caller
+	 */
 	public static boolean isInvocable(Types types, MethodType from, MethodType target) {
 		if (from.getParameterTypes().length() != target.getParameterTypes().length()) {
 			return false;
@@ -375,6 +377,25 @@ public class Util {
 			}
 		}
 		return true;
+	}
+
+	/**
+	 * Gets the TypeScript initial default value for a type.
+	 */
+	public String getTypeInitalValue(String typeName) {
+		if (typeName == null) {
+			return "null";
+		}
+		switch (typeName) {
+		case "void":
+			return null;
+		case "boolean":
+			return "false";
+		case "number":
+			return "0";
+		default:
+			return "null";
+		}
 	}
 
 	/**

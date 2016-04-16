@@ -676,8 +676,17 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			for (MethodSymbol meth : methods) {
 				if (meth.type instanceof MethodType) {
 					MethodSymbol s = Util.findMethodDeclarationInType(getContext().types, classdecl.sym, meth.getSimpleName().toString(),
-							(MethodType) meth.type, true);
-					if (s == null) {
+							(MethodType) meth.type);
+					boolean printDefaultImplementation = false;
+					if (s != null) {
+						if (!s.getEnclosingElement().equals(classdecl.sym)) {
+							if (!(s.isDefault()
+									|| (!Util.isInterface((TypeSymbol) s.getEnclosingElement()) && !s.getModifiers().contains(Modifier.ABSTRACT)))) {
+								printDefaultImplementation = true;
+							}
+						}
+					}
+					if (s == null || printDefaultImplementation) {
 						String signature = getContext().types.erasure(meth.type).toString();
 						if (!(signatures.containsKey(meth.name) && signatures.get(meth.name).equals(signature))) {
 							printDefaultImplementation(meth);
@@ -856,22 +865,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 	}
 
-	private String getTypeInitalValue(String typeName) {
-		if (typeName == null) {
-			return "null";
-		}
-		switch (typeName) {
-		case "void":
-			return null;
-		case "boolean":
-			return "false";
-		case "number":
-			return "0";
-		default:
-			return "null";
-		}
-	}
-
 	@Override
 	public void visitMethodDef(JCMethodDecl methodDecl) {
 		if (Util.hasAnnotationType(methodDecl.sym, JSweetConfig.ANNOTATION_ERASED)) {
@@ -1024,6 +1017,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					}
 				}
 			}
+			if (methodDecl.mods.getFlags().contains(Modifier.ABSTRACT)) {
+				if (!getScope().interfaceScope) {
+					print("abstract ");
+				}
+			}
 			if (ambient) {
 				report(methodDecl, methodDecl.name, JSweetProblem.WRONG_USE_OF_AMBIENT, methodDecl.name);
 			}
@@ -1106,16 +1104,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 				endIndent().printIndent().print("}");
 			} else {
-				if (!getScope().interfaceScope && methodDecl.mods.getFlags().contains(Modifier.ABSTRACT)) {
-					print(" {");
-					String typeName = methodDecl.restype.toString();
-					if (!"void".equals(typeName)) {
-						print(" return ").print(getTypeInitalValue(typeName)).print("; ");
-					}
-					print("}");
-				} else {
-					print(";");
-				}
+				print(";");
 			}
 		} else {
 			boolean hasStatements = methodDecl.getBody().getStatements().isEmpty();
@@ -2042,15 +2031,17 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				s = s.substring(0, s.length() - 1);
 			}
 			break;
-//		case CLASS:
-//			if (literal.value instanceof String) {
-//				//s = "\"" + StringEscapeUtils.escapeJava(((String) literal.value)) + "\"";
-//				//s = "\"" + s + "\"";
-//			}
-//			break;
-//		case CHAR:
-//			s = "\"" + new String(Character.toChars((int) literal.value)).replace("\\", "\\\\") + "\"";
-//			break;
+		// case CLASS:
+		// if (literal.value instanceof String) {
+		// //s = "\"" + StringEscapeUtils.escapeJava(((String) literal.value)) +
+		// "\"";
+		// //s = "\"" + s + "\"";
+		// }
+		// break;
+		// case CHAR:
+		// s = "\"" + new String(Character.toChars((int)
+		// literal.value)).replace("\\", "\\\\") + "\"";
+		// break;
 		default:
 		}
 		print(s);
