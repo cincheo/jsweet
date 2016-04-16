@@ -653,12 +653,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (defaultMethods != null && !defaultMethods.isEmpty()) {
 			getScope().defaultMethodScope = true;
 			for (Entry<JCClassDecl, JCMethodDecl> entry : defaultMethods) {
-
 				MethodSymbol s = Util.findMethodDeclarationInType(context.types, classdecl.sym, entry.getValue().getName().toString(),
 						(MethodType) entry.getValue().type);
 				if (s == null || s == entry.getValue().sym) {
 					stack.push(entry.getKey());
+					getAdapter().typeVariablesToErase.addAll(((ClassSymbol) s.getEnclosingElement()).getTypeParameters());
 					printIndent().print(entry.getValue()).println();
+					getAdapter().typeVariablesToErase.removeAll(((ClassSymbol) s.getEnclosingElement()).getTypeParameters());
 					stack.pop();
 				}
 			}

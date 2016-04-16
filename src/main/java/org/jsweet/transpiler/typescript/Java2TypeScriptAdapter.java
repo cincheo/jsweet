@@ -252,7 +252,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			} else {
 				getPrinter().print(varName + " = ").print(invocation.args.tail.head).print("; ");
 				getPrinter().print("console.log('" + JSweetTranspiler.EXPORTED_VAR_BEGIN + StringUtils.strip(invocation.args.head.toString(), "\"") + "='+")
-						.print(varName).print("+'" + JSweetTranspiler.EXPORTED_VAR_END + "');");
+						.print(varName).print("+'" + JSweetTranspiler.EXPORTED_VAR_END + "')");
 			}
 			return true;
 		}

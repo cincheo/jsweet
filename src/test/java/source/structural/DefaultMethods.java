@@ -4,13 +4,13 @@ import static jsweet.util.Globals.$export;
 
 import jsweet.lang.Array;
 
-public class DefaultMethods implements IDefaultMethods {
+public class DefaultMethods<U> implements IDefaultMethods<U> {
 
 	static Array<String> trace = new Array<String>();
 
 	public static void main(String[] args) {
-		new DefaultMethods().m();
-		new DefaultMethods().m2();
+		new DefaultMethods<String>().m("");
+		new DefaultMethods<String>().m2();
 		$export("trace", trace.join());
 	}
 
@@ -26,9 +26,9 @@ public class DefaultMethods implements IDefaultMethods {
 	
 }
 
-interface IDefaultMethods {
+interface IDefaultMethods<T> {
 
-	default void m() {
+	default void m(T t) {
 		DefaultMethods.trace.push("m");
 		m1();
 	}
