@@ -30,10 +30,12 @@ public class InnerClass {
 		new InnerClass.InnerClass2().m2();
 	}
 
+	static int i = 1;
+
 	public static class InnerClass1 {
 
 		public void m1() {
-			$export("value1", "test1");
+			$export("value1", "test" + i);
 		}
 
 		public static void main(String[] args) {
