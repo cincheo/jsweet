@@ -30,6 +30,7 @@ import org.jsweet.transpiler.TypeChecker;
 
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
+import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 
 /**
@@ -344,6 +345,8 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	public AbstractTreePrinter printArgList(List<? extends JCTree> args) {
 		return printArgList(args, null);
 	}
+
+	public abstract AbstractTreePrinter printConstructorArgList(JCNewClass newClass);
 
 	/**
 	 * Prints a comma-separated list of variable names (no types).

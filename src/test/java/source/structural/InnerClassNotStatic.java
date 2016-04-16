@@ -18,27 +18,50 @@ package source.structural;
 
 import static jsweet.util.Globals.$export;
 
+import jsweet.lang.Array;
+
 public class InnerClassNotStatic {
+
+	static Array<String> trace = new Array<>();
 
 	public static void main(String[] args) {
 		new InnerClassNotStatic().m();
 	}
 
+	int i = 2;
+
+	int getI() {
+		return i;
+	}
+
 	void m() {
-		new InnerClassNotStatic.InnerClass1().m();
-		new InnerClass1().m();
+		new InnerClassNotStatic.InnerClass1("abc").m1();
+		new InnerClass1("ABC").m1();
+		new InnerClass2().m();
+		$export("trace", trace.join(","));
 	}
 
 	public class InnerClass1 {
-
-		public void m() {
-			$export("value", "test");
+		public InnerClass1(String s) {
+			trace.push("" + i + getI() + s);
 		}
-		
+
+		public void m1() {
+			trace.push("" + i + getI() + "a");
+		}
+
+//		public void m2() {
+//			trace.push("test" + InnerClassNotStatic.this.i + InnerClassNotStatic.this.getI() + "a");
+//		}
+	}
+
+	public class InnerClass2 {
+		public void m() {
+			trace.push("" + i + getI() + "b");
+		}
 	}
 
 	public interface I {
-
 	}
 
 }
@@ -46,12 +69,13 @@ public class InnerClassNotStatic {
 class Sub extends InnerClassNotStatic {
 	void m2(InnerClass1 c) {
 	}
+
 	void m3(InnerClassNotStatic.InnerClass1 c) {
 	}
 }
 
 class Use {
 	void m2(InnerClassNotStatic.InnerClass1 c) {
-		
+
 	}
 }
