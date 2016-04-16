@@ -10,6 +10,7 @@ public class DefaultMethods implements IDefaultMethods {
 
 	public static void main(String[] args) {
 		new DefaultMethods().m();
+		new DefaultMethods().m2();
 		$export("trace", trace.join());
 	}
 
@@ -18,6 +19,11 @@ public class DefaultMethods implements IDefaultMethods {
 		trace.push("m1");
 	}
 
+	@Override
+	public void m2() {
+		DefaultMethods.trace.push("m2-overriden");
+	}
+	
 }
 
 interface IDefaultMethods {
@@ -27,6 +33,10 @@ interface IDefaultMethods {
 		m1();
 	}
 
+	default void m2() {
+		DefaultMethods.trace.push("m2");
+	}
+	
 	void m1();
 
 }

@@ -653,9 +653,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (defaultMethods != null && !defaultMethods.isEmpty()) {
 			getScope().defaultMethodScope = true;
 			for (Entry<JCClassDecl, JCMethodDecl> entry : defaultMethods) {
-				stack.push(entry.getKey());
-				printIndent().print(entry.getValue()).println();
-				stack.pop();
+
+				MethodSymbol s = Util.findMethodDeclarationInType(context.types, classdecl.sym, entry.getValue().getName().toString(),
+						(MethodType) entry.getValue().type);
+				if (s == null || s == entry.getValue().sym) {
+					stack.push(entry.getKey());
+					printIndent().print(entry.getValue()).println();
+					stack.pop();
+				}
 			}
 			getScope().defaultMethodScope = false;
 		}
@@ -2488,7 +2493,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 				print("[\"__interfaces\"].indexOf(\"").print(type.tsym.getQualifiedName().toString()).print("\") >= 0");
 			} else {
-				if(type.tsym instanceof TypeVariableSymbol) {
+				if (type.tsym instanceof TypeVariableSymbol) {
 					print(" != null");
 				} else {
 					print(" instanceof ").print(getQualifiedTypeName(type.tsym, false));

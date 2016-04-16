@@ -299,7 +299,7 @@ public class StructuralTests extends AbstractTest {
 	public void testDefaultMethods() {
 		eval((logHandler, r) -> {
 			logHandler.assertReportedProblems();
-			assertEquals("m,m1", r.get("trace"));
+			assertEquals("m,m1,m2-overriden", r.get("trace"));
 		} , getSourceFile(DefaultMethods.class));
 	}
 

@@ -259,7 +259,7 @@ public class JSweetContext extends Context {
 	 * Stores a default method AST for the given type.
 	 */
 	public void addDefaultMethod(JCClassDecl type, JCMethodDecl defaultMethod) {
-		Set<Entry<JCClassDecl, JCMethodDecl>> methods = defaultMethods.get(type);
+		Set<Entry<JCClassDecl, JCMethodDecl>> methods = defaultMethods.get(type.sym);
 		if (methods == null) {
 			methods = new HashSet<>();
 			defaultMethods.put(type.sym, methods);
