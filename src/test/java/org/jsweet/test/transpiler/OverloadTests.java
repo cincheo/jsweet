@@ -24,6 +24,7 @@ import source.overload.Overload;
 import source.overload.OverloadInInnerClass;
 import source.overload.WrongOverload;
 import source.overload.WrongOverloadWithArraysAndObjects;
+import source.overload.WrongOverloadWithGenerics;
 import source.overload.WrongOverloads;
 
 public class OverloadTests extends AbstractTest {
@@ -69,4 +70,13 @@ public class OverloadTests extends AbstractTest {
 		} , getSourceFile(WrongOverloadWithArraysAndObjects.class));
 	}
 
+	@Test
+	public void testWrongOverloadWithGenerics() {
+		eval((logHandler, r) -> {
+			logHandler.assertReportedProblems();
+			assertEquals("1,2,3,4", r.get("trace"));
+		} , getSourceFile(WrongOverloadWithGenerics.class));
+	}
+	
+	
 }

@@ -2488,7 +2488,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 				print("[\"__interfaces\"].indexOf(\"").print(type.tsym.getQualifiedName().toString()).print("\") >= 0");
 			} else {
-				print(" instanceof ").print(getQualifiedTypeName(type.tsym, false));
+				if(type.tsym instanceof TypeVariableSymbol) {
+					print(" != null");
+				} else {
+					print(" instanceof ").print(getQualifiedTypeName(type.tsym, false));
+				}
 			}
 		}
 		if (!(getParent() instanceof JCParens)) {
