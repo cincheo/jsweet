@@ -741,11 +741,10 @@ public class JSweetTranspiler implements JSweetOptions {
 	private void generateTsFiles(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files, List<JCCompilationUnit> compilationUnits)
 			throws IOException {
 		// regular file-to-file generation
+		new OverloadScanner(transpilationHandler, context).process(compilationUnits);
 		for (int i = 0; i < compilationUnits.length(); i++) {
 			JCCompilationUnit cu = compilationUnits.get(i);
 			logger.info("scanning " + cu.sourcefile.getName() + "...");
-			OverloadScanner overloadChecker = new OverloadScanner(transpilationHandler, context);
-			overloadChecker.process(cu);
 			AbstractTreePrinter printer = new Java2TypeScriptTranslator(transpilationHandler, context, cu, preserveSourceLineNumbers);
 			printer.print(cu);
 			String[] s = cu.getSourceFile().getName().split(File.separator.equals("\\") ? "\\\\" : File.separator);
@@ -803,11 +802,10 @@ public class JSweetTranspiler implements JSweetOptions {
 			permutationString.append("" + i + "=" + permutation[i] + ";");
 		}
 		logger.debug("permutation: " + permutationString.toString());
+		new OverloadScanner(transpilationHandler, context).process(orderedCompilationUnits);
 		for (int i = 0; i < orderedCompilationUnits.size(); i++) {
 			JCCompilationUnit cu = orderedCompilationUnits.get(i);
 			logger.info("scanning " + cu.sourcefile.getName() + "...");
-			OverloadScanner overloadChecker = new OverloadScanner(transpilationHandler, context);
-			overloadChecker.process(cu);
 			AbstractTreePrinter printer = new Java2TypeScriptTranslator(transpilationHandler, context, cu, preserveSourceLineNumbers);
 			printer.print(cu);
 			StringBuilder sb = modules.get(cu.packge);
@@ -876,12 +874,11 @@ public class JSweetTranspiler implements JSweetOptions {
 			permutationString.append("" + i + "=" + permutation[i] + ";");
 		}
 		logger.debug("permutation: " + permutationString.toString());
+		new OverloadScanner(transpilationHandler, context).process(orderedCompilationUnits);
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < orderedCompilationUnits.size(); i++) {
 			JCCompilationUnit cu = orderedCompilationUnits.get(i);
 			logger.info("scanning " + cu.sourcefile.getName() + "...");
-			OverloadScanner overloadChecker = new OverloadScanner(transpilationHandler, context);
-			overloadChecker.process(cu);
 			AbstractTreePrinter printer = new Java2TypeScriptTranslator(transpilationHandler, context, cu, preserveSourceLineNumbers);
 			printer.print(cu);
 			files[permutation[i]].sourceMap = printer.sourceMap;

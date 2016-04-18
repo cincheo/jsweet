@@ -927,4 +927,25 @@ public class Util {
 		}
 	}
 
+	/**
+	 * Looks up a class in the given class hierarchy and returns true if found.
+	 */
+	public static boolean isParent(ClassSymbol clazz, ClassSymbol toFind) {
+		if (clazz == null) {
+			return false;
+		}
+		if (clazz == toFind) {
+			return true;
+		}
+		if (isParent((ClassSymbol) clazz.getSuperclass().tsym, toFind)) {
+			return true;
+		}
+		for (Type t : clazz.getInterfaces()) {
+			if (isParent((ClassSymbol) t.tsym, toFind)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 }

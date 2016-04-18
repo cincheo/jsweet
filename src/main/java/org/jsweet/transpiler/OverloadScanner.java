@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 
 import org.jsweet.JSweetConfig;
@@ -31,6 +30,8 @@ import org.jsweet.transpiler.util.Util;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
+import com.sun.tools.javac.code.Symbol.TypeVariableSymbol;
+import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
@@ -85,6 +86,17 @@ public class OverloadScanner extends AbstractTreeScanner {
 		public Map<Integer, JCTree> defaultValues;
 
 		/**
+		 * A flag to tell if this overload was printed out (used by the
+		 * printer).
+		 */
+		public boolean printed = false;
+
+		@Override
+		public String toString() {
+			return "overload(" + methodName + ")[" + methods.size() + "," + isValid + "]";
+		}
+
+		/**
 		 * Checks the validity of the overload and calculates the default
 		 * values.
 		 */
@@ -96,6 +108,17 @@ public class OverloadScanner extends AbstractTreeScanner {
 				int i = m2.getParameters().size() - m1.getParameters().size();
 				if (i == 0) {
 					isValid = false;
+					// TODO: here we order the methods containing more type
+					// parameters last, but we should actually do actual
+					// ordering
+					for (int j = 0; j < m1.getParameters().size(); j++) {
+						if (m1.getParameters().get(j).type.tsym instanceof TypeVariableSymbol) {
+							i++;
+						}
+						if (m2.getParameters().get(j).type.tsym instanceof TypeVariableSymbol) {
+							i--;
+						}
+					}
 				}
 				return i;
 			});
@@ -103,6 +126,92 @@ public class OverloadScanner extends AbstractTreeScanner {
 			if (isValid) {
 				defaultValues = new HashMap<>();
 			}
+
+			if (methods.size() > 1 && isValid) {
+				for (JCMethodDecl methodDecl : methods) {
+					if (!methodDecl.equals(coreMethod)) {
+						if (methodDecl.body != null && methodDecl.body.stats.size() == 1) {
+							JCMethodInvocation invocation = null;
+							JCStatement stat = methodDecl.body.stats.get(0);
+							if (stat instanceof JCReturn) {
+								if (((JCReturn) stat).expr instanceof JCMethodInvocation) {
+									invocation = (JCMethodInvocation) ((JCReturn) stat).expr;
+								}
+							} else if (stat instanceof JCExpressionStatement) {
+								if (((JCExpressionStatement) stat).expr instanceof JCMethodInvocation) {
+									invocation = (JCMethodInvocation) ((JCExpressionStatement) stat).expr;
+								}
+							}
+							if (invocation == null) {
+								isValid = false;
+							} else {
+								MethodSymbol method = Util.findMethodDeclarationInType(types, (TypeSymbol) methodDecl.sym.getEnclosingElement(), invocation);
+								if (method != null && method.getSimpleName().toString().equals(methodName)) {
+									if (invocation.getArguments() != null) {
+										for (int i = 0; i < invocation.getArguments().size(); i++) {
+											JCExpression expr = invocation.getArguments().get(i);
+											boolean constant = false;
+											if (expr instanceof JCLiteral) {
+												constant = true;
+											} else if (expr instanceof JCFieldAccess) {
+												if (((JCFieldAccess) expr).sym.isStatic()
+														&& ((JCFieldAccess) expr).sym.getModifiers().contains(Modifier.FINAL)) {
+													constant = true;
+												}
+											} else if (expr instanceof JCIdent) {
+												if (((JCIdent) expr).sym.isStatic() && ((JCIdent) expr).sym.getModifiers().contains(Modifier.FINAL)) {
+													constant = true;
+												}
+											}
+											if (constant) {
+												defaultValues.put(i, expr);
+											} else {
+												if (!(expr instanceof JCIdent
+														&& methodDecl.params.stream().map(p -> p.name).anyMatch(p -> p.equals(((JCIdent) expr).name)))) {
+													isValid = false;
+												}
+											}
+										}
+									}
+								} else {
+									isValid = false;
+								}
+							}
+						} else {
+							isValid = false;
+						}
+					}
+				}
+			}
+
+		}
+
+		/**
+		 * Merges the given overload with a subclass one.
+		 */
+		public void merge(Overload subOverload) {
+			boolean merge = false;
+			for (JCMethodDecl subm : new ArrayList<>(subOverload.methods)) {
+				boolean overrides = false;
+				for (JCMethodDecl m : new ArrayList<>(methods)) {
+					if (subm.getParameters().size() == m.getParameters().size()) {
+						overrides = true;
+					}
+				}
+				if (!overrides) {
+					merge = true;
+					methods.add(subm);
+				}
+			}
+
+			if (merge) {
+				for (JCMethodDecl m : methods) {
+					if (!subOverload.methods.contains(m)) {
+						subOverload.methods.add(m);
+					}
+				}
+			}
+
 		}
 	}
 
@@ -115,9 +224,9 @@ public class OverloadScanner extends AbstractTreeScanner {
 	}
 
 	/**
-	 * Gets an overload instance for the given class and method.
+	 * Gets or create an overload instance for the given class and method.
 	 */
-	public Overload getOverload(ClassSymbol clazz, JCMethodDecl method) {
+	public Overload getOrCreateOverload(ClassSymbol clazz, JCMethodDecl method) {
 		Map<String, Overload> m = context.overloads.get(clazz);
 		if (m == null) {
 			m = new HashMap<>();
@@ -133,94 +242,60 @@ public class OverloadScanner extends AbstractTreeScanner {
 		return overload;
 	}
 
-	@Override
-	public void visitClassDef(JCClassDecl classdecl) {
-		if (classdecl.sym.isInterface() || Util.hasAnnotationType(classdecl.sym, JSweetConfig.ANNOTATION_INTERFACE)) {
+	/**
+	 * Gets or create an overload instance for the given class and method.
+	 */
+	public Overload getOverload(ClassSymbol clazz, JCMethodDecl method) {
+		Map<String, Overload> m = context.overloads.get(clazz);
+		if (m == null) {
+			return null;
+		}
+		String name = method.name.toString();
+		Overload overload = m.get(name);
+		if (overload == null) {
+			return null;
+		}
+		return overload;
+	}
+
+	private void inspectSuperTypes(ClassSymbol clazz, Overload overload, JCMethodDecl method) {
+		if (clazz == null) {
 			return;
 		}
-		if (pass == 1) {
-			ClassSymbol clazz = classdecl.sym;
-			for (JCTree member : classdecl.defs) {
-				if (member instanceof JCMethodDecl) {
-					if (Util.hasAnnotationType(((JCMethodDecl) member).sym, JSweetConfig.ANNOTATION_ERASED)) {
-						continue;
-					}
-					JCMethodDecl method = (JCMethodDecl) member;
-					Overload overload = getOverload(clazz, method);
-					overload.methods.add(method);
-				}
-				// scan inner classes
-				if (member instanceof JCClassDecl) {
-					scan(member);
-				}
+		Overload superOverload = getOverload(clazz, method);
+		if (superOverload != null && superOverload != overload) {
+			superOverload.merge(overload);
+		}
+		if (clazz.isInterface()) {
+			for (Type t : clazz.getInterfaces()) {
+				inspectSuperTypes((ClassSymbol) t.tsym, overload, method);
 			}
 		} else {
-			for (JCTree member : classdecl.defs) {
-				if (member instanceof JCMethodDecl || member instanceof JCClassDecl) {
-					this.scan(member);
-				}
-			}
+			inspectSuperTypes((ClassSymbol) clazz.getSuperclass().tsym, overload, method);
 		}
 	}
 
 	@Override
-	public void visitMethodDef(JCMethodDecl methodDecl) {
-		Element e = methodDecl.sym.getEnclosingElement();
-		if (!(e instanceof ClassSymbol)) {
-			return;
-		}
-		Overload overload = context.getOverload(((ClassSymbol) e), methodDecl.name.toString());
-		if (overload != null && overload.methods.size() > 1 && overload.isValid) {
-			if (!methodDecl.equals(overload.coreMethod)) {
-				if (methodDecl.body != null && methodDecl.body.stats.size() == 1) {
-					JCMethodInvocation invocation = null;
-					JCStatement stat = methodDecl.body.stats.get(0);
-					if (stat instanceof JCReturn) {
-						if (((JCReturn) stat).expr instanceof JCMethodInvocation) {
-							invocation = (JCMethodInvocation) ((JCReturn) stat).expr;
-						}
-					} else if (stat instanceof JCExpressionStatement) {
-						if (((JCExpressionStatement) stat).expr instanceof JCMethodInvocation) {
-							invocation = (JCMethodInvocation) ((JCExpressionStatement) stat).expr;
-						}
-					}
-					if (invocation == null) {
-						overload.isValid = false;
-					} else {
-						MethodSymbol method = Util.findMethodDeclarationInType(types, (TypeSymbol) e, invocation);
-						if (method != null && method.getSimpleName().toString().equals(overload.methodName)) {
-							if (invocation.getArguments() != null) {
-								for (int i = 0; i < invocation.getArguments().size(); i++) {
-									JCExpression expr = invocation.getArguments().get(i);
-									boolean constant = false;
-									if (expr instanceof JCLiteral) {
-										constant = true;
-									} else if (expr instanceof JCFieldAccess) {
-										if (((JCFieldAccess) expr).sym.isStatic() && ((JCFieldAccess) expr).sym.getModifiers().contains(Modifier.FINAL)) {
-											constant = true;
-										}
-									} else if (expr instanceof JCIdent) {
-										if (((JCIdent) expr).sym.isStatic() && ((JCIdent) expr).sym.getModifiers().contains(Modifier.FINAL)) {
-											constant = true;
-										}
-									}
-									if (constant) {
-										overload.defaultValues.put(i, expr);
-									} else {
-										if (!(expr instanceof JCIdent
-												&& methodDecl.params.stream().map(p -> p.name).anyMatch(p -> p.equals(((JCIdent) expr).name)))) {
-											overload.isValid = false;
-										}
-									}
-								}
-							}
-						} else {
-							overload.isValid = false;
-						}
-					}
-				} else {
-					overload.isValid = false;
+	public void visitClassDef(JCClassDecl classdecl) {
+		ClassSymbol clazz = classdecl.sym;
+		for (JCTree member : classdecl.defs) {
+			if (member instanceof JCMethodDecl) {
+				if (Util.hasAnnotationType(((JCMethodDecl) member).sym, JSweetConfig.ANNOTATION_ERASED)) {
+					continue;
 				}
+				JCMethodDecl method = (JCMethodDecl) member;
+				Overload overload = getOrCreateOverload(clazz, method);
+				if (pass == 1) {
+					overload.methods.add(method);
+				} else {
+					if (!((JCMethodDecl) member).sym.isConstructor()) {
+						inspectSuperTypes(classdecl.sym, overload, method);
+					}
+				}
+			}
+			// scan inner classes
+			if (member instanceof JCClassDecl) {
+				scan(member);
 			}
 		}
 	}
@@ -233,17 +308,21 @@ public class OverloadScanner extends AbstractTreeScanner {
 	}
 
 	/**
-	 * Processes all the overload of a given compilation unit.
+	 * Processes all the overload of a given compilation unit list.
 	 */
-	public void process(JCCompilationUnit cu) {
-		scan(cu);
+	public void process(List<JCCompilationUnit> cuList) {
+		for (JCCompilationUnit cu : cuList) {
+			scan(cu);
+		}
+		pass++;
+		for (JCCompilationUnit cu : cuList) {
+			scan(cu);
+		}
 		for (Map<String, Overload> overloads : context.overloads.values()) {
 			for (Overload overload : overloads.values()) {
 				overload.calculate();
 			}
 		}
-		pass++;
-		scan(cu);
 	}
 
 }

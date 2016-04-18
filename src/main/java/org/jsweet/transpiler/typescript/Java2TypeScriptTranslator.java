@@ -917,6 +917,17 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					if (methodDecl.sym.isConstructor()) {
 						return;
 					}
+					if (!overload.printed && overload.coreMethod.sym.getEnclosingElement() != parent.sym
+							&& !Util.isParent(parent.sym, (ClassSymbol) overload.coreMethod.sym.getEnclosingElement())) {
+						visitMethodDef(overload.coreMethod);
+						overload.printed = true;
+						if (!Util.isInterface(parent.sym)) {
+							println().println().printIndent();
+						}
+					}
+					if (overload.printed && Util.isInterface(parent.sym)) {
+						return;
+					}
 				}
 			} else {
 				if (!overload.coreMethod.equals(methodDecl)) {
@@ -1149,11 +1160,16 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					print(" {").println().startIndent().printIndent();
 					printInterfacesInitialization(parent.sym, methodDecl.sym);
 
+					boolean wasPrinted = false;
 					for (i = 0; i < overload.methods.size(); i++) {
 						JCMethodDecl method = overload.methods.get(i);
-						if (i > 0) {
+						if (!Util.isParent(parent.sym, (ClassSymbol) method.sym.getEnclosingElement())) {
+							continue;
+						}
+						if (wasPrinted) {
 							print(" else ");
 						}
+						wasPrinted = true;
 						print("if(");
 						printMethodParamsTest(methodDecl, method);
 						print(") ");
