@@ -252,6 +252,10 @@ public abstract class AbstractPrinterAdapter {
 				getPrinter().print(">");
 				return getPrinter();
 			} else {
+				if ("java.lang".equals(typeTree.type.tsym.getEnclosingElement().getQualifiedName().toString())
+						&& !typeTree.toString().startsWith("java.lang")) {
+					getPrinter().print("java.lang.");
+				}
 				return getPrinter().print(typeTree);
 			}
 		}
