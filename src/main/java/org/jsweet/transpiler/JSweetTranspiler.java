@@ -1093,7 +1093,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		for (File dir : tsDefDirs) {
 			LinkedList<File> tsDefFiles = new LinkedList<>();
 			Util.addFiles(".d.ts", dir, tsDefFiles);
-			logger.info("found tsdef files in " + dir + ": " + tsDefFiles);
+			logger.trace("found tsdef files in " + dir + ": " + tsDefFiles);
 			for (File f : tsDefFiles) {
 				args.add(relativizeTsFile(f).toString());
 			}
