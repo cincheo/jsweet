@@ -18,15 +18,20 @@ package org.jsweet.test.transpiler;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.File;
+
 import org.jsweet.transpiler.ModuleKind;
+import org.jsweet.transpiler.SourceFile;
 import org.junit.Test;
 
 import source.candies.Angular;
+import source.candies.Babylonjs;
 import source.candies.BackboneCandy;
 import source.candies.ExpressLib;
 import source.candies.GlobalsImport;
 import source.candies.JQuery;
 import source.candies.QualifiedNames;
+import source.candies.Threejs;
 
 public class CandiesTests extends AbstractTest {
 
@@ -83,6 +88,20 @@ public class CandiesTests extends AbstractTest {
 		transpile(ModuleKind.commonjs, logHandler -> {
 			assertEquals(0, logHandler.getReportedProblems().size());
 		} , getSourceFile(ExpressLib.class));
+	}
+
+	@Test
+	public void testThreejs() {
+		transpile(logHandler -> {
+			assertEquals(0, logHandler.getReportedProblems().size());
+		} , getSourceFile(Threejs.class));
+	}
+
+	@Test
+	public void testBabylonjs() {
+		transpile(logHandler -> {
+			assertEquals(0, logHandler.getReportedProblems().size());
+		} , getSourceFile(Babylonjs.class), new SourceFile(new File(TEST_DIRECTORY_NAME + "/def/babylonjs/babylon/package-info.java")));
 	}
 
 	@Test

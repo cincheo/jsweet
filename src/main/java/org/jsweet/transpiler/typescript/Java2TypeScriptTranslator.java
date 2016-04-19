@@ -255,6 +255,18 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	@Override
 	public void visitTopLevel(JCCompilationUnit topLevel) {
+		if (topLevel.packge.getQualifiedName().toString().startsWith("def.")) {
+			if (topLevel.getSourceFile().getName().endsWith("package-info.java")) {
+				if (Util.hasAnnotationType(topLevel.packge, JSweetConfig.ANNOTATION_MODULE)) {
+					String actualName = Util.getAnnotationValue(topLevel.packge, JSweetConfig.ANNOTATION_MODULE, null);
+					print("declare module \"").print(actualName).print("\" {").println();
+					startIndent().printIndent().print("export = ").print(Util.getActualName(topLevel.packge)).print(";");
+					endIndent().println().print("}").println();
+				}
+			}
+			return;
+		}
+
 		printIndent().print("\"Generated from Java with JSweet " + JSweetConfig.getVersionNumber() + " - http://www.jsweet.org\";").println();
 		PackageSymbol rootPackage = Util.getFirstEnclosingRootPackage(topLevel.packge);
 		if (rootPackage != null) {
@@ -521,6 +533,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 
 		globalModule = false;
+
 	}
 
 	private void printDocComment(JCTree element, boolean indent) {

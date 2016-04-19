@@ -948,4 +948,8 @@ public class Util {
 		return false;
 	}
 
+	public static PackageSymbol getPackageByName(JSweetContext context, String qualifiedName) {
+		return context.symtab.packages.get(context.names.fromString(qualifiedName));
+	}
+
 }

@@ -589,6 +589,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		}
 		candiesProcessor.processCandies(transpilationHandler);
 		addTsDefDir(candiesProcessor.getCandiesTsdefsDir());
+		addTsDefDir(tsOutputDir);
 		if (classPath != null && !ArrayUtils.contains(classPath.split(File.pathSeparator), candiesProcessor.getCandiesProcessedDir().getPath())) {
 			classPath = candiesProcessor.getCandiesProcessedDir() + File.pathSeparator + classPath;
 			logger.debug("updated classpath: " + classPath);
@@ -675,7 +676,7 @@ public class JSweetTranspiler implements JSweetOptions {
 			if (!createModuleFile) {
 				boolean isTsFromSourceFile = false;
 				for (SourceFile sourceFile : context.sourceFiles) {
-					if (moduleFile.getAbsolutePath().equals(sourceFile.getTsFile().getAbsolutePath())) {
+					if (sourceFile.getTsFile() != null && moduleFile.getAbsolutePath().equals(sourceFile.getTsFile().getAbsolutePath())) {
 						isTsFromSourceFile = true;
 						break;
 					}
@@ -738,12 +739,19 @@ public class JSweetTranspiler implements JSweetOptions {
 		getOrCreateTscRootFile();
 	}
 
+	private boolean isPackageDefinition(JCCompilationUnit cu) {
+		return cu.packge.getQualifiedName().toString().startsWith("def.") && cu.getSourceFile().getName().endsWith("package-info.java");
+	}
+
 	private void generateTsFiles(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files, List<JCCompilationUnit> compilationUnits)
 			throws IOException {
 		// regular file-to-file generation
 		new OverloadScanner(transpilationHandler, context).process(compilationUnits);
 		for (int i = 0; i < compilationUnits.length(); i++) {
 			JCCompilationUnit cu = compilationUnits.get(i);
+			if (isPackageDefinition(cu)) {
+				continue;
+			}
 			logger.info("scanning " + cu.sourcefile.getName() + "...");
 			AbstractTreePrinter printer = new Java2TypeScriptTranslator(transpilationHandler, context, cu, preserveSourceLineNumbers);
 			printer.print(cu);
@@ -803,11 +811,16 @@ public class JSweetTranspiler implements JSweetOptions {
 		}
 		logger.debug("permutation: " + permutationString.toString());
 		new OverloadScanner(transpilationHandler, context).process(orderedCompilationUnits);
+		StringBuilder packageDefinitions = new StringBuilder();
 		for (int i = 0; i < orderedCompilationUnits.size(); i++) {
 			JCCompilationUnit cu = orderedCompilationUnits.get(i);
 			logger.info("scanning " + cu.sourcefile.getName() + "...");
 			AbstractTreePrinter printer = new Java2TypeScriptTranslator(transpilationHandler, context, cu, preserveSourceLineNumbers);
 			printer.print(cu);
+			if (isPackageDefinition(cu)) {
+				packageDefinitions.append(printer.getOutput());
+				continue;
+			}
 			StringBuilder sb = modules.get(cu.packge);
 			if (sb == null) {
 				sb = new StringBuilder();
@@ -850,7 +863,10 @@ public class JSweetTranspiler implements JSweetOptions {
 			}
 			logger.info("created " + outputFilePath);
 		}
-
+		if (packageDefinitions.length() > 0) {
+			FileUtils.write(new File(tsOutputDir, "modules.d.ts"), packageDefinitions);
+			logger.info("created module definitions");
+		}
 	}
 
 	private void generateTsBundle(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files, List<JCCompilationUnit> compilationUnits)
@@ -878,6 +894,9 @@ public class JSweetTranspiler implements JSweetOptions {
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < orderedCompilationUnits.size(); i++) {
 			JCCompilationUnit cu = orderedCompilationUnits.get(i);
+			if (isPackageDefinition(cu)) {
+				continue;
+			}
 			logger.info("scanning " + cu.sourcefile.getName() + "...");
 			AbstractTreePrinter printer = new Java2TypeScriptTranslator(transpilationHandler, context, cu, preserveSourceLineNumbers);
 			printer.print(cu);
