@@ -589,7 +589,6 @@ public class JSweetTranspiler implements JSweetOptions {
 		}
 		candiesProcessor.processCandies(transpilationHandler);
 		addTsDefDir(candiesProcessor.getCandiesTsdefsDir());
-		addTsDefDir(tsOutputDir);
 		if (classPath != null && !ArrayUtils.contains(classPath.split(File.pathSeparator), candiesProcessor.getCandiesProcessedDir().getPath())) {
 			classPath = candiesProcessor.getCandiesProcessedDir() + File.pathSeparator + classPath;
 			logger.debug("updated classpath: " + classPath);
@@ -1093,10 +1092,15 @@ public class JSweetTranspiler implements JSweetOptions {
 		for (File dir : tsDefDirs) {
 			LinkedList<File> tsDefFiles = new LinkedList<>();
 			Util.addFiles(".d.ts", dir, tsDefFiles);
-			logger.trace("found tsdef files in " + dir + ": " + tsDefFiles);
 			for (File f : tsDefFiles) {
 				args.add(relativizeTsFile(f).toString());
 			}
+		}
+		
+		LinkedList<File> tsDefFiles = new LinkedList<>();
+		Util.addFiles(".d.ts", tsOutputDir, tsDefFiles);
+		for (File f : tsDefFiles) {
+			args.add(relativizeTsFile(f).toString());
 		}
 
 		try {

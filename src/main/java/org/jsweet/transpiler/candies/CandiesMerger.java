@@ -211,7 +211,6 @@ public class CandiesMerger {
 	}
 
 	private void findMixinClasses(File dir, List<Class<?>> mixinClasses) {
-		logger.debug("findLibPackages: " + dir + " - " + dir.getAbsolutePath());
 		String packageName = dir.getPath().substring(targetDir.getPath().length() + 1).replace(File.separatorChar, '.');
 		Class<?> packageInfo = null;
 		try {
@@ -310,6 +309,7 @@ public class CandiesMerger {
 			logger.debug("merging: " + ctMixin.getName() + " -> " + ctTarget.getName());
 		int memberCount = 0;
 		int ignoredDuplicates = 0;
+		int innerClassCount = 0;
 		for (CtClass ctInnerClass : ctMixin.getDeclaredClasses()) {
 			try {
 				String innerClassSimpleName = ctInnerClass.getSimpleName();
@@ -332,7 +332,7 @@ public class CandiesMerger {
 						logger.debug("adding " + innerClassName + " to pool");
 						ctTargetInner = ctTarget.makeNestedClass(innerClassSimpleName, true);
 						// RP: This line did not work for me.
-						//ctTargetInner = classPool.makeClass(innerClassName);
+						// ctTargetInner = classPool.makeClass(innerClassName);
 					}
 
 					mergeMixin(ctTargetInner, ctInnerClass, false);
@@ -343,11 +343,14 @@ public class CandiesMerger {
 					}
 
 					memberCount++;
-					logger.debug("merged inner class " + ctInnerClass.getName());
+					innerClassCount++;
 				}
 			} catch (Exception e) {
 				logger.warn("error merging inner class: " + ctInnerClass, e);
 			}
+		}
+		if (innerClassCount > 0) {
+			logger.debug("merged " + innerClassCount + " inner classes");
 		}
 		for (CtMethod ctMethod : ctMixin.getDeclaredMethods()) {
 			try {
@@ -355,7 +358,7 @@ public class CandiesMerger {
 					CtMethod copy = CtNewMethod.copy(ctMethod, ctTarget, null);
 					try {
 						copy.setGenericSignature(ctMethod.getGenericSignature());
-					} catch(Exception e) {
+					} catch (Exception e) {
 						// swallow
 					}
 					ctTarget.addMethod(copy);

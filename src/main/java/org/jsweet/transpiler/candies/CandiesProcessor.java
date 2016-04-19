@@ -118,10 +118,10 @@ public class CandiesProcessor {
 		candiesStoreFile = new File(workingDir, CANDIES_STORE_FILE_NAME);
 		candiesTsdefsDir = new File(workingDir, CANDIES_TSDEFS_DIR_NAME);
 		logger.debug("processed classes dir: " + getCandiesProcessedDir() + " - " + getCandiesProcessedDir().getAbsolutePath());
-		
+
 		setCandiesJavascriptOutDir(extractedCandiesJavascriptDir);
 	}
-	
+
 	private void setCandiesJavascriptOutDir(File extractedCandiesJavascriptDir) {
 		this.candiesJavascriptOutDir = extractedCandiesJavascriptDir;
 		if (this.candiesJavascriptOutDir == null) {
@@ -186,7 +186,6 @@ public class CandiesProcessor {
 		LinkedHashMap<File, CandyDescriptor> jarFilesCollector = new LinkedHashMap<>();
 		for (String classPathEntry : classPath.split("[" + System.getProperty("path.separator") + "]")) {
 			if (classPathEntry.endsWith(".jar")) {
-				logger.info("build candy descriptor for: " + classPathEntry);
 				File jarFile = new File(classPathEntry);
 				try (JarFile jarFileHandle = new JarFile(jarFile)) {
 					JarEntry candySpecificEntry = jarFileHandle.getJarEntry("META-INF/maven/" + JSweetConfig.MAVEN_CANDIES_GROUP);
@@ -202,6 +201,7 @@ public class CandiesProcessor {
 
 			}
 		}
+		logger.info("candies: " + jarFilesCollector.keySet());
 
 		return jarFilesCollector;
 	}
@@ -291,7 +291,6 @@ public class CandiesProcessor {
 	}
 
 	private void extractEntry(JarFile jarFile, JarEntry entry, File out) {
-		logger.info("extract " + entry.getName() + " to " + out);
 		out.getParentFile().mkdirs();
 		try {
 			FileUtils.copyInputStreamToFile(jarFile.getInputStream(entry), out);
@@ -311,7 +310,6 @@ public class CandiesProcessor {
 							File out = new File(candiesSourceDir + "/" + entry.getName().substring(4));
 							out.getParentFile().mkdirs();
 							try {
-								logger.debug("extracting source: " + out);
 								FileUtils.copyInputStreamToFile(jarFile.getInputStream(entry), out);
 							} catch (Exception e) {
 								throw new RuntimeException(e);
