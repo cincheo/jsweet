@@ -1097,7 +1097,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			paramPrinted = true;
 		}
 		int i = 0;
-		for (JCVariableDecl param : methodDecl.params) {
+		for (JCVariableDecl param : methodDecl.getParameters()) {
 			print(param);
 			if (inOverload && overload.isValid && overload.defaultValues.get(i) != null) {
 				print(" = ").print(overload.defaultValues.get(i));
@@ -1187,7 +1187,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						printMethodParamsTest(methodDecl, method);
 						print(") ");
 						if (i == 0 || method.sym.isConstructor()) {
-							printInlinedConstructorBody(overload, method, methodDecl.params);
+							printInlinedConstructorBody(overload, method, methodDecl.getParameters());
 						} else {
 							print("{").println().startIndent().printIndent();
 							// temporary cast to any because of Java generics
@@ -1199,10 +1199,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 								print("this");
 							}
 							print(".").print(getOverloadMethodName(method)).print("(");
-							for (int j = 0; j < method.params.size(); j++) {
-								print(avoidJSKeyword(overload.coreMethod.params.get(j).name.toString())).print(", ");
+							for (int j = 0; j < method.getParameters().size(); j++) {
+								print(avoidJSKeyword(overload.coreMethod.getParameters().get(j).name.toString())).print(", ");
 							}
-							if (!method.params.isEmpty()) {
+							if (!method.getParameters().isEmpty()) {
 								removeLastChars(2);
 							}
 							print(");");
@@ -1254,20 +1254,20 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	private void printInlinedConstructorBody(Overload overload, JCMethodDecl method, List<? extends JCTree> args) {
 		print("{").println().startIndent();
-		for (int j = 0; j < method.params.size(); j++) {
+		for (int j = 0; j < method.getParameters().size(); j++) {
 			if (args.get(j) instanceof JCVariableDecl) {
-				if (method.params.get(j).name.equals(((JCVariableDecl) args.get(j)).name)) {
+				if (method.getParameters().get(j).name.equals(((JCVariableDecl) args.get(j)).name)) {
 					continue;
 				} else {
-					printIndent().print("var ").printIdentifier(avoidJSKeyword(method.params.get(j).name.toString())).print(" : ").print("any").print(" = ")
-							.printIdentifier(avoidJSKeyword(((JCVariableDecl) args.get(j)).name.toString())).print(";").println();
+					printIndent().print("var ").printIdentifier(avoidJSKeyword(method.getParameters().get(j).name.toString())).print(" : ").print("any")
+							.print(" = ").printIdentifier(avoidJSKeyword(((JCVariableDecl) args.get(j)).name.toString())).print(";").println();
 				}
 			} else {
-				if (method.params.get(j).name.toString().equals(args.get(j).toString())) {
+				if (method.getParameters().get(j).name.toString().equals(args.get(j).toString())) {
 					continue;
 				} else {
-					printIndent().print("var ").printIdentifier(avoidJSKeyword(method.params.get(j).name.toString())).print(" : ").print("any").print(" = ")
-							.print(args.get(j)).print(";").println();
+					printIndent().print("var ").printIdentifier(avoidJSKeyword(method.getParameters().get(j).name.toString())).print(" : ").print("any")
+							.print(" = ").print(args.get(j)).print(";").println();
 				}
 			}
 		}
@@ -1323,11 +1323,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 		StringBuilder sb = new StringBuilder(method.getName().toString());
 		sb.append("$");
-		for (JCVariableDecl p : method.params) {
+		for (JCVariableDecl p : method.getParameters()) {
 			sb.append(p.type.tsym.getSimpleName());
 			sb.append("_");
 		}
-		if (!method.params.isEmpty()) {
+		if (!method.getParameters().isEmpty()) {
 			sb.deleteCharAt(sb.length() - 1);
 		}
 		return sb.toString();
@@ -1335,12 +1335,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	private void printMethodParamsTest(JCMethodDecl coreMethod, JCMethodDecl m) {
 		int i = 0;
-		for (; i < m.params.size(); i++) {
-			printInstanceOf(avoidJSKeyword(coreMethod.params.get(i).name.toString()), null, m.params.get(i).type);
+		for (; i < m.getParameters().size(); i++) {
+			printInstanceOf(avoidJSKeyword(coreMethod.getParameters().get(i).name.toString()), null, m.getParameters().get(i).type);
 			print(" && ");
 		}
-		for (; i < coreMethod.params.size(); i++) {
-			print(avoidJSKeyword(coreMethod.params.get(i).name.toString())).print(" == null");
+		for (; i < coreMethod.getParameters().size(); i++) {
+			print(avoidJSKeyword(coreMethod.getParameters().get(i).name.toString())).print(" == null");
 			print(" && ");
 		}
 		removeLastChars(4);
@@ -1593,6 +1593,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				print(fieldAccess.selected);
 			} else if ("this".equals(fieldAccess.name.toString()) && getScope().innerClassNotStatic) {
 				print("this.__parent");
+			} else if("this".equals(fieldAccess.name.toString())) {
+				print("this");
 			} else {
 				// if (Util.isIntegral(fieldAccess.type)) {
 				// print("(");
@@ -1749,7 +1751,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			if (!hasVarargs(methSym) //
 					|| inv.args.last().type.getKind() != TypeKind.ARRAY
 					// we dont use apply if var args type differ
-					|| !((ArrayType) inv.args.last().type).elemtype.equals(((ArrayType) methSym.params().last().type).elemtype)) {
+					|| !((ArrayType) inv.args.last().type).elemtype.equals(((ArrayType) methSym.getParameters().last().type).elemtype)) {
 				applyVarargs = false;
 			}
 
@@ -2470,13 +2472,16 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	public void visitReference(JCMemberReference memberReference) {
 		if (memberReference.sym instanceof MethodSymbol) {
 			MethodSymbol method = (MethodSymbol) memberReference.sym;
+			if (getParent() instanceof JCTypeCast) {
+				print("(");
+			}
 			print("(");
-			if (method.params != null) {
-				for (VarSymbol var : method.params) {
+			if (method.getParameters() != null) {
+				for (VarSymbol var : method.getParameters()) {
 					print(var.name.toString());
 					print(",");
 				}
-				if (!method.params.isEmpty()) {
+				if (!method.getParameters().isEmpty()) {
 					removeLastChar();
 				}
 			}
@@ -2494,17 +2499,20 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			MethodSymbol method = (MethodSymbol) memberReference.sym;
 
 			print("(");
-			if (method.params != null) {
-				for (VarSymbol var : method.params) {
+			if (method.getParameters() != null) {
+				for (VarSymbol var : method.getParameters()) {
 					print(var.name.toString());
 					print(",");
 				}
-				if (!method.params.isEmpty()) {
+				if (!method.getParameters().isEmpty()) {
 					removeLastChar();
 				}
 			}
 			print(")");
 			print(" }");
+			if (getParent() instanceof JCTypeCast) {
+				print(")");
+			}
 		}
 
 	}

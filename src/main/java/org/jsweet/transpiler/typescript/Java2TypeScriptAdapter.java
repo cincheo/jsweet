@@ -281,6 +281,12 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			printCastMethodInvocation(invocation);
 			return true;
 		}
+		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "any")) {
+			getPrinter().print("(<any>");
+			printCastMethodInvocation(invocation);
+			getPrinter().print(")");
+			return true;
+		}
 		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "object")) {
 			printCastMethodInvocation(invocation);
 			return true;
@@ -708,8 +714,12 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				}
 			}
 			if (typeFullName.startsWith(Class.class.getName() + "<")) {
-				getPrinter().print("typeof ");
-				return substituteAndPrintType(typeApply.arguments.head, arrayComponent, inTypeParameters, completeRawTypes);
+				if (typeApply.arguments.head.type.tsym instanceof TypeVariableSymbol) {
+					return getPrinter().print("any");
+				} else {
+					getPrinter().print("typeof ");
+					return substituteAndPrintType(typeApply.arguments.head, arrayComponent, inTypeParameters, completeRawTypes);
+				}
 			}
 		} else {
 			if (typesMapping.containsKey(typeFullName)) {

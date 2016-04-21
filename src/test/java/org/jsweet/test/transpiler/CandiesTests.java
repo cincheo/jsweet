@@ -31,6 +31,7 @@ import source.candies.ExpressLib;
 import source.candies.GlobalsImport;
 import source.candies.JQuery;
 import source.candies.QualifiedNames;
+import source.candies.ReactLib;
 import source.candies.Threejs;
 
 public class CandiesTests extends AbstractTest {
@@ -95,6 +96,13 @@ public class CandiesTests extends AbstractTest {
 		transpile(logHandler -> {
 			assertEquals(0, logHandler.getReportedProblems().size());
 		} , getSourceFile(Threejs.class));
+	}
+
+	@Test
+	public void testReactLib() {
+		transpile(ModuleKind.none, logHandler -> {
+			assertEquals(0, logHandler.getReportedProblems().size());
+		} , getSourceFile(ReactLib.class));
 	}
 
 	@Test
