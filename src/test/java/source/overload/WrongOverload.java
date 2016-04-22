@@ -19,6 +19,8 @@ package source.overload;
 import static jsweet.util.Globals.$export;
 import static jsweet.util.Globals.array;
 
+import jsweet.lang.Array;
+
 public class WrongOverload {
 
 	static String[] trace = {};
@@ -78,6 +80,12 @@ public class WrongOverload {
 		array(trace).push("4");
 	}
 
+	public void draw(MyClass c, Array<Long>[] l) {
+		System.out.println(c);
+		System.out.println(l);
+		array(trace).push("4");
+	}
+	
 	public static void drawStatic(int i, boolean b, Number n) {
 		array(trace).push("5");
 	}
