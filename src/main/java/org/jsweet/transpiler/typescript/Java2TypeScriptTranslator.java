@@ -1324,8 +1324,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		StringBuilder sb = new StringBuilder(method.getName().toString());
 		sb.append("$");
 		for (JCVariableDecl p : method.getParameters()) {
-			sb.append(p.type.tsym.getSimpleName());
-			sb.append("_");
+			sb.append(p.type.toString().replace('.', '_').replace("[]", "_A"));
+			sb.append("$");
 		}
 		if (!method.getParameters().isEmpty()) {
 			sb.deleteCharAt(sb.length() - 1);
@@ -1593,7 +1593,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				print(fieldAccess.selected);
 			} else if ("this".equals(fieldAccess.name.toString()) && getScope().innerClassNotStatic) {
 				print("this.__parent");
-			} else if("this".equals(fieldAccess.name.toString())) {
+			} else if ("this".equals(fieldAccess.name.toString())) {
 				print("this");
 			} else {
 				// if (Util.isIntegral(fieldAccess.type)) {

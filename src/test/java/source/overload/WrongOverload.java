@@ -60,6 +60,24 @@ public class WrongOverload {
 		array(trace).push("4");
 	}
 
+	public void draw(MyClass c, long l) {
+		System.out.println(c);
+		System.out.println(l);
+		array(trace).push("4");
+	}
+
+	public void draw(MyClass c, int[] i) {
+		System.out.println(c);
+		System.out.println(i);
+		array(trace).push("4");
+	}
+
+	public void draw(MyClass c, long[] l) {
+		System.out.println(c);
+		System.out.println(l);
+		array(trace).push("4");
+	}
+
 	public static void drawStatic(int i, boolean b, Number n) {
 		array(trace).push("5");
 	}
