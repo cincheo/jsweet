@@ -747,7 +747,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			return true;
 		}
 		if (identifier.type.toString().startsWith("java.lang.")) {
-			if (("java.lang." + identifier.toString()).equals(identifier.type.toString())) {
+			if (!identifier.toString().equals("Object") && ("java.lang." + identifier.toString()).equals(identifier.type.toString())) {
 				// it is a java.lang class being referenced, so we expand its
 				// name
 				getPrinter().print(identifier.type.toString());
