@@ -1563,24 +1563,29 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 		String adaptedQualId = getAdapter().needsImport(importDecl, qualId);
 		if (adaptedQualId != null && adaptedQualId.contains(".")) {
-			String[] namePath = adaptedQualId.split("\\.");
-			String name = namePath[namePath.length - 1];
-			name = getAdapter().getIdentifier(name);
-			if (context.useModules) {
-				if (!context.getImportedNames(compilationUnit.packge).contains(name)) {
-					print("import ").print(name).print(" = ").print(adaptedQualId).print(";");
-					context.registerImportedName(compilationUnit.packge, name);
-				}
+			if (importDecl.isStatic() && !qualId.contains("." + JSweetConfig.GLOBALS_CLASS_NAME + ".")) {
+				print("var ").print(qualId.substring(qualId.lastIndexOf('.') + 1)).print(": any = ").print(qualId).print(";");
 			} else {
-				if (topLevelPackage == null) {
-					if (context.globalImports.contains(name)) {
-						// Tsc global package does allow multiple import with
-						// the same name in the global namespace (bug?)
-						return;
+				String[] namePath = adaptedQualId.split("\\.");
+				String name = namePath[namePath.length - 1];
+				name = getAdapter().getIdentifier(name);
+				if (context.useModules) {
+					if (!context.getImportedNames(compilationUnit.packge).contains(name)) {
+						print("import ").print(name).print(" = ").print(adaptedQualId).print(";");
+						context.registerImportedName(compilationUnit.packge, name);
 					}
-					context.globalImports.add(name);
+				} else {
+					if (topLevelPackage == null) {
+						if (context.globalImports.contains(name)) {
+							// Tsc global package does allow multiple import
+							// with
+							// the same name in the global namespace (bug?)
+							return;
+						}
+						context.globalImports.add(name);
+					}
+					print("import ").print(name).print(" = ").print(adaptedQualId).print(";");
 				}
-				print("import ").print(name).print(" = ").print(adaptedQualId).print(";");
 			}
 		}
 

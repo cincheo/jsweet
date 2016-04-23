@@ -52,7 +52,9 @@ import source.structural.WrongConstructsInInterfaces;
 import source.structural.WrongConstructsInSharedInterfaces;
 import source.structural.WrongThisAccessOnStatic;
 import source.structural.globalclasses.Globals;
+import source.structural.globalclasses.a.ClassWithStaticMethod;
 import source.structural.globalclasses.a.GlobalsConstructor;
+import source.structural.globalclasses.c.ClassUsingStaticMethod;
 import source.structural.globalclasses.c.GlobalFunctionGetSetDelete;
 import source.structural.globalclasses.d.GlobalFunctionAccessFromMain;
 import source.structural.globalclasses.f.InvalidGlobalSetGetDelete;
@@ -114,14 +116,14 @@ public class StructuralTests extends AbstractTest {
 	public void testInheritance() {
 		eval((logHandler, r) -> {
 			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-			assertEquals(true, r.<Boolean>get("X"));
-			assertEquals(true, r.<Boolean>get("Y"));
-			assertEquals(true, r.<Boolean>get("itfb"));
-			assertEquals("s1", r.<Boolean>get("s1b"));
-			assertEquals("s2", r.<Boolean>get("s2b"));
-			assertEquals(false, r.<Boolean>get("itfo"));
-			assertEquals("s1", r.<Boolean>get("s1o"));
-			assertEquals("s2", r.<Boolean>get("s2o"));
+			assertEquals(true, r.<Boolean> get("X"));
+			assertEquals(true, r.<Boolean> get("Y"));
+			assertEquals(true, r.<Boolean> get("itfb"));
+			assertEquals("s1", r.<Boolean> get("s1b"));
+			assertEquals("s2", r.<Boolean> get("s2b"));
+			assertEquals(false, r.<Boolean> get("itfo"));
+			assertEquals("s1", r.<Boolean> get("s1o"));
+			assertEquals("s2", r.<Boolean> get("s2o"));
 		} , getSourceFile(Inheritance.class));
 	}
 
@@ -312,6 +314,14 @@ public class StructuralTests extends AbstractTest {
 			assertEquals("test3", r.get("value3"));
 			assertEquals("test4", r.get("value4"));
 		} , getSourceFile(StaticMembersInInterfaces.class));
+	}
+
+	@Test
+	public void testStaticImport() {
+		eval((logHandler, r) -> {
+			logHandler.assertReportedProblems();
+			assertEquals(true, r.get("m"));
+		} , getSourceFile(ClassWithStaticMethod.class), getSourceFile(ClassUsingStaticMethod.class));
 	}
 
 }
