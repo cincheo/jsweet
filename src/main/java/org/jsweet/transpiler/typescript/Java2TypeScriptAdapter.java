@@ -37,7 +37,6 @@ import static org.jsweet.JSweetConfig.UTIL_PACKAGE;
 import static org.jsweet.JSweetConfig.isJDKPath;
 import static org.jsweet.JSweetConfig.isJSweetPath;
 import static org.jsweet.transpiler.util.Util.getFirstAnnotationValue;
-import static org.jsweet.transpiler.util.Util.getRootRelativeName;
 
 import java.util.HashMap;
 import java.util.List;
@@ -130,7 +129,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		if (importDecl.isStatic()) {
 			if (importDecl.getQualifiedIdentifier() instanceof JCFieldAccess) {
 				JCFieldAccess fa = (JCFieldAccess) importDecl.getQualifiedIdentifier();
-				String name = getRootRelativeName(fa.selected.type.tsym, getPrinter().getContext().useModules);
+				String name = getPrinter().getRootRelativeName(fa.selected.type.tsym, getPrinter().getContext().useModules);
 				String methodName = fa.name.toString();
 
 				// function is a top-level global function (no need to import)
@@ -152,7 +151,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				}
 				// function belong to the current package (no need to
 				// import)
-				String current = Util.getRootRelativeName(getPrinter().getCompilationUnit().packge, getPrinter().getContext().useModules);
+				String current = getPrinter().getRootRelativeName(getPrinter().getCompilationUnit().packge, getPrinter().getContext().useModules);
 				if (getPrinter().getContext().useModules) {
 					if (current.equals(name)) {
 						return null;
@@ -222,7 +221,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		if (targetType != null && targetType.getKind() == ElementKind.ENUM) {
 			// TODO: enum type simple name will not be valid when uses as fully
 			// qualified name (not imported)
-			String relTarget = getPrinter().getContext().useModules ? targetType.getSimpleName().toString() : getRootRelativeName(targetType);
+			String relTarget = getPrinter().getContext().useModules ? targetType.getSimpleName().toString() : getPrinter().getRootRelativeName(targetType);
 			if (targetMethodName.equals("name")) {
 				getPrinter().print(relTarget).print("[").print(fieldAccess.selected).print("]");
 				return true;

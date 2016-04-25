@@ -18,7 +18,6 @@ package org.jsweet.transpiler.typescript;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.jsweet.transpiler.util.Util.getRootRelativeJavaName;
-import static org.jsweet.transpiler.util.Util.getRootRelativeName;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -29,9 +28,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 import java.util.Set;
 import java.util.Stack;
+import java.util.stream.Collectors;
 
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
@@ -225,12 +224,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			context.packageDependencies.addEdge(compilationUnit.packge, targetPackage);
 		}
 		context.registerUsedModule(moduleName);
-		Set<String> importedNames = context.getImportedNames(compilationUnit.packge);
-		if (!importedNames.contains(targetName)) {
+		Map<String, String> importedNames = context.getImportedNames(compilationUnit.packge);
+		if (!importedNames.values().contains(targetName)) {
 			if (context.useModules) {
 				print("import " + targetName + " = require(\"" + moduleName + "\"); ").println();
 			}
-			importedNames.add(targetName);
+			importedNames.put(moduleName, targetName);
 		}
 	}
 
@@ -319,12 +318,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			for (File file : parent.listFiles()) {
 				if (file.isDirectory() && !file.getName().startsWith(".")) {
 					if (Util.containsFile(file, sourceFiles)) {
-						Set<String> importedNames = context.getImportedNames(compilationUnit.packge);
-						if (!importedNames.contains(file.getName())) {
+						Map<String, String> importedNames = context.getImportedNames(compilationUnit.packge);
+						if (!importedNames.values().contains(file.getName())) {
 							logger.debug(topLevel.getSourceFile().getName() + " export import: " + file);
 							print("export import " + file.getName() + " = require('./" + file.getName() + "/" + JSweetConfig.MODULE_FILE_NAME + "');")
 									.println();
-							importedNames.add(file.getName());
+							importedNames.put("./" + file.getName() + "/" + JSweetConfig.MODULE_FILE_NAME, file.getName());
 						}
 					}
 				}
@@ -485,7 +484,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				// TODO: same for static variables
 				if (invocation.meth instanceof JCIdent && JSweetConfig.TS_STRICT_MODE_KEYWORDS.contains(invocation.meth.toString().toLowerCase())) {
 					PackageSymbol invocationPackage = (PackageSymbol) ((JCIdent) invocation.meth).sym.getEnclosingElement().getEnclosingElement();
-					String rootRelativeInvocationPackageName = Util.getRootRelativeName(invocationPackage);
+					String rootRelativeInvocationPackageName = getRootRelativeName(invocationPackage);
 					if (rootRelativeInvocationPackageName.indexOf('.') == -1) {
 						super.visitApply(invocation);
 						return;
@@ -1570,9 +1569,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				String name = namePath[namePath.length - 1];
 				name = getAdapter().getIdentifier(name);
 				if (context.useModules) {
-					if (!context.getImportedNames(compilationUnit.packge).contains(name)) {
+					if (!context.getImportedNames(compilationUnit.packge).values().contains(name)) {
 						print("import ").print(name).print(" = ").print(adaptedQualId).print(";");
-						context.registerImportedName(compilationUnit.packge, name);
+						context.registerImportedName(compilationUnit.packge, adaptedQualId, name);
 					}
 				} else {
 					if (topLevelPackage == null) {

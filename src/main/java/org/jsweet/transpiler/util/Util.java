@@ -444,7 +444,7 @@ public class Util {
 		return name;
 	}
 
-	private static void getRootRelativeName(StringBuilder sb, Symbol symbol) {
+	private static void getRootRelativeName(Map<String, String> nameMapping, StringBuilder sb, Symbol symbol) {
 		if (!Util.hasAnnotationType(symbol, JSweetConfig.ANNOTATION_ROOT)) {
 			if (sb.length() > 0 && !"".equals(symbol.toString())) {
 				sb.insert(0, ".");
@@ -457,11 +457,14 @@ public class Util {
 					name = originalName;
 				}
 			}
+			if (nameMapping != null && nameMapping.containsKey(name)) {
+				name = nameMapping.get(name);
+			}
 
 			sb.insert(0, name);
 			symbol = (symbol instanceof PackageSymbol) ? ((PackageSymbol) symbol).owner : symbol.getEnclosingElement();
 			if (symbol != null) {
-				getRootRelativeName(sb, symbol);
+				getRootRelativeName(nameMapping, sb, symbol);
 			}
 		}
 	}
@@ -538,6 +541,7 @@ public class Util {
 	 * Gets the qualified name of a symbol relatively to the root package
 	 * (potentially annotated with <code>jsweet.lang.Root</code>).
 	 * 
+	 * @param nameMapping a map to redirect names
 	 * @param symbol
 	 *            the symbol to get the name of
 	 * @param useJavaNames
@@ -545,11 +549,11 @@ public class Util {
 	 *            <code>jsweet.lang.Name</code> annotations
 	 * @return
 	 */
-	public static String getRootRelativeName(Symbol symbol, boolean useJavaNames) {
+	public static String getRootRelativeName(Map<String, String> nameMapping, Symbol symbol, boolean useJavaNames) {
 		if (useJavaNames) {
 			return getRootRelativeJavaName(symbol);
 		} else {
-			return getRootRelativeName(symbol);
+			return getRootRelativeName(nameMapping, symbol);
 		}
 	}
 
@@ -558,9 +562,9 @@ public class Util {
 	 * (potentially annotated with <code>jsweet.lang.Root</code>). This function
 	 * takes into account potential <code>jsweet.lang.Name</code> annotations).
 	 */
-	public static String getRootRelativeName(Symbol symbol) {
+	public static String getRootRelativeName(Map<String, String> nameMapping, Symbol symbol) {
 		StringBuilder sb = new StringBuilder();
-		getRootRelativeName(sb, symbol);
+		getRootRelativeName(nameMapping, sb, symbol);
 		if (sb.length() > 0 && sb.charAt(0) == '.') {
 			sb.deleteCharAt(0);
 		}

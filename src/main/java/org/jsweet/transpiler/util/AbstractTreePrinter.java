@@ -28,6 +28,7 @@ import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.TranspilationHandler;
 import org.jsweet.transpiler.TypeChecker;
 
+import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
@@ -429,6 +430,14 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 		}
 
 		return this;
+	}
+
+	public String getRootRelativeName(Symbol symbol) {
+		return Util.getRootRelativeName(context.useModules ? context.getImportedNames(compilationUnit.packge) : null, symbol);
+	}
+
+	public String getRootRelativeName(Symbol symbol, boolean useJavaNames) {
+		return Util.getRootRelativeName(context.useModules ? context.getImportedNames(compilationUnit.packge) : null, symbol, useJavaNames);
 	}
 
 }

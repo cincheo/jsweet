@@ -138,25 +138,31 @@ public class JSweetContext extends Context {
 		return usedModules;
 	}
 
-	private Map<PackageSymbol, Set<String>> importedNamesInPackages = new HashMap<>();
+	private Map<PackageSymbol, Map<String, String>> importedNamesInPackages = new HashMap<>();
 
 	/**
 	 * Register a name that is imported by the given package of the transpiled
 	 * program.
 	 * 
+	 * <pre>
+	 * import targetName = require("sourceName");
+	 * </pre>
+	 * 
 	 * @param package
 	 *            the package that is importing the name
-	 * @param name
-	 *            the name being imported
+	 * @param sourceName
+	 *            the source name being imported
+	 * @param targetName
+	 *            the target name being imported
 	 */
-	public void registerImportedName(PackageSymbol packageSymbol, String name) {
-		Set<String> importedNames = importedNamesInPackages.get(packageSymbol);
+	public void registerImportedName(PackageSymbol packageSymbol, String sourceName, String targetName) {
+		Map<String, String> importedNames = importedNamesInPackages.get(packageSymbol);
 		if (importedNames == null) {
-			importedNames = new HashSet<>();
+			importedNames = new HashMap<>();
 			importedNamesInPackages.put(packageSymbol, importedNames);
 		}
-		if (!importedNames.contains(name)) {
-			importedNames.add(name);
+		if (!importedNames.values().contains(targetName)) {
+			importedNames.put(sourceName, targetName);
 		}
 	}
 
@@ -164,10 +170,10 @@ public class JSweetContext extends Context {
 	 * The list of names imported by the given package of the transpiled
 	 * program.
 	 */
-	public Set<String> getImportedNames(PackageSymbol packageSymbol) {
-		Set<String> importedNames = importedNamesInPackages.get(packageSymbol);
+	public Map<String, String> getImportedNames(PackageSymbol packageSymbol) {
+		Map<String, String> importedNames = importedNamesInPackages.get(packageSymbol);
 		if (importedNames == null) {
-			importedNames = new HashSet<>();
+			importedNames = new HashMap<>();
 			importedNamesInPackages.put(packageSymbol, importedNames);
 		}
 		return importedNames;
@@ -177,7 +183,7 @@ public class JSweetContext extends Context {
 	 * Clears the names imported by the given package.
 	 */
 	public void clearImportedNames(PackageSymbol packageSymbol) {
-		Set<String> importedNames = new HashSet<>();
+		Map<String, String> importedNames = new HashMap<>();
 		importedNamesInPackages.put(packageSymbol, importedNames);
 	}
 

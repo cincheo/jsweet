@@ -32,6 +32,7 @@ import source.candies.GlobalsImport;
 import source.candies.JQuery;
 import source.candies.QualifiedNames;
 import source.candies.ReactLib;
+import source.candies.SocketIOLib;
 import source.candies.Threejs;
 
 public class CandiesTests extends AbstractTest {
@@ -105,6 +106,13 @@ public class CandiesTests extends AbstractTest {
 		} , getSourceFile(ReactLib.class));
 	}
 
+	@Test
+	public void testSocketIOLib() {
+		transpile(ModuleKind.commonjs, logHandler -> {
+			assertEquals(0, logHandler.getReportedProblems().size());
+		} , getSourceFile(SocketIOLib.class));
+	}
+	
 	@Test
 	public void testBabylonjs() {
 		transpile(logHandler -> {

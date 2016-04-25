@@ -16,8 +16,6 @@
  */
 package org.jsweet.transpiler.util;
 
-import static org.jsweet.transpiler.util.Util.getRootRelativeName;
-
 import java.util.HashSet;
 import java.util.Set;
 
@@ -193,7 +191,7 @@ public abstract class AbstractPrinterAdapter {
 		if (importDecl.isStatic()) {
 			return null;
 		} else {
-			return getRootRelativeName(importDecl.getQualifiedIdentifier().type.tsym, getPrinter().getContext().useModules);
+			return getPrinter().getRootRelativeName(importDecl.getQualifiedIdentifier().type.tsym);
 		}
 	}
 
