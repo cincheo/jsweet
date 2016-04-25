@@ -18,9 +18,11 @@ package source.tscomparison;
 
 import static jsweet.dom.Globals.console;
 import static jsweet.util.Globals.$set;
-import jsweet.lang.Interface;
+
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+
+import jsweet.lang.Interface;
 
 @Interface
 class Options {

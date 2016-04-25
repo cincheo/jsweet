@@ -16,11 +16,11 @@
  */
 package source.api;
 
-import jsweet.lang.Function;
-import jsweet.lang.String;
-import jsweet.lang.Number;
 import jsweet.lang.Boolean;
+import jsweet.lang.Function;
 import jsweet.lang.JSON;
+import jsweet.lang.Number;
+import jsweet.lang.String;
 
 public class PrimitiveInstantiation {
 

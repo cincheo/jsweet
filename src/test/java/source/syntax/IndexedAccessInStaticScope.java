@@ -16,11 +16,6 @@
  */
 package source.syntax;
 
-import static jsweet.util.Globals.$get;
-import static jsweet.util.Globals.$set;
-import static jsweet.util.Globals.$delete;
-import static jsweet.util.Globals.$export;
-
 public class IndexedAccessInStaticScope {
 
 	static {

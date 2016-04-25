@@ -17,7 +17,6 @@
 package source.tscomparison;
 
 import static jsweet.dom.Globals.alert;
-import static jsweet.dom.Globals.console;
 
 enum DemoEnum {
 	VALUE,

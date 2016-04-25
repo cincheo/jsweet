@@ -22,10 +22,10 @@ import org.junit.Test;
 
 import source.overload.Overload;
 import source.overload.OverloadInInnerClass;
-import source.overload.WrongOverloadWithInheritance;
 import source.overload.WrongOverload;
 import source.overload.WrongOverloadWithArraysAndObjects;
 import source.overload.WrongOverloadWithGenerics;
+import source.overload.WrongOverloadWithInheritance;
 import source.overload.WrongOverloads;
 
 public class OverloadTests extends AbstractTest {

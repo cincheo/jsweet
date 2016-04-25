@@ -19,7 +19,6 @@ package source.require.globals;
 import static jsweet.dom.Globals.window;
 
 import jsweet.dom.Event;
-import jsweet.lang.Date;
 
 public class Globals {
 

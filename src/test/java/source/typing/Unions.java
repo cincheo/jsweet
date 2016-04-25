@@ -17,8 +17,8 @@
 package source.typing;
 
 import static jsweet.util.Globals.$export;
-import static jsweet.util.Globals.union;
 import static jsweet.util.Globals.function;
+import static jsweet.util.Globals.union;
 
 import jsweet.lang.Function;
 import jsweet.util.union.Union;

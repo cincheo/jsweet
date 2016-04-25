@@ -16,8 +16,9 @@
  */
 package source.typing;
 
-import jsweet.util.tuple.Tuple2;
 import static jsweet.util.Globals.$export;
+
+import jsweet.util.tuple.Tuple2;
 
 public class Tuples {
 

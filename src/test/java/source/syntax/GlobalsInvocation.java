@@ -16,9 +16,10 @@
  */
 package source.syntax;
 
-import jsweet.lang.RegExp;
 import static jsweet.util.Globals.string;
 import static source.syntax.Globals.toTitleCase;
+
+import jsweet.lang.RegExp;
 
 public class GlobalsInvocation {
 

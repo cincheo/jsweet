@@ -20,13 +20,15 @@ import static jsweet.dom.Globals.console;
 import static jsweet.dom.Globals.document;
 import static jsweet.util.StringTypes.click;
 import static jsweet.util.StringTypes.div;
+
+import java.util.function.Consumer;
+
 import jsweet.dom.HTMLDivElement;
 import jsweet.dom.HTMLElement;
 import jsweet.dom.Node;
 import jsweet.dom.NodeList;
 import jsweet.lang.Date;
 import jsweet.lang.Math;
-import java.util.function.Consumer;
 
 public class FinalVariables {
 

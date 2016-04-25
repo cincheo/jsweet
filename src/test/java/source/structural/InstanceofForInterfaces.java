@@ -67,4 +67,8 @@ abstract class I2 {
 }
 
 class C3 implements I1 {
+	int i;
+//	C3() {
+//		i = 2;
+//	}
 }

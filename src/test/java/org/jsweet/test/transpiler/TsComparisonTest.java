@@ -31,7 +31,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import source.structural.globalclasses.Globals;
-import source.structural.globalclasses.d.GlobalFunctionAccessFromMain;
 import source.tscomparison.AbstractClasses;
 import source.tscomparison.ActualScoping;
 import source.tscomparison.CompileTimeWarnings;

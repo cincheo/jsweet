@@ -17,6 +17,7 @@
 package source.typing;
 
 import static jsweet.util.Globals.function;
+
 import jsweet.lang.Function;
 
 public class ClassTypeAsFunction {

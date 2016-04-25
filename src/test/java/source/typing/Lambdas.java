@@ -16,8 +16,9 @@
  */
 package source.typing;
 
-import java.util.function.Function;
 import static jsweet.util.Globals.$export;
+
+import java.util.function.Function;
 
 public class Lambdas {
 

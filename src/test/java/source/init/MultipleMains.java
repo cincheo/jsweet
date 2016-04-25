@@ -16,8 +16,9 @@
  */
 package source.init;
 
-import jsweet.lang.Disabled;
 import static jsweet.util.Globals.$export;
+
+import jsweet.lang.Disabled;
 
 public class MultipleMains {
 	public static int counter = 0;

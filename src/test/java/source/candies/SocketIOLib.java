@@ -6,13 +6,13 @@ import static def.socket_io.Globals.socket_io;
 import static jsweet.dom.Globals.console;
 import static jsweet.util.Globals.function;
 
-import def.socket_io.socketio.Socket;
 import def.express_serve_static_core.express_serve_static_core.Express;
 import def.express_serve_static_core.express_serve_static_core.Request;
 import def.express_serve_static_core.express_serve_static_core.Response;
 import def.node.http.IncomingMessage;
 import def.node.http.Server;
 import def.node.http.ServerResponse;
+import def.socket_io.socketio.Socket;
 import jsweet.lang.Array;
 import jsweet.lang.Date;
 import jsweet.lang.Interface;

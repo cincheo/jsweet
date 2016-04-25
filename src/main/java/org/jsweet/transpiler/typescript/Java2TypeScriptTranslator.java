@@ -217,19 +217,19 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	private PackageSymbol topLevelPackage;
 
-	private void useModule(PackageSymbol targetPackage, JCTree sourceTree, String targetName, String moduleName) {
+	private void useModule(PackageSymbol targetPackage, JCTree sourceTree, String targetName, String moduleName, Symbol sourceElement) {
 		if (context.useModules) {
 			context.packageDependencies.add(targetPackage);
 			context.packageDependencies.add(compilationUnit.packge);
 			context.packageDependencies.addEdge(compilationUnit.packge, targetPackage);
 		}
 		context.registerUsedModule(moduleName);
-		Map<String, String> importedNames = context.getImportedNames(compilationUnit.packge);
-		if (!importedNames.values().contains(targetName)) {
+		Set<String> importedNames = context.getImportedNames(compilationUnit.packge);
+		if (!importedNames.contains(targetName)) {
 			if (context.useModules) {
 				print("import " + targetName + " = require(\"" + moduleName + "\"); ").println();
 			}
-			importedNames.put(moduleName, targetName);
+			context.registerImportedName(compilationUnit.packge, sourceElement, targetName);
 		}
 	}
 
@@ -318,12 +318,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			for (File file : parent.listFiles()) {
 				if (file.isDirectory() && !file.getName().startsWith(".")) {
 					if (Util.containsFile(file, sourceFiles)) {
-						Map<String, String> importedNames = context.getImportedNames(compilationUnit.packge);
-						if (!importedNames.values().contains(file.getName())) {
+						Set<String> importedNames = context.getImportedNames(compilationUnit.packge);
+						if (!importedNames.contains(file.getName())) {
 							logger.debug(topLevel.getSourceFile().getName() + " export import: " + file);
 							print("export import " + file.getName() + " = require('./" + file.getName() + "/" + JSweetConfig.MODULE_FILE_NAME + "');")
 									.println();
-							importedNames.put("./" + file.getName() + "/" + JSweetConfig.MODULE_FILE_NAME, file.getName());
+							context.registerImportedName(compilationUnit.packge, null, file.getName());
 						}
 					}
 				}
@@ -343,7 +343,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							// regular import case (qualified.sym is a package)
 							if (Util.hasAnnotationType(qualified.sym, JSweetConfig.ANNOTATION_MODULE)) {
 								String actualName = Util.getAnnotationValue(qualified.sym, JSweetConfig.ANNOTATION_MODULE, null);
-								useModule(null, importDecl, qualified.name.toString(), actualName);
+								useModule(null, importDecl, qualified.name.toString(), actualName, ((PackageSymbol)qualified.sym));
 							}
 						} else {
 							// static import case (imported fields and methods)
@@ -355,7 +355,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 											if (qualified.name.equals(importedMember.getSimpleName())) {
 												if (Util.hasAnnotationType(importedMember, JSweetConfig.ANNOTATION_MODULE)) {
 													String actualName = Util.getAnnotationValue(importedMember, JSweetConfig.ANNOTATION_MODULE, null);
-													useModule(null, importDecl, importedMember.getSimpleName().toString(), actualName);
+													useModule(null, importDecl, importedMember.getSimpleName().toString(), actualName, importedMember);
 													break;
 												}
 											}
@@ -401,7 +401,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						File moduleFile = new File(new File(pathToReachRootPackage), JSweetConfig.MODULE_FILE_NAME);
 						if (qualified.sym.getEnclosingElement() instanceof PackageSymbol) {
 							useModule((PackageSymbol) qualified.sym.getEnclosingElement(), importDecl, targetRootPackageName,
-									moduleFile.getPath().replace('\\', '/'));
+									moduleFile.getPath().replace('\\', '/'), null);
 						}
 					}
 				}
@@ -462,7 +462,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					}
 					File moduleFile = new File(new File(pathToModulePackage), JSweetConfig.MODULE_FILE_NAME);
 					if (!identifierPackage.getSimpleName().toString().equals(compilationUnit.packge.getSimpleName().toString())) {
-						useModule(identifierPackage, identifier, identifierPackage.getSimpleName().toString(), moduleFile.getPath().replace('\\', '/'));
+						useModule(identifierPackage, identifier, identifierPackage.getSimpleName().toString(), moduleFile.getPath().replace('\\', '/'), null);
 					}
 				} else if (identifier.sym instanceof ClassSymbol) {
 					if (JSweetConfig.GLOBALS_PACKAGE_NAME.equals(identifier.sym.getEnclosingElement().getSimpleName().toString())) {
@@ -473,7 +473,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						File moduleFile = new File(new File(pathToModulePackage), JSweetConfig.MODULE_FILE_NAME);
 						if (!identifier.sym.getEnclosingElement().equals(compilationUnit.packge.getSimpleName().toString())) {
 							useModule((PackageSymbol) identifier.sym.getEnclosingElement(), identifier, JSweetConfig.GLOBALS_PACKAGE_NAME,
-									moduleFile.getPath().replace('\\', '/'));
+									moduleFile.getPath().replace('\\', '/'), null);
 						}
 					}
 				}
@@ -498,7 +498,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					}
 					File moduleFile = new File(new File(pathToReachRootPackage), JSweetConfig.MODULE_FILE_NAME);
 					if (!invocationPackage.toString().equals(compilationUnit.packge.getSimpleName().toString())) {
-						useModule(invocationPackage, invocation, targetRootPackageName, moduleFile.getPath().replace('\\', '/'));
+						useModule(invocationPackage, invocation, targetRootPackageName, moduleFile.getPath().replace('\\', '/'), null);
 					}
 				}
 				super.visitApply(invocation);
@@ -1569,9 +1569,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				String name = namePath[namePath.length - 1];
 				name = getAdapter().getIdentifier(name);
 				if (context.useModules) {
-					if (!context.getImportedNames(compilationUnit.packge).values().contains(name)) {
+					if (!context.getImportedNames(compilationUnit.packge).contains(name)) {
 						print("import ").print(name).print(" = ").print(adaptedQualId).print(";");
-						context.registerImportedName(compilationUnit.packge, adaptedQualId, name);
+						context.registerImportedName(compilationUnit.packge, null, name);
 					}
 				} else {
 					if (topLevelPackage == null) {

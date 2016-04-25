@@ -1,10 +1,10 @@
 package source.doc;
 
-import java.util.function.BiFunction;
-
-import static jsweet.util.Globals.string;
 import static jsweet.util.Globals.$export;
 import static jsweet.util.Globals.array;
+import static jsweet.util.Globals.string;
+
+import java.util.function.BiFunction;
 
 enum MyEnum {
 	A, B, C

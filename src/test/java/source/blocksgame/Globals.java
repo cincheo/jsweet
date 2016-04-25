@@ -16,7 +16,6 @@
  */
 package source.blocksgame;
 
-import static jsweet.dom.Globals.console;
 import static jsweet.dom.Globals.window;
 
 import jsweet.dom.Event;

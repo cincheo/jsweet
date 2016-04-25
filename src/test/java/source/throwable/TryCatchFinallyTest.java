@@ -16,8 +16,9 @@
  */
 package source.throwable;
 
-import jsweet.lang.Error;
 import static jsweet.util.Globals.$export;
+
+import jsweet.lang.Error;
 
 public class TryCatchFinallyTest {
 

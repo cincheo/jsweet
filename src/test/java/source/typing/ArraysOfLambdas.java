@@ -17,8 +17,10 @@
 package source.typing;
 
 import static jsweet.util.Globals.array;
-import jsweet.lang.Array;
+
 import java.util.function.Consumer;
+
+import jsweet.lang.Array;
 
 public class ArraysOfLambdas {
 

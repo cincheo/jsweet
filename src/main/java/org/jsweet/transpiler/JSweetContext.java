@@ -138,7 +138,8 @@ public class JSweetContext extends Context {
 		return usedModules;
 	}
 
-	private Map<PackageSymbol, Map<String, String>> importedNamesInPackages = new HashMap<>();
+	private Map<PackageSymbol, Set<String>> importedNamesInPackages = new HashMap<>();
+	private Map<PackageSymbol, Map<Symbol, String>> importedElementsInPackages = new HashMap<>();
 
 	/**
 	 * Register a name that is imported by the given package of the transpiled
@@ -150,19 +151,30 @@ public class JSweetContext extends Context {
 	 * 
 	 * @param package
 	 *            the package that is importing the name
-	 * @param sourceName
-	 *            the source name being imported
+	 * @param sourceElement
+	 *            the source element if any (null if not applicable)
 	 * @param targetName
 	 *            the target name being imported
 	 */
-	public void registerImportedName(PackageSymbol packageSymbol, String sourceName, String targetName) {
-		Map<String, String> importedNames = importedNamesInPackages.get(packageSymbol);
+	public void registerImportedName(PackageSymbol packageSymbol, Symbol sourceElement, String targetName) {
+		Set<String> importedNames = importedNamesInPackages.get(packageSymbol);
 		if (importedNames == null) {
-			importedNames = new HashMap<>();
+			importedNames = new HashSet<>();
 			importedNamesInPackages.put(packageSymbol, importedNames);
 		}
-		if (!importedNames.values().contains(targetName)) {
-			importedNames.put(sourceName, targetName);
+		if (!importedNames.contains(targetName)) {
+			importedNames.add(targetName);
+		}
+		if (sourceElement != null) {
+			Map<Symbol, String> importedElements = importedElementsInPackages.get(packageSymbol);
+			if (importedElements == null) {
+				importedElements = new HashMap<>();
+				importedElementsInPackages.put(packageSymbol, importedElements);
+			}
+			if (!importedElements.containsKey(sourceElement)) {
+				importedElements.put(sourceElement, targetName);
+			}
+
 		}
 	}
 
@@ -170,21 +182,36 @@ public class JSweetContext extends Context {
 	 * The list of names imported by the given package of the transpiled
 	 * program.
 	 */
-	public Map<String, String> getImportedNames(PackageSymbol packageSymbol) {
-		Map<String, String> importedNames = importedNamesInPackages.get(packageSymbol);
+	public Set<String> getImportedNames(PackageSymbol packageSymbol) {
+		Set<String> importedNames = importedNamesInPackages.get(packageSymbol);
 		if (importedNames == null) {
-			importedNames = new HashMap<>();
+			importedNames = new HashSet<>();
 			importedNamesInPackages.put(packageSymbol, importedNames);
 		}
 		return importedNames;
 	}
 
 	/**
+	 * The list of package names imported by the given package of the transpiled
+	 * program.
+	 */
+	public Map<Symbol, String> getImportedElements(PackageSymbol packageSymbol) {
+		Map<Symbol, String> importedElements = importedElementsInPackages.get(packageSymbol);
+		if (importedElements == null) {
+			importedElements = new HashMap<>();
+			importedElementsInPackages.put(packageSymbol, importedElements);
+		}
+		return importedElements;
+	}
+
+	/**
 	 * Clears the names imported by the given package.
 	 */
 	public void clearImportedNames(PackageSymbol packageSymbol) {
-		Map<String, String> importedNames = new HashMap<>();
+		Set<String> importedNames = new HashSet<>();
 		importedNamesInPackages.put(packageSymbol, importedNames);
+		Map<Symbol, String> importedPackagesForNames = new HashMap<>();
+		importedElementsInPackages.put(packageSymbol, importedPackagesForNames);
 	}
 
 	/**

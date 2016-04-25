@@ -16,7 +16,6 @@
  */
 package source.require.b;
 
-import static jsweet.dom.Globals.console;
 import static source.require.globals.Globals.animate;
 
 import source.require.globals.Globals;

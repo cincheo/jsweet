@@ -16,8 +16,8 @@
  */
 package source.structural;
 
-import static jsweet.util.Globals.array;
 import static jsweet.util.Globals.$export;
+import static jsweet.util.Globals.array;
 
 public class Enums {
 

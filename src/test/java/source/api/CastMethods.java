@@ -16,10 +16,13 @@
  */
 package source.api;
 
+import static jsweet.util.Globals.array;
+import static jsweet.util.Globals.bool;
+import static jsweet.util.Globals.object;
+
 import jsweet.lang.Boolean;
 import jsweet.lang.Number;
 import jsweet.util.Globals;
-import static jsweet.util.Globals.*;
 
 public class CastMethods {
 

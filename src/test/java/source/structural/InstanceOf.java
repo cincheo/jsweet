@@ -16,12 +16,11 @@
  */
 package source.structural;
 
+import static jsweet.lang.Globals.eval;
+import static jsweet.util.Globals.equalsStrict;
 import static jsweet.util.Globals.typeof;
 
 import jsweet.lang.Array;
-
-import static jsweet.util.Globals.equalsStrict;
-import static jsweet.lang.Globals.eval;
 
 public class InstanceOf {
 	public static void main(String[] args) {
