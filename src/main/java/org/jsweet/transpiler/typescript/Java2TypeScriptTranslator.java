@@ -343,7 +343,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							// regular import case (qualified.sym is a package)
 							if (Util.hasAnnotationType(qualified.sym, JSweetConfig.ANNOTATION_MODULE)) {
 								String actualName = Util.getAnnotationValue(qualified.sym, JSweetConfig.ANNOTATION_MODULE, null);
-								useModule(null, importDecl, qualified.name.toString(), actualName, ((PackageSymbol)qualified.sym));
+								useModule(null, importDecl, qualified.name.toString(), actualName, ((PackageSymbol) qualified.sym));
 							}
 						} else {
 							// static import case (imported fields and methods)
@@ -1176,6 +1176,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					for (i = 0; i < overload.methods.size(); i++) {
 						JCMethodDecl method = overload.methods.get(i);
 						if (!Util.isParent(parent.sym, (ClassSymbol) method.sym.getEnclosingElement())) {
+							continue;
+						}
+						if (parent.sym != method.sym.getEnclosingElement()
+								&& context.getOverload((ClassSymbol) method.sym.getEnclosingElement(), method.getName().toString()).coreMethod == method) {
 							continue;
 						}
 						if (wasPrinted) {
