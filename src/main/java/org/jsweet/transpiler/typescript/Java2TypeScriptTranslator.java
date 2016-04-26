@@ -1170,7 +1170,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			} else {
 				if (inCoreWrongOverload) {
 					print(" {").println().startIndent().printIndent();
-					printInterfacesInitialization(parent.sym, methodDecl.sym);
 
 					boolean wasPrinted = false;
 					for (i = 0; i < overload.methods.size(); i++) {
@@ -1289,7 +1288,15 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 		}
 		stack.push(method.getBody());
-		printBlockStatements(skipFirst ? method.getBody().stats.tail : method.getBody().stats);
+		com.sun.tools.javac.util.List<JCStatement> stats = skipFirst ? method.getBody().stats.tail : method.getBody().stats;
+		if (!stats.isEmpty() && stats.head.toString().startsWith("super(")) {
+			printBlockStatement(stats.head);
+			printInterfacesInitialization((ClassSymbol) method.sym.getEnclosingElement(), method.sym);
+			printBlockStatements(stats.tail);
+		} else {
+			printInterfacesInitialization((ClassSymbol) method.sym.getEnclosingElement(), method.sym);
+			printBlockStatements(stats);
+		}
 		stack.pop();
 		endIndent().printIndent().print("}");
 	}

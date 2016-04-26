@@ -10,7 +10,8 @@ public class WrongOverloadWithInheritance {
 	public static Array<String> trace = new Array<String>();
 
 	public static void main(String[] args) {
-		MyFinalClass<String> o = new MyFinalClass<String>();
+		new MyFinalClass<String>();
+		MyFinalClass<String> o = new MyFinalClass<String>(99);
 		o.overloaded("s1");
 		o.overloaded(99, "s2");
 		o.overloaded(true);
@@ -37,6 +38,11 @@ interface MyInterface2<T> extends MyInterface<T> {
 }
 
 abstract class MyAbstractClass<T> implements MyInterface<T> {
+	
+	public MyAbstractClass() {
+		
+	}
+	
 	public abstract void overloaded2();
 
 	public void overloaded2(int i) {
@@ -60,6 +66,14 @@ abstract class MyAbstractClass<T> implements MyInterface<T> {
 }
 
 class MyFinalClass<T> extends MyAbstractClass<T> implements MyInterface2<T> {
+
+	public MyFinalClass() {
+		WrongOverloadWithInheritance.trace.push("0-" + 88);
+	}
+
+	public MyFinalClass(int i) {
+		WrongOverloadWithInheritance.trace.push("0-" + i);
+	}
 	
 	public void overloaded2() {
 		overloaded2(5);
