@@ -2553,10 +2553,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	}
 
 	private void printInstanceOf(String exprStr, JCTree expr, Type type) {
-		if (Object.class.getName().equals(type.tsym.getQualifiedName().toString())) {
-			print("true");
-			return;
-		}
 		if (!(getParent() instanceof JCParens)) {
 			print("(");
 		}
@@ -2589,7 +2585,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 				print("[\"__interfaces\"].indexOf(\"").print(type.tsym.getQualifiedName().toString()).print("\") >= 0");
 			} else {
-				if (type.tsym instanceof TypeVariableSymbol) {
+				if (type.tsym instanceof TypeVariableSymbol || Object.class.getName().equals(type.tsym.getQualifiedName().toString())) {
 					print(" != null");
 				} else {
 					print(" instanceof ").print(getQualifiedTypeName(type.tsym, false));
