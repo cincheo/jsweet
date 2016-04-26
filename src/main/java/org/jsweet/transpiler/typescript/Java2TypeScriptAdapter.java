@@ -88,7 +88,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 	private Map<String, String> typesMapping = new HashMap<String, String>();
 
 	public Java2TypeScriptAdapter() {
-		typesMapping.put(Object.class.getName(), "Object");
+		typesMapping.put(Object.class.getName(), "any");
 		typesMapping.put(Runnable.class.getName(), "() => void");
 		typesMapping.put(String.class.getName(), "string");
 		typesMapping.put(Number.class.getName(), "number");
