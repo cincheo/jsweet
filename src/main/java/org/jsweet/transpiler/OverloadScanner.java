@@ -123,6 +123,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 				return i;
 			});
 			coreMethod = methods.get(0);
+			
 			if (isValid) {
 				defaultValues = new HashMap<>();
 			}
@@ -204,6 +205,8 @@ public class OverloadScanner extends AbstractTreeScanner {
 				}
 			}
 
+			merge = merge || methods.size() > 1;
+			
 			if (merge) {
 				for (JCMethodDecl m : methods) {
 					if (!subOverload.methods.contains(m)) {

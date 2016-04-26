@@ -15,6 +15,8 @@ public class WrongOverloadWithInheritance {
 		o.overloaded(99, "s2");
 		o.overloaded(true);
 		o.overloaded(new Date());
+		o.overloaded2();
+		o.overloaded2(6);
 		$export("trace", trace.join(","));
 	}
 
@@ -35,6 +37,12 @@ interface MyInterface2<T> extends MyInterface<T> {
 }
 
 abstract class MyAbstractClass<T> implements MyInterface<T> {
+	public abstract void overloaded2();
+
+	public void overloaded2(int i) {
+		WrongOverloadWithInheritance.trace.push("5-" + i);
+	};
+	
 	public void overloaded(T arg) {
 		WrongOverloadWithInheritance.trace.push("1-" + arg);
 	};
@@ -52,6 +60,11 @@ abstract class MyAbstractClass<T> implements MyInterface<T> {
 }
 
 class MyFinalClass<T> extends MyAbstractClass<T> implements MyInterface2<T> {
+	
+	public void overloaded2() {
+		overloaded2(5);
+	}
+	
 	@Override
 	public void overloaded(int i, T arg) {
 		m2();
