@@ -86,6 +86,7 @@ import com.sun.tools.javac.util.Log;
 public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 
 	private Map<String, String> typesMapping = new HashMap<String, String>();
+	private Map<String, String> langTypesMapping = new HashMap<String, String>();
 
 	public Java2TypeScriptAdapter() {
 		typesMapping.put(Object.class.getName(), "any");
@@ -113,6 +114,16 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		typesMapping.put(LANG_PACKAGE + ".Boolean", "boolean");
 		typesMapping.put(LANG_PACKAGE + ".String", "string");
 		typesMapping.put(LANG_PACKAGE + ".Number", "number");
+
+		langTypesMapping.put("Object", "Object");
+		langTypesMapping.put("String", "String");
+		langTypesMapping.put("Boolean", "Boolean");
+		langTypesMapping.put("Integer", "Number");
+		langTypesMapping.put("Long", "Number");
+		langTypesMapping.put("Float", "Number");
+		langTypesMapping.put("Double", "Number");
+		langTypesMapping.put("Byte", "Number");
+		langTypesMapping.put("Character", "String");
 	}
 
 	@Override
@@ -746,11 +757,16 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			return true;
 		}
 		if (identifier.type.toString().startsWith("java.lang.")) {
-			if (!identifier.toString().equals("Object") && ("java.lang." + identifier.toString()).equals(identifier.type.toString())) {
-				// it is a java.lang class being referenced, so we expand its
-				// name
-				getPrinter().print(identifier.type.toString());
-				return true;
+			if (("java.lang." + identifier.toString()).equals(identifier.type.toString())) {
+				if (langTypesMapping.containsKey(identifier.toString())) {
+					getPrinter().print(langTypesMapping.get(identifier.toString()));
+					return true;
+				} else {
+					// it is a java.lang class being referenced, so we expand
+					// its name
+					getPrinter().print(identifier.type.toString());
+					return true;
+				}
 			}
 		}
 		return super.substituteIdentifier(identifier);
