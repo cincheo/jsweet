@@ -1032,7 +1032,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 			print("function ");
 		} else {
-			if (methodDecl.mods.getFlags().contains(Modifier.PUBLIC) || overload.coreMethod.equals(methodDecl)) {
+			if (methodDecl.mods.getFlags().contains(Modifier.PUBLIC) || (inOverload && overload.coreMethod.equals(methodDecl))) {
 				if (!getScope().interfaceScope) {
 					print("public ");
 				}
@@ -1040,7 +1040,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			if (methodDecl.mods.getFlags().contains(Modifier.PRIVATE)) {
 				if (!constructor) {
 					if (!getScope().interfaceScope) {
-						if (!overload.coreMethod.equals(methodDecl)) {
+						if (!(inOverload && overload.coreMethod.equals(methodDecl))) {
 							print("private ");
 						}
 					} else {
