@@ -38,7 +38,7 @@ public class Overload {
 		return this.m(s, 1);
 	}
 
-	String m(String s, int i) {
+	private String m(String s, int i) {
 		return s + i;
 	}
 
@@ -80,4 +80,10 @@ public class Overload {
     	return false;
     }
     
+}
+
+class OverloadCaller {
+	public static void main(String[] args) {
+		new Overload().m("a");
+	}
 }
