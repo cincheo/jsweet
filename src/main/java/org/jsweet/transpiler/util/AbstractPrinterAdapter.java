@@ -51,9 +51,14 @@ public abstract class AbstractPrinterAdapter {
 	private AbstractTreePrinter printer;
 
 	/**
-	 * A flags that indicates if ths adapter is printing type parameters.
+	 * A flags that indicates that this adapter is printing type parameters.
 	 */
 	public boolean inTypeParameters = false;
+
+	/**
+	 * A flags that indicates that this adapter is not substituting types.
+	 */
+	public boolean disableTypeSubstitution = false;
 
 	/**
 	 * A list of type variables to be erased (mapped to any).
@@ -203,17 +208,18 @@ public abstract class AbstractPrinterAdapter {
 	}
 
 	public AbstractTreePrinter substituteAndPrintType(JCTree typeTree) {
-		return substituteAndPrintType(typeTree, false, inTypeParameters, true);
+		return substituteAndPrintType(typeTree, false, inTypeParameters, true, disableTypeSubstitution);
 	}
 
-	public AbstractTreePrinter substituteAndPrintType(JCTree typeTree, boolean arrayComponent, boolean inTypeParameters, boolean completeRawTypes) {
+	public AbstractTreePrinter substituteAndPrintType(JCTree typeTree, boolean arrayComponent, boolean inTypeParameters, boolean completeRawTypes,
+			boolean disableSubstitution) {
 		if (typeTree instanceof JCTypeApply) {
 			JCTypeApply typeApply = ((JCTypeApply) typeTree);
-			substituteAndPrintType(typeApply.clazz, arrayComponent, inTypeParameters, false);
+			substituteAndPrintType(typeApply.clazz, arrayComponent, inTypeParameters, false, disableSubstitution);
 			if (!typeApply.arguments.isEmpty()) {
 				getPrinter().print("<");
 				for (JCExpression argument : typeApply.arguments) {
-					substituteAndPrintType(argument, arrayComponent, false, completeRawTypes).print(", ");
+					substituteAndPrintType(argument, arrayComponent, false, completeRawTypes, disableSubstitution).print(", ");
 				}
 				if (typeApply.arguments.length() > 0) {
 					getPrinter().removeLastChars(2);
@@ -230,14 +236,14 @@ public abstract class AbstractPrinterAdapter {
 				getPrinter().print(name);
 				if (inTypeParameters) {
 					getPrinter().print(" extends ");
-					return substituteAndPrintType(wildcard.getBound(), arrayComponent, false, completeRawTypes);
+					return substituteAndPrintType(wildcard.getBound(), arrayComponent, false, completeRawTypes, disableSubstitution);
 				} else {
 					return getPrinter();
 				}
 			}
 		} else {
 			if (typeTree instanceof JCArrayTypeTree) {
-				return substituteAndPrintType(((JCArrayTypeTree) typeTree).elemtype, true, inTypeParameters, completeRawTypes).print("[]");
+				return substituteAndPrintType(((JCArrayTypeTree) typeTree).elemtype, true, inTypeParameters, completeRawTypes, disableSubstitution).print("[]");
 			}
 			if (completeRawTypes && typeTree.type.tsym.getTypeParameters() != null && !typeTree.type.tsym.getTypeParameters().isEmpty()) {
 				// raw type case (Java warning)
