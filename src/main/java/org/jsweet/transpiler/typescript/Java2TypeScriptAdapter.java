@@ -48,6 +48,7 @@ import javax.lang.model.element.ElementKind;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jsweet.JSweetConfig;
+import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.JSweetTranspiler;
 import org.jsweet.transpiler.TypeChecker;
@@ -88,7 +89,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 	private Map<String, String> typesMapping = new HashMap<String, String>();
 	private Map<String, String> langTypesMapping = new HashMap<String, String>();
 
-	public Java2TypeScriptAdapter() {
+	public Java2TypeScriptAdapter(JSweetContext context) {
 		typesMapping.put(Object.class.getName(), "any");
 		typesMapping.put(Runnable.class.getName(), "() => void");
 		typesMapping.put(String.class.getName(), "string");
@@ -101,6 +102,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		typesMapping.put(Double.class.getName(), "number");
 		typesMapping.put(Boolean.class.getName(), "boolean");
 		typesMapping.put(Character.class.getName(), "string");
+		typesMapping.put(CharSequence.class.getName(), "string");
 		typesMapping.put(Void.class.getName(), "void");
 		typesMapping.put("double", "number");
 		typesMapping.put("int", "number");
@@ -118,12 +120,12 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		langTypesMapping.put("Object", "Object");
 		langTypesMapping.put("String", "String");
 		langTypesMapping.put("Boolean", "Boolean");
-		langTypesMapping.put("Integer", "Number");
-		langTypesMapping.put("Long", "Number");
-		langTypesMapping.put("Float", "Number");
-		langTypesMapping.put("Double", "Number");
-		langTypesMapping.put("Byte", "Number");
-		langTypesMapping.put("Character", "String");
+		// langTypesMapping.put("Integer", "Number");
+		// langTypesMapping.put("Long", "Number");
+		// langTypesMapping.put("Float", "Number");
+		// langTypesMapping.put("Double", "Number");
+		// langTypesMapping.put("Byte", "Number");
+		// langTypesMapping.put("Character", "String");
 	}
 
 	@Override
@@ -752,10 +754,11 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			getPrinter().printIdentifier(identifier.toString());
 			return true;
 		}
-		if (TypeChecker.NUMBER_TYPE_NAMES.contains(identifier.toString()) && TypeChecker.NUMBER_TYPES.contains(identifier.type.toString())) {
-			getPrinter().print("number");
-			return true;
-		}
+		// if (TypeChecker.NUMBER_TYPE_NAMES.contains(identifier.toString()) &&
+		// TypeChecker.NUMBER_TYPES.contains(identifier.type.toString())) {
+		// getPrinter().print("number");
+		// return true;
+		// }
 		if (identifier.type.toString().startsWith("java.lang.")) {
 			if (("java.lang." + identifier.toString()).equals(identifier.type.toString())) {
 				if (langTypesMapping.containsKey(identifier.toString())) {

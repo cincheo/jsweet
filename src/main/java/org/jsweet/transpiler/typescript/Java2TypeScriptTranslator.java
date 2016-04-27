@@ -172,7 +172,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 */
 	public Java2TypeScriptTranslator(TranspilationHandler logHandler, JSweetContext context, JCCompilationUnit compilationUnit,
 			boolean preserveSourceLineNumbers) {
-		super(logHandler, context, compilationUnit, new Java2TypeScriptAdapter(), preserveSourceLineNumbers);
+		super(logHandler, context, compilationUnit, new Java2TypeScriptAdapter(context), preserveSourceLineNumbers);
 	}
 
 	/**
@@ -688,7 +688,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			removeLastIndent();
 		}
 
-		if (classdecl.getModifiers().getFlags().contains(Modifier.ABSTRACT)) {
+		if (!getScope().interfaceScope && classdecl.getModifiers().getFlags().contains(Modifier.ABSTRACT)) {
 			List<MethodSymbol> methods = new ArrayList<>();
 			for (Type t : implementedInterfaces) {
 				Util.grabMethodsToBeImplemented(methods, t.tsym);
