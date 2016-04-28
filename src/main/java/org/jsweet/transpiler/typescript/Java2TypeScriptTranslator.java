@@ -1908,14 +1908,16 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					}
 				}
 			}
-			// add parent class name is ident is an inner class
+			// add parent class name if ident is an inner class
 			if (ident.sym instanceof ClassSymbol) {
 				ClassSymbol clazz = (ClassSymbol) ident.sym;
 				if (clazz.getEnclosingElement() instanceof ClassSymbol) {
 					print(clazz.getEnclosingElement().getSimpleName() + ".");
 				}
+				print(name);
+			} else {
+				printIdentifier(name);
 			}
-			printIdentifier(name);
 		}
 		// if (Util.isIntegral(ident.type) && getParent() instanceof JCBinary) {
 		// print("|0)");
@@ -2159,38 +2161,38 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	public void visitForeachLoop(JCEnhancedForLoop foreachLoop) {
 		String indexVarName = "index" + Util.getId();
 		boolean noVariable = foreachLoop.expr instanceof JCIdent || foreachLoop.expr instanceof JCFieldAccess;
-		if (noVariable) {
-			boolean[] hasLength = { false };
-			TypeSymbol targetType = foreachLoop.expr.type.tsym;
-			Util.scanMemberDeclarationsInType(targetType, getAdapter().getErasedTypes(), element -> {
-				if (element instanceof VarSymbol) {
-					if ("length".equals(element.getSimpleName().toString()) && Util.isNumber(((VarSymbol) element).type)) {
-						hasLength[0] = true;
-						return false;
-					}
+		boolean[] hasLength = { false };
+		TypeSymbol targetType = foreachLoop.expr.type.tsym;
+		Util.scanMemberDeclarationsInType(targetType, getAdapter().getErasedTypes(), element -> {
+			if (element instanceof VarSymbol) {
+				if ("length".equals(element.getSimpleName().toString()) && Util.isNumber(((VarSymbol) element).type)) {
+					hasLength[0] = true;
+					return false;
 				}
-				return true;
-			});
-			if (hasLength[0]) {
+			}
+			return true;
+		});
+		if (!hasLength[0]) {
+			print("for(var " + indexVarName + "=").print(foreachLoop.expr).print(".iterator();" + indexVarName + ".hasNext();) {").println().startIndent()
+					.printIndent();
+			print("var " + foreachLoop.var.name.toString() + " = ").print(indexVarName + ".next();").println();
+		} else {
+			if (noVariable) {
 				print("for(var " + indexVarName + "=0; " + indexVarName + " < ").print(foreachLoop.expr).print("." + "length" + "; " + indexVarName + "++) {")
 						.println().startIndent().printIndent();
 				print("var " + foreachLoop.var.name.toString() + " = ").print(foreachLoop.expr).print("[" + indexVarName + "];").println();
 			} else {
-				print("for(var " + indexVarName + "=").print(foreachLoop.expr).print(".iterator();" + indexVarName + ".hasNext();) {").println().startIndent()
+				String arrayVarName = "array" + Util.getId();
+				print("{").println().startIndent().printIndent();
+				print("var " + arrayVarName + " = ").print(foreachLoop.expr).print(";").println().printIndent();
+				print("for(var " + indexVarName + "=0; " + indexVarName + " < " + arrayVarName + ".length; " + indexVarName + "++) {").println().startIndent()
 						.printIndent();
-				print("var " + foreachLoop.var.name.toString() + " = ").print(indexVarName + ".next();").println();
+				print("var " + foreachLoop.var.name.toString() + " = " + arrayVarName + "[" + indexVarName + "];").println();
 			}
-		} else {
-			String arrayVarName = "array" + Util.getId();
-			print("{").println().startIndent().printIndent();
-			print("var " + arrayVarName + " = ").print(foreachLoop.expr).print(";").println().printIndent();
-			print("for(var " + indexVarName + "=0; " + indexVarName + " < " + arrayVarName + ".length; " + indexVarName + "++) {").println().startIndent()
-					.printIndent();
-			print("var " + foreachLoop.var.name.toString() + " = " + arrayVarName + "[" + indexVarName + "];").println();
 		}
 		printIndent().print(foreachLoop.body);
 		endIndent().println().printIndent().print("}");
-		if (!noVariable) {
+		if (!noVariable && hasLength[0]) {
 			endIndent().println().printIndent().print("}");
 		}
 	}

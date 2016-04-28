@@ -24,6 +24,7 @@ public class InnerClass {
 		new InnerClass.InnerClass1().m1();
 		new InnerClass().m();
 		InnerClass1.m2();
+		String s = InnerClass1.S;
 	}
 
 	public void m() {
@@ -32,14 +33,12 @@ public class InnerClass {
 
 	static int i = 1;
 
-	public static class InnerClass1 {
+	private final static class InnerClass1 {
 
-		public void m1() {
+		private static String S = "abc";
+		
+		private void m1() {
 			$export("value1", "test" + i);
-		}
-
-		public static void main(String[] args) {
-
 		}
 
 		public static void m2() {

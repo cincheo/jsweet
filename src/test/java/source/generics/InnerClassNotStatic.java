@@ -29,7 +29,7 @@ public class InnerClassNotStatic<T> {
 		new InnerClass1<String>().m(t, "s");
 	}
 
-	public class InnerClass1<U> {
+	public class InnerClass1<U> extends C10<T> {
 
 		public void m(T t, U u) {
 			$export("value", "test");
@@ -41,5 +41,9 @@ public class InnerClassNotStatic<T> {
 
 	}
 
+}
+
+class C10<T> {
+	
 }
 

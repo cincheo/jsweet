@@ -877,13 +877,13 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		// if(fullName.startsWith(Console.class.getPackage().getName())) {
 		// return "any";
 		// }
-		if (!disableSubstitution) {
-			if (typeTree.type.tsym instanceof TypeVariableSymbol) {
-				if (typeVariablesToErase.contains(typeTree.type.tsym)) {
-					return getPrinter().print("any");
-				}
+		if (typeTree.type.tsym instanceof TypeVariableSymbol) {
+			if (typeVariablesToErase.contains(typeTree.type.tsym)) {
+				return getPrinter().print("any");
 			}
+		}
 
+		if (!disableSubstitution) {
 			if (Util.hasAnnotationType(typeTree.type.tsym, ANNOTATION_ERASED)) {
 				return getPrinter().print("any");
 			}
