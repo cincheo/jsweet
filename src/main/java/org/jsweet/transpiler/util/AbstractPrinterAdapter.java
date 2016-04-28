@@ -318,5 +318,7 @@ public abstract class AbstractPrinterAdapter {
 	public String getQualifiedTypeName(TypeSymbol type, boolean globals) {
 		return getPrinter().getRootRelativeName(type);
 	}
+	
+	public abstract Set<String> getErasedTypes();
 
 }

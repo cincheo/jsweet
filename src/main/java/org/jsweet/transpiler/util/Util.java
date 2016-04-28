@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -354,6 +355,68 @@ public class Util {
 			}
 		}
 		return result;
+	}
+
+	/**
+	 * Finds methods by name.
+	 */
+	public static void findMethodDeclarationsInType(TypeSymbol typeSymbol, Collection<String> methodNames, Set<String> ignoredTypeNames,
+			List<MethodSymbol> result) {
+		if (typeSymbol == null) {
+			return;
+		}
+		if (ignoredTypeNames.contains(typeSymbol.getQualifiedName())) {
+			return;
+		}
+		if (typeSymbol.getEnclosedElements() != null) {
+			for (Element element : typeSymbol.getEnclosedElements()) {
+				if ((element instanceof MethodSymbol) && (methodNames.contains(element.getSimpleName().toString()))) {
+					result.add((MethodSymbol) element);
+				}
+			}
+		}
+		if (typeSymbol instanceof ClassSymbol && ((ClassSymbol) typeSymbol).getSuperclass() != null) {
+			findMethodDeclarationsInType(((ClassSymbol) typeSymbol).getSuperclass().tsym, methodNames, ignoredTypeNames, result);
+		}
+		if (result == null) {
+			if (typeSymbol instanceof ClassSymbol && ((ClassSymbol) typeSymbol).getInterfaces() != null) {
+				for (Type t : ((ClassSymbol) typeSymbol).getInterfaces()) {
+					findMethodDeclarationsInType(t.tsym, methodNames, ignoredTypeNames, result);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Scans member declarations in type hierachy.
+	 */
+	public static boolean scanMemberDeclarationsInType(TypeSymbol typeSymbol, Set<String> ignoredTypeNames, Function<Element, Boolean> scanner) {
+		if (typeSymbol == null) {
+			return true;
+		}
+		if (ignoredTypeNames.contains(typeSymbol.getQualifiedName())) {
+			return true;
+		}
+		if (typeSymbol.getEnclosedElements() != null) {
+			for (Element element : typeSymbol.getEnclosedElements()) {
+				if (!scanner.apply(element)) {
+					return false;
+				}
+			}
+		}
+		if (typeSymbol instanceof ClassSymbol && ((ClassSymbol) typeSymbol).getSuperclass() != null) {
+			if (!scanMemberDeclarationsInType(((ClassSymbol) typeSymbol).getSuperclass().tsym, ignoredTypeNames, scanner)) {
+				return false;
+			}
+		}
+		if (typeSymbol instanceof ClassSymbol && ((ClassSymbol) typeSymbol).getInterfaces() != null) {
+			for (Type t : ((ClassSymbol) typeSymbol).getInterfaces()) {
+				if (!scanMemberDeclarationsInType(t.tsym, ignoredTypeNames, scanner)) {
+					return false;
+				}
+			}
+		}
+		return true;
 	}
 
 	/**
@@ -881,6 +944,26 @@ public class Util {
 		}
 	}
 
+	/**
+	 * Returns true is the type is a number.
+	 */
+	public static boolean isNumber(Type type) {
+		if (type == null) {
+			return false;
+		}
+		switch (type.getKind()) {
+		case BYTE:
+		case SHORT:
+		case INT:
+		case LONG:
+		case DOUBLE:
+		case FLOAT:
+			return true;
+		default:
+			return false;
+		}
+	}
+	
 	/**
 	 * Returns true is an arithmetic operator.
 	 */

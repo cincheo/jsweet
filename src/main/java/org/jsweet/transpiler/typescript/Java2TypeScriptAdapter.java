@@ -92,6 +92,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 	private Map<String, String> typesMapping = new HashMap<String, String>();
 	private Map<String, String> langTypesMapping = new HashMap<String, String>();
 	private Set<String> baseThrowables = new HashSet<String>();
+	private Set<String> erasedTypes = new HashSet<String>();
 
 	public Java2TypeScriptAdapter(JSweetContext context) {
 		typesMapping.put(Object.class.getName(), "any");
@@ -136,6 +137,10 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		langTypesMapping.put("RuntimeException", "Error");
 		langTypesMapping.put("Throwable", "Error");
 		langTypesMapping.put("Error", "Error");
+
+		for (String type : langTypesMapping.keySet()) {
+			erasedTypes.add("java.lang." + type);
+		}
 
 		baseThrowables.add(Throwable.class.getName());
 		baseThrowables.add(RuntimeException.class.getName());
@@ -1057,5 +1062,10 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			}
 		}
 		return qualifiedName;
+	}
+
+	@Override
+	public Set<String> getErasedTypes() {
+		return erasedTypes;
 	}
 }

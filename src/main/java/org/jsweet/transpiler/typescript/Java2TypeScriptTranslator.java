@@ -2160,9 +2160,26 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		String indexVarName = "index" + Util.getId();
 		boolean noVariable = foreachLoop.expr instanceof JCIdent || foreachLoop.expr instanceof JCFieldAccess;
 		if (noVariable) {
-			print("for(var " + indexVarName + "=0; " + indexVarName + " < ").print(foreachLoop.expr).print(".length; " + indexVarName + "++) {").println()
-					.startIndent().printIndent();
-			print("var " + foreachLoop.var.name.toString() + " = ").print(foreachLoop.expr).print("[" + indexVarName + "];").println();
+			boolean[] hasLength = { false };
+			TypeSymbol targetType = foreachLoop.expr.type.tsym;
+			Util.scanMemberDeclarationsInType(targetType, getAdapter().getErasedTypes(), element -> {
+				if (element instanceof VarSymbol) {
+					if ("length".equals(element.getSimpleName().toString()) && Util.isNumber(((VarSymbol) element).type)) {
+						hasLength[0] = true;
+						return false;
+					}
+				}
+				return true;
+			});
+			if (hasLength[0]) {
+				print("for(var " + indexVarName + "=0; " + indexVarName + " < ").print(foreachLoop.expr).print("." + "length" + "; " + indexVarName + "++) {")
+						.println().startIndent().printIndent();
+				print("var " + foreachLoop.var.name.toString() + " = ").print(foreachLoop.expr).print("[" + indexVarName + "];").println();
+			} else {
+				print("for(var " + indexVarName + "=").print(foreachLoop.expr).print(".iterator();" + indexVarName + ".hasNext();) {").println().startIndent()
+						.printIndent();
+				print("var " + foreachLoop.var.name.toString() + " = ").print(indexVarName + ".next();").println();
+			}
 		} else {
 			String arrayVarName = "array" + Util.getId();
 			print("{").println().startIndent().printIndent();
