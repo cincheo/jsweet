@@ -124,6 +124,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		langTypesMapping.put("Object", "Object");
 		langTypesMapping.put("String", "String");
 		langTypesMapping.put("Boolean", "Boolean");
+		langTypesMapping.put("Number", "Number");
 		langTypesMapping.put("Integer", "Number");
 		langTypesMapping.put("Long", "Number");
 		langTypesMapping.put("Float", "Number");
@@ -557,8 +558,10 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		}
 
 		// built-in Java support
+
 		if (targetClassName != null) {
 
+			// expand macros
 			switch (targetMethodName) {
 			case "getMessage":
 				if (targetType instanceof ClassSymbol) {
@@ -596,10 +599,6 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				break;
 			case "java.lang.Character":
 				switch (targetMethodName) {
-				case "isSurrogatePair":
-					printMacroName(targetMethodName);
-					getPrinter().print("javaemul.internal.Character.isSurrogatePair(").printArgList(invocation.args).print(")");
-					return true;
 				case "toChars":
 					printMacroName(targetMethodName);
 					getPrinter().print("String.fromCharCode(").printArgList(invocation.args).print(")");
@@ -713,6 +712,12 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				}
 				break;
 			}
+
+			// delegation to javaemul
+			if (fieldAccess != null && fieldAccess.sym.isStatic() && typesMapping.containsKey(targetClassName) && targetClassName.startsWith("java.lang.")) {
+				delegateToEmulLayer(targetClassName, targetMethodName, invocation);
+				return true;
+			}
 		}
 
 		if (!JSweetConfig.isJDKReplacementMode())
@@ -726,6 +731,11 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 
 		return super.substituteMethodInvocation(invocation);
 
+	}
+
+	private void delegateToEmulLayer(String targetClassName, String targetMethodName, JCMethodInvocation invocation) {
+		getPrinter().print("javaemul.internal." + targetClassName.substring(10) + ".").print(targetMethodName).print("(")
+				.printArgList(invocation.getArguments()).print(")");
 	}
 
 	private void printMacroName(String macroName) {
@@ -790,20 +800,28 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 
 		// built-in Java support
 		String accessedType = fieldAccess.selected.type.tsym.getQualifiedName().toString();
-		switch (accessedType) {
-		case "java.lang.Integer":
-			switch (name) {
-			case "MAX_VALUE":
-				getPrinter().print("9007199254740991");
-				return true;
-			case "MIN_VALUE":
-				getPrinter().print("-9007199254740991");
-				return true;
-			}
-			break;
+		if (fieldAccess.sym.isStatic() && typesMapping.containsKey(accessedType) && accessedType.startsWith("java.lang.")) {
+			delegateToEmulLayer(accessedType, fieldAccess);
+			return true;
 		}
+		// switch (accessedType) {
+		// case "java.lang.Integer":
+		// switch (name) {
+		// case "MAX_VALUE":
+		// getPrinter().print("9007199254740991");
+		// return true;
+		// case "MIN_VALUE":
+		// getPrinter().print("-9007199254740991");
+		// return true;
+		// }
+		// break;
+		// }
 
 		return super.substituteFieldAccess(fieldAccess);
+	}
+
+	private void delegateToEmulLayer(String targetClassName, JCFieldAccess fieldAccess) {
+		getPrinter().print("javaemul.internal." + targetClassName.substring(10) + ".").print(fieldAccess.name.toString());
 	}
 
 	private AbstractTreePrinter printArguments(List<JCExpression> arguments) {
@@ -1001,10 +1019,6 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 	@Override
 	public String getIdentifier(String identifier) {
 		return JSweetConfig.toJsIdentifier(identifier);
-	}
-
-	public final Map<String, String> getLangTypesMapping() {
-		return langTypesMapping;
 	}
 
 	@Override
