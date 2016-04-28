@@ -2195,7 +2195,15 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 		}
 		print(binary.lhs);
-		space().print(binary.operator.name.toString()).space();
+		String op = binary.operator.name.toString();
+		if (binary.lhs.type.getKind() == TypeKind.BOOLEAN) {
+			if ("|".equals(op)) {
+				op = "||";
+			} else if ("&".equals(op)) {
+				op = "&&";
+			}
+		}
+		space().print(op).space();
 		print(binary.rhs);
 		if (Util.isIntegral(binary.type) && binary.getKind() == Kind.DIVIDE) {
 			if (binary.type.getKind() == TypeKind.LONG) {
@@ -2235,10 +2243,20 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	}
 
 	@Override
-	public void visitAssignop(JCAssignOp op) {
-		print(op.lhs);
-		print(op.operator.name.toString() + "=");
-		print(op.rhs);
+	public void visitAssignop(JCAssignOp assignOp) {
+		print(assignOp.lhs);
+		String op = assignOp.operator.name.toString();
+		if (assignOp.lhs.type.getKind() == TypeKind.BOOLEAN) {
+			if ("|".equals(op)) {
+				print(" = ").print(assignOp.lhs).print(" || ").print(assignOp.rhs);
+				return;
+			} else if ("&".equals(op)) {
+				print(" = ").print(assignOp.lhs).print(" && ").print(assignOp.rhs);
+				return;
+			}
+		}
+		print(" " + op + "= ");
+		print(assignOp.rhs);
 	}
 
 	@Override

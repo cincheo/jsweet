@@ -26,6 +26,7 @@ import org.junit.Test;
 import source.calculus.Integers;
 import source.calculus.Longs;
 import source.calculus.MathApi;
+import source.calculus.Operators;
 
 public class CalculusTests extends AbstractTest {
 
@@ -72,17 +73,23 @@ public class CalculusTests extends AbstractTest {
 	public void testMathApi() {
 		eval(ModuleKind.none, (logHandler, r) -> {
 			logHandler.assertReportedProblems();
-			
-			Assert.assertEquals(Math.E, (double)r.get("E"), 0.00001);
-			Assert.assertEquals(Math.PI, (double)r.get("PI"), 0.00001);
-			Assert.assertEquals(Math.abs(-123), (int)r.get("abs_123"), 0.00001);
-			Assert.assertEquals(Math.acos(0.1), (double)r.get("acos0_1"), 0.00001);
-			Assert.assertEquals(Math.floor(3.3), (int)r.get("floor3_3"), 0.00001);
-			Assert.assertEquals(Math.cbrt(2), (double)r.get("cbrt2"), 0.00001);
-			Assert.assertEquals(Math.signum(-2342), (int)r.get("signum_2342"), 0.00001);
-			Assert.assertEquals(Math.scalb(1.2, 2), (double)r.get("scalb1_2__2"), 0.00001);
-			
+
+			Assert.assertEquals(Math.E, (double) r.get("E"), 0.00001);
+			Assert.assertEquals(Math.PI, (double) r.get("PI"), 0.00001);
+			Assert.assertEquals(Math.abs(-123), (int) r.get("abs_123"), 0.00001);
+			Assert.assertEquals(Math.acos(0.1), (double) r.get("acos0_1"), 0.00001);
+			Assert.assertEquals(Math.floor(3.3), (int) r.get("floor3_3"), 0.00001);
+			Assert.assertEquals(Math.cbrt(2), (double) r.get("cbrt2"), 0.00001);
+			Assert.assertEquals(Math.signum(-2342), (int) r.get("signum_2342"), 0.00001);
+			Assert.assertEquals(Math.scalb(1.2, 2), (double) r.get("scalb1_2__2"), 0.00001);
+
 		} , getSourceFile(MathApi.class));
 	}
-	
+
+	@Test
+	public void testOperators() {
+		transpile(ModuleKind.none, (logHandler) -> {
+			logHandler.assertReportedProblems();
+		} , getSourceFile(Operators.class));
+	}
 }
