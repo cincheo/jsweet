@@ -140,6 +140,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 		private boolean hasDeclaredConstructor = false;
 
+		private boolean innerClass = false;
+
 		private boolean innerClassNotStatic = false;
 	}
 
@@ -576,6 +578,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		JCClassDecl parent = getParent(JCClassDecl.class);
 		List<TypeVariableSymbol> parentTypeVars = new ArrayList<>();
 		if (parent != null) {
+			getScope().innerClass = true;
 			if (!classdecl.getModifiers().getFlags().contains(Modifier.STATIC)) {
 				getScope().innerClassNotStatic = true;
 				if (parent.getTypeParameters() != null) {
@@ -1026,15 +1029,17 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 			if (methodDecl.mods.getFlags().contains(Modifier.PRIVATE)) {
 				if (!constructor) {
-					if (!getScope().interfaceScope) {
-						if (!(inOverload && overload.coreMethod.equals(methodDecl))) {
-							print("private ");
-						}
-					} else {
-						if (getScope().sharedMode) {
-							print("public ");
+					if (!getScope().innerClass) {
+						if (!getScope().interfaceScope) {
+							if (!(inOverload && overload.coreMethod.equals(methodDecl))) {
+								print("private ");
+							}
 						} else {
-							report(methodDecl, methodDecl.name, JSweetProblem.INVALID_PRIVATE_IN_INTERFACE, methodDecl.name, parent.name);
+							if (getScope().sharedMode) {
+								print("public ");
+							} else {
+								report(methodDecl, methodDecl.name, JSweetProblem.INVALID_PRIVATE_IN_INTERFACE, methodDecl.name, parent.name);
+							}
 						}
 					}
 				}
@@ -1464,7 +1469,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 				if (varDecl.mods.getFlags().contains(Modifier.PRIVATE)) {
 					if (!getScope().interfaceScope) {
-						print("private ");
+						if (!getScope().innerClass) {
+							print("private ");
+						}
 					} else {
 						if (!getScope().sharedMode) {
 							report(varDecl, varDecl.name, JSweetProblem.INVALID_PRIVATE_IN_INTERFACE, varDecl.name, ((JCClassDecl) parent).name);
