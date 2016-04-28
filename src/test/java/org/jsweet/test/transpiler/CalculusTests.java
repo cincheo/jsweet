@@ -23,6 +23,7 @@ import org.jsweet.transpiler.util.EvaluationResult;
 import org.junit.Assert;
 import org.junit.Test;
 
+import source.calculus.Chars;
 import source.calculus.Integers;
 import source.calculus.Longs;
 import source.calculus.MathApi;
@@ -92,4 +93,13 @@ public class CalculusTests extends AbstractTest {
 			logHandler.assertReportedProblems();
 		} , getSourceFile(Operators.class));
 	}
+
+	@Test
+	public void testChars() {
+		eval(ModuleKind.none, (logHandler, r) -> {
+			logHandler.assertReportedProblems();
+			Assert.assertEquals("" + (char) (0x0030 + ((int) (5 * 10))), r.get("result"));
+		} , getSourceFile(Chars.class));
+	}
+
 }

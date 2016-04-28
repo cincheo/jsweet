@@ -2384,6 +2384,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	@Override
 	public void visitTypeCast(JCTypeCast cast) {
+		if (cast.type.getKind() == TypeKind.CHAR && Util.isIntegral(cast.expr.type)) {
+			print("String.fromCharCode(").print(cast.expr).print(")");
+			return;
+		}
+
 		if (Util.isIntegral(cast.type)) {
 			if (cast.type.getKind() == TypeKind.LONG) {
 				print("Math.round(");
