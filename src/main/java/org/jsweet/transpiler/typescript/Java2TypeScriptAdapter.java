@@ -593,7 +593,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					return true;
 				case "compareToIgnoreCase":
 					printMacroName(targetMethodName);
-					getPrinter().print("(").print(fieldAccess.getExpression()).print(".toUpperCase() === ").printArgList(invocation.args)
+					getPrinter().print(fieldAccess.getExpression()).print(".toUpperCase().localeCompare(").printArgList(invocation.args)
 							.print(".toUpperCase())");
 					return true;
 				case "toChars":
