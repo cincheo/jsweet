@@ -342,7 +342,7 @@ public class JSweetContext extends Context {
 	 * </pre>
 	 * 
 	 */
-	public boolean ignoreWildcardBounds = false;
+	public boolean ignoreWildcardBounds = true;
 
 	private Map<JCWildcard, String> wildcardNames = new HashMap<>();
 
