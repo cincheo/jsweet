@@ -591,6 +591,11 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					printMacroName(targetMethodName);
 					getPrinter().print(fieldAccess.getExpression()).print(".substring(").printArgList(invocation.args).print(")");
 					return true;
+				case "compareToIgnoreCase":
+					printMacroName(targetMethodName);
+					getPrinter().print("(").print(fieldAccess.getExpression()).print(".toUpperCase() === ").printArgList(invocation.args)
+							.print(".toUpperCase())");
+					return true;
 				case "toChars":
 					printMacroName(targetMethodName);
 					getPrinter().print("String.fromCharCode(").printArgList(invocation.args).print(")");
@@ -713,10 +718,21 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				break;
 			}
 
-			// delegation to javaemul
-			if (fieldAccess != null && fieldAccess.sym.isStatic() && typesMapping.containsKey(targetClassName) && targetClassName.startsWith("java.lang.")) {
-				delegateToEmulLayer(targetClassName, targetMethodName, invocation);
-				return true;
+			if (fieldAccess != null && typesMapping.containsKey(targetClassName) && targetClassName.startsWith("java.lang.")) {
+				if (fieldAccess.sym.isStatic()) {
+					// delegation to javaemul
+					delegateToEmulLayer(targetClassName, targetMethodName, invocation);
+					return true;
+				} else {
+					switch (targetMethodName) {
+					case "equals":
+						getPrinter().print("(").print(fieldAccess.getExpression()).print(" === ").printArgList(invocation.args).print(")");
+						return true;
+					case "hashCode":
+						getPrinter().print("(<any>").print(fieldAccess.getExpression()).print(".toString())");
+						return true;
+					}
+				}
 			}
 		}
 
