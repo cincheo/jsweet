@@ -865,20 +865,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	}
 
 	private String getQualifiedTypeName(TypeSymbol type, boolean globals) {
-		String qualifiedName = getRootRelativeName(type);
-		if (context.useModules) {
-			int dotIndex = qualifiedName.lastIndexOf(".");
-			qualifiedName = qualifiedName.substring(dotIndex + 1);
-		}
-		if (globals) {
-			int dotIndex = qualifiedName.lastIndexOf(".");
-			if (dotIndex == -1) {
-				qualifiedName = "";
-			} else {
-				qualifiedName = qualifiedName.substring(0, dotIndex);
-			}
-		}
-		return qualifiedName;
+		return getAdapter().getQualifiedTypeName(type, globals);
 	}
 
 	private String getTSMethodName(JCMethodDecl methodDecl) {

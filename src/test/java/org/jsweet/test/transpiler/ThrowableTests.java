@@ -24,6 +24,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import source.throwable.InvalidTryCatchTest;
+import source.throwable.Throwables;
 import source.throwable.TryCatchFinallyTest;
 
 public class ThrowableTests extends AbstractTest {
@@ -54,6 +55,24 @@ public class ThrowableTests extends AbstractTest {
 			e.printStackTrace();
 			fail("Exception occured while running test");
 		}
+	}
+
+	@Test
+	public void testThrowables() {
+		eval((handler, result) -> {
+			handler.assertReportedProblems();
+			Assert.assertEquals(true, result.get("catch1"));
+			Assert.assertEquals(true, result.get("catch2"));
+			// the message is not passed to the error superclass...
+			// it seems to be a well-known problem of current JS engines:
+			// https://github.com/Microsoft/TypeScript/issues/5069
+			// TODO: should we patch it or wait that it is fixed?
+			Assert.assertEquals("message", result.get("message2"));
+			Assert.assertEquals(true, result.get("catch3"));
+			Assert.assertEquals("message2", result.get("message3"));
+			// cause does not work yet and returns the current error
+			Assert.assertEquals(true, result.get("cause"));
+		} , getSourceFile(Throwables.class));
 	}
 
 }

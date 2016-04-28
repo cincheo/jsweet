@@ -39,8 +39,10 @@ import static org.jsweet.JSweetConfig.isJSweetPath;
 import static org.jsweet.transpiler.util.Util.getFirstAnnotationValue;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -59,6 +61,7 @@ import org.jsweet.transpiler.util.Util;
 import com.sun.codemodel.internal.JJavaName;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.PackageSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
@@ -88,6 +91,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 
 	private Map<String, String> typesMapping = new HashMap<String, String>();
 	private Map<String, String> langTypesMapping = new HashMap<String, String>();
+	private Set<String> baseThrowables = new HashSet<String>();
 
 	public Java2TypeScriptAdapter(JSweetContext context) {
 		typesMapping.put(Object.class.getName(), "any");
@@ -127,6 +131,15 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		langTypesMapping.put("Byte", "Number");
 		langTypesMapping.put("Character", "String");
 		langTypesMapping.put("Math", "Math");
+		langTypesMapping.put("Exception", "Error");
+		langTypesMapping.put("RuntimeException", "Error");
+		langTypesMapping.put("Throwable", "Error");
+		langTypesMapping.put("Error", "Error");
+
+		baseThrowables.add(Throwable.class.getName());
+		baseThrowables.add(RuntimeException.class.getName());
+		baseThrowables.add(Error.class.getName());
+		baseThrowables.add(Exception.class.getName());
 	}
 
 	@Override
@@ -212,6 +225,21 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			if (getPrinter().getParent(JCClassDecl.class).extending == null //
 					|| Util.isInterface(getPrinter().getParent(JCClassDecl.class).extending.type.tsym)) {
 				return true;
+			}
+			// special case when subclassing a Java exception type
+			if (invocation.meth instanceof JCIdent) {
+				String superClassName = ((JCIdent) invocation.meth).sym.getEnclosingElement().getQualifiedName().toString();
+				if (baseThrowables.contains(superClassName)) {
+					// ES6 would take the cause, but we ignore it so far for
+					// backward compatibility
+					getPrinter().print("super(").print(invocation.getArguments().head).print(")");
+					// PATCH:
+					// https://github.com/Microsoft/TypeScript/issues/5069
+					if (!invocation.getArguments().isEmpty()) {
+						getPrinter().print("; this.message=").print(invocation.getArguments().head);
+					}
+					return true;
+				}
 			}
 		}
 		JCFieldAccess fieldAccess = null;
@@ -530,6 +558,24 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 
 		// built-in Java support
 		if (targetClassName != null) {
+
+			switch (targetMethodName) {
+			case "getMessage":
+				if (targetType instanceof ClassSymbol) {
+					if (Util.hasParent((ClassSymbol) targetType, "java.lang.Throwable")) {
+						getPrinter().print(fieldAccess.getExpression()).print(".message");
+						return true;
+					}
+				}
+			case "getCause":
+				if (targetType instanceof ClassSymbol) {
+					if (Util.hasParent((ClassSymbol) targetType, "java.lang.Throwable")) {
+						getPrinter().print("(<Error>null)");
+						return true;
+					}
+				}
+			}
+
 			switch (targetClassName) {
 			case "java.lang.String":
 			case "java.lang.CharSequence":
@@ -562,6 +608,10 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				break;
 			case "java.lang.Float":
 			case "java.lang.Double":
+			case "java.lang.Integer":
+			case "java.lang.Byte":
+			case "java.lang.Long":
+			case "java.lang.Short":
 				switch (targetMethodName) {
 				case "isNaN":
 					printMacroName(targetMethodName);
@@ -581,6 +631,12 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					} else {
 						getPrinter().print("((value) => Number.NEGATIVE_INFINITY === value || Number.POSITIVE_INFINITY === value)(")
 								.print(fieldAccess.getExpression()).print(")");
+						return true;
+					}
+				case "toString":
+					if (!invocation.args.isEmpty()) {
+						printMacroName(targetMethodName);
+						getPrinter().print("(''+").print(invocation.args.head).print(")");
 						return true;
 					}
 				}
@@ -945,5 +1001,31 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 	@Override
 	public String getIdentifier(String identifier) {
 		return JSweetConfig.toJsIdentifier(identifier);
+	}
+
+	public final Map<String, String> getLangTypesMapping() {
+		return langTypesMapping;
+	}
+
+	@Override
+	public String getQualifiedTypeName(TypeSymbol type, boolean globals) {
+		String qualifiedName = super.getQualifiedTypeName(type, globals);
+		if (qualifiedName.startsWith("java.lang.") && langTypesMapping.containsKey(type.getSimpleName().toString())) {
+			qualifiedName = langTypesMapping.get(type.getSimpleName().toString());
+		} else {
+			if (getPrinter().getContext().useModules) {
+				int dotIndex = qualifiedName.lastIndexOf(".");
+				qualifiedName = qualifiedName.substring(dotIndex + 1);
+			}
+			if (globals) {
+				int dotIndex = qualifiedName.lastIndexOf(".");
+				if (dotIndex == -1) {
+					qualifiedName = "";
+				} else {
+					qualifiedName = qualifiedName.substring(0, dotIndex);
+				}
+			}
+		}
+		return qualifiedName;
 	}
 }

@@ -42,6 +42,7 @@ import javax.lang.model.element.Modifier;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.JSweetContext;
@@ -948,6 +949,24 @@ public class Util {
 		}
 		for (Type t : clazz.getInterfaces()) {
 			if (isParent((ClassSymbol) t.tsym, toFind)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public static boolean hasParent(ClassSymbol clazz, String... qualifiedNamesToFind) {
+		if (clazz == null) {
+			return false;
+		}
+		if (ArrayUtils.contains(qualifiedNamesToFind, clazz.getQualifiedName().toString())) {
+			return true;
+		}
+		if (hasParent((ClassSymbol) clazz.getSuperclass().tsym, qualifiedNamesToFind)) {
+			return true;
+		}
+		for (Type t : clazz.getInterfaces()) {
+			if (hasParent((ClassSymbol) t.tsym, qualifiedNamesToFind)) {
 				return true;
 			}
 		}
