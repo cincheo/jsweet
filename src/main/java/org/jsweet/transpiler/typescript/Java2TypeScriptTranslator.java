@@ -1110,11 +1110,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			removeLastChars(2);
 		}
 		print(")");
-		if (methodDecl.restype != null && methodDecl.restype.type.getTag() != TypeTag.VOID) {
-			print(" : ");
-			getAdapter().substituteAndPrintType(methodDecl.restype);
-		} else if (inCoreWrongOverload && !methodDecl.sym.isConstructor()) {
+		if (inCoreWrongOverload && !methodDecl.sym.isConstructor()) {
 			print(" : any");
+		} else {
+			if (methodDecl.restype != null && methodDecl.restype.type.getTag() != TypeTag.VOID) {
+				print(" : ");
+				getAdapter().substituteAndPrintType(methodDecl.restype);
+			}
 		}
 		if (methodDecl.getBody() == null || (methodDecl.mods.getFlags().contains(Modifier.DEFAULT) && !getScope().defaultMethodScope)) {
 			if (jsniLine != -1) {
