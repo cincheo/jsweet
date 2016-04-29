@@ -58,6 +58,13 @@ public class InnerClassNotStatic {
 	public class InnerClass2 {
 		public void m() {
 			trace.push("" + i + getI() + "b");
+			new InnerOfInnerClass().m();
+		}
+		
+		public final class InnerOfInnerClass {
+			public void m() {
+				trace.push("" + i + getI() + "c");
+			}
 		}
 	}
 

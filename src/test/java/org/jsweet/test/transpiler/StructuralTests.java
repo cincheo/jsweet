@@ -109,7 +109,7 @@ public class StructuralTests extends AbstractTest {
 	public void testInnerClassNotStatic() {
 		eval((logHandler, r) -> {
 			logHandler.assertReportedProblems();
-			assertEquals("22abc,22a,22ABC,22a,22b", r.get("trace"));
+			assertEquals("22abc,22a,22ABC,22a,22b,22c", r.get("trace"));
 		} , getSourceFile(InnerClassNotStatic.class));
 	}
 
