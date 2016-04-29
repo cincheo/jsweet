@@ -18,15 +18,22 @@ package source.typing;
 
 import static jsweet.util.Globals.$export;
 
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.DoubleConsumer;
+import java.util.function.DoubleSupplier;
 import java.util.function.Function;
+
+import jsweet.util.function.TriFunction;
 
 public class Lambdas {
 
 	void m() {
-		Runnable r = (Runnable) () -> {};
+		Runnable r = (Runnable) () -> {
+		};
 		r.run();
 	}
-	
+
 	void test(Function<String, String> f) {
 		$export("result", f.apply("a"));
 	}
@@ -34,5 +41,23 @@ public class Lambdas {
 	public static void main(String[] args) {
 		new Lambdas().test(p -> p);
 	}
-	
+
+	void invoker() {
+		f1.apply("a", "b");
+		f2.apply("a", "b", "c");
+		f3.getAsDouble();
+		f4.accept(20);
+		f5.accept("a", "b");
+	}
+
+	BiFunction<String, String, Boolean> f1;
+
+	TriFunction<String, String, String, Boolean> f2;
+
+	DoubleSupplier f3;
+
+	DoubleConsumer f4;
+
+	BiConsumer<String, String> f5;
+
 }

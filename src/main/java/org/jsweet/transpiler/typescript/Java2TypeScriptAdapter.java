@@ -43,7 +43,29 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BooleanSupplier;
+import java.util.function.DoubleBinaryOperator;
+import java.util.function.DoubleConsumer;
+import java.util.function.DoublePredicate;
+import java.util.function.DoubleSupplier;
+import java.util.function.DoubleToIntFunction;
+import java.util.function.DoubleToLongFunction;
+import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
+import java.util.function.IntBinaryOperator;
+import java.util.function.IntConsumer;
+import java.util.function.IntPredicate;
+import java.util.function.IntSupplier;
+import java.util.function.IntToDoubleFunction;
+import java.util.function.IntToLongFunction;
+import java.util.function.IntUnaryOperator;
+import java.util.function.LongBinaryOperator;
+import java.util.function.LongConsumer;
+import java.util.function.LongPredicate;
+import java.util.function.LongSupplier;
+import java.util.function.LongToDoubleFunction;
+import java.util.function.LongToIntFunction;
+import java.util.function.LongUnaryOperator;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
@@ -97,6 +119,33 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 	public Java2TypeScriptAdapter(JSweetContext context) {
 		typesMapping.put(Object.class.getName(), "any");
 		typesMapping.put(Runnable.class.getName(), "() => void");
+
+		typesMapping.put(DoubleConsumer.class.getName(), "(number) => void");
+		typesMapping.put(DoublePredicate.class.getName(), "(number) => boolean");
+		typesMapping.put(DoubleSupplier.class.getName(), "() => number");
+		typesMapping.put(DoubleBinaryOperator.class.getName(), "(number, number) => number");
+		typesMapping.put(DoubleUnaryOperator.class.getName(), "(number) => number");
+		typesMapping.put(DoubleToIntFunction.class.getName(), "(number) => number");
+		typesMapping.put(DoubleToLongFunction.class.getName(), "(number) => number");
+
+		typesMapping.put(IntConsumer.class.getName(), "(number) => void");
+		typesMapping.put(IntPredicate.class.getName(), "(number) => boolean");
+		typesMapping.put(IntSupplier.class.getName(), "() => number");
+		typesMapping.put(IntBinaryOperator.class.getName(), "(number, number) => number");
+		typesMapping.put(IntUnaryOperator.class.getName(), "(number) => number");
+		typesMapping.put(IntToDoubleFunction.class.getName(), "(number) => number");
+		typesMapping.put(IntToLongFunction.class.getName(), "(number) => number");
+
+		typesMapping.put(LongConsumer.class.getName(), "(number) => void");
+		typesMapping.put(LongPredicate.class.getName(), "(number) => boolean");
+		typesMapping.put(LongSupplier.class.getName(), "() => number");
+		typesMapping.put(LongBinaryOperator.class.getName(), "(number, number) => number");
+		typesMapping.put(LongUnaryOperator.class.getName(), "(number) => number");
+		typesMapping.put(LongToDoubleFunction.class.getName(), "(number) => number");
+		typesMapping.put(LongToIntFunction.class.getName(), "(number) => number");
+
+		typesMapping.put(BooleanSupplier.class.getName(), "() => boolean");
+
 		typesMapping.put(String.class.getName(), "string");
 		typesMapping.put(Number.class.getName(), "number");
 		typesMapping.put(Integer.class.getName(), "number");
@@ -845,12 +894,17 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 	private AbstractTreePrinter printArguments(List<JCExpression> arguments) {
 		int i = 1;
 		for (JCExpression argument : arguments) {
-			getPrinter().print("p" + (i++) + ": ");
-			substituteAndPrintType(argument, false, false, true, false).print(",");
+			printArgument(argument, i++).print(", ");
 		}
 		if (arguments.size() > 0) {
-			getPrinter().removeLastChar();
+			getPrinter().removeLastChars(2);
 		}
+		return getPrinter();
+	}
+
+	private AbstractTreePrinter printArgument(JCExpression argument, int i) {
+		getPrinter().print("p" + i + ": ");
+		substituteAndPrintType(argument, false, false, true, false);
 		return getPrinter();
 	}
 
@@ -968,6 +1022,22 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 						getPrinter().print("(");
 						printArguments(typeApply.arguments);
 						getPrinter().print(") => boolean");
+						if (arrayComponent) {
+							getPrinter().print(")");
+						}
+						return getPrinter();
+					} else if (typeName.endsWith("Operator")) {
+						if (arrayComponent) {
+							getPrinter().print("(");
+						}
+						getPrinter().print("(");
+						printArgument(typeApply.arguments.head, 1);
+						if (typeName.startsWith("Binary")) {
+							printArgument(typeApply.arguments.head, 2);
+						}
+						printArguments(typeApply.arguments);
+						getPrinter().print(") => ");
+						substituteAndPrintType(typeApply.arguments.head, arrayComponent, inTypeParameters, completeRawTypes, disableSubstitution);
 						if (arrayComponent) {
 							getPrinter().print(")");
 						}
