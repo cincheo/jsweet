@@ -392,11 +392,6 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			return true;
 		}
 
-		if (matchesMethod(targetClassName, targetMethodName, String.class.getName(), "length")) {
-			getPrinter().print(invocation.meth);
-			return true;
-		}
-
 		if (matchesMethod(targetClassName, targetMethodName, null, INDEXED_GET_FUCTION_NAME)) {
 			if (isWithinGlobals(targetClassName)) {
 				if (invocation.getArguments().size() == 1) {
@@ -595,6 +590,15 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				case "subSequence":
 					printMacroName(targetMethodName);
 					getPrinter().print(fieldAccess.getExpression()).print(".substring(").printArgList(invocation.args).print(")");
+					return true;
+				case "length":
+					getPrinter().print(fieldAccess.getExpression()).print(".length");
+					return true;
+				// this macro is not needed in ES6
+				case "startsWith":
+					printMacroName(targetMethodName);
+					getPrinter().print("((str, searchString, position = 0) => str.substr(position, searchString.length) === searchString)(")
+							.print(fieldAccess.getExpression()).print(", ").printArgList(invocation.args).print(")");
 					return true;
 				case "compareToIgnoreCase":
 					printMacroName(targetMethodName);
