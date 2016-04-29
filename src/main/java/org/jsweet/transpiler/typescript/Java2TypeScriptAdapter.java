@@ -651,7 +651,12 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					return true;
 				// this macro is not needed in ES6
 				case "codePointAt":
+					printMacroName(targetMethodName);
 					getPrinter().print(fieldAccess.getExpression()).print(".charCodeAt(").printArgList(invocation.args).print(")");
+					return true;
+				case "isEmpty":
+					printMacroName(targetMethodName);
+					getPrinter().print("(").print(fieldAccess.getExpression()).print(".length === 0)");
 					return true;
 				case "compareToIgnoreCase":
 					printMacroName(targetMethodName);
@@ -960,7 +965,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				if (typeFullName.startsWith(TUPLE_CLASSES_PACKAGE + ".")) {
 					getPrinter().print("[");
 					for (JCExpression argument : typeApply.arguments) {
-						substituteAndPrintType(argument, arrayComponent, inTypeParameters, completeRawTypes, disableSubstitution).print(",");
+						substituteAndPrintType(argument, arrayComponent, inTypeParameters, completeRawTypes, false).print(",");
 					}
 					if (typeApply.arguments.length() > 0) {
 						getPrinter().removeLastChar();
@@ -971,7 +976,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				if (typeFullName.startsWith(UNION_CLASS_NAME)) {
 					getPrinter().print("(");
 					for (JCExpression argument : typeApply.arguments) {
-						substituteAndPrintType(argument, arrayComponent, inTypeParameters, completeRawTypes, disableSubstitution).print("|");
+						substituteAndPrintType(argument, arrayComponent, inTypeParameters, completeRawTypes, false).print("|");
 					}
 					if (typeApply.arguments.length() > 0) {
 						getPrinter().removeLastChar();
@@ -999,7 +1004,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 						printArguments(typeApply.arguments.subList(0, typeApply.arguments.length() - 1));
 						getPrinter().print(") => ");
 						substituteAndPrintType(typeApply.arguments.get(typeApply.arguments.length() - 1), arrayComponent, inTypeParameters, completeRawTypes,
-								disableSubstitution);
+								false);
 						if (arrayComponent) {
 							getPrinter().print(")");
 						}
@@ -1010,7 +1015,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 						}
 						getPrinter().print("(");
 						getPrinter().print(") => ");
-						substituteAndPrintType(typeApply.arguments.get(0), arrayComponent, inTypeParameters, completeRawTypes, disableSubstitution);
+						substituteAndPrintType(typeApply.arguments.get(0), arrayComponent, inTypeParameters, completeRawTypes, false);
 						if (arrayComponent) {
 							getPrinter().print(")");
 						}
@@ -1037,7 +1042,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 						}
 						printArguments(typeApply.arguments);
 						getPrinter().print(") => ");
-						substituteAndPrintType(typeApply.arguments.head, arrayComponent, inTypeParameters, completeRawTypes, disableSubstitution);
+						substituteAndPrintType(typeApply.arguments.head, arrayComponent, inTypeParameters, completeRawTypes, false);
 						if (arrayComponent) {
 							getPrinter().print(")");
 						}

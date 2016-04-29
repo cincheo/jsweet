@@ -220,7 +220,7 @@ public abstract class AbstractPrinterAdapter {
 			if (!typeApply.arguments.isEmpty()) {
 				getPrinter().print("<");
 				for (JCExpression argument : typeApply.arguments) {
-					substituteAndPrintType(argument, arrayComponent, false, completeRawTypes, disableSubstitution).print(", ");
+					substituteAndPrintType(argument, arrayComponent, false, completeRawTypes, false).print(", ");
 				}
 				if (typeApply.arguments.length() > 0) {
 					getPrinter().removeLastChars(2);

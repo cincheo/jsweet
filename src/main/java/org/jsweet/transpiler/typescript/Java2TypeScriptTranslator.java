@@ -2217,7 +2217,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 		}
 		boolean charWrapping = Util.isArithmeticOperator(binary.getKind()) || Util.isComparisonOperator(binary.getKind());
-		if (charWrapping && binary.lhs.type.isPrimitive() && context.symtab.charType.tsym == binary.lhs.type.tsym) {
+		if (charWrapping && binary.lhs.type.isPrimitive() && context.symtab.charType.tsym == binary.lhs.type.tsym
+				&& !(binary.rhs.type.tsym == context.symtab.stringType.tsym)) {
 			print("(").print(binary.lhs).print(").charCodeAt(0)");
 		} else {
 			print(binary.lhs);
@@ -2233,7 +2234,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 		}
 		space().print(op).space();
-		if (charWrapping && binary.rhs.type.isPrimitive() && context.symtab.charType.tsym == binary.rhs.type.tsym) {
+		if (charWrapping && binary.rhs.type.isPrimitive() && context.symtab.charType.tsym == binary.rhs.type.tsym
+				&& !(binary.lhs.type.tsym == context.symtab.stringType.tsym)) {
 			print("(").print(binary.rhs).print(").charCodeAt(0)");
 		} else {
 			print(binary.rhs);
