@@ -113,8 +113,8 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 
 	private Map<String, String> typesMapping = new HashMap<String, String>();
 	private Map<String, String> langTypesMapping = new HashMap<String, String>();
+	private Set<String> langTypesSimpleNames = new HashSet<String>();
 	private Set<String> baseThrowables = new HashSet<String>();
-	private Set<String> erasedTypes = new HashSet<String>();
 
 	public Java2TypeScriptAdapter(JSweetContext context) {
 		typesMapping.put(Object.class.getName(), "any");
@@ -171,24 +171,25 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		typesMapping.put(LANG_PACKAGE + ".String", "string");
 		typesMapping.put(LANG_PACKAGE + ".Number", "number");
 
-		langTypesMapping.put("Object", "Object");
-		langTypesMapping.put("String", "String");
-		langTypesMapping.put("Boolean", "Boolean");
-		langTypesMapping.put("Number", "Number");
-		langTypesMapping.put("Integer", "Number");
-		langTypesMapping.put("Long", "Number");
-		langTypesMapping.put("Float", "Number");
-		langTypesMapping.put("Double", "Number");
-		langTypesMapping.put("Byte", "Number");
-		langTypesMapping.put("Character", "String");
-		langTypesMapping.put("Math", "Math");
-		langTypesMapping.put("Exception", "Error");
-		langTypesMapping.put("RuntimeException", "Error");
-		langTypesMapping.put("Throwable", "Error");
-		langTypesMapping.put("Error", "Error");
+		langTypesMapping.put("java.lang.Object", "Object");
+		langTypesMapping.put("java.lang.String", "String");
+		langTypesMapping.put("java.lang.Boolean", "Boolean");
+		langTypesMapping.put("java.lang.Number", "Number");
+		langTypesMapping.put("java.lang.Integer", "Number");
+		langTypesMapping.put("java.lang.Long", "Number");
+		langTypesMapping.put("java.lang.Float", "Number");
+		langTypesMapping.put("java.lang.Double", "Number");
+		langTypesMapping.put("java.lang.Byte", "Number");
+		langTypesMapping.put("java.lang.Character", "String");
+		langTypesMapping.put("java.lang.Math", "Math");
+		langTypesMapping.put("java.lang.Exception", "Error");
+		langTypesMapping.put("java.lang.RuntimeException", "Error");
+		langTypesMapping.put("java.lang.Throwable", "Error");
+		langTypesMapping.put("java.lang.Error", "Error");
+		langTypesMapping.put("java.util.Date", "Date");
 
-		for (String type : langTypesMapping.keySet()) {
-			erasedTypes.add("java.lang." + type);
+		for (String s : langTypesMapping.keySet()) {
+			langTypesSimpleNames.add(s.substring(s.lastIndexOf('.') + 1));
 		}
 
 		baseThrowables.add(Throwable.class.getName());
@@ -783,6 +784,14 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					return true;
 				}
 				break;
+			// case "java.util.Date":
+			// switch (targetMethodName) {
+			// case "setFullYear":
+			// printMacroName(targetMethodName);
+			// getPrinter().print(fieldAccess.getExpression()).print(".setYear(").printArgList(invocation.args).print(")");
+			//
+			// }
+			// break;
 			}
 
 			if (fieldAccess != null && typesMapping.containsKey(targetClassName) && targetClassName.startsWith("java.lang.")) {
@@ -1084,17 +1093,16 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		// getPrinter().print("number");
 		// return true;
 		// }
+		if (langTypesSimpleNames.contains(identifier.toString()) && langTypesMapping.containsKey(identifier.type.toString())) {
+			getPrinter().print(langTypesMapping.get(identifier.type.toString()));
+			return true;
+		}
 		if (identifier.type.toString().startsWith("java.lang.")) {
 			if (("java.lang." + identifier.toString()).equals(identifier.type.toString())) {
-				if (langTypesMapping.containsKey(identifier.toString())) {
-					getPrinter().print(langTypesMapping.get(identifier.toString()));
-					return true;
-				} else {
-					// it is a java.lang class being referenced, so we expand
-					// its name
-					getPrinter().print(identifier.type.toString());
-					return true;
-				}
+				// it is a java.lang class being referenced, so we expand
+				// its name
+				getPrinter().print(identifier.type.toString());
+				return true;
 			}
 		}
 		return super.substituteIdentifier(identifier);
@@ -1117,8 +1125,8 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 	@Override
 	public String getQualifiedTypeName(TypeSymbol type, boolean globals) {
 		String qualifiedName = super.getQualifiedTypeName(type, globals);
-		if (qualifiedName.startsWith("java.lang.") && langTypesMapping.containsKey(type.getSimpleName().toString())) {
-			qualifiedName = langTypesMapping.get(type.getSimpleName().toString());
+		if (langTypesMapping.containsKey(type.getQualifiedName().toString())) {
+			qualifiedName = langTypesMapping.get(type.getQualifiedName().toString());
 		} else {
 			if (getPrinter().getContext().useModules) {
 				int dotIndex = qualifiedName.lastIndexOf(".");
@@ -1138,6 +1146,6 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 
 	@Override
 	public Set<String> getErasedTypes() {
-		return erasedTypes;
+		return langTypesMapping.keySet();
 	}
 }
