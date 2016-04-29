@@ -755,7 +755,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 	}
 
 	private void delegateToEmulLayer(String targetClassName, String targetMethodName, JCMethodInvocation invocation) {
-		getPrinter().print("javaemul.internal." + targetClassName.substring(10) + ".").print(targetMethodName).print("(")
+		getPrinter().print("javaemul.internal." + targetClassName.substring(10) + "Helper.").print(targetMethodName).print("(")
 				.printArgList(invocation.getArguments()).print(")");
 	}
 
@@ -842,7 +842,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 	}
 
 	private void delegateToEmulLayer(String targetClassName, JCFieldAccess fieldAccess) {
-		getPrinter().print("javaemul.internal." + targetClassName.substring(10) + ".").print(fieldAccess.name.toString());
+		getPrinter().print("javaemul.internal." + targetClassName.substring(10) + "Helper.").print(fieldAccess.name.toString());
 	}
 
 	private AbstractTreePrinter printArguments(List<JCExpression> arguments) {
