@@ -980,6 +980,21 @@ public class Util {
 	}
 
 	/**
+	 * Returns true is an comparison operator.
+	 */
+	public static boolean isComparisonOperator(Kind kind) {
+		switch (kind) {
+		case GREATER_THAN:
+		case GREATER_THAN_EQUAL:
+		case LESS_THAN:
+		case LESS_THAN_EQUAL:
+			return true;
+		default:
+			return false;
+		}
+	}
+	
+	/**
 	 * Grabs the names of all the support interfaces in the class and interface
 	 * hierarchy.
 	 */

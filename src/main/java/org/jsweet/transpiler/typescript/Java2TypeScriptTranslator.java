@@ -2216,7 +2216,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				print("(");
 			}
 		}
-		print(binary.lhs);
+		boolean charWrapping = Util.isArithmeticOperator(binary.getKind()) || Util.isComparisonOperator(binary.getKind());
+		if (charWrapping && binary.lhs.type.isPrimitive() && context.symtab.charType.tsym == binary.lhs.type.tsym) {
+			print("(").print(binary.lhs).print(").charCodeAt(0)");
+		} else {
+			print(binary.lhs);
+		}
 		String op = binary.operator.name.toString();
 		if (binary.lhs.type.getKind() == TypeKind.BOOLEAN) {
 			if ("|".equals(op)) {
@@ -2226,7 +2231,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 		}
 		space().print(op).space();
-		print(binary.rhs);
+		if (charWrapping && binary.rhs.type.isPrimitive() && context.symtab.charType.tsym == binary.rhs.type.tsym) {
+			print("(").print(binary.rhs).print(").charCodeAt(0)");
+		} else {
+			print(binary.rhs);
+		}
 		if (Util.isIntegral(binary.type) && binary.getKind() == Kind.DIVIDE) {
 			if (binary.type.getKind() == TypeKind.LONG) {
 				print(")");
