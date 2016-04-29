@@ -963,7 +963,7 @@ public class Util {
 			return false;
 		}
 	}
-	
+
 	/**
 	 * Returns true is an arithmetic operator.
 	 */
@@ -1038,6 +1038,12 @@ public class Util {
 		return false;
 	}
 
+	/**
+	 * Recursively looks up one of the given types in the type hierachy of the given class.
+	 * 
+	 * @return true if one of the given names is found as a superclass or a
+	 *         superinterface
+	 */
 	public static boolean hasParent(ClassSymbol clazz, String... qualifiedNamesToFind) {
 		if (clazz == null) {
 			return false;
@@ -1056,8 +1062,20 @@ public class Util {
 		return false;
 	}
 
+	/**
+	 * Looks up a package element from its qualified name.
+	 * 
+	 * @return null if not found
+	 */
 	public static PackageSymbol getPackageByName(JSweetContext context, String qualifiedName) {
 		return context.symtab.packages.get(context.names.fromString(qualifiedName));
+	}
+
+	/**
+	 * Tells if the given method has varargs.
+	 */
+	public static boolean hasVarargs(MethodSymbol methodSymbol) {
+		return methodSymbol != null && methodSymbol.getParameters().length() > 0 && (methodSymbol.flags() & Flags.VARARGS) != 0;
 	}
 
 }

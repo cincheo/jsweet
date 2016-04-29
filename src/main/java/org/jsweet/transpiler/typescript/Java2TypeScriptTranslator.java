@@ -48,7 +48,6 @@ import org.jsweet.transpiler.util.Util;
 import org.jsweet.transpiler.util.VariableKind;
 
 import com.sun.source.tree.Tree.Kind;
-import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
@@ -912,7 +911,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			return;
 		}
 
-		Overload overload = context.getOverload(parent.sym, methodDecl.name.toString());
+		Overload overload = context.getOverload(parent.sym, methodDecl.sym);
 		boolean inOverload = overload != null && overload.methods.size() > 1;
 		boolean inCoreWrongOverload = false;
 		if (inOverload) {
@@ -1178,7 +1177,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							continue;
 						}
 						if (parent.sym != method.sym.getEnclosingElement()
-								&& context.getOverload((ClassSymbol) method.sym.getEnclosingElement(), method.getName().toString()).coreMethod == method) {
+								&& context.getOverload((ClassSymbol) method.sym.getEnclosingElement(), method.sym).coreMethod == method) {
 							continue;
 						}
 						if (wasPrinted) {
@@ -1520,7 +1519,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 			}
 
-			if (isVarargs(varDecl)) {
+			if (Util.isVarargs(varDecl)) {
 				print("...");
 			}
 
@@ -1533,6 +1532,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					print(" : ");
 					if (getScope().eraseVariableTypes) {
 						print("any");
+						if (Util.isVarargs(varDecl)) {
+							print("[]");
+						}
 					} else {
 						getAdapter().substituteAndPrintType(varDecl.vartype);
 					}
@@ -1548,14 +1550,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 			}
 		}
-	}
-
-	private boolean isVarargs(JCVariableDecl varDecl) {
-		return (varDecl.mods.flags & Flags.VARARGS) == Flags.VARARGS;
-	}
-
-	private boolean hasVarargs(MethodSymbol methodSymbol) {
-		return methodSymbol != null && methodSymbol.getParameters().length() > 0 && (methodSymbol.flags() & Flags.VARARGS) != 0;
 	}
 
 	@Override
@@ -1765,7 +1759,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 
 			boolean isStatic = methSym == null || methSym.isStatic();
-			if (!hasVarargs(methSym) //
+			if (!Util.hasVarargs(methSym) //
 					|| inv.args.last().type.getKind() != TypeKind.ARRAY
 					// we dont use apply if var args type differ
 					|| !((ArrayType) inv.args.last().type).elemtype.equals(((ArrayType) methSym.getParameters().last().type).elemtype)) {

@@ -62,7 +62,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 	 * 
 	 * @author Renaud Pawlak
 	 */
-	public class Overload {
+	public static class Overload {
 		/**
 		 * The method name.
 		 */
@@ -100,7 +100,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 		 * Checks the validity of the overload and calculates the default
 		 * values.
 		 */
-		public void calculate() {
+		public void calculate(Types types) {
 			if (methods.size() < 2) {
 				return;
 			}
@@ -123,7 +123,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 				return i;
 			});
 			coreMethod = methods.get(0);
-			
+
 			if (isValid) {
 				defaultValues = new HashMap<>();
 			}
@@ -206,7 +206,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 			}
 
 			merge = merge || methods.size() > 1;
-			
+
 			if (merge) {
 				for (JCMethodDecl m : methods) {
 					if (!subOverload.methods.contains(m)) {
@@ -226,46 +226,11 @@ public class OverloadScanner extends AbstractTreeScanner {
 		this.types = Types.instance(context);
 	}
 
-	/**
-	 * Gets or create an overload instance for the given class and method.
-	 */
-	public Overload getOrCreateOverload(ClassSymbol clazz, JCMethodDecl method) {
-		Map<String, Overload> m = context.overloads.get(clazz);
-		if (m == null) {
-			m = new HashMap<>();
-			context.overloads.put(clazz, m);
-		}
-		String name = method.name.toString();
-		Overload overload = m.get(name);
-		if (overload == null) {
-			overload = new Overload();
-			overload.methodName = name;
-			m.put(name, overload);
-		}
-		return overload;
-	}
-
-	/**
-	 * Gets or create an overload instance for the given class and method.
-	 */
-	public Overload getOverload(ClassSymbol clazz, JCMethodDecl method) {
-		Map<String, Overload> m = context.overloads.get(clazz);
-		if (m == null) {
-			return null;
-		}
-		String name = method.name.toString();
-		Overload overload = m.get(name);
-		if (overload == null) {
-			return null;
-		}
-		return overload;
-	}
-
 	private void inspectSuperTypes(ClassSymbol clazz, Overload overload, JCMethodDecl method) {
 		if (clazz == null) {
 			return;
 		}
-		Overload superOverload = getOverload(clazz, method);
+		Overload superOverload = context.getOverload(clazz, method.sym);
 		if (superOverload != null && superOverload != overload) {
 			superOverload.merge(overload);
 		}
@@ -287,7 +252,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 					continue;
 				}
 				JCMethodDecl method = (JCMethodDecl) member;
-				Overload overload = getOrCreateOverload(clazz, method);
+				Overload overload = context.getOrCreateOverload(clazz, method.sym);
 				if (pass == 1) {
 					overload.methods.add(method);
 				} else {
@@ -321,10 +286,8 @@ public class OverloadScanner extends AbstractTreeScanner {
 		for (JCCompilationUnit cu : cuList) {
 			scan(cu);
 		}
-		for (Map<String, Overload> overloads : context.overloads.values()) {
-			for (Overload overload : overloads.values()) {
-				overload.calculate();
-			}
+		for (Overload overload : context.getAllOverloads()) {
+			overload.calculate(types);
 		}
 	}
 

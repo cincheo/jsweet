@@ -22,6 +22,7 @@ import org.junit.Test;
 
 import source.overload.Overload;
 import source.overload.OverloadInInnerClass;
+import source.overload.OverloadWithStaticAndInstanceMethods;
 import source.overload.WrongOverload;
 import source.overload.WrongOverloadWithArraysAndObjects;
 import source.overload.WrongOverloadWithGenerics;
@@ -85,6 +86,15 @@ public class OverloadTests extends AbstractTest {
 			logHandler.assertReportedProblems();
 			assertEquals("0-88,0-99,1-s1,m2,2-99-s2,3-true,m1,4,5-5,5-6", r.get("trace"));
 		} , getSourceFile(WrongOverloadWithInheritance.class));
+	}
+
+	@Test
+	public void testOverloadWithStaticAndInstanceMethods() {
+		eval((logHandler, r) -> {
+			logHandler.assertReportedProblems();
+			assertEquals(true, r.get("static"));
+			assertEquals(true, r.get("instance"));
+		} , getSourceFile(OverloadWithStaticAndInstanceMethods.class));
 	}
 	
 }

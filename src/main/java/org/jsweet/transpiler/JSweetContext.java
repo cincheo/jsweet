@@ -32,6 +32,7 @@ import org.jsweet.transpiler.util.DirectedGraph;
 
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.PackageSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
@@ -71,25 +72,60 @@ public class JSweetContext extends Context {
 	 * @see OverloadScanner
 	 * @see OverloadScanner.Overload
 	 */
-	public Map<ClassSymbol, Map<String, Overload>> overloads = new HashMap<>();
+	private Map<ClassSymbol, Map<String, Overload>> overloads = new HashMap<>();
 
 	/**
-	 * An overload is a container of methods have the same name but different
-	 * signatures.
+	 * A cache of static method overloads.
 	 * 
-	 * @param clazz
-	 *            the class to look into
-	 * @param methodName
-	 *            the method name
-	 * @return an overload that contains 0 to many methods matching the given
-	 *         name
+	 * @see OverloadScanner
+	 * @see OverloadScanner.Overload
 	 */
-	public Overload getOverload(ClassSymbol clazz, String methodName) {
-		Map<String, Overload> m = overloads.get(clazz);
+	private Map<ClassSymbol, Map<String, Overload>> staticOverloads = new HashMap<>();
+
+	/**
+	 * Returns all the overloads in this context.
+	 */
+	public Set<Overload> getAllOverloads() {
+		Set<Overload> result = new HashSet<>();
+		overloads.values().forEach(m -> result.addAll(m.values()));
+		staticOverloads.values().forEach(m -> result.addAll(m.values()));
+		return result;
+	}
+
+	/**
+	 * Gets or create an overload instance for the given class and method.
+	 */
+	public Overload getOrCreateOverload(ClassSymbol clazz, MethodSymbol method) {
+		Map<ClassSymbol, Map<String, Overload>> actualOverloads = method.isStatic() ? staticOverloads : overloads;
+		Map<String, Overload> m = actualOverloads.get(clazz);
+		if (m == null) {
+			m = new HashMap<>();
+			actualOverloads.put(clazz, m);
+		}
+		String name = method.name.toString();
+		Overload overload = m.get(name);
+		if (overload == null) {
+			overload = new Overload();
+			overload.methodName = name;
+			m.put(name, overload);
+		}
+		return overload;
+	}
+
+	/**
+	 * Gets an overload instance for the given class and method.
+	 */
+	public Overload getOverload(ClassSymbol clazz, MethodSymbol method) {
+		Map<ClassSymbol, Map<String, Overload>> actualOverloads = method.isStatic() ? staticOverloads : overloads;
+		Map<String, Overload> m = actualOverloads.get(clazz);
 		if (m == null) {
 			return null;
 		}
-		return m.get(methodName);
+		Overload overload = m.get(method.name.toString());
+		if (overload == null) {
+			return null;
+		}
+		return overload;
 	}
 
 	/**
