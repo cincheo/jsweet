@@ -171,6 +171,17 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 		return null;
 	}
 
+	public JCTree getFirstParent(Class<?>... types) {
+		for (int i = this.stack.size() - 2; i >= 0; i--) {
+			for (Class<?> type : types) {
+				if (type.isAssignableFrom(this.stack.get(i).getClass())) {
+					return this.stack.get(i);
+				}
+			}
+		}
+		return null;
+	}
+
 	@SuppressWarnings("unchecked")
 	public <T extends JCTree> T getParent(Class<T> type, JCTree from) {
 		for (int i = this.stack.size() - 1; i >= 0; i--) {

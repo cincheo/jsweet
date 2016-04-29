@@ -2269,7 +2269,23 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	public void visitReturn(JCReturn returnStatement) {
 		print("return");
 		if (returnStatement.expr != null) {
-			print(" ").print(returnStatement.expr);
+			boolean wrapChar = false;
+			if (returnStatement.expr.type.isPrimitive() && context.symtab.charType.tsym == returnStatement.expr.type.tsym) {
+				JCTree parent = getFirstParent(JCMethodDecl.class, JCLambda.class);
+				if (parent instanceof JCMethodDecl) {
+					if (Util.isNumber(((JCMethodDecl) parent).restype.type)) {
+						wrapChar = true;
+					}
+				}
+			}
+			print(" ");
+			if (wrapChar) {
+				print("(");
+			}
+			print(returnStatement.expr);
+			if (wrapChar) {
+				print(").charCodeAt(0)");
+			}
 		}
 	}
 

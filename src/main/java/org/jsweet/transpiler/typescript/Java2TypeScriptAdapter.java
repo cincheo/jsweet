@@ -600,6 +600,10 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					getPrinter().print("((str, searchString, position = 0) => str.substr(position, searchString.length) === searchString)(")
 							.print(fieldAccess.getExpression()).print(", ").printArgList(invocation.args).print(")");
 					return true;
+				// this macro is not needed in ES6
+				case "codePointAt":
+					getPrinter().print(fieldAccess.getExpression()).print(".charCodeAt(").printArgList(invocation.args).print(")");
+					return true;
 				case "compareToIgnoreCase":
 					printMacroName(targetMethodName);
 					getPrinter().print(fieldAccess.getExpression()).print(".toUpperCase().localeCompare(").printArgList(invocation.args)
@@ -825,22 +829,11 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 
 		// built-in Java support
 		String accessedType = fieldAccess.selected.type.tsym.getQualifiedName().toString();
-		if (fieldAccess.sym.isStatic() && typesMapping.containsKey(accessedType) && accessedType.startsWith("java.lang.")) {
+		if (fieldAccess.sym.isStatic() && typesMapping.containsKey(accessedType) && accessedType.startsWith("java.lang.")
+				&& !"class".equals(fieldAccess.name.toString())) {
 			delegateToEmulLayer(accessedType, fieldAccess);
 			return true;
 		}
-		// switch (accessedType) {
-		// case "java.lang.Integer":
-		// switch (name) {
-		// case "MAX_VALUE":
-		// getPrinter().print("9007199254740991");
-		// return true;
-		// case "MIN_VALUE":
-		// getPrinter().print("-9007199254740991");
-		// return true;
-		// }
-		// break;
-		// }
 
 		return super.substituteFieldAccess(fieldAccess);
 	}

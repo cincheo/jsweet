@@ -36,5 +36,8 @@ public class Chars {
 		return -1;
 	}
 	
-
+	public static int getChar(char c) {
+		return c;
+	}
+	
 }
