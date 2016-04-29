@@ -973,6 +973,9 @@ public class Util {
 		case PLUS:
 		case MULTIPLY:
 		case DIVIDE:
+		case AND:
+		case OR:
+		case XOR:
 			return true;
 		default:
 			return false;

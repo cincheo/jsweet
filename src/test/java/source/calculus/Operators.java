@@ -10,6 +10,8 @@ public class Operators {
 		b3 &= b1;
 		b1 |= b3;
 
+		b1 = b1 ^ b2;
+
 		int i1 = 1;
 		int i2 = 3;
 		int i3 = i1 | i2;

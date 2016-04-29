@@ -2228,6 +2228,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				op = "||";
 			} else if ("&".equals(op)) {
 				op = "&&";
+			} else if ("^".equals(op)) {
+				op = "!==";
 			}
 		}
 		space().print(op).space();
