@@ -1,8 +1,10 @@
 package source.structural;
 
+import static source.structural.globalclasses.a.ClassWithStaticMethod.aStaticMethod;
 import static jsweet.util.Globals.$export;
 
 import jsweet.lang.Array;
+import source.structural.globalclasses.a.ClassWithStaticMethod;
 
 public class DefaultMethods<U> implements IDefaultMethods<U> {
 
@@ -30,11 +32,13 @@ interface IDefaultMethods<T> {
 
 	default void m(T t) {
 		DefaultMethods.trace.push("m");
+		aStaticMethod();
 		m1();
 	}
 
 	default void m2() {
 		DefaultMethods.trace.push("m2");
+		ClassWithStaticMethod.aStaticMethod();
 	}
 	
 	void m1();

@@ -1709,6 +1709,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							}
 						}
 					} else {
+						if (getScope().defaultMethodScope) {
+							TypeSymbol target = Util.getStaticImportTarget(getContext().getDefaultMethodCompilationUnit(getParent(JCMethodDecl.class)),
+									methName);
+							if (target != null) {
+								print(getRootRelativeName(target) + ".");
+							}
+						}
+
 						if (getScope().innerClassNotStatic) {
 							methSym = Util.findMethodDeclarationInType(context.types, getParent(JCClassDecl.class, getParent(JCClassDecl.class)).sym, methName,
 									type);
@@ -1902,11 +1910,19 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					}
 				}
 			}
-			// add parent class name if ident is an inner class
 			if (ident.sym instanceof ClassSymbol) {
 				ClassSymbol clazz = (ClassSymbol) ident.sym;
-				if (clazz.getEnclosingElement() instanceof ClassSymbol) {
+				boolean prefixAdded = false;
+				if (getScope().defaultMethodScope) {
+					if (Util.isImported(getContext().getDefaultMethodCompilationUnit(getParent(JCMethodDecl.class)), clazz)) {
+						print(getRootRelativeName(clazz.getEnclosingElement()) + ".");
+						prefixAdded = true;
+					}
+				}
+				// add parent class name if ident is an inner class
+				if (!prefixAdded && clazz.getEnclosingElement() instanceof ClassSymbol) {
 					print(clazz.getEnclosingElement().getSimpleName() + ".");
+					prefixAdded = true;
 				}
 				print(name);
 			} else {

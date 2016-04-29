@@ -26,6 +26,7 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
+import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.JCTree.JCWildcard;
@@ -46,6 +47,12 @@ public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {
 	}
 
 	@Override
+	public void visitTopLevel(JCCompilationUnit topLevel) {
+		this.compilationUnit = topLevel;
+		super.visitTopLevel(topLevel);
+	}
+	
+	@Override
 	public void visitClassDef(JCClassDecl classdecl) {
 		for (JCTree def : classdecl.defs) {
 			if (def instanceof JCVariableDecl) {
@@ -62,7 +69,7 @@ public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {
 	@Override
 	public void visitMethodDef(JCMethodDecl methodDecl) {
 		if (methodDecl.mods.getFlags().contains(Modifier.DEFAULT)) {
-			getContext().addDefaultMethod(getParent(JCClassDecl.class), methodDecl);
+			getContext().addDefaultMethod(compilationUnit, getParent(JCClassDecl.class), methodDecl);
 		}
 		if (!getContext().ignoreWildcardBounds) {
 			scan(methodDecl.params);

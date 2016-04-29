@@ -68,9 +68,12 @@ import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCCase;
 import com.sun.tools.javac.tree.JCTree.JCCatch;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
+import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCEnhancedForLoop;
+import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCForLoop;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
+import com.sun.tools.javac.tree.JCTree.JCImport;
 import com.sun.tools.javac.tree.JCTree.JCLambda;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
@@ -996,7 +999,7 @@ public class Util {
 			return false;
 		}
 	}
-	
+
 	/**
 	 * Grabs the names of all the support interfaces in the class and interface
 	 * hierarchy.
@@ -1057,7 +1060,8 @@ public class Util {
 	}
 
 	/**
-	 * Recursively looks up one of the given types in the type hierachy of the given class.
+	 * Recursively looks up one of the given types in the type hierachy of the
+	 * given class.
 	 * 
 	 * @return true if one of the given names is found as a superclass or a
 	 *         superinterface
@@ -1094,6 +1098,47 @@ public class Util {
 	 */
 	public static boolean hasVarargs(MethodSymbol methodSymbol) {
 		return methodSymbol != null && methodSymbol.getParameters().length() > 0 && (methodSymbol.flags() & Flags.VARARGS) != 0;
+	}
+
+	/**
+	 * Tells if the given type is imported in the given compilation unit.
+	 */
+	public static boolean isImported(JCCompilationUnit compilationUnit, TypeSymbol type) {
+		for (JCImport i : compilationUnit.getImports()) {
+			if (i.isStatic()) {
+				continue;
+			}
+			if (i.qualid.type.tsym == type) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Tells if the given symbol is statically imported in the given compilation
+	 * unit.
+	 */
+	public static TypeSymbol getStaticImportTarget(JCCompilationUnit compilationUnit, String name) {
+		for (JCImport i : compilationUnit.getImports()) {
+			if (!i.isStatic()) {
+				continue;
+			}
+			if (!i.qualid.toString().endsWith("." + name)) {
+				continue;
+			}
+			if (i.qualid instanceof JCFieldAccess) {
+				JCFieldAccess qualified = (JCFieldAccess) i.qualid;
+				if (qualified.selected instanceof JCFieldAccess) {
+					qualified = (JCFieldAccess) qualified.selected;
+				}
+				if (qualified.sym instanceof TypeSymbol) {
+					return (TypeSymbol) qualified.sym;
+				}
+			}
+			return null;
+		}
+		return null;
 	}
 
 }

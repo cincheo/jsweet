@@ -39,6 +39,7 @@ import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
+import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCWildcard;
 import com.sun.tools.javac.util.Context;
@@ -316,6 +317,7 @@ public class JSweetContext extends Context {
 	}
 
 	private Map<TypeSymbol, Set<Entry<JCClassDecl, JCMethodDecl>>> defaultMethods = new HashMap<>();
+	private Map<JCMethodDecl, JCCompilationUnit> defaultMethodsCompilationUnits = new HashMap<>();
 
 	/**
 	 * Gets the default methods declared in the given type.
@@ -327,13 +329,21 @@ public class JSweetContext extends Context {
 	/**
 	 * Stores a default method AST for the given type.
 	 */
-	public void addDefaultMethod(JCClassDecl type, JCMethodDecl defaultMethod) {
+	public void addDefaultMethod(JCCompilationUnit compilationUnit, JCClassDecl type, JCMethodDecl defaultMethod) {
 		Set<Entry<JCClassDecl, JCMethodDecl>> methods = defaultMethods.get(type.sym);
 		if (methods == null) {
 			methods = new HashSet<>();
 			defaultMethods.put(type.sym, methods);
 		}
 		methods.add(new AbstractMap.SimpleEntry<>(type, defaultMethod));
+		defaultMethodsCompilationUnits.put(defaultMethod, compilationUnit);
+	}
+
+	/**
+	 * Gets the compilation unit the given default method belongs to.
+	 */
+	public JCCompilationUnit getDefaultMethodCompilationUnit(JCMethodDecl defaultMethod) {
+		return defaultMethodsCompilationUnits.get(defaultMethod);
 	}
 
 	private Map<VarSymbol, String> fieldNameMapping = new HashMap<>();

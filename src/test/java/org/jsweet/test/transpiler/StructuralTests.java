@@ -30,6 +30,7 @@ import source.structural.AbstractClass;
 import source.structural.AutoImportClassesInSamePackage;
 import source.structural.AutoImportClassesInSamePackageUsed;
 import source.structural.DefaultMethods;
+import source.structural.DefaultMethodsConsumer;
 import source.structural.Enums;
 import source.structural.ExtendsClassInSameFile;
 import source.structural.ExtendsObject;
@@ -302,7 +303,7 @@ public class StructuralTests extends AbstractTest {
 		eval((logHandler, r) -> {
 			logHandler.assertReportedProblems();
 			assertEquals("m,m1,m2-overriden", r.get("trace"));
-		} , getSourceFile(DefaultMethods.class));
+		} , getSourceFile(ClassWithStaticMethod.class), getSourceFile(DefaultMethods.class), getSourceFile(DefaultMethodsConsumer.class));
 	}
 
 	@Test
