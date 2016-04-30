@@ -142,6 +142,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		private boolean innerClass = false;
 
 		private boolean innerClassNotStatic = false;
+		
+		private boolean hasInnerClass = false;
 	}
 
 	private Stack<Scope> scope = new Stack<>();
@@ -729,6 +731,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 
 		for (JCTree def : classdecl.defs) {
+			if (def instanceof JCClassDecl) {
+				getScope().hasInnerClass = true;
+			}
+		}
+		
+		for (JCTree def : classdecl.defs) {
 			if (!getScope().sharedMode && getScope().interfaceScope && ((def instanceof JCMethodDecl && ((JCMethodDecl) def).sym.isStatic())
 					|| (def instanceof JCVariableDecl && ((JCVariableDecl) def).sym.isStatic()))) {
 				// static interface members will be printed at the end in a
@@ -1034,7 +1042,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (!constructor) {
 					if (!getScope().innerClass) {
 						if (!getScope().interfaceScope) {
-							if (!(inOverload && overload.coreMethod.equals(methodDecl))) {
+							if (!(inOverload && overload.coreMethod.equals(methodDecl) || getScope().hasInnerClass)) {
 								print("private ");
 							}
 						} else {
@@ -1721,24 +1729,27 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							}
 						}
 
-						if (getScope().innerClassNotStatic) {
+						if (getScope().innerClass) {
 							JCClassDecl parent = getParent(JCClassDecl.class);
 							int level = 0;
-							boolean foundInParent = false;
-							while (getScope(level++).innerClassNotStatic) {
+							MethodSymbol method = null;
+							while (getScope(level++).innerClass) {
 								parent = getParent(JCClassDecl.class, parent);
-								if (Util.findMethodDeclarationInType(context.types, parent.sym, methName, type) != null) {
-									foundInParent = true;
+								if ((method = Util.findMethodDeclarationInType(context.types, parent.sym, methName, type)) != null) {
 									break;
 								}
 							}
-							if (foundInParent) {
-								print("this.");
-								for (int i = 0; i < level; i++) {
-									print("__parent.");
-								}
-								if (anonymous) {
-									removeLastChar();
+							if (method != null) {
+								if (method.isStatic()) {
+									print(method.getEnclosingElement().getSimpleName().toString() + ".");
+								} else {
+									print("this.");
+									for (int i = 0; i < level; i++) {
+										print("__parent.");
+									}
+									if (anonymous) {
+										removeLastChar();
+									}
 								}
 							}
 						}

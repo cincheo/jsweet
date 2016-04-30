@@ -33,11 +33,16 @@ public class InnerClassNotStatic {
 	int getI() {
 		return i;
 	}
+	
+	private static void staticMethod() {
+		trace.push("staticMethod");
+	}
 
 	void m() {
 		new InnerClassNotStatic.InnerClass1("abc").m1();
 		new InnerClass1("ABC").m1();
 		new InnerClass2().m();
+		new InnerClass1("ABC").m2();
 		$export("trace", trace.join(","));
 	}
 
@@ -52,6 +57,7 @@ public class InnerClassNotStatic {
 
 		public void m2() {
 			trace.push("test" + InnerClassNotStatic.this.i + InnerClassNotStatic.this.getI() + "a");
+			staticMethod();
 		}
 	}
 
