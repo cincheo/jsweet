@@ -20,6 +20,9 @@ import static jsweet.util.Globals.$export;
 import static jsweet.util.Globals.$get;
 import static jsweet.util.Globals.$set;
 
+import jsweet.lang.Date;
+import jsweet.lang.Interface;
+
 public class ValidIndexedAccesses {
 
 	{
@@ -116,6 +119,27 @@ class ValidIndexedAccesses2 extends jsweet.lang.Object {
 		$set("a", "value");
 		jsweet.util.Globals.$get(this, "a");
 		jsweet.util.Globals.$set(this, "a", "value");
+		Test t = new Test() {
+			{
+			}
+		};
+		String s = t.$get("test");
+		AClass2 c2 = new AClass2();
+		Date d = c2.$get("test");
 	}
 
+}
+
+@Interface
+class Test {
+	public native String $get(String name);
+}
+
+interface Test2 {
+	public Date $get(String name);
+}
+
+class AClass2 implements Test2 {
+	@Override
+	public native Date $get(String name);
 }
