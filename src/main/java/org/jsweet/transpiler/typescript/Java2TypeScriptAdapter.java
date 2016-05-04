@@ -635,7 +635,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				switch (targetMethodName) {
 				case "valueOf":
 					printMacroName(targetMethodName);
-					getPrinter().print("new String(").printArgList(invocation.args).print(")");
+					getPrinter().print("new String(").printArgList(invocation.args).print(").toString()");
 					return true;
 				case "subSequence":
 					printMacroName(targetMethodName);
