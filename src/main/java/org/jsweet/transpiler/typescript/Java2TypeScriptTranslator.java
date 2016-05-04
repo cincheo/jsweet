@@ -142,7 +142,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		private boolean innerClass = false;
 
 		private boolean innerClassNotStatic = false;
-		
+
 		private boolean hasInnerClass = false;
 	}
 
@@ -735,7 +735,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				getScope().hasInnerClass = true;
 			}
 		}
-		
+
 		for (JCTree def : classdecl.defs) {
 			if (!getScope().sharedMode && getScope().interfaceScope && ((def instanceof JCMethodDecl && ((JCMethodDecl) def).sym.isStatic())
 					|| (def instanceof JCVariableDecl && ((JCVariableDecl) def).sym.isStatic()))) {
@@ -1536,7 +1536,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 
 			printIdentifier(name);
-			if (getScope().eraseVariableTypes || (getScope().interfaceScope && Util.hasAnnotationType(varDecl.sym, JSweetConfig.ANNOTATION_OPTIONAL))) {
+			if (!Util.isVarargs(varDecl) && (getScope().eraseVariableTypes
+					|| (getScope().interfaceScope && Util.hasAnnotationType(varDecl.sym, JSweetConfig.ANNOTATION_OPTIONAL)))) {
 				print("?");
 			}
 			if (!getScope().skipTypeAnnotations) {
