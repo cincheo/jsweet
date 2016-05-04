@@ -1200,7 +1200,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						printMethodParamsTest(methodDecl, method);
 						print(") ");
 						if (i == 0 || method.sym.isConstructor()) {
-							printInlinedConstructorBody(overload, method, methodDecl.getParameters());
+							printInlinedMethod(overload, method, methodDecl.getParameters());
 						} else {
 							print("{").println().startIndent().printIndent();
 							// temporary cast to any because of Java generics
@@ -1265,7 +1265,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				"$1");
 	}
 
-	private void printInlinedConstructorBody(Overload overload, JCMethodDecl method, List<? extends JCTree> args) {
+	private void printInlinedMethod(Overload overload, JCMethodDecl method, List<? extends JCTree> args) {
 		print("{").println().startIndent();
 		for (int j = 0; j < method.getParameters().size(); j++) {
 			if (args.get(j) instanceof JCVariableDecl) {
@@ -1292,7 +1292,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			for (JCMethodDecl md : overload.methods) {
 				if (md.sym.equals(ms)) {
 					printIndent();
-					printInlinedConstructorBody(overload, md, inv.args);
+					printInlinedMethod(overload, md, inv.args);
 					println();
 				}
 			}
@@ -1303,10 +1303,18 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (!stats.isEmpty() && stats.head.toString().startsWith("super(")) {
 			printBlockStatement(stats.head);
 			printInterfacesInitialization((ClassSymbol) method.sym.getEnclosingElement(), method.sym);
+			printIndent().print("((").print(") => {").startIndent().println();
 			printBlockStatements(stats.tail);
+			endIndent().printIndent().print("})(").print(");").println();
 		} else {
 			printInterfacesInitialization((ClassSymbol) method.sym.getEnclosingElement(), method.sym);
+			printIndent();
+			if(stats.last() instanceof JCReturn) {
+				print("return ");
+			}
+			print("((").print(") => {").startIndent().println();
 			printBlockStatements(stats);
+			endIndent().printIndent().print("})(").print(");").println();
 		}
 		stack.pop();
 		endIndent().printIndent().print("}");

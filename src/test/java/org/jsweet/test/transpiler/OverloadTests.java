@@ -53,7 +53,7 @@ public class OverloadTests extends AbstractTest {
 	public void testWrongOverloads() {
 		eval((logHandler, r) -> {
 			logHandler.assertReportedProblems();
-			assertEquals("1,5,2,3,2,4,2,4,6", r.get("trace"));
+			assertEquals("1,5,2,3,2,4,test5,tutu,2,4,1,tutu,6", r.get("trace"));
 		} , getSourceFile(WrongOverloads.class));
 	}
 

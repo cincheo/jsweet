@@ -39,7 +39,7 @@ public class WrongOverloads extends SuperClass {
 
 		new WrongOverloads();
 		new WrongOverloads("test");
-		new WrongOverloads("test", 0);
+		new WrongOverloads("test5", 0);
 		new WrongOverloads(true);
 		$export("trace", trace);
 	}
@@ -96,8 +96,11 @@ public class WrongOverloads extends SuperClass {
 
 	public WrongOverloads(String s5, int i2) {
 		super(0);
+		String s = "tutu";
 		array(WrongOverloads.trace).push("4");
-		System.out.println(s5);
+		array(WrongOverloads.trace).push(s5);
+		array(WrongOverloads.trace).push(s);
+		System.out.println(s);
 	}
 
 	public WrongOverloads(boolean b) {
