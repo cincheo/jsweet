@@ -1309,7 +1309,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		} else {
 			printInterfacesInitialization((ClassSymbol) method.sym.getEnclosingElement(), method.sym);
 			printIndent();
-			if(stats.last() instanceof JCReturn) {
+			if (stats.last() instanceof JCReturn) {
 				print("return ");
 			}
 			print("((").print(") => {").startIndent().println();
@@ -1867,6 +1867,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 				removeLastChar();
 				print(">");
+			} else {
+				// force type arguments to any because they are inferred to
+				// {} by default
+				if (methSym !=null && !methSym.getTypeParameters().isEmpty()) {
+					printAnyTypeArguments(methSym.getTypeParameters().size());
+				}
 			}
 
 			print("(");
@@ -2149,6 +2155,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							print("new ").print(typeApply.clazz);
 							if (!typeApply.arguments.isEmpty()) {
 								print("<").printTypeArgList(typeApply.arguments).print(">");
+							} else {
+								// erase types since the diamond (<>) operator
+								// does not exists in TypeScript
+								printAnyTypeArguments(((ClassSymbol) newClass.clazz.type.tsym).getTypeParameters().length());
 							}
 							print("(").printConstructorArgList(newClass).print(")");
 						} else {
@@ -2158,6 +2168,18 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 			}
 		}
+
+	}
+
+	private void printAnyTypeArguments(int count) {
+		print("<");
+		for (int i = 0; i < count; i++) {
+			print("any, ");
+		}
+		if (count > 0) {
+			removeLastChars(2);
+		}
+		print(">");
 
 	}
 
