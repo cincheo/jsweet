@@ -30,6 +30,7 @@ import source.api.J4TSInvocations;
 import source.api.JdkInvocations;
 import source.api.PrimitiveInstantiation;
 import source.api.QualifiedInstantiation;
+import source.api.Strings;
 import source.api.WrongJdkInvocations;
 
 public class ApiTests extends AbstractTest {
@@ -115,4 +116,12 @@ public class ApiTests extends AbstractTest {
 		} , getSourceFile(ErasingJava.class));
 	}
 
+	@Test
+	public void testStrings() {
+		eval((logHandler, r) -> {
+			logHandler.assertReportedProblems();
+			Assert.assertEquals("b,bc,c,bc,3,true,ab,32", r.get("trace"));
+		} , getSourceFile(Strings.class));
+	}
+	
 }

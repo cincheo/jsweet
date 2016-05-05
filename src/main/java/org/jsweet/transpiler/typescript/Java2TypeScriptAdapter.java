@@ -668,6 +668,16 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					printMacroName(targetMethodName);
 					getPrinter().print("String.fromCharCode(").printArgList(invocation.args).print(")");
 					return true;
+				// this implementation uses ES6
+				case "getBytes":
+					printMacroName(targetMethodName);
+					getPrinter().print("(<Array<string>>(<any>Array).from(").print(fieldAccess.getExpression()).print(")).map(s => s.charCodeAt(0))");
+					return true;
+				// this implementation uses ES6
+				case "toCharArray":
+					printMacroName(targetMethodName);
+					getPrinter().print("(<any>Array).from(").print(fieldAccess.getExpression()).print(")");
+					return true;
 				}
 				break;
 			case "java.lang.Character":
@@ -931,6 +941,17 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		}
 		if (typesMapping.containsKey(fullType)) {
 			getPrinter().print("<").print(typesMapping.get(fullType)).print(">");
+		}
+		// macros
+		if (newClass.clazz.type.equals(getPrinter().getContext().symtab.stringType)) {
+			if (newClass.args.length() == 3) {
+				getPrinter().print("((str, index, len) => ").print("str.substring(index, index + len))((").print(newClass.args.head).print(")");
+				if ("byte[]".equals(newClass.args.get(0).type.toString())) {
+					getPrinter().print(".map(s => String.fromCharCode(s))");
+				}
+				getPrinter().print(".join(''), ").printArgList(newClass.args.tail).print(")");
+				return true;
+			}
 		}
 		return super.substituteNewClass(newClass);
 	}
