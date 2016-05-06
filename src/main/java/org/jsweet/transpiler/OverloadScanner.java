@@ -247,7 +247,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 		}
 		Overload superOverload = context.getOverload(clazz, method.sym);
 		if (superOverload != null && superOverload != overload) {
-			superOverload.merge(overload, !Util.isInterface((TypeSymbol) method.sym.getEnclosingElement()) && Util.isInterface(clazz));
+			superOverload.merge(overload, Util.isInterface(clazz));
 		}
 		for (Type t : clazz.getInterfaces()) {
 			inspectSuperTypes((ClassSymbol) t.tsym, overload, method);

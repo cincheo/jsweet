@@ -29,6 +29,7 @@ import source.overload.WrongOverloadWithGenerics;
 import source.overload.WrongOverloadWithInheritance;
 import source.overload.WrongOverloads;
 import source.overload.WrongOverloadsWithDefaultMethods;
+import source.overload.WrongOverloadsWithNonCoreMethod;
 
 public class OverloadTests extends AbstractTest {
 
@@ -65,12 +66,20 @@ public class OverloadTests extends AbstractTest {
 			assertEquals("draw0,draw1", r.get("trace"));
 		} , getSourceFile(WrongOverloadsWithDefaultMethods.class));
 	}
-	
+
+	@Test
+	public void testWrongOverloadsWithNonCoreMethod() {
+		eval((logHandler, r) -> {
+			logHandler.assertReportedProblems();
+			assertEquals("draw0,draw1", r.get("trace"));
+		} , getSourceFile(WrongOverloadsWithNonCoreMethod.class));
+	}
+
 	@Test
 	public void testOverloadInInnerClass() {
 		eval((logHandler, r) -> {
 			logHandler.assertReportedProblems();
-			//assertEquals("1,5,2,3,2,4,2,4,6", r.get("trace"));
+			// assertEquals("1,5,2,3,2,4,2,4,6", r.get("trace"));
 		} , getSourceFile(OverloadInInnerClass.class));
 	}
 
@@ -88,7 +97,7 @@ public class OverloadTests extends AbstractTest {
 			assertEquals("1,2,3,4", r.get("trace"));
 		} , getSourceFile(WrongOverloadWithGenerics.class));
 	}
-	
+
 	@Test
 	public void testWrongOverloadWithInheritance() {
 		eval((logHandler, r) -> {
@@ -105,5 +114,5 @@ public class OverloadTests extends AbstractTest {
 			assertEquals(true, r.get("instance"));
 		} , getSourceFile(OverloadWithStaticAndInstanceMethods.class));
 	}
-	
+
 }

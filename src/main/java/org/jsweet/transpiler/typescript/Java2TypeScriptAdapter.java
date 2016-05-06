@@ -1080,7 +1080,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					}
 				}
 				if (typeFullName.startsWith(Class.class.getName() + "<")) {
-					if (typeApply.arguments.head.type.tsym instanceof TypeVariableSymbol || "?".equals(typeApply.arguments.head.toString())) {
+					if (typeApply.arguments.head.type.tsym instanceof TypeVariableSymbol || typeApply.arguments.head.toString().startsWith("?")) {
 						return getPrinter().print("any");
 					} else {
 						getPrinter().print("typeof ");
