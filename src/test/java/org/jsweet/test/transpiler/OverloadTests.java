@@ -28,6 +28,7 @@ import source.overload.WrongOverloadWithArraysAndObjects;
 import source.overload.WrongOverloadWithGenerics;
 import source.overload.WrongOverloadWithInheritance;
 import source.overload.WrongOverloads;
+import source.overload.WrongOverloadsWithDefaultMethods;
 
 public class OverloadTests extends AbstractTest {
 
@@ -57,6 +58,14 @@ public class OverloadTests extends AbstractTest {
 		} , getSourceFile(WrongOverloads.class));
 	}
 
+	@Test
+	public void testWrongOverloadsWithDefaultMethods() {
+		eval((logHandler, r) -> {
+			logHandler.assertReportedProblems();
+			assertEquals("draw0,draw1", r.get("trace"));
+		} , getSourceFile(WrongOverloadsWithDefaultMethods.class));
+	}
+	
 	@Test
 	public void testOverloadInInnerClass() {
 		eval((logHandler, r) -> {

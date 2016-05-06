@@ -130,6 +130,15 @@ public class JSweetContext extends Context {
 	}
 
 	/**
+	 * Tells if that method is part of an invalid overload in its declaring
+	 * class.
+	 */
+	public boolean isInvalidOverload(MethodSymbol method) {
+		Overload overload = getOverload((ClassSymbol) method.getEnclosingElement(), method);
+		return overload != null && !overload.isValid;
+	}
+
+	/**
 	 * The Java compiler symbol table for fast access.
 	 */
 	public Symtab symtab;

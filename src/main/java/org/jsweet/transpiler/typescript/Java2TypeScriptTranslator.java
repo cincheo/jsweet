@@ -683,11 +683,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				MethodSymbol s = Util.findMethodDeclarationInType(context.types, classdecl.sym, entry.getValue().getName().toString(),
 						(MethodType) entry.getValue().type);
 				if (s == null || s == entry.getValue().sym) {
-					stack.push(entry.getKey());
 					getAdapter().typeVariablesToErase.addAll(((ClassSymbol) s.getEnclosingElement()).getTypeParameters());
 					printIndent().print(entry.getValue()).println();
 					getAdapter().typeVariablesToErase.removeAll(((ClassSymbol) s.getEnclosingElement()).getTypeParameters());
-					stack.pop();
 				}
 			}
 			getScope().defaultMethodScope = false;
@@ -716,6 +714,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							if (!(s.isDefault()
 									|| (!Util.isInterface((TypeSymbol) s.getEnclosingElement()) && !s.getModifiers().contains(Modifier.ABSTRACT)))) {
 								printDefaultImplementation = true;
+							}
+						}
+					}
+					if (printDefaultImplementation) {
+						Overload o = context.getOverload(classdecl.sym, meth);
+						if (o != null && o.methods.size() > 1 && !o.isValid) {
+							if (!meth.type.equals(o.coreMethod.type)) {
+								printDefaultImplementation = false;
 							}
 						}
 					}
@@ -932,6 +938,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					inCoreWrongOverload = true;
 				} else {
 					if (methodDecl.sym.isConstructor()) {
+						return;
+					}
+					if(Util.isInterface(parent.sym)) {
 						return;
 					}
 					if (!overload.printed && overload.coreMethod.sym.getEnclosingElement() != parent.sym
@@ -1870,8 +1879,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			} else {
 				// force type arguments to any because they are inferred to
 				// {} by default
-				if (methSym !=null && !methSym.getTypeParameters().isEmpty()) {
-					printAnyTypeArguments(methSym.getTypeParameters().size());
+				if (methSym != null && !methSym.getTypeParameters().isEmpty()) {
+					// invalid overload type parameters are erased
+					if(!context.isInvalidOverload(methSym)) {
+						printAnyTypeArguments(methSym.getTypeParameters().size());
+					}
 				}
 			}
 

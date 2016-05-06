@@ -190,31 +190,46 @@ public class OverloadScanner extends AbstractTreeScanner {
 		/**
 		 * Merges the given overload with a subclass one.
 		 */
-		public void merge(Overload subOverload) {
-			boolean merge = false;
-			for (JCMethodDecl subm : new ArrayList<>(subOverload.methods)) {
-				boolean overrides = false;
-				for (JCMethodDecl m : new ArrayList<>(methods)) {
-					if (subm.getParameters().size() == m.getParameters().size()) {
-						overrides = true;
-					}
-				}
-				if (!overrides) {
-					merge = true;
-					methods.add(subm);
-				}
-			}
-
-			merge = merge || methods.size() > 1;
-
-			if (merge) {
+		public void merge(Overload subOverload, boolean mergeOnlyDefaultMethods) {
+			if (mergeOnlyDefaultMethods) {
 				for (JCMethodDecl m : methods) {
-					if (!subOverload.methods.contains(m)) {
-						subOverload.methods.add(m);
+					if (m.getModifiers().getFlags().contains(Modifier.DEFAULT)) {
+						boolean overriden = false;
+						for (JCMethodDecl subm : new ArrayList<>(subOverload.methods)) {
+							if (subm.getParameters().size() == m.getParameters().size()) {
+								overriden = true;
+							}
+						}
+						if (!overriden) {
+							subOverload.methods.add(m);
+						}
+					}
+				}
+			} else {
+				boolean merge = false;
+				for (JCMethodDecl subm : new ArrayList<>(subOverload.methods)) {
+					boolean overrides = false;
+					for (JCMethodDecl m : new ArrayList<>(methods)) {
+						if (subm.getParameters().size() == m.getParameters().size()) {
+							overrides = true;
+						}
+					}
+					if (!overrides) {
+						merge = true;
+						methods.add(subm);
+					}
+				}
+
+				merge = merge || methods.size() > 1;
+
+				if (merge) {
+					for (JCMethodDecl m : methods) {
+						if (!subOverload.methods.contains(m)) {
+							subOverload.methods.add(m);
+						}
 					}
 				}
 			}
-
 		}
 	}
 
@@ -232,15 +247,12 @@ public class OverloadScanner extends AbstractTreeScanner {
 		}
 		Overload superOverload = context.getOverload(clazz, method.sym);
 		if (superOverload != null && superOverload != overload) {
-			superOverload.merge(overload);
+			superOverload.merge(overload, !Util.isInterface((TypeSymbol) method.sym.getEnclosingElement()) && Util.isInterface(clazz));
 		}
-		if (clazz.isInterface()) {
-			for (Type t : clazz.getInterfaces()) {
-				inspectSuperTypes((ClassSymbol) t.tsym, overload, method);
-			}
-		} else {
-			inspectSuperTypes((ClassSymbol) clazz.getSuperclass().tsym, overload, method);
+		for (Type t : clazz.getInterfaces()) {
+			inspectSuperTypes((ClassSymbol) t.tsym, overload, method);
 		}
+		inspectSuperTypes((ClassSymbol) clazz.getSuperclass().tsym, overload, method);
 	}
 
 	@Override

@@ -29,6 +29,10 @@ interface MyInterface<T> {
 	void overloaded(boolean arg);
 
 	void m1();
+	
+	void a();
+	
+	void a(int i);
 }
 
 interface MyInterface2<T> extends MyInterface<T> {
@@ -63,6 +67,47 @@ abstract class MyAbstractClass<T> implements MyInterface<T> {
 		WrongOverloadWithInheritance.trace.push("m1");
 	}
 
+	@Override
+	public void a() {
+		a(0);
+	}
+	
+	@Override
+	public void a(int i) {
+		WrongOverloadWithInheritance.trace.push("a");
+	}
+}
+
+abstract class MyAbstractClass2<T> implements MyInterface2<T> {
+	
+	public MyAbstractClass2() {
+		
+	}
+
+	@Override
+	public void overloaded(boolean arg) {
+		overloaded(1, null);
+	}
+
+	@Override
+	public void overloaded(Date arg) {
+		overloaded(2, null);
+	}
+	
+	@Override
+	public void overloaded(int i, T arg) {
+	}
+	
+	@Override
+	public void a() {
+		a(0);
+	}
+	
+	@Override
+	public void a(int i) {
+		WrongOverloadWithInheritance.trace.push("a");
+	}
+	
 }
 
 class MyFinalClass<T> extends MyAbstractClass<T> implements MyInterface2<T> {
