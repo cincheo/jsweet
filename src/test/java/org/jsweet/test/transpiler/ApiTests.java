@@ -120,7 +120,7 @@ public class ApiTests extends AbstractTest {
 	public void testStrings() {
 		eval((logHandler, r) -> {
 			logHandler.assertReportedProblems();
-			Assert.assertEquals("b,bc,c,bc,3,true,ab,32", r.get("trace"));
+			Assert.assertEquals("b,bc,c,bc,3,true,ab,32,-1,0,false,true", r.get("trace"));
 		} , getSourceFile(Strings.class));
 	}
 	

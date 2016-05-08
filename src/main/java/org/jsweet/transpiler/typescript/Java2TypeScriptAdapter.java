@@ -177,6 +177,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		langTypesMapping.put("java.lang.Number", "Number");
 		langTypesMapping.put("java.lang.Integer", "Number");
 		langTypesMapping.put("java.lang.Long", "Number");
+		langTypesMapping.put("java.lang.Short", "Number");
 		langTypesMapping.put("java.lang.Float", "Number");
 		langTypesMapping.put("java.lang.Double", "Number");
 		langTypesMapping.put("java.lang.Byte", "Number");
@@ -664,6 +665,15 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					getPrinter().print(fieldAccess.getExpression()).print(".toUpperCase().localeCompare(").printArgList(invocation.args)
 							.print(".toUpperCase())");
 					return true;
+				case "compareTo":
+					printMacroName(targetMethodName);
+					getPrinter().print(fieldAccess.getExpression()).print(".localeCompare(").printArgList(invocation.args).print(")");
+					return true;
+				case "equalsIgnoreCase":
+					printMacroName(targetMethodName);
+					getPrinter().print("((o1, o2) => o1.toUpperCase() === (o2===null?o2:o2.toUpperCase()))(").print(fieldAccess.getExpression()).print(", ")
+							.printArgList(invocation.args).print(")");
+					return true;
 				case "toChars":
 					printMacroName(targetMethodName);
 					getPrinter().print("String.fromCharCode(").printArgList(invocation.args).print(")");
@@ -1084,7 +1094,11 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 						return getPrinter().print("any");
 					} else {
 						getPrinter().print("typeof ");
-						return substituteAndPrintType(typeApply.arguments.head, arrayComponent, inTypeParameters, completeRawTypes, disableSubstitution);
+						if (langTypesMapping.containsKey(typeApply.arguments.head.type.tsym.getQualifiedName().toString())) {
+							return getPrinter().print(langTypesMapping.get(typeApply.arguments.head.type.tsym.getQualifiedName().toString()));
+						} else {
+							return substituteAndPrintType(typeApply.arguments.head, arrayComponent, inTypeParameters, completeRawTypes, disableSubstitution);
+						}
 					}
 				}
 			} else {

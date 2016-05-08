@@ -21,6 +21,15 @@ public class Strings {
 		trace.push(String.valueOf(!"abc".isEmpty()));
 		trace.push(String.valueOf("abc".subSequence(0, 2)));
 		trace.push(String.valueOf("x x".codePointAt(1)));
+		
+		String str1 = "abc";
+		String str2 = "ABC";
+
+		trace.push(String.valueOf(str1.compareTo(str2)));
+		trace.push(String.valueOf(str1.compareToIgnoreCase(str2)));
+		trace.push(String.valueOf(str1.equals(str2)));
+		trace.push(String.valueOf(str1.equalsIgnoreCase(str2)));
+		
 		$export("trace", trace.join(","));
 	}
 
