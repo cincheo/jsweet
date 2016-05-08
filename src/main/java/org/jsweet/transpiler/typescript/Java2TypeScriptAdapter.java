@@ -678,15 +678,15 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					printMacroName(targetMethodName);
 					getPrinter().print("String.fromCharCode(").printArgList(invocation.args).print(")");
 					return true;
-				// this implementation uses ES6
+				// In ES6, we can use the Array.from method
 				case "getBytes":
 					printMacroName(targetMethodName);
-					getPrinter().print("(<Array<string>>(<any>Array).from(").print(fieldAccess.getExpression()).print(")).map(s => s.charCodeAt(0))");
+					getPrinter().print("(").print(fieldAccess.getExpression()).print(").split('').map(s => s.charCodeAt(0))");
 					return true;
-				// this implementation uses ES6
+					// In ES6, we can use the Array.from method
 				case "toCharArray":
 					printMacroName(targetMethodName);
-					getPrinter().print("(<any>Array).from(").print(fieldAccess.getExpression()).print(")");
+					getPrinter().print("(").print(fieldAccess.getExpression()).print(").split('')");
 					return true;
 				}
 				break;
