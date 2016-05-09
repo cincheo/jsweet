@@ -326,6 +326,14 @@ public class Util {
 	 * signature.
 	 */
 	public static MethodSymbol findMethodDeclarationInType(Types types, TypeSymbol typeSymbol, String methodName, MethodType methodType) {
+		return findMethodDeclarationInType(types, typeSymbol, methodName, methodType, false);
+	}
+
+	/**
+	 * Finds the method in the given type that matches the given name and
+	 * signature.
+	 */
+	public static MethodSymbol findMethodDeclarationInType(Types types, TypeSymbol typeSymbol, String methodName, MethodType methodType, boolean overrides) {
 		if (typeSymbol == null) {
 			return null;
 		}
@@ -337,7 +345,8 @@ public class Util {
 					if (methodType == null) {
 						return methodSymbol;
 					}
-					if (isInvocable(types, methodType, methodSymbol.type.asMethodType())) {
+					if (overrides ? isInvocable(types, methodSymbol.type.asMethodType(), methodType)
+							: isInvocable(types, methodType, methodSymbol.type.asMethodType())) {
 						return methodSymbol;
 					}
 				}

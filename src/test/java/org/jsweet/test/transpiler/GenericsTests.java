@@ -21,6 +21,7 @@ import static org.junit.Assert.assertEquals;
 import org.jsweet.transpiler.ModuleKind;
 import org.junit.Test;
 
+import source.generics.AbstractClassAndOverride;
 import source.generics.AddThisOnGenericMethods;
 import source.generics.GenericObjectStructure;
 import source.generics.InnerClassNotStatic;
@@ -70,6 +71,13 @@ public class GenericsTests extends AbstractTest {
 		transpile(ModuleKind.none, logHandler -> {
 			logHandler.assertReportedProblems();
 		} , getSourceFile(RawTypes.class));
+	}
+
+	@Test
+	public void testAbstractClassAndOverride() {
+		transpile(ModuleKind.none, logHandler -> {
+			logHandler.assertReportedProblems();
+		} , getSourceFile(AbstractClassAndOverride.class));
 	}
 	
 }
