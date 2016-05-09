@@ -122,7 +122,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	protected static Logger logger = Logger.getLogger(Java2TypeScriptTranslator.class);
 
-	private static class Scope {
+	private static class ClassScope {
+		private String name;
+
 		private boolean interfaceScope = false;
 
 		private boolean sharedMode = false;
@@ -146,20 +148,31 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		private boolean innerClassNotStatic = false;
 
 		private boolean hasInnerClass = false;
+
+		private List<JCClassDecl> anonymousClasses = new ArrayList<>();
+
+		private List<JCNewClass> anonymousClassesConstructors = new ArrayList<>();
+
+		private List<List<JCVariableDecl>> finalVariables = new ArrayList<>();
+
 	}
 
-	private Stack<Scope> scope = new Stack<>();
+	private List<JCVariableDecl> finalVariables = new ArrayList<>();
 
-	private Scope getScope() {
+	private boolean isAnonymousClass = false;
+
+	private Stack<ClassScope> scope = new Stack<>();
+
+	private ClassScope getScope() {
 		return scope.peek();
 	}
 
-	private Scope getScope(int i) {
+	private ClassScope getScope(int i) {
 		return scope.get(scope.size() - 1 - i);
 	}
 
 	private void enterScope() {
-		scope.push(new Scope());
+		scope.push(new ClassScope());
 	}
 
 	private void exitScope() {
@@ -581,7 +594,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			// erased types are ignored
 			return;
 		}
+		String name = classdecl.getSimpleName().toString();
+		if (!scope.isEmpty() && getScope().anonymousClasses.contains(classdecl)) {
+			name = "$" + getScope().anonymousClasses.indexOf(classdecl);
+		}
 		enterScope();
+		getScope().name = name;
 		JCClassDecl parent = getParent(JCClassDecl.class);
 		List<TypeVariableSymbol> parentTypeVars = new ArrayList<>();
 		if (parent != null) {
@@ -635,7 +653,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					print("class ");
 				}
 			}
-			print(classdecl.name.toString());
+			print(name);
 			if (classdecl.typarams != null && classdecl.typarams.size() > 0) {
 				print("<").printArgList(classdecl.typarams).print(">");
 			}
@@ -798,13 +816,35 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (getScope().innerClassNotStatic) {
 					print(PARENT_CLASS_FIELD_NAME + ": any");
 				}
+				int anonymousClassIndex = scope.size() > 1 ? getScope(1).anonymousClasses.indexOf(classdecl) : -1;
+				if (anonymousClassIndex != -1) {
+					for (int i = 0; i < getScope(1).anonymousClassesConstructors.get(anonymousClassIndex).args.length(); i++) {
+						print(", __arg" + i + ": any");
+					}
+					for (JCVariableDecl v : getScope(1).finalVariables.get(anonymousClassIndex)) {
+						print(", private " + v.getName() + ": any");
+					}
+				}
+
 				print(") {").startIndent().println();
 				if (classdecl.extending != null && !getScope().removedSuperclass && !Util.isInterface(classdecl.extending.type.tsym)) {
 					printIndent().print("super(");
 					if (getScope().innerClassNotStatic) {
 						Symbol s = classdecl.extending.type.tsym.getEnclosingElement();
+						boolean hasArg = false;
 						if (s instanceof ClassSymbol && !((ClassSymbol) s).isStatic()) {
 							print(PARENT_CLASS_FIELD_NAME);
+							hasArg = true;
+						}
+						if (anonymousClassIndex != -1) {
+							for (int i = 0; i < getScope(1).anonymousClassesConstructors.get(anonymousClassIndex).args.length(); i++) {
+								if (hasArg) {
+									print(", ");
+								} else {
+									hasArg = true;
+								}
+								print("__arg" + i);
+							}
 						}
 					}
 					print(");").println();
@@ -831,10 +871,20 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				JCClassDecl cdef = (JCClassDecl) def;
 				if (!nameSpace) {
 					nameSpace = true;
-					println().printIndent().print("export namespace ").print(classdecl.getSimpleName().toString()).print(" {").startIndent();
+					println().println().printIndent().print("export namespace ").print(name).print(" {").startIndent();
 				}
-				println().printIndent().print(cdef);
+				println().println().printIndent().print(cdef);
 			}
+		}
+		// print anonymous classes
+		for (JCClassDecl cdef : getScope().anonymousClasses) {
+			if (!nameSpace) {
+				nameSpace = true;
+				println().println().printIndent().print("export namespace ").print(name).print(" {").startIndent();
+			}
+			isAnonymousClass = true;
+			println().println().printIndent().print(cdef);
+			isAnonymousClass = false;
 		}
 		if (nameSpace) {
 			println().endIndent().printIndent().print("}").println();
@@ -848,10 +898,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						|| (def instanceof JCVariableDecl && ((JCVariableDecl) def).sym.isStatic())) {
 					if (!nameSpace) {
 						nameSpace = true;
-						println().printIndent().print("export namespace ").print(classdecl.getSimpleName().toString()).print(" {").startIndent();
+						println().println().printIndent().print("export namespace ").print(classdecl.getSimpleName().toString()).print(" {").startIndent();
 					}
 					// innerClassScope = true;
-					println().printIndent().print(def);
+					println().println().printIndent().print(def);
 					// innerClassScope = false;
 				}
 			}
@@ -919,6 +969,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (methodDecl.pos == parent.pos) {
 			return;
 		}
+
+		finalVariables.clear();
 
 		if (JSweetConfig.INDEXED_GET_FUCTION_NAME.equals(methodDecl.getName().toString()) && methodDecl.getParameters().size() == 1) {
 			print("[").print(methodDecl.getParameters().head).print("]: ");
@@ -1488,6 +1540,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					report(varDecl, varDecl.name, JSweetProblem.JS_KEYWORD_CONFLICT, name, name);
 					name = JSweetConfig.JS_KEYWORD_PREFIX + name;
 				}
+				if (varDecl.mods.getFlags().contains(Modifier.FINAL)) {
+					finalVariables.add(varDecl);
+				}
 			}
 
 			boolean globals = (parent instanceof JCClassDecl) && JSweetConfig.GLOBALS_CLASS_NAME.equals(((JCClassDecl) parent).name.toString());
@@ -1962,6 +2017,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		String name = ident.toString();
 		if (!getAdapter().substituteIdentifier(ident)) {
 			// add this of class name if ident is a field
+			if ("finalString".equals(name)) {
+				System.out.println();
+			}
 			if (ident.sym instanceof VarSymbol && !ident.sym.name.equals(context.names._this) && !ident.sym.name.equals(context.names._super)) {
 				VarSymbol varSym = (VarSymbol) ident.sym; // findFieldDeclaration(currentClass,
 				// ident.name);
@@ -1991,8 +2049,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							print(varSym.owner.getSimpleName() + ".");
 						}
 					} else {
-						if (JSweetConfig.JS_KEYWORDS.contains(name)) {
-							name = JSweetConfig.JS_KEYWORD_PREFIX + name;
+						if (varSym.owner instanceof MethodSymbol && varSym.getModifiers().contains(Modifier.FINAL) && isAnonymousClass) {
+							print("this.");
+						} else {
+							if (JSweetConfig.JS_KEYWORDS.contains(name)) {
+								name = JSweetConfig.JS_KEYWORD_PREFIX + name;
+							}
 						}
 					}
 				}
@@ -2035,6 +2097,25 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 		boolean isInterface = Util.isInterface(clazz);
 		if (newClass.def != null || isInterface) {
+			boolean isAnonymousClass = false;
+			if (newClass.clazz != null && newClass.def != null) {
+				for (JCTree def : newClass.def.defs) {
+					if (def instanceof JCVariableDecl || def instanceof JCMethodDecl) {
+						if (def instanceof JCMethodDecl && "<init>".equals(((JCMethodDecl) def).name.toString())) {
+							continue;
+						}
+						isAnonymousClass = true;
+					}
+				}
+			}
+			if (isAnonymousClass && !Util.hasAnnotationType(newClass.clazz.type.tsym, JSweetConfig.ANNOTATION_OBJECT_TYPE)) {
+				getScope().anonymousClasses.add(newClass.def);
+				getScope().anonymousClassesConstructors.add(newClass);
+				getScope().finalVariables.add(new ArrayList<>(finalVariables));
+				print("new ").print(getScope().name + ".$" + (getScope().anonymousClasses.size() - 1)).print("(").printConstructorArgList(newClass).print(")");
+				return;
+			}
+
 			if (isInterface || Util.hasAnnotationType(newClass.clazz.type.tsym, JSweetConfig.ANNOTATION_OBJECT_TYPE)) {
 				if (isInterface) {
 					print("<").print(newClass.clazz).print(">"); // .print("<any>");
@@ -2220,13 +2301,27 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	@Override
 	public AbstractTreePrinter printConstructorArgList(JCNewClass newClass) {
-		if (newClass.clazz.type.tsym.getEnclosingElement() instanceof ClassSymbol && !newClass.clazz.type.tsym.getModifiers().contains(Modifier.STATIC)) {
+		boolean printed = false;
+		if (getScope().anonymousClasses.contains(newClass.def) || (newClass.clazz.type.tsym.getEnclosingElement() instanceof ClassSymbol
+				&& !newClass.clazz.type.tsym.getModifiers().contains(Modifier.STATIC))) {
 			print("this");
 			if (!newClass.args.isEmpty()) {
 				print(", ");
 			}
+			printed = true;
 		}
-		return printArgList(newClass.args);
+		printArgList(newClass.args);
+		if (getScope().anonymousClasses.contains(newClass.def) && !finalVariables.isEmpty()) {
+			if (printed || !newClass.args.isEmpty()) {
+				print(", ");
+			}
+			for (JCVariableDecl v : finalVariables) {
+				print(v.getName().toString());
+				print(", ");
+			}
+			removeLastChars(2);
+		}
+		return this;
 	}
 
 	@Override

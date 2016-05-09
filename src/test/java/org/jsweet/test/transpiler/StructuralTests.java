@@ -27,6 +27,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import source.structural.AbstractClass;
+import source.structural.AnonymousClass;
 import source.structural.AutoImportClassesInSamePackage;
 import source.structural.AutoImportClassesInSamePackageUsed;
 import source.structural.DefaultMethods;
@@ -113,6 +114,14 @@ public class StructuralTests extends AbstractTest {
 		} , getSourceFile(InnerClassNotStatic.class));
 	}
 
+	@Test
+	public void testAnonymousClasses() {
+		eval((logHandler, r) -> {
+			logHandler.assertReportedProblems();
+			assertEquals("22abcfinal", r.get("trace"));
+		} , getSourceFile(AnonymousClass.class));
+	}
+	
 	@Test
 	public void testInheritance() {
 		eval((logHandler, r) -> {
