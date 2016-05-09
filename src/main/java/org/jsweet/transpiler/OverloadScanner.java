@@ -167,9 +167,10 @@ public class OverloadScanner extends AbstractTreeScanner {
 											if (constant) {
 												defaultValues.put(i, expr);
 											} else {
-												if (!(expr instanceof JCIdent
-														&& methodDecl.params.stream().map(p -> p.name).anyMatch(p -> p.equals(((JCIdent) expr).name)))) {
+												if (!(expr instanceof JCIdent && i < methodDecl.params.length()
+														&& methodDecl.params.get(i).name.equals(((JCIdent) expr).name))) {
 													isValid = false;
+													break;
 												}
 											}
 										}

@@ -187,7 +187,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		langTypesMapping.put("java.lang.RuntimeException", "Error");
 		langTypesMapping.put("java.lang.Throwable", "Error");
 		langTypesMapping.put("java.lang.Error", "Error");
-		langTypesMapping.put("java.util.Date", "Date");
+		// langTypesMapping.put("java.util.Date", "Date");
 
 		for (String s : langTypesMapping.keySet()) {
 			langTypesSimpleNames.add(s.substring(s.lastIndexOf('.') + 1));
@@ -201,8 +201,8 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 
 	@Override
 	public String needsImport(JCImport importDecl, String qualifiedName) {
-		if (isJSweetPath(qualifiedName) || qualifiedName.startsWith("java.lang.") || qualifiedName.startsWith("java.util.function.")
-				|| (isJDKPath(qualifiedName) && !getPrinter().getContext().options.isJDKAllowed())
+		if (isJSweetPath(qualifiedName) || typesMapping.containsKey(qualifiedName) || langTypesMapping.containsKey(qualifiedName)
+				|| qualifiedName.startsWith("java.util.function.") || (isJDKPath(qualifiedName) && !getPrinter().getContext().options.isJDKAllowed())
 				|| qualifiedName.endsWith(GLOBALS_PACKAGE_NAME + "." + GLOBALS_CLASS_NAME)) {
 			return null;
 		}
@@ -245,10 +245,6 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 						return null;
 					}
 				}
-				// MethodSymbol staticMethSymbol =
-				// Util.findMethodDeclarationInType(getPrinter().getContext().types,
-				// fa.selected.type.tsym, "" + fa.name, null);
-				// String methodName = Util.getActualName(staticMethSymbol);
 				return StringUtils.isBlank(name) ? null : name + "." + getIdentifier(methodName);
 			} else {
 				return null;
@@ -636,7 +632,11 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				switch (targetMethodName) {
 				case "valueOf":
 					printMacroName(targetMethodName);
-					getPrinter().print("new String(").printArgList(invocation.args).print(").toString()");
+					if (invocation.args.length() == 3) {
+						getPrinter().print("((str, index, len) => str.join('').substring(index, index + len))(").printArgList(invocation.args).print(")");
+					} else {
+						getPrinter().print("new String(").printArgList(invocation.args).print(").toString()");
+					}
 					return true;
 				case "subSequence":
 					printMacroName(targetMethodName);
@@ -683,7 +683,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					printMacroName(targetMethodName);
 					getPrinter().print("(").print(fieldAccess.getExpression()).print(").split('').map(s => s.charCodeAt(0))");
 					return true;
-					// In ES6, we can use the Array.from method
+				// In ES6, we can use the Array.from method
 				case "toCharArray":
 					printMacroName(targetMethodName);
 					getPrinter().print("(").print(fieldAccess.getExpression()).print(").split('')");
@@ -954,12 +954,13 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		}
 		// macros
 		if (newClass.clazz.type.equals(getPrinter().getContext().symtab.stringType)) {
-			if (newClass.args.length() == 3) {
+			if (newClass.args.length() >= 3) {
 				getPrinter().print("((str, index, len) => ").print("str.substring(index, index + len))((").print(newClass.args.head).print(")");
 				if ("byte[]".equals(newClass.args.get(0).type.toString())) {
 					getPrinter().print(".map(s => String.fromCharCode(s))");
 				}
-				getPrinter().print(".join(''), ").printArgList(newClass.args.tail).print(")");
+				getPrinter().print(".join(''), ");
+				getPrinter().print(newClass.args.tail.head).print(", ").print(newClass.args.tail.tail.head).print(")");
 				return true;
 			}
 		}
@@ -969,16 +970,11 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 	@Override
 	public AbstractTreePrinter substituteAndPrintType(JCTree typeTree, boolean arrayComponent, boolean inTypeParameters, boolean completeRawTypes,
 			boolean disableSubstitution) {
-		// String fullName=typeTree.type.getModelType().toString();
-		// if(fullName.startsWith(Console.class.getPackage().getName())) {
-		// return "any";
-		// }
 		if (typeTree.type.tsym instanceof TypeVariableSymbol) {
 			if (typeVariablesToErase.contains(typeTree.type.tsym)) {
 				return getPrinter().print("any");
 			}
 		}
-
 		if (!disableSubstitution) {
 			if (Util.hasAnnotationType(typeTree.type.tsym, ANNOTATION_ERASED)) {
 				return getPrinter().print("any");
@@ -988,7 +984,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				// object type...
 				return getPrinter().print("any");
 			}
-			String typeFullName = typeTree.type.getModelType().toString();
+			String typeFullName = typeTree.type.getModelType().toString(); // typeTree.type.tsym.getQualifiedName().toString();
 			if (Runnable.class.getName().equals(typeFullName)) {
 				if (arrayComponent) {
 					getPrinter().print("(");
@@ -1123,11 +1119,6 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			getPrinter().printIdentifier(identifier.toString());
 			return true;
 		}
-		// if (TypeChecker.NUMBER_TYPE_NAMES.contains(identifier.toString()) &&
-		// TypeChecker.NUMBER_TYPES.contains(identifier.type.toString())) {
-		// getPrinter().print("number");
-		// return true;
-		// }
 		if (langTypesSimpleNames.contains(identifier.toString()) && langTypesMapping.containsKey(identifier.type.toString())) {
 			getPrinter().print(langTypesMapping.get(identifier.type.toString()));
 			return true;

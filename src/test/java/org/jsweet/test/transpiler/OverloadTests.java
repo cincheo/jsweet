@@ -18,12 +18,14 @@ package org.jsweet.test.transpiler;
 
 import static org.junit.Assert.assertEquals;
 
+import org.jsweet.transpiler.ModuleKind;
 import org.junit.Test;
 
 import source.overload.Overload;
 import source.overload.OverloadInInnerClass;
 import source.overload.OverloadWithStaticAndInstanceMethods;
 import source.overload.WrongOverload;
+import source.overload.WrongOverloadInInnerClass;
 import source.overload.WrongOverloadWithArraysAndObjects;
 import source.overload.WrongOverloadWithGenerics;
 import source.overload.WrongOverloadWithInheritance;
@@ -77,12 +79,18 @@ public class OverloadTests extends AbstractTest {
 
 	@Test
 	public void testOverloadInInnerClass() {
-		eval((logHandler, r) -> {
+		transpile(ModuleKind.none, (logHandler) -> {
 			logHandler.assertReportedProblems();
-			// assertEquals("1,5,2,3,2,4,2,4,6", r.get("trace"));
 		} , getSourceFile(OverloadInInnerClass.class));
 	}
 
+	@Test
+	public void testWrongOverloadInInnerClass() {
+		transpile(ModuleKind.none, (logHandler) -> {
+			logHandler.assertReportedProblems();
+		} , getSourceFile(WrongOverloadInInnerClass.class));
+	}
+	
 	@Test
 	public void testWrongOverloadWithArraysAndObjects() {
 		eval((logHandler, r) -> {

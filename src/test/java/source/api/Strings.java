@@ -21,6 +21,7 @@ public class Strings {
 		trace.push(String.valueOf(!"abc".isEmpty()));
 		trace.push(String.valueOf("abc".subSequence(0, 2)));
 		trace.push(String.valueOf("x x".codePointAt(1)));
+		trace.push(String.valueOf(chars, 1, 1));
 		
 		String str1 = "abc";
 		String str2 = "ABC";
