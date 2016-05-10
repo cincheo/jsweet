@@ -18,8 +18,8 @@ package source.generics;
 
 public class StaticAnonymousClass<T> {
 
-	static <T> void m(T t) {
-		new Interface1<T>() {
+	static <T> Interface1<T> m(T t) {
+		return new Interface1<T>() {
 			@Override
 			public void m(T t) {
 			}

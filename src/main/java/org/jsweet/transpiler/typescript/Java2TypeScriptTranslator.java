@@ -533,7 +533,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			printIndent().print("namespace ").print(rootRelativePackageName).print(" {").startIndent().println();
 		}
 
-		for (JCTree def : topLevel.defs) {
+		for (
+
+		JCTree def : topLevel.defs)
+
+		{
 			mainMethod = null;
 
 			printIndent();
@@ -545,11 +549,15 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 			println().println();
 		}
-		if (!globalModule && !context.useModules) {
+		if (!globalModule && !context.useModules)
+
+		{
 			removeLastChar().endIndent().printIndent().print("}");
 		}
 
-		if (footer.length() > 0) {
+		if (footer.length() > 0)
+
+		{
 			println().print(footer.toString());
 		}
 
@@ -579,6 +587,28 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				println().printIndent().print(" ").print("*/\n");
 				if (!indent) {
 					printIndent();
+				}
+			}
+		}
+	}
+
+	private void printAnonymousClassTypeArgs(JCNewClass newClass) {
+		if ((newClass.clazz instanceof JCTypeApply)) {
+			JCTypeApply tapply = (JCTypeApply) newClass.clazz;
+			if (tapply.getTypeArguments() != null && !tapply.getTypeArguments().isEmpty()) {
+				boolean printed = false;
+				print("<");
+				for (JCExpression targ : tapply.getTypeArguments()) {
+					if (targ.type.tsym instanceof TypeVariableSymbol) {
+						printed = true;
+						print(targ).print(", ");
+					}
+				}
+				if (printed) {
+					removeLastChars(2);
+					print(">");
+				} else {
+					removeLastChar();
 				}
 			}
 		}
@@ -658,25 +688,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				print("<").printArgList(classdecl.typarams).print(">");
 			} else if (isAnonymousClass && classdecl.getModifiers().getFlags().contains(Modifier.STATIC)) {
 				JCNewClass newClass = getScope(1).anonymousClassesConstructors.get(getScope(1).anonymousClasses.indexOf(classdecl));
-				if ((newClass.clazz instanceof JCTypeApply)) {
-					JCTypeApply tapply = (JCTypeApply) newClass.clazz;
-					if (tapply.getTypeArguments() != null && !tapply.getTypeArguments().isEmpty()) {
-						boolean printed = false;
-						print("<");
-						for (JCExpression targ : tapply.getTypeArguments()) {
-							if (targ.type.tsym instanceof TypeVariableSymbol) {
-								printed = true;
-								print(targ).print(", ");
-							}
-						}
-						if (printed) {
-							removeLastChars(2);
-							print(">");
-						} else {
-							removeLastChar();
-						}
-					}
-				}
+				printAnonymousClassTypeArgs(newClass);
 			}
 			boolean extendsInterface = false;
 			if (classdecl.extending != null) {
@@ -2142,7 +2154,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				getScope().anonymousClasses.add(newClass.def);
 				getScope().anonymousClassesConstructors.add(newClass);
 				getScope().finalVariables.add(new ArrayList<>(finalVariables));
-				print("new ").print(getScope().name + ".$" + (getScope().anonymousClasses.size() - 1)).print("(").printConstructorArgList(newClass).print(")");
+				print("new ").print(getScope().name + ".$" + (getScope().anonymousClasses.size() - 1));
+				if (newClass.def.getModifiers().getFlags().contains(Modifier.STATIC)) {
+					printAnonymousClassTypeArgs(newClass);
+				}
+				print("(").printConstructorArgList(newClass).print(")");
 				return;
 			}
 
