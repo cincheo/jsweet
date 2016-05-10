@@ -28,6 +28,10 @@ class AClass<T> {
 	}
 }
 
+interface AnInterface {
+	int compare(String s);
+}
+
 public class AnonymousClass {
 
 	static Array<String> trace = new Array<>();
@@ -81,4 +85,13 @@ public class AnonymousClass {
 		};
 	}
 
+	static AnInterface get() {
+		return new AnInterface() {
+			@Override
+			public int compare(String s) {
+				return s.length();
+			}
+		};
+	}
+	
 }

@@ -813,16 +813,28 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			Util.grabSupportedInterfaceNames(interfaces, classdecl.sym);
 			if (!interfaces.isEmpty() || getScope().innerClassNotStatic) {
 				printIndent().print("constructor(");
+				boolean hasArgs = false;
 				if (getScope().innerClassNotStatic) {
 					print(PARENT_CLASS_FIELD_NAME + ": any");
+					hasArgs = true;
 				}
 				int anonymousClassIndex = scope.size() > 1 ? getScope(1).anonymousClasses.indexOf(classdecl) : -1;
 				if (anonymousClassIndex != -1) {
 					for (int i = 0; i < getScope(1).anonymousClassesConstructors.get(anonymousClassIndex).args.length(); i++) {
-						print(", __arg" + i + ": any");
+						if (!hasArgs) {
+							hasArgs = true;
+						} else {
+							print(", ");
+						}
+						print("__arg" + i + ": any");
 					}
 					for (JCVariableDecl v : getScope(1).finalVariables.get(anonymousClassIndex)) {
-						print(", private " + v.getName() + ": any");
+						if (!hasArgs) {
+							hasArgs = true;
+						} else {
+							print(", ");
+						}
+						print("private " + v.getName() + ": any");
 					}
 				}
 
@@ -2017,9 +2029,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		String name = ident.toString();
 		if (!getAdapter().substituteIdentifier(ident)) {
 			// add this of class name if ident is a field
-			if ("finalString".equals(name)) {
-				System.out.println();
-			}
 			if (ident.sym instanceof VarSymbol && !ident.sym.name.equals(context.names._this) && !ident.sym.name.equals(context.names._super)) {
 				VarSymbol varSym = (VarSymbol) ident.sym; // findFieldDeclaration(currentClass,
 				// ident.name);
@@ -2302,8 +2311,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	@Override
 	public AbstractTreePrinter printConstructorArgList(JCNewClass newClass) {
 		boolean printed = false;
-		if (getScope().anonymousClasses.contains(newClass.def) || (newClass.clazz.type.tsym.getEnclosingElement() instanceof ClassSymbol
-				&& !newClass.clazz.type.tsym.getModifiers().contains(Modifier.STATIC))) {
+		if ((getScope().anonymousClasses.contains(newClass.def) && !newClass.def.getModifiers().getFlags().contains(Modifier.STATIC))
+				|| (newClass.clazz.type.tsym.getEnclosingElement() instanceof ClassSymbol
+						&& !newClass.clazz.type.tsym.getModifiers().contains(Modifier.STATIC))) {
 			print("this");
 			if (!newClass.args.isEmpty()) {
 				print(", ");
