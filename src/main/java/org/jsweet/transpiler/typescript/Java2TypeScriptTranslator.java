@@ -119,6 +119,7 @@ import com.sun.tools.javac.util.Name;
 public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	public static final String PARENT_CLASS_FIELD_NAME = "__parent";
+	public static final String ANONYMOUS_PREFIX = "Anonymous$";
 
 	protected static Logger logger = Logger.getLogger(Java2TypeScriptTranslator.class);
 
@@ -626,7 +627,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 		String name = classdecl.getSimpleName().toString();
 		if (!scope.isEmpty() && getScope().anonymousClasses.contains(classdecl)) {
-			name = "$" + getScope().anonymousClasses.indexOf(classdecl);
+			name = ANONYMOUS_PREFIX + getScope().anonymousClasses.indexOf(classdecl);
 		}
 		enterScope();
 		getScope().name = name;
@@ -2154,7 +2155,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				getScope().anonymousClasses.add(newClass.def);
 				getScope().anonymousClassesConstructors.add(newClass);
 				getScope().finalVariables.add(new ArrayList<>(finalVariables));
-				print("new ").print(getScope().name + ".$" + (getScope().anonymousClasses.size() - 1));
+				print("new ").print(getScope().name + "." + ANONYMOUS_PREFIX + (getScope().anonymousClasses.size() - 1));
 				if (newClass.def.getModifiers().getFlags().contains(Modifier.STATIC)) {
 					printAnonymousClassTypeArgs(newClass);
 				}
