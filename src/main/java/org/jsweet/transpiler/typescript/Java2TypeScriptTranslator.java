@@ -876,9 +876,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (classdecl.extending != null && !getScope().removedSuperclass && !Util.isInterface(classdecl.extending.type.tsym)) {
 					printIndent().print("super(");
 					if (getScope().innerClassNotStatic) {
-						Symbol s = classdecl.extending.type.tsym.getEnclosingElement();
+						TypeSymbol s = classdecl.extending.type.tsym;
 						boolean hasArg = false;
-						if (s instanceof ClassSymbol && !((ClassSymbol) s).isStatic()) {
+						if (s.getEnclosingElement() instanceof ClassSymbol && !s.isStatic()) {
 							print(PARENT_CLASS_FIELD_NAME);
 							hasArg = true;
 						}
@@ -2019,8 +2019,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			int argsLength = applyVarargs ? inv.args.size() - 1 : inv.args.size();
 
 			if (getScope().innerClassNotStatic && "super".equals(methName)) {
-				Symbol s = getParent(JCClassDecl.class).extending.type.tsym.getEnclosingElement();
-				if (s instanceof ClassSymbol && !((ClassSymbol) s).isStatic()) {
+				TypeSymbol s = getParent(JCClassDecl.class).extending.type.tsym;
+				if (s.getEnclosingElement() instanceof ClassSymbol && !s.isStatic()) {
 					print(PARENT_CLASS_FIELD_NAME);
 					if (argsLength > 0) {
 						print(", ");
