@@ -656,6 +656,27 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			print(name);
 			if (classdecl.typarams != null && classdecl.typarams.size() > 0) {
 				print("<").printArgList(classdecl.typarams).print(">");
+			} else if (isAnonymousClass && classdecl.getModifiers().getFlags().contains(Modifier.STATIC)) {
+				JCNewClass newClass = getScope(1).anonymousClassesConstructors.get(getScope(1).anonymousClasses.indexOf(classdecl));
+				if ((newClass.clazz instanceof JCTypeApply)) {
+					JCTypeApply tapply = (JCTypeApply) newClass.clazz;
+					if (tapply.getTypeArguments() != null && !tapply.getTypeArguments().isEmpty()) {
+						boolean printed = false;
+						print("<");
+						for (JCExpression targ : tapply.getTypeArguments()) {
+							if (targ.type.tsym instanceof TypeVariableSymbol) {
+								printed = true;
+								print(targ).print(", ");
+							}
+						}
+						if (printed) {
+							removeLastChars(2);
+							print(">");
+						} else {
+							removeLastChar();
+						}
+					}
+				}
 			}
 			boolean extendsInterface = false;
 			if (classdecl.extending != null) {

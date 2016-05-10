@@ -27,6 +27,7 @@ import source.generics.GenericObjectStructure;
 import source.generics.InnerClassNotStatic;
 import source.generics.InstantiationWithGenerics;
 import source.generics.RawTypes;
+import source.generics.StaticAnonymousClass;
 import source.generics.Wildcards;
 
 public class GenericsTests extends AbstractTest {
@@ -78,6 +79,13 @@ public class GenericsTests extends AbstractTest {
 		transpile(ModuleKind.none, logHandler -> {
 			logHandler.assertReportedProblems();
 		} , getSourceFile(AbstractClassAndOverride.class));
+	}
+
+	@Test
+	public void testStaticAnonymousClass() {
+		transpile(ModuleKind.none, logHandler -> {
+			logHandler.assertReportedProblems();
+		} , getSourceFile(StaticAnonymousClass.class));
 	}
 	
 }
