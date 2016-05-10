@@ -30,7 +30,6 @@ import org.jsweet.transpiler.util.Util;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
-import com.sun.tools.javac.code.Symbol.TypeVariableSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.tree.JCTree;
@@ -108,21 +107,28 @@ public class OverloadScanner extends AbstractTreeScanner {
 				int i = m2.getParameters().size() - m1.getParameters().size();
 				if (i == 0) {
 					isValid = false;
-					// TODO: here we order the methods containing more type
-					// parameters last, but we should actually do actual
-					// ordering
 					for (int j = 0; j < m1.getParameters().size(); j++) {
-						if (m1.getParameters().get(j).type.tsym instanceof TypeVariableSymbol) {
-							i++;
-						}
-						if (m2.getParameters().get(j).type.tsym instanceof TypeVariableSymbol) {
+						if (types.isAssignable(types.erasure(m1.getParameters().get(j).type), types.erasure(m2.getParameters().get(j).type))) {
 							i--;
+						}
+						if (types.isAssignable(types.erasure(m2.getParameters().get(j).type), types.erasure(m1.getParameters().get(j).type))) {
+							i++;
 						}
 					}
 				}
 				return i;
 			});
 			coreMethod = methods.get(0);
+
+			Type coreMethodType = types.erasureRecursive(coreMethod.type);
+			for (JCMethodDecl m : new ArrayList<>(methods)) {
+				if (m == coreMethod) {
+					continue;
+				}
+				if (coreMethodType.toString().equals(types.erasureRecursive(m.type).toString())) {
+					methods.remove(m);
+				}
+			}
 
 			if (isValid) {
 				defaultValues = new HashMap<>();
@@ -191,7 +197,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 		/**
 		 * Merges the given overload with a subclass one.
 		 */
-		public void merge(Overload subOverload, boolean mergeOnlyDefaultMethods) {
+		public void merge(Types types, Overload subOverload, boolean mergeOnlyDefaultMethods) {
 			if (mergeOnlyDefaultMethods) {
 				for (JCMethodDecl m : methods) {
 					if (m.getModifiers().getFlags().contains(Modifier.DEFAULT)) {
@@ -199,10 +205,17 @@ public class OverloadScanner extends AbstractTreeScanner {
 						for (JCMethodDecl subm : new ArrayList<>(subOverload.methods)) {
 							if (subm.getParameters().size() == m.getParameters().size()) {
 								overriden = true;
+								for (int i = 0; i < subm.getParameters().size(); i++) {
+									if (!types.isAssignable(m.getParameters().get(i).type, subm.getParameters().get(i).type)) {
+										overriden = false;
+									}
+								}
 							}
 						}
 						if (!overriden) {
-							subOverload.methods.add(m);
+							if (!subOverload.methods.contains(m)) {
+								subOverload.methods.add(m);
+							}
 						}
 					}
 				}
@@ -213,11 +226,18 @@ public class OverloadScanner extends AbstractTreeScanner {
 					for (JCMethodDecl m : new ArrayList<>(methods)) {
 						if (subm.getParameters().size() == m.getParameters().size()) {
 							overrides = true;
+							for (int i = 0; i < subm.getParameters().size(); i++) {
+								if (!types.isAssignable(m.getParameters().get(i).type, subm.getParameters().get(i).type)) {
+									overrides = false;
+								}
+							}
 						}
 					}
 					if (!overrides) {
 						merge = true;
-						methods.add(subm);
+						if (!methods.contains(subm)) {
+							methods.add(subm);
+						}
 					}
 				}
 
@@ -248,7 +268,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 		}
 		Overload superOverload = context.getOverload(clazz, method.sym);
 		if (superOverload != null && superOverload != overload) {
-			superOverload.merge(overload, Util.isInterface(clazz));
+			superOverload.merge(types, overload, Util.isInterface(clazz));
 		}
 		for (Type t : clazz.getInterfaces()) {
 			inspectSuperTypes((ClassSymbol) t.tsym, overload, method);

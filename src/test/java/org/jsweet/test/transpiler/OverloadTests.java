@@ -25,6 +25,7 @@ import source.overload.Overload;
 import source.overload.OverloadInInnerClass;
 import source.overload.OverloadWithStaticAndInstanceMethods;
 import source.overload.WrongOverload;
+import source.overload.WrongOverloadFrom2Interfaces;
 import source.overload.WrongOverloadInInnerClass;
 import source.overload.WrongOverloadWithArraysAndObjects;
 import source.overload.WrongOverloadWithGenerics;
@@ -90,7 +91,7 @@ public class OverloadTests extends AbstractTest {
 			logHandler.assertReportedProblems();
 		} , getSourceFile(WrongOverloadInInnerClass.class));
 	}
-	
+
 	@Test
 	public void testWrongOverloadWithArraysAndObjects() {
 		eval((logHandler, r) -> {
@@ -121,6 +122,14 @@ public class OverloadTests extends AbstractTest {
 			assertEquals(true, r.get("static"));
 			assertEquals(true, r.get("instance"));
 		} , getSourceFile(OverloadWithStaticAndInstanceMethods.class));
+	}
+
+	@Test
+	public void testWrongOverloadFrom2Interfaces() {
+		eval(ModuleKind.none, (logHandler, r) -> {
+			logHandler.assertReportedProblems();
+			assertEquals("remove1: abc,remove2: 1", r.get("trace"));
+		} , getSourceFile(WrongOverloadFrom2Interfaces.class));
 	}
 
 }

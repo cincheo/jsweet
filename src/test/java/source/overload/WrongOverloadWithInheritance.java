@@ -140,3 +140,12 @@ class MyFinalClass<T> extends MyAbstractClass<T> implements MyInterface2<T> {
 		WrongOverloadWithInheritance.trace.push("4");
 	}
 }
+
+class SubClass3 extends MyFinalClass<String> {
+
+	@Override
+	public void overloaded(int i, String arg) {
+		m2();
+	}
+	
+}
