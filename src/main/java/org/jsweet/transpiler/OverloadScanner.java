@@ -212,13 +212,19 @@ public class OverloadScanner extends AbstractTreeScanner {
 
 		}
 
-		private boolean hasMethodType(Types types, List<JCMethodDecl> methods, JCMethodDecl method) {
-			return methods.stream().map(m -> types.erasureRecursive(m.type)).anyMatch(t -> t.toString().equals(types.erasureRecursive(method.type).toString()));
+		private static boolean hasMethodType(Types types, Overload overload, JCMethodDecl method) {
+			return overload.methods.stream().map(m -> types.erasureRecursive(m.type)).anyMatch(t -> {
+				boolean match = t.toString().equals(types.erasureRecursive(method.type).toString());
+				if (match && t.tsym.getEnclosingElement() != method.sym.getEnclosingElement()) {
+					overload.isValid = false;
+				}
+				return match;
+			});
 		}
 
-		private void safeAdd(Types types, List<JCMethodDecl> methods, JCMethodDecl method) {
-			if (!methods.contains(method) && !hasMethodType(types, methods, method)) {
-				methods.add(method);
+		private static void safeAdd(Types types, Overload overload, JCMethodDecl method) {
+			if (!overload.methods.contains(method) && !hasMethodType(types, overload, method)) {
+				overload.methods.add(method);
 			}
 		}
 
@@ -241,7 +247,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 						}
 					}
 					if (!overriden) {
-						safeAdd(types, subOverload.methods, m);
+						safeAdd(types, subOverload, m);
 					}
 				}
 			}
@@ -261,7 +267,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 				}
 				if (!overrides) {
 					merge = true;
-					safeAdd(types, methods, subm);
+					safeAdd(types, this, subm);
 				}
 			}
 
@@ -269,7 +275,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 
 			if (merge) {
 				for (JCMethodDecl m : methods) {
-					safeAdd(types, subOverload.methods, m);
+					safeAdd(types, subOverload, m);
 				}
 			}
 		}
