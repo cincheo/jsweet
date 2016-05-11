@@ -891,6 +891,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		logger.debug("permutation: " + permutationString.toString());
 		new OverloadScanner(transpilationHandler, context).process(orderedCompilationUnits);
 		StringBuilder sb = new StringBuilder();
+		int lineCount = 0;
 		for (int i = 0; i < orderedCompilationUnits.size(); i++) {
 			JCCompilationUnit cu = orderedCompilationUnits.get(i);
 			if (isPackageDefinition(cu)) {
@@ -900,8 +901,9 @@ public class JSweetTranspiler implements JSweetOptions {
 			AbstractTreePrinter printer = new Java2TypeScriptTranslator(transpilationHandler, context, cu, preserveSourceLineNumbers);
 			printer.print(cu);
 			files[permutation[i]].sourceMap = printer.sourceMap;
-			files[permutation[i]].sourceMap.shiftOutputPositions(StringUtils.countMatches(sb, "\n"));
+			files[permutation[i]].sourceMap.shiftOutputPositions(lineCount);
 			sb.append(printer.getOutput());
+			lineCount += printer.getCurrentLine();
 		}
 
 		File bundleDirectory = tsOutputDir;
@@ -1096,7 +1098,7 @@ public class JSweetTranspiler implements JSweetOptions {
 				args.add(relativizeTsFile(f).toString());
 			}
 		}
-		
+
 		LinkedList<File> tsDefFiles = new LinkedList<>();
 		Util.addFiles(".d.ts", tsOutputDir, tsDefFiles);
 		for (File f : tsDefFiles) {
