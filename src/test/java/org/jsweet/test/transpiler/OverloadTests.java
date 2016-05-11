@@ -21,6 +21,8 @@ import static org.junit.Assert.assertEquals;
 import org.jsweet.transpiler.ModuleKind;
 import org.junit.Test;
 
+import source.overload.InterfaceInheritance;
+import source.overload.NonPublicRootMethod;
 import source.overload.Overload;
 import source.overload.OverloadInInnerClass;
 import source.overload.OverloadWithStaticAndInstanceMethods;
@@ -130,6 +132,20 @@ public class OverloadTests extends AbstractTest {
 			logHandler.assertReportedProblems();
 			assertEquals("remove1: abc,remove2: 1", r.get("trace"));
 		} , getSourceFile(WrongOverloadFrom2Interfaces.class));
+	}
+
+	@Test
+	public void testInterfaceInheritance() {
+		transpile(ModuleKind.none, (logHandler) -> {
+			logHandler.assertReportedProblems();
+		} , getSourceFile(InterfaceInheritance.class));
+	}
+
+	@Test
+	public void testNonPublicRootMethod() {
+		transpile(ModuleKind.none, (logHandler) -> {
+			logHandler.assertReportedProblems();
+		} , getSourceFile(NonPublicRootMethod.class));
 	}
 
 }

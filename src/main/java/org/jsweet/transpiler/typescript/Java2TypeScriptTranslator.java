@@ -1047,9 +1047,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					if (methodDecl.sym.isConstructor()) {
 						return;
 					}
-					if (Util.isInterface(parent.sym)) {
-						return;
-					}
 					if (!overload.printed && overload.coreMethod.sym.getEnclosingElement() != parent.sym
 							&& !Util.isParent(parent.sym, (ClassSymbol) overload.coreMethod.sym.getEnclosingElement())) {
 						visitMethodDef(overload.coreMethod);
@@ -1058,7 +1055,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							println().println().printIndent();
 						}
 					}
-					if (overload.printed && Util.isInterface(parent.sym)) {
+					if (Util.isInterface(parent.sym)) {
 						return;
 					}
 				}
@@ -1162,10 +1159,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 								print("private ");
 							}
 						} else {
-							if (getScope().sharedMode) {
-								print("public ");
-							} else {
-								report(methodDecl, methodDecl.name, JSweetProblem.INVALID_PRIVATE_IN_INTERFACE, methodDecl.name, parent.name);
+							if (!(inOverload && overload.coreMethod.equals(methodDecl))) {
+								if (getScope().sharedMode) {
+									print("public ");
+								} else {
+									report(methodDecl, methodDecl.name, JSweetProblem.INVALID_PRIVATE_IN_INTERFACE, methodDecl.name, parent.name);
+								}
 							}
 						}
 					}
@@ -1245,6 +1244,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				getAdapter().substituteAndPrintType(methodDecl.restype);
 			}
 		}
+		if (inCoreWrongOverload && Util.isInterface(parent.sym)) {
+			print(";");
+			return;
+		}
 		if (methodDecl.getBody() == null || (methodDecl.mods.getFlags().contains(Modifier.DEFAULT) && !getScope().defaultMethodScope)) {
 			if (jsniLine != -1) {
 				int line = jsniLine;
@@ -1301,6 +1304,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					boolean wasPrinted = false;
 					for (i = 0; i < overload.methods.size(); i++) {
 						JCMethodDecl method = overload.methods.get(i);
+						if (Util.isInterface((ClassSymbol) method.sym.getEnclosingElement()) && !method.getModifiers().getFlags().contains(Modifier.DEFAULT)) {
+							continue;
+						}
 						if (!Util.isParent(parent.sym, (ClassSymbol) method.sym.getEnclosingElement())) {
 							continue;
 						}

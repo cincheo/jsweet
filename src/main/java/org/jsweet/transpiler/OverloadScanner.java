@@ -49,6 +49,14 @@ import com.sun.tools.javac.tree.JCTree.JCStatement;
  * This AST scanner detects method overloads and gather them into
  * {@link Overload} objects.
  * 
+ * "Valid" overloads are the cases where the overload calls the overloaded
+ * method with some constants. It can then be translated as a unique method
+ * containing default parameter values.
+ * 
+ * "Wrong" overloads are all the other cases. A core generic untyped signature
+ * is generated that englobles all the overloads and dispatch to the
+ * implementations depending on the parameter types.
+ * 
  * @author Renaud Pawlak
  */
 public class OverloadScanner extends AbstractTreeScanner {
@@ -116,6 +124,11 @@ public class OverloadScanner extends AbstractTreeScanner {
 						}
 					}
 				}
+				// valid overloads can only be in the same classe because of
+				// potential side effects in subclasses
+				if (m1.sym.getEnclosingElement() != m2.sym.getEnclosingElement()) {
+					isValid = false;
+				}
 				return i;
 			});
 			coreMethod = methods.get(0);
@@ -154,7 +167,12 @@ public class OverloadScanner extends AbstractTreeScanner {
 							} else {
 								MethodSymbol method = Util.findMethodDeclarationInType(types, (TypeSymbol) methodDecl.sym.getEnclosingElement(), invocation);
 								if (method != null && method.getSimpleName().toString().equals(methodName)) {
-									if (invocation.getArguments() != null) {
+									String inv = invocation.meth.toString();
+									if (!(inv.equals(methodName) || inv.equals("this." + methodName)
+											|| /* constructor case */ inv.equals("this"))) {
+										isValid = false;
+									}
+									if (isValid && invocation.getArguments() != null) {
 										for (int i = 0; i < invocation.getArguments().size(); i++) {
 											JCExpression expr = invocation.getArguments().get(i);
 											boolean constant = false;
@@ -194,61 +212,64 @@ public class OverloadScanner extends AbstractTreeScanner {
 
 		}
 
+		private boolean hasMethodType(Types types, List<JCMethodDecl> methods, JCMethodDecl method) {
+			return methods.stream().map(m -> types.erasureRecursive(m.type)).anyMatch(t -> t.toString().equals(types.erasureRecursive(method.type).toString()));
+		}
+
+		private void safeAdd(Types types, List<JCMethodDecl> methods, JCMethodDecl method) {
+			if (!methods.contains(method) && !hasMethodType(types, methods, method)) {
+				methods.add(method);
+			}
+		}
+
 		/**
 		 * Merges the given overload with a subclass one.
 		 */
-		public void merge(Types types, Overload subOverload, boolean mergeOnlyDefaultMethods) {
-			if (mergeOnlyDefaultMethods) {
-				for (JCMethodDecl m : methods) {
-					if (m.getModifiers().getFlags().contains(Modifier.DEFAULT)) {
-						boolean overriden = false;
-						for (JCMethodDecl subm : new ArrayList<>(subOverload.methods)) {
-							if (subm.getParameters().size() == m.getParameters().size()) {
-								overriden = true;
-								for (int i = 0; i < subm.getParameters().size(); i++) {
-									if (!types.isAssignable(m.getParameters().get(i).type, subm.getParameters().get(i).type)) {
-										overriden = false;
-									}
-								}
-							}
-						}
-						if (!overriden) {
-							if (!subOverload.methods.contains(m)) {
-								subOverload.methods.add(m);
-							}
-						}
-					}
-				}
-			} else {
-				boolean merge = false;
-				for (JCMethodDecl subm : new ArrayList<>(subOverload.methods)) {
-					boolean overrides = false;
-					for (JCMethodDecl m : new ArrayList<>(methods)) {
+		public void merge(Types types, Overload subOverload) {
+			// merge default methods
+			for (JCMethodDecl m : methods) {
+				if (m.getModifiers().getFlags().contains(Modifier.DEFAULT)) {
+					boolean overriden = false;
+					for (JCMethodDecl subm : new ArrayList<>(subOverload.methods)) {
 						if (subm.getParameters().size() == m.getParameters().size()) {
-							overrides = true;
+							overriden = true;
 							for (int i = 0; i < subm.getParameters().size(); i++) {
 								if (!types.isAssignable(m.getParameters().get(i).type, subm.getParameters().get(i).type)) {
-									overrides = false;
+									overriden = false;
 								}
 							}
 						}
 					}
-					if (!overrides) {
-						merge = true;
-						if (!methods.contains(subm)) {
-							methods.add(subm);
+					if (!overriden) {
+						safeAdd(types, subOverload.methods, m);
+					}
+				}
+			}
+			// merge other methods
+			boolean merge = false;
+			for (JCMethodDecl subm : new ArrayList<>(subOverload.methods)) {
+				boolean overrides = false;
+				for (JCMethodDecl m : new ArrayList<>(methods)) {
+					if (subm.getParameters().size() == m.getParameters().size()) {
+						overrides = true;
+						for (int i = 0; i < subm.getParameters().size(); i++) {
+							if (!types.isAssignable(m.getParameters().get(i).type, subm.getParameters().get(i).type)) {
+								overrides = false;
+							}
 						}
 					}
 				}
+				if (!overrides) {
+					merge = true;
+					safeAdd(types, methods, subm);
+				}
+			}
 
-				merge = merge || methods.size() > 1;
+			merge = merge || methods.size() > 1;
 
-				if (merge) {
-					for (JCMethodDecl m : methods) {
-						if (!subOverload.methods.contains(m)) {
-							subOverload.methods.add(m);
-						}
-					}
+			if (merge) {
+				for (JCMethodDecl m : methods) {
+					safeAdd(types, subOverload.methods, m);
 				}
 			}
 		}
@@ -268,12 +289,12 @@ public class OverloadScanner extends AbstractTreeScanner {
 		}
 		Overload superOverload = context.getOverload(clazz, method.sym);
 		if (superOverload != null && superOverload != overload) {
-			superOverload.merge(types, overload, Util.isInterface(clazz));
+			superOverload.merge(types, overload);
 		}
+		inspectSuperTypes((ClassSymbol) clazz.getSuperclass().tsym, overload, method);
 		for (Type t : clazz.getInterfaces()) {
 			inspectSuperTypes((ClassSymbol) t.tsym, overload, method);
 		}
-		inspectSuperTypes((ClassSymbol) clazz.getSuperclass().tsym, overload, method);
 	}
 
 	@Override
