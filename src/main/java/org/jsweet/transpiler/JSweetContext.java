@@ -166,6 +166,11 @@ public class JSweetContext extends Context {
 	private List<String> usedModules = new ArrayList<>();
 
 	/**
+	 * A flag to make sure that all type names are expanded (fully qualified).
+	 */
+	public boolean expandTypeNames = false;
+	
+	/**
 	 * Register a module that is used by the transpiled program.
 	 * 
 	 * @param moduleName

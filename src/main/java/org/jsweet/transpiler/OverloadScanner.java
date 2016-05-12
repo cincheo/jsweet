@@ -37,9 +37,7 @@ import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCExpressionStatement;
-import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
-import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCReturn;
@@ -175,20 +173,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 									if (isValid && invocation.getArguments() != null) {
 										for (int i = 0; i < invocation.getArguments().size(); i++) {
 											JCExpression expr = invocation.getArguments().get(i);
-											boolean constant = false;
-											if (expr instanceof JCLiteral) {
-												constant = true;
-											} else if (expr instanceof JCFieldAccess) {
-												if (((JCFieldAccess) expr).sym.isStatic()
-														&& ((JCFieldAccess) expr).sym.getModifiers().contains(Modifier.FINAL)) {
-													constant = true;
-												}
-											} else if (expr instanceof JCIdent) {
-												if (((JCIdent) expr).sym.isStatic() && ((JCIdent) expr).sym.getModifiers().contains(Modifier.FINAL)) {
-													constant = true;
-												}
-											}
-											if (constant) {
+											if (Util.isConstant(expr)) {
 												defaultValues.put(i, expr);
 											} else {
 												if (!(expr instanceof JCIdent && i < methodDecl.params.length()

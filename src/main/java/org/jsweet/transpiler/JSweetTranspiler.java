@@ -54,6 +54,7 @@ import org.jsweet.transpiler.candies.CandiesProcessor;
 import org.jsweet.transpiler.typescript.Java2TypeScriptTranslator;
 import org.jsweet.transpiler.util.AbstractTreePrinter;
 import org.jsweet.transpiler.util.DirectedGraph;
+import org.jsweet.transpiler.util.DirectedGraph.Node;
 import org.jsweet.transpiler.util.ErrorCountTranspilationHandler;
 import org.jsweet.transpiler.util.EvaluationResult;
 import org.jsweet.transpiler.util.Position;
@@ -875,13 +876,23 @@ public class JSweetTranspiler implements JSweetOptions {
 		}
 		StaticInitilializerAnalyzer analizer = new StaticInitilializerAnalyzer(context);
 		analizer.process(compilationUnits);
+		ArrayList<Node<JCCompilationUnit>> sourcesInCycle = new ArrayList<>();
 		java.util.List<JCCompilationUnit> orderedCompilationUnits = analizer.globalStaticInitializersDependencies.topologicalSort(n -> {
-			transpilationHandler.report(JSweetProblem.CYCLE_IN_STATIC_INITIALIZER_DEPENDENCIES, null,
-					JSweetProblem.CYCLE_IN_STATIC_INITIALIZER_DEPENDENCIES.getMessage(n.element.sourcefile.getName()));
+			sourcesInCycle.add(n);
 		});
+		if (!sourcesInCycle.isEmpty()) {
+			transpilationHandler.report(JSweetProblem.CYCLE_IN_STATIC_INITIALIZER_DEPENDENCIES, null, JSweetProblem.CYCLE_IN_STATIC_INITIALIZER_DEPENDENCIES
+					.getMessage(sourcesInCycle.stream().map(n -> n.element.sourcefile.getName()).collect(Collectors.toList())));
+
+			DirectedGraph.dumpCycles(sourcesInCycle, u -> u.sourcefile.getName());
+
+			return;
+		}
+
 		logger.debug("ordered compilation units: " + orderedCompilationUnits.stream().map(cu -> {
 			return cu.sourcefile.getName();
 		}).collect(Collectors.toList()));
+		logger.debug("count: " + compilationUnits.size() + " (initial), " + orderedCompilationUnits.size() + " (ordered)");
 		int[] permutation = new int[orderedCompilationUnits.size()];
 		StringBuilder permutationString = new StringBuilder();
 		for (int i = 0; i < orderedCompilationUnits.size(); i++) {
@@ -890,6 +901,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		}
 		logger.debug("permutation: " + permutationString.toString());
 		new OverloadScanner(transpilationHandler, context).process(orderedCompilationUnits);
+		context.expandTypeNames = true;
 		StringBuilder sb = new StringBuilder();
 		int lineCount = 0;
 		for (int i = 0; i < orderedCompilationUnits.size(); i++) {
@@ -905,6 +917,8 @@ public class JSweetTranspiler implements JSweetOptions {
 			sb.append(printer.getOutput());
 			lineCount += printer.getCurrentLine();
 		}
+
+		context.expandTypeNames = false;
 
 		File bundleDirectory = tsOutputDir;
 		if (!bundleDirectory.exists()) {

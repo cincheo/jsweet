@@ -27,16 +27,15 @@ import javax.lang.model.element.Modifier;
 import org.apache.log4j.Logger;
 import org.jsweet.transpiler.util.DirectedGraph;
 import org.jsweet.transpiler.util.ReferenceGrabber;
-import org.jsweet.transpiler.util.Util;
 
 import com.sun.tools.javac.code.Symbol.PackageSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCImport;
-import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.TreeScanner;
 
@@ -102,6 +101,17 @@ public class StaticInitilializerAnalyzer extends TreeScanner {
 				if (i.qualid.type != null) {
 					currentTopLevelImportedTypes.add(i.qualid.type);
 				}
+				// TypeSymbol type = Util.getImportedType(i);
+				// if (type != null) {
+				// JCCompilationUnit target = typesToCompilationUnits.get(type);
+				// if (target != null && getGraph().contains(target)) {
+				// logger.debug("adding import dependency: " +
+				// currentTopLevel.getSourceFile() + " -> " +
+				// target.getSourceFile());
+				// getGraph().addEdge(target, currentTopLevel);
+				// }
+				// }
+
 			}
 		}
 		super.visitTopLevel(compilationUnit);
@@ -113,21 +123,24 @@ public class StaticInitilializerAnalyzer extends TreeScanner {
 		if (pass == 1) {
 			typesToCompilationUnits.put(classdecl.sym, currentTopLevel);
 		} else {
+			if (classdecl.extending != null) {
+				JCCompilationUnit target = typesToCompilationUnits.get(classdecl.extending.type.tsym);
+				if (target != null && getGraph().contains(target)) {
+					logger.debug("adding inheritance dependency: " + currentTopLevel.getSourceFile() + " -> " + target.getSourceFile());
+					getGraph().addEdge(target, currentTopLevel);
+				}
+			}
+
 			for (JCTree member : classdecl.defs) {
 				if (member instanceof JCVariableDecl) {
 					JCVariableDecl field = (JCVariableDecl) member;
 					if (field.getModifiers().getFlags().contains(Modifier.STATIC) && field.getInitializer() != null) {
-						ReferenceGrabber refGrabber = new ReferenceGrabber();
-						refGrabber.scan(field.getInitializer());
-						for (TypeSymbol type : refGrabber.referencedTypes) {
-							if (!context.useModules || currentTopLevel.packge.equals(type.packge())) {
-								JCCompilationUnit target = typesToCompilationUnits.get(type);
-								if (target != null && !currentTopLevel.equals(target) && getGraph().contains(target)) {
-									logger.debug("adding static initializer dependency: " + currentTopLevel.getSourceFile() + " -> " + target.getSourceFile());
-									getGraph().addEdge(target, currentTopLevel);
-								}
-							}
-						}
+						acceptReferences(field.getInitializer());
+					}
+				} else if (member instanceof JCBlock) {
+					JCBlock initializer = (JCBlock) member;
+					if (initializer.isStatic()) {
+						acceptReferences(initializer);
 					}
 				}
 			}
@@ -135,19 +148,33 @@ public class StaticInitilializerAnalyzer extends TreeScanner {
 		}
 	}
 
-	@Override
-	public void visitNewClass(JCNewClass newClass) {
-		if (pass == 1) {
-			return;
-		}
-		if (!Util.isInterface(newClass.type.tsym) && currentTopLevelImportedTypes.contains(newClass.type)) {
-			JCCompilationUnit target = typesToCompilationUnits.get(newClass.type.tsym);
-			if (target != null && !currentTopLevel.equals(target) && getGraph().contains(target)) {
-				logger.debug("adding object construction dependency: " + currentTopLevel.getSourceFile() + " -> " + target.getSourceFile());
-				getGraph().addEdge(target, currentTopLevel);
+	private void acceptReferences(JCTree tree) {
+		ReferenceGrabber refGrabber = new ReferenceGrabber();
+		refGrabber.scan(tree);
+		for (TypeSymbol type : refGrabber.referencedTypes) {
+			if (!context.useModules || currentTopLevel.packge.equals(type.packge())) {
+				JCCompilationUnit target = typesToCompilationUnits.get(type);
+				if (target != null && !currentTopLevel.equals(target) && getGraph().contains(target)) {
+					logger.debug("adding static initializer dependency: " + currentTopLevel.getSourceFile() + " -> " + target.getSourceFile());
+					getGraph().addEdge(target, currentTopLevel);
+				}
 			}
 		}
 	}
+
+//	@Override
+//	public void visitNewClass(JCNewClass newClass) {
+//		if (pass == 1) {
+//			return;
+//		}
+//		if (!Util.isInterface(newClass.type.tsym) && currentTopLevelImportedTypes.contains(newClass.type)) {
+//			JCCompilationUnit target = typesToCompilationUnits.get(newClass.type.tsym);
+//			if (target != null && !currentTopLevel.equals(target) && getGraph().contains(target)) {
+//				logger.debug("adding object construction dependency: " + currentTopLevel.getSourceFile() + " -> " + target.getSourceFile());
+//				getGraph().addEdge(target, currentTopLevel);
+//			}
+//		}
+//	}
 
 	boolean isImported(Type type) {
 		for (JCImport i : currentTopLevel.getImports()) {

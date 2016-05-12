@@ -70,11 +70,13 @@ import com.sun.tools.javac.tree.JCTree.JCCatch;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCEnhancedForLoop;
+import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCForLoop;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCImport;
 import com.sun.tools.javac.tree.JCTree.JCLambda;
+import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
@@ -1150,4 +1152,42 @@ public class Util {
 		return null;
 	}
 
+	/**
+	 * Gets the imported type (wether statically imported or not).
+	 */
+	public static TypeSymbol getImportedType(JCImport i) {
+		if (!i.isStatic()) {
+			return i.qualid.type == null ? null : i.qualid.type.tsym;
+		} else {
+			if (i.qualid instanceof JCFieldAccess) {
+				JCFieldAccess qualified = (JCFieldAccess) i.qualid;
+				if (qualified.selected instanceof JCFieldAccess) {
+					qualified = (JCFieldAccess) qualified.selected;
+				}
+				if (qualified.sym instanceof TypeSymbol) {
+					return (TypeSymbol) qualified.sym;
+				}
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Tells if the given expression is a constant.
+	 */
+	public static boolean isConstant(JCExpression expr) {
+		boolean constant = false;
+		if (expr instanceof JCLiteral) {
+			constant = true;
+		} else if (expr instanceof JCFieldAccess) {
+			if (((JCFieldAccess) expr).sym.isStatic() && ((JCFieldAccess) expr).sym.getModifiers().contains(Modifier.FINAL)) {
+				constant = true;
+			}
+		} else if (expr instanceof JCIdent) {
+			if (((JCIdent) expr).sym.isStatic() && ((JCIdent) expr).sym.getModifiers().contains(Modifier.FINAL)) {
+				constant = true;
+			}
+		}
+		return constant;
+	}
 }

@@ -24,7 +24,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * This class defines a directed graph collection type, that is to say a set of
@@ -88,7 +91,7 @@ public class DirectedGraph<T> implements Collection<T> {
 	 */
 	@Override
 	public boolean add(T element) {
-		if(nodes.containsKey(element)) {
+		if (nodes.containsKey(element)) {
 			return false;
 		}
 		Node<T> node = new Node<T>(this, element);
@@ -435,8 +438,8 @@ public class DirectedGraph<T> implements Collection<T> {
 	}
 
 	/**
-	 * Sorts this graph using a topological sort algorithm given in this <a
-	 * href=
+	 * Sorts this graph using a topological sort algorithm given in this
+	 * <a href=
 	 * "http://stackoverflow.com/questions/2739392/sample-directed-graph-and-topological-sort-code"
 	 * >StackOverflow thread</a>.
 	 * 
@@ -493,6 +496,37 @@ public class DirectedGraph<T> implements Collection<T> {
 			n.resetEdges();
 		}
 		return toElements(L);
+	}
+
+	/**
+	 * Dumps the found cycles to System.out.
+	 * 
+	 * @param nodes
+	 *            the nodes in which to look for cycles
+	 * @param toString
+	 *            the element's toString function
+	 */
+	public static <T> void dumpCycles(List<Node<T>> nodes, Function<T, String> toString) {
+		for (Node<T> node : nodes) {
+			Stack<Node<T>> path = new Stack<Node<T>>();
+			path.add(node);
+			dumpCycles(nodes, path, toString);
+		}
+	}
+
+	private static <T> void dumpCycles(List<Node<T>> nodes, Stack<Node<T>> path, Function<T, String> toString) {
+		path.peek().outEdges.stream().map(e -> e.to).forEach(node -> {
+			if (nodes.contains(node)) {
+				if (path.contains(node)) {
+					System.out.println("cycle: " + path.stream().map(n -> toString.apply(n.element)).collect(Collectors.toList()));
+				} else {
+					path.push(node);
+					dumpCycles(nodes, path, toString);
+					path.pop();
+				}
+			}
+		});
+		;
 	}
 
 	public static void main(String[] args) {
