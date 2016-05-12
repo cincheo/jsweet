@@ -1045,6 +1045,22 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 	}
 
+	private String getTypeInitalValue(String typeName) {
+		if (typeName == null) {
+			return "null";
+		}
+		switch (typeName) {
+		case "void":
+			return null;
+		case "boolean":
+			return "false";
+		case "number":
+			return "0";
+		default:
+			return "null";
+		}
+	}
+
 	@Override
 	public void visitMethodDef(JCMethodDecl methodDecl) {
 		if (Util.hasAnnotationType(methodDecl.sym, JSweetConfig.ANNOTATION_ERASED)) {
@@ -1221,7 +1237,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 			}
 			if (methodDecl.mods.getFlags().contains(Modifier.ABSTRACT)) {
-				if (!getScope().interfaceScope) {
+				if (!getScope().interfaceScope && !inOverload) {
 					print("abstract ");
 				}
 			}
@@ -1290,7 +1306,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			return;
 		}
 		if (methodDecl.getBody() == null || (methodDecl.mods.getFlags().contains(Modifier.DEFAULT) && !getScope().defaultMethodScope)) {
-			if (jsniLine != -1) {
+			if (!getScope().interfaceScope && methodDecl.getModifiers().getFlags().contains(Modifier.ABSTRACT) && inOverload && !overload.isValid) {
+				print(" {");
+				String typeName = methodDecl.restype.toString();
+				if (!"void".equals(typeName)) {
+					print(" return ").print(getTypeInitalValue(typeName)).print("; ");
+				}
+				print("}");
+			} else if (jsniLine != -1) {
 				int line = jsniLine;
 				print(" {").println().startIndent();
 				String jsniCode = content[line].substring(content[line].indexOf("/*-{") + 4).trim();

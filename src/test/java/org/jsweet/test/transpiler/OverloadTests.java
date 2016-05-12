@@ -21,6 +21,7 @@ import static org.junit.Assert.assertEquals;
 import org.jsweet.transpiler.ModuleKind;
 import org.junit.Test;
 
+import source.overload.BasicOverride;
 import source.overload.InterfaceInheritance;
 import source.overload.NonPublicRootMethod;
 import source.overload.Overload;
@@ -147,5 +148,13 @@ public class OverloadTests extends AbstractTest {
 			logHandler.assertReportedProblems();
 		} , getSourceFile(NonPublicRootMethod.class));
 	}
+	
+	@Test
+	public void testBasicOverride() {
+		transpile(ModuleKind.none, (logHandler) -> {
+			logHandler.assertReportedProblems();
+		} , getSourceFile(BasicOverride.class));
+	}
 
+	
 }
