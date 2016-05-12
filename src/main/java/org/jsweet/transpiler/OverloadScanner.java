@@ -102,6 +102,13 @@ public class OverloadScanner extends AbstractTreeScanner {
 		}
 
 		/**
+		 * Returns parameter count of the method having the fewer parameters.
+		 */
+		public int getSmallerParameterCount() {
+			return methods.get(methods.size()-1).getParameters().size();
+		}
+		
+		/**
 		 * Checks the validity of the overload and calculates the default
 		 * values.
 		 */

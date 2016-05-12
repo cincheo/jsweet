@@ -1045,22 +1045,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 	}
 
-	private String getTypeInitalValue(String typeName) {
-		if (typeName == null) {
-			return "null";
-		}
-		switch (typeName) {
-		case "void":
-			return null;
-		case "boolean":
-			return "false";
-		case "number":
-			return "0";
-		default:
-			return "null";
-		}
-	}
-
 	@Override
 	public void visitMethodDef(JCMethodDecl methodDecl) {
 		if (Util.hasAnnotationType(methodDecl.sym, JSweetConfig.ANNOTATION_ERASED)) {
@@ -1308,10 +1292,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (methodDecl.getBody() == null || (methodDecl.mods.getFlags().contains(Modifier.DEFAULT) && !getScope().defaultMethodScope)) {
 			if (!getScope().interfaceScope && methodDecl.getModifiers().getFlags().contains(Modifier.ABSTRACT) && inOverload && !overload.isValid) {
 				print(" {");
-				String typeName = methodDecl.restype.toString();
-				if (!"void".equals(typeName)) {
-					print(" return ").print(getTypeInitalValue(typeName)).print("; ");
-				}
+				// runtime error if we go there...
+				print(" throw new Error('cannot invoke abstract overloaded method... check your argument(s) type(s)'); ");
 				print("}");
 			} else if (jsniLine != -1) {
 				int line = jsniLine;
@@ -1383,7 +1365,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						}
 						wasPrinted = true;
 						print("if(");
-						printMethodParamsTest(methodDecl, method);
+						printMethodParamsTest(overload, method);
 						print(") ");
 						if (i == 0 || method.sym.isConstructor()) {
 							printInlinedMethod(overload, method, methodDecl.getParameters());
@@ -1551,14 +1533,23 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		return sb.toString();
 	}
 
-	private void printMethodParamsTest(JCMethodDecl coreMethod, JCMethodDecl m) {
+	private void printMethodParamsTest(Overload overload, JCMethodDecl m) {
 		int i = 0;
 		for (; i < m.getParameters().size(); i++) {
-			printInstanceOf(avoidJSKeyword(coreMethod.getParameters().get(i).name.toString()), null, m.getParameters().get(i).type);
+			if (i < overload.getSmallerParameterCount()) {
+				print("(");
+			}
+			printInstanceOf(avoidJSKeyword(overload.coreMethod.getParameters().get(i).name.toString()), null, m.getParameters().get(i).type);
+			if (i < overload.getSmallerParameterCount()) {
+				// if we don't allow null in this case, null parameters may
+				// never
+				// find any suitable overload
+				print(" || ").print(avoidJSKeyword(overload.coreMethod.getParameters().get(i).name.toString()) + " == null").print(")");
+			}
 			print(" && ");
 		}
-		for (; i < coreMethod.getParameters().size(); i++) {
-			print(avoidJSKeyword(coreMethod.getParameters().get(i).name.toString())).print(" == null");
+		for (; i < overload.coreMethod.getParameters().size(); i++) {
+			print(avoidJSKeyword(overload.coreMethod.getParameters().get(i).name.toString())).print(" == null");
 			print(" && ");
 		}
 		removeLastChars(4);
