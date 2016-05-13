@@ -617,6 +617,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 						return true;
 					}
 				}
+				break;
 			case "getCause":
 				if (targetType instanceof ClassSymbol) {
 					if (Util.hasParent((ClassSymbol) targetType, "java.lang.Throwable")) {
@@ -624,6 +625,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 						return true;
 					}
 				}
+				break;
 			}
 
 			switch (targetClassName) {
@@ -802,6 +804,25 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					printMacroName(targetMethodName);
 					getPrinter().print("((x) => x * Math.PI / 180; )(").printArgList(invocation.args).print(")");
 					return true;
+				}
+				break;
+
+			case "java.lang.Class":
+				switch (targetMethodName) {
+				case "getName":
+					if (fieldAccess != null && fieldAccess.selected.toString().endsWith(".class")) {
+						printMacroName(targetMethodName);
+						getPrinter().print("\"").print(fieldAccess.selected.type.getTypeArguments().get(0).tsym.getQualifiedName().toString()).print("\"");
+						return true;
+					}
+					break;
+				case "getSimpleName":
+					if (fieldAccess != null && fieldAccess.selected.toString().endsWith(".class")) {
+						printMacroName(targetMethodName);
+						getPrinter().print("\"").print(fieldAccess.selected.type.getTypeArguments().get(0).tsym.getSimpleName().toString()).print("\"");
+						return true;
+					}
+					break;
 				}
 				break;
 			// case "java.util.Date":
