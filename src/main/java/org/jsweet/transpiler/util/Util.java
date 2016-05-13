@@ -79,6 +79,7 @@ import com.sun.tools.javac.tree.JCTree.JCLambda;
 import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
+import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.TreeScanner;
@@ -1190,4 +1191,26 @@ public class Util {
 		}
 		return constant;
 	}
+
+	/**
+	 * Returns true if this new class expression defines an anonymous class.
+	 */
+	public static boolean isAnonymousClass(JCNewClass newClass) {
+		boolean isAnonymousClass = false;
+		if (newClass.clazz != null && newClass.def != null) {
+			if (Util.hasAnnotationType(newClass.clazz.type.tsym, JSweetConfig.ANNOTATION_OBJECT_TYPE)) {
+				return false;
+			}
+			for (JCTree def : newClass.def.defs) {
+				if (def instanceof JCVariableDecl || def instanceof JCMethodDecl) {
+					if (def instanceof JCMethodDecl && "<init>".equals(((JCMethodDecl) def).name.toString())) {
+						continue;
+					}
+					isAnonymousClass = true;
+				}
+			}
+		}
+		return isAnonymousClass;
+	}
+
 }

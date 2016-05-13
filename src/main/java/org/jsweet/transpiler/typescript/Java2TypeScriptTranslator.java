@@ -2206,6 +2206,17 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		getAdapter().substituteAndPrintType(typeApply);
 	}
 
+	private int initAnonymousClass(JCNewClass newClass) {
+		int anonymousClassIndex = getScope().anonymousClasses.indexOf(newClass.def);
+		if (anonymousClassIndex == -1) {
+			anonymousClassIndex = getScope().anonymousClasses.size();
+			getScope().anonymousClasses.add(newClass.def);
+			getScope().anonymousClassesConstructors.add(newClass);
+			getScope().finalVariables.add(new ArrayList<>(finalVariables));
+		}
+		return anonymousClassIndex;
+	}
+
 	@Override
 	public void visitNewClass(JCNewClass newClass) {
 		ClassSymbol clazz = ((ClassSymbol) newClass.clazz.type.tsym);
@@ -2215,22 +2226,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 		boolean isInterface = Util.isInterface(clazz);
 		if (newClass.def != null || isInterface) {
-			boolean isAnonymousClass = false;
-			if (newClass.clazz != null && newClass.def != null) {
-				for (JCTree def : newClass.def.defs) {
-					if (def instanceof JCVariableDecl || def instanceof JCMethodDecl) {
-						if (def instanceof JCMethodDecl && "<init>".equals(((JCMethodDecl) def).name.toString())) {
-							continue;
-						}
-						isAnonymousClass = true;
-					}
-				}
-			}
-			if (isAnonymousClass && !Util.hasAnnotationType(newClass.clazz.type.tsym, JSweetConfig.ANNOTATION_OBJECT_TYPE)) {
-				getScope().anonymousClasses.add(newClass.def);
-				getScope().anonymousClassesConstructors.add(newClass);
-				getScope().finalVariables.add(new ArrayList<>(finalVariables));
-				print("new ").print(getScope().name + "." + getScope().name + ANONYMOUS_PREFIX + (getScope().anonymousClasses.size() - 1));
+			if (Util.isAnonymousClass(newClass)) {
+				int anonymousClassIndex = initAnonymousClass(newClass);
+				print("new ").print(getScope().name + "." + getScope().name + ANONYMOUS_PREFIX + anonymousClassIndex);
 				if (newClass.def.getModifiers().getFlags().contains(Modifier.STATIC)) {
 					printAnonymousClassTypeArgs(newClass);
 				}
