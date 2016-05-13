@@ -790,19 +790,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 		}
 
-		boolean hasStaticFieldsOfCurrentType = false;
-
 		for (JCTree def : classdecl.defs) {
 			if (def instanceof JCClassDecl) {
 				getScope().hasInnerClass = true;
 			}
-			if (!getScope().enumScope && def instanceof JCVariableDecl && ((JCVariableDecl) def).sym.isStatic()
-					&& classdecl.sym.equals(((JCVariableDecl) def).sym.type.tsym)) {
-				hasStaticFieldsOfCurrentType = true;
-			}
 		}
 
-		getScope().initStaticFieldsInNamespace = (getScope().hasInnerClass || hasStaticFieldsOfCurrentType) && !globals;
+		getScope().initStaticFieldsInNamespace = (getScope().hasInnerClass) && !globals;
 
 		for (JCTree def : classdecl.defs) {
 			if (!getScope().sharedMode && getScope().interfaceScope && ((def instanceof JCMethodDecl && ((JCMethodDecl) def).sym.isStatic())
@@ -975,7 +969,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						nameSpace = true;
 						println().println().printIndent().print("export namespace ").print(classdecl.getSimpleName().toString()).print(" {").startIndent();
 					}
-					println().println().printIndent().print(def);
+					println().println().printIndent().print(def).print(";");
 				}
 			}
 			// reprint anonymous classes because some may have been created in
