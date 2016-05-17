@@ -2578,6 +2578,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 	}
 
+	private boolean isNullLiteral(JCTree tree) {
+		return tree instanceof JCLiteral && ((JCLiteral) tree).getValue() == null;
+	}
+
 	@Override
 	public void visitBinary(JCBinary binary) {
 		if (Util.isIntegral(binary.type) && binary.getKind() == Kind.DIVIDE) {
@@ -2603,6 +2607,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			} else if ("^".equals(op)) {
 				op = "!==";
 			}
+		}
+		if ("==".equals(op) && !(isNullLiteral(binary.lhs) || isNullLiteral(binary.rhs))) {
+			op = "===";
+		} else if ("!=".equals(op) && !(isNullLiteral(binary.lhs) || isNullLiteral(binary.rhs))) {
+			op = "!==";
 		}
 		space().print(op).space();
 		if (charWrapping && binary.rhs.type.isPrimitive() && context.symtab.charType.tsym == binary.rhs.type.tsym

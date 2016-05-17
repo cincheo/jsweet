@@ -400,6 +400,18 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			getPrinter().print("(").print(invocation.getArguments().head).print(" === ").print(invocation.getArguments().tail.head).print(")");
 			return true;
 		}
+		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "notEqualsStrict")) {
+			getPrinter().print("(").print(invocation.getArguments().head).print(" !== ").print(invocation.getArguments().tail.head).print(")");
+			return true;
+		}
+		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "equalsLoose")) {
+			getPrinter().print("(").print(invocation.getArguments().head).print(" == ").print(invocation.getArguments().tail.head).print(")");
+			return true;
+		}
+		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "notEqualsLoose")) {
+			getPrinter().print("(").print(invocation.getArguments().head).print(" != ").print(invocation.getArguments().tail.head).print(")");
+			return true;
+		}
 		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "$map")) {
 			if (invocation.args.size() % 2 != 0) {
 				report(invocation, JSweetProblem.UNTYPED_OBJECT_ODD_PARAMETER_COUNT);
@@ -908,7 +920,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			getPrinter().print("\"");
 			return true;
 		}
-		
+
 		if (fieldAccess.selected.type.tsym instanceof PackageSymbol) {
 			if (Util.hasAnnotationType(fieldAccess.selected.type.tsym, ANNOTATION_ROOT)) {
 				if (fieldAccess.type != null && fieldAccess.type.tsym != null) {

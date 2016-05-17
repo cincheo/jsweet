@@ -27,6 +27,7 @@ import source.calculus.Chars;
 import source.calculus.Integers;
 import source.calculus.Longs;
 import source.calculus.MathApi;
+import source.calculus.Null;
 import source.calculus.Operators;
 
 public class CalculusTests extends AbstractTest {
@@ -102,4 +103,11 @@ public class CalculusTests extends AbstractTest {
 		} , getSourceFile(Chars.class));
 	}
 
+	@Test
+	public void testNull() {
+		eval(ModuleKind.none, (logHandler, r) -> {
+			logHandler.assertReportedProblems();
+		} , getSourceFile(Null.class));
+	}
+	
 }
