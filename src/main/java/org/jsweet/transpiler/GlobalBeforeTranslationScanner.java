@@ -16,6 +16,10 @@
  */
 package org.jsweet.transpiler;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import javax.lang.model.element.Modifier;
 
 import org.jsweet.JSweetConfig;
@@ -25,8 +29,10 @@ import org.jsweet.transpiler.util.Util;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
+import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.JCTree.JCWildcard;
@@ -38,6 +44,8 @@ import com.sun.tools.javac.tree.JCTree.JCWildcard;
  * @author Renaud Pawlak
  */
 public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {
+
+	Set<JCVariableDecl> lazyInitializedStaticCandidates = new HashSet<>();
 
 	/**
 	 * Creates a new global scanner.
@@ -51,7 +59,7 @@ public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {
 		this.compilationUnit = topLevel;
 		super.visitTopLevel(topLevel);
 	}
-	
+
 	@Override
 	public void visitClassDef(JCClassDecl classdecl) {
 		for (JCTree def : classdecl.defs) {
@@ -60,6 +68,15 @@ public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {
 				MethodSymbol m = Util.findMethodDeclarationInType(context.types, classdecl.sym, var.name.toString(), null);
 				if (m != null) {
 					context.addFieldNameMapping(var.sym, JSweetConfig.FIELD_METHOD_CLASH_RESOLVER_PREFIX + var.name.toString());
+				}
+				if (var.getModifiers().getFlags().contains(Modifier.STATIC)) {
+					if (!(var.getModifiers().getFlags().contains(Modifier.FINAL) && var.init != null && var.init instanceof JCLiteral)) {
+						lazyInitializedStaticCandidates.add(var);
+					}
+				}
+			} else if (def instanceof JCBlock) {
+				if (((JCBlock) def).isStatic()) {
+					context.countStaticInitializer(classdecl.sym);
 				}
 			}
 		}
@@ -86,6 +103,18 @@ public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {
 		if (container != null) {
 			getContext().registerWildcard(container, wildcard);
 			scan(wildcard.getBound());
+		}
+	}
+
+	public void process(List<JCCompilationUnit> compilationUnits) {
+		for (JCCompilationUnit compilationUnit : compilationUnits) {
+			scan(compilationUnit);
+		}
+		for (JCVariableDecl var : lazyInitializedStaticCandidates) {
+			if (context.getStaticInitializerCount(var.sym.enclClass()) == 0 && var.init == null || var.init instanceof JCLiteral) {
+				continue;
+			}
+			context.lazyInitializedStatics.add(var.sym);
 		}
 	}
 

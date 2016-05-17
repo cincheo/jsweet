@@ -720,11 +720,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		context.useModules = isUsingModules();
 		context.sourceFiles = files;
 
-		GlobalBeforeTranslationScanner globalScanner = new GlobalBeforeTranslationScanner(transpilationHandler, context);
-
-		for (int i = 0; i < compilationUnits.length(); i++) {
-			globalScanner.scan(compilationUnits.get(i));
-		}
+		new GlobalBeforeTranslationScanner(transpilationHandler, context).process(compilationUnits);
 
 		if (context.useModules) {
 			generateTsModules(transpilationHandler, files, compilationUnits);

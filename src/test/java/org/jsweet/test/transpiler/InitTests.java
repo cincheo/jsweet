@@ -42,6 +42,7 @@ import source.init.MultipleMains;
 import source.init.NoOptionalFieldsInClass;
 import source.init.OptionalField;
 import source.init.OptionalFieldError;
+import source.init.StaticFieldWithInnerClass;
 import source.init.StaticInitializer;
 import source.init.UntypedObject;
 import source.init.UntypedObjectWrongUses;
@@ -282,4 +283,12 @@ public class InitTests extends AbstractTest {
 		}
 	}
 
+	@Test
+	public void testStaticFieldWithInnerClass() {
+		eval((h, r) -> {
+			h.assertReportedProblems();
+		}, getSourceFile(StaticFieldWithInnerClass.class));
+	}
+	
+	
 }

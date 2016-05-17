@@ -908,12 +908,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			getPrinter().print("\"");
 			return true;
 		}
-		String selected = fieldAccess.selected.toString();
-		if (selected.equals(GLOBALS_CLASS_NAME)) {
-			getPrinter().printIdentifier(fieldAccess.name.toString());
-			return true;
-		}
-
+		
 		if (fieldAccess.selected.type.tsym instanceof PackageSymbol) {
 			if (Util.hasAnnotationType(fieldAccess.selected.type.tsym, ANNOTATION_ROOT)) {
 				if (fieldAccess.type != null && fieldAccess.type.tsym != null) {
@@ -1134,10 +1129,6 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			getPrinter().print("\"");
 			getPrinter().printIdentifier(getFirstAnnotationValue(annotation, identifier).toString());
 			getPrinter().print("\"");
-			return true;
-		}
-		if (identifier.sym.owner.getQualifiedName().toString().endsWith("." + GLOBALS_CLASS_NAME)) {
-			getPrinter().printIdentifier(identifier.toString());
 			return true;
 		}
 		if (langTypesSimpleNames.contains(identifier.toString()) && langTypesMapping.containsKey(identifier.type.toString())) {

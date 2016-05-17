@@ -169,7 +169,29 @@ public class JSweetContext extends Context {
 	 * A flag to make sure that all type names are expanded (fully qualified).
 	 */
 	public boolean expandTypeNames = false;
-	
+
+	/**
+	 * Holds all the static fields that are lazy intitialized.
+	 */
+	public Set<VarSymbol> lazyInitializedStatics = new HashSet<>();
+
+	private Map<ClassSymbol, Integer> staticInitializerCounts = new HashMap<>();
+
+	/**
+	 * Increments the count of static initialization blocks for the given class.
+	 */
+	public void countStaticInitializer(ClassSymbol clazz) {
+		staticInitializerCounts.put(clazz, (staticInitializerCounts.containsKey(clazz) ? staticInitializerCounts.get(clazz) : 0) + 1);
+	}
+
+	/**
+	 * Gets the static initializer count for the given class.
+	 */
+	public int getStaticInitializerCount(ClassSymbol clazz) {
+		Integer count = null;
+		return (count = staticInitializerCounts.get(clazz)) == null ? 0 : count;
+	}
+
 	/**
 	 * Register a module that is used by the transpiled program.
 	 * 

@@ -980,6 +980,31 @@ public class Util {
 	}
 
 	/**
+	 * Returns true is the type is a core.
+	 */
+	public static boolean isCoreType(Type type) {
+		if (type == null) {
+			return false;
+		}
+		if ("java.lang.toString".equals(type.toString())) {
+			return true;
+		}
+		switch (type.getKind()) {
+		case BYTE:
+		case SHORT:
+		case INT:
+		case LONG:
+		case DOUBLE:
+		case FLOAT:
+		case BOOLEAN:
+		case CHAR:
+			return true;
+		default:
+			return false;
+		}
+	}
+
+	/**
 	 * Returns true is an arithmetic operator.
 	 */
 	public static boolean isArithmeticOperator(Kind kind) {
