@@ -23,6 +23,7 @@
 	<properties>
 		<timestamp>${maven.build.timestamp}</timestamp>
 		<maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<repositories>
 		<repository>
@@ -56,6 +57,7 @@
 				<configuration>
 					<source>1.8</source>
 					<target>1.8</target>
+					<encoding>${project.build.sourceEncoding}</encoding>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -111,7 +113,7 @@
 				<configuration>
 					<javadocVersion>1.8</javadocVersion>
 					<sourcepath>src/main/java</sourcepath>
-					<encoding>UTF-8</encoding>
+					<encoding>${project.build.sourceEncoding}</encoding>
 					<fixTags>all</fixTags>
 					<failOnError>false</failOnError>
 					<reportOutputDirectory>/var/www/apidocs/org/jsweet</reportOutputDirectory>
@@ -178,7 +180,7 @@
 			<artifactId>javassist</artifactId>
 			<version>3.20.0-GA</version>
 		</dependency>
-		<!-- Compile-time only dependency (JSweet looks up installed JDK at runtime 
+		<!-- Compile-time only dependency (JSweet looks up installed JDK at runtime
 			to conform to legal obligations) -->
 		<dependency>
 			<groupId>com.sun</groupId>
