@@ -885,6 +885,8 @@ public class JSweetTranspiler implements JSweetOptions {
 			return;
 		}
 
+		new OverloadScanner(transpilationHandler, context).process(orderedCompilationUnits);
+
 		logger.debug("ordered compilation units: " + orderedCompilationUnits.stream().map(cu -> {
 			return cu.sourcefile.getName();
 		}).collect(Collectors.toList()));
@@ -896,7 +898,6 @@ public class JSweetTranspiler implements JSweetOptions {
 			permutationString.append("" + i + "=" + permutation[i] + ";");
 		}
 		logger.debug("permutation: " + permutationString.toString());
-		new OverloadScanner(transpilationHandler, context).process(orderedCompilationUnits);
 		context.expandTypeNames = true;
 		StringBuilder sb = new StringBuilder();
 		int lineCount = 0;

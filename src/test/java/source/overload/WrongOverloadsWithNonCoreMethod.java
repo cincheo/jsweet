@@ -46,3 +46,20 @@ class SubClass2 implements WrongOverloadsWithNonCoreMethod {
 	}
 
 }
+
+class AbstractClass1 implements WrongOverloadsWithNonCoreMethod {
+
+	public void draw() {
+		trace.push("draw0");
+	}
+
+}
+
+class SubClass4 extends AbstractClass1 {
+
+	public void draw(String s) {
+		trace.push(s);
+	}
+
+}
+

@@ -44,7 +44,7 @@ public class LanguageSpecifications {
 
 		Double d = i + 4d;
 		assert d.toString() == "6";
-		assert(Object) d == "6";
+		assert !((Object)d == "6");
 
 		BiFunction<String, Integer, String> f = (str, integer) -> {
 			return str.substring(integer);

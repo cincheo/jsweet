@@ -137,6 +137,18 @@ public class OverloadScanner extends AbstractTreeScanner {
 								i++;
 							}
 						}
+						if (i == 0) {
+							boolean abstract1 = m1.getModifiers().getFlags().contains(Modifier.ABSTRACT)
+									|| (m1.sym.getEnclosingElement().isInterface() && !m1.getModifiers().getFlags().contains(Modifier.DEFAULT));
+							boolean abstract2 = m2.getModifiers().getFlags().contains(Modifier.ABSTRACT)
+									|| (m2.sym.getEnclosingElement().isInterface() && !m2.getModifiers().getFlags().contains(Modifier.DEFAULT));
+							if (abstract1 && !abstract2) {
+								i++;
+							}
+							if (!abstract1 && abstract2) {
+								i--;
+							}
+						}
 					}
 				}
 				// valid overloads can only be in the same classe because of

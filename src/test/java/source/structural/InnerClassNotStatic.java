@@ -47,6 +47,7 @@ public class InnerClassNotStatic {
 	}
 
 	public class InnerClass1 {
+		int j = i + 1;
 		public InnerClass1(String s) {
 			trace.push("" + i + getI() + s);
 		}

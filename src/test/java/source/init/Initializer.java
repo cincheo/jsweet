@@ -21,13 +21,18 @@ import static jsweet.util.Globals.$export;
 public class Initializer {
 
 	int n;
-	
+
 	{
 		n = 4;
 	}
-	
+
+	int n2;
+	boolean b;
+
 	public static void main(String[] args) {
 		$export("out", new Initializer().n);
+		assert new Initializer().n2 == 0;
+		assert new Initializer().b == false;
 	}
-	
+
 }

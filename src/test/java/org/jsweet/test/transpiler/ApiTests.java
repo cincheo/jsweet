@@ -29,6 +29,7 @@ import source.api.ErasingJava;
 import source.api.ForeachIteration;
 import source.api.J4TSInvocations;
 import source.api.JdkInvocations;
+import source.api.Numbers;
 import source.api.PrimitiveInstantiation;
 import source.api.QualifiedInstantiation;
 import source.api.Strings;
@@ -129,6 +130,13 @@ public class ApiTests extends AbstractTest {
 		} , getSourceFile(Strings.class));
 	}
 
+	@Test
+	public void testNumbers() {
+		eval(ModuleKind.none, (logHandler, r) -> {
+			logHandler.assertReportedProblems();
+		} , getSourceFile(Numbers.class));
+	}
+	
 	@Test
 	public void testArrayBuffers() {
 		eval(ModuleKind.none, (logHandler, r) -> {

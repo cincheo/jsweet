@@ -40,6 +40,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.type.TypeKind;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 
@@ -1236,6 +1237,40 @@ public class Util {
 			}
 		}
 		return isAnonymousClass;
+	}
+
+	/**
+	 * Tells if that tree is the null literal.
+	 */
+	public static boolean isNullLiteral(JCTree tree) {
+		return tree instanceof JCLiteral && ((JCLiteral) tree).getValue() == null;
+	}
+
+	/**
+	 * Tells if that variable is a non-static final field initialized with a
+	 * literal value.
+	 */
+	public static boolean isConstantOrNullField(JCVariableDecl var) {
+		return !var.getModifiers().getFlags().contains(Modifier.STATIC)
+				&& (var.init == null || var.getModifiers().getFlags().contains(Modifier.FINAL) && var.init instanceof JCLiteral);
+	}
+
+	/**
+	 * Returns the literal for a given type inital value.
+	 */
+	public static String getTypeInitialValue(Type type) {
+		if (type == null) {
+			return "null";
+		}
+		if (isNumber(type)) {
+			return "0";
+		} else if (type.getKind() == TypeKind.BOOLEAN) {
+			return "false";
+		} else if (type.getKind() == TypeKind.VOID) {
+			return null;
+		} else {
+			return "null";
+		}
 	}
 
 }
