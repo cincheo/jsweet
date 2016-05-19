@@ -33,6 +33,7 @@ import source.overload.WrongOverloadInInnerClass;
 import source.overload.WrongOverloadWithArraysAndObjects;
 import source.overload.WrongOverloadWithGenerics;
 import source.overload.WrongOverloadWithInheritance;
+import source.overload.WrongOverloadWithSpecialParameters;
 import source.overload.WrongOverloads;
 import source.overload.WrongOverloadsWithDefaultMethods;
 import source.overload.WrongOverloadsWithNonCoreMethod;
@@ -157,5 +158,12 @@ public class OverloadTests extends AbstractTest {
 		} , getSourceFile(BasicOverride.class));
 	}
 
+	@Test
+	public void testWrongOverloadWithSpecialParameters() {
+		eval(ModuleKind.none, (logHandler, r) -> {
+			logHandler.assertReportedProblems();
+			assertEquals("m,m,read1,read2", r.get("trace"));
+		} , getSourceFile(WrongOverloadWithSpecialParameters.class));
+	}
 	
 }

@@ -1538,20 +1538,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	private void printMethodParamsTest(Overload overload, JCMethodDecl m) {
 		int i = 0;
 		for (; i < m.getParameters().size(); i++) {
-			if (i < overload.getSmallerParameterCount()) {
-				print("(");
-			}
+			print("(");
 			printInstanceOf(avoidJSKeyword(overload.coreMethod.getParameters().get(i).name.toString()), null, m.getParameters().get(i).type);
-			if (i < overload.getSmallerParameterCount()) {
-				// if we don't allow null in this case, null parameters may
-				// never
-				// find any suitable overload
-				print(" || ").print(avoidJSKeyword(overload.coreMethod.getParameters().get(i).name.toString()) + " == null").print(")");
-			}
+			print(" || ").print(avoidJSKeyword(overload.coreMethod.getParameters().get(i).name.toString()) + " === null").print(")");
 			print(" && ");
 		}
 		for (; i < overload.coreMethod.getParameters().size(); i++) {
-			print(avoidJSKeyword(overload.coreMethod.getParameters().get(i).name.toString())).print(" == null");
+			print(avoidJSKeyword(overload.coreMethod.getParameters().get(i).name.toString())).print(" === undefined");
 			print(" && ");
 		}
 		removeLastChars(4);

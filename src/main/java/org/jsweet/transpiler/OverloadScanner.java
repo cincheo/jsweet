@@ -30,6 +30,7 @@ import org.jsweet.transpiler.util.Util;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
+import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.tree.JCTree;
@@ -112,7 +113,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 		 * Checks the validity of the overload and calculates the default
 		 * values.
 		 */
-		public void calculate(Types types) {
+		public void calculate(Types types, Symtab symtab) {
 			if (methods.size() < 2) {
 				return;
 			}
@@ -127,16 +128,24 @@ public class OverloadScanner extends AbstractTreeScanner {
 						if (types.isAssignable(types.erasure(m2.getParameters().get(j).type), types.erasure(m1.getParameters().get(j).type))) {
 							i++;
 						}
+
 						if (i == 0) {
 							boolean core1 = Util.isCoreType(m1.getParameters().get(j).type);
+							if (m1.getParameters().get(j).type == symtab.stringType) {
+								core1 = false;
+							}
 							boolean core2 = Util.isCoreType(m2.getParameters().get(j).type);
-							if (core1 && !core2) {
-								i--;
+							if (m2.getParameters().get(j).type == symtab.stringType) {
+								core2 = false;
 							}
 							if (!core1 && core2) {
+								i--;
+							}
+							if (core1 && !core2) {
 								i++;
 							}
 						}
+
 						if (i == 0) {
 							boolean abstract1 = m1.getModifiers().getFlags().contains(Modifier.ABSTRACT)
 									|| (m1.sym.getEnclosingElement().isInterface() && !m1.getModifiers().getFlags().contains(Modifier.DEFAULT));
@@ -151,6 +160,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 						}
 					}
 				}
+
 				// valid overloads can only be in the same classe because of
 				// potential side effects in subclasses
 				if (m1.sym.getEnclosingElement() != m2.sym.getEnclosingElement()) {
@@ -361,7 +371,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 			scan(cu);
 		}
 		for (Overload overload : context.getAllOverloads()) {
-			overload.calculate(types);
+			overload.calculate(types, context.symtab);
 		}
 	}
 
