@@ -352,6 +352,13 @@ public class JSweetContext extends Context {
 		footerStatements.add(footerStatement);
 	}
 
+	/**
+	 * Adds a footer statement at the first position.
+	 */
+	public void addTopFooterStatement(String footerStatement) {
+		footerStatements.add(0, footerStatement);
+	}
+	
 	private Map<TypeSymbol, Set<Entry<JCClassDecl, JCMethodDecl>>> defaultMethods = new HashMap<>();
 	private Map<JCMethodDecl, JCCompilationUnit> defaultMethodsCompilationUnits = new HashMap<>();
 

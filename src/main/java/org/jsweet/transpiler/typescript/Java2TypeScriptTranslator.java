@@ -1762,6 +1762,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							.print("; ");
 				}
 				print("return ").print(prefix).printIdentifier(name).print("; }");
+				String qualifiedClassName = getQualifiedTypeName(clazz.sym, globals);
+				context.addTopFooterStatement((isBlank(qualifiedClassName) ? "" : qualifiedClassName + ".") + getAdapter().getIdentifier(name) + "_$LI$();");
 			} else {
 				if (varDecl.init != null) {
 					if (!(parent instanceof JCClassDecl && getScope().innerClassNotStatic && !Util.isConstantOrNullField(varDecl))) {
