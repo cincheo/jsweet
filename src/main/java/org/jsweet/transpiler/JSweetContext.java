@@ -166,9 +166,11 @@ public class JSweetContext extends Context {
 	private List<String> usedModules = new ArrayList<>();
 
 	/**
-	 * A flag to make sure that all type names are expanded (fully qualified).
+	 * A flag that indicates if we are building a bundle. In bundle mode, all
+	 * type names are expanded (fully qualified) and static fields will be
+	 * initalized at the end of the bundle.
 	 */
-	public boolean expandTypeNames = false;
+	public boolean bundleMode = false;
 
 	/**
 	 * Holds all the static fields that are lazy intitialized.
@@ -358,7 +360,7 @@ public class JSweetContext extends Context {
 	public void addTopFooterStatement(String footerStatement) {
 		footerStatements.add(0, footerStatement);
 	}
-	
+
 	private Map<TypeSymbol, Set<Entry<JCClassDecl, JCMethodDecl>>> defaultMethods = new HashMap<>();
 	private Map<JCMethodDecl, JCCompilationUnit> defaultMethodsCompilationUnits = new HashMap<>();
 

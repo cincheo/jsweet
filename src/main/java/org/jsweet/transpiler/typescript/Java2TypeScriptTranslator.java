@@ -1762,8 +1762,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							.print("; ");
 				}
 				print("return ").print(prefix).printIdentifier(name).print("; }");
-				String qualifiedClassName = getQualifiedTypeName(clazz.sym, globals);
-				context.addTopFooterStatement((isBlank(qualifiedClassName) ? "" : qualifiedClassName + ".") + getAdapter().getIdentifier(name) + "_$LI$();");
+				if (context.bundleMode && !globals) {
+					String qualifiedClassName = getQualifiedTypeName(clazz.sym, globals);
+					context.addTopFooterStatement(
+							(isBlank(qualifiedClassName) ? "" : qualifiedClassName + ".") + getAdapter().getIdentifier(name) + "_$LI$();");
+				}
 			} else {
 				if (varDecl.init != null) {
 					if (!(parent instanceof JCClassDecl && getScope().innerClassNotStatic && !Util.isConstantOrNullField(varDecl))) {
@@ -1795,7 +1798,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			report(importDecl, JSweetProblem.WILDCARD_IMPORT);
 			return;
 		}
-		if (context.expandTypeNames) {
+		if (context.bundleMode) {
 			return;
 		}
 		String adaptedQualId = getAdapter().needsImport(importDecl, qualId);
@@ -1957,7 +1960,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							if (target != null) {
 								print(getRootRelativeName(target) + ".");
 							}
-						} else if (context.expandTypeNames) {
+						} else if (context.bundleMode) {
 							TypeSymbol target = Util.getStaticImportTarget(compilationUnit, methName);
 							if (target != null) {
 								print(getRootRelativeName(target) + ".");
@@ -2202,7 +2205,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 								lazyInitializedStatic = true;
 							}
 							if (!varSym.owner.getQualifiedName().toString().endsWith("." + GLOBALS_CLASS_NAME)) {
-								if (context.expandTypeNames && !varSym.owner.equals(getParent(JCClassDecl.class).sym)) {
+								if (context.bundleMode && !varSym.owner.equals(getParent(JCClassDecl.class).sym)) {
 									print(Util.getRootRelativeName(null, varSym.owner) + ".");
 								} else {
 									print(varSym.owner.getSimpleName() + ".");
@@ -2234,7 +2237,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					print(clazz.getEnclosingElement().getSimpleName() + ".");
 					prefixAdded = true;
 				}
-				if (!prefixAdded && context.expandTypeNames && !clazz.equals(getParent(JCClassDecl.class).sym)) {
+				if (!prefixAdded && context.bundleMode && !clazz.equals(getParent(JCClassDecl.class).sym)) {
 					print(getRootRelativeName(clazz));
 				} else {
 					print(name);

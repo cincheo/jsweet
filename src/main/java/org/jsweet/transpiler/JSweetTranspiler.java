@@ -898,7 +898,7 @@ public class JSweetTranspiler implements JSweetOptions {
 			permutationString.append("" + i + "=" + permutation[i] + ";");
 		}
 		logger.debug("permutation: " + permutationString.toString());
-		context.expandTypeNames = true;
+		context.bundleMode = true;
 		StringBuilder sb = new StringBuilder();
 		int lineCount = 0;
 		for (int i = 0; i < orderedCompilationUnits.size(); i++) {
@@ -915,7 +915,7 @@ public class JSweetTranspiler implements JSweetOptions {
 			lineCount += printer.getCurrentLine();
 		}
 
-		context.expandTypeNames = false;
+		context.bundleMode = false;
 
 		File bundleDirectory = tsOutputDir;
 		if (!bundleDirectory.exists()) {
