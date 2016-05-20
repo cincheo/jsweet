@@ -22,6 +22,7 @@ import source.statics.AnonymousClasses;
 import source.statics.Classes;
 import source.statics.InnerClasses;
 import source.statics.StaticInitializer;
+import source.statics.StaticInitializerWithNoFields;
 
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -59,6 +60,14 @@ public class StaticsTests extends AbstractTest {
 			h.assertReportedProblems();
 			Assert.assertEquals(4, (int) r.get("result"));
 		} , getSourceFile(StaticInitializer.class));
+	}
+
+	@Test
+	public void testStaticInitializerWithNoFields() {
+		eval((h, r) -> {
+			h.assertReportedProblems();
+			Assert.assertTrue(r.get("ok"));
+		} , getSourceFile(StaticInitializerWithNoFields.class));
 	}
 
 }

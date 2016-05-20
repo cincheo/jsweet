@@ -796,7 +796,18 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 
 		if (!globals && !Util.isInterface(classdecl.sym) && context.getStaticInitializerCount(classdecl.sym) > 0) {
-			printIndent().print("static __static_initialized : boolean = false;").println().println();
+			printIndent().print("static __static_initialized : boolean = false;").println();
+			int liCount = context.getStaticInitializerCount(classdecl.sym);
+			String prefix = classdecl.getSimpleName().toString() + ".";
+			printIndent().print("static __static_initialize() { ");
+			print("if(!" + prefix + "__static_initialized) { ");
+			print(prefix + "__static_initialized = true; ");
+			for (int i = 0; i < liCount; i++) {
+				print(prefix + "__static_initializer_" + i + "(); ");
+			}
+			print("} }").println().println();
+			String qualifiedClassName = getQualifiedTypeName(classdecl.sym, globals);
+			context.addTopFooterStatement((isBlank(qualifiedClassName) ? "" : qualifiedClassName + ".__static_initialize();"));
 		}
 
 		boolean hasUninitializedFields = false;
@@ -1750,19 +1761,16 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				print(" { ");
 				int liCount = context.getStaticInitializerCount(clazz.sym);
 				if (liCount > 0) {
-					print("if(!" + prefix + "__static_initialized) { ");
-					print(prefix + "__static_initialized = true; ");
-					for (int i = 0; i < liCount; i++) {
-						print(prefix + "__static_initializer_" + i + "(); ");
+					if (!globals) {
+						print(prefix + "__static_initialize(); ");
 					}
-					print("}");
 				}
 				if (varDecl.init != null) {
 					print("if(" + prefix).printIdentifier(name).print(" == null) ").print(prefix).printIdentifier(name).print(" = ").print(varDecl.init)
 							.print("; ");
 				}
 				print("return ").print(prefix).printIdentifier(name).print("; }");
-				if (context.bundleMode && !globals) {
+				if (!globals) {
 					String qualifiedClassName = getQualifiedTypeName(clazz.sym, globals);
 					context.addTopFooterStatement(
 							(isBlank(qualifiedClassName) ? "" : qualifiedClassName + ".") + getAdapter().getIdentifier(name) + "_$LI$();");
