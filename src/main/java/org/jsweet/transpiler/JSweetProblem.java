@@ -222,19 +222,9 @@ public enum JSweetProblem {
 	 */
 	UNION_TYPE_MISMATCH(Severity.ERROR),
 	/**
-	 * Raised when an union type assignment is not compatible with one of the
-	 * union-ed types.
+	 * Raised when trying to create a bundle with a module kind selected.
 	 */
-	BUNDLE_WITH_COMMONJS(Severity.WARNING),
-	/**
-	 * Raised when a bundle cannot be done because of a cycle in the
-	 * module/packages.
-	 */
-	BUNDLE_HAS_CYCLE(Severity.ERROR),
-	/**
-	 * Raised when a bundle cannot be done because it has no entries.
-	 */
-	BUNDLE_HAS_NO_ENTRIES(Severity.WARNING),
+	BUNDLE_WITH_MODULE(Severity.ERROR),
 	/**
 	 * Raised when a package is named after an invalid name (typically a
 	 * TypeScript keyword).
@@ -402,12 +392,8 @@ public enum JSweetProblem {
 			return String.format("type mismatch, expecting '%s' (inferred from the indexed getter type)", params);
 		case UNION_TYPE_MISMATCH:
 			return String.format("type mismatch in union type", params);
-		case BUNDLE_WITH_COMMONJS:
-			return String.format("no bundle file generated: choose the 'commonjs' module kind when specifying a bundle file", params);
-		case BUNDLE_HAS_CYCLE:
-			return String.format("no bundle file generated: cycle detected in package graph %s", params);
-		case BUNDLE_HAS_NO_ENTRIES:
-			return String.format("no bundle file generated: no entries found, you must define at least one main method", params);
+		case BUNDLE_WITH_MODULE:
+			return String.format("bundle and module options are exclusive: choose one or the other", params);
 		case PACKAGE_NAME_CONTAINS_KEYWORD:
 			return String.format("a package name cannot contain top-level keyword(s): '%s'", params);
 		case WILDCARD_IMPORT:

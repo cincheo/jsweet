@@ -243,9 +243,6 @@ public class JSweetTranspiler implements JSweetOptions {
 		if (!ProcessUtil.isInstalledWithNpm("tsc")) {
 			ProcessUtil.installNodePackage("typescript", true);
 		}
-		if (!ProcessUtil.isInstalledWithNpm("browserify")) {
-			ProcessUtil.installNodePackage("browserify", true);
-		}
 	}
 
 	/**
@@ -608,64 +605,7 @@ public class JSweetTranspiler implements JSweetOptions {
 			ts2js(errorHandler, tsSources.toArray(new SourceFile[0]));
 		}
 
-		generateBundles(errorHandler, files);
 		logger.info("transpilation process finished in " + (System.currentTimeMillis() - transpilationStartTimestamp) + " ms");
-	}
-
-	private void generateBundles(ErrorCountTranspilationHandler errorHandler, SourceFile... files) {
-		if (bundle && context.useModules && errorHandler.getErrorCount() == 0) {
-			if (moduleKind != ModuleKind.commonjs) {
-				errorHandler.report(JSweetProblem.BUNDLE_WITH_COMMONJS, null, JSweetProblem.BUNDLE_WITH_COMMONJS.getMessage());
-			}
-			context.packageDependencies.topologicalSort(node -> {
-				if (errorHandler.getErrorCount() == 0) {
-					errorHandler.report(JSweetProblem.BUNDLE_HAS_CYCLE, null,
-							JSweetProblem.BUNDLE_HAS_CYCLE.getMessage(context.packageDependencies.toString()));
-				}
-			});
-			if (errorHandler.getErrorCount() > 0) {
-				return;
-			}
-
-			logger.info("checking for used modules: " + context.getUsedModules());
-			for (String module : context.getUsedModules()) {
-				if (module.endsWith(JSweetConfig.MODULE_FILE_NAME)) {
-					continue;
-				}
-				logger.debug("cheking for module " + module);
-				if (!ProcessUtil.isNodePackageInstalled(module)) {
-					logger.debug("installing " + module + "...");
-					// TODO: error reporting
-					ProcessUtil.installNodePackage(module, false);
-				}
-			}
-
-			Set<String> entries = new HashSet<>();
-			for (SourceFile f : files) {
-				if (context.entryFiles.contains(f.getJavaFile())) {
-					entries.add(f.jsFile.getAbsolutePath());
-				}
-			}
-
-			if (entries.isEmpty()) {
-				errorHandler.report(JSweetProblem.BUNDLE_HAS_NO_ENTRIES, null, JSweetProblem.BUNDLE_HAS_NO_ENTRIES.getMessage());
-			}
-
-			for (String entry : entries) {
-				String[] args = { entry };
-				File entryDir = new File(entry).getParentFile();
-				File bundleDirectory = bundlesDirectory != null ? bundlesDirectory : entryDir;
-				if (!bundleDirectory.exists()) {
-					bundleDirectory.mkdirs();
-				}
-				String bundleName = "bundle-" + entryDir.getName() + ".js";
-				args = ArrayUtils.addAll(args, "-o", new File(bundleDirectory, bundleName).getAbsolutePath());
-				logger.info("creating bundle file with browserify, args: " + StringUtils.join(args, ' '));
-				// TODO: keep original ts files sourcemaps:
-				// http://stackoverflow.com/questions/23453160/keep-original-typescript-source-maps-after-using-browserify
-				ProcessUtil.runCommand("browserify", ProcessUtil.USER_HOME_DIR, false, null, null, null, args);
-			}
-		}
 	}
 
 	private void createAuxiliaryModuleFiles(File rootDir) throws IOException {
@@ -719,6 +659,11 @@ public class JSweetTranspiler implements JSweetOptions {
 		}
 		context.useModules = isUsingModules();
 		context.sourceFiles = files;
+
+		if (context.useModules && bundle) {
+			transpilationHandler.report(JSweetProblem.BUNDLE_WITH_MODULE, null, JSweetProblem.BUNDLE_WITH_MODULE.getMessage());
+			return;
+		}
 
 		new GlobalBeforeTranslationScanner(transpilationHandler, context).process(compilationUnits);
 
