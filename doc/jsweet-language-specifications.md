@@ -19,10 +19,11 @@ Content
     -   [Untyped objects (maps)](#untyped-objects-maps)
     -   [Enums](#enums)
     -   [Globals](#globals)
-    -   [Optional parameters](#optional-parameters)
+    -   [Optional parameters and overloading](#optional-parameters)
 -   [Bridging to external JavaScript elements](#bridging-to-external-javascript-elements)
     -   [Ambient declarations](#ambient-declarations)
     -   [Definitions](#definitions)
+    -   [Untyped accesses](#untyped-accesses)
     -   [Mixins](#mixins)
 -   [Auxiliary types](#auxiliary-types)
     -   [Functional types](#functional-types)
@@ -40,27 +41,30 @@ Content
     -   [Variable scoping in lambda expressions](#variable-scoping-in-lambda-expressions)
     -   [Scope of *this*](#scope-of-this)
 -   [Packaging](#packaging)
-    -   [Packages and modules](#packages-and-modules)
+    -   [Use your files without any packaging](#use-your-files-without-any-packaging)
+    -   [Creating a bundle for a browser](#creating-a-bundle-for-a-browser)
+    -   [Packaging with modules](#packaging-with-modules)
     -   [Root packages](#root-packages)
-    -   [External modules](#external-modules)
     -   [Packaging a JSweet jar (candy)](#packaging-a-jsweet-jar-candy)
 -   [Appendix 1: JSweet transpiler options](#appendix-1-jsweet-transpiler-options)
--   [Appendix 2: JSweet strict mode](#appendix-2-jsweet-strict-mode)
+-   [Appendix 2: packaging and static behavior](#static_behavior)
+    -   [When main methods are invoked](#when-main-methods-are-invoked)
+    -   [Static and inheritance dependencies](#static-and-inheritance-dependencies)
 
 Basic concepts
 --------------
 
-This section presents the JSweet language basic concepts. One must keep in mind that JSweet, as a Java-to-JavaScript transpiler, is an extension of Java at compile-time, and executes as JavaScript at runtime. Thus, most Java typing and syntactic constraints will apply at compile time, but some JavaScript semantics may apply at runtime. This document will mention when Java syntactic constructs and semantics are not legal (or differ) in JSweet.
+This section presents the JSweet language basic concepts. One must keep in mind that JSweet, as a Java-to-JavaScript transpiler, is an extension of Java at compile-time, and executes as JavaScript at runtime. Thus, most Java typing and syntactic constraints will apply at compile time, but some JavaScript semantics may apply at runtime. This document will mention JSweet-specific semantics.
 
 ### Core types and objects
 
-JSweet allows the use of primitive Java types, core Java objects (with some restrictions) and of core JavaScript objects, which are defined in the `jsweet.lang` package. Next, we describe the use of such core types and objects.
+JSweet allows the use of primitive Java types, core Java objects and of core JavaScript objects, which are defined in the `jsweet.lang` package. Next, we describe the use of such core types and objects.
 
 #### Primitive Java types
 
 JSweet allows the use of Java primitive types (and associated literals).
 
--   `int`, `byte`, `short`, `double`, `float` are all converted to JavaScript numbers (precision does not matter in JSweet).
+-   `int`, `byte`, `short`, `double`, `float` are all converted to JavaScript numbers. Precision usually does not matter in JSweet, however, using/casting to int, byte, or short forces the number to be rounded to the right-length integer.
 
 -   `char` follows the Java typing rules but is converted to a JavaScript string by the transpiler.
 
@@ -68,10 +72,12 @@ JSweet allows the use of Java primitive types (and associated literals).
 
 -   `java.lang.String` corresponds to the JavaScript `string`. (not per say a primitive type, but is immutable and used as the class of string literals in Java)
 
+A direct consequence of that conversion is that it is not possible in JSweet to safely overload methods with numbers or chars/strings. For instance, the methods `pow(int, int)` and `pow(double, double)` will be considered as the same method at runtime and should not have different implementations for that reason.
+
 Examples of valid statements:
 
 ``` java
-// warning '==' behaves like the JavaScript one at runtime
+// warning '==' behaves like JavaScript '===' at runtime
 int i = 2;
 assert i == 2;
 double d = i + 4;
@@ -82,62 +88,152 @@ boolean b = false;
 assert !b;
 ```
 
-Note that in JSweet the `==` operator behaves like in JavaScript on primitive types, so that when comparing a string and an integer, it will try to match the two without taking the types in consideration. For instance, `2 == 2` evaluates to `true`. In JavaScript, one can use the `===` operator to strictly compare the objects, so that `2 === 2` evaluates to `false`. To use the `===` operator in JSweet, use the `jsweet.util.Globals.equalsStrict` utility method as follows.
+Note that in JSweet the `==` operator behaves like the JavaScript strict equals operator `===` so that it is close to the Java semantics. Similarly, `!=` is mapped `!==`. There is an exception to that behavior which is when comparing an object to a `null` literal. In that case, JSweet translates to the loose equality operators so that the programmers see no distinction between `null` and `undefined` (which are different in JavaScript but may be confusing to Java programmers). To control whether JSweet generates strict or loose operators, you can use the following helper methods: `jsweet.util.Globals.equalsStrict` (`===`), `jsweet.util.Globals.notEqualsStrict` (`!==`), `jsweet.util.Globals.equalsLoose` (`==`), and `jsweet.util.Globals.notEqualsLoose` (`!=`). For example:
 
 ``` java
-import static jsweet.util.Globals.equalsStrict;
+import static jsweet.util.Globals.equalsLoose;
 [...]
 int i = 2;
 assert i == 2;
-assert "2" == i;
-assert !(equalsStrict("2", i);
+assert !((Object)"2" == i);
+assert equalsLoose("2", i);
 ```
 
 #### Allowed Java objects
 
-Here follows the list of allowed Java classes in JSweet:
+By default, JSweet maps core Java objects and methods to JavaScript through the use of built-in macros. It means that the Java code is directly substituted with a valid JavaScript code that implements similar behavior. Here is the list of accepted Java core classes and methods in a JSweet program:
 
 -   `java.lang.Object`
 
-    -   allowed methods: `toString()`
+    -   allowed methods: `boolean equals()`
 
--   `java.lang.String`
+    -   allowed methods: `String toString()`
+
+-   `java.lang.CharSequence`
 
     -   allowed methods:
 
-        -   `charAt(int)`
+        -   `char charAt(int index)`
 
-        -   `concat(java.lang.String)`
+        -   `int length()` (transpiles to `length`)
 
-        -   `indexOf(java.lang.String)`
+        -   `CharSequence subSequence(int beginIndex, int endIndex)`
 
-        -   `lastIndexOf(java.lang.String)`
+        -   `String toString()`
 
-        -   `lastIndexOf(java.lang.String,int)`
+-   `java.lang.String`
 
-        -   `length()` (transpiles to `length`)
+    -   allowed constructors:
 
-        -   `substring(int)`
+        -   `String()`
 
-        -   `substring(int,int)` (with the JavaScript behavior)
+        -   `String(byte[] bytes)`
 
-        -   `replace(java.lang.CharSequence,java.lang.CharSequence)`
+        -   `String(byte[] bytes, int offset, int length)`
 
-        -   `split(java.lang.String)`
+        -   `String(char[] value)`
 
-        -   `trim()`
+        -   `String(char[] value, int offset, int count)`
 
-        -   `toLowerCase()`
+    -   allowed methods:
 
-        -   `toUpperCase()`
+        -   `char charAt(int index)`
+
+        -   `int codePointAt(int index)`
+
+        -   `int compareTo(String anotherString)`
+
+        -   `int compareToIgnoreCase(String str)`
+
+        -   `String concat(String str)`
+
+        -   `boolean equals(String anotherString)`
+
+        -   `boolean equalsIgnoreCase(String anotherString)`
+
+        -   `byte[] getBytes()`
+
+        -   `int indexOf(int ch)`
+
+        -   `int indexOf(String str)`
+
+        -   `boolean isEmpty()`
+
+        -   `int lastIndexOf(int ch)`
+
+        -   `int lastIndexOf(int ch, int fromIndex)`
+
+        -   `int lastIndexOf(String str)`
+
+        -   `int lastIndexOf(String str, int fromIndex)`
+
+        -   `int length()` (transpiles to `length`)
+
+        -   `String replace(CharSequence target, CharSequence replacement)`
+
+        -   `CharSequence subSequence(int beginIndex, int endIndex)`
+
+        -   `String substring(int beginIndex)`
+
+        -   `String substring(int beginIndex, int endIndex)` (with the JavaScript behavior)
+
+        -   `String[] split(String regex)`
+
+        -   `boolean startsWith(String prefix)`
+
+        -   `boolean startsWith(String prefix, int toffset)`
+
+        -   `char[] toCharArray()`
+
+        -   `String toLowerCase()`
+
+        -   `String toString()`
+
+        -   `String toUpperCase()`
+
+        -   `String trim()`
+
+        -   `static String valueOf(boolean b)`
+
+        -   `static String valueOf(char c)`
+
+        -   `static String valueOf(char[] data)`
+
+        -   `static String valueOf(char[] data, int offset, int count)`
+
+        -   `static String valueOf(double d)`
+
+        -   `static String valueOf(float f)`
+
+        -   `static String valueOf(int i)`
+
+        -   `static String valueOf(long l)`
+
+        -   `static String valueOf(Object obj)`
 
 -   `java.lang.Class`
 
-    -   allowed methods: none
+    -   allowed methods:
+
+        -   `String getName()`: only on class literals
+
+        -   `String getSimpleName()`: only on class literals
 
 -   `java.lang.Boolean`
 
-    -   allowed methods: none
+    -   allowed constructors:
+
+        -   `Boolean(value value)`
+
+        -   `Boolean(String s)`
+
+    -   allowed methods:
+
+        -   `boolean equals()`
+
+        -   `int hashCode()`
+
+        -   `String toString()`
 
 -   `java.lang.Void`
 
@@ -145,11 +241,55 @@ Here follows the list of allowed Java classes in JSweet:
 
 -   `java.lang.Integer`
 
-    -   allowed methods: none
+    -   allowed constructors:
+
+        -   `Integer(int value)`
+
+        -   `Integer(String s)`
+
+    -   allowed methods:
+
+        -   `boolean equals()`
+
+        -   `int hashCode()`
+
+        -   `String toString()`
+
+-   `java.lang.Long`
+
+    -   allowed constructors:
+
+        -   `Long(long value)`
+
+        -   `Long(String s)`
+
+    -   allowed methods:
+
+        -   `boolean equals()`
+
+        -   `int hashCode()`
+
+        -   `String toString()`
 
 -   `java.lang.Double`
 
-    -   allowed methods: none
+    -   allowed constructors:
+
+        -   `Double(double value)`
+
+        -   `Double(String s)`
+
+    -   allowed methods:
+
+        -   `boolean equals()`
+
+        -   `int hashCode()`
+
+        -   `boolean isInfinite()`
+
+        -   `boolean isNaN()`
+
+        -   `String toString()`
 
 -   `java.lang.Number`
 
@@ -157,15 +297,55 @@ Here follows the list of allowed Java classes in JSweet:
 
 -   `java.lang.Float`
 
-    -   allowed methods: none
+    -   allowed constructors:
+
+        -   `Float(float value)`
+
+        -   `Float(String s)`
+
+    -   allowed methods:
+
+        -   `boolean equals()`
+
+        -   `int hashCode()`
+
+        -   `boolean isInfinite()`
+
+        -   `boolean isNaN()`
+
+        -   `String toString()`
 
 -   `java.lang.Byte`
 
-    -   allowed methods: none
+    -   allowed constructors:
+
+        -   `Byte(byte value)`
+
+        -   `Byte(String s)`
+
+    -   allowed methods:
+
+        -   `boolean equals()`
+
+        -   `int hashCode()`
+
+        -   `String toString()`
 
 -   `java.lang.Short`
 
-    -   allowed methods: none
+    -   allowed constructors:
+
+        -   `Short(short value)`
+
+        -   `Short(String s)`
+
+    -   allowed methods:
+
+        -   `boolean equals()`
+
+        -   `int hashCode()`
+
+        -   `String toString()`
 
 -   `java.lang.Iterable`
 
@@ -174,6 +354,112 @@ Here follows the list of allowed Java classes in JSweet:
 -   `java.lang.Runnable`
 
     -   allowed methods: none (for declaring lambdas)
+
+-   `java.lang.Throwable` and all sub-classes
+
+    -   allowed methods:
+
+        -   `getMessage()`
+
+        -   `getCause()`: valid but always return `null` by default
+
+-   `java.lang.Math`
+
+    -   allowed fields:
+
+        -   `static double E`
+
+        -   `static double PI`
+
+    -   allowed methods:
+
+        -   `static double abs(double a)`
+
+        -   `static float abs(float a)`
+
+        -   `static int abs(int a)`
+
+        -   `static long abs(long a)`
+
+        -   `static double acos(double a)`
+
+        -   `static double asin(double a)`
+
+        -   `static double atan(double a)`
+
+        -   `static double atan2(double y, double x)`
+
+        -   `static double cbrt(double a)`
+
+        -   `static double ceil(double a)`
+
+        -   `static double copySign(double magnitude, double sign)`
+
+        -   `static double cos(double a)`
+
+        -   `static double cosh(double x)`
+
+        -   `static double exp(double a)`
+
+        -   `static double expm1(double x)`
+
+        -   `static double floor(double a)`
+
+        -   `static double hypot(double x, double y)`
+
+        -   `static double log(double a)`
+
+        -   `static double log10(double a)`
+
+        -   `static double log1p(double a)`
+
+        -   `static double max(double a, double b)`
+
+        -   `static float max(float a, float b)`
+
+        -   `static int max(int a, int b)`
+
+        -   `static long max(long a, long b)`
+
+        -   `static double min(double a, double b)`
+
+        -   `static float min(float a, float b)`
+
+        -   `static int min(int a, int b)`
+
+        -   `static long min(long a, long b)`
+
+        -   `static double pow(double a, double b)`
+
+        -   `static double random()`
+
+        -   `static double rint(double a)`
+
+        -   `static long round(double a)`
+
+        -   `static int round(float a)`
+
+        -   `static double scalb(double d, int scaleFactor)`
+
+        -   `static float scalb(float f, int scaleFactor)`
+
+        -   `static double signum(double d)`
+
+        -   `static float signum(float f)`
+
+        -   `static double sin(double a)`
+
+        -   `static double sinh(double x)`
+
+        -   `static double sqrt(double a)`
+
+        -   `static double tan(double a)`
+
+        -   `static double tanh(double x)`
+
+        -   `static double toDegrees(double angrad)`
+
+        -   `static double toRadians(double angdeg)`
 
 -   `java.util.function.*` (for declaring lambdas)
 
@@ -190,15 +476,20 @@ Here follows the list of allowed Java classes in JSweet:
 Examples of valid statements:
 
 ``` java
-// warning '==' behaves like the JavaScript one at runtime
 Integer i = 2;
 assert i == 2;
 Double d = i + 4d;
 assert d.toString() == "6";
-assert (Object) d == "6";
+assert !((Object) d == "6");
 BiFunction<String, Integer, String> f = (s, i) -> { return s.substring(i); };
 assert "bc" == f.apply("abc", 1);
 ```
+
+#### Getting more Java APIs
+
+With JSweet, it is possible to add a runtime that implements Java APIs in JavaScript, so that programmers can access more Java APIs and thus share the same code between Java and JavaScript. The core project for implementing Java APIs for JSweet is J4TS and contains a quite complete implementation of `java.util.*` classes and other core package. J4TS is based on a fork of the GWT’s Java emulation, but it is adapted to be compiled with JSweet. Programmers can use J4TS as a regular JavaScript library available in our Maven repository. Contributions to implement more Java libraries can be done at: <https://github.com/cincheo/j4ts>.
+
+Although J4TS cannot directly implement the Java core types that conflict with JavaScript ones (Boolean, Short, Integer, Long, Float, Double, Char, String), J4TS contributes to supporting the static part of them by providing helpers for each class (`javaemul.internal.BooleanHelper`, `javaemul.internal.ShortHelper`, ...). When the JSweet transpiler meets a static Java method on a type `java.lang.T` that is not supported as a built-in macro, it delegates to `javaemul.internal.THelper`, which can provide a JavaScript implementation for the given static method. That way, by using J4TS, programmers can use even more of the core JRE API.
 
 #### Java arrays
 
@@ -234,19 +525,19 @@ The core JavaScript API is defined in `jsweet.lang` (the full documentation can 
 
 -   `jsweet.lang.Error`: JavaScript Error class. This class implements `java.lang.RuntimeException` and can be thrown and caught with `try` ... `catch` statements.
 
-Programmers should use this API most of the time, which is HTML5 compatible and follows the JavaScript latest supported versions. However, for objects that need to be used with Java literals (numbers, booleans, and strings), the use of the `java.lang` package classes is recommended. For instance, the jQuery API declares `$(java.lang.String)` instead of `$(jsweet.lang.String)`. This allows the programmer to write expressions using literals, such as `$("a")` (for selecting all links in a document).
+When using JavaScript frameworks, programmers should use this API most of the time, which is HTML5 compatible and follows the JavaScript latest supported versions. However, for objects that need to be used with Java literals (numbers, booleans, and strings), the use of the `java.lang` package classes is recommended. For instance, the jQuery API declares `$(java.lang.String)` instead of `$(jsweet.lang.String)`. This allows the programmer to write expressions using literals, such as `$("a")` (for selecting all links in a document).
 
 As a consequence, programmers need to be able to switch to the JavaScript API when coming from a Java object. The `jsweet.util.Globals` class defines convenient static methods to cast back and forth core Java objects to their corresponding JSweet objects. For instance the `string(...)` method will allow the programmer to switch from the Java to the JSweet strings and conversely.
 
 ``` java
 import static jsweet.util.Globals.string;
-String str = "This is a test string";
+String str = "This is a test string"; // str is actually a JavaScript string at runtime
 str.toLowerCase(); // valid: toLowerCase it defined both in Java and JavaScript
-str.substr(1); // compile error: substr is not a Java method
-string(str).substr(1); // valid: string(str) is a jsweet.lang.String.
+str.substr(1); // this is ok, but it is a macro that will generate JavaScript code
+string(str).substr(1); // direct call to the substr method on the JavaScript string
 ```
 
-Note: using the `jsweet.util.Globals` class to access the JavaScript API can be avoided in some cases when working in *strict* mode (see Appendix 2).
+Note: for code sharing between a JavaScript client and a Java server for instance, it is better to use Java APIs only and not JavaScript ones.
 
 Here is another example that shows the use of the `array` method to access the `push` method available on JavaScript arrays.
 
@@ -259,7 +550,7 @@ assert strings[3] == "d";
 
 ### Classes
 
-Classes in JSweet are very similar to Java classes. For example:
+Classes in JSweet fully support all types of Java classes declarations. For example:
 
 ``` java
 public class BankAccount {  
@@ -286,17 +577,28 @@ var BankAccount = (function () {
 })();
 ```
 
-Classes can define constructors, have super classes and be instantiated exactly like in Java. The only restriction compared to Java is that inner classes or anonymous classes are not allowed in JSweet (in the general case). For instance, the following code will raise an error.
+Classes can define constructors, have super classes and be instantiated exactly like in Java. Similarly to Java, inner classes and anonymous classes are allowed in JSweet since version 1.1.0. JSweet supports both static and regular inner/anonymous classes, which can share state with enclosing classes. Still like in Java, anonymous classes can access final variables declared in their scope. For example, the following declarations are valid in JSweet and will mimic the Java semantics at runtime so that Java programmers can benefit all the features of the Java language.
 
 ``` java
+abstract class C {
+    public abstract int m();
+}
 public class ContainerClass {
-    // error: inner classes are not allowed
+    // inner class
     public class InnerClass {
+        public I aMethod(final int i) {
+            // anonymous class
+            return new C() {
+                @Override
+                public int m() {
+                    // access to final variable i
+                    return i;
+                }
+            }
+        }    
     }
 }
 ```
-
-Exceptions: inner classes annotated with `@ObjectType` or `@Erased` are allowed (see the part on Auxiliary Types).
 
 ### Interfaces
 
@@ -353,6 +655,10 @@ We can create an object typed after the interface. Note that the following code 
 Point p1 = new Point() {{ x=1; y=1; }};
 ```
 
+This object creation mechanism is a TypeScript/JavaScript mechanism and shall not be confused with anonymous classes, which is a Java-like construction.
+
+Note also that, for each object, JSweet keeps track of which interface it was created from and of all the potential interfaces implemented by its class. This interface tracking system is implemented as a special object property called `__interfaces`. Using that property, JSweet allows the use of the `instanceof` operator on interfaces, exactly like in Java, as we will see later in this document.
+
 #### Optional fields
 
 Interfaces can define *optional fields*, which are used to report errors when the programmer forgets to initialize a mandatory field in an object. Supporting optional fields in JSweet is done through the use of `@jsweet.lang.Optional` annotations. For instance:
@@ -367,7 +673,7 @@ public class Point {
 }
 ```
 
-It is the JSweet compiler that will check that the fields are correctly initialized, when constructing an object.
+It is the JSweet compiler that will check that the fields are correctly initialized, when constructing an object from an interface.
 
 ``` java
 // no errors (z is optional)
@@ -500,6 +806,8 @@ public enum WrongConstructsInEnums {
 }
 ```
 
+These constraints will be relaxed in future releases.
+
 ### Globals
 
 In Java, on contrary to JavaScript, there is no such thing as global variables or functions (there are only static members, but even those must belong to a class). Thus, JSweet introduces reserved `Globals` classes and `globals` packages. These have two purposes:
@@ -547,15 +855,15 @@ One must remember that `Globals` classes and `global` packages are erased at run
 
 In order to erase packages in the generated code, programmers can also use the `@Root` annotation, which will be explained in Section \[packaging\].
 
-### Optional parameters
+### Optional parameters and overloading
 
-In JavaScript, parameters can be optional, in the sense that a parameter value does not need to be provided when calling a function. Except for varargs, which are fully supported in JSweet, the general concept of an optional parameter does not exist in Java. To simulate optional parameters, JSweet supports overloading as long as it is for implementing optional parameters – a very commonly used idiom. Here are some examples of valid and invalid overloading in JSweet:
+In JavaScript, parameters can be optional, in the sense that a parameter value does not need to be provided when calling a function. Except for varargs, which are fully supported in JSweet, the general concept of an optional parameter does not exist in Java. To simulate optional parameters, JSweet programmers can use method overloading, which is supported in Java. Here are some examples of supported overloads in JSweet:
 
 ``` java
 String m(String s, double n) { return s + n; }
-// valid overloading (JSweet transpiles to optional parameter)
+// simple overloading (JSweet transpiles to optional parameter)
 String m(String s) { return m(s, 0); }
-// invalid overloading (JSweet error)
+// complex overloading (JSweet generates more complex code to mimic the Java behavior)
 String m(String s) { return s; }
 ```
 
@@ -590,13 +898,25 @@ By convention, putting the classes in a `def.libname` package defines a set of d
 
 Candies (bridges to external JavaScript libraries) use definitions. For instance, the jQuery candy defines all the jQuery API in the `def.jquery` package.
 
+### Untyped accesses
+
+Sometimes, definitions are not available or are not correct, and just a small patch is required to access a functionality. Programmers have to keep in mind that JSweet is just a syntactic layer and that it is always possible to bypass typing in order to access a field or a function that is not explicitly specified in an API.
+
+In that cases, the use of `$get` allows reflective access to methods and properties that can then be cast to the right type. For accessing functions in an untyped way, one can cast to `jsweet.lang.Function` and call the generic and untyped method `apply` on it. Note also the use of the `jsweet.util.Globals.any` helper method, which can be extremely useful to erase typing. Since the `any` method generates a cast to the `any` type in TypeScript, it is more radical than a cast to `Object` for instance. The following example shows how to use the `any` method to cast an `Int32Array` to a Java `int[]` (and then allow direct indexed accesses to it.
+
+``` java
+ArrayBuffer arb = new ArrayBuffer(2 * 2 * 4);
+int[] array = any(new Int32Array(arb));
+int whatever = array[0];
+```
+
 ### Mixins
 
 In JavaScript, it is common practice to enhance an existing class with news elements (field and methods). It is an extension mechanism used when a framework defines plugins for instance. Typically, jQuery plugins add new elements to the `JQuery` class. For example the jQuery timer plugin adds a `timer` field to the `JQuery` class. As a consequence, the `JQuery` class does not have the same prototype if you are using jQuery alone, or jQuery enhanced with its timer plugin.
 
 In Java, this extension mechanism is problematic because Java cannot dynamically enhance a given class.
 
-#### Untyped accesses
+#### Untyped accesses to mixins
 
 Programmers can access the added element with `$get` accessors and/or with brute-force casting.
 
@@ -953,13 +1273,7 @@ assert C.instance != null;
 assert C.instance.getN() == 4;
 ```
 
-Main methods do not behave exactly like in Java and depend on the way the program is packaged and deployed.
-
--   **Regular packaging (no modules)**. With regular packaging, one Java source file corresponds to one generated JavaScript file. In that case, when loading a file in the browser, all the main methods will be invoked, right after the file is evaluated.
-
--   **Module packaging**. With module packaging (module option), one Java package corresponds to one module. With modules, it is mandatory to have only one main method in the program, which will be the global entry point from which the module dependency graph will be calculated. The main module will use directly or transitively all the other modules.
-
-Because of modules, it is good practice to have only one main method in an application.
+The way main methods are globally invoked depends on how the program is packaged. See the appendixes for more details.
 
 ### Initializers
 
@@ -988,6 +1302,10 @@ public class C2 {
 }
 assert C2.n == 4;
 ```
+
+While regular initializers are evaluated when the class is instantiated, static initializers are lazily evaluated in order to avoid forward-dependency issues, and mimic the Java behavior for initializers. With JSweet, it is possible for a programmer to define a static field or a static intializer that relies on a static field that has not yet been initialized.
+
+More details on this behavior can be found in the appendixes.
 
 ### Arrays initialization and allocation
 
@@ -1034,7 +1352,11 @@ assert strings.$get(3) == "d";
 
 ### Name clashes
 
-On contrary to Java, methods and fields of the same name are not allowed within the same class or within classes having a subclassing link. The reason behind this behavior is that in JavaScript, object variables and functions are stored within the same object map, which basically means that you cannot have the same key for several object members (this also explains that method overloading in the Java sense is not possible in JavaScript).
+On contrary to TypeScript/JavaScript, Java makes a fundamental difference between methods, fields, and packages. Java also support method overloading (methods having different signatures with the same name). The reason behind this behavior is that in JavaScript, object variables and functions are stored within the same object map, which basically means that you cannot have the same key for several object members (this also explains that method overloading in the Java sense is not possible in JavaScript). Because of this, some Java code may contain name clashes when generated as is in TypeScript. JSweet will avoid name clashes automatically when possible, and will report sound errors in the other cases.
+
+#### Methods and fields names clashes
+
+JSweet performs a transformation to automatically allow methods and private fields having the same name. On the other hand, methods and public fields of the same name are not allowed within the same class or within classes having a subclassing link.
 
 In order to avoid programming mistakes due to this JavaScript behavior, which is not necessarily known by Java programmers, JSweet adds a semantics check to avoid duplicate names in classes (this also takes into account members defined in parent classes). As an example:
 
@@ -1052,7 +1374,9 @@ public class NameClashes {
 }
 ```
 
-In general, it also not possible to have two methods with the same name but with different parameters (so-called overloads). An exception to this behavior is the use of method overloading for defining optional parameters. JSweet allows this idiom under the condition that it corresponds to the following template:
+#### Method overloading
+
+On contrary to TypeScript and JavaScript (but similarly to Java), it is possible in JSweet to have several methods with the same name but with different parameters (so-called overloads). We make a distinction between simple overloads and complex overloads. Simple overloading is the use of method overloading for defining optional parameters. JSweet allows this idiom under the condition that it corresponds to the following template:
 
 ``` java
 String m(String s, double n) { return s + n; }
@@ -1066,15 +1390,32 @@ In that case, JSweet will generate JavaScript code with only one method having d
 function m(s, n = 0) { return s + n; }
 ```
 
-If the programmer tries to use overloading differently, for example by defining two different implementations for the same method name, JSweet will raise a compile error.
+If the programmer tries to use overloading differently, for example by defining two different implementations for the same method name, JSweet will fallback on a complex overload, which consists of generating a root implementation (the method that hold the more parameters) and one subsidiary implementation per overloading method (named with a suffix representing the method signature). The root implementation is generic and dispatches to other implementation by testing the values and types of the given parameters. For example:
 
 ``` java
 String m(String s, double n) { return s + n; }
-// invalid overloading (JSweet error)
 String m(String s) { return s; }
 ```
 
-Local variables can also clash with the use of a global method. For instance, using the `alert` global method from the DOM (`jsweet.dom.Globals.alert`) requires that no local variable hides it. For instance:
+Generates the following (slightly simplified) JavaScript code:
+
+``` java
+m(s, n) { 
+    if(typeof s === 'string' && typeof n === 'number') {    
+        return s + n; 
+    } else if(typeof s === 'string' && n === undefined) {
+        return this.m$java_lang_String(s);
+    } else {
+        throw new Error("invalid overload");    
+    }
+}
+
+m$java_lang_String(s) { return s; }
+```
+
+#### Local variable names
+
+In TypeScript/JavaScript, local variables can clash with the use of a global method. For instance, using the `alert` global method from the DOM (`jsweet.dom.Globals.alert`) requires that no local variable hides it. For instance:
 
 ``` java
 import static jsweet.dom.Globals.alert;
@@ -1093,7 +1434,7 @@ public void m2() {
 }
 ```
 
-Note that this problem also happens when using fully qualified names when calling the global methods (that because the qualification gets erased in TypeScript/JavaScript). In any case, JSweet will report sound errors when such problems happen so that programmers can adjust local variable names to avoid clashes with globals.
+Note that this problem also happens when using fully qualified names when calling the global methods (that is because the qualification gets erased in TypeScript/JavaScript). In any case, JSweet will report sound errors when such problems happen so that programmers can adjust local variable names to avoid clashes with globals.
 
 ### Testing the type of an object (`instanceof`)
 
@@ -1119,20 +1460,21 @@ assert s instanceof String; // transpiles to a typeof
 assert !(s instanceof Integer); // transpiles to a typeof
 assert c instanceof MyClass;
 assert typeof(n3) == "number";
-assert equalsStrict(typeof(n3), "number");
 ```
 
-In JSweet, the `instanceof` operator is not allowed on interfaces, since an interface has no runtime existence in JavaScript (it is for typing only and is erased during the transpilation process). For example, the following code is not actually creating an instance of the `Point` interface, it is creating an object that conforms to the interface, and it is not allowed to check an instance against this interface type.
+Since JSweet version 1.1.0, the `instanceof` operator is also allowed on interfaces, because JSweet keeps track of all the implemented interfaces for all objects. This interface tracking is ensure through an additional hidden property in the objects called `__interfaces` and containing the names of all the interfaces implemented by the objects (either directly of through its class inheritance tree determined at compile time). So, in case the type argument of the instanceof operator is an interface, JSweet simply checks out if the object’s `__interfaces` field exists and contains the given interface. For example, this code is fully valid in JSweet when `Point` is an interface:
 
 ``` java
 Point p1 = new Point() {{ x=1; y=1; }};
 [...]
-if (p1 instanceof Point) { ... } // compile error
+assert p1 instanceof Point
 ```
 
-This may seems quite confusing for Java programmers, but you have to remember that, on contrary to Java where interfaces are available as special classes at runtime, in JSweet, interfaces have no reality at runtime. Think of generics, which are of the same kind in Java. As a consequence, the `instanceof` operator is applicable to classes, but not to interfaces at runtime (like it is not applicable on generics).
+#### Limitations and constraints
 
-In the future, JSweet might implement a small mechanism to simulate that semantics for simple cases.
+Since all numbers are mapped to JavaScript numbers, JSweet make no distinction between integers and floats for example. So, `n instanceof Integer` and `n instanceof Float` will always give the same result whatever the actual type of `n` is. The same limitation exists for strings and char, which are not distinguishable at runtime.
+
+Like it is usually the case when working in JavaScript, serialized objects must be properly “revived” with their actual classes so that the `instanceof` operator can work again. For example a point object created through `Point p = (Point)JSON.parse({x:1,y:1})` will not work with regard to the `instanceof` operator. In case you meet such a use case, you can contact us to get some useful JSweet code to properly revive object types.
 
 ### Variable scoping in lambda expressions
 
@@ -1179,21 +1521,90 @@ It is important to stress that the `this` correct value is ensured thanks to a s
 Packaging
 ---------
 
-Packaging is one of the complex point of JavaScript, especially when coming from Java. Complexity with JavaScript packaging boils down to the fact that JavaScript did not define any packaging natively. As a consequence, many *de facto* solutions and quidelines came up along the years, making the understanding of packaging uneasy for regular Java programmers. In spite EcmaScript UMS is supposed to bring a standard for modules in Java, other *de facto* standards remain and the notion of a namespace/package is still not handled by JavaScript, making the notion of a module and a namespace confusing for JavaScript and TypeScript developers themselves.
+Packaging is one of the complex point of JavaScript, especially when coming from Java. Complexity with JavaScript packaging boils down to the fact that JavaScript did not define any packaging natively. As a consequence, many *de facto* solutions and quidelines came up along the years, making the understanding of packaging uneasy for regular Java programmers. JSweet provides useful options and generates code in order to simplify the life of Java programmers by making the packaging issues much more transparent and as “easy” as in Java for most cases. In this section, we will describe and explain typical packaging scenarios.
 
-### Packages and modules
+### Use your files without any packaging
 
-Packages and modules are two similar concepts but for different contexts.
+The most common and simple case for running a program is just to include each generated file in an HTML page. This is the default mode when not precising any packaging options. For example, when your program defines two classes `x.y.z.A` and `x.y.z.B` in two separated files, you can use them as following:
 
-Java packages must be understood as compile-time *namespaces*. They allow a compile-time structuration of the programs through name paths, with implicit or explicit visibility rules. Packages have usually not much impact on how the program is actually bundled and deployed.
+```
+<script type="text/javascript" src="target/js/x/y/z/A.js"></script>
+<script type="text/javascript" src="target/js/x/y/z/B.js"></script>
+[...]
+<!-- access a method later in the file -->
+<script type="text/javascript">x.y.z.B.myMethod()</script>
+```
 
-Modules must be understood as deployment and runtime *bundles*. The closest concept to a module in the Java world would probably be an OSGi bundle. A module defines imported and exported elements so that they create a strong runtime structure that can be used for deploying software components independently and thus avoiding name clashes. For instance, with modules, two different libraries may define a `util.List` class and be actually running and used on the same VM with no naming issues (as long as the libraries are bundled in different modules).
+When doing so, programmers need to be extremely cautious to avoid forward static dependencies between the files. In other words, the `A` class cannot use anything from `B` in static fields, static initializers, or static imports, otherwise leading to runtime errors when trying to load the page. Additionally, the `A` class cannot extend the `B` class. These constraints come from JavaScript/TypeScript and have nothing to do with JSweet.
 
-JSweet uses the Java package concept for namespaces. Modules are a deployment concept and should be created with some deployment scripts involving third party tools. However, for easy deployment, JSweet defines a `module` option that automatically creates a default module organization following the simple rule: one package = one module. With this rule, it is actually possible to run a JSweet program on Node.js without requiring extra work from the programmer. Also, using both the `bundle` and `module` options of JSweet creates a bundle file containing the application modules, and which can be deployed on a browser with no extra packaging.
+As you can imagine, running simple programs with this manual technique is fine, but can become really uncomfortable for developing complex applications. Complex applications most of the time bundle and/or package the program with appropriate tools in order to avoid having to manually handle dependencies between JavaScript files.
+
+### Creating a bundle for a browser
+
+To avoid having to take care of the dependencies manually, programmers use bundling tools to bundle up their classes into a single file. Such a bundle is included in any web page using something like this:
+
+```
+<script type="text/javascript" src="target/js/bundle.js"></script>
+[...]
+<!-- access a method later in the file -->
+<script type="text/javascript">x.y.z.B.myMethod()</script>
+```
+
+JSweet comes with such a bundling facility. To create a bundle file, just set to `true` the `bundle` option of JSweet. Note that you can also set to `true` the `declaration` option that will ask JSweet to generate the TypeScript definition file (`bundle.d.ts`). This file allows you to use/compile your JSweet program from TypeScript in a well-typed way.
+
+The “magic” with JSweet bundling option is that it analyzes the dependencies in the source code and takes care of solving forward references when building the bundle. In particular, JSweet implements a lazy initialization mechanism for static fields and initializers in order to break down static forward references across the classes. There are no specific additional declarations to be made by the programmers to make it work (on contrary to TypeScript).
+
+Note that there are still some minor limitations to it (when using inner and anonymous classes for instance), but these limitations will be rarely encountered and will be removed in future releases.
+
+Note also that JSweet will raise an error if you specify the `module` option along with the `bundle` option.
+
+### Packaging with modules
+
+First, let us start by explaining modules and focus on the difference between a Java package (or TypeScript namespace) and a module. If you feel comfortable with the difference, just skip this section.
+
+Packages and modules are two similar concepts but for different contexts. Java packages must be understood as compile-time *namespaces*. They allow a compile-time structuration of the programs through name paths, with implicit or explicit visibility rules. Packages have usually not much impact on how the program is actually bundled and deployed.
+
+Modules must be understood as deployment / runtime “bundles”, which can be `required` by other modules. The closest concept to a module in the Java world would probably be an OSGi bundle. A module defines imported and exported elements so that they create a strong runtime structure that can be used for deploying software components independently and thus avoiding name clashes. For instance, with modules, two different libraries may define a `util.List` class and be actually running and used on the same VM with no naming issues (as long as the libraries are bundled in different modules).
+
+Nowadays, a lot of libraries are packaged and accessible through modules. The standard way to use modules in a browser is the AMD, but in Node.js it is the commonjs module system.
+
+#### Modules in JSweet
+
+JSweet supports AMD, commonjs, and UMD module systems for packaging. JSweet defines a `module` option (value: `amd`, `commonjs` or `umd`). When specifying this option, JSweet automatically creates a default module organization following the simple rule: one package = one module generated in a single file called `module.js`.
+
+For example, when packaged with the `module` option set to `commonjs`, one can write:
+
+```
+> node target/js/x/y/z/module.js
+```
+
+The module system will automatically take care of the references and require other modules when needed.
+
+Note: once the program has been compiled with the `module` option, it is easy to package it as a bundle using appropriate tools such as Browserify, which would give similar output as using the `bundle` option of JSweet. Note also that JSweet will raise an error when specifying both `module` and `bundle`, which are exclusive options.
+
+#### External modules
+
+When compiling JSweet programs with the `module` options, all external libraries and components must be required as external modules. JSweet can automatically require modules, simply by using the `@Module(name)` annotation. In JSweet, importing or using a class or a member annotated with `@Module(name)` will automatically require the corresponding module at runtime. Please not that it is true only when the code is generated with the `module` option. If the `module` option is off, the `@Module` annotations are ignored.
+
+``` java
+package def.jquery;
+public final class Globals extends jsweet.lang.Object {
+    ...
+    @jsweet.lang.Module("jquery")
+    native public static def.jquery.JQuery $(java.lang.String selector);
+    ...
+}
+```
+
+The above code shows an excerpt of the JSweet jQuery API. As we can notice, the $ function is annotated with `@Module("jquery")`. As a consequence, any call to this function will trigger the require of the `jquery` module.
+
+Note: the notion of manual require of a module may be available in future releases. However, automatic require is sufficient for most programmers and hides the complexity of having to require modules explicitly. It also brings the advantage of having the same code whether modules are used or not.
+
+Troubleshooting: when a candy does not define properly the module annotation, it is currently possible to overcome the problem with a “hack” and force the use of an external module. See: <https://github.com/cincheo/jsweet/issues/114>.
 
 ### Root packages
 
-Root packages are a way to tune the generated code so that JSweet packages are erased in the generated code and thus at runtime. To set a root package, just define a package-info.java file and use the *@Root* annotation on the package, as follows:
+Root packages are a way to tune the generated code so that JSweet packages are erased in the generated code and thus at runtime. To set a root package, just define a `package-info.java` file and use the *@Root* annotation on the package, as follows:
 
 ``` java
 @Root
@@ -1213,24 +1624,6 @@ When not using modules (default), it is possible to have several *@Root* package
 #### Behavior when using modules
 
 When using modules (see the *module* option), only one *@Root* package is allowed, and when having one *@Root* package, no other package or type can be outside of the scope of that *@Root* package. The generated folder/file hierarchy then starts at the root package so that all the folders before it are actually erased.
-
-### External modules
-
-When compiling JSweet programs with the `module` options, all external libraries and components must be required as external modules. JSweet can automatically require modules, simply by using the `@Module(name)` annotation. In JSweet, importing or using a class or a member annotated with `@Module(name)` will automatically require the corresponding module at runtime. Please not that it is true only when the code is generated with the `module` option. If the `module` option is off, the `@Module` annotations are ignored.
-
-``` java
-package def.jquery;
-public final class Globals extends jsweet.lang.Object {
-    ...
-    @jsweet.lang.Module("jquery")
-    native public static def.jquery.JQuery $(java.lang.String selector);
-    ...
-}
-```
-
-The above code shows an excerpt of the JSweet jQuery API. As we can notice, the $ function is annotated with `@Module("jquery")`. As a consequence, any call to this function will trigger the require of the `jquery` module.
-
-Note: the notion of manual require of a module may be available in future releases. However, automatic require is sufficient for most programmers and hides the complexity of having to require modules explicitly. It also brings the advantage of having the same code whether modules are used or not.
 
 ### Packaging a JSweet jar (candy)
 
@@ -1256,7 +1649,7 @@ Typically, `d.ts` files shall be generated by the JSweet transpiler using the fo
 
 -   `dtsout`: tells where to put the generated `d.ts` files (for packaging, place them in `RESOURCES/src/typings`, where `RESOURCES` is your Maven project resources directory).
 
-Note: this section only described how to package JSweet jars for compilation. For execution, the generated JavaScript must be accessible to the using project too. A way is to package the JavaScript following the WebJar conventions: <http://www.webjars.org/>.
+Finally it is recommended (and good practice) to also package the generated JavaScript as a bundle. The adopted way by JSweet is to package the JavaScript following the WebJar conventions: <http://www.webjars.org/>. When packaged this way, a JSweet transpiler using your candy will automatically extract the bundled JavaScript and extract it in a directory given by the `candiesJsOut` option (default: `js/candies`).
 
 Appendix 1: JSweet transpiler options
 -------------------------------------
@@ -1299,6 +1692,10 @@ Appendix 1: JSweet transpiler options
             is set (by default, d.ts files are generated in the JavaScript output
             directory - next to the corresponding js files).
 
+      [--candiesJsOut <candiesJsOut>]
+            Specify where to place extracted JavaScript files from candies.
+            (default: js/candies)
+
       [--classpath <classpath>]
             The JSweet transpilation classpath (candy jars). This classpath should
             at least contain the core candy.
@@ -1331,28 +1728,33 @@ Appendix 1: JSweet transpiler options
             Set the transpiler to ignore 'assert' statements, i.e. no code is
             generated for assertions.
 
-Appendix 2: JSweet strict mode
-------------------------------
+Appendix 2: packaging and static behavior
+-----------------------------------------
 
-For programmers developing JavaScript-only application (no Java at all), JSweet proposes an optional *strict* mode. In strict mode, Java APIs are not accessible at all anymore and are substituted by the JavaScript APIs. This is possible through a technique invented by Peter Kriens consisting in replacing the core Java classes at compile-time. To enable strict mode, just add to your dependencies (in first position) the `jsweet-core-strict` artifact (group `org.jsweet`).
+This appendix explains some static behavior with regards to packaging.
 
-The advantage of using the strict mode is that Java core objects become JavaScript object directly and expose the JavaScript API, so that programmers do not need to switch from Java to JSweet API anymore (through the `jsweet.util.Globals` utilities). This means for instance that the `$get`, `$set` and `$delete` functions are directly accessible on all objects.
+### When main methods are invoked
 
-Here is an example with a native Java string:
+When main methods are invoked depends on the way the program is packaged.
 
-``` java
-String str = "This is a test string";
-// compile error in non strict mode: substr is not a Java method
-// but OK with strict mode! 
-str.substr(1); 
-```
+-   `module`: off, `bundle`: off. With default packaging, one Java source file corresponds to one generated JavaScript file. In that case, when loading a file in the browser, all the main methods will be invoked right at the end of the file.
 
-The main benefit in using strict mode is when manipulating objects and strings. However, it has limitations. For instance, Java arrays still need to be cast to JSweet arrays to access the JavaScript API. Moreover, programmers have to be aware that using strict mode within an IDE will prevent from having JSweet and Java code mixed within the same project (they may be in different projects though). Here is a list of tips about using strict mode.
+-   `module`: off, `bundle`: on. When the `bundle` option is on and the `module` option is off, main methods are called at the end of the bundle.
 
--   You can use strict mode on full JavaScript projects, for instance pure client-side applications or full-stack applications with a Node.js server.
+-   `module`: on, `bundle`: off. With module packaging (`module` option), one Java package corresponds to one module. With modules, it is mandatory to have only one main method in the program, which will be the global entry point from which the module dependency graph will be calculated. The main module (the one with the main method) will use directly or transitively all the other modules. The main method will be invoked at the end of the main module evaluation.
 
--   You can use strict mode on small pure JavaScript components with very few interactions with the outside world (almost no data exchanged).
+Because of modules, it is good practice to have only one main method in an application.
 
--   Avoid using strict mode when wanting to share some data between JavaScript and some Java tiers (typically trough DTOs).
+### Static and inheritance dependencies
 
--   Avoid using strict mode when you feel that one day, your code may collaborate closer with a Java application (typically a Java server).
+In TypeScript, programmers need to take care of the ordering of classes with regards to static fields and initializers. Typically, a static member cannot be initialized with a static member of a class that has not yet been defined. Also, a class cannot extend a class that has not been defined yet. This forward-dependency issue triggers runtime errors when evaluating the generated JavaScript code, which can be quite annoying for the programmers and may requires the use of external JavaScript bundling tools, such as Browserify.
+
+JSweet’s statics lazy initialization allows static forward references within a given file, and within an entire bundle when the `bundle` option is set. Also, when bundling a set of files, JSweet analyses the inheritance tree and performs a partial order permutation to eliminate forward references in the inheritance tree. Note that TypeScript bundle provide a similar feature, but the references need to be manually declared, which is not convenient for programmers.
+
+To wrap it up, here are the guidelines to be followed by the programmers depending on the packaging method:
+
+-   `module`: off, `bundle`: off. One JavaScript file is generated per Java file. The programmer must take care of including the files in the right order in the HTML page, so that there are no forward references with regard to inheritance and statics. Within a given file, static forward references are allowed, but inheritance forward reference are not supported yet (this will be supported in coming releases).
+
+-   `module`: off, `bundle`: on. This configuration produces a unique browser-compatible bundle file that can be included in an HTML page. Here, the programmer does not have to take care at all of the forward references across files. Exactly like in Java, the order does not matter. Within a single file, the programmer still have to take care of the inheritance forward references (in other words, a subclass must be declared after its parent class) (this will be supported in coming releases).
+
+-   `module`: commonjs, amd or umd, `bundle`: off. This configuration produces one module file per Java package so that they can be used within a module system. For instance, using the `commonjs` module kind will allow the program to run on Node.js. In that configuration, the program should contain one main method and only the module file containing the main method should be loaded (because it will take care loading all the other modules). This configuration imposes the same constraint within a single file (no forward-references in inheritance).
