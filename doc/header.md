@@ -1,7 +1,7 @@
 JSweet Language Specifications
 ==============================
 
-Version: 1.1.0
+Version: 1.1.x
 
 Author: Renaud Pawlak
 
