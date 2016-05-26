@@ -1102,9 +1102,9 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 						getPrinter().print("(");
 						printArgument(typeApply.arguments.head, 1);
 						if (typeName.startsWith("Binary")) {
+							getPrinter().print(", ");
 							printArgument(typeApply.arguments.head, 2);
 						}
-						printArguments(typeApply.arguments);
 						getPrinter().print(") => ");
 						substituteAndPrintType(typeApply.arguments.head, arrayComponent, inTypeParameters, completeRawTypes, false);
 						if (arrayComponent) {
