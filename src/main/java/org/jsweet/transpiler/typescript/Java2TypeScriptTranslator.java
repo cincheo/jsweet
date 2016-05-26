@@ -1444,14 +1444,15 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					continue;
 				} else {
 					printIndent().print("var ").printIdentifier(avoidJSKeyword(method.getParameters().get(j).name.toString())).print(" : ").print("any")
-							.print(" = ").printIdentifier(avoidJSKeyword(((JCVariableDecl) args.get(j)).name.toString())).print(";").println();
+							.print(Util.isVarargs(method.getParameters().get(j)) ? "[]" : "").print(" = ")
+							.printIdentifier(avoidJSKeyword(((JCVariableDecl) args.get(j)).name.toString())).print(";").println();
 				}
 			} else {
 				if (method.getParameters().get(j).name.toString().equals(args.get(j).toString())) {
 					continue;
 				} else {
 					printIndent().print("var ").printIdentifier(avoidJSKeyword(method.getParameters().get(j).name.toString())).print(" : ").print("any")
-							.print(" = ").print(args.get(j)).print(";").println();
+							.print(Util.isVarargs(method.getParameters().get(j)) ? "[]" : "").print(" = ").print(args.get(j)).print(";").println();
 				}
 			}
 		}
