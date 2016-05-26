@@ -3052,7 +3052,17 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (memberReference.expr.type.toString().endsWith(JSweetConfig.GLOBALS_CLASS_NAME)) {
 			print(memberReference.name.toString());
 		} else {
-			print(memberReference.expr).print(".").print(memberReference.name.toString());
+			if ("<init>".equals(memberReference.name.toString())) {
+				if (context.types.isArray(memberReference.expr.type)) {
+					print("new Array<");
+					getAdapter().substituteAndPrintType(((JCArrayTypeTree) memberReference.expr).elemtype);
+					print(">");
+				} else {
+					print("new ").print(memberReference.expr);
+				}
+			} else {
+				print(memberReference.expr).print(".").print(memberReference.name.toString());
+			}
 		}
 
 		if (memberReference.sym instanceof MethodSymbol) {

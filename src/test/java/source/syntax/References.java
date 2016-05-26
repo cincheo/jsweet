@@ -19,12 +19,16 @@ package source.syntax;
 import static jsweet.util.Globals.$export;
 
 import java.util.function.BiConsumer;
+import java.util.function.IntFunction;
+import java.util.function.Supplier;
 
 public class References {
 
 	void m(String s, int i) {
 		$export("s", s);
 		$export("i", i);
+		$export("m", m(MyObject::new));
+		$export("m2", m2(MyObject[]::new));
 	}
 
 	void m1(BiConsumer<String, Integer> c) {
@@ -36,4 +40,19 @@ public class References {
 		r.m1(r::m);
 	}
 
+	public static <T> Object m(Supplier<T> supplier) {
+		return supplier.get();
+	}
+
+	public static <T> T[] m2(IntFunction<T[]> intFunction) {
+		return intFunction.apply(2);
+	}
+	
+}
+
+class MyObject {
+	@Override
+	public String toString() {
+		return "O";
+	}
 }

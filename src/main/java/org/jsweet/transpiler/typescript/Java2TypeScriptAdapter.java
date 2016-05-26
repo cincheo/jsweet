@@ -1054,7 +1054,11 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 							getPrinter().print("(");
 						}
 						getPrinter().print("(");
-						printArguments(typeApply.arguments);
+						if (typeName.startsWith("Int") || typeName.startsWith("Long") || typeName.startsWith("Double")) {
+							getPrinter().print("p0 : number");
+						} else {
+							printArguments(typeApply.arguments);
+						}
 						getPrinter().print(") => void");
 						if (arrayComponent) {
 							getPrinter().print(")");
@@ -1065,7 +1069,11 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 							getPrinter().print("(");
 						}
 						getPrinter().print("(");
-						printArguments(typeApply.arguments.subList(0, typeApply.arguments.length() - 1));
+						if (typeName.startsWith("Int") || typeName.startsWith("Long") || typeName.startsWith("Double")) {
+							getPrinter().print("p0 : number");
+						} else {
+							printArguments(typeApply.arguments.subList(0, typeApply.arguments.length() - 1));
+						}
 						getPrinter().print(") => ");
 						substituteAndPrintType(typeApply.arguments.get(typeApply.arguments.length() - 1), arrayComponent, inTypeParameters, completeRawTypes,
 								false);
@@ -1079,7 +1087,11 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 						}
 						getPrinter().print("(");
 						getPrinter().print(") => ");
-						substituteAndPrintType(typeApply.arguments.get(0), arrayComponent, inTypeParameters, completeRawTypes, false);
+						if (typeName.startsWith("Int") || typeName.startsWith("Long") || typeName.startsWith("Double")) {
+							getPrinter().print("number");
+						} else {
+							substituteAndPrintType(typeApply.arguments.get(0), arrayComponent, inTypeParameters, completeRawTypes, false);
+						}
 						if (arrayComponent) {
 							getPrinter().print(")");
 						}
@@ -1089,7 +1101,11 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 							getPrinter().print("(");
 						}
 						getPrinter().print("(");
-						printArguments(typeApply.arguments);
+						if (typeName.startsWith("Int") || typeName.startsWith("Long") || typeName.startsWith("Double")) {
+							getPrinter().print("p0 : number");
+						} else {
+							printArguments(typeApply.arguments);
+						}
 						getPrinter().print(") => boolean");
 						if (arrayComponent) {
 							getPrinter().print(")");
