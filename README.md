@@ -22,6 +22,8 @@ JSweet programs usually run on a JavaScript VM, but the programs that only use J
 - Support for various EcmaScript target versions (ES3 to ES6).
 - ...
 
+For more details, go to the [language specifications](https://github.com/cincheo/jsweet/blob/master/doc/jsweet-language-specifications.md) ([PDF](https://github.com/cincheo/jsweet/raw/master/doc/jsweet-language-specifications.pdf)).
+
 ## Getting started
 
 - Step 1: Install (or check that you have installed) [Git](https://git-scm.com/downloads), [Node.js](https://nodejs.org) and [Maven](https://maven.apache.org/) (commands `git`, `node`, `npm` and `mvn` should be in your path).

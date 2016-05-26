@@ -1,5 +1,5 @@
-JSweet Language Specifications ([PDF](https://github.com/cincheo/jsweet/raw/master/doc/jsweet-language-specifications.pdf))
-====================================
+JSweet Language Specifications
+==============================
 
 Version: 1.1.0
 
