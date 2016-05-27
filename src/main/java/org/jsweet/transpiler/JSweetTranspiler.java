@@ -147,6 +147,7 @@ public class JSweetTranspiler implements JSweetOptions {
 	private boolean generateDeclarations = false;
 	private File declarationsOutputDir;
 	private boolean jdkAllowed = true;
+	private ArrayList<File> jsLibFiles = new ArrayList<>();
 
 	/**
 	 * Creates a JSweet transpiler, with the default values.
@@ -491,6 +492,12 @@ public class JSweetTranspiler implements JSweetOptions {
 			} else {
 				File tmpFile = new File(new File(TMP_WORKING_DIR_NAME), "eval.tmp.js");
 				FileUtils.deleteQuietly(tmpFile);
+				if (jsLibFiles != null) {
+					for (File jsLibFile : jsLibFiles) {
+						String script = FileUtils.readFileToString(jsLibFile);
+						FileUtils.write(tmpFile, script + "\n", true);
+					}
+				}
 				for (SourceFile sourceFile : sourceFiles) {
 					String script = FileUtils.readFileToString(sourceFile.getJsFile());
 					FileUtils.write(tmpFile, script + "\n", true);
@@ -1475,4 +1482,23 @@ public class JSweetTranspiler implements JSweetOptions {
 	public boolean isJDKAllowed() {
 		return jdkAllowed;
 	}
+
+	/**
+	 * Add JavaScript libraries that are used for the JavaScript evaluation.
+	 * 
+	 * @see #eval(TranspilationHandler, SourceFile...)
+	 */
+	public void addJsLibFiles(File... files) {
+		jsLibFiles.addAll(Arrays.asList(files));
+	}
+
+	/**
+	 * Clears JavaScript libraries that are used for the JavaScript evaluation.
+	 * 
+	 * @see #eval(TranspilationHandler, SourceFile...)
+	 */
+	public void clearJsLibFiles() {
+		jsLibFiles.clear();
+	}
+
 }
