@@ -260,7 +260,7 @@ public class CandiesProcessor {
 			Predicate<String> isTsDefToBeExtracted, //
 			File classesOutputDirectory) {
 		logger.info("extract candy: " + jarFile.getName() + " javaOutputDirectory=" + javaOutputDirectory + " tsDefOutputDirectory=" + tsDefOutputDirectory
-				+ " classesOutputDirectory=" + classesOutputDirectory);
+				+ " classesOutputDirectory=" + classesOutputDirectory + " jsOutputDir=" + jsOutputDirectory);
 
 		jarFile.stream()
 				.filter(entry -> entry.getName().endsWith(".d.ts") && entry.getName().startsWith("src/") || entry.getName().endsWith("package-info.class")) //
