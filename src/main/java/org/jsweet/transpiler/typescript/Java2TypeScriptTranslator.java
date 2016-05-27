@@ -3123,6 +3123,17 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			print("typeof ");
 			print(exprStr, expr);
 			print(" === ").print("'" + instanceOfTypeMapping.get(type.toString()).toLowerCase() + "'");
+		} else if (type.toString().startsWith(JSweetConfig.FUNCTION_CLASSES_PACKAGE + ".") || type.toString().startsWith("java.util.function.")
+				|| Runnable.class.getName().equals(type.toString()) || Util.hasAnnotationType(type.tsym, JSweetConfig.ANNOTATION_FUNCTIONAL_INTERFACE)) {
+			print("typeof ");
+			print(exprStr, expr);
+			print(" === 'function'");
+			int parameterCount = Util.getFunctionalTypeParameterCount(type);
+			if (parameterCount != -1) {
+				print(" && (<any>");
+				print(exprStr, expr);
+				print(").length == " + Util.getFunctionalTypeParameterCount(type));
+			}
 		} else {
 			print(exprStr, expr);
 			if (Util.isInterface(type.tsym)) {

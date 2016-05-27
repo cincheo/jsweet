@@ -1273,4 +1273,67 @@ public class Util {
 		}
 	}
 
+	/**
+	 * Returns the number of arguments declared by a function interface.
+	 */
+	public static int getFunctionalTypeParameterCount(Type type) {
+		String name = type.tsym.getSimpleName().toString();
+		String fullName = type.toString();
+		if (Runnable.class.getName().equals(fullName)) {
+			return 0;
+		} else if (type.toString().startsWith(JSweetConfig.FUNCTION_CLASSES_PACKAGE + ".")) {
+			if (name.equals("TriFunction")) {
+				return 3;
+			} else if (name.equals("TriConsumer")) {
+				return 3;
+			} else if (name.equals("Consumer")) {
+				return 1;
+			} else if (name.startsWith("Function") || name.startsWith("Consumer")) {
+				return Integer.parseInt(name.substring(8));
+			} else {
+				return -1;
+			}
+		} else if (type.toString().startsWith("java.util.function.")) {
+			if (name.endsWith("Consumer")) {
+				if (name.startsWith("Bi")) {
+					return 2;
+				} else {
+					return 1;
+				}
+			} else if (name.endsWith("Function")) {
+				if (name.startsWith("Bi")) {
+					return 2;
+				} else {
+					return 1;
+				}
+			} else if (name.endsWith("UnaryOperator")) {
+				return 1;
+			} else if (name.endsWith("BinaryOperator")) {
+				return 2;
+			} else if (name.endsWith("Supplier")) {
+				return 0;
+			} else if (name.endsWith("Predicate")) {
+				if (name.startsWith("Bi")) {
+					return 2;
+				} else {
+					return 1;
+				}
+			} else {
+				return -1;
+			}
+		} else {
+			if (hasAnnotationType(type.tsym, JSweetConfig.ANNOTATION_FUNCTIONAL_INTERFACE)) {
+				for (Element e : type.tsym.getEnclosedElements()) {
+					if (e instanceof MethodSymbol) {
+						return ((MethodSymbol) e).getParameters().size();
+					}
+				}
+				return -1;
+			} else {
+				return -1;
+			}
+		}
+
+	}
+
 }

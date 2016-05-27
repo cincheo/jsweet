@@ -18,6 +18,9 @@ package source.structural;
 
 import static jsweet.util.Globals.$export;
 
+import java.util.function.BinaryOperator;
+import java.util.function.IntFunction;
+
 import jsweet.lang.Array;
 import jsweet.lang.Interface;
 import jsweet.lang.Optional;
@@ -40,6 +43,10 @@ public class InstanceofForInterfaces {
 		}
 	}
 
+	static void m2(BinaryOperator<String> op) {
+		assert op instanceof BinaryOperator && !(op instanceof IntFunction);
+	}
+
 	public static void main(String[] args) {
 		I1 i1 = new I1() {
 		};
@@ -51,6 +58,7 @@ public class InstanceofForInterfaces {
 		};
 		new InstanceofForInterfaces().m(i2);
 		new InstanceofForInterfaces().m(new C3());
+		m2((a, b) -> a + b);
 		$export("trace", trace.join());
 	}
 
@@ -68,7 +76,7 @@ abstract class I2 {
 
 class C3 implements I1 {
 	int i;
-//	C3() {
-//		i = 2;
-//	}
+	// C3() {
+	// i = 2;
+	// }
 }
