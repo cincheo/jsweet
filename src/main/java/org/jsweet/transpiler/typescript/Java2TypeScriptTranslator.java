@@ -2047,7 +2047,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			if (!Util.hasVarargs(methSym) //
 					|| inv.args.last().type.getKind() != TypeKind.ARRAY
 					// we dont use apply if var args type differ
-					|| !((ArrayType) inv.args.last().type).elemtype.equals(((ArrayType) methSym.getParameters().last().type).elemtype)) {
+					|| !context.types.erasure(((ArrayType) inv.args.last().type).elemtype)
+							.equals(context.types.erasure(((ArrayType) methSym.getParameters().last().type).elemtype))) {
 				applyVarargs = false;
 			}
 
@@ -2100,22 +2101,22 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 			if (applyVarargs) {
 				print(".apply");
-			}
-
-			if (inv.typeargs != null && !inv.typeargs.isEmpty()) {
-				print("<");
-				for (JCExpression argument : inv.typeargs) {
-					getAdapter().substituteAndPrintType(argument).print(",");
-				}
-				removeLastChar();
-				print(">");
 			} else {
-				// force type arguments to any because they are inferred to
-				// {} by default
-				if (methSym != null && !methSym.getTypeParameters().isEmpty()) {
-					// invalid overload type parameters are erased
-					if (!context.isInvalidOverload(methSym)) {
-						printAnyTypeArguments(methSym.getTypeParameters().size());
+				if (inv.typeargs != null && !inv.typeargs.isEmpty()) {
+					print("<");
+					for (JCExpression argument : inv.typeargs) {
+						getAdapter().substituteAndPrintType(argument).print(",");
+					}
+					removeLastChar();
+					print(">");
+				} else {
+					// force type arguments to any because they are inferred to
+					// {} by default
+					if (methSym != null && !methSym.getTypeParameters().isEmpty()) {
+						// invalid overload type parameters are erased
+						if (!context.isInvalidOverload(methSym)) {
+							printAnyTypeArguments(methSym.getTypeParameters().size());
+						}
 					}
 				}
 			}
@@ -2468,19 +2469,41 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			} else {
 				if (!getAdapter().substituteNewClass(newClass)) {
 					if (typeChecker.checkType(newClass, null, newClass.clazz)) {
-						if (newClass.clazz instanceof JCTypeApply) {
-							JCTypeApply typeApply = (JCTypeApply) newClass.clazz;
-							print("new ").print(typeApply.clazz);
-							if (!typeApply.arguments.isEmpty()) {
-								print("<").printTypeArgList(typeApply.arguments).print(">");
-							} else {
-								// erase types since the diamond (<>) operator
-								// does not exists in TypeScript
-								printAnyTypeArguments(((ClassSymbol) newClass.clazz.type.tsym).getTypeParameters().length());
+
+						boolean applyVarargs = true;
+						MethodSymbol methSym = (MethodSymbol) newClass.constructor;
+						if (newClass.args.size() == 0 || !Util.hasVarargs(methSym) //
+								|| newClass.args.last().type.getKind() != TypeKind.ARRAY
+								// we dont use apply if var args type differ
+								|| !context.types.erasure(((ArrayType) newClass.args.last().type).elemtype)
+										.equals(context.types.erasure(((ArrayType) methSym.getParameters().last().type).elemtype))) {
+							applyVarargs = false;
+						}
+						if (applyVarargs) {
+							print("<any>new (Function.prototype.bind.apply(").print(newClass.clazz).print(", [null");
+
+							for (int i = 0; i < newClass.args.length() - 1; i++) {
+								print(", ").print(newClass.args.get(i));
 							}
-							print("(").printConstructorArgList(newClass).print(")");
+
+							print("].concat(<any[]>").print(newClass.args.last()).print(")))");
+
 						} else {
-							print("new ").print(newClass.clazz).print("(").printConstructorArgList(newClass).print(")");
+							if (newClass.clazz instanceof JCTypeApply) {
+								JCTypeApply typeApply = (JCTypeApply) newClass.clazz;
+								print("new ").print(typeApply.clazz);
+								if (!typeApply.arguments.isEmpty()) {
+									print("<").printTypeArgList(typeApply.arguments).print(">");
+								} else {
+									// erase types since the diamond (<>)
+									// operator
+									// does not exists in TypeScript
+									printAnyTypeArguments(((ClassSymbol) newClass.clazz.type.tsym).getTypeParameters().length());
+								}
+								print("(").printConstructorArgList(newClass).print(")");
+							} else {
+								print("new ").print(newClass.clazz).print("(").printConstructorArgList(newClass).print(")");
+							}
 						}
 					}
 				}
