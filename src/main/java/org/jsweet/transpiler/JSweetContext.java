@@ -361,6 +361,26 @@ public class JSweetContext extends Context {
 		footerStatements.add(0, footerStatement);
 	}
 
+	private Map<String, String> globalsMapping = new HashMap<>();
+
+	/**
+	 * Adds a globals mapping.
+	 */
+	public void addGlobalsMapping(String from, String to) {
+		globalsMapping.put(from, to);
+	}
+
+	/**
+	 * Returns the TypeScript string for globals mapping.
+	 */
+	public String getGlobalsMappingString() {
+		StringBuilder b = new StringBuilder();
+		for (Map.Entry<String, String> e : globalsMapping.entrySet()) {
+			b.append("var " + e.getValue() + " = " + e.getKey() + ";\n");
+		}
+		return b.toString();
+	}
+
 	private Map<TypeSymbol, Set<Entry<JCClassDecl, JCMethodDecl>>> defaultMethods = new HashMap<>();
 	private Map<JCMethodDecl, JCCompilationUnit> defaultMethodsCompilationUnits = new HashMap<>();
 

@@ -2480,14 +2480,15 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							applyVarargs = false;
 						}
 						if (applyVarargs) {
-							print("<any>new (Function.prototype.bind.apply(").print(newClass.clazz).print(", [null");
-
+							// this is necessary in case the user defines a
+							// Function class that hides the global Function
+							// class
+							context.addGlobalsMapping("Function", "__Function");
+							print("<any>new (__Function.prototype.bind.apply(").print(newClass.clazz).print(", [null");
 							for (int i = 0; i < newClass.args.length() - 1; i++) {
 								print(", ").print(newClass.args.get(i));
 							}
-
 							print("].concat(<any[]>").print(newClass.args.last()).print(")))");
-
 						} else {
 							if (newClass.clazz instanceof JCTypeApply) {
 								JCTypeApply typeApply = (JCTypeApply) newClass.clazz;

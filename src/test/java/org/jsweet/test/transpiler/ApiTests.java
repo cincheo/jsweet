@@ -18,6 +18,9 @@ package org.jsweet.test.transpiler;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.File;
+
+import org.jsweet.transpiler.JSweetTranspiler;
 import org.jsweet.transpiler.ModuleKind;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -26,6 +29,8 @@ import org.junit.Test;
 import source.api.ArrayBuffers;
 import source.api.CastMethods;
 import source.api.ErasingJava;
+import source.api.ExpressionBuilderTest;
+import source.api.ExpressionBuilderTest2;
 import source.api.ForeachIteration;
 import source.api.J4TSInvocations;
 import source.api.JdkInvocations;
@@ -136,13 +141,27 @@ public class ApiTests extends AbstractTest {
 			logHandler.assertReportedProblems();
 		} , getSourceFile(Numbers.class));
 	}
-	
+
 	@Test
 	public void testArrayBuffers() {
 		eval(ModuleKind.none, (logHandler, r) -> {
 			logHandler.assertReportedProblems();
 			Assert.assertEquals("0,0,1", r.get("trace"));
 		} , getSourceFile(ArrayBuffers.class));
+	}
+
+	@Test
+	public void testExpressionBuilder() {
+		transpiler.addJsLibFiles(new File(JSweetTranspiler.TMP_WORKING_DIR_NAME + "/candies/js/j4ts-0.1.0/bundle.js"));
+		try {
+			eval(ModuleKind.none, (logHandler, r) -> {
+				logHandler.assertReportedProblems();
+				Assert.assertEquals(30, (int) r.get("result"));
+				Assert.assertEquals(30, (int) r.get("result2"));
+			} , getSourceFile(ExpressionBuilderTest.class), getSourceFile(ExpressionBuilderTest2.class));
+		} finally {
+			transpiler.clearJsLibFiles();
+		}
 	}
 
 }

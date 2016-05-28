@@ -721,6 +721,7 @@ public class JSweetTranspiler implements JSweetOptions {
 			PrintWriter out = new PrintWriter(outputFilePath);
 			try {
 				out.println(printer.getResult());
+				out.print(context.getGlobalsMappingString());
 				out.print(context.poolFooterStatements());
 			} finally {
 				out.close();
@@ -788,6 +789,7 @@ public class JSweetTranspiler implements JSweetOptions {
 			files[permutation[i]].sourceMap = printer.sourceMap;
 			files[permutation[i]].sourceMap.shiftOutputPositions(StringUtils.countMatches(sb, "\n"));
 			sb.append(printer.getOutput());
+			sb2.append(context.getGlobalsMappingString());
 			sb2.append(context.poolFooterStatements());
 		}
 		for (Entry<PackageSymbol, StringBuilder> e : modules.entrySet()) {
@@ -883,6 +885,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		PrintWriter out = new PrintWriter(outputFilePath);
 		try {
 			out.println(sb.toString());
+			out.print(context.getGlobalsMappingString());
 			out.print(context.poolFooterStatements());
 		} finally {
 			out.close();
