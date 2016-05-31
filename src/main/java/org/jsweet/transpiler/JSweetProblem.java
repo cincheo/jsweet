@@ -16,6 +16,8 @@
  */
 package org.jsweet.transpiler;
 
+import org.jsweet.JSweetConfig;
+
 /**
  * This enumeration holds all the possible JSweet transpilation problems
  * (warnings and errors) and the associated messages.
@@ -341,7 +343,8 @@ public enum JSweetProblem {
 		case USELESS_OPTIONAL_ANNOTATION:
 			return String.format("useless @Optional field %s (fields are optional by default in classes, use @Interface to define %s as an interface)", params);
 		case JS_KEYWORD_CONFLICT:
-			return String.format("local variable name '%s' is not allowed and is automatically generated to '_jsweet_%s'", params);
+			return String.format("local variable name '%s' is not allowed and is automatically generated to '" + JSweetConfig.JS_KEYWORD_PREFIX + "%s'",
+					params);
 		case INVALID_METHOD_BODY_IN_INTERFACE:
 			return String.format("method '%s' cannot define a body in interface '%s' (try 'abstract' or 'native' modifiers)", params);
 		case INVALID_PRIVATE_IN_INTERFACE:
