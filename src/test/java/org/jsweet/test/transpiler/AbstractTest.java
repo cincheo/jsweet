@@ -97,7 +97,8 @@ public class AbstractTest {
 			staticLogger.info("*** test suite initialization ***");
 			FileUtils.deleteQuietly(outDir);
 			staticLogger.info("*** create tranpiler ***");
-			transpiler = new JSweetTranspiler(outDir, null, null, System.getProperty("java.class.path"));
+			transpiler = new JSweetTranspiler(outDir, null, new File(JSweetTranspiler.TMP_WORKING_DIR_NAME + "/candies/js"),
+					System.getProperty("java.class.path"));
 			transpiler.setModuleKind(ModuleKind.none);
 			FileUtils.deleteQuietly(transpiler.getWorkingDirectory());
 			transpiler.getCandiesProcessor().touch();
@@ -127,7 +128,6 @@ public class AbstractTest {
 		return new SourceFile(new File(JSWEET_TEST_DIRECTORY_NAME + "/" + className.replace(".", "/") + ".java"));
 	}
 
-	
 	protected EvaluationResult eval(SourceFile sourceFile, JSweetProblem... expectedProblems) {
 		EvaluationResult res = null;
 		TestTranspilationHandler logHandler = new TestTranspilationHandler();
