@@ -96,7 +96,7 @@ public class AbstractTest {
 		if (!testSuiteInitialized) {
 			staticLogger.info("*** test suite initialization ***");
 			FileUtils.deleteQuietly(outDir);
-			staticLogger.info("*** create tranpiler ***");
+			staticLogger.info("*** create transpiler ***");
 			transpiler = new JSweetTranspiler(outDir, null, new File(JSweetTranspiler.TMP_WORKING_DIR_NAME + "/candies/js"),
 					System.getProperty("java.class.path"));
 			transpiler.setModuleKind(ModuleKind.none);

@@ -125,6 +125,7 @@ public class CandiesProcessor {
 	private void setCandiesJavascriptOutDir(File extractedCandiesJavascriptDir) {
 		this.candiesJavascriptOutDir = extractedCandiesJavascriptDir;
 		if (this.candiesJavascriptOutDir == null) {
+			logger.info("extracted candies directory is set to default");
 			this.candiesJavascriptOutDir = new File(workingDir, CANDIES_DEFAULT_JS_DIR_NAME);
 		}
 		logger.info("extracted candies directory: " + extractedCandiesJavascriptDir);
