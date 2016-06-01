@@ -5,15 +5,15 @@ sudo: false
 jdk:
   - oraclejdk8
 
-env:
-  - TRAVIS_NODE_VERSION="4.2"
-
 script:
   - mvn clean verify
 
 cache:
   directories:
     - $HOME/.m2
+
+install:
+  - nvm use 4.1
 
 notifications:
   email:
