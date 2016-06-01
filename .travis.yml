@@ -5,8 +5,8 @@ sudo: false
 jdk:
   - oraclejdk8
 
-node_js:
-  - "4.2"
+env:
+  - TRAVIS_NODE_VERSION="4.2"
 
 script:
   - mvn clean verify
