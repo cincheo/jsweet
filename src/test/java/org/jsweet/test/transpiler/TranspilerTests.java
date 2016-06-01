@@ -111,6 +111,7 @@ public class TranspilerTests extends AbstractTest {
 		}
 	}
 
+	@Ignore
 	@Test
 	public void testTscInstallation() throws Exception {
 		ProcessUtil.uninstallNodePackage("typescript", true);
