@@ -202,7 +202,7 @@ public class CandiesProcessor {
 
 			}
 		}
-		logger.info("candies: " + jarFilesCollector.keySet());
+		logger.info(jarFilesCollector.keySet().size() + " candies found in classpath");
 
 		return jarFilesCollector;
 	}

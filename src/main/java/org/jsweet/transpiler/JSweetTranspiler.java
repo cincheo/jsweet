@@ -1073,7 +1073,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		}
 
 		try {
-			logger.info("launching tsc with args: " + args);
+			logger.info("launching tsc...");
 
 			boolean[] fullPass = { true };
 
