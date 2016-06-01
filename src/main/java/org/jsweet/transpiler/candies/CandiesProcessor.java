@@ -193,7 +193,7 @@ public class CandiesProcessor {
 					JarEntry candySpecificEntry2 = jarFileHandle.getJarEntry("META-INF/candy-metadata.json");
 					boolean isCandy = candySpecificEntry != null || candySpecificEntry2 != null;
 					if (isCandy) {
-						CandyDescriptor descriptor = CandyDescriptor.fromCandyJar(jarFileHandle);
+						CandyDescriptor descriptor = CandyDescriptor.fromCandyJar(jarFileHandle, candiesJavascriptOutDir.getAbsolutePath());
 
 						checkCandyVersion(descriptor, transpilationHandler);
 						jarFilesCollector.put(jarFile, descriptor);
