@@ -108,6 +108,19 @@
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>3.0.0</version>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>2.10.3</version>
 				<configuration>
@@ -122,6 +135,14 @@
 					<bottom><![CDATA[<center>Copyright 2015, <a href="http://www.cincheo.org" target="_blank">Cinchéo SAS<a> - Web site: <a href="http://www.jsweet.org" target="_blank">http://www.jsweet.org<a><center>]]></bottom>
 					<stylesheetfile>/var/www/apidocs/stylesheet.css</stylesheetfile>
 				</configuration>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
