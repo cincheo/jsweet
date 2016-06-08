@@ -60,7 +60,7 @@ public class CalculusTests extends AbstractTest {
 			Assert.assertEquals((Double) 7.5, r.get("f3"));
 			Assert.assertEquals((Integer) 7, r.get("i3"));
 			Assert.assertEquals((Integer) 7, r.get("i4"));
-		} , getSourceFile(Integers.class));
+		}, getSourceFile(Integers.class));
 	}
 
 	@Test
@@ -68,7 +68,7 @@ public class CalculusTests extends AbstractTest {
 		eval(ModuleKind.none, (logHandler, r) -> {
 			logHandler.assertReportedProblems();
 			Assert.assertEquals(r.get("t1").toString(), r.get("t2").toString());
-		} , getSourceFile(Longs.class));
+		}, getSourceFile(Longs.class));
 	}
 
 	@Test
@@ -84,15 +84,15 @@ public class CalculusTests extends AbstractTest {
 			Assert.assertEquals(Math.cbrt(2), (double) r.get("cbrt2"), 0.00001);
 			Assert.assertEquals(Math.signum(-2342), (int) r.get("signum_2342"), 0.00001);
 			Assert.assertEquals(Math.scalb(1.2, 2), (double) r.get("scalb1_2__2"), 0.00001);
-
-		} , getSourceFile(MathApi.class));
+			Assert.assertEquals(Math.toDegrees(0.5), (double) r.get("toDegres0_5"), 0.00001);
+		}, getSourceFile(MathApi.class));
 	}
 
 	@Test
 	public void testOperators() {
 		transpile(ModuleKind.none, (logHandler) -> {
 			logHandler.assertReportedProblems();
-		} , getSourceFile(Operators.class));
+		}, getSourceFile(Operators.class));
 	}
 
 	@Test
@@ -100,14 +100,14 @@ public class CalculusTests extends AbstractTest {
 		eval(ModuleKind.none, (logHandler, r) -> {
 			logHandler.assertReportedProblems();
 			Assert.assertEquals("" + (char) (0x0030 + ((int) (5 * 10))), r.get("result"));
-		} , getSourceFile(Chars.class));
+		}, getSourceFile(Chars.class));
 	}
 
 	@Test
 	public void testNull() {
 		eval(ModuleKind.none, (logHandler, r) -> {
 			logHandler.assertReportedProblems();
-		} , getSourceFile(Null.class));
+		}, getSourceFile(Null.class));
 	}
-	
+
 }
