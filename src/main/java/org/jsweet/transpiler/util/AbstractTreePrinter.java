@@ -37,407 +37,408 @@ import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 /**
  * A tree printer is a kind of tree scanner specialized in pretty printing the
  * scanned AST of a compilation unit (source file).
- * 
+ *
  * @author Renaud Pawlak
  */
 public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 
-	private static final Logger logger = Logger.getLogger(AbstractTreePrinter.class);
+    private static final Logger logger = Logger.getLogger(AbstractTreePrinter.class);
 
-	private Stack<Position> positionStack = new Stack<>();
+    private Stack<Position> positionStack = new Stack<>();
 
-	/**
-	 * A footer to be printed at the end of the output.
-	 */
-	public StringBuilder footer = new StringBuilder();
+    /**
+     * A footer to be printed at the end of the output.
+     */
+    public StringBuilder footer = new StringBuilder();
 
-	/**
-	 * The position stack of the scanner.
-	 */
-	public Stack<Position> getPositionStack() {
-		return positionStack;
-	}
+    /**
+     * The position stack of the scanner.
+     */
+    public Stack<Position> getPositionStack() {
+        return positionStack;
+    }
 
-	/**
-	 * This method must be overridden to define the printer output files
-	 * extension.
-	 */
-	public abstract String getTargetFilesExtension();
+    /**
+     * This method must be overridden to define the printer output files
+     * extension.
+     */
+    public abstract String getTargetFilesExtension();
 
-	private static final String INDENT = "    ";
+    private static final String INDENT = "    ";
 
-	private StringBuilder out = new StringBuilder();
+    private StringBuilder out = new StringBuilder();
 
-	private int indent = 0;
+    private int indent = 0;
 
-	private AbstractPrinterAdapter adapter;
+    private AbstractPrinterAdapter adapter;
 
-	public TypeChecker typeChecker;
+    public TypeChecker typeChecker;
 
-	private int currentLine = 1;
+    private int currentLine = 1;
 
-	private int currentColumn = 0;
+    private int currentColumn = 0;
 
-	private boolean preserveSourceLineNumbers = true;
+    private boolean preserveSourceLineNumbers = true;
 
-	public SourceMap sourceMap = new SourceMap();
+    public SourceMap sourceMap = new SourceMap();
 
-	/**
-	 * Creates a new printer.
-	 * 
-	 * @param logHandler
-	 *            the handler that reports logs and problems
-	 * @param context
-	 *            the scanning context
-	 * @param compilationUnit
-	 *            the source file to be printed
-	 * @param adapter
-	 *            the printer adapter
-	 * @param preserveSourceLineNumbers
-	 *            tells if the output source code should try to preserve the
-	 *            line numbers of the original Java code
-	 */
-	public AbstractTreePrinter(TranspilationHandler logHandler, JSweetContext context, JCCompilationUnit compilationUnit, AbstractPrinterAdapter adapter,
-			boolean preserveSourceLineNumbers) {
-		super(logHandler, context, compilationUnit);
-		this.typeChecker = new TypeChecker(this);
-		this.adapter = adapter;
-		this.adapter.setPrinter(this);
-		this.preserveSourceLineNumbers = preserveSourceLineNumbers;
-	}
+    /**
+     * Creates a new printer.
+     *
+     * @param logHandler the handler that reports logs and problems
+     * @param context the scanning context
+     * @param compilationUnit the source file to be printed
+     * @param adapter the printer adapter
+     * @param preserveSourceLineNumbers tells if the output source code should
+     * try to preserve the line numbers of the original Java code
+     */
+    public AbstractTreePrinter(TranspilationHandler logHandler, JSweetContext context, JCCompilationUnit compilationUnit, AbstractPrinterAdapter adapter,
+        boolean preserveSourceLineNumbers) {
+        super(logHandler, context, compilationUnit);
+        this.typeChecker = new TypeChecker(this);
+        this.adapter = adapter;
+        this.adapter.setPrinter(this);
+        this.preserveSourceLineNumbers = preserveSourceLineNumbers;
+    }
 
-	/**
-	 * Gets this output of this printer.
-	 */
-	public String getOutput() {
-		return out.toString();
-	}
+    /**
+     * Gets this output of this printer.
+     */
+    public String getOutput() {
+        return out.toString();
+    }
 
-	/**
-	 * Print a given AST.
-	 */
-	public AbstractTreePrinter print(JCTree tree) {
-		scan(tree);
-		return this;
-	}
+    /**
+     * Print a given AST.
+     */
+    public AbstractTreePrinter print(JCTree tree) {
+        scan(tree);
+        return this;
+    }
 
-	/**
-	 * Enters the given tree (se {@link #scan(JCTree)}.
-	 */
-	protected void enter(JCTree tree) {
-		super.enter(tree);
-		if (this.preserveSourceLineNumbers && !stack.isEmpty()) {
-			int line = compilationUnit.lineMap.getLineNumber(stack.peek().pos);
-			// adjusting line...
-			while (currentLine < line) {
-				out.append("\n");
-				currentColumn = 0;
-				currentLine++;
-			}
-			while (currentLine != 1 && currentLine > line && out.charAt(out.length() - 1) == '\n') {
-				out.deleteCharAt(out.length() - 1);
-				currentColumn = 0;
-				currentLine--;
-			}
-			if (currentLine != line) {
-				logger.warn("cannot adjust line for: " + tree.getClass() + " at line " + line);
-			}
-			// adjusting columns... (TODO: does not work)
-			// int column =
-			// compilationUnit.lineMap.getColumnNumber(stack.peek().pos);
-			// while (currentColumn < column) {
-			// // System.out.println("adding a column on "+tree.getClass());
-			// out.append(" ");
-			// currentColumn++;
-			// }
-			// while (currentColumn > column
-			// && ((currentColumn == 1 && out.charAt(out.length() - 1) == ' ')
-			// || (currentColumn > 1 && out.charAt(out.length() - 2) == ' '))) {
-			// out.deleteCharAt(out.length() - 1);
-			// currentColumn--;
-			// }
-			// if (currentColumn != column) {
-			// System.out.println("cannot adjust column for: " + tree.getClass()
-			// + " at position " + line + ", " + column + " - " + (currentColumn
-			// - column));
-			// }
-		}
-		positionStack.push(new Position(getCurrentPosition(), currentLine, currentColumn));
-		sourceMap.addEntry(new Position(tree.pos, //
-				compilationUnit.lineMap.getLineNumber(tree.pos), //
-				compilationUnit.lineMap.getColumnNumber(tree.pos)), positionStack.peek());
-	}
+    public StringBuilder replaceBuilder(StringBuilder builder) {
+        StringBuilder tmp = out;
+        this.out = builder;
+        return tmp;
+    }
 
-	@Override
-	protected void onRollbacked(JCTree target) {
-		super.onRollbacked(target);
-		Position position = positionStack.peek();
-		out.delete(position.getPosition(), out.length());
-		currentColumn = position.getColumn();
-		currentLine = position.getLine();
-	}
+    /**
+     * Enters the given tree (se {@link #scan(JCTree)}.
+     */
+    protected void enter(JCTree tree) {
+        super.enter(tree);
+        if (this.preserveSourceLineNumbers && !stack.isEmpty()) {
+            int line = compilationUnit.lineMap.getLineNumber(stack.peek().pos);
+            // adjusting line...
+            while (currentLine < line) {
+                out.append("\n");
+                currentColumn = 0;
+                currentLine++;
+            }
+            while (currentLine != 1 && currentLine > line && out.charAt(out.length() - 1) == '\n') {
+                out.deleteCharAt(out.length() - 1);
+                currentColumn = 0;
+                currentLine--;
+            }
+            if (currentLine != line) {
+                logger.warn("cannot adjust line for: " + tree.getClass() + " at line " + line);
+            }
+            // adjusting columns... (TODO: does not work)
+            // int column =
+            // compilationUnit.lineMap.getColumnNumber(stack.peek().pos);
+            // while (currentColumn < column) {
+            // // System.out.println("adding a column on "+tree.getClass());
+            // out.append(" ");
+            // currentColumn++;
+            // }
+            // while (currentColumn > column
+            // && ((currentColumn == 1 && out.charAt(out.length() - 1) == ' ')
+            // || (currentColumn > 1 && out.charAt(out.length() - 2) == ' '))) {
+            // out.deleteCharAt(out.length() - 1);
+            // currentColumn--;
+            // }
+            // if (currentColumn != column) {
+            // System.out.println("cannot adjust column for: " + tree.getClass()
+            // + " at position " + line + ", " + column + " - " + (currentColumn
+            // - column));
+            // }
+        }
+        positionStack.push(new Position(getCurrentPosition(), currentLine, currentColumn));
+        sourceMap.addEntry(new Position(tree.pos, //
+            compilationUnit.lineMap.getLineNumber(tree.pos), //
+            compilationUnit.lineMap.getColumnNumber(tree.pos)), positionStack.peek());
+    }
 
-	/**
-	 * Exits the currently scanned tree.
-	 */
-	@Override
-	protected void exit() {
-		super.exit();
-		positionStack.pop();
-	}
+    @Override
+    protected void onRollbacked(JCTree target) {
+        super.onRollbacked(target);
+        Position position = positionStack.peek();
+        out.delete(position.getPosition(), out.length());
+        currentColumn = position.getColumn();
+        currentLine = position.getLine();
+    }
 
-	/**
-	 * Gets the current character count of the output.
-	 */
-	public int getCurrentPosition() {
-		return out.length();
-	}
+    /**
+     * Exits the currently scanned tree.
+     */
+    @Override
+    protected void exit() {
+        super.exit();
+        positionStack.pop();
+    }
 
-	/**
-	 * Gets the lastly printed character.
-	 */
-	public char getLastPrintedChar() {
-		return out.charAt(out.length() - 1);
-	}
+    /**
+     * Gets the current character count of the output.
+     */
+    public int getCurrentPosition() {
+        return out.length();
+    }
 
-	/**
-	 * Prints an indentation for the current indentation value.
-	 */
-	public AbstractTreePrinter printIndent() {
-		for (int i = 0; i < indent; i++) {
-			print(INDENT);
-		}
-		return this;
-	}
+    /**
+     * Gets the lastly printed character.
+     */
+    public char getLastPrintedChar() {
+        return out.charAt(out.length() - 1);
+    }
 
-	/**
-	 * Increments the current indentation value.
-	 */
-	public AbstractTreePrinter startIndent() {
-		indent++;
-		return this;
-	}
+    /**
+     * Prints an indentation for the current indentation value.
+     */
+    public AbstractTreePrinter printIndent() {
+        for (int i = 0; i < indent; i++) {
+            print(INDENT);
+        }
+        return this;
+    }
 
-	/**
-	 * Decrements the current indentation value.
-	 */
-	public AbstractTreePrinter endIndent() {
-		indent--;
-		return this;
-	}
+    /**
+     * Increments the current indentation value.
+     */
+    public AbstractTreePrinter startIndent() {
+        indent++;
+        return this;
+    }
 
-	/**
-	 * Outputs a string (new lines are not allowed).
-	 */
-	public AbstractTreePrinter print(String string) {
-		out.append(string);
-		currentColumn += string.length();
-		return this;
-	}
+    /**
+     * Decrements the current indentation value.
+     */
+    public AbstractTreePrinter endIndent() {
+        indent--;
+        return this;
+    }
 
-	/**
-	 * Outputs an identifier.
-	 */
-	public AbstractTreePrinter printIdentifier(String identifier) {
-		String adaptedIdentifier = getAdapter().getIdentifier(identifier);
-		return print(adaptedIdentifier);
-	}
+    /**
+     * Outputs a string (new lines are not allowed).
+     */
+    public AbstractTreePrinter print(String string) {
+        out.append(string);
+        currentColumn += string.length();
+        return this;
+    }
 
-	/**
-	 * Adds a space to the output.
-	 */
-	public AbstractTreePrinter space() {
-		return print(" ");
-	}
+    /**
+     * Outputs an identifier.
+     */
+    public AbstractTreePrinter printIdentifier(String identifier) {
+        String adaptedIdentifier = getAdapter().getIdentifier(identifier);
+        return print(adaptedIdentifier);
+    }
 
-	/**
-	 * Removes the last output character.
-	 */
-	public AbstractTreePrinter removeLastChar() {
-		if (out.length() == 0) {
-			return this;
-		}
-		if (out.charAt(out.length() - 1) == '\n') {
-			currentLine--;
-			currentColumn = 0;
-		} else {
-			currentColumn--;
-		}
-		out.deleteCharAt(out.length() - 1);
-		return this;
-	}
+    /**
+     * Adds a space to the output.
+     */
+    public AbstractTreePrinter space() {
+        return print(" ");
+    }
 
-	/**
-	 * Removes the last output characters.
-	 */
-	public AbstractTreePrinter removeLastChars(int count) {
-		for (int i = 0; i < count; i++) {
-			removeLastChar();
-		}
-		return this;
-	}
+    /**
+     * Removes the last output character.
+     */
+    public AbstractTreePrinter removeLastChar() {
+        if (out.length() == 0) {
+            return this;
+        }
+        if (out.charAt(out.length() - 1) == '\n') {
+            currentLine--;
+            currentColumn = 0;
+        } else {
+            currentColumn--;
+        }
+        out.deleteCharAt(out.length() - 1);
+        return this;
+    }
 
-	/**
-	 * Removes the last printed indentation.
-	 */
-	public AbstractTreePrinter removeLastIndent() {
-		removeLastChars(indent * INDENT.length());
-		return this;
-	}
+    /**
+     * Removes the last output characters.
+     */
+    public AbstractTreePrinter removeLastChars(int count) {
+        for (int i = 0; i < count; i++) {
+            removeLastChar();
+        }
+        return this;
+    }
 
-	/**
-	 * Outputs a new line.
-	 */
-	public AbstractTreePrinter println() {
-		if (this.preserveSourceLineNumbers) {
-			out.append(" ");
-			currentColumn++;
-			return this;
-		}
-		out.append("\n");
-		currentLine++;
-		currentColumn = 0;
-		return this;
-	}
+    /**
+     * Removes the last printed indentation.
+     */
+    public AbstractTreePrinter removeLastIndent() {
+        removeLastChars(indent * INDENT.length());
+        return this;
+    }
 
-	/**
-	 * Gets the printed result as a string.
-	 */
-	public String getResult() {
-		return out.toString();
-	}
+    /**
+     * Outputs a new line.
+     */
+    public AbstractTreePrinter println() {
+        if (this.preserveSourceLineNumbers) {
+            out.append(" ");
+            currentColumn++;
+            return this;
+        }
+        out.append("\n");
+        currentLine++;
+        currentColumn = 0;
+        return this;
+    }
 
-	/**
-	 * Gets the adapter attached to this printer.
-	 */
-	public AbstractPrinterAdapter getAdapter() {
-		return adapter;
-	}
+    /**
+     * Gets the printed result as a string.
+     */
+    public String getResult() {
+        return out.toString();
+    }
 
-	/**
-	 * Sets the adapter attached to this printer.
-	 */
-	public void setAdapter(AbstractPrinterAdapter adapter) {
-		this.adapter = adapter;
-	}
+    /**
+     * Gets the adapter attached to this printer.
+     */
+    public AbstractPrinterAdapter getAdapter() {
+        return adapter;
+    }
 
-	protected boolean inArgListTail = false;
+    /**
+     * Sets the adapter attached to this printer.
+     */
+    public void setAdapter(AbstractPrinterAdapter adapter) {
+        this.adapter = adapter;
+    }
 
-	/**
-	 * Prints a comma-separated list of subtrees.
-	 */
-	public AbstractTreePrinter printArgList(List<? extends JCTree> args, Consumer<JCTree> printer) {
-		for (JCTree arg : args) {
-			if (printer != null) {
-				printer.accept(arg);
-			} else {
-				print(arg);
-			}
-			print(", ");
-			inArgListTail = true;
-		}
-		inArgListTail = false;
-		if (!args.isEmpty()) {
-			removeLastChars(2);
-		}
-		return this;
-	}
+    protected boolean inArgListTail = false;
 
-	public AbstractTreePrinter printArgList(List<? extends JCTree> args) {
-		return printArgList(args, null);
-	}
+    /**
+     * Prints a comma-separated list of subtrees.
+     */
+    public AbstractTreePrinter printArgList(List<? extends JCTree> args, Consumer<JCTree> printer) {
+        for (JCTree arg : args) {
+            if (printer != null) {
+                printer.accept(arg);
+            } else {
+                print(arg);
+            }
+            print(", ");
+            inArgListTail = true;
+        }
+        inArgListTail = false;
+        if (!args.isEmpty()) {
+            removeLastChars(2);
+        }
+        return this;
+    }
 
-	public abstract AbstractTreePrinter printConstructorArgList(JCNewClass newClass);
+    public AbstractTreePrinter printArgList(List<? extends JCTree> args) {
+        return printArgList(args, null);
+    }
 
-	/**
-	 * Prints a comma-separated list of variable names (no types).
-	 */
-	public AbstractTreePrinter printVarNameList(List<JCVariableDecl> args) {
-		for (JCVariableDecl arg : args) {
-			print(arg.name.toString());
-			print(", ");
-		}
-		if (!args.isEmpty()) {
-			removeLastChars(2);
-		}
-		return this;
-	}
+    public abstract AbstractTreePrinter printConstructorArgList(JCNewClass newClass);
 
-	/**
-	 * Prints a comma-separated list of type subtrees.
-	 */
-	public AbstractTreePrinter printTypeArgList(List<? extends JCTree> args) {
-		for (JCTree arg : args) {
-			getAdapter().substituteAndPrintType(arg);
-			print(", ");
-		}
-		if (!args.isEmpty()) {
-			removeLastChars(2);
-		}
-		return this;
-	}
+    /**
+     * Prints a comma-separated list of variable names (no types).
+     */
+    public AbstractTreePrinter printVarNameList(List<JCVariableDecl> args) {
+        for (JCVariableDecl arg : args) {
+            print(arg.name.toString());
+            print(", ");
+        }
+        if (!args.isEmpty()) {
+            removeLastChars(2);
+        }
+        return this;
+    }
 
-	/**
-	 * Gets the current line of the printed output.
-	 */
-	public int getCurrentLine() {
-		return currentLine;
-	}
+    /**
+     * Prints a comma-separated list of type subtrees.
+     */
+    public AbstractTreePrinter printTypeArgList(List<? extends JCTree> args) {
+        for (JCTree arg : args) {
+            getAdapter().substituteAndPrintType(arg);
+            print(", ");
+        }
+        if (!args.isEmpty()) {
+            removeLastChars(2);
+        }
+        return this;
+    }
 
-	/**
-	 * Gets the current column of the printed output.
-	 */
-	public int getCurrentColumn() {
-		return currentColumn;
-	}
+    /**
+     * Gets the current line of the printed output.
+     */
+    public int getCurrentLine() {
+        return currentLine;
+    }
 
-	/**
-	 * Gets the current compilation unit.
-	 */
-	public JCCompilationUnit getCompilationUnit() {
-		return compilationUnit;
-	}
+    /**
+     * Gets the current column of the printed output.
+     */
+    public int getCurrentColumn() {
+        return currentColumn;
+    }
 
-	/**
-	 * Tells if this printer tries to preserve the original line numbers of the
-	 * Java input.
-	 */
-	public boolean isPreserveLineNumbers() {
-		return preserveSourceLineNumbers;
-	}
+    /**
+     * Gets the current compilation unit.
+     */
+    public JCCompilationUnit getCompilationUnit() {
+        return compilationUnit;
+    }
 
-	/**
-	 * Gets the Javadoc attached to the given element if any.
-	 */
-	protected String getJavaDoc(JCTree element) {
-		String javaDoc = compilationUnit.docComments.getCommentText(element);
-		return javaDoc;
-	}
+    /**
+     * Tells if this printer tries to preserve the original line numbers of the
+     * Java input.
+     */
+    public boolean isPreserveLineNumbers() {
+        return preserveSourceLineNumbers;
+    }
 
-	/**
-	 * Prints the Javadoc attached to the given element if any.
-	 */
-	protected AbstractTreePrinter printJavaDoc(JCTree element) {
-		String doc = getJavaDoc(element);
-		if (!isBlank(doc)) {
-			print("/**");
-			println();
-			print(" * ");
-			print(join(doc.split("\n"), "\n * "));
-			println();
-			print(" */");
-			println();
-		}
+    /**
+     * Gets the Javadoc attached to the given element if any.
+     */
+    protected String getJavaDoc(JCTree element) {
+        String javaDoc = compilationUnit.docComments.getCommentText(element);
+        return javaDoc;
+    }
 
-		return this;
-	}
+    /**
+     * Prints the Javadoc attached to the given element if any.
+     */
+    protected AbstractTreePrinter printJavaDoc(JCTree element) {
+        String doc = getJavaDoc(element);
+        if (!isBlank(doc)) {
+            print("/**");
+            println();
+            print(" * ");
+            print(join(doc.split("\n"), "\n * "));
+            println();
+            print(" */");
+            println();
+        }
 
-	public String getRootRelativeName(Symbol symbol) {
-		return Util.getRootRelativeName(context.useModules ? context.getImportedElements(compilationUnit.packge) : null, symbol);
-	}
+        return this;
+    }
 
-	public String getRootRelativeName(Symbol symbol, boolean useJavaNames) {
-		return Util.getRootRelativeName(context.useModules ? context.getImportedElements(compilationUnit.packge) : null, symbol, useJavaNames);
-	}
+    public String getRootRelativeName(Symbol symbol) {
+        return Util.getRootRelativeName(context.useModules ? context.getImportedElements(compilationUnit.packge) : null, symbol);
+    }
+
+    public String getRootRelativeName(Symbol symbol, boolean useJavaNames) {
+        return Util.getRootRelativeName(context.useModules ? context.getImportedElements(compilationUnit.packge) : null, symbol, useJavaNames);
+    }
 
 }
