@@ -86,6 +86,8 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
+import java.util.function.Consumer;
+import java.util.logging.Level;
 
 /**
  * The actual JSweet transpiler.
@@ -122,7 +124,7 @@ public class JSweetTranspiler implements JSweetOptions {
     public static final String EXPORTED_VAR_END = ";";
     private static Pattern exportedVarRE = Pattern.compile(EXPORTED_VAR_BEGIN + "(\\w*)=(.*)" + EXPORTED_VAR_END);
 
-    private final static Logger logger = Logger.getLogger(JSweetTranspiler.class);
+    public final static Logger logger = Logger.getLogger(JSweetTranspiler.class);
 
     /**
      * The name of the file generated in the root package to avoid the
@@ -141,7 +143,7 @@ public class JSweetTranspiler implements JSweetOptions {
     private JavaFileManager fileManager;
 
     public JavacFileManager getFileManager() {
-        return (JavacFileManager)fileManager;
+        return (JavacFileManager) fileManager;
     }
     private JavaCompiler compiler;
 
@@ -186,15 +188,12 @@ public class JSweetTranspiler implements JSweetOptions {
     /**
      * Creates a JSweet transpiler.
      *
-	 * @param tsOutputDir
-	 *            the directory where TypeScript files are written
-	 * @param jsOutputDir
-	 *            the directory where JavaScript files are written
-	 * @param extractedCandiesJavascriptDir
-	 *            see {@link #getExtractedCandyJavascriptDir()}
-	 * @param classPath
-	 *            the classpath as a string (check out system-specific
-	 *            requirements for Java classpathes)
+     * @param tsOutputDir the directory where TypeScript files are written
+     * @param jsOutputDir the directory where JavaScript files are written
+     * @param extractedCandiesJavascriptDir see
+     * {@link #getExtractedCandyJavascriptDir()}
+     * @param classPath the classpath as a string (check out system-specific
+     * requirements for Java classpathes)
      */
     public JSweetTranspiler(File tsOutputDir, File jsOutputDir, File extractedCandiesJavascriptDir, String classPath) {
         this(new File(TMP_WORKING_DIR_NAME), tsOutputDir, jsOutputDir, extractedCandiesJavascriptDir, classPath);
@@ -203,17 +202,13 @@ public class JSweetTranspiler implements JSweetOptions {
     /**
      * Creates a JSweet transpiler.
      *
-	 * @param workingDir
-	 *            the working directory
-	 * @param tsOutputDir
-	 *            the directory where TypeScript files are written
-	 * @param jsOutputDir
-	 *            the directory where JavaScript files are written
-	 * @param extractedCandiesJavascriptDir
-	 *            see {@link #getExtractedCandyJavascriptDir()}
-	 * @param classPath
-	 *            the classpath as a string (check out system-specific
-	 *            requirements for Java classpaths)
+     * @param workingDir the working directory
+     * @param tsOutputDir the directory where TypeScript files are written
+     * @param jsOutputDir the directory where JavaScript files are written
+     * @param extractedCandiesJavascriptDir see
+     * {@link #getExtractedCandyJavascriptDir()}
+     * @param classPath the classpath as a string (check out system-specific
+     * requirements for Java classpaths)
      */
     public JSweetTranspiler(File workingDir, File tsOutputDir, File jsOutputDir, File extractedCandiesJavascriptDir, String classPath) {
         this.workingDir = workingDir.getAbsoluteFile();
@@ -248,7 +243,7 @@ public class JSweetTranspiler implements JSweetOptions {
         return this.workingDir;
     }
 
-    private void initNode(TranspilationHandler transpilationHandler) throws Exception {
+    public void initNode(TranspilationHandler transpilationHandler) throws Exception {
         ProcessUtil.initNode();
         logger.debug("extra path: " + ProcessUtil.EXTRA_PATH);
         File initFile = new File(workingDir, ".node-init");
@@ -257,13 +252,13 @@ public class JSweetTranspiler implements JSweetOptions {
             ProcessUtil.runCommand(ProcessUtil.NODE_COMMAND, null, () -> {
                 transpilationHandler.report(JSweetProblem.NODE_CANNOT_START, null, JSweetProblem.NODE_CANNOT_START.getMessage());
                 throw new RuntimeException("cannot find node.js");
-			} , "--version");
+            }, "--version");
             initFile.mkdirs();
             initFile.createNewFile();
         }
     }
 
-    private void initNodeCommands(TranspilationHandler transpilationHandler) throws Exception {
+    public void initNodeCommands(TranspilationHandler transpilationHandler) throws Exception {
         if (!ProcessUtil.isInstalledWithNpm("tsc")) {
             ProcessUtil.installNodePackage("typescript", true);
         }
@@ -273,8 +268,7 @@ public class JSweetTranspiler implements JSweetOptions {
      * Sets one or more directories that contain TypeScript definition files
      * (sub-directories are scanned recursively to find all .d.ts files).
      *
-	 * @param tsDefDirs
-	 *            a list of directories to scan for .d.ts files
+     * @param tsDefDirs a list of directories to scan for .d.ts files
      */
     public void setTsDefDirs(File... tsDefDirs) {
         this.tsDefDirs = tsDefDirs;
@@ -284,8 +278,7 @@ public class JSweetTranspiler implements JSweetOptions {
      * Adds a directory that contains TypeScript definition files
      * (sub-directories are scanned recursively to find all .d.ts files).
      *
-	 * @param tsDefDir
-	 *            a directory to scan for .d.ts files
+     * @param tsDefDir a directory to scan for .d.ts files
      */
     public void addTsDefDir(File tsDefDir) {
         if (!ArrayUtils.contains(tsDefDirs, tsDefDir)) {
@@ -378,19 +371,17 @@ public class JSweetTranspiler implements JSweetOptions {
      * <p>
      * This function automatically transpile the source files if needed.
      *
-	 * @param transpilationHandler
-	 *            the transpilation handler
-	 * @param sourceFiles
-	 *            the source files to be evaluated
+     * @param transpilationHandler the transpilation handler
+     * @param sourceFiles the source files to be evaluated
      * @return an object that holds the evaluation result
-	 * @throws Exception
-	 *             when an internal error occurs
+     * @throws Exception when an internal error occurs
      */
     public EvaluationResult eval(TranspilationHandler transpilationHandler, SourceFile... sourceFiles) throws Exception {
         return eval("JavaScript", transpilationHandler, sourceFiles);
     }
 
     private static class MainMethodFinder extends TreeScanner {
+
         public MethodSymbol mainMethod;
 
         public void visitMethodDef(JCMethodDecl methodDecl) {
@@ -426,16 +417,13 @@ public class JSweetTranspiler implements JSweetOptions {
      * If given engine name is "Java", this function looks up for the classes in
      * the classpath and run the main methods when found.
      *
-	 * @param engineName
-	 *            the engine name: either "Java" or any valid and installed
-	 *            JavaScript engine.
-	 * @param transpilationHandler
-	 *            the log handler
-	 * @param sourceFiles
-	 *            the source files to be evaluated (transpiled first if needed)
+     * @param engineName the engine name: either "Java" or any valid and
+     * installed JavaScript engine.
+     * @param transpilationHandler the log handler
+     * @param sourceFiles the source files to be evaluated (transpiled first if
+     * needed)
      * @return the evaluation result
-	 * @throws Exception
-	 *             when an internal error occurs
+     * @throws Exception when an internal error occurs
      */
     public EvaluationResult eval(String engineName, TranspilationHandler transpilationHandler, SourceFile... sourceFiles) throws Exception {
         logger.info("[" + engineName + " engine] eval files: " + Arrays.asList(sourceFiles));
@@ -539,6 +527,7 @@ public class JSweetTranspiler implements JSweetOptions {
     }
 
     static private class TraceBasedEvaluationResult implements EvaluationResult {
+
         private String trace;
 
         public TraceBasedEvaluationResult(String trace) {
@@ -557,7 +546,7 @@ public class JSweetTranspiler implements JSweetOptions {
                 match = matcher.find(index);
                 if (match) {
                     if (variableName.equals(matcher.group(1))) {
-						var = new String[] { matcher.group(1), matcher.group(2) };
+                        var = new String[]{matcher.group(1), matcher.group(2)};
                         match = false;
 
                     }
@@ -648,7 +637,33 @@ public class JSweetTranspiler implements JSweetOptions {
         logger.info("transpilation process finished in " + (System.currentTimeMillis() - transpilationStartTimestamp) + " ms");
     }
 
-    class PartialTranslator extends Java2TypeScriptTranslator {
+    public String tspart2js(JCTree tree, String tsCode, ErrorCountTranspilationHandler handler, String name) {
+        SourceFile sf = new SourceFile(null);
+        sf.setTsFile(new File(tsOutputDir, name + ".ts"));
+        sf.setJsFile(new File(jsOutputDir, name + ".js"));
+        try {
+            sf.tsFile.getParentFile().mkdirs();
+            sf.tsFile.createNewFile();
+            Files.write(sf.tsFile.toPath(), Arrays.asList(tsCode));
+        } catch (IOException ex) {
+            throw new UncheckedIOException(ex);
+        }
+        runTSC(
+            handler,
+            new SourceFile[]{sf},
+            "--target", ecmaTargetVersion.name(),
+            "--outFile", sf.getJsFile().toString(),
+            //                        "--rootDir", tsOutputDir.getAbsolutePath(),
+            sf.getTsFile().toString()
+        );
+        try {
+            return new String(Files.readAllBytes(sf.jsFile.toPath()));
+        } catch (IOException ex) {
+            return null;
+        }
+    }
+
+    public static class PartialTranslator extends Java2TypeScriptTranslator {
 
         final Stack<StringBuilder> buffers = new Stack<>();
         final Map<JCTree, String> tsHierarchy = new IdentityHashMap<>();
@@ -674,7 +689,7 @@ public class JSweetTranspiler implements JSweetOptions {
         }
     }
 
-    class PartialPrinter extends Pretty {
+    public class PartialPrinter extends Pretty {
 
         final Map<JCTree, String> tsHierarchy;
         final BiPredicate<JCTree, String> filter;
@@ -697,40 +712,21 @@ public class JSweetTranspiler implements JSweetOptions {
             }
             RecordTranspilationHandler rhandler = new RecordTranspilationHandler();
             ErrorCountTranspilationHandler handler = new ErrorCountTranspilationHandler(rhandler);
-            SourceFile sf = new SourceFile(null);
-            sf.setTsFile(new File(tsOutputDir, "part" + p + ".ts"));
-            sf.setJsFile(new File(jsOutputDir, "part" + p + ".js"));
-            ++p;
-
             System.out.println("\nTranspiling: java code:\n" + tree + "\nts code:" + tsCode);
-            try {
-                sf.tsFile.getParentFile().mkdirs();
-                sf.tsFile.createNewFile();
-                Files.write(sf.tsFile.toPath(), Arrays.asList(tsCode));
-            } catch (IOException ex) {
-                throw new UncheckedIOException(ex);
-            }
-            runTSC(
-                handler,
-                new SourceFile[]{sf},
-                "--target", ecmaTargetVersion.name(),
-                "--outFile", sf.getJsFile().toString(),
-                //                        "--rootDir", tsOutputDir.getAbsolutePath(),
-                sf.getTsFile().toString()
-            );
+            String jsCode = tspart2js(tree, tsCode, handler, "part" + p++);
             System.out.println("errors: " + handler.getErrorCount());
 
             try {
                 if (handler.getErrorCount() != 0) {
                     print(errorsEditor.apply(tree, rhandler.getProblems()));
                     return false;
+                } else {
+                    print(editor.apply(tree, jsCode));
+                    return true;
                 }
-                String jsCode = new String(Files.readAllBytes(sf.jsFile.toPath()));
-                print(editor.apply(tree, jsCode));
             } catch (IOException ex) {
                 throw new UncheckedIOException(ex);
             }
-            return true;
         }
 
         @Override
@@ -748,7 +744,7 @@ public class JSweetTranspiler implements JSweetOptions {
         }
     }
 
-    class RecordTranspilationHandler implements TranspilationHandler {
+    public static class RecordTranspilationHandler implements TranspilationHandler {
 
         private final java.util.List<String> problems = new ArrayList<>();
 
@@ -776,10 +772,8 @@ public class JSweetTranspiler implements JSweetOptions {
      * mode ({@link #setTscWatchMode(boolean)}), the first invocation to this
      * method determines the files to be watched by the Tsc process.
      *
-	 * @param transpilationHandler
-	 *            the log handler
-	 * @param files
-	 *            the files to be transpiled
+     * @param transpilationHandler the log handler
+     * @param files the files to be transpiled
      * @throws IOException
      */
     synchronized public void transpile(TranspilationHandler transpilationHandler, SourceFile... files) throws IOException {
@@ -875,13 +869,11 @@ public class JSweetTranspiler implements JSweetOptions {
 
         if (context.useModules) {
             generateTsModules(transpilationHandler, files, compilationUnits);
-		} else {
-			if (bundle) {
+        } else if (bundle) {
             generateTsBundle(transpilationHandler, files, compilationUnits);
         } else {
             generateTsFiles(transpilationHandler, files, compilationUnits);
         }
-		}
         log.flush();
         getOrCreateTscRootFile();
     }
@@ -1108,6 +1100,7 @@ public class JSweetTranspiler implements JSweetOptions {
     }
 
     private static class TscOutput {
+
         public SourcePosition position;
         public String message;
 
@@ -1278,7 +1271,7 @@ public class JSweetTranspiler implements JSweetOptions {
         }
     }
 
-    private void runTSC(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files, String... args) {
+    public void runTSC(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files, String... args) {
         boolean[] fullPass = {true};
         tsCompilationProcess = ProcessUtil.runCommand("tsc", getTsOutputDir(), isTscWatchMode(), line -> {
             logger.info(line);
@@ -1290,8 +1283,7 @@ public class JSweetTranspiler implements JSweetOptions {
                 } else {
                     transpilationHandler.report(JSweetProblem.MAPPED_TSC_ERROR, position, output.message);
                 }
-				} else {
-					if (output.message.startsWith("message TS6042:")) {
+            } else if (output.message.startsWith("message TS6042:")) {
                 onTsTranspilationCompleted(fullPass[0], transpilationHandler, files);
                 fullPass[0] = false;
             } else {
@@ -1301,12 +1293,11 @@ public class JSweetTranspiler implements JSweetOptions {
                 // 'commonjs', 'amd', 'system' or 'umd' when
                 // targeting 'ES6' or higher.
             }
-				}
-			} , process -> {
+        }, process -> {
             tsCompilationProcess = null;
             onTsTranspilationCompleted(fullPass[0], transpilationHandler, files);
             fullPass[0] = false;
-			} , () -> {
+        }, () -> {
             if (transpilationHandler.getProblemCount() == 0) {
                 transpilationHandler.report(JSweetProblem.INTERNAL_TSC_ERROR, null, "Unknown tsc error");
             }
@@ -1469,10 +1460,9 @@ public class JSweetTranspiler implements JSweetOptions {
      * Tsc watch process, which regenerates the JavaScript files when one of the
      * input file changes.
      *
-	 * @param tscWatchMode
-	 *            true: enables the watch mode (do nothing is already enabled),
-	 *            false: disables the watch mode and stops the current Tsc
-	 *            watching process
+     * @param tscWatchMode true: enables the watch mode (do nothing is already
+     * enabled), false: disables the watch mode and stops the current Tsc
+     * watching process
      * @see #getWatchedFile(File)
      */
     synchronized public void setTscWatchMode(boolean tscWatchMode) {
@@ -1522,8 +1512,7 @@ public class JSweetTranspiler implements JSweetOptions {
     /**
      * Sets target ECMA script version for generated JavaScript
      *
-	 * @param ecmaTargetVersion
-	 *            The target version
+     * @param ecmaTargetVersion The target version
      */
     public void setEcmaTargetVersion(EcmaScriptComplianceLevel ecmaTargetVersion) {
         this.ecmaTargetVersion = ecmaTargetVersion;

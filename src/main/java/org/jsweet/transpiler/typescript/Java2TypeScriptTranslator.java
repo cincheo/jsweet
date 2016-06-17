@@ -1144,7 +1144,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			globals = globals || (getScope().interfaceScope && methodDecl.mods.getFlags().contains(Modifier.STATIC));
 		}
 		printDocComment(methodDecl, false);
-		if (globals) {
+		if (parent == null) {
+            print("function ");
+        } else if (globals) {
 			if (constructor) {
 				report(methodDecl, methodDecl.name, JSweetProblem.GLOBAL_CONSTRUCTOR_DEF);
 				return;

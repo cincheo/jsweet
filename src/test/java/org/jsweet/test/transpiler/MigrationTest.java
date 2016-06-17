@@ -28,12 +28,14 @@ import java.util.stream.Collectors;
 import javax.tools.JavaFileObject;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.log4j.Level;
 import org.jsweet.transpiler.JSweetTranspiler;
 import org.jsweet.transpiler.ModuleKind;
 import org.jsweet.transpiler.SourceFile;
 import org.jsweet.transpiler.TranspilationHandler;
 import org.jsweet.transpiler.typescript.Java2TypeScriptTranslator;
 import org.jsweet.transpiler.util.ConsoleTranspilationHandler;
+import org.jsweet.transpiler.util.ErrorCountTranspilationHandler;
 import org.junit.Test;
 import source.migration.QuickStart;
 
@@ -129,8 +131,13 @@ public class MigrationTest extends AbstractTest {
             new File(dir, "cjs"),
             null
         );
-        TranspilationHandler handler = new ConsoleTranspilationHandler();
-        transpiler.initJavac(handler);
+        transpiler.logger.setLevel(Level.WARN);
+        TranspilationHandler handler0 = new ConsoleTranspilationHandler();
+        transpiler.initJavac(handler0);
+        transpiler.initNode(handler0);
+        transpiler.initNodeCommands(handler0);
+        JSweetTranspiler.RecordTranspilationHandler rhandler = new JSweetTranspiler.RecordTranspilationHandler();
+        ErrorCountTranspilationHandler handler = new ErrorCountTranspilationHandler(rhandler);
         Java2TypeScriptTranslator translator = new Java2TypeScriptTranslator(
             handler,
             transpiler.getContext(),
@@ -170,14 +177,21 @@ public class MigrationTest extends AbstractTest {
 //            .get();
 //        transpiler.transpile(handler, file);
         methods.remove(0);
+        int p = 0;
         for (JCTree.JCMethodDecl method : methods) {
-            System.out.println("java code:\n" + method);
+            System.out.println("java code:" + method);
 
             translator.replaceBuilder(new StringBuilder());
+            rhandler.getProblems().clear();
             translator.enterScope();
             translator.scan(method);
             translator.exitScope();
-            System.out.println("resulting ts:\n" + translator.getResult());
+            String tsCode = translator.getResult();
+            System.out.println("resulting ts:\n" + tsCode);
+
+            String jsCode = transpiler.tspart2js(method, tsCode, handler, "part" + p++);
+            System.out.println("resulting js:\n" + jsCode);
+            System.out.println("errors: {" + rhandler.getProblems().stream().collect(Collectors.joining("\n")) + "}");
         }
     }
 
