@@ -39,162 +39,172 @@ import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Names;
 
 /**
- * 
+ *
  * @author Renaud Pawlak
  */
 public abstract class AbstractTreeScanner extends TreeScanner {
 
-	private TranspilationHandler logHandler;
+    private TranspilationHandler logHandler;
 
-	public void report(JCTree tree, JSweetProblem problem, Object... params) {
-		report(tree, null, problem, params);
-	}
+    public void report(JCTree tree, JSweetProblem problem, Object... params) {
+        report(tree, null, problem, params);
+    }
 
-	public void report(JCTree tree, Name name, JSweetProblem problem, Object... params) {
-		if (logHandler == null) {
-			System.err.println(problem.getMessage(params));
-		} else {
-			int s = tree.getStartPosition();
-			int e = tree.getEndPosition(diagnosticSource.getEndPosTable());
-			if (e == -1) {
-				e = s;
-			}
-			if (name != null) {
-				e += name.length();
-			}
-			logHandler.report(problem,
-					new SourcePosition(new File(compilationUnit.sourcefile.getName()), tree, diagnosticSource.getLineNumber(s),
-							diagnosticSource.getColumnNumber(s, false), diagnosticSource.getLineNumber(e), diagnosticSource.getColumnNumber(e, false)),
-					problem.getMessage(params));
-		}
-	}
+    public void report(JCTree tree, Name name, JSweetProblem problem, Object... params) {
+        if (logHandler == null) {
+            System.err.println(problem.getMessage(params));
+        } else {
+            if(diagnosticSource == null) {
+                logHandler.report(problem,
+                    null,
+                    problem.getMessage(params));
+            } else {
+                int s = tree.getStartPosition();
+                int e = tree.getEndPosition(diagnosticSource.getEndPosTable());
+                if (e == -1) {
+                    e = s;
+                }
+                if (name != null) {
+                    e += name.length();
+                }
+                logHandler.report(problem,
+                    new SourcePosition(new File(compilationUnit.sourcefile.getName()), tree, diagnosticSource.getLineNumber(s),
+                        diagnosticSource.getColumnNumber(s, false), diagnosticSource.getLineNumber(e), diagnosticSource.getColumnNumber(e, false)),
+                    problem.getMessage(params));
+            }
+        }
+    }
 
-	protected Stack<JCTree> stack = new Stack<JCTree>();
+    protected Stack<JCTree> stack = new Stack<JCTree>();
 
-	protected JCCompilationUnit compilationUnit;
+    protected JCCompilationUnit compilationUnit;
 
-	protected JSweetContext context;
+    protected JSweetContext context;
 
-	public JSweetContext getContext() {
-		return context;
-	}
+    public JSweetContext getContext() {
+        return context;
+    }
 
-	protected DiagnosticSource diagnosticSource;
+    protected DiagnosticSource diagnosticSource;
 
-	private Entry<String, String[]> sourceCache;
+    private Entry<String, String[]> sourceCache;
 
-	protected String[] getGetSource(JCCompilationUnit compilationUnit) {
-		if (sourceCache != null && sourceCache.getKey().equals(compilationUnit.getSourceFile().getName())) {
-			return sourceCache.getValue();
-		} else {
-			try {
-				sourceCache = new AbstractMap.SimpleEntry<>(compilationUnit.getSourceFile().getName(),
-						FileUtils.readFileToString(new File(compilationUnit.getSourceFile().getName())).split("\\n"));
-			} catch (Exception e) {
-				return null;
-			}
-			return sourceCache.getValue();
-		}
-	}
+    protected String[] getGetSource(JCCompilationUnit compilationUnit) {
+        if (sourceCache != null && sourceCache.getKey().equals(compilationUnit.getSourceFile().getName())) {
+            return sourceCache.getValue();
+        } else {
+            try {
+                sourceCache = new AbstractMap.SimpleEntry<>(compilationUnit.getSourceFile().getName(),
+                    FileUtils.readFileToString(new File(compilationUnit.getSourceFile().getName())).split("\\n"));
+            } catch (Exception e) {
+                return null;
+            }
+            return sourceCache.getValue();
+        }
+    }
 
-	public AbstractTreeScanner(TranspilationHandler logHandler, JSweetContext context, JCCompilationUnit compilationUnit) {
-		this.logHandler = logHandler;
-		this.context = context;
-		this.context.symtab = Symtab.instance(context);
-		this.context.names = Names.instance(context);
-		this.context.types = Types.instance(context);
-		this.setCompilationUnit(compilationUnit);
-	}
+    public AbstractTreeScanner(TranspilationHandler logHandler, JSweetContext context, JCCompilationUnit compilationUnit) {
+        this.logHandler = logHandler;
+        this.context = context;
+        this.context.symtab = Symtab.instance(context);
+        this.context.names = Names.instance(context);
+        this.context.types = Types.instance(context);
+        this.setCompilationUnit(compilationUnit);
+    }
 
-	protected final void setCompilationUnit(JCCompilationUnit compilationUnit) {
-		if (compilationUnit != null) {
-			this.compilationUnit = compilationUnit;
-			this.diagnosticSource = new DiagnosticSource(compilationUnit.sourcefile, Log.instance(context));
-		} else {
-			this.compilationUnit = null;
-			this.diagnosticSource = null;
-		}
-	}
+    protected final void setCompilationUnit(JCCompilationUnit compilationUnit) {
+        if (compilationUnit != null) {
+            this.compilationUnit = compilationUnit;
+            this.diagnosticSource = new DiagnosticSource(compilationUnit.sourcefile, Log.instance(context));
+        } else {
+            this.compilationUnit = null;
+            this.diagnosticSource = null;
+        }
+    }
 
-	@Override
-	public void scan(JCTree tree) {
-		if (tree == null) {
-			return;
-		}
-		enter(tree);
-		try {
-			tree.accept(this);
-		} catch (RollbackException rollback) {
-			if (rollback.getTarget() == tree) {
-				onRollbacked(tree);
-				if (rollback.getOnRollbacked() != null) {
-					rollback.getOnRollbacked().accept(tree);
-				}
-			} else {
-				throw rollback;
-			}
-		} finally {
-			exit();
-		}
-	}
+    @Override
+    public void scan(JCTree tree) {
+        if (tree == null) {
+            return;
+        }
+        enter(tree);
+        try {
+            tree.accept(this);
+        } catch (RollbackException rollback) {
+            if (rollback.getTarget() == tree) {
+                onRollbacked(tree);
+                if (rollback.getOnRollbacked() != null) {
+                    rollback.getOnRollbacked().accept(tree);
+                }
+            } else {
+                throw rollback;
+            }
+        } finally {
+            exit();
+        }
+    }
 
-	protected void onRollbacked(JCTree target) {
-	}
+    protected void onRollbacked(JCTree target) {
+    }
 
-	protected void rollback(JCTree target, Consumer<JCTree> onRollbacked) {
-		throw new RollbackException(target, onRollbacked);
-	}
+    protected void rollback(JCTree target, Consumer<JCTree> onRollbacked) {
+        throw new RollbackException(target, onRollbacked);
+    }
 
-	protected void enter(JCTree tree) {
-		stack.push(tree);
-	}
+    protected void enter(JCTree tree) {
+        stack.push(tree);
+    }
 
-	protected void exit() {
-		stack.pop();
-	}
+    protected void exit() {
+        stack.pop();
+    }
 
-	public Stack<JCTree> getStack() {
-		return this.stack;
-	}
+    public Stack<JCTree> getStack() {
+        return this.stack;
+    }
 
-	public JCTree getParent() {
-		return this.stack.get(this.stack.size() - 2);
-	}
+    public JCTree getParent() {
+        if (this.stack.size() >= 2) {
+            return this.stack.get(this.stack.size() - 2);
+        }else{
+            return null;
+        }
+    }
 
-	@SuppressWarnings("unchecked")
-	public <T extends JCTree> T getParent(Class<T> type) {
-		for (int i = this.stack.size() - 2; i >= 0; i--) {
-			if (type.isAssignableFrom(this.stack.get(i).getClass())) {
-				return (T) this.stack.get(i);
-			}
-		}
-		return null;
-	}
+    @SuppressWarnings("unchecked")
+    public <T extends JCTree> T getParent(Class<T> type) {
+        for (int i = this.stack.size() - 2; i >= 0; i--) {
+            if (type.isAssignableFrom(this.stack.get(i).getClass())) {
+                return (T) this.stack.get(i);
+            }
+        }
+        return null;
+    }
 
-	public JCTree getFirstParent(Class<?>... types) {
-		for (int i = this.stack.size() - 2; i >= 0; i--) {
-			for (Class<?> type : types) {
-				if (type.isAssignableFrom(this.stack.get(i).getClass())) {
-					return this.stack.get(i);
-				}
-			}
-		}
-		return null;
-	}
+    public JCTree getFirstParent(Class<?>... types) {
+        for (int i = this.stack.size() - 2; i >= 0; i--) {
+            for (Class<?> type : types) {
+                if (type.isAssignableFrom(this.stack.get(i).getClass())) {
+                    return this.stack.get(i);
+                }
+            }
+        }
+        return null;
+    }
 
-	@SuppressWarnings("unchecked")
-	public <T extends JCTree> T getParent(Class<T> type, JCTree from) {
-		for (int i = this.stack.size() - 1; i >= 0; i--) {
-			if (this.stack.get(i) == from) {
-				for (int j = i - 1; j >= 0; j--) {
-					if (type.isAssignableFrom(this.stack.get(j).getClass())) {
-						return (T) this.stack.get(j);
-					}
-				}
-				return null;
-			}
-		}
-		return null;
-	}
+    @SuppressWarnings("unchecked")
+    public <T extends JCTree> T getParent(Class<T> type, JCTree from) {
+        for (int i = this.stack.size() - 1; i >= 0; i--) {
+            if (this.stack.get(i) == from) {
+                for (int j = i - 1; j >= 0; j--) {
+                    if (type.isAssignableFrom(this.stack.get(j).getClass())) {
+                        return (T) this.stack.get(j);
+                    }
+                }
+                return null;
+            }
+        }
+        return null;
+    }
 
 }

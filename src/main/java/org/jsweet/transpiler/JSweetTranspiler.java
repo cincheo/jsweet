@@ -133,9 +133,21 @@ public class JSweetTranspiler implements JSweetOptions {
     private long transpilationStartTimestamp;
     private ArrayList<File> auxiliaryTsModuleFiles = new ArrayList<>();
     private JSweetContext context;
+
+    public JSweetContext getContext() {
+        return context;
+    }
     private Options options;
     private JavaFileManager fileManager;
+
+    public JavacFileManager getFileManager() {
+        return (JavacFileManager)fileManager;
+    }
     private JavaCompiler compiler;
+
+    public JavaCompiler getCompiler() {
+        return compiler;
+    }
     private Log log;
     private CandiesProcessor candiesProcessor;
     private boolean preserveSourceLineNumbers = false;
@@ -289,7 +301,7 @@ public class JSweetTranspiler implements JSweetOptions {
         tsDefDirs = new File[0];
     }
 
-    private void initJavac(final TranspilationHandler transpilationHandler) {
+    public void initJavac(final TranspilationHandler transpilationHandler) {
         context = new JSweetContext(this);
         options = Options.instance(context);
         if (classPath != null) {
