@@ -77,17 +77,11 @@ import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.Log.WriterKind;
 import com.sun.tools.javac.util.Options;
-import java.util.IdentityHashMap;
-import java.util.Stack;
 import com.sun.tools.javac.tree.Pretty;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
-import java.util.function.BiFunction;
-import java.util.function.BiPredicate;
-import java.util.function.Consumer;
-import java.util.logging.Level;
 
 /**
  * The actual JSweet transpiler.
@@ -135,21 +129,9 @@ public class JSweetTranspiler implements JSweetOptions {
     private long transpilationStartTimestamp;
     private ArrayList<File> auxiliaryTsModuleFiles = new ArrayList<>();
     private JSweetContext context;
-
-    public JSweetContext getContext() {
-        return context;
-    }
     private Options options;
     private JavaFileManager fileManager;
-
-    public JavacFileManager getFileManager() {
-        return (JavacFileManager) fileManager;
-    }
     private JavaCompiler compiler;
-
-    public JavaCompiler getCompiler() {
-        return compiler;
-    }
     private Log log;
     private CandiesProcessor candiesProcessor;
     private boolean preserveSourceLineNumbers = false;
@@ -243,7 +225,7 @@ public class JSweetTranspiler implements JSweetOptions {
         return this.workingDir;
     }
 
-    public void initNode(TranspilationHandler transpilationHandler) throws Exception {
+    private void initNode(TranspilationHandler transpilationHandler) throws Exception {
         ProcessUtil.initNode();
         logger.debug("extra path: " + ProcessUtil.EXTRA_PATH);
         File initFile = new File(workingDir, ".node-init");
@@ -258,7 +240,7 @@ public class JSweetTranspiler implements JSweetOptions {
         }
     }
 
-    public void initNodeCommands(TranspilationHandler transpilationHandler) throws Exception {
+    private void initNodeCommands(TranspilationHandler transpilationHandler) throws Exception {
         if (!ProcessUtil.isInstalledWithNpm("tsc")) {
             ProcessUtil.installNodePackage("typescript", true);
         }
@@ -294,7 +276,7 @@ public class JSweetTranspiler implements JSweetOptions {
         tsDefDirs = new File[0];
     }
 
-    public void initJavac(final TranspilationHandler transpilationHandler) {
+    private void initJavac(final TranspilationHandler transpilationHandler) {
         context = new JSweetContext(this);
         options = Options.instance(context);
         if (classPath != null) {
@@ -584,56 +566,29 @@ public class JSweetTranspiler implements JSweetOptions {
         }
     }
 
-    synchronized public void migrate(TranspilationHandler transpilationHandler, SourceFile[] files, BiPredicate<JCTree, String> filter, BiFunction<JCTree, String, String> editor, BiFunction<JCTree, java.util.List<String>, String> errorsEditor) throws IOException, Exception {
+    synchronized public void migrate(TranspilationHandler transpilationHandler, SourceFile[] sourceFiles, TranspiledPartsPrinter printer) throws Exception {
         transpilationStartTimestamp = System.currentTimeMillis();
+        initJavac(transpilationHandler);
         initNode(transpilationHandler);
         initNodeCommands(transpilationHandler);
-        initJavac(transpilationHandler);
-//        candiesProcessor.processCandies(transpilationHandler);
-//        addTsDefDir(candiesProcessor.getCandiesTsdefsDir());
-//        if (classPath != null && !ArrayUtils.contains(classPath.split(File.pathSeparator), candiesProcessor.getCandiesProcessedDir().getPath())) {
-//            classPath = candiesProcessor.getCandiesProcessedDir() + File.pathSeparator + classPath;
-//            logger.debug("updated classpath: " + classPath);
-//        }
 
-        ErrorCountTranspilationHandler errorHandler = new ErrorCountTranspilationHandler(transpilationHandler);
-        Collection<SourceFile> jsweetSources = asList(files).stream() //
-            .filter(source -> source.getJavaFile() != null).collect(toList());
-        List<JavaFileObject> fileObjects = toJavaFileObjects(fileManager, Arrays.asList(SourceFile.toFiles(jsweetSources.toArray(new SourceFile[0]))));
-
-        logger.info("parsing: " + fileObjects);
-        List<JCCompilationUnit> compilationUnits = compiler.enterTrees(compiler.parseFiles(fileObjects));
-        logger.info("attribution phase");
+        Iterable<? extends JavaFileObject> io = ((JavacFileManager) fileManager)
+            .getJavaFileObjectsFromFiles(Arrays.stream(sourceFiles)
+                .map(sf -> sf.getJavaFile())
+                .collect(Collectors.toList()));
+        java.util.List<JCCompilationUnit> compilationUnits = compiler
+            .enterTrees(compiler.parseFiles((Iterable<JavaFileObject>) io));
         compiler.attribute(compiler.todo);
+        context.useModules = false;
+        context.sourceFiles = sourceFiles;
 
-        if (errorHandler.getErrorCount() > 0) {
-            return;
-        }
-        context.sourceFiles = jsweetSources.toArray(new SourceFile[0]);
         for (JCCompilationUnit cu : compilationUnits) {
-            System.out.println("\nTranspiling " + cu.getSourceFile().getName() + "\n");
-            PartialTranslator translator = new PartialTranslator(errorHandler, context, cu, preserveSourceLineNumbers);
-            translator.scan(cu);
-//            printer.tsHierarchy.entrySet()
-//                .forEach(e -> System.out.println("\nkey:\n" + e.getKey() + "\ntranslation:\n" + e.getValue()));
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            try (Writer writer = new OutputStreamWriter(baos)) {
-                PartialPrinter printer = new PartialPrinter(
-                    writer,
-                    translator.tsHierarchy,
-                    filter,
-                    editor,
-                    errorsEditor
-                );
-                printer.printUnit(cu, null);
-                System.out.println("tcs attempts: " + printer.p);
-            }
-            System.out.println("Resulting java code:\n" + baos);
+            logger.info("started transpilation of " + cu.getSourceFile().getName());
+            printer.reset();
+            cu.accept(printer);
+            printer.flush();
+            System.out.println(printer.getStringResult());
         }
-
-        log.flush();
-        getOrCreateTscRootFile();
-
         logger.info("transpilation process finished in " + (System.currentTimeMillis() - transpilationStartTimestamp) + " ms");
     }
 
@@ -661,110 +616,6 @@ public class JSweetTranspiler implements JSweetOptions {
         } catch (IOException ex) {
             return null;
         }
-    }
-
-    public static class PartialTranslator extends Java2TypeScriptTranslator {
-
-        final Stack<StringBuilder> buffers = new Stack<>();
-        final Map<JCTree, String> tsHierarchy = new IdentityHashMap<>();
-
-        public PartialTranslator(TranspilationHandler logHandler, JSweetContext context, JCCompilationUnit compilationUnit, boolean preserveSourceLineNumbers) {
-            super(logHandler, context, compilationUnit, preserveSourceLineNumbers);
-        }
-
-        @Override
-        protected void enter(JCTree tree) {
-//            System.out.println("visiting " + tree.getClass().getName());
-            buffers.push(replaceBuilder(new StringBuilder()));
-            super.enter(tree);
-        }
-
-        @Override
-        protected void exit() {
-            StringBuilder parent = buffers.pop();
-            StringBuilder child = replaceBuilder(parent);
-            parent.append(child);
-            tsHierarchy.put(stack.peek(), child.toString());
-            super.exit();
-        }
-    }
-
-    public class PartialPrinter extends Pretty {
-
-        final Map<JCTree, String> tsHierarchy;
-        final BiPredicate<JCTree, String> filter;
-        final BiFunction<JCTree, String, String> editor;
-        final BiFunction<JCTree, java.util.List<String>, String> errorsEditor;
-        int p;
-
-        public PartialPrinter(Writer writer, Map<JCTree, String> tsHierarchy, BiPredicate<JCTree, String> filter, BiFunction<JCTree, String, String> editor, BiFunction<JCTree, java.util.List<String>, String> errorsEditor) {
-            super(writer, true);
-            this.tsHierarchy = tsHierarchy;
-            this.filter = filter;
-            this.editor = editor;
-            this.errorsEditor = errorsEditor;
-        }
-
-        public boolean transpilingSuccess(JCTree tree) {
-            String tsCode = tsHierarchy.get(tree);
-            if (tsCode == null || !filter.test(tree, tsCode)) {
-                return false;
-            }
-            RecordTranspilationHandler rhandler = new RecordTranspilationHandler();
-            ErrorCountTranspilationHandler handler = new ErrorCountTranspilationHandler(rhandler);
-            System.out.println("\nTranspiling: java code:\n" + tree + "\nts code:" + tsCode);
-            String jsCode = tspart2js(tree, tsCode, handler, "part" + p++);
-            System.out.println("errors: " + handler.getErrorCount());
-
-            try {
-                if (handler.getErrorCount() != 0) {
-                    print(errorsEditor.apply(tree, rhandler.getProblems()));
-                    return false;
-                } else {
-                    print(editor.apply(tree, jsCode));
-                    return true;
-                }
-            } catch (IOException ex) {
-                throw new UncheckedIOException(ex);
-            }
-        }
-
-        @Override
-        public void visitBlock(JCTree.JCBlock tree) {
-            if (!transpilingSuccess(tree)) {
-                super.visitBlock(tree);
-            }
-        }
-
-        @Override
-        public void visitMethodDef(JCMethodDecl tree) {
-            if (!transpilingSuccess(tree)) {
-                super.visitMethodDef(tree);
-            }
-        }
-    }
-
-    public static class RecordTranspilationHandler implements TranspilationHandler {
-
-        private final java.util.List<String> problems = new ArrayList<>();
-
-        @Override
-        public void report(JSweetProblem problem, SourcePosition sourcePosition, String message) {
-            if (sourcePosition == null || sourcePosition.getFile() == null) {
-                problems.add(problem.getSeverity() + ": " + message);
-            } else {
-                problems.add(problem.getSeverity() + ": " + message + " at " + sourcePosition.getFile() + "(" + sourcePosition.getStartLine() + ")");
-            }
-        }
-
-        @Override
-        public void onCompleted(JSweetTranspiler transpiler, boolean fullPass, SourceFile[] files) {
-        }
-
-        public java.util.List<String> getProblems() {
-            return problems;
-        }
-
     }
 
     /**
@@ -1691,6 +1542,128 @@ public class JSweetTranspiler implements JSweetOptions {
      */
     public void clearJsLibFiles() {
         jsLibFiles.clear();
+    }
+
+    public static class TranspiledPartsPrinter extends Pretty {
+
+        private final JSweetTranspiler transpiler;
+        private final ByteArrayOutputStream outputStream;
+        private final Writer writer;
+        private int p;
+
+        public TranspiledPartsPrinter(JSweetTranspiler transpiler) {
+            this(new ByteArrayOutputStream(), transpiler);
+        }
+
+        private TranspiledPartsPrinter(ByteArrayOutputStream baos, JSweetTranspiler transpiler) {
+            this(new OutputStreamWriter(baos), baos, transpiler);
+        }
+
+        private TranspiledPartsPrinter(Writer writer, ByteArrayOutputStream baos, JSweetTranspiler transpiler) {
+            super(writer, true);
+            this.writer = writer;
+            this.outputStream = baos;
+            this.transpiler = transpiler;
+        }
+
+        public boolean transpilingSuccess(JCTree tree) {
+            if (!transpilePart(tree)) {
+                return false;
+            }
+            final JSweetTranspiler.RecordTranspilationHandler rhandler = new JSweetTranspiler.RecordTranspilationHandler();
+            final ErrorCountTranspilationHandler handler = new ErrorCountTranspilationHandler(rhandler);
+            Java2TypeScriptTranslator translator = new Java2TypeScriptTranslator(
+                handler,
+                transpiler.context,
+                null,
+                false
+            );
+            rhandler.getProblems().clear();
+            translator.enterScope();
+            translator.scan(tree);
+            translator.exitScope();
+            String tsCode = translator.getResult();
+            String jsCode = transpiler.tspart2js(tree, tsCode, handler, "part" + p++);
+            try {
+                if (!rhandler.getProblems().isEmpty()) {
+                    printProblems(rhandler.getProblems());
+                }
+                if (handler.getErrorCount() == 0) {
+                    printTranspiled(tree, tsCode, jsCode);
+                    return true;
+                } else {
+                    return false;
+                }
+            } catch (IOException ex) {
+                throw new UncheckedIOException(ex);
+            }
+        }
+
+        public boolean transpilePart(JCTree tree) {
+            return true;
+        }
+
+        public void printTranspiled(JCTree tree, String tsCode, String jsCode) throws IOException {
+            // do nothing by default
+        }
+
+        public void printProblems(java.util.List<String> problems) throws IOException {
+            // do nothing by default
+        }
+
+        public void flush() throws IOException {
+            writer.flush();
+            outputStream.flush();
+        }
+
+        public void reset() {
+            outputStream.reset();
+        }
+
+        public String getStringResult() {
+            return outputStream.toString();
+        }
+
+        public byte[] getByteArray() {
+            return outputStream.toByteArray();
+        }
+
+//        @Override
+//        public void visitBlock(JCTree.JCBlock tree) {
+//            if (!transpilingSuccess(tree)) {
+//                super.visitBlock(tree);
+//            }
+//        }
+        @Override
+        public void visitMethodDef(JCTree.JCMethodDecl method) {
+            if ("<init>".equals(method.getName().toString()) || "<clinit>".equals(method.getName().toString())) {
+                super.visitMethodDef(method);
+            } else if (!transpilingSuccess(method)) {
+                super.visitMethodDef(method);
+            }
+        }
+    }
+
+    private static class RecordTranspilationHandler implements TranspilationHandler {
+
+        private final java.util.List<String> problems = new ArrayList<>();
+
+        @Override
+        public void report(JSweetProblem problem, SourcePosition sourcePosition, String message) {
+            if (sourcePosition == null || sourcePosition.getFile() == null) {
+                problems.add(problem.getSeverity() + ": " + message);
+            } else {
+                problems.add(problem.getSeverity() + ": " + message + " at " + sourcePosition.getFile() + "(" + sourcePosition.getStartLine() + ")");
+            }
+        }
+
+        @Override
+        public void onCompleted(JSweetTranspiler transpiler, boolean fullPass, SourceFile[] files) {
+        }
+
+        public java.util.List<String> getProblems() {
+            return problems;
+        }
     }
 
 }

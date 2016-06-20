@@ -85,12 +85,17 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
     /**
      * Creates a new printer.
      *
-     * @param logHandler the handler that reports logs and problems
-     * @param context the scanning context
-     * @param compilationUnit the source file to be printed
-     * @param adapter the printer adapter
-     * @param preserveSourceLineNumbers tells if the output source code should
-     * try to preserve the line numbers of the original Java code
+	 * @param logHandler
+	 *            the handler that reports logs and problems
+	 * @param context
+	 *            the scanning context
+	 * @param compilationUnit
+	 *            the source file to be printed
+	 * @param adapter
+	 *            the printer adapter
+	 * @param preserveSourceLineNumbers
+	 *            tells if the output source code should try to preserve the
+	 *            line numbers of the original Java code
      */
     public AbstractTreePrinter(TranspilationHandler logHandler, JSweetContext context, JCCompilationUnit compilationUnit, AbstractPrinterAdapter adapter,
         boolean preserveSourceLineNumbers) {
@@ -114,12 +119,6 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
     public AbstractTreePrinter print(JCTree tree) {
         scan(tree);
         return this;
-    }
-
-    public StringBuilder replaceBuilder(StringBuilder builder) {
-        StringBuilder tmp = out;
-        this.out = builder;
-        return tmp;
     }
 
     /**
