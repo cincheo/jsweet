@@ -176,9 +176,12 @@ public class MigrationTest extends AbstractTest {
 //            .findAny()
 //            .get();
 //        transpiler.transpile(handler, file);
-        methods.remove(0);
+//        methods.remove(0);
         int p = 0;
         for (JCTree.JCMethodDecl method : methods) {
+            if ("<init>".equals(method.getName().toString()) || "<clinit>".equals(method.getName().toString())) {
+                continue;
+            }
             System.out.println("java code:" + method);
 
             translator.replaceBuilder(new StringBuilder());
