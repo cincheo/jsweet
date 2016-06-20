@@ -118,7 +118,7 @@ public class JSweetTranspiler implements JSweetOptions {
     public static final String EXPORTED_VAR_END = ";";
     private static Pattern exportedVarRE = Pattern.compile(EXPORTED_VAR_BEGIN + "(\\w*)=(.*)" + EXPORTED_VAR_END);
 
-    public final static Logger logger = Logger.getLogger(JSweetTranspiler.class);
+    private final static Logger logger = Logger.getLogger(JSweetTranspiler.class);
 
     /**
      * The name of the file generated in the root package to avoid the

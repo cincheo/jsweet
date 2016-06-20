@@ -1,5 +1,8 @@
 package source.migration;
 
+import java.util.LinkedList;
+import java.util.Queue;
+
 public class QuickStart {
 
     public String concat(String[] array) {
@@ -8,6 +11,16 @@ public class QuickStart {
             result += array[i];
         }
         return result;
+    }
+
+    public void fail(String a, String b) {
+        System.out.println(concat(new String[]{a, b}));
+    }
+    
+    public Queue<String> wrap(String input){
+        LinkedList<String> list = new LinkedList<>();
+        list.add(input);
+        return list;
     }
 
     public static void main(String[] args) {

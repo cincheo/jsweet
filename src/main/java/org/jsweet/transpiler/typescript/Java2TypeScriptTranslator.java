@@ -1953,7 +1953,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			if (targetIsThisOrStaticImported) {
 				JCImport staticImport = getStaticImport(methName);
 				if (staticImport == null) {
-					methSym = Util.findMethodDeclarationInType(context.types, getParent(JCClassDecl.class).sym, methName, type);
+                    JCClassDecl p = getParent(JCClassDecl.class);
+					methSym = p == null ? null : Util.findMethodDeclarationInType(context.types, p.sym, methName, type);
 					if (methSym != null) {
 						typeChecker.checkApply(inv, methSym);
 						if (!methSym.getModifiers().contains(Modifier.STATIC)) {
@@ -1992,12 +1993,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							JCClassDecl parent = getParent(JCClassDecl.class);
 							int level = 0;
 							MethodSymbol method = null;
-							while (getScope(level++).innerClass) {
-								parent = getParent(JCClassDecl.class, parent);
-								if ((method = Util.findMethodDeclarationInType(context.types, parent.sym, methName, type)) != null) {
-									break;
-								}
-							}
+                            if (parent != null) {
+                                while (getScope(level++).innerClass) {
+                                    parent = getParent(JCClassDecl.class, parent);
+                                    if ((method = Util.findMethodDeclarationInType(context.types, parent.sym, methName, type)) != null) {
+                                        break;
+                                    }
+                                }
+                            }
 							if (method != null) {
 								if (method.isStatic()) {
 									print(method.getEnclosingElement().getSimpleName().toString() + ".");

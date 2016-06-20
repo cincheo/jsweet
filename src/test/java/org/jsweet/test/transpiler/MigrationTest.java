@@ -32,31 +32,6 @@ import source.migration.QuickStart;
 
 public class MigrationTest extends AbstractTest {
 
-    public static class TestTranspilePrinter extends TranspiledPartsPrinter {
-
-        public TestTranspilePrinter(JSweetTranspiler transpiler) {
-            super(transpiler);
-        }
-
-        @Override
-        public void printTranspiled(JCTree tree, String tsCode, String jsCode) throws IOException {
-            print("/*\n");
-            print(Arrays.stream(String.format(
-                "java code:\n%s\nts code:\n%s\njs code:\n%s\n",
-                tree,
-                tsCode,
-                jsCode
-            ).split("\n")).map(s -> " * " + s).collect(Collectors.joining("\n")));
-            print("*/\n");
-            print(tree);
-        }
-
-        @Override
-        public void printProblems(List<String> problems) throws IOException {
-            print("/* errors: {" + problems.stream().collect(Collectors.joining("\n")) + "} */");
-        }
-    }
-
     @Test
     public void test1() throws Exception {
         File dir = Files.createTempDirectory("jsweet").toFile();
@@ -71,7 +46,25 @@ public class MigrationTest extends AbstractTest {
         transpiler.migrate(
             new ConsoleTranspilationHandler(),
             new SourceFile[]{getSourceFile(QuickStart.class)},
-            new TestTranspilePrinter(transpiler)
-        );
+            new TranspiledPartsPrinter(transpiler) {
+
+            @Override
+            public void printTranspiled(JCTree tree, String tsCode, String jsCode) throws IOException {
+                print("\n/*\n");
+                print(Arrays.stream(String.format(
+                    "java code:\n%s\nts code:\n%s\njs code:\n%s\n",
+                    tree,
+                    tsCode,
+                    jsCode
+                ).split("\n")).map(s -> " * " + s).collect(Collectors.joining("\n")));
+                print("*/\n");
+                print(tree);
+            }
+
+            @Override
+            public void printProblems(List<String> problems) throws IOException {
+                print("\n/* errors: {" + problems.stream().collect(Collectors.joining("\n")) + "} */");
+            }
+        });
     }
 }
