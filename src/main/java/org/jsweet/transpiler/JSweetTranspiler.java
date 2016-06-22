@@ -79,6 +79,7 @@ import com.sun.tools.javac.util.Log.WriterKind;
 import com.sun.tools.javac.util.Options;
 import com.sun.tools.javac.tree.Pretty;
 import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
@@ -1543,22 +1544,16 @@ public class JSweetTranspiler implements JSweetOptions {
     public static class TranspiledPartsPrinter extends Pretty {
 
         private final JSweetTranspiler transpiler;
-        private final ByteArrayOutputStream outputStream;
         private final Writer writer;
         private int p;
 
-        public TranspiledPartsPrinter(JSweetTranspiler transpiler) {
-            this(new ByteArrayOutputStream(), transpiler);
+        public TranspiledPartsPrinter(OutputStream os, JSweetTranspiler transpiler) {
+            this(new OutputStreamWriter(os), transpiler);
         }
 
-        private TranspiledPartsPrinter(ByteArrayOutputStream baos, JSweetTranspiler transpiler) {
-            this(new OutputStreamWriter(baos), baos, transpiler);
-        }
-
-        private TranspiledPartsPrinter(Writer writer, ByteArrayOutputStream baos, JSweetTranspiler transpiler) {
+        public TranspiledPartsPrinter(Writer writer, JSweetTranspiler transpiler) {
             super(writer, true);
             this.writer = writer;
-            this.outputStream = baos;
             this.transpiler = transpiler;
         }
 
@@ -1609,19 +1604,6 @@ public class JSweetTranspiler implements JSweetOptions {
 
         public void flush() throws IOException {
             writer.flush();
-            outputStream.flush();
-        }
-
-        public void reset() {
-            outputStream.reset();
-        }
-
-        public String getStringResult() {
-            return outputStream.toString();
-        }
-
-        public byte[] getByteArray() {
-            return outputStream.toByteArray();
         }
 
 //        @Override

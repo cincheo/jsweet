@@ -17,6 +17,7 @@
 package org.jsweet.test.transpiler;
 
 import com.sun.tools.javac.tree.JCTree;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -42,7 +43,8 @@ public class MigrationTest extends AbstractTest {
             new File(dir, "cjs"),
             null
         );
-        TranspiledPartsPrinter printer = new TranspiledPartsPrinter(transpiler) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        TranspiledPartsPrinter printer = new TranspiledPartsPrinter(baos, transpiler) {
 
             @Override
             public void printTranspiled(JCTree tree, String tsCode, String jsCode) throws IOException {
@@ -62,13 +64,13 @@ public class MigrationTest extends AbstractTest {
                 print("\n/* errors: {" + problems.stream().collect(Collectors.joining("\n")) + "} */");
             }
         };
-        printer.reset();
+        baos.reset();
         transpiler.migrate(
             new ConsoleTranspilationHandler(),
             new File(TEST_DIRECTORY_NAME + "/" + QuickStart.class.getName().replace(".", "/") + ".java"),
             printer);
         printer.flush();
-        System.out.println(printer.getStringResult());
+        System.out.println(baos);
 
     }
 }

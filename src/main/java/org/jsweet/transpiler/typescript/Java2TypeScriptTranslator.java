@@ -2552,7 +2552,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		} else if ((newClass.clazz.type.tsym.getEnclosingElement() instanceof ClassSymbol
 				&& !newClass.clazz.type.tsym.getModifiers().contains(Modifier.STATIC))) {
 			print("this");
-			if (newClass.clazz.type.tsym.getEnclosingElement() != getParent(JCClassDecl.class).sym) {
+            JCClassDecl parent = getParent(JCClassDecl.class);
+            ClassSymbol parentSymbol = parent == null ? null : parent.sym;
+			if (newClass.clazz.type.tsym.getEnclosingElement() != parentSymbol) {
 				print("." + PARENT_CLASS_FIELD_NAME);
 			}
 			if (!newClass.args.isEmpty()) {
