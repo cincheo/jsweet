@@ -566,33 +566,29 @@ public class JSweetTranspiler implements JSweetOptions {
         }
     }
 
-    synchronized public void migrate(TranspilationHandler transpilationHandler, SourceFile[] sourceFiles, TranspiledPartsPrinter printer) throws Exception {
+    synchronized public void migrate(TranspilationHandler transpilationHandler, File file, JCTree.Visitor printer) throws Exception {
+        logger.info("started transpilation of " + file);
         transpilationStartTimestamp = System.currentTimeMillis();
         initJavac(transpilationHandler);
         initNode(transpilationHandler);
         initNodeCommands(transpilationHandler);
 
         Iterable<? extends JavaFileObject> io = ((JavacFileManager) fileManager)
-            .getJavaFileObjectsFromFiles(Arrays.stream(sourceFiles)
-                .map(sf -> sf.getJavaFile())
-                .collect(Collectors.toList()));
+            .getJavaFileObjectsFromFiles(Arrays.asList(file));
         java.util.List<JCCompilationUnit> compilationUnits = compiler
             .enterTrees(compiler.parseFiles((Iterable<JavaFileObject>) io));
+        if (compilationUnits.size() != 1) {
+            throw new RuntimeException("Unexpected count of compilation units!");
+        }
+        JCCompilationUnit cu = compilationUnits.get(0);
         compiler.attribute(compiler.todo);
         context.useModules = false;
-        context.sourceFiles = sourceFiles;
 
-        for (JCCompilationUnit cu : compilationUnits) {
-            logger.info("started transpilation of " + cu.getSourceFile().getName());
-            printer.reset();
-            cu.accept(printer);
-            printer.flush();
-            System.out.println(printer.getStringResult());
-        }
+        cu.accept(printer);
         logger.info("transpilation process finished in " + (System.currentTimeMillis() - transpilationStartTimestamp) + " ms");
     }
 
-    public String tspart2js(JCTree tree, String tsCode, ErrorCountTranspilationHandler handler, String name) {
+    private String tspart2js(String tsCode, ErrorCountTranspilationHandler handler, String name) {
         SourceFile sf = new SourceFile(null);
         sf.setTsFile(new File(tsOutputDir, name + ".ts"));
         sf.setJsFile(new File(jsOutputDir, name + ".js"));
@@ -1122,7 +1118,7 @@ public class JSweetTranspiler implements JSweetOptions {
         }
     }
 
-    public void runTSC(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files, String... args) {
+    private void runTSC(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files, String... args) {
         boolean[] fullPass = {true};
         tsCompilationProcess = ProcessUtil.runCommand("tsc", getTsOutputDir(), isTscWatchMode(), line -> {
             logger.info(line);
@@ -1583,7 +1579,7 @@ public class JSweetTranspiler implements JSweetOptions {
             translator.scan(tree);
             translator.exitScope();
             String tsCode = translator.getResult();
-            String jsCode = transpiler.tspart2js(tree, tsCode, handler, "part" + p++);
+            String jsCode = transpiler.tspart2js(tsCode, handler, "part" + p++);
             try {
                 if (!rhandler.getProblems().isEmpty()) {
                     printProblems(rhandler.getProblems());

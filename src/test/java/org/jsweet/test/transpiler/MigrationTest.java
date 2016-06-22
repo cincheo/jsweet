@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.jsweet.transpiler.JSweetTranspiler;
 import org.jsweet.transpiler.JSweetTranspiler.TranspiledPartsPrinter;
-import org.jsweet.transpiler.SourceFile;
 import org.jsweet.transpiler.util.ConsoleTranspilationHandler;
 import org.junit.Test;
 import source.migration.QuickStart;
@@ -43,10 +42,7 @@ public class MigrationTest extends AbstractTest {
             new File(dir, "cjs"),
             null
         );
-        transpiler.migrate(
-            new ConsoleTranspilationHandler(),
-            new SourceFile[]{getSourceFile(QuickStart.class)},
-            new TranspiledPartsPrinter(transpiler) {
+        TranspiledPartsPrinter printer = new TranspiledPartsPrinter(transpiler) {
 
             @Override
             public void printTranspiled(JCTree tree, String tsCode, String jsCode) throws IOException {
@@ -65,6 +61,14 @@ public class MigrationTest extends AbstractTest {
             public void printProblems(List<String> problems) throws IOException {
                 print("\n/* errors: {" + problems.stream().collect(Collectors.joining("\n")) + "} */");
             }
-        });
+        };
+        printer.reset();
+        transpiler.migrate(
+            new ConsoleTranspilationHandler(),
+            new File(TEST_DIRECTORY_NAME + "/" + QuickStart.class.getName().replace(".", "/") + ".java"),
+            printer);
+        printer.flush();
+        System.out.println(printer.getStringResult());
+
     }
 }
