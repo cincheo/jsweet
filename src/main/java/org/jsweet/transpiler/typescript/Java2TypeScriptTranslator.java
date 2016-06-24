@@ -110,6 +110,8 @@ import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.JCTree.JCWhileLoop;
 import com.sun.tools.javac.tree.TreeScanner;
 import com.sun.tools.javac.util.Name;
+import java.util.Collections;
+import static org.jsweet.transpiler.util.Util.getRootRelativeJavaName;
 
 /**
  * This is a TypeScript printer for translating the Java AST to a TypeScript
@@ -210,27 +212,28 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	private static java.util.List<Class<?>> statementsWithNoSemis = Arrays
 			.asList(new Class<?>[] { JCIf.class, JCForLoop.class, JCEnhancedForLoop.class, JCSwitch.class });
 
-	private static Map<String, String> instanceOfTypeMapping = new HashMap<String, String>();
-
+	public static final Map<String, String> TYPE_MAPPING;
 	static {
-		instanceOfTypeMapping.put("java.lang.String", "String");
-		instanceOfTypeMapping.put("java.lang.Number", "Number");
-		instanceOfTypeMapping.put("java.lang.Integer", "Number");
-		instanceOfTypeMapping.put("java.lang.Float", "Number");
-		instanceOfTypeMapping.put("java.lang.Double", "Number");
-		instanceOfTypeMapping.put("java.lang.Short", "Number");
-		instanceOfTypeMapping.put("java.lang.Character", "String");
-		instanceOfTypeMapping.put("java.lang.Byte", "Number");
-		instanceOfTypeMapping.put("java.lang.Boolean", "Boolean");
-		instanceOfTypeMapping.put("java.lang.Long", "Number");
-		instanceOfTypeMapping.put("int", "Number");
-		instanceOfTypeMapping.put("float", "Number");
-		instanceOfTypeMapping.put("double", "Number");
-		instanceOfTypeMapping.put("short", "Number");
-		instanceOfTypeMapping.put("char", "String");
-		instanceOfTypeMapping.put("boolean", "Boolean");
-		instanceOfTypeMapping.put("byte", "Number");
-		instanceOfTypeMapping.put("long", "Number");
+        Map<String, String> mapping = new HashMap<>();
+		mapping.put("java.lang.String", "String");
+		mapping.put("java.lang.Number", "Number");
+		mapping.put("java.lang.Integer", "Number");
+		mapping.put("java.lang.Float", "Number");
+		mapping.put("java.lang.Double", "Number");
+		mapping.put("java.lang.Short", "Number");
+		mapping.put("java.lang.Character", "String");
+		mapping.put("java.lang.Byte", "Number");
+		mapping.put("java.lang.Boolean", "Boolean");
+		mapping.put("java.lang.Long", "Number");
+		mapping.put("int", "Number");
+		mapping.put("float", "Number");
+		mapping.put("double", "Number");
+		mapping.put("short", "Number");
+		mapping.put("char", "String");
+		mapping.put("boolean", "Boolean");
+		mapping.put("byte", "Number");
+		mapping.put("long", "Number");
+        TYPE_MAPPING = Collections.unmodifiableMap(mapping);
 	}
 
 	private JCMethodDecl mainMethod;
@@ -3160,10 +3163,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (!(getParent() instanceof JCParens)) {
 			print("(");
 		}
-		if (instanceOfTypeMapping.containsKey(type.toString())) {
+		if (TYPE_MAPPING.containsKey(type.toString())) {
 			print("typeof ");
 			print(exprStr, expr);
-			print(" === ").print("'" + instanceOfTypeMapping.get(type.toString()).toLowerCase() + "'");
+			print(" === ").print("'" + TYPE_MAPPING.get(type.toString()).toLowerCase() + "'");
 		} else if (type.toString().startsWith(JSweetConfig.FUNCTION_CLASSES_PACKAGE + ".") || type.toString().startsWith("java.util.function.")
 				|| Runnable.class.getName().equals(type.toString()) || Util.hasAnnotationType(type.tsym, JSweetConfig.ANNOTATION_FUNCTIONAL_INTERFACE)) {
 			print("typeof ");
