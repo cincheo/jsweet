@@ -20,13 +20,14 @@ import com.sun.tools.javac.tree.JCTree;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.util.Arrays;
-import java.util.List;
 import java.util.stream.Collectors;
 import org.jsweet.transpiler.JSweetTranspiler;
 import org.jsweet.transpiler.JSweetTranspiler.TranspiledPartsPrinter;
 import org.jsweet.transpiler.util.ConsoleTranspilationHandler;
+import org.jsweet.transpiler.util.ErrorCountTranspilationHandler;
 import org.junit.Test;
 import source.migration.QuickStart;
 
@@ -47,21 +48,29 @@ public class MigrationTest extends AbstractTest {
         TranspiledPartsPrinter printer = new TranspiledPartsPrinter(baos, transpiler) {
 
             @Override
-            public void printTranspiled(JCTree tree, String tsCode, String jsCode) throws IOException {
-                print("\n/*\n");
-                print(Arrays.stream(String.format(
-                    "java code:\n%s\nts code:\n%s\njs code:\n%s\n",
-                    tree,
-                    tsCode,
-                    jsCode
-                ).split("\n")).map(s -> " * " + s).collect(Collectors.joining("\n")));
-                print("*/\n");
-                print(tree);
-            }
-
-            @Override
-            public void printProblems(List<String> problems) throws IOException {
-                print("\n/* errors: {" + problems.stream().collect(Collectors.joining("\n")) + "} */");
+            public void visitMethodDef(JCTree.JCMethodDecl method) {
+                if ("<init>".equals(method.getName().toString()) || "<clinit>".equals(method.getName().toString())) {
+                    super.visitMethodDef(method);
+                } else {
+                    ErrorCountTranspilationHandler handler = new ErrorCountTranspilationHandler(new ConsoleTranspilationHandler());
+                    String jsCode = transpile(method, handler);
+                    if (handler.getErrorCount() == 0) {
+                        try {
+                            print("\n/*\n");
+                            print(Arrays.stream(String.format(
+                                "java code:\n%s\njs code:\n%s\n",
+                                method,
+                                jsCode
+                            ).split("\n")).map(s -> " * " + s).collect(Collectors.joining("\n")));
+                            print("*/\n");
+                            print(method);
+                        } catch (IOException ex) {
+                            throw new UncheckedIOException(ex);
+                        }
+                    } else {
+                        super.visitMethodDef(method);
+                    }
+                }
             }
         };
         baos.reset();

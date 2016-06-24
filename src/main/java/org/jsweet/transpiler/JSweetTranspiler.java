@@ -78,7 +78,6 @@ import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.Log.WriterKind;
 import com.sun.tools.javac.util.Options;
 import com.sun.tools.javac.tree.Pretty;
-import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UncheckedIOException;
@@ -1557,91 +1556,22 @@ public class JSweetTranspiler implements JSweetOptions {
             this.transpiler = transpiler;
         }
 
-        public boolean transpilingSuccess(JCTree tree) {
-            if (!transpilePart(tree)) {
-                return false;
-            }
-            final JSweetTranspiler.RecordTranspilationHandler rhandler = new JSweetTranspiler.RecordTranspilationHandler();
-            final ErrorCountTranspilationHandler handler = new ErrorCountTranspilationHandler(rhandler);
+        public String transpile(JCTree tree, ErrorCountTranspilationHandler handler) {
             Java2TypeScriptTranslator translator = new Java2TypeScriptTranslator(
                 handler,
                 transpiler.context,
                 null,
                 false
             );
-            rhandler.getProblems().clear();
             translator.enterScope();
             translator.scan(tree);
             translator.exitScope();
             String tsCode = translator.getResult();
-            String jsCode = transpiler.tspart2js(tsCode, handler, "part" + p++);
-            try {
-                if (!rhandler.getProblems().isEmpty()) {
-                    printProblems(rhandler.getProblems());
-                }
-                if (handler.getErrorCount() == 0) {
-                    printTranspiled(tree, tsCode, jsCode);
-                    return true;
-                } else {
-                    return false;
-                }
-            } catch (IOException ex) {
-                throw new UncheckedIOException(ex);
-            }
-        }
-
-        public boolean transpilePart(JCTree tree) {
-            return true;
-        }
-
-        public void printTranspiled(JCTree tree, String tsCode, String jsCode) throws IOException {
-            // do nothing by default
-        }
-
-        public void printProblems(java.util.List<String> problems) throws IOException {
-            // do nothing by default
+            return transpiler.tspart2js(tsCode, handler, "part" + p++);
         }
 
         public void flush() throws IOException {
             writer.flush();
         }
-
-//        @Override
-//        public void visitBlock(JCTree.JCBlock tree) {
-//            if (!transpilingSuccess(tree)) {
-//                super.visitBlock(tree);
-//            }
-//        }
-        @Override
-        public void visitMethodDef(JCTree.JCMethodDecl method) {
-            if ("<init>".equals(method.getName().toString()) || "<clinit>".equals(method.getName().toString())) {
-                super.visitMethodDef(method);
-            } else if (!transpilingSuccess(method)) {
-                super.visitMethodDef(method);
-            }
-        }
     }
-
-    private static class RecordTranspilationHandler implements TranspilationHandler {
-
-        private final java.util.List<String> problems = new ArrayList<>();
-
-        @Override
-        public void report(JSweetProblem problem, SourcePosition sourcePosition, String message) {
-            if (sourcePosition == null || sourcePosition.getFile() == null) {
-                problems.add(problem.getSeverity() + ": " + message);
-            } else {
-                problems.add(problem.getSeverity() + ": " + message + " at " + sourcePosition.getFile() + "(" + sourcePosition.getStartLine() + ")");
-            }
-        }
-
-        @Override
-        public void onCompleted(JSweetTranspiler transpiler, boolean fullPass, SourceFile[] files) {
-        }
-
-        public java.util.List<String> getProblems() {
-            return problems;
-        }
-    }
-
 }
