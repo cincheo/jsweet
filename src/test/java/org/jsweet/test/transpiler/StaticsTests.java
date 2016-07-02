@@ -21,6 +21,7 @@ import org.junit.Test;
 import source.statics.AnonymousClasses;
 import source.statics.Classes;
 import source.statics.InnerClasses;
+import source.statics.StaticsInInterfaces;
 import source.statics.StaticInitializer;
 import source.statics.StaticInitializerWithNoFields;
 
@@ -69,5 +70,15 @@ public class StaticsTests extends AbstractTest {
 			Assert.assertTrue(r.get("ok"));
 		} , getSourceFile(StaticInitializerWithNoFields.class));
 	}
+	
+	@Test
+	public void testStaticsInInterfaces() {
+		eval((h, r) -> {
+			h.assertReportedProblems();
+			Assert.assertEquals(1, (int)r.get("c1"));
+			Assert.assertEquals(2, (int)r.get("c2"));
+		} , getSourceFile(StaticsInInterfaces.class));
+	}
+	
 
 }
