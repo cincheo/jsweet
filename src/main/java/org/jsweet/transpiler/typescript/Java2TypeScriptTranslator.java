@@ -848,7 +848,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 				continue;
 			}
-			if (def instanceof JCVariableDecl) {
+			if (def instanceof JCVariableDecl && !(getScope().sharedMode && ((JCVariableDecl) def).getModifiers().getFlags().contains(Modifier.STATIC))) {
 				if (getScope().enumScope) {
 					print(", ");
 				} else {
@@ -966,6 +966,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						println().println().printIndent().print("export namespace ").print(classdecl.getSimpleName().toString()).print(" {").startIndent();
 					}
 					println().println().printIndent().print(def);
+					if (def instanceof JCVariableDecl) {
+						print(";");
+					}
 				}
 			}
 			if (nameSpace) {
@@ -1444,14 +1447,15 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					continue;
 				} else {
 					printIndent().print("var ").printIdentifier(avoidJSKeyword(method.getParameters().get(j).name.toString())).print(" : ").print("any")
-							.print(" = ").printIdentifier(avoidJSKeyword(((JCVariableDecl) args.get(j)).name.toString())).print(";").println();
+							.print(Util.isVarargs(method.getParameters().get(j)) ? "[]" : "").print(" = ")
+							.printIdentifier(avoidJSKeyword(((JCVariableDecl) args.get(j)).name.toString())).print(";").println();
 				}
 			} else {
 				if (method.getParameters().get(j).name.toString().equals(args.get(j).toString())) {
 					continue;
 				} else {
 					printIndent().print("var ").printIdentifier(avoidJSKeyword(method.getParameters().get(j).name.toString())).print(" : ").print("any")
-							.print(" = ").print(args.get(j)).print(";").println();
+							.print(Util.isVarargs(method.getParameters().get(j)) ? "[]" : "").print(" = ").print(args.get(j)).print(";").println();
 				}
 			}
 		}
@@ -2046,7 +2050,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			if (!Util.hasVarargs(methSym) //
 					|| inv.args.last().type.getKind() != TypeKind.ARRAY
 					// we dont use apply if var args type differ
-					|| !((ArrayType) inv.args.last().type).elemtype.equals(((ArrayType) methSym.getParameters().last().type).elemtype)) {
+					|| !context.types.erasure(((ArrayType) inv.args.last().type).elemtype)
+							.equals(context.types.erasure(((ArrayType) methSym.getParameters().last().type).elemtype))) {
 				applyVarargs = false;
 			}
 
@@ -2099,22 +2104,22 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 			if (applyVarargs) {
 				print(".apply");
-			}
-
-			if (inv.typeargs != null && !inv.typeargs.isEmpty()) {
-				print("<");
-				for (JCExpression argument : inv.typeargs) {
-					getAdapter().substituteAndPrintType(argument).print(",");
-				}
-				removeLastChar();
-				print(">");
 			} else {
-				// force type arguments to any because they are inferred to
-				// {} by default
-				if (methSym != null && !methSym.getTypeParameters().isEmpty()) {
-					// invalid overload type parameters are erased
-					if (!context.isInvalidOverload(methSym)) {
-						printAnyTypeArguments(methSym.getTypeParameters().size());
+				if (inv.typeargs != null && !inv.typeargs.isEmpty()) {
+					print("<");
+					for (JCExpression argument : inv.typeargs) {
+						getAdapter().substituteAndPrintType(argument).print(",");
+					}
+					removeLastChar();
+					print(">");
+				} else {
+					// force type arguments to any because they are inferred to
+					// {} by default
+					if (methSym != null && !methSym.getTypeParameters().isEmpty()) {
+						// invalid overload type parameters are erased
+						if (!context.isInvalidOverload(methSym)) {
+							printAnyTypeArguments(methSym.getTypeParameters().size());
+						}
 					}
 				}
 			}
@@ -2467,19 +2472,42 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			} else {
 				if (!getAdapter().substituteNewClass(newClass)) {
 					if (typeChecker.checkType(newClass, null, newClass.clazz)) {
-						if (newClass.clazz instanceof JCTypeApply) {
-							JCTypeApply typeApply = (JCTypeApply) newClass.clazz;
-							print("new ").print(typeApply.clazz);
-							if (!typeApply.arguments.isEmpty()) {
-								print("<").printTypeArgList(typeApply.arguments).print(">");
-							} else {
-								// erase types since the diamond (<>) operator
-								// does not exists in TypeScript
-								printAnyTypeArguments(((ClassSymbol) newClass.clazz.type.tsym).getTypeParameters().length());
+
+						boolean applyVarargs = true;
+						MethodSymbol methSym = (MethodSymbol) newClass.constructor;
+						if (newClass.args.size() == 0 || !Util.hasVarargs(methSym) //
+								|| newClass.args.last().type.getKind() != TypeKind.ARRAY
+								// we dont use apply if var args type differ
+								|| !context.types.erasure(((ArrayType) newClass.args.last().type).elemtype)
+										.equals(context.types.erasure(((ArrayType) methSym.getParameters().last().type).elemtype))) {
+							applyVarargs = false;
+						}
+						if (applyVarargs) {
+							// this is necessary in case the user defines a
+							// Function class that hides the global Function
+							// class
+							context.addGlobalsMapping("Function", "__Function");
+							print("<any>new (__Function.prototype.bind.apply(").print(newClass.clazz).print(", [null");
+							for (int i = 0; i < newClass.args.length() - 1; i++) {
+								print(", ").print(newClass.args.get(i));
 							}
-							print("(").printConstructorArgList(newClass).print(")");
+							print("].concat(<any[]>").print(newClass.args.last()).print(")))");
 						} else {
-							print("new ").print(newClass.clazz).print("(").printConstructorArgList(newClass).print(")");
+							if (newClass.clazz instanceof JCTypeApply) {
+								JCTypeApply typeApply = (JCTypeApply) newClass.clazz;
+								print("new ").print(typeApply.clazz);
+								if (!typeApply.arguments.isEmpty()) {
+									print("<").printTypeArgList(typeApply.arguments).print(">");
+								} else {
+									// erase types since the diamond (<>)
+									// operator
+									// does not exists in TypeScript
+									printAnyTypeArguments(((ClassSymbol) newClass.clazz.type.tsym).getTypeParameters().length());
+								}
+								print("(").printConstructorArgList(newClass).print(")");
+							} else {
+								print("new ").print(newClass.clazz).print("(").printConstructorArgList(newClass).print(")");
+							}
 						}
 					}
 				}
@@ -3051,7 +3079,17 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (memberReference.expr.type.toString().endsWith(JSweetConfig.GLOBALS_CLASS_NAME)) {
 			print(memberReference.name.toString());
 		} else {
-			print(memberReference.expr).print(".").print(memberReference.name.toString());
+			if ("<init>".equals(memberReference.name.toString())) {
+				if (context.types.isArray(memberReference.expr.type)) {
+					print("new Array<");
+					getAdapter().substituteAndPrintType(((JCArrayTypeTree) memberReference.expr).elemtype);
+					print(">");
+				} else {
+					print("new ").print(memberReference.expr);
+				}
+			} else {
+				print(memberReference.expr).print(".").print(memberReference.name.toString());
+			}
 		}
 
 		if (memberReference.sym instanceof MethodSymbol) {
@@ -3112,6 +3150,17 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			print("typeof ");
 			print(exprStr, expr);
 			print(" === ").print("'" + instanceOfTypeMapping.get(type.toString()).toLowerCase() + "'");
+		} else if (type.toString().startsWith(JSweetConfig.FUNCTION_CLASSES_PACKAGE + ".") || type.toString().startsWith("java.util.function.")
+				|| Runnable.class.getName().equals(type.toString()) || Util.hasAnnotationType(type.tsym, JSweetConfig.ANNOTATION_FUNCTIONAL_INTERFACE)) {
+			print("typeof ");
+			print(exprStr, expr);
+			print(" === 'function'");
+			int parameterCount = Util.getFunctionalTypeParameterCount(type);
+			if (parameterCount != -1) {
+				print(" && (<any>");
+				print(exprStr, expr);
+				print(").length == " + Util.getFunctionalTypeParameterCount(type));
+			}
 		} else {
 			print(exprStr, expr);
 			if (Util.isInterface(type.tsym)) {

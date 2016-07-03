@@ -28,6 +28,7 @@ import source.overload.Overload;
 import source.overload.OverloadInInnerClass;
 import source.overload.OverloadWithStaticAndInstanceMethods;
 import source.overload.WrongOverload;
+import source.overload.WrongOverloadConstructorWithVarargs;
 import source.overload.WrongOverloadFrom2Interfaces;
 import source.overload.WrongOverloadInInnerClass;
 import source.overload.WrongOverloadWithArraysAndObjects;
@@ -164,6 +165,14 @@ public class OverloadTests extends AbstractTest {
 			logHandler.assertReportedProblems();
 			assertEquals("m,m,read1,read2", r.get("trace"));
 		} , getSourceFile(WrongOverloadWithSpecialParameters.class));
+	}
+
+	@Test
+	public void testWrongOverloadConstructorWithVarargs() {
+		eval(ModuleKind.none, (logHandler, r) -> {
+			logHandler.assertReportedProblems();
+			assertEquals("c11,t12,c13,t14", r.get("trace"));
+		} , getSourceFile(WrongOverloadConstructorWithVarargs.class));
 	}
 	
 }

@@ -125,6 +125,7 @@ public class CandiesProcessor {
 	private void setCandiesJavascriptOutDir(File extractedCandiesJavascriptDir) {
 		this.candiesJavascriptOutDir = extractedCandiesJavascriptDir;
 		if (this.candiesJavascriptOutDir == null) {
+			logger.info("extracted candies directory is set to default");
 			this.candiesJavascriptOutDir = new File(workingDir, CANDIES_DEFAULT_JS_DIR_NAME);
 		}
 		logger.info("extracted candies directory: " + extractedCandiesJavascriptDir);
@@ -192,7 +193,7 @@ public class CandiesProcessor {
 					JarEntry candySpecificEntry2 = jarFileHandle.getJarEntry("META-INF/candy-metadata.json");
 					boolean isCandy = candySpecificEntry != null || candySpecificEntry2 != null;
 					if (isCandy) {
-						CandyDescriptor descriptor = CandyDescriptor.fromCandyJar(jarFileHandle);
+						CandyDescriptor descriptor = CandyDescriptor.fromCandyJar(jarFileHandle, candiesJavascriptOutDir.getAbsolutePath());
 
 						checkCandyVersion(descriptor, transpilationHandler);
 						jarFilesCollector.put(jarFile, descriptor);
@@ -201,7 +202,7 @@ public class CandiesProcessor {
 
 			}
 		}
-		logger.info("candies: " + jarFilesCollector.keySet());
+		logger.info(jarFilesCollector.keySet().size() + " candies found in classpath");
 
 		return jarFilesCollector;
 	}
@@ -260,7 +261,7 @@ public class CandiesProcessor {
 			Predicate<String> isTsDefToBeExtracted, //
 			File classesOutputDirectory) {
 		logger.info("extract candy: " + jarFile.getName() + " javaOutputDirectory=" + javaOutputDirectory + " tsDefOutputDirectory=" + tsDefOutputDirectory
-				+ " classesOutputDirectory=" + classesOutputDirectory);
+				+ " classesOutputDirectory=" + classesOutputDirectory + " jsOutputDir=" + jsOutputDirectory);
 
 		jarFile.stream()
 				.filter(entry -> entry.getName().endsWith(".d.ts") && entry.getName().startsWith("src/") || entry.getName().endsWith("package-info.class")) //

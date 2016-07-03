@@ -23,6 +23,7 @@ import static org.junit.Assert.fail;
 
 import org.apache.commons.io.FileUtils;
 import org.jsweet.transpiler.JSweetProblem;
+import org.jsweet.transpiler.ModuleKind;
 import org.jsweet.transpiler.SourceFile;
 import org.jsweet.transpiler.util.EvaluationResult;
 import org.junit.Assert;
@@ -59,11 +60,12 @@ public class SyntaxTests extends AbstractTest {
 
 	@Test
 	public void testKeywords() {
-		transpile((logHandler) -> {
+		eval(ModuleKind.none, (logHandler, r) -> {
 			Assert.assertEquals(8, logHandler.reportedProblems.size());
 			for (JSweetProblem problem : logHandler.reportedProblems) {
 				Assert.assertEquals(JSweetProblem.JS_KEYWORD_CONFLICT, problem);
 			}
+			Assert.assertEquals("a,1,f,2,abc", r.get("trace"));
 		} , getSourceFile(Keywords.class));
 	}
 

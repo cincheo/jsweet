@@ -28,6 +28,7 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -43,6 +44,7 @@ class CandyDescriptor {
 	final long lastUpdateTimestamp;
 	final String modelVersion;
 	final String transpilerVersion;
+	final String jsOutputDirPath;
 	final String jsDirPath;
 	final List<String> jsFilesPaths;
 
@@ -52,6 +54,7 @@ class CandyDescriptor {
 			long lastUpdateTimestamp, //
 			String modelVersion, //
 			String transpilerVersion, //
+			String jsOutputDirPath, //
 			String jsDirPath, //
 			List<String> jsFilesPaths) {
 		this.name = name;
@@ -59,6 +62,7 @@ class CandyDescriptor {
 		this.lastUpdateTimestamp = lastUpdateTimestamp;
 		this.modelVersion = modelVersion;
 		this.transpilerVersion = transpilerVersion;
+		this.jsOutputDirPath = jsOutputDirPath;
 		this.jsDirPath = jsDirPath;
 		this.jsFilesPaths = jsFilesPaths;
 	}
@@ -81,7 +85,8 @@ class CandyDescriptor {
 		CandyDescriptor other = (CandyDescriptor) obj;
 		return name.equals(other.name) //
 				&& version.equals(other.version) //
-				&& lastUpdateTimestamp == other.lastUpdateTimestamp;
+				&& lastUpdateTimestamp == other.lastUpdateTimestamp //
+				&& StringUtils.equals(jsOutputDirPath, other.jsOutputDirPath);
 	}
 
 	private final static Pattern MODEL_VERSION_PATTERN = Pattern.compile("[\\<]groupId[\\>]org[.]jsweet[.]candies[.](.*)[\\<]/groupId[\\>]");
@@ -90,7 +95,7 @@ class CandyDescriptor {
 
 	private final static Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-	public static CandyDescriptor fromCandyJar(JarFile jarFile) throws IOException {
+	public static CandyDescriptor fromCandyJar(JarFile jarFile, String jsOutputDirPath) throws IOException {
 		JarEntry pomEntry = null;
 		Enumeration<JarEntry> entries = jarFile.entries();
 		while (entries.hasMoreElements()) {
@@ -157,6 +162,7 @@ class CandyDescriptor {
 				lastUpdateTimestamp, //
 				modelVersion, //
 				transpilerVersion, //
+				jsOutputDirPath, //
 				jsDirPath, //
 				jsFilesPaths);
 	}

@@ -8,6 +8,7 @@ import java.util.function.Function;
 import def.backbone.backbone.Collection;
 import def.backbone.backbone.Model;
 import def.backbone.backbone.ObjectHash;
+import jsweet.util.Globals;
 
 public class BackboneCandy {
 
@@ -68,24 +69,26 @@ class TodoList extends Collection<Todo> {
 	Class<Todo> model = Todo.class;
 
 	Function<String, String> test;
-	
+
 	// Save all of the todo items under the `"todos"` namespace.
 	// TODO: the Store class in backbone does not define any parameter in the
 	// constructor... maybe a mistake in the original TypeScript exammle, which
 	// declare the Store class as an "any" variable...
 	// Store localStorage = new Store("todos-backbone");
-	//Store localStorage = new Store("todos-backbone");
+	// Store localStorage = new Store("todos-backbone");
 
 	// Filter down the list of all todo items that are finished.
 	Todo[] done() {
-		return this.filter((todo, i) -> {
+		return this.filter((todo, i, __) -> {
 			return (Boolean) todo.get("done");
 		});
 	}
 
 	// Filter down the list to only todo items that are still not finished.
+	// TODO: this is wrong... there is a problem with varargs... to be
+	// investigated
 	Todo[] remaining() {
-		return this.without(this, this.done());
+		return this.without(Globals.any(this.done()));
 	}
 
 	// We keep the Todos in sequential order, despite being saved by unordered
@@ -101,15 +104,15 @@ class TodoList extends Collection<Todo> {
 			return (Integer) todo.get("order");
 		}));
 	}
-	
+
 }
 
 class Child extends TodoList {
-	
+
 	{
 		test = (String s) -> {
 			return "";
 		};
 	}
-	
+
 }

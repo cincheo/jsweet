@@ -14,6 +14,7 @@ public class MathApi {
 		$export("cbrt2", Math.cbrt(2));
 		$export("signum_2342", Math.signum(-2342));
 		$export("scalb1_2__2", Math.scalb(1.2, 2));
+		$export("toDegres0_5", Math.toDegrees(0.5));
 		
 	}
 	

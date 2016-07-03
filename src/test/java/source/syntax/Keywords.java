@@ -16,7 +16,21 @@
  */
 package source.syntax;
 
+import static jsweet.util.Globals.$export;
+
+import jsweet.lang.Array;
+
 public class Keywords {
+
+	static Array<String> trace = new Array<String>();
+
+	public static void main(String[] args) {
+		Keywords k = new Keywords("a");
+		trace.push(k.in);
+		k.m();
+		k.m2(1, 2);
+		$export("trace", trace.join(","));
+	}
 
 	String in;
 
@@ -46,17 +60,19 @@ public class Keywords {
 		typeof = "";
 	}
 
-	@SuppressWarnings("unused")
 	void m() {
-		Integer var = null;
-		String function = null;
+		Integer var = 1;
+		String function = "f";
+		trace.push("" + var);
+		trace.push(function);
 	}
 
 	void m2(int var, long function) {
 		var = 2;
 		var = (int) function;
-		@SuppressWarnings("unused")
+		trace.push("" + var);
 		String constructor = "abc";
+		trace.push(constructor);
 	}
 
 }

@@ -147,6 +147,7 @@ public class JSweetTranspiler implements JSweetOptions {
 	private boolean generateDeclarations = false;
 	private File declarationsOutputDir;
 	private boolean jdkAllowed = true;
+	private ArrayList<File> jsLibFiles = new ArrayList<>();
 
 	/**
 	 * Creates a JSweet transpiler, with the default values.
@@ -211,6 +212,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		logger.info("curent dir: " + new File(".").getAbsolutePath());
 		logger.info("tsOut: " + tsOutputDir + (tsOutputDir == null ? "" : " - " + tsOutputDir.getAbsolutePath()));
 		logger.info("jsOut: " + jsOutputDir + (jsOutputDir == null ? "" : " - " + jsOutputDir.getAbsolutePath()));
+		logger.info("candyJsOut: " + extractedCandiesJavascriptDir);
 		logger.debug("compile classpath: " + classPath);
 		logger.debug("runtime classpath: " + System.getProperty("java.class.path"));
 		this.candiesProcessor = new CandiesProcessor(workingDir, classPath, extractedCandyJavascriptDir);
@@ -242,9 +244,6 @@ public class JSweetTranspiler implements JSweetOptions {
 	private void initNodeCommands(TranspilationHandler transpilationHandler) throws Exception {
 		if (!ProcessUtil.isInstalledWithNpm("tsc")) {
 			ProcessUtil.installNodePackage("typescript", true);
-		}
-		if (!ProcessUtil.isInstalledWithNpm("browserify")) {
-			ProcessUtil.installNodePackage("browserify", true);
 		}
 	}
 
@@ -494,6 +493,12 @@ public class JSweetTranspiler implements JSweetOptions {
 			} else {
 				File tmpFile = new File(new File(TMP_WORKING_DIR_NAME), "eval.tmp.js");
 				FileUtils.deleteQuietly(tmpFile);
+				if (jsLibFiles != null) {
+					for (File jsLibFile : jsLibFiles) {
+						String script = FileUtils.readFileToString(jsLibFile);
+						FileUtils.write(tmpFile, script + "\n", true);
+					}
+				}
 				for (SourceFile sourceFile : sourceFiles) {
 					String script = FileUtils.readFileToString(sourceFile.getJsFile());
 					FileUtils.write(tmpFile, script + "\n", true);
@@ -608,64 +613,7 @@ public class JSweetTranspiler implements JSweetOptions {
 			ts2js(errorHandler, tsSources.toArray(new SourceFile[0]));
 		}
 
-		generateBundles(errorHandler, files);
 		logger.info("transpilation process finished in " + (System.currentTimeMillis() - transpilationStartTimestamp) + " ms");
-	}
-
-	private void generateBundles(ErrorCountTranspilationHandler errorHandler, SourceFile... files) {
-		if (bundle && context.useModules && errorHandler.getErrorCount() == 0) {
-			if (moduleKind != ModuleKind.commonjs) {
-				errorHandler.report(JSweetProblem.BUNDLE_WITH_COMMONJS, null, JSweetProblem.BUNDLE_WITH_COMMONJS.getMessage());
-			}
-			context.packageDependencies.topologicalSort(node -> {
-				if (errorHandler.getErrorCount() == 0) {
-					errorHandler.report(JSweetProblem.BUNDLE_HAS_CYCLE, null,
-							JSweetProblem.BUNDLE_HAS_CYCLE.getMessage(context.packageDependencies.toString()));
-				}
-			});
-			if (errorHandler.getErrorCount() > 0) {
-				return;
-			}
-
-			logger.info("checking for used modules: " + context.getUsedModules());
-			for (String module : context.getUsedModules()) {
-				if (module.endsWith(JSweetConfig.MODULE_FILE_NAME)) {
-					continue;
-				}
-				logger.debug("cheking for module " + module);
-				if (!ProcessUtil.isNodePackageInstalled(module)) {
-					logger.debug("installing " + module + "...");
-					// TODO: error reporting
-					ProcessUtil.installNodePackage(module, false);
-				}
-			}
-
-			Set<String> entries = new HashSet<>();
-			for (SourceFile f : files) {
-				if (context.entryFiles.contains(f.getJavaFile())) {
-					entries.add(f.jsFile.getAbsolutePath());
-				}
-			}
-
-			if (entries.isEmpty()) {
-				errorHandler.report(JSweetProblem.BUNDLE_HAS_NO_ENTRIES, null, JSweetProblem.BUNDLE_HAS_NO_ENTRIES.getMessage());
-			}
-
-			for (String entry : entries) {
-				String[] args = { entry };
-				File entryDir = new File(entry).getParentFile();
-				File bundleDirectory = bundlesDirectory != null ? bundlesDirectory : entryDir;
-				if (!bundleDirectory.exists()) {
-					bundleDirectory.mkdirs();
-				}
-				String bundleName = "bundle-" + entryDir.getName() + ".js";
-				args = ArrayUtils.addAll(args, "-o", new File(bundleDirectory, bundleName).getAbsolutePath());
-				logger.info("creating bundle file with browserify, args: " + StringUtils.join(args, ' '));
-				// TODO: keep original ts files sourcemaps:
-				// http://stackoverflow.com/questions/23453160/keep-original-typescript-source-maps-after-using-browserify
-				ProcessUtil.runCommand("browserify", ProcessUtil.USER_HOME_DIR, false, null, null, null, args);
-			}
-		}
 	}
 
 	private void createAuxiliaryModuleFiles(File rootDir) throws IOException {
@@ -720,6 +668,11 @@ public class JSweetTranspiler implements JSweetOptions {
 		context.useModules = isUsingModules();
 		context.sourceFiles = files;
 
+		if (context.useModules && bundle) {
+			transpilationHandler.report(JSweetProblem.BUNDLE_WITH_MODULE, null, JSweetProblem.BUNDLE_WITH_MODULE.getMessage());
+			return;
+		}
+
 		new GlobalBeforeTranslationScanner(transpilationHandler, context).process(compilationUnits);
 
 		if (context.useModules) {
@@ -769,6 +722,7 @@ public class JSweetTranspiler implements JSweetOptions {
 			PrintWriter out = new PrintWriter(outputFilePath);
 			try {
 				out.println(printer.getResult());
+				out.print(context.getGlobalsMappingString());
 				out.print(context.poolFooterStatements());
 			} finally {
 				out.close();
@@ -836,6 +790,7 @@ public class JSweetTranspiler implements JSweetOptions {
 			files[permutation[i]].sourceMap = printer.sourceMap;
 			files[permutation[i]].sourceMap.shiftOutputPositions(StringUtils.countMatches(sb, "\n"));
 			sb.append(printer.getOutput());
+			sb2.append(context.getGlobalsMappingString());
 			sb2.append(context.poolFooterStatements());
 		}
 		for (Entry<PackageSymbol, StringBuilder> e : modules.entrySet()) {
@@ -931,6 +886,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		PrintWriter out = new PrintWriter(outputFilePath);
 		try {
 			out.println(sb.toString());
+			out.print(context.getGlobalsMappingString());
 			out.print(context.poolFooterStatements());
 		} finally {
 			out.close();
@@ -1117,7 +1073,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		}
 
 		try {
-			logger.info("launching tsc with args: " + args);
+			logger.info("launching tsc...");
 
 			boolean[] fullPass = { true };
 
@@ -1530,4 +1486,23 @@ public class JSweetTranspiler implements JSweetOptions {
 	public boolean isJDKAllowed() {
 		return jdkAllowed;
 	}
+
+	/**
+	 * Add JavaScript libraries that are used for the JavaScript evaluation.
+	 * 
+	 * @see #eval(TranspilationHandler, SourceFile...)
+	 */
+	public void addJsLibFiles(File... files) {
+		jsLibFiles.addAll(Arrays.asList(files));
+	}
+
+	/**
+	 * Clears JavaScript libraries that are used for the JavaScript evaluation.
+	 * 
+	 * @see #eval(TranspilationHandler, SourceFile...)
+	 */
+	public void clearJsLibFiles() {
+		jsLibFiles.clear();
+	}
+
 }

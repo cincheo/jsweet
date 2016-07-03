@@ -12,6 +12,9 @@ cache:
   directories:
     - $HOME/.m2
 
+install:
+  - nvm install 4.1 && nvm use 4.1
+
 notifications:
   email:
     recipients:

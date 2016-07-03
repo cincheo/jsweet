@@ -20,14 +20,19 @@ import static jsweet.util.Globals.$export;
 
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 import java.util.function.DoubleConsumer;
 import java.util.function.DoubleSupplier;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 import jsweet.util.function.TriFunction;
 
-public class Lambdas {
-
+public class Lambdas<T> {
+	
+	final BinaryOperator<T>[] operations = null;
+    final Lambdas<UnaryOperator<T>> unary = null;
+    
 	void m() {
 		Runnable r = (Runnable) () -> {
 		};
@@ -39,7 +44,7 @@ public class Lambdas {
 	}
 
 	public static void main(String[] args) {
-		new Lambdas().test(p -> p);
+		new Lambdas<String>().test(p -> p);
 	}
 
 	void invoker() {

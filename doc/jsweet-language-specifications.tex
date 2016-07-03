@@ -63,7 +63,7 @@
 
 \begin{document}
 
-\title{JSweet Language Specifications\\{\large Version 1.1.0}}
+\title{JSweet Language Specifications\\{\large Version 1.2.x (snapshot)}}
 \author{%
 Renaud Pawlak\\
 {\normalsize renaud.pawlak@jsweet.org}\\
@@ -76,28 +76,30 @@ Renaud Pawlak\\
 
 \chapter{Basic concepts} 
 
-This section presents the JSweet language basic concepts. One must keep in mind that JSweet, as a Java-to-JavaScript transpiler, is an extension of Java at compile-time, and executes as JavaScript at runtime. Thus, most Java typing and syntactic constraints will apply at compile time, but some JavaScript semantics may apply at runtime. This document will mention when Java syntactic constructs and semantics are not legal (or differ) in JSweet.
+This section presents the JSweet language basic concepts. One must keep in mind that JSweet, as a Java-to-JavaScript transpiler, is an extension of Java at compile-time, and executes as JavaScript at runtime. Thus, most Java typing and syntactic constraints will apply at compile time, but some JavaScript semantics may apply at runtime. This document will mention JSweet-specific semantics.
 
 \section{Core types and objects}
 
-JSweet allows the use of primitive Java types, core Java objects (with some restrictions) and of core JavaScript objects, which are defined in the \texttt{jsweet.lang} package. Next, we describe the use of such core types and objects.
+JSweet allows the use of primitive Java types, core Java objects and of core JavaScript objects, which are defined in the \texttt{jsweet.lang} package. Next, we describe the use of such core types and objects.
 
 \subsection{Primitive Java types}
 
 JSweet allows the use of Java primitive types (and associated literals).
 
 \begin{itemize}
-\item \texttt{int}, \texttt{byte}, \texttt{short}, \texttt{double}, \texttt{float} are all converted to JavaScript numbers (precision does not matter in JSweet).
-\item \texttt{char} follows the Java typing rules but is converted to a JavaScript string by the transpiler.
-\item \texttt{boolean} corresponds to the JavaScript boolean.
+\item \texttt{int}, \texttt{byte}, \texttt{short}, \texttt{double}, \texttt{float} are all converted to JavaScript numbers (TypeScript \texttt{number} type). Precision usually does not matter in JSweet, however, casting to \texttt{int}, \texttt{byte}, or \texttt{short} forces the number to be rounded to the right-length integer.
+\item \texttt{char} follows the Java typing rules but is converted to a JavaScript \texttt{string} by the transpiler.
+\item \texttt{boolean} corresponds to the JavaScript \texttt{boolean}.
 \item \texttt{java.lang.String} corresponds to the JavaScript \texttt{string}. (not per say a primitive type, but is immutable and used as the class of string literals in Java)
 \end{itemize}
+
+A direct consequence of that conversion is that it is not possible in JSweet to safely overload methods with numbers or chars/strings. For instance, the methods \texttt{pow(int, int)} and \texttt{pow(double, double)} will be considered as the same method at runtime and should not have different implementations for that reason. Also, there will be no difference between \texttt{n instanceof Integer} and \texttt{n instanceof Double}, because it both means \texttt{typeof n === 'number'}. These behavior ensure low impedance between JSweet programs and JavaScript ones.
 
 \noindent
 Examples of valid statements:
 
 \begin{lstlisting}[language=Java]
-// warning '==' behaves like the JavaScript one at runtime
+// warning '==' behaves like JavaScript '===' at runtime
 int i = 2;
 assert i == 2;
 double d = i + 4;
@@ -108,52 +110,109 @@ boolean b = false;
 assert !b;
 \end{lstlisting}
 
-Note that in JSweet the \texttt{==} operator behaves like in JavaScript on primitive types, so that when comparing a string and an integer, it will try to match the two without taking the types in consideration. For instance, \texttt{"2" == 2} evaluates to \texttt{true}. In JavaScript, one can use the \texttt{===} operator to strictly compare the objects, so that \texttt{"2" === 2} evaluates to \texttt{false}. To use the \texttt{===} operator in JSweet, use the \texttt{jsweet.util.Globals.equalsStrict} utility method as follows. 
+Note that since JSweet 1.1.0, the \texttt{==} operator behaves like the JavaScript strict equals operator \texttt{===} so that it is close to the Java semantics. Similarly, \texttt{!=} is mapped to \texttt{!==}. There is an exception to that behavior which is when comparing an object to a \texttt{null} literal. In that case, JSweet translates to the loose equality operators so that the programmers see no distinction between \texttt{null} and \texttt{undefined} (which are different in JavaScript but it may be confusing to Java programmers). To control whether JSweet generates strict or loose operators, you can use the following helper methods: \texttt{jsweet.\-util.\-Globals.\-equalsStrict} (\texttt{===}), \texttt{jsweet.\-util.\-Globals.\-notEqualsStrict} (\texttt{!==}), \texttt{jsweet.\-util.\-Globals.\-equalsLoose} (\texttt{==}), and  \texttt{jsweet.\-util.\-Globals.\-notEqualsLoose} (\texttt{!=}). For example:
 
 \begin{lstlisting}[language=Java]
-import static jsweet.util.Globals.equalsStrict;
+import static jsweet.util.Globals.equalsLoose;
 [...]
 int i = 2;
-assert i == 2;
-assert "2" == i;
-assert !(equalsStrict("2", i);
+assert i == 2; // generates i === 2
+assert !((Object)"2" == i);
+assert equalsLoose("2", i); // generates "2" == i
 \end{lstlisting}
 
 \subsection{Allowed Java objects}
 
-Here follows the list of allowed Java classes in JSweet:
+By default, JSweet maps core Java objects and methods to JavaScript through the use of built-in macros. It means that the Java code is directly substituted with a valid JavaScript code that implements similar behavior. Here is the list of accepted Java core classes and methods in a JSweet program:
 
 \begin{itemize}
 \item \texttt{java.lang.Object}
 	\begin{itemize}
-	\item allowed methods: \texttt{toString()}
+	\item allowed methods: \texttt{boolean equals()}
+	\item allowed methods: \texttt{String toString()}
 	\end{itemize}
-\item \texttt{java.lang.String}
+\item \texttt{java.lang.CharSequence}
 	\begin{itemize}
 	\item allowed methods: 
 			\begin{itemize}
-				\item \texttt{charAt(int)}
-				\item \texttt{concat(java.lang.String)} 
-				\item \texttt{indexOf(java.lang.String)}
-				\item \texttt{lastIndexOf(java.lang.String)}
-				\item \texttt{lastIndexOf(java.lang.String,int)}
-				\item \texttt{length()} (transpiles to \texttt{length})
-				\item \texttt{substring(int)}
-				\item \texttt{substring(int,int)} (with the JavaScript behavior)
-				\item \texttt{replace(java.lang.CharSequence,java.lang.CharSequence)}
-				\item \texttt{split(java.lang.String)}
-				\item \texttt{trim()}
-				\item \texttt{toLowerCase()}
-				\item \texttt{toUpperCase()}
+				\item \texttt{char charAt(int index)}
+				\item \texttt{int length()} (transpiles to \texttt{length})
+				\item \texttt{CharSequence subSequence(int beginIndex, int endIndex)}
+				\item \texttt{String toString()}
+			\end{itemize}
+	\end{itemize}
+\item \texttt{java.lang.String}
+	\begin{itemize}
+	\item allowed constructors: 
+			\begin{itemize}
+				\item \texttt{String()}
+				\item \texttt{String(byte[] bytes)}
+				\item \texttt{String(byte[] bytes, int offset, int length)}
+				\item \texttt{String(char[] value)}
+				\item \texttt{String(char[] value, int offset, int count)}
+			\end{itemize}
+	\item allowed methods: 
+			\begin{itemize}
+				\item \texttt{char charAt(int index)}
+				\item \texttt{int codePointAt(int index)}
+				\item \texttt{int compareTo(String anotherString)} 
+				\item \texttt{int compareToIgnoreCase(String str)} 
+				\item \texttt{String concat(String str)} 
+				\item \texttt{boolean equals(String anotherString)} 
+				\item \texttt{boolean equalsIgnoreCase(String anotherString)} 				
+				\item \texttt{byte[] getBytes()} 
+				\item \texttt{int indexOf(int ch)}
+				\item \texttt{int	indexOf(String str)}
+				\item \texttt{boolean isEmpty()}
+				\item \texttt{int lastIndexOf(int ch)}
+				\item \texttt{int lastIndexOf(int ch, int fromIndex)}
+				\item \texttt{int lastIndexOf(String str)}
+				\item \texttt{int lastIndexOf(String str, int fromIndex)}
+				\item \texttt{int length()} (transpiles to \texttt{length})
+				\item \texttt{String replace(CharSequence target, CharSequence replacement)}
+				\item \texttt{CharSequence subSequence(int beginIndex, int endIndex)}
+				\item \texttt{String substring(int beginIndex)}
+				\item \texttt{String substring(int beginIndex, int endIndex)} (with the JavaScript behavior)
+				\item \texttt{String[] split(String regex)}
+				\item \texttt{boolean	startsWith(String prefix)}
+				\item \texttt{boolean startsWith(String prefix, int toffset)}
+				\item \texttt{char[] toCharArray()}
+				\item \texttt{String	toLowerCase()}
+				\item \texttt{String toString()}
+				\item \texttt{String toUpperCase()}
+				\item \texttt{String trim()}
+				\item \texttt{static String valueOf(boolean b)}
+				\item \texttt{static String valueOf(char c)}
+				\item \texttt{static String valueOf(char[] data)}
+				\item \texttt{static String valueOf(char[] data, int offset, int count)}
+				\item \texttt{static String valueOf(double d)}
+				\item \texttt{static String valueOf(float f)}
+				\item \texttt{static String valueOf(int i)}
+				\item \texttt{static String valueOf(long l)}
+				\item \texttt{static String valueOf(Object obj)}
 			\end{itemize}
 	\end{itemize}
 \item \texttt{java.lang.Class}
 	\begin{itemize}
-	\item allowed methods: none
+	\item allowed methods: 
+			\begin{itemize}
+				\item \texttt{String getName()}: only on class literals
+				\item \texttt{String getSimpleName()}: only on class literals
+			\end{itemize}
 	\end{itemize}
 \item \texttt{java.lang.Boolean}
 	\begin{itemize}
-	\item allowed methods: none
+	\item allowed constructors:
+			\begin{itemize}
+				\item \texttt{Boolean(value value)}
+				\item \texttt{Boolean(String s)}
+			\end{itemize}
+	\item allowed methods:
+			\begin{itemize}
+				\item \texttt{boolean equals()}
+				\item \texttt{int hashCode()}
+				\item \texttt{String toString()}
+			\end{itemize}
 	\end{itemize}
 \item \texttt{java.lang.Void}
 	\begin{itemize}
@@ -161,11 +220,47 @@ Here follows the list of allowed Java classes in JSweet:
 	\end{itemize}
 \item \texttt{java.lang.Integer}
 	\begin{itemize}
-	\item allowed methods: none
+	\item allowed constructors:
+			\begin{itemize}
+				\item \texttt{Integer(int value)}
+				\item \texttt{Integer(String s)}
+			\end{itemize}
+	\item allowed methods:
+			\begin{itemize}
+				\item \texttt{boolean equals()}
+				\item \texttt{int hashCode()}
+				\item \texttt{String toString()}
+			\end{itemize}
+	\end{itemize}
+\item \texttt{java.lang.Long}
+	\begin{itemize}
+	\item allowed constructors:
+			\begin{itemize}
+				\item \texttt{Long(long value)}
+				\item \texttt{Long(String s)}
+			\end{itemize}
+	\item allowed methods:
+			\begin{itemize}
+				\item \texttt{boolean equals()}
+				\item \texttt{int hashCode()}
+				\item \texttt{String toString()}
+			\end{itemize}
 	\end{itemize}
 \item \texttt{java.lang.Double}
 	\begin{itemize}
-	\item allowed methods: none
+	\item allowed constructors:
+			\begin{itemize}
+				\item \texttt{Double(double value)}
+				\item \texttt{Double(String s)}
+			\end{itemize}
+	\item allowed methods:
+			\begin{itemize}
+				\item \texttt{boolean equals()}
+				\item \texttt{int hashCode()}
+				\item \texttt{boolean isInfinite()}
+				\item \texttt{boolean isNaN()}
+				\item \texttt{String toString()}
+			\end{itemize}
 	\end{itemize}
 \item \texttt{java.lang.Number}
 	\begin{itemize}
@@ -173,15 +268,47 @@ Here follows the list of allowed Java classes in JSweet:
 	\end{itemize}
 \item \texttt{java.lang.Float}
 	\begin{itemize}
-	\item allowed methods: none
+	\item allowed constructors:
+			\begin{itemize}
+				\item \texttt{Float(float value)}
+				\item \texttt{Float(String s)}
+			\end{itemize}
+	\item allowed methods:
+			\begin{itemize}
+				\item \texttt{boolean equals()}
+				\item \texttt{int hashCode()}
+				\item \texttt{boolean isInfinite()}
+				\item \texttt{boolean isNaN()}
+				\item \texttt{String toString()}
+			\end{itemize}
 	\end{itemize}
 \item \texttt{java.lang.Byte}
 	\begin{itemize}
-	\item allowed methods: none
+	\item allowed constructors:
+			\begin{itemize}
+				\item \texttt{Byte(byte value)}
+				\item \texttt{Byte(String s)}
+			\end{itemize}
+	\item allowed methods:
+			\begin{itemize}
+				\item \texttt{boolean equals()}
+				\item \texttt{int hashCode()}
+				\item \texttt{String toString()}
+			\end{itemize}
 	\end{itemize}
 \item \texttt{java.lang.Short}
 	\begin{itemize}
-	\item allowed methods: none
+	\item allowed constructors:
+			\begin{itemize}
+				\item \texttt{Short(short value)}
+				\item \texttt{Short(String s)}
+			\end{itemize}
+	\item allowed methods:
+			\begin{itemize}
+				\item \texttt{boolean equals()}
+				\item \texttt{int hashCode()}
+				\item \texttt{String toString()}
+			\end{itemize}
 	\end{itemize}
 \item \texttt{java.lang.Iterable}
 	\begin{itemize}
@@ -190,6 +317,69 @@ Here follows the list of allowed Java classes in JSweet:
 \item \texttt{java.lang.Runnable}
 	\begin{itemize}
 	\item allowed methods: none (for declaring lambdas)
+	\end{itemize}
+\item \texttt{java.lang.Throwable} and all sub-classes
+	\begin{itemize}
+	\item allowed methods: 
+			\begin{itemize}
+				\item \texttt{getMessage()}
+				\item \texttt{getCause()}: valid but always return \texttt{null} by default
+			\end{itemize}
+	\end{itemize}
+\item \texttt{java.lang.Math}
+	\begin{itemize}
+	\item allowed fields: 
+			\begin{itemize}
+				\item \texttt{static double E}
+				\item \texttt{static double	PI}
+			\end{itemize}
+	\item allowed methods: 
+			\begin{itemize}
+				\item \texttt{static double abs(double a)}
+				\item \texttt{static float abs(float a)}
+				\item \texttt{static int abs(int a)}
+				\item \texttt{static long abs(long a)}
+				\item \texttt{static double acos(double a)}
+				\item \texttt{static double asin(double a)}
+				\item \texttt{static double atan(double a)}
+				\item \texttt{static double atan2(double y, double x)}
+				\item \texttt{static double cbrt(double a)}
+				\item \texttt{static double ceil(double a)}
+				\item \texttt{static double copySign(double magnitude, double sign)}				
+				\item \texttt{static double cos(double a)}
+				\item \texttt{static double cosh(double x)}
+				\item \texttt{static double exp(double a)}
+				\item \texttt{static double expm1(double x)}
+				\item \texttt{static double floor(double a)}
+				\item \texttt{static double hypot(double x, double y)}
+				\item \texttt{static double	log(double a)}
+				\item \texttt{static double	log10(double a)}
+				\item \texttt{static double	log1p(double a)}
+				\item \texttt{static double max(double a, double b)}
+				\item \texttt{static float max(float a, float b)}
+				\item \texttt{static int max(int a, int b)}
+				\item \texttt{static long max(long a, long b)}
+				\item \texttt{static double min(double a, double b)}
+				\item \texttt{static float min(float a, float b)}
+				\item \texttt{static int min(int a, int b)}
+				\item \texttt{static long min(long a, long b)}
+				\item \texttt{static double pow(double a, double b)}
+				\item \texttt{static double random()}
+				\item \texttt{static double rint(double a)}
+				\item \texttt{static long round(double a)}
+				\item \texttt{static int round(float a)}
+				\item \texttt{static double scalb(double d, int scaleFactor)}
+				\item \texttt{static float scalb(float f, int scaleFactor)}
+				\item \texttt{static double signum(double d)}
+				\item \texttt{static float signum(float f)}
+				\item \texttt{static double sin(double a)}
+				\item \texttt{static double sinh(double x)}
+				\item \texttt{static double sqrt(double a)}
+				\item \texttt{static double tan(double a)}
+				\item \texttt{static double tanh(double x)}
+				\item \texttt{static double toDegrees(double angrad)}
+				\item \texttt{static double toRadians(double angdeg)}
+			\end{itemize}
 	\end{itemize}
 \item \texttt{java.util.function.*} (for declaring lambdas)
 	\begin{itemize}
@@ -207,15 +397,20 @@ Here follows the list of allowed Java classes in JSweet:
 Examples of valid statements:
 
 \begin{lstlisting}[language=Java]
-// warning '==' behaves like the JavaScript one at runtime
 Integer i = 2;
 assert i == 2;
 Double d = i + 4d;
 assert d.toString() == "6";
-assert (Object) d == "6";
+assert !((Object) d == "6");
 BiFunction<String, Integer, String> f = (s, i) -> { return s.substring(i); };
 assert "bc" == f.apply("abc", 1);
 \end{lstlisting}
+
+\subsection{Getting more Java APIs}
+
+With JSweet, it is possible to add a runtime that implements Java APIs in JavaScript, so that programmers can access more Java APIs and thus share the same code between Java and JavaScript. The core project for implementing Java APIs for JSweet is J4TS (\url{https://github.com/cincheo/j4ts}) and contains a quite complete implementation of \texttt{java.util.*} classes and other core package. J4TS is based on a fork of the GWT's JRE emulation, but it is adapted to be compiled with JSweet. Programmers can use J4TS as a regular JavaScript library available in our Maven repository.
+
+Although J4TS cannot directly implement the Java core types that conflict with JavaScript ones (\texttt{Boolean}, \texttt{Byte}, \texttt{Short}, \texttt{Integer}, \texttt{Long}, \texttt{Float}, \texttt{Double}, \texttt{Character}, \texttt{String}), J4TS contributes to supporting the static part of them by providing helpers for each class (\texttt{javaemul.internal.BooleanHelper}, \texttt{javaemul.internal.ByteHelper}, ...). When the JSweet transpiler meets a static Java method on a type \texttt{java.lang.T} that is not supported as a built-in macro, it delegates to \texttt{javaemul.internal.THelper}, which can provide a JavaScript implementation for the given static method. That way, by using J4TS, programmers can use even more of the core JRE API.
 
 \subsection{Java arrays}
 
@@ -246,19 +441,19 @@ The core JavaScript API is defined in \texttt{jsweet.lang} (the full documentati
 \item \texttt{jsweet.lang.Error}: JavaScript Error class. This class implements \texttt{java.lang.RuntimeException} and can be thrown and caught with \texttt{try} ... \texttt{catch} statements.
 \end{itemize}
 
-Programmers should use this API most of the time, which is HTML5 compatible and follows the JavaScript latest supported versions. However, for objects that need to be used with Java literals (numbers, booleans, and strings), the use of the \texttt{java.lang} package classes is recommended. For instance, the jQuery API declares \texttt{\$(java.lang.String)} instead of \texttt{\$(jsweet.\-lang.\-String)}. This allows the programmer to write expressions using literals, such as \texttt{\$($"$a$"$)} (for selecting all links in a document).
+When using JavaScript frameworks, programmers should use this API most of the time, which is HTML5 compatible and follows the JavaScript latest supported versions. However, for objects that need to be used with Java literals (numbers, booleans, and strings), the use of the \texttt{java.lang} package classes is recommended. For instance, the jQuery API declares \texttt{\$(java.lang.String)} instead of \texttt{\$(jsweet.\-lang.\-String)}. This allows the programmer to write expressions using literals, such as \texttt{\$($"$a$"$)} (for selecting all links in a document).
 
 As a consequence, programmers need to be able to switch to the JavaScript API when coming from a Java object. The \texttt{jsweet.util.Globals} class defines convenient static methods to cast back and forth core Java objects to their corresponding JSweet objects. For instance the \texttt{string(...)} method will allow the programmer to switch from the Java to the JSweet strings and conversely.
 
 \begin{lstlisting}[language=Java]
 import static jsweet.util.Globals.string;
-String str = "This is a test string";
+String str = "This is a test string"; // str is actually a JavaScript string at runtime
 str.toLowerCase(); // valid: toLowerCase it defined both in Java and JavaScript
-str.substr(1); // compile error: substr is not a Java method
-string(str).substr(1); // valid: string(str) is a jsweet.lang.String.
+str.substr(1); // this is ok, but it is a macro that will generate JavaScript code
+string(str).substr(1); // direct call to the substr method on the JavaScript string
 \end{lstlisting}
 
-Note: using the \texttt{jsweet.util.Globals} class to access the JavaScript API can be avoided in some cases when working in \emph{strict} mode (see Appendix 2).
+Note: for code sharing between a JavaScript client and a Java server for instance, it is better to use Java APIs only and not JavaScript ones.
 
 \noindent
 Here is another example that shows the use of the \texttt{array} method to access the \texttt{push} method available on JavaScript arrays.
@@ -272,7 +467,7 @@ assert strings[3] == "d";
 
 \section{Classes}
 
-Classes in JSweet are very similar to Java classes. For example:
+Classes in JSweet fully support all types of Java classes declarations. For example:
 
 \begin{lstlisting}[language=Java]
 public class BankAccount {  
@@ -300,17 +495,28 @@ var BankAccount = (function () {
 })();
 \end{lstlisting}
 
-Classes can define constructors, have super classes and be instantiated exactly like in Java. The only restriction compared to Java is that inner classes or anonymous classes are not allowed in JSweet (in the general case). For instance, the following code will raise an error.
+Classes can define constructors, have super classes and be instantiated exactly like in Java. Similarly to Java, inner classes and anonymous classes are allowed in JSweet since version 1.1.0. JSweet supports both static and regular inner/anonymous classes, which can share state with enclosing classes. Still like in Java, anonymous classes can access final variables declared in their scope. For example, the following declarations are valid in JSweet and will mimic the Java semantics at runtime so that Java programmers can benefit all the features of the Java language.
 
 \begin{lstlisting}[language=Java]
+abstract class C {
+	public abstract int m();
+}
 public class ContainerClass {
-	// error: inner classes are not allowed
+	// inner class
 	public class InnerClass {
+		public I aMethod(final int i) {
+			// anonymous class
+			return new C() {
+				@Override
+				public int m() {
+					// access to final variable i
+					return i;
+				}
+			}
+		}    
 	}
 }
 \end{lstlisting}
-
-Exceptions: inner classes annotated with \texttt{@ObjectType} or \texttt{@Erased} are allowed (see the part on Auxiliary Types).
 
 \section{Interfaces}
 
@@ -368,6 +574,10 @@ We can create an object typed after the interface. Note that the following code 
 Point p1 = new Point() {{ x=1; y=1; }};
 \end{lstlisting}
 
+This object creation mechanism is a TypeScript/JavaScript mechanism and shall not be confused with anonymous classes, which is a Java-like construction.
+
+Note also that, for each object, JSweet keeps track of which interface it was created from and of all the potential interfaces implemented by its class. This interface tracking system is implemented as a special object property called \texttt{\_\_interfaces}. Using that property, JSweet allows the use of the \texttt{instanceof} operator on interfaces, exactly like in Java, as we will see later in this document.
+
 \subsection{Optional fields}
  
 Interfaces can define \emph{optional fields}, which are used to report errors when the programmer forgets to initialize a mandatory field in an object. Supporting optional fields in JSweet is done through the use of \texttt{@jsweet.lang.Optional} annotations. For instance:
@@ -382,7 +592,7 @@ public class Point {
 }
 \end{lstlisting}
 
-It is the JSweet compiler that will check that the fields are correctly initialized, when constructing an object.
+It is the JSweet compiler that will check that the fields are correctly initialized, when constructing an object from an interface.
 
 \begin{lstlisting}[language=Java]
 // no errors (z is optional)
@@ -516,6 +726,8 @@ public enum WrongConstructsInEnums {
 }
 \end{lstlisting}
 
+These constraints will be relaxed in future releases.
+
 \section{Globals}
 
 In Java, on contrary to JavaScript, there is no such thing as global variables or functions (there are only static members, but even those must belong to a class). Thus, JSweet introduces reserved \texttt{Globals} classes and \texttt{globals} packages. These have two purposes:
@@ -561,16 +773,16 @@ One must remember that \texttt{Globals} classes and \texttt{global} packages are
 
 In order to erase packages in the generated code, programmers can also use the \texttt{@Root} annotation, which will be explained in Section \ref{packaging}.
 
-\section{Optional parameters} 
+\section{Optional parameters and overloading} 
 \label{optional-parameters}
 
-In JavaScript, parameters can be optional, in the sense that a parameter value does not need to be provided when calling a function. Except for varargs, which are fully supported in JSweet, the general concept of an optional parameter does not exist in Java. To simulate optional parameters, JSweet supports overloading as long as it is for implementing optional parameters -- a very commonly used idiom. Here are some examples of valid and invalid overloading in JSweet:
+In JavaScript, parameters can be optional, in the sense that a parameter value does not need to be provided when calling a function. Except for varargs, which are fully supported in JSweet, the general concept of an optional parameter does not exist in Java. To simulate optional parameters, JSweet programmers can use method overloading, which is supported in Java. Here are some examples of supported overloads in JSweet:
 
 \begin{lstlisting}[language=Java]
 String m(String s, double n) { return s + n; }
-// valid overloading (JSweet transpiles to optional parameter)
+// simple overloading (JSweet transpiles to optional parameter)
 String m(String s) { return m(s, 0); }
-// invalid overloading (JSweet error)
+// complex overloading (JSweet generates more complex code to mimic the Java behavior)
 String m(String s) { return s; }
 \end{lstlisting}
 
@@ -604,13 +816,25 @@ By convention, putting the classes in a \texttt{def.libname} package defines a s
 
 Candies (bridges to external JavaScript libraries) use definitions. For instance, the jQuery candy defines all the jQuery API in the \texttt{def.jquery} package.
 
+\section{Untyped accesses}
+
+Sometimes, definitions are not available or are not correct, and just a small patch is required to access a functionality. Programmers have to keep in mind that JSweet is just a syntactic layer and that it is always possible to bypass typing in order to access a field or a function that is not explicitly specified in an API.
+
+In that cases, the use of \texttt{\$get} allows reflective access to methods and properties that can then be cast to the right type. For accessing functions in an untyped way, one can cast to \texttt{jsweet.lang.Function} and call the generic and untyped method \texttt{apply} on it. Note also the use of the \texttt{jsweet.util.Globals.any} helper method, which can be extremely useful to erase typing. Since the \texttt{any} method generates a cast to the \texttt{any} type in TypeScript, it is more radical than a cast to \texttt{Object} for instance. The following example shows how to use the \texttt{any} method to cast an \texttt{Int32Array} to a Java \texttt{int[]} (and then allow direct indexed accesses to it.
+
+\begin{lstlisting}[language=Java]
+ArrayBuffer arb = new ArrayBuffer(2 * 2 * 4);
+int[] array = any(new Int32Array(arb));
+int whatever = array[0];
+\end{lstlisting}
+
 \section{Mixins}
 
 In JavaScript, it is common practice to enhance an existing class with news elements (field and methods). It is an extension mechanism used when a framework defines plugins for instance. Typically, jQuery plugins add new elements to the \texttt{JQuery} class. For example the jQuery timer plugin adds a \texttt{timer} field to the \texttt{JQuery} class. As a consequence, the \texttt{JQuery} class does not have the same prototype if you are using jQuery alone, or jQuery enhanced with its timer plugin.
 
 In Java, this extension mechanism is problematic because Java cannot dynamically enhance a given class. 
 
-\subsection{Untyped accesses}
+\subsection{Untyped accesses to mixins}
 
 Programmers can access the added element with \texttt{\$get} accessors and/or with brute-force casting. 
 
@@ -968,14 +1192,7 @@ assert C.instance != null;
 assert C.instance.getN() == 4;
 \end{lstlisting}
 
-Main methods do not behave exactly like in Java and depend on the way the program is packaged and deployed. 
-
-\begin{itemize}
-\item \textbf{Regular packaging (no modules)}. With regular packaging, one Java source file corresponds to one generated JavaScript file. In that case, when loading a file in the browser, all the main methods will be invoked, right after the file is evaluated. 
-\item \textbf{Module packaging}. With module packaging (module option), one Java package corresponds to one module. With modules, it is mandatory to have only one main method in the program, which will be the global entry point from which the module dependency graph will be calculated. The main module will use directly or transitively all the other modules.
-\end{itemize}
-
-Because of modules, it is good practice to have only one main method in an application.
+The way main methods are globally invoked depends on how the program is packaged. See the appendixes for more details.
 
 \section{Initializers}
 
@@ -1006,6 +1223,10 @@ public class C2 {
 }
 assert C2.n == 4;
 \end{lstlisting}
+
+While regular initializers are evaluated when the class is instantiated, static initializers are lazily evaluated in order to avoid forward-dependency issues, and mimic the Java behavior for initializers. With JSweet, it is possible for a programmer to define a static field or a static intializer that relies on a static field that has not yet been initialized.
+
+More details on this behavior can be found in the appendixes.
 
 \section{Arrays initialization and allocation}
 
@@ -1052,9 +1273,13 @@ assert strings.$get(3) == "d";
 
 \section{Name clashes}
 
-On contrary to Java, methods and fields of the same name are not allowed within the same class or within classes having a subclassing link. The reason behind this behavior is that in JavaScript, object variables and functions are stored within the same object map, which basically means that you cannot have the same key for several object members (this also explains that method overloading in the Java sense is not possible in JavaScript).
+On contrary to TypeScript/JavaScript, Java makes a fundamental difference between methods, fields, and packages. Java also support method overloading (methods having different signatures with the same name). In JavaScript, object variables and functions are stored within the same object map, which basically means that you cannot have the same key for several object members (this also explains that method overloading in the Java sense is not possible in JavaScript). Because of this, some Java code may contain name clashes when generated as is in TypeScript. JSweet will avoid name clashes automatically when possible, and will report sound errors in the other cases.
 
-In order to avoid programming mistakes due to this JavaScript behavior, which is not necessarily known by Java programmers, JSweet adds a semantics check to avoid duplicate names in classes (this also takes into account members defined in parent classes). As an example:
+\subsection{Methods and fields names clashes}
+
+JSweet performs a transformation to automatically allow methods and private fields to have the same name. On the other hand, methods and public fields of the same name are not allowed within the same class or within classes having a subclassing link. 
+
+To avoid programming mistakes due to this JavaScript behavior, JSweet adds a semantics check to detect duplicate names in classes (this also takes into account members defined in parent classes). As an example:
 
 \begin{lstlisting}[language=Java]
 public class NameClashes {
@@ -1070,7 +1295,9 @@ public class NameClashes {
 }
 \end{lstlisting}
 
-In general, it also not possible to have two methods with the same name but with different parameters (so-called overloads). An exception to this behavior is the use of method overloading for defining optional parameters. JSweet allows this idiom under the condition that it corresponds to the following template:
+\subsection{Method overloading}
+
+On contrary to TypeScript and JavaScript (but similarly to Java), it is possible in JSweet to have several methods with the same name but with different parameters (so-called overloads). We make a distinction between simple overloads and complex overloads. Simple overloading is the use of method overloading for defining optional parameters. JSweet allows this idiom under the condition that it corresponds to the following template:
 
 \begin{lstlisting}[language=Java]
 String m(String s, double n) { return s + n; }
@@ -1084,16 +1311,32 @@ In that case, JSweet will generate JavaScript code with only one method having d
 function m(s, n = 0) { return s + n; }
 \end{lstlisting}
 
-
-If the programmer tries to use overloading differently, for example by defining two different implementations for the same method name, JSweet will raise a compile error. 
+If the programmer tries to use overloading differently, for example by defining two different implementations for the same method name, JSweet will fallback on a complex overload, which consists of generating a root implementation (the method that hold the more parameters) and one subsidiary implementation per overloading method (named with a suffix representing the method signature). The root implementation is generic and dispatches to other implementations by testing the values and types of the given parameters. For example:
 
 \begin{lstlisting}[language=Java]
 String m(String s, double n) { return s + n; }
-// invalid overloading (JSweet error)
 String m(String s) { return s; }
 \end{lstlisting}
 
-Local variables can also clash with the use of a global method. For instance, using the \texttt{alert} global method from the DOM (\texttt{jsweet.dom.Globals.alert}) requires that no local variable hides it. For instance:
+Generates the following (slightly simplified) JavaScript code:
+
+\begin{lstlisting}[language=Java]
+function m(s, n) { 
+	if(typeof s === 'string' && typeof n === 'number') { 	
+		return s + n; 
+	} else if(typeof s === 'string' && n === undefined) {
+		return this.m$java_lang_String(s);
+	} else {
+		throw new Error("invalid overload");	
+	}
+}
+
+function m$java_lang_String(s) { return s; }
+\end{lstlisting}
+
+\subsection{Local variable names}
+
+In TypeScript/JavaScript, local variables can clash with the use of a global method. For instance, using the \texttt{alert} global method from the DOM (\texttt{jsweet.dom.Globals.alert}) requires that no local variable hides it:
 
 \begin{lstlisting}[language=Java]
 import static jsweet.dom.Globals.alert;
@@ -1112,7 +1355,7 @@ public void m2() {
 }
 \end{lstlisting}
 
-Note that this problem also happens when using fully qualified names when calling the global methods (that because the qualification gets erased in TypeScript/JavaScript). In any case, JSweet will report sound errors when such problems happen so that programmers can adjust local variable names to avoid clashes with globals.
+Note that this problem also happens when using fully qualified names when calling the global methods (that is because the qualification gets erased in TypeScript/JavaScript). In any case, JSweet will report sound errors when such problems happen so that programmers can adjust local variable names to avoid clashes with globals.
 
 \section{Testing the type of an object (\texttt{instanceof})}
 
@@ -1138,21 +1381,23 @@ assert s instanceof String; // transpiles to a typeof
 assert !(s instanceof Integer); // transpiles to a typeof
 assert c instanceof MyClass;
 assert typeof(n3) == "number";
-assert equalsStrict(typeof(n3), "number");
 \end{lstlisting}
 
-In JSweet, the \texttt{instanceof} operator is not allowed on interfaces, since an interface has no runtime existence in JavaScript (it is for typing only and is erased during the transpilation process). For example, the following code is not actually creating an instance of the \texttt{Point} interface, it is creating an object that conforms to the interface, and it is not allowed to check an instance against this interface type.
+From JSweet version 1.1.0, the \texttt{instanceof} operator is also allowed on interfaces, because JSweet keeps track of all the implemented interfaces for all objects. This interface tracking is ensured through an additional hidden property in the objects called \texttt{\_\_interfaces} and containing the names of all the interfaces implemented by the objects (either directly or through its class inheritance tree determined at compile time). So, in case the type argument of the \texttt{instanceof} operator is an interface, JSweet simply checks out if the object's \texttt{\_\_interfaces} field exists and contains the given interface. For example, this code is fully valid in JSweet when \texttt{Point} is an interface:
  
 \begin{lstlisting}[language=Java]
 Point p1 = new Point() {{ x=1; y=1; }};
 [...]
-if (p1 instanceof Point) { ... } // compile error
+assert p1 instanceof Point
 \end{lstlisting}
 
-\noindent
-This may seems quite confusing for Java programmers, but you have to remember that, on contrary to Java where interfaces are available as special classes at runtime, in JSweet, interfaces have no reality at runtime. Think of generics, which are of the same kind in Java. As a consequence, the \texttt{instanceof} operator is applicable to classes, but not to interfaces at runtime (like it is not applicable on generics).
+\subsection{Limitations and constraints}
 
-In the future, JSweet might implement a small mechanism to simulate that semantics for simple cases.
+Since all numbers are mapped to JavaScript numbers, JSweet make no distinction between integers and floats for example. So, \texttt{n instanceof Integer} and \texttt{n instanceof Float} will always give the same result whatever the actual type of \texttt{n} is. The same limitation exists for strings and chars, which are not distinguishable at runtime, but also for functions that have the same number of parameters. For example, an instance of \texttt{IntFunction<R>} will not be distinguishable at runtime from a \texttt{Function<String,R>}. 
+
+These limitations have a direct impact on function overloading, since overloading uses the \texttt{instanceof} operator to decide which overload to be called.
+
+Like it is usually the case when working in JavaScript, serialized objects must be properly "revived" with their actual classes so that the \texttt{instanceof} operator can work again. For example a point object created through \texttt{Point p = (Point)JSON.parse("\{x:1,y:1\}")} will not work with regard to the \texttt{instanceof} operator. In case you meet such a use case, you can contact us to get some useful JSweet code to properly revive object types.
 
 \section{Variable scoping in lambda expressions}
 
@@ -1200,42 +1445,68 @@ function references are wrapped in functions, which means that function pointers
 \chapter{Packaging}
 \label{packaging}
 
-Packaging is one of the complex point of JavaScript, especially when coming from Java. Complexity with JavaScript packaging boils down to the fact that JavaScript did not define any packaging natively. As a consequence, many \emph{de facto} solutions and quidelines came up along the years, making the understanding of packaging uneasy for regular Java programmers. In spite EcmaScript UMS is supposed to bring a standard for modules in Java, other \emph{de facto} standards remain and the notion of a namespace/package is still not handled by JavaScript, making the notion of a module and a namespace confusing for JavaScript and TypeScript developers themselves.
+Packaging is one of the complex point of JavaScript, especially when coming from Java. Complexity with JavaScript packaging boils down to the fact that JavaScript did not define any packaging natively. As a consequence, many \emph{de facto} solutions and quidelines came up along the years, making the understanding of packaging uneasy for regular Java programmers. JSweet provides useful options and generates code in order to simplify the life of Java programmers by making the packaging issues much more transparent and as "easy" as in Java for most cases. In this section, we will describe and explain typical packaging scenarios.
 
-\section{Packages and modules}
+\section{Use your files without any packaging}
 
-Packages and modules are two similar concepts but for different contexts.
+The most common and simple case for running a program is just to include each generated file in an HTML page. This is the default mode when not precising any packaging options. For example, when your program defines two classes \texttt{x.y.z.A} and \texttt{x.y.z.B} in two separated files, you can use them as following:
 
-Java packages must be understood as compile-time \emph{namespaces}. They allow a compile-time structuration of the programs through name paths, with implicit or explicit visibility rules. Packages have usually not much impact on how the program is actually bundled and deployed.
-
-Modules must be understood as deployment and runtime \emph{bundles}. The closest concept to a module in the Java world would probably be an OSGi bundle. A module defines imported and exported elements so that they create a strong runtime structure that can be used for deploying software components independently and thus avoiding name clashes. For instance, with modules, two different libraries may define a \texttt{util.List} class and be actually running and used on the same VM with no naming issues (as long as the libraries are bundled in different modules).
-
-JSweet uses the Java package concept for namespaces. Modules are a deployment concept and should be created with some deployment scripts involving third party tools. However, for easy deployment, JSweet defines a \texttt{module} option that automatically creates a default module organization following the simple rule: one package = one module. With this rule, it is actually possible to run a JSweet program on Node.js without requiring extra work from the programmer. Also, using both the \texttt{bundle} and \texttt{module} options of JSweet creates a bundle file containing the application modules, and which can be deployed on a browser with no extra packaging.
-
-\section{Root packages}
-
-Root packages are a way to tune the generated code so that JSweet packages are erased in the generated code and thus at runtime. To set a root package, just define a package-info.java file and use the \emph{@Root} annotation on the package, as follows:
-
-\begin{lstlisting}[language=Java]
-@Root
-package a.b.c;
+\begin{lstlisting}[language=html]
+<script type="text/javascript" src="target/js/x/y/z/A.js"></script>
+<script type="text/javascript" src="target/js/x/y/z/B.js"></script>
+[...]
+<!-- access a method later in the file -->
+<script type="text/javascript">x.y.z.B.myMethod()</script>
 \end{lstlisting}
 
-The above declaration means that the \texttt{c} package is a root package, i.e. it will be erased in the generated code, as well as all its parent packages. Thus, if \texttt{c} contains a package \texttt{d}, and a class \texttt{C}, these will be top-level objects at runtime. In other words, \texttt{a.b.c.d} becomes \texttt{d}, and \texttt{a.b.c.C} becomes \texttt{C}.
+When doing so, programmers need to be extremely cautious to avoid forward static dependencies between the files. In other words, the \texttt{A} class cannot use anything from \texttt{B} in static fields, static initializers, or static imports, otherwise leading to runtime errors when trying to load the page. Additionally,  the \texttt{A} class cannot extend the \texttt{B} class. These constraints come from JavaScript/TypeScript and have nothing to do with JSweet.
 
-Note that since that packaged placed before the \emph{@Root} package are erased, there cannot be any type defined before a \emph{@Root} package. In the previous example, the \emph{a} and \emph{b} packages are necessarily empty packages.
+As you can imagine, running simple programs with this manual technique is fine, but can become really uncomfortable for developing complex applications. Complex applications most of the time bundle and/or package the program with appropriate tools in order to avoid having to manually handle dependencies between JavaScript files.
 
-\subsection{Behavior when not using modules (default)}
+\section{Creating a bundle for a browser}
 
-By default, root packages do not change the folder hierarchy of the generated files. For instance, the \texttt{a.b.c.C} class will still be generated in the \texttt{<jsout>/a/b/c/C.js} file (relatively to the \texttt{<jsout>} output directory). However, switching on the \texttt{noRootDirectories} option will remove the root directories so that the \texttt{a.b.c.C} class gets generated to the \texttt{<jsout>/C.js} file.
+To avoid having to take care of the dependencies manually, programmers use bundling tools to bundle up their classes into a single file. Such a bundle is included in any web page using something like this:
 
-When not using modules (default), it is possible to have several \emph{@Root} packages (but a \emph{@Root} package can never contain another \emph{@Root} package).
+\begin{lstlisting}[language=html]
+<script type="text/javascript" src="target/js/bundle.js"></script>
+[...]
+<!-- access a method later in the file -->
+<script type="text/javascript">x.y.z.B.myMethod()</script>
+\end{lstlisting}
 
-\subsection{Behavior when using modules}
+JSweet comes with such a bundling facility. To create a bundle file, just set to \texttt{true} the \texttt{bundle} option of JSweet. Note that you can also set to \texttt{true} the \texttt{declaration} option that will ask JSweet to generate the TypeScript definition file (\texttt{bundle.d.ts}). This file allows you to use/compile your JSweet program from TypeScript in a well-typed way. 
 
-When using modules (see the \emph{module} option), only one \emph{@Root} package is allowed, and when having one \emph{@Root} package, no other package or type can be outside of the scope of that \emph{@Root} package. The generated folder/file hierarchy then starts at the root package so that all the folders before it are actually erased.
+The "magic" with JSweet bundling option is that it analyzes the dependencies in the source code and takes care of solving forward references when building the bundle. In particular, JSweet implements a lazy initialization mechanism for static fields and initializers in order to break down static forward references across the classes. There are no specific additional declarations to be made by the programmers to make it work (on contrary to TypeScript). 
 
-\section{External modules}
+Note that there are still some minor limitations to it (when using inner and anonymous classes for instance), but these limitations will be rarely encountered and will be removed in future releases.
+
+Note also that JSweet will raise an error if you specify the \texttt{module} option along with the \texttt{bundle} option.
+
+\section{Packaging with modules}
+
+First, let us start by explaining modules and focus on the difference between Java \emph{packages} (or TypeScript \emph{namespaces}) and \emph{modules}. If you feel comfortable with the difference, just skip this section.
+
+Packages and modules are two similar concepts but for different contexts. Java packages must be understood as compile-time \emph{namespaces}. They allow a compile-time structuration of the programs through name paths, with implicit or explicit visibility rules. Packages have usually not much impact on how the program is actually bundled and deployed.
+
+Modules must be understood as deployment / runtime "bundles", which can be \texttt{required} by other modules. The closest concept to a module in the Java world would probably be an OSGi bundle. A module defines imported and exported elements so that they create a strong runtime structure that can be used for deploying software components independently and thus avoiding name clashes. For instance, with modules, two different libraries may define a \texttt{util.List} class and be actually running and used on the same VM with no naming issues (as long as the libraries are bundled in different modules).
+
+Nowadays, a lot of libraries are packaged and accessible through modules. The standard way to use modules in a browser is the AMD, but in Node.js it is the commonjs module system.
+
+\subsection{Modules in JSweet}
+
+JSweet supports AMD, commonjs, and UMD module systems for packaging. JSweet defines a \texttt{module} option (value: \texttt{amd}, \texttt{commonjs} or \texttt{umd}). When specifying this option, JSweet automatically creates a default module organization following the simple rule: one package = one module generated in a single file called \texttt{module.js}. 
+
+For example, when packaged with the \texttt{module} option set to \texttt{commonjs}, one can write:
+
+\begin{lstlisting}[language=html]
+> node target/js/x/y/z/module.js
+\end{lstlisting}
+
+The module system will automatically take care of the references and require other modules when needed.
+
+Note: once the program has been compiled with the \texttt{module} option, it is easy to package it as a bundle using appropriate tools such as Browserify, which would give similar output as using the \texttt{bundle} option of JSweet. Note also that JSweet will raise an error when specifying both \texttt{module} and \texttt{bundle}, which are exclusive options.
+
+\subsection{External modules}
 
 When compiling JSweet programs with the \texttt{module} options, all external libraries and components must be required as external modules. JSweet can automatically require modules, simply by using the \texttt{@Module(name)} annotation. In JSweet, importing or using a class or a member annotated with \texttt{@Module(name)} will automatically require the corresponding module at runtime. Please not that it is true only when the code is generated with the \texttt{module} option. If the \texttt{module} option is off, the \texttt{@Module} annotations are ignored.
 
@@ -1249,9 +1520,34 @@ public final class Globals extends jsweet.lang.Object {
 }
 \end{lstlisting}
 
-The above code shows an excerpt of the JSweet jQuery API. As we can notice, the \$ function is annotated with \texttt{@Module($"$jquery$"$)}. As a consequence, any call to this function will trigger the require of the \texttt{jquery} module.
+The above code shows an excerpt of the JSweet jQuery API. As we can notice, the \texttt{\$} function is annotated with \texttt{@Module($"$jquery$"$)}. As a consequence, any call to this function will trigger the require of the \texttt{jquery} module.
 
 Note: the notion of manual require of a module may be available in future releases. However, automatic require is sufficient for most programmers and hides the complexity of having to require modules explicitly. It also brings the advantage of having the same code whether modules are used or not.
+
+Troubleshooting: when a candy does not define properly the \texttt{@Module} annotation, it is currently possible to overcome the problem with a "hack" and force the use of an external module. See: \url{https://github.com/cincheo/jsweet/issues/114}.
+
+\section{Root packages}
+
+Root packages are a way to tune the generated code so that JSweet packages are erased in the generated code and thus at runtime. To set a root package, just define a \texttt{package-info.java} file and use the \texttt{@Root} annotation on the package, as follows:
+
+\begin{lstlisting}[language=Java]
+@Root
+package a.b.c;
+\end{lstlisting}
+
+The above declaration means that the \texttt{c} package is a root package, i.e. it will be erased in the generated code, as well as all its parent packages. Thus, if \texttt{c} contains a package \texttt{d}, and a class \texttt{C}, these will be top-level objects at runtime. In other words, \texttt{a.b.c.d} becomes \texttt{d}, and \texttt{a.b.c.C} becomes \texttt{C}.
+
+Note that since that packaged placed before the \texttt{@Root} package are erased, there cannot be any type defined before a \texttt{@Root} package. In the previous example, the \emph{a} and \emph{b} packages are necessarily empty packages.
+
+\subsection{Behavior when not using modules (default)}
+
+By default, root packages do not change the folder hierarchy of the generated files. For instance, the \texttt{a.b.c.C} class will still be generated in the \texttt{<jsout>/a/b/c/C.js} file (relatively to the \texttt{<jsout>} output directory). However, switching on the \texttt{noRootDirectories} option will remove the root directories so that the \texttt{a.b.c.C} class gets generated to the \texttt{<jsout>/C.js} file.
+
+When not using modules (default), it is possible to have several \texttt{@Root} packages (but a \texttt{@Root} package can never contain another \texttt{@Root} package).
+
+\subsection{Behavior when using modules}
+
+When using modules (see the \emph{module} option), only one \texttt{@Root} package is allowed, and when having one \texttt{@Root} package, no other package or type can be outside of the scope of that \texttt{@Root} package. The generated folder/file hierarchy then starts at the root package so that all the folders before it are actually erased.
 
 \section{Packaging a JSweet jar (candy)}
 
@@ -1279,7 +1575,9 @@ Typically, \texttt{d.ts} files shall be generated by the JSweet transpiler using
 \item \texttt{dtsout}: tells where to put the generated \texttt{d.ts} files (for packaging, place them in \texttt{RESOURCES/src/typings}, where \texttt{RESOURCES} is your Maven project resources directory). 
 \end{itemize}
 
-Note: this section only described how to package JSweet jars for compilation. For execution, the generated JavaScript must be accessible to the using project too. A way is to package the JavaScript following the WebJar conventions: \url{http://www.webjars.org/}.
+Finally it is recommended (and good practice) to also package the generated JavaScript as a bundle. The adopted way by JSweet is to package the JavaScript following the WebJar conventions: \url{http://www.webjars.org/}. When packaged this way, a JSweet transpiler using your candy will automatically extract the bundled JavaScript and extract it in a directory given by the \texttt{candiesJsOut} option (default: \texttt{js/candies}).
+
+A typical Maven \texttt{pom.xml} for building a candy can be found here: \url{https://gist.github.com/renaudpawlak/5d3f1fa092d718e12407ef1801fb5ddd}.
 
 \chapter*{Appendix 1: JSweet transpiler options}
 
@@ -1322,6 +1620,10 @@ Note: this section only described how to package JSweet jars for compilation. Fo
         is set (by default, d.ts files are generated in the JavaScript output
         directory - next to the corresponding js files).
 
+  [--candiesJsOut <candiesJsOut>]
+        Specify where to place extracted JavaScript files from candies.
+        (default: js/candies)
+
   [--classpath <classpath>]
         The JSweet transpilation classpath (candy jars). This classpath should
         at least contain the core candy.
@@ -1354,29 +1656,36 @@ Note: this section only described how to package JSweet jars for compilation. Fo
         Set the transpiler to ignore 'assert' statements, i.e. no code is
         generated for assertions.
 \end{verbatim}
+       
+\chapter*{Appendix 2: packaging and static behavior}
+\label{static_behavior}
 
-\chapter*{Appendix 2: JSweet strict mode}
+This appendix explains some static behavior with regards to packaging.
 
-For programmers developing JavaScript-only application (no Java at all), JSweet proposes an optional \emph{strict} mode. In strict mode, Java APIs are not accessible at all anymore and are substituted by the JavaScript APIs. This is possible through a technique invented by Peter Kriens consisting in replacing the core Java classes at compile-time. To enable strict mode, just add to your dependencies (in first position) the \texttt{jsweet-core-strict} artifact (group \texttt{org.jsweet}).
+\section*{When main methods are invoked}
 
-The advantage of using the strict mode is that Java core objects become JavaScript object directly and expose the JavaScript API, so that programmers do not need to switch from Java to JSweet API anymore (through the \texttt{jsweet.util.Globals} utilities). This means for instance that the \texttt{\$get}, \texttt{\$set} and \texttt{\$delete} functions are directly accessible on all objects.
-
-Here is an example with a native Java string:
-
-\begin{lstlisting}[language=Java]
-String str = "This is a test string";
-// compile error in non strict mode: substr is not a Java method
-// but OK with strict mode! 
-str.substr(1); 
-\end{lstlisting}
-
-The main benefit in using strict mode is when manipulating objects and strings. However, it has limitations. For instance, Java arrays still need to be cast to JSweet arrays to access the JavaScript API. Moreover, programmers have to be aware that using strict mode within an IDE will prevent from having JSweet and Java code mixed within the same project (they may be in different projects though). Here is a list of tips about using strict mode.
+When main methods are invoked depends on the way the program is packaged. 
 
 \begin{itemize}
-\item You can use strict mode on full JavaScript projects, for instance pure client-side applications or full-stack applications with a Node.js server.
-\item You can use strict mode on small pure JavaScript components with very few interactions with the outside world (almost no data exchanged).
-\item Avoid using strict mode when wanting to share some data between JavaScript and some Java tiers (typically trough DTOs).
-\item Avoid using strict mode when you feel that one day, your code may collaborate closer with a Java application (typically a Java server).
+\item \texttt{module}: off, \texttt{bundle}: off. With default packaging, one Java source file corresponds to one generated JavaScript file. In that case, when loading a file in the browser, all the main methods will be invoked right at the end of the file. 
+\item \texttt{module}: off, \texttt{bundle}: on. When the \texttt{bundle} option is on and the \texttt{module} option is off, main methods are called at the end of the bundle.
+\item \texttt{module}: on, \texttt{bundle}: off. With module packaging (\texttt{module} option), one Java package corresponds to one module. With modules, it is mandatory to have only one main method in the program, which will be the global entry point from which the module dependency graph will be calculated. The main module (the one with the main method) will use directly or transitively all the other modules. The main method will be invoked at the end of the main module evaluation.
+\end{itemize}
+
+Because of modules, it is good practice to have only one main method in an application.
+
+\section*{Static and inheritance dependencies}
+
+In TypeScript, programmers need to take care of the ordering of classes with regards to static fields and initializers. Typically, a static member cannot be initialized with a static member of a class that has not yet been defined. Also, a class cannot extend a class that has not been defined yet. This forward-dependency issue triggers runtime errors when evaluating the generated JavaScript code, which can be quite annoying for the programmers and may requires the use of external JavaScript bundling tools, such as Browserify.
+
+JSweet's statics lazy initialization allows static forward references within a given file, and within an entire bundle when the \texttt{bundle} option is set. Also, when bundling a set of files, JSweet analyses the inheritance tree and performs a partial order permutation to eliminate forward references in the inheritance tree. Note that TypeScript bundle provide a similar feature, but the references need to be manually declared, which is not convenient for programmers.
+
+To wrap it up, here are the guidelines to be followed by the programmers depending on the packaging method:
+
+\begin{itemize}
+\item \texttt{module}: off, \texttt{bundle}: off. One JavaScript file is generated per Java file. The programmer must take care of including the files in the right order in the HTML page, so that there are no forward references with regard to inheritance and statics. Within a given file, static forward references are allowed, but inheritance forward reference are not supported yet (this will be supported in coming releases). 
+\item \texttt{module}: off, \texttt{bundle}: on. This configuration produces a unique browser-compatible bundle file that can be included in an HTML page. Here, the programmer does not have to take care at all of the forward references across files. Exactly like in Java, the order does not matter. Within a single file, the programmer still have to take care of the inheritance forward references (in other words, a subclass must be declared after its parent class) (this will be supported in coming releases).
+\item \texttt{module}: commonjs, amd or umd, \texttt{bundle}: off. This configuration produces one module file per Java package so that they can be used within a module system. For instance, using the \texttt{commonjs} module kind will allow the program to run on Node.js. In that configuration, the program should contain one main method and only the module file containing the main method should be loaded (because it will take care loading all the other modules). This configuration imposes the same constraint within a single file (no forward-references in inheritance).
 \end{itemize}
         
 \end{document}

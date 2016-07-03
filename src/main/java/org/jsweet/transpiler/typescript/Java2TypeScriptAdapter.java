@@ -761,30 +761,30 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					return true;
 				case "cosh":
 					printMacroName(targetMethodName);
-					getPrinter().print("((x) => (Math.exp(x) + Math.exp(-x)) / 2)(").printArgList(invocation.args).print(")");
+					getPrinter().print("(x => (Math.exp(x) + Math.exp(-x)) / 2)(").printArgList(invocation.args).print(")");
 					return true;
 				case "expm1":
 					printMacroName(targetMethodName);
 					getPrinter()
-							.print("((d) => { if (d == 0.0 || d === Number.NaN) { return d; } else if (!Number.POSITIVE_INFINITY === d && !Number.NEGATIVE_INFINITY === d) { if (d < 0) { return -1; } else { return Number.POSITIVE_INFINITY; } } })(")
+							.print("(d => { if (d == 0.0 || d === Number.NaN) { return d; } else if (!Number.POSITIVE_INFINITY === d && !Number.NEGATIVE_INFINITY === d) { if (d < 0) { return -1; } else { return Number.POSITIVE_INFINITY; } } })(")
 							.printArgList(invocation.args).print(")");
 					return true;
 				case "hypot":
 					printMacroName(targetMethodName);
-					getPrinter().print("((x) => Math.sqrt(x * x + y * y))(").printArgList(invocation.args).print(")");
+					getPrinter().print("(x => Math.sqrt(x * x + y * y))(").printArgList(invocation.args).print(")");
 					return true;
 				case "log10":
 					printMacroName(targetMethodName);
-					getPrinter().print("((x) => Math.log(x) * Math.LOG10E)(").printArgList(invocation.args).print(")");
+					getPrinter().print("(x => Math.log(x) * Math.LOG10E)(").printArgList(invocation.args).print(")");
 					return true;
 				case "log1p":
 					printMacroName(targetMethodName);
-					getPrinter().print("((x) => Math.log(x + 1))(").printArgList(invocation.args).print(")");
+					getPrinter().print("(x => Math.log(x + 1))(").printArgList(invocation.args).print(")");
 					return true;
 				case "rint":
 					printMacroName(targetMethodName);
 					getPrinter()
-							.print("((d) => { if (d === Number.NaN) { return d; } else if (Number.POSITIVE_INFINITY === d || Number.NEGATIVE_INFINITY === d) { return d; } else if(d == 0) { return d; } else { return Math.round(d); } })(")
+							.print("(d => { if (d === Number.NaN) { return d; } else if (Number.POSITIVE_INFINITY === d || Number.NEGATIVE_INFINITY === d) { return d; } else if(d == 0) { return d; } else { return Math.round(d); } })(")
 							.printArgList(invocation.args).print(")");
 					return true;
 				case "scalb":
@@ -795,26 +795,26 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					return true;
 				case "signum":
 					printMacroName(targetMethodName);
-					getPrinter().print("((f) => { if (f > 0) { return 1; } else if (f < 0) { return -1; } else { return 0; } })(").printArgList(invocation.args)
+					getPrinter().print("(f => { if (f > 0) { return 1; } else if (f < 0) { return -1; } else { return 0; } })(").printArgList(invocation.args)
 							.print(")");
 					return true;
 				case "sinh":
 					printMacroName(targetMethodName);
-					getPrinter().print("((x) => (Math.exp(x) - Math.exp(-x)) / 2)(").printArgList(invocation.args).print(")");
+					getPrinter().print("(x => (Math.exp(x) - Math.exp(-x)) / 2)(").printArgList(invocation.args).print(")");
 					return true;
 				case "tanh":
 					printMacroName(targetMethodName);
 					getPrinter()
-							.print("((x) => { if (x == Number.POSITIVE_INFINITY) { return 1; } else if (x == Number.NEGATIVE_INFINITY) { return -1; } double e2x = Math.exp(2 * x); return (e2x - 1) / (e2x + 1); })(")
+							.print("(x => { if (x == Number.POSITIVE_INFINITY) { return 1; } else if (x == Number.NEGATIVE_INFINITY) { return -1; } double e2x = Math.exp(2 * x); return (e2x - 1) / (e2x + 1); })(")
 							.printArgList(invocation.args).print(")");
 					return true;
 				case "toDegrees":
 					printMacroName(targetMethodName);
-					getPrinter().print("((x) => x * 180 / Math.PI; )(").printArgList(invocation.args).print(")");
+					getPrinter().print("(x => x * 180 / Math.PI)(").printArgList(invocation.args).print(")");
 					return true;
 				case "toRadians":
 					printMacroName(targetMethodName);
-					getPrinter().print("((x) => x * Math.PI / 180; )(").printArgList(invocation.args).print(")");
+					getPrinter().print("(x => x * Math.PI / 180)(").printArgList(invocation.args).print(")");
 					return true;
 				}
 				break;
@@ -1054,7 +1054,11 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 							getPrinter().print("(");
 						}
 						getPrinter().print("(");
-						printArguments(typeApply.arguments);
+						if (typeName.startsWith("Int") || typeName.startsWith("Long") || typeName.startsWith("Double")) {
+							getPrinter().print("p0 : number");
+						} else {
+							printArguments(typeApply.arguments);
+						}
 						getPrinter().print(") => void");
 						if (arrayComponent) {
 							getPrinter().print(")");
@@ -1065,7 +1069,11 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 							getPrinter().print("(");
 						}
 						getPrinter().print("(");
-						printArguments(typeApply.arguments.subList(0, typeApply.arguments.length() - 1));
+						if (typeName.startsWith("Int") || typeName.startsWith("Long") || typeName.startsWith("Double")) {
+							getPrinter().print("p0 : number");
+						} else {
+							printArguments(typeApply.arguments.subList(0, typeApply.arguments.length() - 1));
+						}
 						getPrinter().print(") => ");
 						substituteAndPrintType(typeApply.arguments.get(typeApply.arguments.length() - 1), arrayComponent, inTypeParameters, completeRawTypes,
 								false);
@@ -1079,7 +1087,11 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 						}
 						getPrinter().print("(");
 						getPrinter().print(") => ");
-						substituteAndPrintType(typeApply.arguments.get(0), arrayComponent, inTypeParameters, completeRawTypes, false);
+						if (typeName.startsWith("Int") || typeName.startsWith("Long") || typeName.startsWith("Double")) {
+							getPrinter().print("number");
+						} else {
+							substituteAndPrintType(typeApply.arguments.get(0), arrayComponent, inTypeParameters, completeRawTypes, false);
+						}
 						if (arrayComponent) {
 							getPrinter().print(")");
 						}
@@ -1089,7 +1101,11 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 							getPrinter().print("(");
 						}
 						getPrinter().print("(");
-						printArguments(typeApply.arguments);
+						if (typeName.startsWith("Int") || typeName.startsWith("Long") || typeName.startsWith("Double")) {
+							getPrinter().print("p0 : number");
+						} else {
+							printArguments(typeApply.arguments);
+						}
 						getPrinter().print(") => boolean");
 						if (arrayComponent) {
 							getPrinter().print(")");
@@ -1102,9 +1118,9 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 						getPrinter().print("(");
 						printArgument(typeApply.arguments.head, 1);
 						if (typeName.startsWith("Binary")) {
+							getPrinter().print(", ");
 							printArgument(typeApply.arguments.head, 2);
 						}
-						printArguments(typeApply.arguments);
 						getPrinter().print(") => ");
 						substituteAndPrintType(typeApply.arguments.head, arrayComponent, inTypeParameters, completeRawTypes, false);
 						if (arrayComponent) {
