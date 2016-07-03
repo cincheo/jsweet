@@ -848,7 +848,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 				continue;
 			}
-			if (def instanceof JCVariableDecl) {
+			if (def instanceof JCVariableDecl && !(getScope().sharedMode && ((JCVariableDecl) def).getModifiers().getFlags().contains(Modifier.STATIC))) {
 				if (getScope().enumScope) {
 					print(", ");
 				} else {
@@ -966,6 +966,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						println().println().printIndent().print("export namespace ").print(classdecl.getSimpleName().toString()).print(" {").startIndent();
 					}
 					println().println().printIndent().print(def);
+					if (def instanceof JCVariableDecl) {
+						print(";");
+					}
 				}
 			}
 			if (nameSpace) {
