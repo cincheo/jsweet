@@ -702,6 +702,11 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					printMacroName(targetMethodName);
 					getPrinter().print("(").print(fieldAccess.getExpression()).print(").split('')");
 					return true;
+				case "replaceAll":
+					printMacroName(targetMethodName);
+					getPrinter().print(fieldAccess.getExpression()).print(".replace(new RegExp(").print(invocation.args.head).print(", 'g'),")
+							.print(invocation.args.tail.head).print(")");
+					return true;
 				}
 				break;
 			case "java.lang.Character":

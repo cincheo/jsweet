@@ -35,6 +35,8 @@ public class Strings {
 		trace.push(Strings.class.getName());
 		trace.push(Strings.class.getSimpleName());
 
+		trace.push("a b c".replaceAll(" ", ""));
+
 		$export("trace", trace.join(","));
 	}
 
