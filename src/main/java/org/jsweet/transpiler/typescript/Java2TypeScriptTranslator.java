@@ -175,11 +175,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		return scope.get(scope.size() - 1 - i);
 	}
 
-	public  void enterScope() {
+	public void enterScope() {
 		scope.push(new ClassScope());
 	}
 
-	public  void exitScope() {
+	public void exitScope() {
 		scope.pop();
 	}
 
@@ -1949,7 +1949,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					|| JSweetConfig.NEW_FUNCTION_NAME.equals(methName);
 			boolean targetIsThisOrStaticImported = meth.startsWith(methName) || meth.startsWith("this." + methName);
 
-			MethodType type = (MethodType) inv.meth.type;
+			MethodType type = inv.meth.type instanceof MethodType ? (MethodType) inv.meth.type : null;
 			MethodSymbol methSym = null;
 			String methodName = null;
 			boolean keywordHandled = false;
@@ -2063,10 +2063,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 			boolean isStatic = methSym == null || methSym.isStatic();
 			if (!Util.hasVarargs(methSym) //
-					|| inv.args.last().type.getKind() != TypeKind.ARRAY
+					|| !inv.args.isEmpty() && (inv.args.last().type.getKind() != TypeKind.ARRAY
 					// we dont use apply if var args type differ
 					|| !context.types.erasure(((ArrayType) inv.args.last().type).elemtype)
-							.equals(context.types.erasure(((ArrayType) methSym.getParameters().last().type).elemtype))) {
+							.equals(context.types.erasure(((ArrayType) methSym.getParameters().last().type).elemtype)))) {
 				applyVarargs = false;
 			}
 
@@ -2101,7 +2101,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					if (keywordHandled) {
 						print(inv.meth);
 					} else {
-						if (methSym == null && inv.meth instanceof JCFieldAccess) {
+						if (methSym == null && inv.meth instanceof JCFieldAccess && ((JCFieldAccess) inv.meth).sym instanceof MethodSymbol) {
 							methSym = (MethodSymbol) ((JCFieldAccess) inv.meth).sym;
 						}
 						if (methSym != null && inv.meth instanceof JCFieldAccess) {
@@ -2748,6 +2748,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	public void visitReturn(JCReturn returnStatement) {
 		print("return");
 		if (returnStatement.expr != null) {
+            if (returnStatement.expr.type == null) {
+                JCMethodDecl arg = getParent(JCMethodDecl.class);
+                report(returnStatement, JSweetProblem.CANNOT_ACCESS_THIS,
+                    arg == null ? returnStatement.toString() : arg.toString());
+                return;
+            }
 			boolean wrapChar = false;
 			if (returnStatement.expr.type.isPrimitive() && context.symtab.charType.tsym == returnStatement.expr.type.tsym) {
 				JCTree parent = getFirstParent(JCMethodDecl.class, JCLambda.class);

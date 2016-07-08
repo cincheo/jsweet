@@ -20,7 +20,9 @@ import com.sun.tools.javac.tree.JCTree;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.UncheckedIOException;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -45,7 +47,8 @@ public class MigrationTest extends AbstractTest {
             null
         );
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        TranspiledPartsPrinter printer = new TranspiledPartsPrinter(baos, transpiler) {
+        Writer writer = new OutputStreamWriter(baos);
+        TranspiledPartsPrinter printer = new TranspiledPartsPrinter(writer, transpiler) {
 
             @Override
             public void visitMethodDef(JCTree.JCMethodDecl method) {
@@ -78,7 +81,7 @@ public class MigrationTest extends AbstractTest {
             new ConsoleTranspilationHandler(),
             new File(TEST_DIRECTORY_NAME + "/" + QuickStart.class.getName().replace(".", "/") + ".java"),
             printer);
-        printer.flush();
+        writer.flush();
         System.out.println(baos);
 
     }

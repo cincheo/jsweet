@@ -266,6 +266,10 @@ public enum JSweetProblem {
 	 * Raised when a class tries to extend a Globals class.
 	 */
 	GLOBALS_CLASS_CANNOT_BE_SUBCLASSED(Severity.ERROR),
+    /**
+	 * Raised when trying to access this from scope it isn't defined.
+	 */
+    CANNOT_ACCESS_THIS(Severity.ERROR),
 	/**
 	 * Raised when invoking a static method on this (this is allowed in Java,
 	 * but not in JSweet).
@@ -418,6 +422,8 @@ public enum JSweetProblem {
 			return String.format("globals classes cannot extend any class", params);
 		case GLOBALS_CLASS_CANNOT_BE_SUBCLASSED:
 			return String.format("globals classes cannot be subclassed", params);
+        case CANNOT_ACCESS_THIS:
+			return String.format("'this' isn't defined in scope of %s", params);
 		case CANNOT_ACCESS_STATIC_MEMBER_ON_THIS:
 			return String.format("member '%s' is static and cannot be accessed on 'this'", params);
 		case UNTYPED_OBJECT_ODD_PARAMETER_COUNT:

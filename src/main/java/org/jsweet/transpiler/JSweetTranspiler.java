@@ -78,8 +78,6 @@ import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.Log.WriterKind;
 import com.sun.tools.javac.util.Options;
 import com.sun.tools.javac.tree.Pretty;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 
@@ -1543,16 +1541,10 @@ public class JSweetTranspiler implements JSweetOptions {
     public static class TranspiledPartsPrinter extends Pretty {
 
         private final JSweetTranspiler transpiler;
-        private final Writer writer;
         private int p;
-
-        public TranspiledPartsPrinter(OutputStream os, JSweetTranspiler transpiler) {
-            this(new OutputStreamWriter(os), transpiler);
-        }
 
         public TranspiledPartsPrinter(Writer writer, JSweetTranspiler transpiler) {
             super(writer, true);
-            this.writer = writer;
             this.transpiler = transpiler;
         }
 
@@ -1568,10 +1560,6 @@ public class JSweetTranspiler implements JSweetOptions {
             translator.exitScope();
             String tsCode = translator.getResult();
             return transpiler.tspart2js(tsCode, handler, "part" + p++);
-        }
-
-        public void flush() throws IOException {
-            writer.flush();
         }
     }
 }
