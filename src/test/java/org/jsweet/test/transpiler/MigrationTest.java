@@ -65,7 +65,12 @@ public class MigrationTest extends AbstractTest {
                     super.visitMethodDef(method);
                 } else {
                     ErrorCountTranspilationHandler handler = new ErrorCountTranspilationHandler(new ConsoleTranspilationHandler());
-                    String jsCode = transpile(method, handler);
+                    String jsCode;
+                    try {
+                        jsCode = transpile(method, handler, "part");
+                    } catch (IOException ex) {
+                        throw new UncheckedIOException(ex);
+                    }
                     if (handler.getErrorCount() == 0) {
                         try {
                             print("\n/*\n");

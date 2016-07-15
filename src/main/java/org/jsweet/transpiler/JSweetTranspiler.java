@@ -585,10 +585,10 @@ public class JSweetTranspiler implements JSweetOptions {
         return compilationUnits;
     }
 
-    private String tspart2js(String tsCode, ErrorCountTranspilationHandler handler, String name) {
+    private String tspart2js(String tsCode, ErrorCountTranspilationHandler handler, String name) throws IOException {
         SourceFile sf = new SourceFile(null);
-        sf.setTsFile(new File(tsOutputDir, name + ".ts"));
-        sf.setJsFile(new File(jsOutputDir, name + ".js"));
+        sf.setTsFile(File.createTempFile(name, ".ts", tsOutputDir));
+        sf.setJsFile(File.createTempFile(name, ".js", jsOutputDir));
         try {
             sf.tsFile.getParentFile().mkdirs();
             sf.tsFile.createNewFile();
@@ -601,7 +601,6 @@ public class JSweetTranspiler implements JSweetOptions {
             new SourceFile[]{sf},
             "--target", ecmaTargetVersion.name(),
             "--outFile", sf.getJsFile().toString(),
-            //                        "--rootDir", tsOutputDir.getAbsolutePath(),
             sf.getTsFile().toString()
         );
         try {
@@ -1525,14 +1524,13 @@ public class JSweetTranspiler implements JSweetOptions {
     public static class TranspiledPartsPrinter extends Pretty {
 
         private final JSweetTranspiler transpiler;
-        private int p;
 
         public TranspiledPartsPrinter(Writer writer, JSweetTranspiler transpiler) {
             super(writer, true);
             this.transpiler = transpiler;
         }
 
-        public String transpile(JCTree tree, ErrorCountTranspilationHandler handler) {
+        public String transpile(JCTree tree, ErrorCountTranspilationHandler handler, String name) throws IOException {
             Java2TypeScriptTranslator translator = new Java2TypeScriptTranslator(
                 handler,
                 transpiler.context,
@@ -1543,7 +1541,7 @@ public class JSweetTranspiler implements JSweetOptions {
             translator.scan(tree);
             translator.exitScope();
             String tsCode = translator.getResult();
-            return transpiler.tspart2js(tsCode, handler, "part" + p++);
+            return transpiler.tspart2js(tsCode, handler, name);
         }
     }
 }
