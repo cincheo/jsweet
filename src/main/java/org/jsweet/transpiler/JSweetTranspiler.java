@@ -223,7 +223,7 @@ public class JSweetTranspiler implements JSweetOptions {
         return this.workingDir;
     }
 
-    private void initNode(TranspilationHandler transpilationHandler) throws Exception {
+    public void initNode(TranspilationHandler transpilationHandler) throws Exception {
         ProcessUtil.initNode();
         logger.debug("extra path: " + ProcessUtil.EXTRA_PATH);
         File initFile = new File(workingDir, ".node-init");
@@ -236,9 +236,6 @@ public class JSweetTranspiler implements JSweetOptions {
             initFile.mkdirs();
             initFile.createNewFile();
         }
-    }
-
-    private void initNodeCommands(TranspilationHandler transpilationHandler) throws Exception {
         if (!ProcessUtil.isInstalledWithNpm("tsc")) {
             ProcessUtil.installNodePackage("typescript", true);
         }
@@ -564,26 +561,28 @@ public class JSweetTranspiler implements JSweetOptions {
         }
     }
 
-    synchronized public void migrate(TranspilationHandler transpilationHandler, File file, JCTree.Visitor printer) throws Exception {
-        logger.info("started transpilation of " + file);
-        transpilationStartTimestamp = System.currentTimeMillis();
+    public List<JCCompilationUnit> setupCompiler(java.util.List<File> files, ErrorCountTranspilationHandler transpilationHandler) throws IOException {
         initJavac(transpilationHandler);
-        initNode(transpilationHandler);
-        initNodeCommands(transpilationHandler);
+        List<JavaFileObject> fileObjects = toJavaFileObjects(fileManager, files);
 
-        Iterable<? extends JavaFileObject> io = ((JavacFileManager) fileManager)
-            .getJavaFileObjectsFromFiles(Arrays.asList(file));
-        java.util.List<JCCompilationUnit> compilationUnits = compiler
-            .enterTrees(compiler.parseFiles((Iterable<JavaFileObject>) io));
-        if (compilationUnits.size() != 1) {
-            throw new RuntimeException("Unexpected count of compilation units!");
+        logger.info("parsing: " + fileObjects);
+        List<JCCompilationUnit> compilationUnits = compiler.enterTrees(compiler.parseFiles(fileObjects));
+        if (transpilationHandler.getErrorCount() > 0) {
+            return null;
         }
-        JCCompilationUnit cu = compilationUnits.get(0);
+        logger.info("attribution phase");
         compiler.attribute(compiler.todo);
-        context.useModules = false;
 
-        cu.accept(printer);
-        logger.info("transpilation process finished in " + (System.currentTimeMillis() - transpilationStartTimestamp) + " ms");
+        if (transpilationHandler.getErrorCount() > 0) {
+            return null;
+        }
+        context.useModules = isUsingModules();
+
+        if (context.useModules && bundle) {
+            transpilationHandler.report(JSweetProblem.BUNDLE_WITH_MODULE, null, JSweetProblem.BUNDLE_WITH_MODULE.getMessage());
+            return null;
+        }
+        return compilationUnits;
     }
 
     private String tspart2js(String tsCode, ErrorCountTranspilationHandler handler, String name) {
@@ -625,7 +624,6 @@ public class JSweetTranspiler implements JSweetOptions {
         transpilationStartTimestamp = System.currentTimeMillis();
         try {
             initNode(transpilationHandler);
-            initNodeCommands(transpilationHandler);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             return;
@@ -687,28 +685,14 @@ public class JSweetTranspiler implements JSweetOptions {
     }
 
     private void java2ts(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files) throws IOException {
-
-        initJavac(transpilationHandler);
-        List<JavaFileObject> fileObjects = toJavaFileObjects(fileManager, Arrays.asList(SourceFile.toFiles(files)));
-
-        logger.info("parsing: " + fileObjects);
-        List<JCCompilationUnit> compilationUnits = compiler.enterTrees(compiler.parseFiles(fileObjects));
-        if (transpilationHandler.getErrorCount() > 0) {
+        List<JCCompilationUnit> compilationUnits = setupCompiler(
+            Arrays.asList(SourceFile.toFiles(files)),
+            transpilationHandler
+        );
+        if (compilationUnits == null) {
             return;
         }
-        logger.info("attribution phase");
-        compiler.attribute(compiler.todo);
-
-        if (transpilationHandler.getErrorCount() > 0) {
-            return;
-        }
-        context.useModules = isUsingModules();
         context.sourceFiles = files;
-
-        if (context.useModules && bundle) {
-            transpilationHandler.report(JSweetProblem.BUNDLE_WITH_MODULE, null, JSweetProblem.BUNDLE_WITH_MODULE.getMessage());
-            return;
-        }
 
         new GlobalBeforeTranslationScanner(transpilationHandler, context).process(compilationUnits);
 

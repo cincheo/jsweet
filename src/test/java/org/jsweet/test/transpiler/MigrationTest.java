@@ -25,11 +25,13 @@ import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 import org.jsweet.transpiler.JSweetTranspiler;
 import org.jsweet.transpiler.JSweetTranspiler.TranspiledPartsPrinter;
 import org.jsweet.transpiler.util.ConsoleTranspilationHandler;
 import org.jsweet.transpiler.util.ErrorCountTranspilationHandler;
+import org.junit.Assert;
 import org.junit.Test;
 import source.migration.QuickStart;
 
@@ -39,6 +41,7 @@ public class MigrationTest extends AbstractTest {
     public void test1() throws Exception {
         File dir = Files.createTempDirectory("jsweet").toFile();
         System.out.println("Transpile directory: " + dir);
+        ErrorCountTranspilationHandler handler = new ErrorCountTranspilationHandler(new ConsoleTranspilationHandler());
         JSweetTranspiler transpiler = new JSweetTranspiler(
             new File(dir, "wd"),
             new File(dir, "ts"),
@@ -46,6 +49,12 @@ public class MigrationTest extends AbstractTest {
             new File(dir, "cjs"),
             null
         );
+        File input = new File(TEST_DIRECTORY_NAME + "/" + QuickStart.class.getName().replace(".", "/") + ".java");
+        transpiler.initNode(handler);
+        List<JCTree.JCCompilationUnit> units
+            = transpiler.setupCompiler(Arrays.asList(input), handler);
+        Assert.assertEquals(1,units.size());
+        
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Writer writer = new OutputStreamWriter(baos);
         TranspiledPartsPrinter printer = new TranspiledPartsPrinter(writer, transpiler) {
@@ -76,11 +85,7 @@ public class MigrationTest extends AbstractTest {
                 }
             }
         };
-        baos.reset();
-        transpiler.migrate(
-            new ConsoleTranspilationHandler(),
-            new File(TEST_DIRECTORY_NAME + "/" + QuickStart.class.getName().replace(".", "/") + ".java"),
-            printer);
+        units.get(0).accept(printer);
         writer.flush();
         System.out.println(baos);
 
