@@ -1159,6 +1159,9 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			getPrinter().print("\"");
 			return true;
 		}
+        if (identifier.type == null) {
+            return super.substituteIdentifier(identifier);           
+        }
 		if (langTypesSimpleNames.contains(identifier.toString()) && langTypesMapping.containsKey(identifier.type.toString())) {
 			getPrinter().print(langTypesMapping.get(identifier.type.toString()));
 			return true;
