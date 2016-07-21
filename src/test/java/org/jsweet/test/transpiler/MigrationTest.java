@@ -53,8 +53,8 @@ public class MigrationTest extends AbstractTest {
         transpiler.initNode(handler);
         List<JCTree.JCCompilationUnit> units
             = transpiler.setupCompiler(Arrays.asList(input), handler);
-        Assert.assertEquals(1,units.size());
-        
+        Assert.assertEquals(1, units.size());
+
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Writer writer = new OutputStreamWriter(baos);
         TranspiledPartsPrinter printer = new TranspiledPartsPrinter(writer, transpiler) {
@@ -92,7 +92,9 @@ public class MigrationTest extends AbstractTest {
         };
         units.get(0).accept(printer);
         writer.flush();
-        System.out.println(baos);
-
+        // System.out.println(baos); // prints resulting code
+        // verify that there are exactly two comments in the code
+        Assert.assertEquals(3, baos.toString().split("/\\*").length);
+        Assert.assertEquals(3, baos.toString().split("\\*/").length);
     }
 }
