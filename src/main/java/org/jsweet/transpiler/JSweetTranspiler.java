@@ -66,6 +66,7 @@ import com.sun.tools.javac.code.Symbol.PackageSymbol;
 import com.sun.tools.javac.file.JavacFileManager;
 import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.main.Option;
+import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.TreeScanner;
@@ -76,6 +77,9 @@ import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.Log.WriterKind;
 import com.sun.tools.javac.util.Options;
+import com.sun.tools.javac.tree.Pretty;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
 
 /**
  * The actual JSweet transpiler.
@@ -226,7 +230,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		return this.workingDir;
 	}
 
-	private void initNode(TranspilationHandler transpilationHandler) throws Exception {
+    public void initNode(TranspilationHandler transpilationHandler) throws Exception {
 		ProcessUtil.initNode();
 		logger.debug("extra path: " + ProcessUtil.EXTRA_PATH);
 		File initFile = new File(workingDir, ".node-init");
@@ -239,9 +243,6 @@ public class JSweetTranspiler implements JSweetOptions {
 			initFile.mkdirs();
 			initFile.createNewFile();
 		}
-	}
-
-	private void initNodeCommands(TranspilationHandler transpilationHandler) throws Exception {
 		if (!ProcessUtil.isInstalledWithNpm("tsc")) {
 			ProcessUtil.installNodePackage("typescript", true);
 		}
@@ -573,6 +574,55 @@ public class JSweetTranspiler implements JSweetOptions {
 		}
 	}
 
+    public List<JCCompilationUnit> setupCompiler(java.util.List<File> files, ErrorCountTranspilationHandler transpilationHandler) throws IOException {
+        initJavac(transpilationHandler);
+        List<JavaFileObject> fileObjects = toJavaFileObjects(fileManager, files);
+
+        logger.info("parsing: " + fileObjects);
+        List<JCCompilationUnit> compilationUnits = compiler.enterTrees(compiler.parseFiles(fileObjects));
+        if (transpilationHandler.getErrorCount() > 0) {
+            return null;
+        }
+        logger.info("attribution phase");
+        compiler.attribute(compiler.todo);
+
+        if (transpilationHandler.getErrorCount() > 0) {
+            return null;
+        }
+        context.useModules = isUsingModules();
+
+        if (context.useModules && bundle) {
+            transpilationHandler.report(JSweetProblem.BUNDLE_WITH_MODULE, null, JSweetProblem.BUNDLE_WITH_MODULE.getMessage());
+            return null;
+        }
+        return compilationUnits;
+    }
+
+    private String tspart2js(String tsCode, ErrorCountTranspilationHandler handler, String name) throws IOException {
+        SourceFile sf = new SourceFile(null);
+        sf.setTsFile(File.createTempFile(name, ".ts", tsOutputDir));
+        sf.setJsFile(File.createTempFile(name, ".js", jsOutputDir));
+        try {
+            sf.tsFile.getParentFile().mkdirs();
+            sf.tsFile.createNewFile();
+            Files.write(sf.tsFile.toPath(), Arrays.asList(tsCode));
+        } catch (IOException ex) {
+            throw new UncheckedIOException(ex);
+        }
+        runTSC(
+            handler,
+            new SourceFile[]{sf},
+            "--target", ecmaTargetVersion.name(),
+            "--outFile", sf.getJsFile().toString(),
+            sf.getTsFile().toString()
+        );
+        try {
+            return new String(Files.readAllBytes(sf.jsFile.toPath()));
+        } catch (IOException ex) {
+            return null;
+        }
+    }
+
 	/**
 	 * Transpiles the given Java source files. When the transpiler is in watch
 	 * mode ({@link #setTscWatchMode(boolean)}), the first invocation to this
@@ -588,7 +638,6 @@ public class JSweetTranspiler implements JSweetOptions {
 		transpilationStartTimestamp = System.currentTimeMillis();
 		try {
 			initNode(transpilationHandler);
-			initNodeCommands(transpilationHandler);
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			return;
@@ -650,28 +699,14 @@ public class JSweetTranspiler implements JSweetOptions {
 	}
 
 	private void java2ts(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files) throws IOException {
-
-		initJavac(transpilationHandler);
-		List<JavaFileObject> fileObjects = toJavaFileObjects(fileManager, Arrays.asList(SourceFile.toFiles(files)));
-
-		logger.info("parsing: " + fileObjects);
-		List<JCCompilationUnit> compilationUnits = compiler.enterTrees(compiler.parseFiles(fileObjects));
-		if (transpilationHandler.getErrorCount() > 0) {
+        List<JCCompilationUnit> compilationUnits = setupCompiler(
+            Arrays.asList(SourceFile.toFiles(files)),
+            transpilationHandler
+        );
+        if (compilationUnits == null) {
 			return;
 		}
-		logger.info("attribution phase");
-		compiler.attribute(compiler.todo);
-
-		if (transpilationHandler.getErrorCount() > 0) {
-			return;
-		}
-		context.useModules = isUsingModules();
 		context.sourceFiles = files;
-
-		if (context.useModules && bundle) {
-			transpilationHandler.report(JSweetProblem.BUNDLE_WITH_MODULE, null, JSweetProblem.BUNDLE_WITH_MODULE.getMessage());
-			return;
-		}
 
 		new GlobalBeforeTranslationScanner(transpilationHandler, context).process(compilationUnits);
 
@@ -1074,8 +1109,14 @@ public class JSweetTranspiler implements JSweetOptions {
 
 		try {
 			logger.info("launching tsc...");
+            runTSC(transpilationHandler, files, args.toArray(new String[0]));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
-			boolean[] fullPass = { true };
+    private void runTSC(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files, String... args) {
+        boolean[] fullPass = { true };
 
 			tsCompilationProcess = ProcessUtil.runCommand("tsc", getTsOutputDir(), isTscWatchMode(), line -> {
 				logger.info(line);
@@ -1107,7 +1148,7 @@ public class JSweetTranspiler implements JSweetOptions {
 				if (transpilationHandler.getProblemCount() == 0) {
 					transpilationHandler.report(JSweetProblem.INTERNAL_TSC_ERROR, null, "Unknown tsc error");
 				}
-			} , args.toArray(new String[0]));
+			} , args);
 
 			// tsCompilationProcess.waitFor();
 			// if (tsCompilationProcess != null &&
@@ -1115,10 +1156,6 @@ public class JSweetTranspiler implements JSweetOptions {
 			// transpilationHandler.report(JSweetProblem.TSC_CANNOT_START, null,
 			// JSweetProblem.TSC_CANNOT_START.getMessage());
 			// }
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
 	}
 
 	private void onTsTranspilationCompleted(boolean fullPass, ErrorCountTranspilationHandler handler, SourceFile[] files) {
@@ -1505,4 +1542,27 @@ public class JSweetTranspiler implements JSweetOptions {
 		jsLibFiles.clear();
 	}
 
+    public static class TranspiledPartsPrinter extends Pretty {
+
+        private final JSweetTranspiler transpiler;
+
+        public TranspiledPartsPrinter(Writer writer, JSweetTranspiler transpiler) {
+            super(writer, true);
+            this.transpiler = transpiler;
+        }
+
+        public String transpile(JCTree tree, ErrorCountTranspilationHandler handler, String name) throws IOException {
+            Java2TypeScriptTranslator translator = new Java2TypeScriptTranslator(
+                handler,
+                transpiler.context,
+                null,
+                false
+            );
+            translator.enterScope();
+            translator.scan(tree);
+            translator.exitScope();
+            String tsCode = translator.getResult();
+            return transpiler.tspart2js(tsCode, handler, name);
+        }
+    }
 }
