@@ -77,7 +77,7 @@ public enum JSweetProblem {
 	/**
 	 * Raised when the program tries to use the synchronized keyword.
 	 */
-	SYNCHRONIZATION(Severity.ERROR),
+	SYNCHRONIZATION(Severity.WARNING),
 	/**
 	 * Raised when a method has the same name as a field, including fields
 	 * defined in superclasses.
@@ -327,7 +327,7 @@ public enum JSweetProblem {
 		case ERASED_CLASS_CONSTRUCTOR:
 			return String.format("erased class constructors must take exactly one parameter", params);
 		case SYNCHRONIZATION:
-			return String.format("synchronization is not allowed in JSweet", params);
+			return String.format("synchronization is ignored in JSweet", params);
 		case METHOD_CONFLICTS_FIELD:
 			return String.format("method '%s' has the same name as a field in '%s'", params);
 		case HIDDEN_INVOCATION:
