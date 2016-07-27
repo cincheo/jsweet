@@ -1787,7 +1787,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 								report(varDecl, varDecl.name, JSweetProblem.INVALID_FIELD_INITIALIZER_IN_INTERFACE, varDecl.name, ((JCClassDecl) parent).name);
 							}
 						} else {
-							print(" = ").print(varDecl.init);
+							print(" = ");
+							if (varDecl.type.equals(context.symtab.charType) && varDecl.init instanceof JCLiteral
+									&& varDecl.init.type.getTag() != TypeTag.CHAR) {
+								print("String.fromCharCode(").print(varDecl.init).print(")");
+							} else {
+								print(varDecl.init);
+							}
 						}
 					}
 				}
