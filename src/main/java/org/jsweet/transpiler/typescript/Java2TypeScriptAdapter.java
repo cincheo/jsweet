@@ -665,6 +665,11 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					getPrinter().print("((str, searchString, position = 0) => str.substr(position, searchString.length) === searchString)(")
 							.print(fieldAccess.getExpression()).print(", ").printArgList(invocation.args).print(")");
 					return true;
+				case "endsWith":
+					printMacroName(targetMethodName);
+					getPrinter().print("((str, searchString) => { var pos = str.length - searchString.length; var lastIndex = str.indexOf(searchString, pos); return lastIndex !== -1 && lastIndex === pos; })(")
+							.print(fieldAccess.getExpression()).print(", ").printArgList(invocation.args).print(")");
+					return true;
 				// this macro is not needed in ES6
 				case "codePointAt":
 					printMacroName(targetMethodName);
