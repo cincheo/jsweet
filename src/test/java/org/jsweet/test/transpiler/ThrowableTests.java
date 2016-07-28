@@ -24,6 +24,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import source.throwable.InvalidTryCatchTest;
+import source.throwable.MultipleTryCatchTest;
 import source.throwable.Throwables;
 import source.throwable.TryCatchFinallyTest;
 
@@ -45,12 +46,28 @@ public class ThrowableTests extends AbstractTest {
 	}
 
 	@Test
+	public void testMultipleTryCatch() {
+		TestTranspilationHandler logHandler = new TestTranspilationHandler();
+		try {
+			EvaluationResult r = transpiler.eval(logHandler, getSourceFile(MultipleTryCatchTest.class));
+			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+			Assert.assertNotNull("Test was not executed", r.get("executed"));
+			Assert.assertEquals("Expected a message when the catch clause is executed", "test-message", r.get("message1"));
+			Assert.assertNotNull("Finally was not executed", r.get("finally_executed"));
+			Assert.assertNull(r.get("message2"));
+			Assert.assertNull(r.get("message3"));
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail("Exception occured while running test");
+		}
+	}
+
+	@Test
 	public void testInvalidTryCatch() {
 		TestTranspilationHandler logHandler = new TestTranspilationHandler();
 		try {
 			transpiler.transpile(logHandler, getSourceFile(InvalidTryCatchTest.class));
-			logHandler.assertReportedProblems(JSweetProblem.TRY_WITH_MULTIPLE_CATCHES, JSweetProblem.UNSUPPORTED_TRY_WITH_RESOURCE,
-					JSweetProblem.TRY_WITHOUT_CATCH_OR_FINALLY);
+			logHandler.assertReportedProblems(JSweetProblem.UNSUPPORTED_TRY_WITH_RESOURCE, JSweetProblem.TRY_WITHOUT_CATCH_OR_FINALLY);
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail("Exception occured while running test");
@@ -72,7 +89,7 @@ public class ThrowableTests extends AbstractTest {
 			Assert.assertEquals("message2", result.get("message3"));
 			// cause does not work yet and returns the current error
 			Assert.assertEquals(true, result.get("cause"));
-		} , getSourceFile(Throwables.class));
+		}, getSourceFile(Throwables.class));
 	}
 
 }

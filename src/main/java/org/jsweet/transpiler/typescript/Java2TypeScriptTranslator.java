@@ -2999,12 +2999,20 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (tryStatement.catchers.isEmpty() && tryStatement.finalizer == null) {
 			report(tryStatement, JSweetProblem.TRY_WITHOUT_CATCH_OR_FINALLY);
 		}
-		if (tryStatement.catchers.size() > 1) {
-			report(tryStatement, JSweetProblem.TRY_WITH_MULTIPLE_CATCHES);
-		}
 		print("try ").print(tryStatement.body);
-		for (JCTree catcher : tryStatement.catchers) {
-			print(catcher);
+		if (tryStatement.catchers.size() > 1) {
+			print(" catch(__e) {").startIndent();
+			for (JCCatch catcher : tryStatement.catchers) {
+				println().printIndent().print("if");
+				printInstanceOf("__e", null, catcher.param.type);
+				print(" {").startIndent().println().printIndent();
+				print(catcher.param).print(" = <").print(catcher.param.getType()).print(">__e;").println();
+				printBlockStatements(catcher.body.getStatements());
+				endIndent().println().printIndent().print("}");
+			}
+			endIndent().println().printIndent().print("}");
+		} else if (tryStatement.catchers.size() == 1) {
+			print(tryStatement.catchers.head);
 		}
 		if (tryStatement.finalizer != null) {
 			print(" finally ").print(tryStatement.finalizer);
