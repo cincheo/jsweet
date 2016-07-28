@@ -37,6 +37,11 @@ public class Strings {
 
 		trace.push("a b c".replaceAll(" ", ""));
 
+		trace.push(String.valueOf("abc".startsWith("ab")));
+		trace.push(String.valueOf("abc".startsWith("c")));
+		trace.push(String.valueOf("abc".endsWith("bc")));
+		trace.push(String.valueOf("abc".endsWith("a")));
+		
 		$export("trace", trace.join(","));
 	}
 
