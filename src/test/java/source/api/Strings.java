@@ -41,6 +41,10 @@ public class Strings {
 		trace.push(String.valueOf("abc".startsWith("c")));
 		trace.push(String.valueOf("abc".endsWith("bc")));
 		trace.push(String.valueOf("abc".endsWith("a")));
+
+		trace.push(String.valueOf("abc".contains("a")));
+		trace.push(String.valueOf("abc".contains("ab")));
+		trace.push(String.valueOf("abc".contains("d")));
 		
 		$export("trace", trace.join(","));
 	}

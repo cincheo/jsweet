@@ -656,6 +656,11 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					printMacroName(targetMethodName);
 					getPrinter().print(fieldAccess.getExpression()).print(".substring(").printArgList(invocation.args).print(")");
 					return true;
+					// this macro should use 'includes' in ES6
+				case "contains":
+					printMacroName(targetMethodName);
+					getPrinter().print(fieldAccess.getExpression()).print(".indexOf(").printArgList(invocation.args).print(") != -1");
+					return true;
 				case "length":
 					getPrinter().print(fieldAccess.getExpression()).print(".length");
 					return true;

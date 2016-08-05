@@ -131,7 +131,7 @@ public class ApiTests extends AbstractTest {
 	public void testStrings() {
 		eval(ModuleKind.none, (logHandler, r) -> {
 			logHandler.assertReportedProblems();
-			Assert.assertEquals("b,bc,c,bc,3,true,ab,32,b,0,false,true,source.api.Strings,Strings,abc,true,false,true,false", r.get("trace"));
+			Assert.assertEquals("b,bc,c,bc,3,true,ab,32,b,0,false,true,source.api.Strings,Strings,abc,true,false,true,false,true,true,false", r.get("trace"));
 		} , getSourceFile(Strings.class));
 	}
 
