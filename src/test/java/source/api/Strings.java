@@ -36,6 +36,7 @@ public class Strings {
 		trace.push(Strings.class.getSimpleName());
 
 		trace.push("a b c".replaceAll(" ", ""));
+		trace.push(String.valueOf("abcdabcdabcd".replace("ab", "")));
 
 		trace.push(String.valueOf("abc".startsWith("ab")));
 		trace.push(String.valueOf("abc".startsWith("c")));
@@ -45,7 +46,7 @@ public class Strings {
 		trace.push(String.valueOf("abc".contains("a")));
 		trace.push(String.valueOf("abc".contains("ab")));
 		trace.push(String.valueOf("abc".contains("d")));
-		
+
 		$export("trace", trace.join(","));
 	}
 

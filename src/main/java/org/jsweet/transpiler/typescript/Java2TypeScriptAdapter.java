@@ -656,7 +656,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					printMacroName(targetMethodName);
 					getPrinter().print(fieldAccess.getExpression()).print(".substring(").printArgList(invocation.args).print(")");
 					return true;
-					// this macro should use 'includes' in ES6
+				// this macro should use 'includes' in ES6
 				case "contains":
 					printMacroName(targetMethodName);
 					getPrinter().print(fieldAccess.getExpression()).print(".indexOf(").printArgList(invocation.args).print(") != -1");
@@ -672,7 +672,8 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					return true;
 				case "endsWith":
 					printMacroName(targetMethodName);
-					getPrinter().print("((str, searchString) => { var pos = str.length - searchString.length; var lastIndex = str.indexOf(searchString, pos); return lastIndex !== -1 && lastIndex === pos; })(")
+					getPrinter()
+							.print("((str, searchString) => { var pos = str.length - searchString.length; var lastIndex = str.indexOf(searchString, pos); return lastIndex !== -1 && lastIndex === pos; })(")
 							.print(fieldAccess.getExpression()).print(", ").printArgList(invocation.args).print(")");
 					return true;
 				// this macro is not needed in ES6
@@ -715,6 +716,11 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				case "replaceAll":
 					printMacroName(targetMethodName);
 					getPrinter().print(fieldAccess.getExpression()).print(".replace(new RegExp(").print(invocation.args.head).print(", 'g'),")
+							.print(invocation.args.tail.head).print(")");
+					return true;
+				case "replace":
+					printMacroName(targetMethodName);
+					getPrinter().print(fieldAccess.getExpression()).print(".split(").print(invocation.args.head).print(").join(")
 							.print(invocation.args.tail.head).print(")");
 					return true;
 				}
