@@ -310,16 +310,28 @@ public class JSweetTranspiler implements JSweetOptions {
 		log.dumpOnError = false;
 		log.emitWarnings = false;
 
-		Writer w = new StringWriter() {
+		Writer errorWriter = new StringWriter() {
 			@Override
 			public void write(String str) {
-				// TranspilationHandler.OUTPUT_LOGGER.error(getBuffer());
-				// getBuffer().delete(0, getBuffer().length());
+                logger.error(str);
 			}
-
+		};
+		Writer warningWriter = new StringWriter() {
+			@Override
+			public void write(String str) {
+                logger.warn(str);
+			}
+		};
+		Writer messageWriter = new StringWriter() {
+			@Override
+			public void write(String str) {
+                logger.trace(str);
+			}
 		};
 
-		log.setWriter(WriterKind.ERROR, new PrintWriter(w));
+		log.setWriter(WriterKind.ERROR, new PrintWriter(errorWriter));
+		log.setWriter(WriterKind.WARNING, new PrintWriter(warningWriter));
+		log.setWriter(WriterKind.NOTICE, new PrintWriter(messageWriter));
 		log.setDiagnosticFormatter(new BasicDiagnosticFormatter(JavacMessages.instance(context)) {
 			@Override
 			public String format(JCDiagnostic diagnostic, Locale locale) {
@@ -330,12 +342,13 @@ public class JSweetTranspiler implements JSweetOptions {
 					}
 				}
 				if (diagnostic.getSource() != null) {
-					return diagnostic.getMessage(locale) + " at " + diagnostic.getSource().getName() + "(" + diagnostic.getLineNumber() + ")";
+					return diagnostic.getMessage(locale) + " atata " + diagnostic.getSource().getName() + "(" + diagnostic.getLineNumber() + ")";
 				} else {
 					return diagnostic.getMessage(locale);
 				}
 			}
 		});
+        compiler.log = log;
 
 		if (encoding != null) {
 			compiler.encoding = encoding;
