@@ -80,6 +80,7 @@ import com.sun.tools.javac.util.Options;
 import com.sun.tools.javac.tree.Pretty;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
+import org.apache.commons.io.output.StringBuilderWriter;
 
 /**
  * The actual JSweet transpiler.
@@ -301,39 +302,17 @@ public class JSweetTranspiler implements JSweetOptions {
 
 		compiler = JavaCompiler.instance(context);
 		compiler.attrParseOnly = true;
-		compiler.verbose = true;
+		compiler.verbose = false;
 		compiler.genEndPos = true;
 		compiler.keepComments = true;
 		log = Log.instance(context);
 		log.dumpOnError = false;
-		log.emitWarnings = true;
-		Writer errorWriter = new StringWriter() {
-			@Override
-			public void write(String str) {
-                if (str != null && !str.isEmpty()) {
-                    logger.error(str);
-                }
-			}
-		};
-		Writer warningWriter = new StringWriter() {
-			@Override
-			public void write(String str) {
-                if (str != null && !str.isEmpty()) {
-                    logger.debug(str);
-                }
-			}
-		};
-		Writer messageWriter = new StringWriter() {
-			@Override
-			public void write(String str) {
-                if (str != null && !str.isEmpty()) {
-                    logger.trace(str);
-                }
-			}
-		};
-		log.setWriter(WriterKind.ERROR, new PrintWriter(errorWriter));
-		log.setWriter(WriterKind.WARNING, new PrintWriter(warningWriter));
-		log.setWriter(WriterKind.NOTICE, new PrintWriter(messageWriter));
+		log.emitWarnings = false;
+		log.setWriters(new PrintWriter(new StringWriter(){
+            @Override
+            public void write(String str) {
+            }
+        }));
 		log.setDiagnosticFormatter(new BasicDiagnosticFormatter(JavacMessages.instance(context)) {
 			@Override
 			public String format(JCDiagnostic diagnostic, Locale locale) {
@@ -343,6 +322,20 @@ public class JSweetTranspiler implements JSweetOptions {
 								(int) diagnostic.getLineNumber(), (int) diagnostic.getColumnNumber()), diagnostic.getMessage(locale));
 					}
 				}
+                switch (diagnostic.getKind()) {
+                    case ERROR:
+                        logger.error(diagnostic);
+                        break;
+                    case WARNING:
+                    case MANDATORY_WARNING:
+                        logger.debug(diagnostic);
+                        break;
+                    case NOTE:
+                    case OTHER:
+                    default:
+                        logger.trace(diagnostic);
+                        break;
+                }
 				if (diagnostic.getSource() != null) {
 					return diagnostic.getMessage(locale) + " at " + diagnostic.getSource().getName() + "(" + diagnostic.getLineNumber() + ")";
 				} else {
@@ -350,7 +343,6 @@ public class JSweetTranspiler implements JSweetOptions {
 				}
 			}
 		});
-        compiler.log = log;
 
 		if (encoding != null) {
 			compiler.encoding = encoding;
