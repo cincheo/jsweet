@@ -301,34 +301,36 @@ public class JSweetTranspiler implements JSweetOptions {
 
 		compiler = JavaCompiler.instance(context);
 		compiler.attrParseOnly = true;
-		compiler.verbose = false;
+		compiler.verbose = true;
 		compiler.genEndPos = true;
 		compiler.keepComments = true;
-
 		log = Log.instance(context);
-
 		log.dumpOnError = false;
-		log.emitWarnings = false;
-
+		log.emitWarnings = true;
 		Writer errorWriter = new StringWriter() {
 			@Override
 			public void write(String str) {
-                logger.error(str);
+                if (str != null && !str.isEmpty()) {
+                    logger.error(str);
+                }
 			}
 		};
 		Writer warningWriter = new StringWriter() {
 			@Override
 			public void write(String str) {
-                logger.warn(str);
+                if (str != null && !str.isEmpty()) {
+                    logger.debug(str);
+                }
 			}
 		};
 		Writer messageWriter = new StringWriter() {
 			@Override
 			public void write(String str) {
-                logger.trace(str);
+                if (str != null && !str.isEmpty()) {
+                    logger.trace(str);
+                }
 			}
 		};
-
 		log.setWriter(WriterKind.ERROR, new PrintWriter(errorWriter));
 		log.setWriter(WriterKind.WARNING, new PrintWriter(warningWriter));
 		log.setWriter(WriterKind.NOTICE, new PrintWriter(messageWriter));
@@ -342,7 +344,7 @@ public class JSweetTranspiler implements JSweetOptions {
 					}
 				}
 				if (diagnostic.getSource() != null) {
-					return diagnostic.getMessage(locale) + " atata " + diagnostic.getSource().getName() + "(" + diagnostic.getLineNumber() + ")";
+					return diagnostic.getMessage(locale) + " at " + diagnostic.getSource().getName() + "(" + diagnostic.getLineNumber() + ")";
 				} else {
 					return diagnostic.getMessage(locale);
 				}
