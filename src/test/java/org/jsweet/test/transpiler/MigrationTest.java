@@ -37,64 +37,54 @@ import source.migration.QuickStart;
 
 public class MigrationTest extends AbstractTest {
 
-    @Test
-    public void test1() throws Exception {
-        File dir = Files.createTempDirectory("jsweet").toFile();
-        System.out.println("Transpile directory: " + dir);
-        ErrorCountTranspilationHandler handler = new ErrorCountTranspilationHandler(new ConsoleTranspilationHandler());
-        JSweetTranspiler transpiler = new JSweetTranspiler(
-            new File(dir, "wd"),
-            new File(dir, "ts"),
-            new File(dir, "js"),
-            new File(dir, "cjs"),
-            null
-        );
-        File input = new File(TEST_DIRECTORY_NAME + "/" + QuickStart.class.getName().replace(".", "/") + ".java");
-        transpiler.initNode(handler);
-        List<JCTree.JCCompilationUnit> units
-            = transpiler.setupCompiler(Arrays.asList(input), handler);
-        Assert.assertEquals(1, units.size());
+	@Test
+	public void test1() throws Exception {
+		File dir = Files.createTempDirectory("jsweet").toFile();
+		System.out.println("Transpile directory: " + dir);
+		ErrorCountTranspilationHandler handler = new ErrorCountTranspilationHandler(new ConsoleTranspilationHandler());
+		JSweetTranspiler transpiler = new JSweetTranspiler(new File(dir, "wd"), new File(dir, "ts"), new File(dir, "js"), new File(dir, "cjs"), null);
+		File input = new File(TEST_DIRECTORY_NAME + "/" + QuickStart.class.getName().replace(".", "/") + ".java");
+		transpiler.initNode(handler);
+		List<JCTree.JCCompilationUnit> units = transpiler.setupCompiler(Arrays.asList(input), handler);
+		Assert.assertEquals(1, units.size());
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        Writer writer = new OutputStreamWriter(baos);
-        Pretty printer = new Pretty(writer, true) {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		Writer writer = new OutputStreamWriter(baos);
+		Pretty printer = new Pretty(writer, true) {
 
-            @Override
-            public void visitMethodDef(JCTree.JCMethodDecl method) {
-                if ("<init>".equals(method.getName().toString()) || "<clinit>".equals(method.getName().toString())) {
-                    super.visitMethodDef(method);
-                } else {
-                    ErrorCountTranspilationHandler handler = new ErrorCountTranspilationHandler(new ConsoleTranspilationHandler());
-                    String jsCode;
-                    try {
-                        jsCode = transpiler.transpile(method, handler, "part");
-                    } catch (IOException ex) {
-                        throw new UncheckedIOException(ex);
-                    }
-                    if (handler.getErrorCount() == 0) {
-                        try {
-                            print("\n/*\n");
-                            print(Arrays.stream(String.format(
-                                "java code:\n%s\njs code:\n%s\n",
-                                method,
-                                jsCode
-                            ).split("\n")).map(s -> " * " + s).collect(Collectors.joining("\n")));
-                            print("*/\n");
-                            print(method);
-                        } catch (IOException ex) {
-                            throw new UncheckedIOException(ex);
-                        }
-                    } else {
-                        super.visitMethodDef(method);
-                    }
-                }
-            }
-        };
-        units.get(0).accept(printer);
-        writer.flush();
-        // System.out.println(baos); // prints resulting code
-        // verify that there are exactly two comments in the code
-        Assert.assertEquals(3, baos.toString().split("/\\*").length);
-        Assert.assertEquals(3, baos.toString().split("\\*/").length);
-    }
+			@Override
+			public void visitMethodDef(JCTree.JCMethodDecl method) {
+				if ("<init>".equals(method.getName().toString()) || "<clinit>".equals(method.getName().toString())) {
+					super.visitMethodDef(method);
+				} else {
+					ErrorCountTranspilationHandler handler = new ErrorCountTranspilationHandler(new ConsoleTranspilationHandler());
+					String jsCode;
+					try {
+						jsCode = transpiler.transpile(handler, method, "part");
+					} catch (IOException ex) {
+						throw new UncheckedIOException(ex);
+					}
+					if (handler.getErrorCount() == 0) {
+						try {
+							print("\n/*\n");
+							print(Arrays.stream(String.format("java code:\n%s\njs code:\n%s\n", method, jsCode).split("\n")).map(s -> " * " + s)
+									.collect(Collectors.joining("\n")));
+							print("*/\n");
+							print(method);
+						} catch (IOException ex) {
+							throw new UncheckedIOException(ex);
+						}
+					} else {
+						super.visitMethodDef(method);
+					}
+				}
+			}
+		};
+		units.get(0).accept(printer);
+		writer.flush();
+		// System.out.println(baos); // prints resulting code
+		// verify that there are exactly two comments in the code
+		Assert.assertEquals(3, baos.toString().split("/\\*").length);
+		Assert.assertEquals(3, baos.toString().split("\\*/").length);
+	}
 }

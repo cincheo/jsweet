@@ -24,8 +24,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.io.Writer;
+import java.io.UncheckedIOException;
 import java.lang.reflect.Field;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -75,12 +76,7 @@ import com.sun.tools.javac.util.JCDiagnostic;
 import com.sun.tools.javac.util.JavacMessages;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Log;
-import com.sun.tools.javac.util.Log.WriterKind;
 import com.sun.tools.javac.util.Options;
-import com.sun.tools.javac.tree.Pretty;
-import java.io.UncheckedIOException;
-import java.nio.file.Files;
-import org.apache.commons.io.output.StringBuilderWriter;
 
 /**
  * The actual JSweet transpiler.
@@ -231,7 +227,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		return this.workingDir;
 	}
 
-    public void initNode(TranspilationHandler transpilationHandler) throws Exception {
+	public void initNode(TranspilationHandler transpilationHandler) throws Exception {
 		ProcessUtil.initNode();
 		logger.debug("extra path: " + ProcessUtil.EXTRA_PATH);
 		File initFile = new File(workingDir, ".node-init");
@@ -240,7 +236,7 @@ public class JSweetTranspiler implements JSweetOptions {
 			ProcessUtil.runCommand(ProcessUtil.NODE_COMMAND, null, () -> {
 				transpilationHandler.report(JSweetProblem.NODE_CANNOT_START, null, JSweetProblem.NODE_CANNOT_START.getMessage());
 				throw new RuntimeException("cannot find node.js");
-			} , "--version");
+			}, "--version");
 			initFile.mkdirs();
 			initFile.createNewFile();
 		}
@@ -308,11 +304,11 @@ public class JSweetTranspiler implements JSweetOptions {
 		log = Log.instance(context);
 		log.dumpOnError = false;
 		log.emitWarnings = false;
-		log.setWriters(new PrintWriter(new StringWriter(){
-            @Override
-            public void write(String str) {
-            }
-        }));
+		log.setWriters(new PrintWriter(new StringWriter() {
+			@Override
+			public void write(String str) {
+			}
+		}));
 		log.setDiagnosticFormatter(new BasicDiagnosticFormatter(JavacMessages.instance(context)) {
 			@Override
 			public String format(JCDiagnostic diagnostic, Locale locale) {
@@ -322,20 +318,20 @@ public class JSweetTranspiler implements JSweetOptions {
 								(int) diagnostic.getLineNumber(), (int) diagnostic.getColumnNumber()), diagnostic.getMessage(locale));
 					}
 				}
-                switch (diagnostic.getKind()) {
-                    case ERROR:
-                        logger.error(diagnostic);
-                        break;
-                    case WARNING:
-                    case MANDATORY_WARNING:
-                        logger.debug(diagnostic);
-                        break;
-                    case NOTE:
-                    case OTHER:
-                    default:
-                        logger.trace(diagnostic);
-                        break;
-                }
+				switch (diagnostic.getKind()) {
+				case ERROR:
+					logger.error(diagnostic);
+					break;
+				case WARNING:
+				case MANDATORY_WARNING:
+					logger.debug(diagnostic);
+					break;
+				case NOTE:
+				case OTHER:
+				default:
+					logger.trace(diagnostic);
+					break;
+				}
 				if (diagnostic.getSource() != null) {
 					return diagnostic.getMessage(locale) + " at " + diagnostic.getSource().getName() + "(" + diagnostic.getLineNumber() + ")";
 				} else {
@@ -581,54 +577,48 @@ public class JSweetTranspiler implements JSweetOptions {
 		}
 	}
 
-    public List<JCCompilationUnit> setupCompiler(java.util.List<File> files, ErrorCountTranspilationHandler transpilationHandler) throws IOException {
-        initJavac(transpilationHandler);
-        List<JavaFileObject> fileObjects = toJavaFileObjects(fileManager, files);
+	public List<JCCompilationUnit> setupCompiler(java.util.List<File> files, ErrorCountTranspilationHandler transpilationHandler) throws IOException {
+		initJavac(transpilationHandler);
+		List<JavaFileObject> fileObjects = toJavaFileObjects(fileManager, files);
 
-        logger.info("parsing: " + fileObjects);
-        List<JCCompilationUnit> compilationUnits = compiler.enterTrees(compiler.parseFiles(fileObjects));
-        if (transpilationHandler.getErrorCount() > 0) {
-            return null;
-        }
-        logger.info("attribution phase");
-        compiler.attribute(compiler.todo);
+		logger.info("parsing: " + fileObjects);
+		List<JCCompilationUnit> compilationUnits = compiler.enterTrees(compiler.parseFiles(fileObjects));
+		if (transpilationHandler.getErrorCount() > 0) {
+			return null;
+		}
+		logger.info("attribution phase");
+		compiler.attribute(compiler.todo);
 
-        if (transpilationHandler.getErrorCount() > 0) {
-            return null;
-        }
-        context.useModules = isUsingModules();
+		if (transpilationHandler.getErrorCount() > 0) {
+			return null;
+		}
+		context.useModules = isUsingModules();
 
-        if (context.useModules && bundle) {
-            transpilationHandler.report(JSweetProblem.BUNDLE_WITH_MODULE, null, JSweetProblem.BUNDLE_WITH_MODULE.getMessage());
-            return null;
-        }
-        return compilationUnits;
-    }
+		if (context.useModules && bundle) {
+			transpilationHandler.report(JSweetProblem.BUNDLE_WITH_MODULE, null, JSweetProblem.BUNDLE_WITH_MODULE.getMessage());
+			return null;
+		}
+		return compilationUnits;
+	}
 
-    private String tspart2js(String tsCode, ErrorCountTranspilationHandler handler, String name) throws IOException {
-        SourceFile sf = new SourceFile(null);
-        sf.setTsFile(File.createTempFile(name, ".ts", tsOutputDir));
-        sf.setJsFile(File.createTempFile(name, ".js", jsOutputDir));
-        try {
-            sf.tsFile.getParentFile().mkdirs();
-            sf.tsFile.createNewFile();
-            Files.write(sf.tsFile.toPath(), Arrays.asList(tsCode));
-        } catch (IOException ex) {
-            throw new UncheckedIOException(ex);
-        }
-        runTSC(
-            handler,
-            new SourceFile[]{sf},
-            "--target", ecmaTargetVersion.name(),
-            "--outFile", sf.getJsFile().toString(),
-            sf.getTsFile().toString()
-        );
-        try {
-            return new String(Files.readAllBytes(sf.jsFile.toPath()));
-        } catch (IOException ex) {
-            return null;
-        }
-    }
+	private String ts2js(ErrorCountTranspilationHandler handler, String tsCode, String targetFileName) throws IOException {
+		SourceFile sf = new SourceFile(null);
+		sf.setTsFile(File.createTempFile(targetFileName, ".ts", tsOutputDir));
+		sf.setJsFile(File.createTempFile(targetFileName, ".js", jsOutputDir));
+		try {
+			sf.tsFile.getParentFile().mkdirs();
+			sf.tsFile.createNewFile();
+			Files.write(sf.tsFile.toPath(), Arrays.asList(tsCode));
+		} catch (IOException ex) {
+			throw new UncheckedIOException(ex);
+		}
+		runTSC(handler, new SourceFile[] { sf }, "--target", ecmaTargetVersion.name(), "--outFile", sf.getJsFile().toString(), sf.getTsFile().toString());
+		try {
+			return new String(Files.readAllBytes(sf.jsFile.toPath()));
+		} catch (IOException ex) {
+			return null;
+		}
+	}
 
 	/**
 	 * Transpiles the given Java source files. When the transpiler is in watch
@@ -706,11 +696,8 @@ public class JSweetTranspiler implements JSweetOptions {
 	}
 
 	private void java2ts(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files) throws IOException {
-        List<JCCompilationUnit> compilationUnits = setupCompiler(
-            Arrays.asList(SourceFile.toFiles(files)),
-            transpilationHandler
-        );
-        if (compilationUnits == null) {
+		List<JCCompilationUnit> compilationUnits = setupCompiler(Arrays.asList(SourceFile.toFiles(files)), transpilationHandler);
+		if (compilationUnits == null) {
 			return;
 		}
 		context.sourceFiles = files;
@@ -1116,53 +1103,53 @@ public class JSweetTranspiler implements JSweetOptions {
 
 		try {
 			logger.info("launching tsc...");
-            runTSC(transpilationHandler, files, args.toArray(new String[0]));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+			runTSC(transpilationHandler, files, args.toArray(new String[0]));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
-    private void runTSC(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files, String... args) {
-        boolean[] fullPass = { true };
+	private void runTSC(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files, String... args) {
+		boolean[] fullPass = { true };
 
-			tsCompilationProcess = ProcessUtil.runCommand("tsc", getTsOutputDir(), isTscWatchMode(), line -> {
-				logger.info(line);
-				TscOutput output = parseTscOutput(line);
-				if (output.position != null) {
-					SourcePosition position = output.findOriginalPosition(Arrays.asList(files));
-					if (position == null) {
-						transpilationHandler.report(JSweetProblem.INTERNAL_TSC_ERROR, output.position, output.message);
-					} else {
-						transpilationHandler.report(JSweetProblem.MAPPED_TSC_ERROR, position, output.message);
-					}
+		tsCompilationProcess = ProcessUtil.runCommand("tsc", getTsOutputDir(), isTscWatchMode(), line -> {
+			logger.info(line);
+			TscOutput output = parseTscOutput(line);
+			if (output.position != null) {
+				SourcePosition position = output.findOriginalPosition(Arrays.asList(files));
+				if (position == null) {
+					transpilationHandler.report(JSweetProblem.INTERNAL_TSC_ERROR, output.position, output.message);
 				} else {
-					if (output.message.startsWith("message TS6042:")) {
-						onTsTranspilationCompleted(fullPass[0], transpilationHandler, files);
-						fullPass[0] = false;
-					} else {
-						// TODO enhance tsc feedbacks support: some
-						// messages are swallowed here: for instance
-						// error TS1204: Cannot compile modules into
-						// 'commonjs', 'amd', 'system' or 'umd' when
-						// targeting 'ES6' or higher.
-					}
+					transpilationHandler.report(JSweetProblem.MAPPED_TSC_ERROR, position, output.message);
 				}
-			} , process -> {
-				tsCompilationProcess = null;
-				onTsTranspilationCompleted(fullPass[0], transpilationHandler, files);
-				fullPass[0] = false;
-			} , () -> {
-				if (transpilationHandler.getProblemCount() == 0) {
-					transpilationHandler.report(JSweetProblem.INTERNAL_TSC_ERROR, null, "Unknown tsc error");
+			} else {
+				if (output.message.startsWith("message TS6042:")) {
+					onTsTranspilationCompleted(fullPass[0], transpilationHandler, files);
+					fullPass[0] = false;
+				} else {
+					// TODO enhance tsc feedbacks support: some
+					// messages are swallowed here: for instance
+					// error TS1204: Cannot compile modules into
+					// 'commonjs', 'amd', 'system' or 'umd' when
+					// targeting 'ES6' or higher.
 				}
-			} , args);
+			}
+		}, process -> {
+			tsCompilationProcess = null;
+			onTsTranspilationCompleted(fullPass[0], transpilationHandler, files);
+			fullPass[0] = false;
+		}, () -> {
+			if (transpilationHandler.getProblemCount() == 0) {
+				transpilationHandler.report(JSweetProblem.INTERNAL_TSC_ERROR, null, "Unknown tsc error");
+			}
+		}, args);
 
-			// tsCompilationProcess.waitFor();
-			// if (tsCompilationProcess != null &&
-			// tsCompilationProcess.exitValue() == 1) {
-			// transpilationHandler.report(JSweetProblem.TSC_CANNOT_START, null,
-			// JSweetProblem.TSC_CANNOT_START.getMessage());
-			// }
+		// tsCompilationProcess.waitFor();
+		// if (tsCompilationProcess != null &&
+		// tsCompilationProcess.exitValue() == 1) {
+		// transpilationHandler.report(JSweetProblem.TSC_CANNOT_START, null,
+		// JSweetProblem.TSC_CANNOT_START.getMessage());
+		// }
 	}
 
 	private void onTsTranspilationCompleted(boolean fullPass, ErrorCountTranspilationHandler handler, SourceFile[] files) {
@@ -1549,17 +1536,24 @@ public class JSweetTranspiler implements JSweetOptions {
 		jsLibFiles.clear();
 	}
 
-    public String transpile(JCTree tree, ErrorCountTranspilationHandler handler, String name) throws IOException {
-        Java2TypeScriptTranslator translator = new Java2TypeScriptTranslator(
-            handler,
-            context,
-            null,
-            false
-        );
-        translator.enterScope();
-        translator.scan(tree);
-        translator.exitScope();
-        String tsCode = translator.getResult();
-        return tspart2js(tsCode, handler, name);
-    }
+	/**
+	 * Transpiles the given Java AST.
+	 * 
+	 * @param transpilationHandler
+	 *            the log handler
+	 * @param tree
+	 *            the AST to be transpiled
+	 * @param targetFileName
+	 *            the name of the file (without any extension) where to put the
+	 *            transpilation output
+	 * @throws IOException
+	 */
+	public String transpile(ErrorCountTranspilationHandler handler, JCTree tree, String targetFileName) throws IOException {
+		Java2TypeScriptTranslator translator = new Java2TypeScriptTranslator(handler, context, null, false);
+		translator.enterScope();
+		translator.scan(tree);
+		translator.exitScope();
+		String tsCode = translator.getResult();
+		return ts2js(handler, tsCode, targetFileName);
+	}
 }
