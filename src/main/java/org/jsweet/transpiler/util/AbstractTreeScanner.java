@@ -54,20 +54,26 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 		if (logHandler == null) {
 			System.err.println(problem.getMessage(params));
 		} else {
-			int s = tree.getStartPosition();
-			int e = tree.getEndPosition(diagnosticSource.getEndPosTable());
-			if (e == -1) {
-				e = s;
-			}
-			if (name != null) {
-				e += name.length();
-			}
-			logHandler.report(problem,
-					new SourcePosition(new File(compilationUnit.sourcefile.getName()), tree, diagnosticSource.getLineNumber(s),
-							diagnosticSource.getColumnNumber(s, false), diagnosticSource.getLineNumber(e), diagnosticSource.getColumnNumber(e, false)),
-					problem.getMessage(params));
-		}
-	}
+            if(diagnosticSource == null) {
+                logHandler.report(problem,
+                    null,
+                    problem.getMessage(params));
+            } else {
+                int s = tree.getStartPosition();
+                int e = tree.getEndPosition(diagnosticSource.getEndPosTable());
+                if (e == -1) {
+                    e = s;
+                }
+                if (name != null) {
+                    e += name.length();
+                }
+                logHandler.report(problem,
+                        new SourcePosition(new File(compilationUnit.sourcefile.getName()), tree, diagnosticSource.getLineNumber(s),
+                                diagnosticSource.getColumnNumber(s, false), diagnosticSource.getLineNumber(e), diagnosticSource.getColumnNumber(e, false)),
+                        problem.getMessage(params));
+            }
+        }
+    }
 
 	protected Stack<JCTree> stack = new Stack<JCTree>();
 
@@ -158,7 +164,11 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 	}
 
 	public JCTree getParent() {
-		return this.stack.get(this.stack.size() - 2);
+        if (this.stack.size() >= 2) {
+            return this.stack.get(this.stack.size() - 2);
+        } else {
+            return null;
+        }
 	}
 
 	@SuppressWarnings("unchecked")
