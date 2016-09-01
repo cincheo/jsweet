@@ -24,6 +24,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -110,8 +111,6 @@ import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.JCTree.JCWhileLoop;
 import com.sun.tools.javac.tree.TreeScanner;
 import com.sun.tools.javac.util.Name;
-import java.util.Collections;
-import static org.jsweet.transpiler.util.Util.getRootRelativeJavaName;
 
 /**
  * This is a TypeScript printer for translating the Java AST to a TypeScript
