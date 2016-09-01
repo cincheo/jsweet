@@ -1549,27 +1549,17 @@ public class JSweetTranspiler implements JSweetOptions {
 		jsLibFiles.clear();
 	}
 
-    public static class TranspiledPartsPrinter extends Pretty {
-
-        private final JSweetTranspiler transpiler;
-
-        public TranspiledPartsPrinter(Writer writer, JSweetTranspiler transpiler) {
-            super(writer, true);
-            this.transpiler = transpiler;
-        }
-
-        public String transpile(JCTree tree, ErrorCountTranspilationHandler handler, String name) throws IOException {
-            Java2TypeScriptTranslator translator = new Java2TypeScriptTranslator(
-                handler,
-                transpiler.context,
-                null,
-                false
-            );
-            translator.enterScope();
-            translator.scan(tree);
-            translator.exitScope();
-            String tsCode = translator.getResult();
-            return transpiler.tspart2js(tsCode, handler, name);
-        }
+    public String transpile(JCTree tree, ErrorCountTranspilationHandler handler, String name) throws IOException {
+        Java2TypeScriptTranslator translator = new Java2TypeScriptTranslator(
+            handler,
+            context,
+            null,
+            false
+        );
+        translator.enterScope();
+        translator.scan(tree);
+        translator.exitScope();
+        String tsCode = translator.getResult();
+        return tspart2js(tsCode, handler, name);
     }
 }

@@ -17,6 +17,7 @@
 package org.jsweet.test.transpiler;
 
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.Pretty;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -28,7 +29,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.jsweet.transpiler.JSweetTranspiler;
-import org.jsweet.transpiler.JSweetTranspiler.TranspiledPartsPrinter;
 import org.jsweet.transpiler.util.ConsoleTranspilationHandler;
 import org.jsweet.transpiler.util.ErrorCountTranspilationHandler;
 import org.junit.Assert;
@@ -57,7 +57,7 @@ public class MigrationTest extends AbstractTest {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Writer writer = new OutputStreamWriter(baos);
-        TranspiledPartsPrinter printer = new TranspiledPartsPrinter(writer, transpiler) {
+        Pretty printer = new Pretty(writer, true) {
 
             @Override
             public void visitMethodDef(JCTree.JCMethodDecl method) {
@@ -67,7 +67,7 @@ public class MigrationTest extends AbstractTest {
                     ErrorCountTranspilationHandler handler = new ErrorCountTranspilationHandler(new ConsoleTranspilationHandler());
                     String jsCode;
                     try {
-                        jsCode = transpile(method, handler, "part");
+                        jsCode = transpiler.transpile(method, handler, "part");
                     } catch (IOException ex) {
                         throw new UncheckedIOException(ex);
                     }
