@@ -343,30 +343,6 @@ public abstract class JSweetConfig {
 		TS_TOP_LEVEL_KEYWORDS.add("require");
 	}
 
-	/**
-	 * This function return a Javascript-friendly identifier from a
-	 * Java-formatted one.
-	 * 
-	 * @param identifier
-	 *            the Java-formatted identifier
-	 * @return the Javascript-friendly identifier
-	 */
-	public static String toJsIdentifier(String identifier) {
-		// "trick" to change back java keywords, which are reserved to valid js
-		// identifier (ex: Catch => catch, New => new)
-		// TODO : but we should actually check if identifier's target has a
-		// @Name
-		if (!identifier.isEmpty() //
-				&& Character.isUpperCase(identifier.charAt(0)) //
-				&& (identifier.length() <= 1 || Character.isLowerCase(identifier.charAt(1)))) {
-			String s = StringUtils.uncapitalize(identifier);
-			if (JSweetConfig.JAVA_KEYWORDS.contains(s) && !JSweetConfig.TS_STRICT_MODE_KEYWORDS.contains(s)) {
-				return s;
-			}
-		}
-		return identifier;
-	}
-
 	public static boolean isJDKReplacementMode() {
 		return "java.lang".equals(LANG_PACKAGE);
 	}

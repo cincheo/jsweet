@@ -404,6 +404,23 @@ public class Util {
 	}
 
 	/**
+	 * Finds first method matching name (no super types lookup).
+	 */
+	public static MethodSymbol findFirstMethodDeclarationInType(TypeSymbol typeSymbol, String methodName) {
+		if (typeSymbol == null) {
+			return null;
+		}
+		if (typeSymbol.getEnclosedElements() != null) {
+			for (Element element : typeSymbol.getEnclosedElements()) {
+				if ((element instanceof MethodSymbol) && (methodName.equals(element.getSimpleName().toString()))) {
+					return (MethodSymbol) element;
+				}
+			}
+		}
+		return null;
+	}
+
+	/**
 	 * Scans member declarations in type hierachy.
 	 */
 	public static boolean scanMemberDeclarationsInType(TypeSymbol typeSymbol, Set<String> ignoredTypeNames, Function<Element, Boolean> scanner) {

@@ -21,6 +21,7 @@ import java.util.Set;
 
 import org.jsweet.transpiler.JSweetProblem;
 
+import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Symbol.TypeVariableSymbol;
 import com.sun.tools.javac.code.Type.MethodType;
@@ -308,8 +309,8 @@ public abstract class AbstractPrinterAdapter {
 	/**
 	 * Gets the adapted identifier string.
 	 */
-	public String getIdentifier(String identifier) {
-		return identifier;
+	public String getIdentifier(Symbol symbol) {
+		return symbol.name.toString();
 	}
 
 	/**
@@ -318,7 +319,7 @@ public abstract class AbstractPrinterAdapter {
 	public String getQualifiedTypeName(TypeSymbol type, boolean globals) {
 		return getPrinter().getRootRelativeName(type);
 	}
-	
+
 	public abstract Set<String> getErasedTypes();
 
 }

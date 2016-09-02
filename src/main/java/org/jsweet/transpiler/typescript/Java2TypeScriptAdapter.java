@@ -245,7 +245,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 						return null;
 					}
 				}
-				return StringUtils.isBlank(name) ? null : name + "." + getIdentifier(methodName);
+				return StringUtils.isBlank(name) ? null : name + "." + (fa.sym == null ? fa.name.toString() : getIdentifier(fa.sym));
 			} else {
 				return null;
 			}
@@ -595,7 +595,12 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			if (vars.containsKey(targetMethodName)) {
 				report(invocation, JSweetProblem.HIDDEN_INVOCATION, targetMethodName);
 			}
-			getPrinter().printIdentifier(targetMethodName).print("(").printArgList(invocation.args).print(")");
+			Symbol s = Util.findFirstMethodDeclarationInType(targetType, targetMethodName);
+			if (s == null) {
+				getPrinter().print(targetMethodName).print("(").printArgList(invocation.args).print(")");
+			} else {
+				getPrinter().printIdentifier(s).print("(").printArgList(invocation.args).print(")");
+			}
 			return true;
 		}
 		if (fieldAccess == null && matchesMethod(targetClassName, targetMethodName, null, "$super")) {
@@ -774,6 +779,10 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					printMacroName(targetMethodName);
 					getPrinter().print("Math.pow(").printArgList(invocation.args).print(", 1/3)");
 					return true;
+				case "abs":
+					printMacroName(targetMethodName);
+					getPrinter().print("Math.abs(").printArgList(invocation.args).print(")");
+					return true;
 				case "copySign":
 					printMacroName(targetMethodName);
 					getPrinter()
@@ -876,7 +885,11 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				} else {
 					switch (targetMethodName) {
 					case "equals":
-						getPrinter().print("(").print(fieldAccess.getExpression()).print(" === ").printArgList(invocation.args).print(")");
+						if ("super".equals(fieldAccess.getExpression().toString())) {
+							getPrinter().print("(this === ").printArgList(invocation.args).print(")");
+						} else {
+							getPrinter().print("(").print(fieldAccess.getExpression()).print(" === ").printArgList(invocation.args).print(")");
+						}
 						return true;
 					case "hashCode":
 						getPrinter().print("(<any>").print(fieldAccess.getExpression()).print(".toString())");
@@ -937,7 +950,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		AnnotationMirror annotation;
 		if ((annotation = Util.getAnnotation(fieldAccess.sym, ANNOTATION_STRING_TYPE)) != null) {
 			getPrinter().print("\"");
-			getPrinter().printIdentifier(getFirstAnnotationValue(annotation, fieldAccess.name).toString());
+			getPrinter().print(getFirstAnnotationValue(annotation, fieldAccess.name).toString());
 			getPrinter().print("\"");
 			return true;
 		}
@@ -945,9 +958,10 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		if (fieldAccess.selected.type.tsym instanceof PackageSymbol) {
 			if (Util.hasAnnotationType(fieldAccess.selected.type.tsym, ANNOTATION_ROOT)) {
 				if (fieldAccess.type != null && fieldAccess.type.tsym != null) {
-					getPrinter().printIdentifier(Util.getActualName(fieldAccess.type.tsym));
+					getPrinter().printIdentifier(fieldAccess.type.tsym);
 				} else {
-					getPrinter().printIdentifier(name);
+					// TODO: see if it breaks something
+					getPrinter().print(name);
 				}
 				return true;
 			}
@@ -1176,13 +1190,13 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		AnnotationMirror annotation;
 		if ((annotation = Util.getAnnotation(identifier.sym, ANNOTATION_STRING_TYPE)) != null) {
 			getPrinter().print("\"");
-			getPrinter().printIdentifier(getFirstAnnotationValue(annotation, identifier).toString());
+			getPrinter().print(getFirstAnnotationValue(annotation, identifier).toString());
 			getPrinter().print("\"");
 			return true;
 		}
-        if (identifier.type == null) {
-            return super.substituteIdentifier(identifier);           
-        }
+		if (identifier.type == null) {
+			return super.substituteIdentifier(identifier);
+		}
 		if (langTypesSimpleNames.contains(identifier.toString()) && langTypesMapping.containsKey(identifier.type.toString())) {
 			getPrinter().print(langTypesMapping.get(identifier.type.toString()));
 			return true;
@@ -1208,8 +1222,8 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 	}
 
 	@Override
-	public String getIdentifier(String identifier) {
-		return JSweetConfig.toJsIdentifier(identifier);
+	public String getIdentifier(Symbol symbol) {
+		return Util.getActualName(symbol);
 	}
 
 	@Override

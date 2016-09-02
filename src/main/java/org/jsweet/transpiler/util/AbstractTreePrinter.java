@@ -240,8 +240,8 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	/**
 	 * Outputs an identifier.
 	 */
-	public AbstractTreePrinter printIdentifier(String identifier) {
-		String adaptedIdentifier = getAdapter().getIdentifier(identifier);
+	public AbstractTreePrinter printIdentifier(Symbol symbol) {
+		String adaptedIdentifier = getAdapter().getIdentifier(symbol);
 		return print(adaptedIdentifier);
 	}
 

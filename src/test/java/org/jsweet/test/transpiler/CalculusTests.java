@@ -76,6 +76,7 @@ public class CalculusTests extends AbstractTest {
 		eval(ModuleKind.none, (logHandler, r) -> {
 			logHandler.assertReportedProblems();
 
+			Assert.assertEquals(Math.abs(-1) + Math.abs(-1), (int) r.get("2"), 0.00001);
 			Assert.assertEquals(Math.E, (double) r.get("E"), 0.00001);
 			Assert.assertEquals(Math.PI, (double) r.get("PI"), 0.00001);
 			Assert.assertEquals(Math.abs(-123), (int) r.get("abs_123"), 0.00001);

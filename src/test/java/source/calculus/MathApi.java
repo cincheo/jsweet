@@ -6,6 +6,7 @@ public class MathApi {
 
 	public static void main(String[] args) {
 		
+		$export("2", java.lang.Math.abs(-1) + java.lang.Math.abs(-1));
 		$export("E", Math.E);
 		$export("PI", Math.PI);
 		$export("abs_123", Math.abs(-123));
