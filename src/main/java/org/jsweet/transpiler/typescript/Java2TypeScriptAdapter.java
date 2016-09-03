@@ -213,6 +213,10 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		if (importDecl.isStatic()) {
 			if (importDecl.getQualifiedIdentifier() instanceof JCFieldAccess) {
 				JCFieldAccess fa = (JCFieldAccess) importDecl.getQualifiedIdentifier();
+				switch (fa.selected.toString()) {
+				case "java.lang.Math":
+					return null;
+				}
 				String name = getPrinter().getRootRelativeName(fa.selected.type.tsym, getPrinter().getContext().useModules);
 				String methodName = fa.name.toString();
 
@@ -306,6 +310,11 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			targetMethodName = fieldAccess.name.toString();
 		} else {
 			targetMethodName = invocation.getMethodSelect().toString();
+			if (getPrinter().getStaticImports().containsKey(targetMethodName)) {
+				JCImport i = getPrinter().getStaticImports().get(targetMethodName);
+				targetType = ((JCFieldAccess) i.qualid).selected.type.tsym;
+				targetClassName = targetType.getQualifiedName().toString();
+			}
 		}
 
 		// System.out.println(invocation+" ===> "+fieldAccess+" :
@@ -779,10 +788,6 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					printMacroName(targetMethodName);
 					getPrinter().print("Math.pow(").printArgList(invocation.args).print(", 1/3)");
 					return true;
-				case "abs":
-					printMacroName(targetMethodName);
-					getPrinter().print("Math.abs(").printArgList(invocation.args).print(")");
-					return true;
 				case "copySign":
 					printMacroName(targetMethodName);
 					getPrinter()
@@ -846,8 +851,19 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					printMacroName(targetMethodName);
 					getPrinter().print("(x => x * Math.PI / 180)(").printArgList(invocation.args).print(")");
 					return true;
+				case "nextUp":
+					delegateToEmulLayer(targetClassName, targetMethodName, invocation);
+					return true;
+				case "nextDown":
+					delegateToEmulLayer(targetClassName, targetMethodName, invocation);
+					return true;
+				case "ulp":
+					delegateToEmulLayer(targetClassName, targetMethodName, invocation);
+					return true;
+				default:
+					getPrinter().print("Math." + targetMethodName + "(").printArgList(invocation.args).print(")");
+					return true;
 				}
-				break;
 
 			case "java.lang.Class":
 				switch (targetMethodName) {

@@ -18,6 +18,8 @@ package org.jsweet.transpiler.util;
 
 import java.io.File;
 import java.util.AbstractMap;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Stack;
 import java.util.function.Consumer;
@@ -32,6 +34,7 @@ import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
+import com.sun.tools.javac.tree.JCTree.JCImport;
 import com.sun.tools.javac.tree.TreeScanner;
 import com.sun.tools.javac.util.DiagnosticSource;
 import com.sun.tools.javac.util.Log;
@@ -54,30 +57,38 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 		if (logHandler == null) {
 			System.err.println(problem.getMessage(params));
 		} else {
-            if(diagnosticSource == null) {
-                logHandler.report(problem,
-                    null,
-                    problem.getMessage(params));
-            } else {
-                int s = tree.getStartPosition();
-                int e = tree.getEndPosition(diagnosticSource.getEndPosTable());
-                if (e == -1) {
-                    e = s;
-                }
-                if (name != null) {
-                    e += name.length();
-                }
-                logHandler.report(problem,
-                        new SourcePosition(new File(compilationUnit.sourcefile.getName()), tree, diagnosticSource.getLineNumber(s),
-                                diagnosticSource.getColumnNumber(s, false), diagnosticSource.getLineNumber(e), diagnosticSource.getColumnNumber(e, false)),
-                        problem.getMessage(params));
-            }
-        }
-    }
+			if (diagnosticSource == null) {
+				logHandler.report(problem, null, problem.getMessage(params));
+			} else {
+				int s = tree.getStartPosition();
+				int e = tree.getEndPosition(diagnosticSource.getEndPosTable());
+				if (e == -1) {
+					e = s;
+				}
+				if (name != null) {
+					e += name.length();
+				}
+				logHandler.report(problem,
+						new SourcePosition(new File(compilationUnit.sourcefile.getName()), tree, diagnosticSource.getLineNumber(s),
+								diagnosticSource.getColumnNumber(s, false), diagnosticSource.getLineNumber(e), diagnosticSource.getColumnNumber(e, false)),
+						problem.getMessage(params));
+			}
+		}
+	}
 
 	protected Stack<JCTree> stack = new Stack<JCTree>();
 
+	protected Map<String, JCImport> staticImports = new HashMap<>();
+
+	public Map<String, JCImport> getStaticImports() {
+		return staticImports;
+	}
+
 	protected JCCompilationUnit compilationUnit;
+
+	public JCCompilationUnit getCompilationUnit() {
+		return compilationUnit;
+	}
 
 	protected JSweetContext context;
 
@@ -115,6 +126,11 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 	protected final void setCompilationUnit(JCCompilationUnit compilationUnit) {
 		if (compilationUnit != null) {
 			this.compilationUnit = compilationUnit;
+			for (JCImport i : this.compilationUnit.getImports()) {
+				if (i.staticImport) {
+					staticImports.put(i.qualid.toString().substring(i.qualid.toString().lastIndexOf(".") + 1), i);
+				}
+			}
 			this.diagnosticSource = new DiagnosticSource(compilationUnit.sourcefile, Log.instance(context));
 		} else {
 			this.compilationUnit = null;
@@ -164,11 +180,11 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 	}
 
 	public JCTree getParent() {
-        if (this.stack.size() >= 2) {
-            return this.stack.get(this.stack.size() - 2);
-        } else {
-            return null;
-        }
+		if (this.stack.size() >= 2) {
+			return this.stack.get(this.stack.size() - 2);
+		} else {
+			return null;
+		}
 	}
 
 	@SuppressWarnings("unchecked")

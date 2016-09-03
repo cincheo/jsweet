@@ -237,8 +237,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	private JCMethodDecl mainMethod;
 
-	private List<JCImport> imports = new ArrayList<JCImport>();
-
 	private boolean globalModule = false;
 
 	private PackageSymbol topLevelPackage;
@@ -280,6 +278,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	@Override
 	public void visitTopLevel(JCCompilationUnit topLevel) {
+
 		if (topLevel.packge.getQualifiedName().toString().startsWith("def.")) {
 			if (topLevel.getSourceFile().getName().endsWith("package-info.java")) {
 				if (Util.hasAnnotationType(topLevel.packge, JSweetConfig.ANNOTATION_MODULE)) {
@@ -315,7 +314,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 		footer.delete(0, footer.length());
 
-		imports.clear();
+		setCompilationUnit(topLevel);
+
 		String packge = topLevel.packge.toString();
 
 		globalModule = JSweetConfig.GLOBALS_PACKAGE_NAME.equals(packge) || packge.endsWith("." + JSweetConfig.GLOBALS_PACKAGE_NAME);
@@ -1022,8 +1022,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		case JSweetConfig.NEW_FUNCTION_NAME:
 			return "new";
 		default:
-//			return Util.getActualName(methodDecl.sym);
-			return name;			
+			return name;
 		}
 	}
 
@@ -1827,7 +1826,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	@Override
 	public void visitImport(JCImport importDecl) {
-		imports.add(importDecl);
 		String qualId = importDecl.getQualifiedIdentifier().toString();
 		if (qualId.endsWith("*") && !qualId.endsWith("." + JSweetConfig.GLOBALS_CLASS_NAME + ".*")) {
 			report(importDecl, JSweetProblem.WILDCARD_IMPORT);
@@ -1903,8 +1901,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 	}
 
-	private JCImport getStaticImport(String methName) {
-		for (JCImport i : imports) {
+	private JCImport getStaticGlobalImport(String methName) {
+		for (JCImport i : getCompilationUnit().getImports()) {
 			if (i.staticImport) {
 				if (i.qualid.toString().endsWith(JSweetConfig.GLOBALS_CLASS_NAME + "." + methName)) {
 					return i;
@@ -1966,7 +1964,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			String methodName = null;
 			boolean keywordHandled = false;
 			if (targetIsThisOrStaticImported) {
-				JCImport staticImport = getStaticImport(methName);
+				JCImport staticImport = getStaticGlobalImport(methName);
 				if (staticImport == null) {
 					JCClassDecl p = getParent(JCClassDecl.class);
 					methSym = p == null ? null : Util.findMethodDeclarationInType(context.types, p.sym, methName, type);
@@ -2054,9 +2052,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							print(targetClass);
 							print(".");
 							keywordHandled = true;
-//							if (context.useModules) {
-//								methodName = methName;
-//							}
 						}
 						if (JSweetConfig.isLibPath(methSym.getEnclosingElement().getQualifiedName().toString())) {
 							methodName = methName.toLowerCase();
