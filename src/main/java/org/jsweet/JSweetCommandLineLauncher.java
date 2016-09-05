@@ -124,6 +124,7 @@ public class JSweetCommandLineLauncher {
 				transpiler.setEncoding(jsapArgs.getString("encoding"));
 				transpiler.setIgnoreAssertions(jsapArgs.getBoolean("ignoreAssertions"));
 				transpiler.setGenerateDeclarations(jsapArgs.getBoolean("declaration"));
+				transpiler.setGenerateJsFiles(!jsapArgs.getBoolean("tsOnly"));
 				transpiler.setDeclarationsOutputDir(dtsOutputDir);
 
 				transpiler.transpile(transpilationHandler, SourceFile.toSourceFiles(files));
@@ -223,6 +224,12 @@ public class JSweetCommandLineLauncher {
 		optionArg.setRequired(false);
 		jsap.registerParameter(optionArg);
 
+		// Do not generate JavaScript
+		switchArg = new Switch("tsOnly");
+		switchArg.setLongFlag("tsOnly");
+		switchArg.setHelp("Tells the transpiler to not compile the TypeScript output (let an external TypeScript compiler do so).");
+		jsap.registerParameter(switchArg);
+		
 		// Generates declarations
 		switchArg = new Switch("declaration");
 		switchArg.setLongFlag("declaration");

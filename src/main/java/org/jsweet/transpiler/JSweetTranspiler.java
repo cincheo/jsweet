@@ -1275,6 +1275,7 @@ public class JSweetTranspiler implements JSweetOptions {
 	/**
 	 * Tells if the JavaScript generation is enabled/disabled.
 	 */
+	@Override
 	public boolean isGenerateJsFiles() {
 		return generateJsFiles;
 	}
@@ -1556,4 +1557,5 @@ public class JSweetTranspiler implements JSweetOptions {
 		String tsCode = translator.getResult();
 		return ts2js(handler, tsCode, targetFileName);
 	}
+	
 }

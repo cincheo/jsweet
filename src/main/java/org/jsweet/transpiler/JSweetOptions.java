@@ -86,5 +86,10 @@ public interface JSweetOptions {
 	 * Returns true if the JDK accesses are allowed.
 	 */
 	boolean isJDKAllowed();
+
+	/**
+	 * If false, do not compile TypeScript output (let an external TypeScript compiler do so). Default is true.
+	 */
+	boolean isGenerateJsFiles();
 	
 }
