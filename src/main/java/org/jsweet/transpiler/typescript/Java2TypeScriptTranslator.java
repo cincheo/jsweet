@@ -1690,7 +1690,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 				if (varDecl.mods.getFlags().contains(Modifier.PRIVATE)) {
 					if (!getScope().interfaceScope) {
-						if (!getScope().innerClass) {
+						if (!getScope().innerClass && !varDecl.mods.getFlags().contains(Modifier.STATIC)) {
 							print("private ");
 						}
 					} else {
