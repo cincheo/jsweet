@@ -84,7 +84,7 @@ public class CandiesMerger {
 				try {
 					c = findClass(name);
 					resolveClass(c);
-				} catch (ClassNotFoundException e) {
+				} catch (Throwable t) {
 					return super.loadClass(name, resolve);
 				}
 			}
