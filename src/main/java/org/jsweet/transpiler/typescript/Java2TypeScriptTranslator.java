@@ -1902,6 +1902,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	}
 
 	private JCImport getStaticGlobalImport(String methName) {
+		if (getCompilationUnit() == null) {
+			return null;
+		}
 		for (JCImport i : getCompilationUnit().getImports()) {
 			if (i.staticImport) {
 				if (i.qualid.toString().endsWith(JSweetConfig.GLOBALS_CLASS_NAME + "." + methName)) {
@@ -1942,6 +1945,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	@Override
 	public void visitApply(JCMethodInvocation inv) {
+		if (inv.toString().toLowerCase().startsWith("static")) {
+			System.out.println();
+		}
 		if (!getAdapter().substituteMethodInvocation(inv)) {
 			String meth = inv.meth.toString();
 			String methName = meth.substring(meth.lastIndexOf('.') + 1);
@@ -1957,7 +1963,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 			boolean anonymous = JSweetConfig.ANONYMOUS_FUNCTION_NAME.equals(methName) || JSweetConfig.ANONYMOUS_STATIC_FUNCTION_NAME.equals(methName)
 					|| JSweetConfig.NEW_FUNCTION_NAME.equals(methName);
-			boolean targetIsThisOrStaticImported = meth.startsWith(methName) || meth.startsWith("this." + methName);
+			boolean targetIsThisOrStaticImported = meth.equals(methName) || meth.equals("this." + methName);
 
 			MethodType type = inv.meth.type instanceof MethodType ? (MethodType) inv.meth.type : null;
 			MethodSymbol methSym = null;

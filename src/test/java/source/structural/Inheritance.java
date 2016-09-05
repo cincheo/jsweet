@@ -84,3 +84,30 @@ class B extends A implements Y {
 
 class D extends SubInterface {
 }
+
+interface Shape {
+	
+    public Rectangle getBounds();
+    public Rectangle2D getBounds2D();	
+
+}
+
+class Rectangle2D implements Shape { 
+	
+    public Rectangle getBounds() { return null; }
+    public Rectangle2D getBounds2D() { return null; }
+	
+}
+
+class Rectangle extends Rectangle2D implements Shape {
+	
+}
+
+class SomeShape implements Shape {
+	
+    public Rectangle getBounds() { return getBounds2D().getBounds(); }
+    public Rectangle2D getBounds2D() { return null; }
+	
+	
+}
+

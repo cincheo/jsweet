@@ -593,7 +593,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			return true;
 		}
 
-		if (targetClassName != null && targetClassName.endsWith(GLOBALS_CLASS_NAME)) {
+		if (targetClassName != null && targetClassName.endsWith(GLOBALS_CLASS_NAME) && (invocation.getMethodSelect() instanceof JCFieldAccess)) {
 			if (getPrinter().getContext().useModules) {
 				if (JSweetConfig.GLOBALS_PACKAGE_NAME.equals(targetType.getEnclosingElement().getSimpleName().toString())) {
 					getPrinter().print(JSweetConfig.GLOBALS_PACKAGE_NAME).print(".");
@@ -901,14 +901,17 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				} else {
 					switch (targetMethodName) {
 					case "equals":
-						if ("super".equals(fieldAccess.getExpression().toString())) {
-							getPrinter().print("(this === ").printArgList(invocation.args).print(")");
-						} else {
-							getPrinter().print("(").print(fieldAccess.getExpression()).print(" === ").printArgList(invocation.args).print(")");
-						}
+						getPrinter().print("(");
+						printTarget(fieldAccess.getExpression()).print(" === ").printArgList(invocation.args).print(")");
 						return true;
 					case "hashCode":
-						getPrinter().print("(<any>").print(fieldAccess.getExpression()).print(".toString())");
+						getPrinter().print("(<any>");
+						printTarget(fieldAccess.getExpression()).print(".toString())");
+						return true;
+					case "clone":
+						// clone is not supported unless the emul layer is
+						// available
+						delegateToEmulLayerStatic(targetClassName, targetMethodName, fieldAccess.getExpression());
 						return true;
 					}
 				}
@@ -928,9 +931,22 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 
 	}
 
+	private AbstractTreePrinter printTarget(JCExpression target) {
+		if ("super".equals(target.toString())) {
+			return getPrinter().print("this");
+		} else {
+			return getPrinter().print(target);
+		}
+	}
+
 	private void delegateToEmulLayer(String targetClassName, String targetMethodName, JCMethodInvocation invocation) {
 		getPrinter().print("javaemul.internal." + targetClassName.substring(10) + "Helper.").print(targetMethodName).print("(")
 				.printArgList(invocation.getArguments()).print(")");
+	}
+
+	private void delegateToEmulLayerStatic(String targetClassName, String targetMethodName, JCExpression target) {
+		getPrinter().print("javaemul.internal." + targetClassName.substring(10) + "Helper.").print(targetMethodName).print("(");
+		printTarget(target).print(")");
 	}
 
 	private void printMacroName(String macroName) {
