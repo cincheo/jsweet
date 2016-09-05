@@ -200,7 +200,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		try {
 			tsOutputDir.mkdirs();
 			this.tsOutputDir = tsOutputDir.getCanonicalFile();
-			if (jsOutputDir != null) {
+			if (jsOutputDir != null && generateJsFiles) {
 				jsOutputDir.mkdirs();
 				this.jsOutputDir = jsOutputDir.getCanonicalFile();
 			}
@@ -1557,5 +1557,5 @@ public class JSweetTranspiler implements JSweetOptions {
 		String tsCode = translator.getResult();
 		return ts2js(handler, tsCode, targetFileName);
 	}
-	
+
 }
