@@ -860,6 +860,9 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				case "ulp":
 					delegateToEmulLayer(targetClassName, targetMethodName, invocation);
 					return true;
+				case "IEEEremainder":
+					delegateToEmulLayer(targetClassName, targetMethodName, invocation);
+					return true;
 				default:
 					getPrinter().print("Math." + targetMethodName + "(").printArgList(invocation.args).print(")");
 					return true;
