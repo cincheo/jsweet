@@ -206,9 +206,14 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				|| qualifiedName.endsWith(GLOBALS_PACKAGE_NAME + "." + GLOBALS_CLASS_NAME)) {
 			return null;
 		}
-		if (importDecl.qualid.type != null && (Util.hasAnnotationType(importDecl.qualid.type.tsym, ANNOTATION_ERASED, ANNOTATION_OBJECT_TYPE)
-				|| importDecl.qualid.type.tsym.getKind() == ElementKind.ANNOTATION_TYPE)) {
-			return null;
+		if (importDecl.qualid.type != null) {
+			if (Util.hasAnnotationType(importDecl.qualid.type.tsym, ANNOTATION_ERASED, ANNOTATION_OBJECT_TYPE)) {
+				return null;
+			}
+			if (importDecl.qualid.type.tsym.getKind() == ElementKind.ANNOTATION_TYPE
+					&& !Util.hasAnnotationType(importDecl.qualid.type.tsym, JSweetConfig.ANNOTATION_DECORATOR)) {
+				return null;
+			}
 		}
 		if (importDecl.isStatic()) {
 			if (importDecl.getQualifiedIdentifier() instanceof JCFieldAccess) {

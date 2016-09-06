@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Collectors;
 
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
 
@@ -63,6 +64,7 @@ import com.sun.tools.javac.code.Type.MethodType;
 import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.parser.Tokens.Comment;
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCArrayAccess;
 import com.sun.tools.javac.tree.JCTree.JCArrayTypeTree;
 import com.sun.tools.javac.tree.JCTree.JCAssert;
@@ -165,6 +167,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	private boolean isAnonymousClass = false;
 
 	private Stack<ClassScope> scope = new Stack<>();
+
+	private boolean isAnnotationScope = false;
 
 	private ClassScope getScope() {
 		return scope.peek();
@@ -620,6 +624,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			// erased types are ignored
 			return;
 		}
+		if (classdecl.type.tsym.getKind() == ElementKind.ANNOTATION_TYPE) {
+			// annotation types are ignored
+			return;
+		}
 		String name = classdecl.getSimpleName().toString();
 		if (!scope.isEmpty() && getScope().anonymousClasses.contains(classdecl)) {
 			name = getScope().name + ANONYMOUS_PREFIX + getScope().anonymousClasses.indexOf(classdecl);
@@ -657,6 +665,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				return;
 			}
 			printDocComment(classdecl, false);
+			print(classdecl.mods);
 			if (!globalModule || context.useModules) {
 				print("export ");
 			}
@@ -3020,7 +3029,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	public void visitAssign(JCAssign assign) {
 		if (!getAdapter().substituteAssignment(assign)) {
 			staticInitializedAssignment = getStaticInitializedField(assign.lhs) != null;
-			print(assign.lhs).print(" = ").print(assign.rhs);
+			print(assign.lhs).print(isAnnotationScope ? ": " : " = ").print(assign.rhs);
 			staticInitializedAssignment = false;
 		}
 	}
@@ -3256,6 +3265,26 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			String assertCode = assertion.toString().replace("\"", "'");
 			print("if(!(").print(assertion.cond).print(")) throw new Error(\"Assertion error line " + getCurrentLine() + ": " + assertCode + "\");");
 		}
+	}
+
+	@Override
+	public void visitAnnotation(JCAnnotation annotation) {
+		if (!Util.hasAnnotationType(annotation.type.tsym, JSweetConfig.ANNOTATION_DECORATOR)) {
+			return;
+		}
+		printIndent().print("@").print(annotation.getAnnotationType());
+		if (annotation.getArguments() != null && !annotation.getArguments().isEmpty()) {
+			isAnnotationScope = true;
+			print("( { ");
+			for (JCExpression e : annotation.getArguments()) {
+				print(e);
+				print(", ");
+			}
+			removeLastChars(2);
+			print(" } )");
+			isAnnotationScope = false;
+		}
+		println();
 	}
 
 }

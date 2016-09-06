@@ -733,6 +733,9 @@ public class JSweetTranspiler implements JSweetOptions {
 			logger.info("scanning " + cu.sourcefile.getName() + "...");
 			AbstractTreePrinter printer = new Java2TypeScriptTranslator(transpilationHandler, context, cu, preserveSourceLineNumbers);
 			printer.print(cu);
+			if (StringUtils.isBlank(printer.getResult())) {
+				continue;
+			}
 			String[] s = cu.getSourceFile().getName().split(File.separator.equals("\\") ? "\\\\" : File.separator);
 			String cuName = s[s.length - 1];
 			s = cuName.split("\\.");
@@ -793,6 +796,10 @@ public class JSweetTranspiler implements JSweetOptions {
 		StringBuilder packageDefinitions = new StringBuilder();
 		for (int i = 0; i < orderedCompilationUnits.size(); i++) {
 			JCCompilationUnit cu = orderedCompilationUnits.get(i);
+			if (cu.packge.getQualifiedName().toString().startsWith("def.")) {
+				logger.info("skipping " + cu.sourcefile.getName() + "...");
+				continue;
+			}
 			logger.info("scanning " + cu.sourcefile.getName() + "...");
 			AbstractTreePrinter printer = new Java2TypeScriptTranslator(transpilationHandler, context, cu, preserveSourceLineNumbers);
 			printer.print(cu);
@@ -1051,6 +1058,10 @@ public class JSweetTranspiler implements JSweetOptions {
 				args.add("--module");
 				args.add(moduleKind.toString());
 			}
+		}
+
+		if (ecmaTargetVersion.ordinal() >= EcmaScriptComplianceLevel.ES5.ordinal()) {
+			args.add("--experimentalDecorators");
 		}
 
 		if (isTscWatchMode()) {
