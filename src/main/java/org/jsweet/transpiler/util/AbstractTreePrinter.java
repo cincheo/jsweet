@@ -163,12 +163,12 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 			// }
 		}
 		positionStack.push(new Position(getCurrentPosition(), currentLine, currentColumn));
-        if (compilationUnit != null) {
-            sourceMap.addEntry(new Position(tree.pos, //
-                    compilationUnit.lineMap.getLineNumber(tree.pos), //
-                    compilationUnit.lineMap.getColumnNumber(tree.pos)), positionStack.peek());
-        }
-    }
+		if (compilationUnit != null && tree.pos >= 0) {
+			sourceMap.addEntry(new Position(tree.pos, //
+					compilationUnit.lineMap.getLineNumber(tree.pos), //
+					compilationUnit.lineMap.getColumnNumber(tree.pos)), positionStack.peek());
+		}
+	}
 
 	@Override
 	protected void onRollbacked(JCTree target) {
@@ -441,5 +441,5 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	public String getRootRelativeName(Symbol symbol, boolean useJavaNames) {
 		return Util.getRootRelativeName(context.useModules ? context.getImportedElements(compilationUnit.packge) : null, symbol, useJavaNames);
 	}
-	
+
 }
