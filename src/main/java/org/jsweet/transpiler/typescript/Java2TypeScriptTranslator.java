@@ -283,6 +283,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	@Override
 	public void visitTopLevel(JCCompilationUnit topLevel) {
 
+		// TODO: remove
 		if (topLevel.packge.getQualifiedName().toString().startsWith("def.")) {
 			if (topLevel.getSourceFile().getName().endsWith("package-info.java")) {
 				if (Util.hasAnnotationType(topLevel.packge, JSweetConfig.ANNOTATION_MODULE)) {

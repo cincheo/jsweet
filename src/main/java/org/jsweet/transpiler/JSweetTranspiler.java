@@ -727,7 +727,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		new OverloadScanner(transpilationHandler, context).process(compilationUnits);
 		for (int i = 0; i < compilationUnits.length(); i++) {
 			JCCompilationUnit cu = compilationUnits.get(i);
-			if (isPackageDefinition(cu)) {
+			if (isPackageDefinition(cu) || isModuleDefsFile(cu)) {
 				continue;
 			}
 			logger.info("scanning " + cu.sourcefile.getName() + "...");
@@ -766,6 +766,10 @@ public class JSweetTranspiler implements JSweetOptions {
 		}
 	}
 
+	private boolean isModuleDefsFile(JCCompilationUnit cu) {
+		return cu.getSourceFile().getName().equals("module_defs.java") || cu.getSourceFile().getName().endsWith("/module_defs.java");
+	}
+
 	private void generateTsModules(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files, List<JCCompilationUnit> compilationUnits)
 			throws IOException {
 		// when using modules, all classes of the same package are folded to
@@ -794,10 +798,16 @@ public class JSweetTranspiler implements JSweetOptions {
 		logger.debug("permutation: " + permutationString.toString());
 		new OverloadScanner(transpilationHandler, context).process(orderedCompilationUnits);
 		StringBuilder packageDefinitions = new StringBuilder();
+		JCCompilationUnit moduleDefs = null;
 		for (int i = 0; i < orderedCompilationUnits.size(); i++) {
 			JCCompilationUnit cu = orderedCompilationUnits.get(i);
 			if (cu.packge.getQualifiedName().toString().startsWith("def.")) {
 				logger.info("skipping " + cu.sourcefile.getName() + "...");
+				continue;
+			}
+			if (isModuleDefsFile(cu)) {
+				logger.info("found module definitions " + cu.sourcefile.getName() + "...");
+				moduleDefs = cu;
 				continue;
 			}
 			logger.info("scanning " + cu.sourcefile.getName() + "...");
@@ -850,10 +860,22 @@ public class JSweetTranspiler implements JSweetOptions {
 			}
 			logger.info("created " + outputFilePath);
 		}
-		if (packageDefinitions.length() > 0) {
-			FileUtils.write(new File(tsOutputDir, "modules.d.ts"), packageDefinitions);
-			logger.info("created module definitions");
+		// TODO: remove
+		// if (packageDefinitions.length() > 0) {
+		// FileUtils.write(new File(tsOutputDir, "modules.d.ts"),
+		// packageDefinitions);
+		// logger.info("created module definitions");
+		// }
+		if (moduleDefs != null) {
+			StringBuilder out = new StringBuilder();
+			for (String line : FileUtils.readLines(new File(moduleDefs.getSourceFile().getName()))) {
+				if (line.startsWith("///")) {
+					out.append(line.substring(3));
+				}
+			}
+			FileUtils.write(new File(tsOutputDir, "module_defs.d.ts"), out, false);
 		}
+
 	}
 
 	private void generateTsBundle(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files, List<JCCompilationUnit> compilationUnits)
@@ -894,7 +916,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		int lineCount = 0;
 		for (int i = 0; i < orderedCompilationUnits.size(); i++) {
 			JCCompilationUnit cu = orderedCompilationUnits.get(i);
-			if (isPackageDefinition(cu)) {
+			if (isPackageDefinition(cu) || isModuleDefsFile(cu)) {
 				continue;
 			}
 			logger.info("scanning " + cu.sourcefile.getName() + "...");
@@ -1190,7 +1212,8 @@ public class JSweetTranspiler implements JSweetOptions {
 				Set<File> handledFiles = new HashSet<>();
 				for (SourceFile sourceFile : files) {
 					if (!sourceFile.getTsFile().getAbsolutePath().startsWith(tsOutputDir.getAbsolutePath())) {
-						throw new RuntimeException("ts directory isn't configured properly, please use setTsDir");
+						throw new RuntimeException("ts directory isn't configured properly, please use setTsDir: " + sourceFile.getTsFile().getAbsolutePath()
+								+ " != " + tsOutputDir.getAbsolutePath());
 					}
 					String outputFileRelativePath = sourceFile.getTsFile().getAbsolutePath().substring(tsOutputDir.getAbsolutePath().length());
 					File outputFile = new File(jsOutputDir == null ? tsOutputDir : jsOutputDir, Util.removeExtension(outputFileRelativePath) + ".js");
