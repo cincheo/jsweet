@@ -732,7 +732,8 @@ public class JSweetTranspiler implements JSweetOptions {
 			logger.info("scanning " + cu.sourcefile.getName() + "...");
 			AbstractTreePrinter printer = new Java2TypeScriptTranslator(transpilationHandler, context, cu, preserveSourceLineNumbers);
 			printer.print(cu);
-			if (StringUtils.isBlank(printer.getResult())) {
+			if (StringUtils.isWhitespace(printer.getResult())) {
+				logger.info("skipping empty file");
 				continue;
 			}
 			String[] s = cu.getSourceFile().getName().split(File.separator.equals("\\") ? "\\\\" : File.separator);
