@@ -123,6 +123,9 @@ import com.sun.tools.javac.util.Name;
 public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	public static final String PARENT_CLASS_FIELD_NAME = "__parent";
+	public static final String INTERFACES_FIELD_NAME = "__interfaces";
+	public static final String STATIC_INITIALIZATION_SUFFIX = "_$LI$";
+	public static final String CLASS_NAME_IN_CONSTRUCTOR = "__classname";
 	public static final String ANONYMOUS_PREFIX = "$";
 
 	protected static Logger logger = Logger.getLogger(Java2TypeScriptTranslator.class);
@@ -924,6 +927,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 		if (!globals) {
 			endIndent().printIndent().print("}");
+			if (getContext().options.isSupportGetClass() && !getScope().interfaceScope && !getScope().declareClassScope && !getScope().enumScope
+					&& !classdecl.sym.isAnonymous()) {
+				println().printIndent().print(classdecl.sym.getSimpleName().toString()).print("[\"" + CLASS_NAME_IN_CONSTRUCTOR + "\"] = ")
+						.print("\"" + Util.getRootRelativeName(null, classdecl.sym) + "\";").println();
+			}
 		}
 
 		// inner and anonymous classes in a namespace ======================
@@ -1405,12 +1413,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	}
 
 	private void printInstanceInitialization(JCClassDecl clazz, MethodSymbol method) {
-		if (method == null || method.isConstructor()) {
+		if (getContext().options.isInterfaceTracking() && method == null || method.isConstructor()) {
 			getScope().hasDeclaredConstructor = true;
 			Set<String> interfaces = new HashSet<>();
 			Util.grabSupportedInterfaceNames(interfaces, clazz.sym);
 			if (!interfaces.isEmpty()) {
-				printIndent().print("Object.defineProperty(this, '__interfaces', { configurable: true, value: ");
+				printIndent().print("Object.defineProperty(this, '" + INTERFACES_FIELD_NAME + "', { configurable: true, value: ");
 				print("[");
 				for (String itf : interfaces) {
 					print("\"").print(itf).print("\",");
@@ -1775,7 +1783,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				} else {
 					print("public static ");
 				}
-				print(name).print("_$LI$() : ");
+				print(name).print(STATIC_INITIALIZATION_SUFFIX + "() : ");
 				getAdapter().substituteAndPrintType(varDecl.vartype);
 				print(" { ");
 				int liCount = context.getStaticInitializerCount(clazz.sym);
@@ -1790,7 +1798,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				print("return ").print(prefix).print(name).print("; }");
 				if (!globals) {
 					String qualifiedClassName = getQualifiedTypeName(clazz.sym, globals);
-					context.addTopFooterStatement((isBlank(qualifiedClassName) ? "" : qualifiedClassName + ".") + name + "_$LI$();");
+					context.addTopFooterStatement((isBlank(qualifiedClassName) ? "" : qualifiedClassName + ".") + name + STATIC_INITIALIZATION_SUFFIX + "();");
 				}
 			} else {
 				if (varDecl.init != null) {
@@ -1888,7 +1896,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 				if (fieldAccess.sym instanceof VarSymbol && !fieldAccess.sym.owner.isEnum() && context.lazyInitializedStatics.contains(fieldAccess.sym)) {
 					if (!staticInitializedAssignment) {
-						print("_$LI$()");
+						print(STATIC_INITIALIZATION_SUFFIX + "()");
 					}
 				}
 				// if (Util.isIntegral(fieldAccess.type)) {
@@ -2289,7 +2297,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				print(name);
 				if (lazyInitializedStatic) {
 					if (!staticInitializedAssignment) {
-						print("_$LI$()");
+						print(STATIC_INITIALIZATION_SUFFIX + "()");
 					}
 				}
 			}
@@ -2356,12 +2364,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (isInterface) {
 					print("<").print(newClass.clazz).print(">"); // .print("<any>");
 				}
-				Set<String> interfaces = new HashSet<>();
-				Util.grabSupportedInterfaceNames(interfaces, clazz);
-				if (!interfaces.isEmpty()) {
-					print("Object.defineProperty(");
-				}
 
+				Set<String> interfaces = new HashSet<>();
+				if (getContext().options.isInterfaceTracking()) {
+					Util.grabSupportedInterfaceNames(interfaces, clazz);
+					if (!interfaces.isEmpty()) {
+						print("Object.defineProperty(");
+					}
+				}
 				print("{").println().startIndent();
 				boolean statementPrinted = false;
 				if (newClass.def != null) {
@@ -2426,17 +2436,18 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 
 				println().endIndent().printIndent().print("}");
-				if (!interfaces.isEmpty()) {
-					print(", '__interfaces', { configurable: true, value: ");
-					print("[");
-					for (String i : interfaces) {
-						print("\"").print(i).print("\",");
+				if (getContext().options.isInterfaceTracking()) {
+					if (!interfaces.isEmpty()) {
+						print(", '" + INTERFACES_FIELD_NAME + "', { configurable: true, value: ");
+						print("[");
+						for (String i : interfaces) {
+							print("\"").print(i).print("\",");
+						}
+						removeLastChar();
+						print("]");
+						print(" })");
 					}
-					removeLastChar();
-					print("]");
-					print(" })");
 				}
-
 			} else {
 
 				// ((target : DataStruct3) => {
@@ -2892,30 +2903,32 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	@Override
 	public void visitUnary(JCUnary unary) {
-		if (!inRollback) {
-			JCStatement statement = null;
-			VarSymbol[] staticInitializedField = { null };
-			switch (unary.getTag()) {
-			case POSTDEC:
-			case POSTINC:
-			case PREDEC:
-			case PREINC:
-				staticInitializedAssignment = (staticInitializedField[0] = getStaticInitializedField(unary.arg)) != null;
-				if (staticInitializedAssignment) {
-					statement = getParent(JCStatement.class);
+		if (getContext().options.isSupportSaticLazyInitialization()) {
+			if (!inRollback) {
+				JCStatement statement = null;
+				VarSymbol[] staticInitializedField = { null };
+				switch (unary.getTag()) {
+				case POSTDEC:
+				case POSTINC:
+				case PREDEC:
+				case PREINC:
+					staticInitializedAssignment = (staticInitializedField[0] = getStaticInitializedField(unary.arg)) != null;
+					if (staticInitializedAssignment) {
+						statement = getParent(JCStatement.class);
+					}
+				default:
 				}
-			default:
+				if (statement != null) {
+					rollback(statement, tree -> {
+						print(Util.getRootRelativeName(null, staticInitializedField[0].getEnclosingElement())).print(".")
+								.print(staticInitializedField[0].getSimpleName().toString() + STATIC_INITIALIZATION_SUFFIX + "();").println().printIndent();
+						inRollback = true;
+						scan(tree);
+					});
+				}
+			} else {
+				inRollback = false;
 			}
-			if (statement != null) {
-				rollback(statement, tree -> {
-					print(Util.getRootRelativeName(null, staticInitializedField[0].getEnclosingElement())).print(".")
-							.print(staticInitializedField[0].getSimpleName().toString() + "_$LI$();").println().printIndent();
-					inRollback = true;
-					scan(tree);
-				});
-			}
-		} else {
-			inRollback = false;
 		}
 		switch (unary.getTag()) {
 		case POS:
@@ -3214,9 +3227,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					print("(");
 				}
 				print(exprStr, expr);
-				print("[\"__interfaces\"]").print(" != null && ");
+				print("[\"" + INTERFACES_FIELD_NAME + "\"]").print(" != null && ");
 				print(exprStr, expr);
-				print("[\"__interfaces\"].indexOf(\"").print(type.tsym.getQualifiedName().toString()).print("\") >= 0");
+				print("[\"" + INTERFACES_FIELD_NAME + "\"].indexOf(\"").print(type.tsym.getQualifiedName().toString()).print("\") >= 0");
 				if (CharSequence.class.getName().equals(type.tsym.getQualifiedName().toString())) {
 					print(" || typeof ");
 					print(exprStr, expr);

@@ -148,6 +148,9 @@ public class JSweetTranspiler implements JSweetOptions {
 	private boolean generateDeclarations = false;
 	private File declarationsOutputDir;
 	private boolean jdkAllowed = true;
+	private boolean interfaceTracking = true;
+	private boolean supportGetClass = true;
+	private boolean supportSaticLazyInitialization = true;
 	private ArrayList<File> jsLibFiles = new ArrayList<>();
 
 	/**
@@ -1575,6 +1578,30 @@ public class JSweetTranspiler implements JSweetOptions {
 		translator.exitScope();
 		String tsCode = translator.getResult();
 		return ts2js(handler, tsCode, targetFileName);
+	}
+
+	public boolean isInterfaceTracking() {
+		return interfaceTracking;
+	}
+
+	public void setInterfaceTracking(boolean interfaceTracking) {
+		this.interfaceTracking = interfaceTracking;
+	}
+
+	public boolean isSupportGetClass() {
+		return supportGetClass;
+	}
+
+	public void setSupportGetClass(boolean supportGetClass) {
+		this.supportGetClass = supportGetClass;
+	}
+
+	public boolean isSupportSaticLazyInitialization() {
+		return supportSaticLazyInitialization;
+	}
+
+	public void setSupportSaticLazyInitialization(boolean supportSaticLazyInitialization) {
+		this.supportSaticLazyInitialization = supportSaticLazyInitialization;
 	}
 
 }

@@ -876,17 +876,31 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			case "java.lang.Class":
 				switch (targetMethodName) {
 				case "getName":
-					if (fieldAccess != null && fieldAccess.selected.toString().endsWith(".class")) {
+					if (getPrinter().getContext().options.isSupportGetClass()) {
 						printMacroName(targetMethodName);
-						getPrinter().print("\"").print(fieldAccess.selected.type.getTypeArguments().get(0).tsym.getQualifiedName().toString()).print("\"");
+						printTarget(fieldAccess.getExpression()).print("[\"" + Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR + "\"]");
 						return true;
+					} else {
+						if (fieldAccess != null && fieldAccess.selected.toString().endsWith(".class")) {
+							printMacroName(targetMethodName);
+							getPrinter().print("\"").print(fieldAccess.selected.type.getTypeArguments().get(0).tsym.getQualifiedName().toString()).print("\"");
+							return true;
+						}
 					}
 					break;
 				case "getSimpleName":
-					if (fieldAccess != null && fieldAccess.selected.toString().endsWith(".class")) {
+					if (getPrinter().getContext().options.isSupportGetClass()) {
 						printMacroName(targetMethodName);
-						getPrinter().print("\"").print(fieldAccess.selected.type.getTypeArguments().get(0).tsym.getSimpleName().toString()).print("\"");
+						getPrinter().print("(name => name.substring(name.lastIndexOf('.')+1))(");
+						printTarget(fieldAccess.getExpression()).print("[\"" + Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR + "\"]");
+						getPrinter().print(")");
 						return true;
+					} else {
+						if (fieldAccess != null && fieldAccess.selected.toString().endsWith(".class")) {
+							printMacroName(targetMethodName);
+							getPrinter().print("\"").print(fieldAccess.selected.type.getTypeArguments().get(0).tsym.getSimpleName().toString()).print("\"");
+							return true;
+						}
 					}
 					break;
 				}
@@ -924,6 +938,17 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					}
 				}
 			}
+		}
+
+		if ("getClass".equals(targetMethodName)) {
+			getPrinter().print("(<any>");
+			if (fieldAccess != null) {
+				printTarget(fieldAccess.getExpression());
+			} else {
+				getPrinter().print("this");
+			}
+			getPrinter().print(".constructor)");
+			return true;
 		}
 
 		if (!JSweetConfig.isJDKReplacementMode())

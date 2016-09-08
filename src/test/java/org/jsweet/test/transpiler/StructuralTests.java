@@ -35,6 +35,7 @@ import source.structural.DefaultMethodsConsumer;
 import source.structural.Enums;
 import source.structural.ExtendsClassInSameFile;
 import source.structural.ExtendsObject;
+import source.structural.GetClass;
 import source.structural.GlobalsAccess;
 import source.structural.Inheritance;
 import source.structural.InnerClass;
@@ -72,28 +73,28 @@ public class StructuralTests extends AbstractTest {
 			assertEquals(3, (int) r.get("v3"));
 			assertEquals("hello", (String) r.get("v4"));
 			assertEquals("hello", (String) r.get("v5"));
-		} , getSourceFile(NoNameClashesWithFields.class));
+		}, getSourceFile(NoNameClashesWithFields.class));
 	}
 
 	@Test
 	public void testVariableMethodNameClashes() {
 		transpile(logHandler -> {
 			logHandler.assertReportedProblems(JSweetProblem.HIDDEN_INVOCATION, JSweetProblem.HIDDEN_INVOCATION, JSweetProblem.HIDDEN_INVOCATION);
-		} , getSourceFile(NameClashesWithMethodInvocations.class));
+		}, getSourceFile(NameClashesWithMethodInvocations.class));
 	}
 
 	@Test
 	public void testTwoClassesInSameFile() {
 		transpile(logHandler -> {
 			assertEquals("There should be 0 problems", 0, logHandler.reportedProblems.size());
-		} , getSourceFile(TwoClassesInSameFile.class));
+		}, getSourceFile(TwoClassesInSameFile.class));
 	}
 
 	@Test
 	public void testExtendsClassInSameFile() {
 		transpile(logHandler -> {
 			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-		} , getSourceFile(ExtendsClassInSameFile.class));
+		}, getSourceFile(ExtendsClassInSameFile.class));
 	}
 
 	@Test
@@ -103,7 +104,7 @@ public class StructuralTests extends AbstractTest {
 			assertEquals("test1", r.get("value1"));
 			assertEquals("test2", r.get("value2"));
 			assertEquals("test3", r.get("value3"));
-		} , getSourceFile(InnerClass.class));
+		}, getSourceFile(InnerClass.class));
 	}
 
 	@Test
@@ -111,7 +112,7 @@ public class StructuralTests extends AbstractTest {
 		eval((logHandler, r) -> {
 			logHandler.assertReportedProblems();
 			assertEquals("22abc,22a,22ABC,22a,22b,22c,22ABC,test22a,staticMethod", r.get("trace"));
-		} , getSourceFile(InnerClassNotStatic.class));
+		}, getSourceFile(InnerClassNotStatic.class));
 	}
 
 	@Test
@@ -119,9 +120,9 @@ public class StructuralTests extends AbstractTest {
 		eval((logHandler, r) -> {
 			logHandler.assertReportedProblems();
 			assertEquals("22abcfinal", r.get("trace"));
-		} , getSourceFile(AnonymousClass.class));
+		}, getSourceFile(AnonymousClass.class));
 	}
-	
+
 	@Test
 	public void testInheritance() {
 		eval((logHandler, r) -> {
@@ -134,7 +135,7 @@ public class StructuralTests extends AbstractTest {
 			assertEquals(false, r.<Boolean> get("itfo"));
 			assertEquals("s1", r.<Boolean> get("s1o"));
 			assertEquals("s2", r.<Boolean> get("s2o"));
-		} , getSourceFile(Inheritance.class));
+		}, getSourceFile(Inheritance.class));
 	}
 
 	@Test
@@ -149,14 +150,14 @@ public class StructuralTests extends AbstractTest {
 					// JSweetProblem.INVALID_STATIC_IN_INTERFACE, //
 					JSweetProblem.INVALID_INITIALIZER_IN_INTERFACE, //
 					JSweetProblem.INVALID_INITIALIZER_IN_INTERFACE);
-		} , getSourceFile(WrongConstructsInInterfaces.class));
+		}, getSourceFile(WrongConstructsInInterfaces.class));
 	}
 
 	@Test
 	public void testWrongConstructsInSharedInterfaces() {
 		transpile(logHandler -> {
 			logHandler.assertReportedProblems();
-		} , getSourceFile(WrongConstructsInSharedInterfaces.class));
+		}, getSourceFile(WrongConstructsInSharedInterfaces.class));
 	}
 
 	@Test
@@ -165,21 +166,21 @@ public class StructuralTests extends AbstractTest {
 			logHandler.assertReportedProblems(JSweetProblem.INVALID_FIELD_IN_ENUM, JSweetProblem.INVALID_FIELD_IN_ENUM, JSweetProblem.INVALID_FIELD_IN_ENUM,
 					JSweetProblem.INVALID_CONSTRUCTOR_IN_ENUM, JSweetProblem.INVALID_METHOD_IN_ENUM, JSweetProblem.INVALID_METHOD_IN_ENUM,
 					JSweetProblem.INVALID_METHOD_IN_ENUM);
-		} , getSourceFile(WrongConstructsInEnums.class));
+		}, getSourceFile(WrongConstructsInEnums.class));
 	}
 
 	@Test
 	public void testAbstractClass() {
 		transpile(logHandler -> {
 			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-		} , getSourceFile(AbstractClass.class));
+		}, getSourceFile(AbstractClass.class));
 	}
 
 	@Test
 	public void testExtendsObject() {
 		transpile(logHandler -> {
 			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-		} , getSourceFile(ExtendsObject.class));
+		}, getSourceFile(ExtendsObject.class));
 	}
 
 	@Test
@@ -187,7 +188,7 @@ public class StructuralTests extends AbstractTest {
 		eval((logHandler, r) -> {
 			logHandler.assertReportedProblems();
 			Assert.assertEquals("1,2,1,3", r.get("trace"));
-		} , getSourceFile(InstanceofForInterfaces.class));
+		}, getSourceFile(InstanceofForInterfaces.class));
 	}
 
 	@Test
@@ -199,7 +200,7 @@ public class StructuralTests extends AbstractTest {
 			Assert.assertEquals("Wrong enum behavior", 0, ((Number) r.get("ordinalOfA")).intValue());
 			Assert.assertEquals("Wrong enum behavior", 0, ((Number) r.get("valueOfA")).intValue());
 			Assert.assertEquals("Wrong enum behavior", 2, ((Number) r.get("valueOfC")).intValue());
-		} , getSourceFile(Enums.class));
+		}, getSourceFile(Enums.class));
 	}
 
 	@Test
@@ -210,21 +211,21 @@ public class StructuralTests extends AbstractTest {
 					JSweetProblem.GLOBAL_CANNOT_BE_INSTANTIATED, //
 					JSweetProblem.GLOBAL_CANNOT_BE_INSTANTIATED, //
 					JSweetProblem.GLOBALS_CLASS_CANNOT_BE_SUBCLASSED);
-		} , getSourceFile(GlobalsConstructor.class));
+		}, getSourceFile(GlobalsConstructor.class));
 	}
 
 	@Test
 	public void testNoGetSetInGlobalFunction() {
 		transpile(logHandler -> {
 			logHandler.assertReportedProblems();
-		} , getSourceFile(GlobalFunctionGetSetDelete.class));
+		}, getSourceFile(GlobalFunctionGetSetDelete.class));
 	}
 
 	@Test
 	public void testNoStaticDeleteInGlobalFunction() {
 		transpile(logHandler -> {
 			logHandler.assertReportedProblems(GLOBAL_INDEXER_GET, GLOBAL_INDEXER_SET, GLOBAL_DELETE);
-		} , getSourceFile(InvalidGlobalSetGetDelete.class));
+		}, getSourceFile(InvalidGlobalSetGetDelete.class));
 	}
 
 	@Test
@@ -235,21 +236,21 @@ public class StructuralTests extends AbstractTest {
 			Assert.assertEquals("invoked", r.get("test"));
 			Assert.assertEquals("invoked1_2", r.get("Static"));
 			Assert.assertEquals("invoked1_2", r.get("test2"));
-		} , getSourceFile(Globals.class), getSourceFile(source.structural.globalclasses.e.Globals.class), getSourceFile(GlobalFunctionAccessFromMain.class));
+		}, getSourceFile(Globals.class), getSourceFile(source.structural.globalclasses.e.Globals.class), getSourceFile(GlobalFunctionAccessFromMain.class));
 	}
 
 	@Test
 	public void testWildcardsInImports() {
 		transpile((logHandler) -> {
 			logHandler.assertReportedProblems(JSweetProblem.WILDCARD_IMPORT);
-		} , getSourceFile(NoWildcardsInImports.class));
+		}, getSourceFile(NoWildcardsInImports.class));
 	}
 
 	@Test
 	public void testName() {
 		transpile((logHandler) -> {
 			logHandler.assertReportedProblems();
-		} , getSourceFile(Name.class));
+		}, getSourceFile(Name.class));
 	}
 
 	@Test
@@ -260,7 +261,7 @@ public class StructuralTests extends AbstractTest {
 			Assert.assertEquals("A method was not executed as expected", true, r.get("m2"));
 			Assert.assertEquals("A method was not executed as expected", true, r.get("sm1"));
 			Assert.assertEquals("A method was not executed as expected", true, r.get("sm2"));
-		} , getSourceFile(AutoImportClassesInSamePackageUsed.class), getSourceFile(AutoImportClassesInSamePackage.class));
+		}, getSourceFile(AutoImportClassesInSamePackageUsed.class), getSourceFile(AutoImportClassesInSamePackage.class));
 	}
 
 	@Test
@@ -268,7 +269,7 @@ public class StructuralTests extends AbstractTest {
 		eval((logHandler, r) -> {
 			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
 			Assert.assertEquals("Renaud Pawlak", r.get("result"));
-		} , getSourceFile(GlobalsAccess.class));
+		}, getSourceFile(GlobalsAccess.class));
 	}
 
 	@Test
@@ -276,35 +277,35 @@ public class StructuralTests extends AbstractTest {
 		transpile(logHandler -> {
 			logHandler.assertReportedProblems(JSweetProblem.GLOBALS_CLASS_CANNOT_HAVE_SUPERCLASS, JSweetProblem.GLOBAL_CONSTRUCTOR_DEF,
 					JSweetProblem.GLOBALS_CAN_ONLY_HAVE_STATIC_MEMBERS, JSweetProblem.GLOBALS_CAN_ONLY_HAVE_STATIC_MEMBERS);
-		} , getSourceFile(source.structural.wrongglobals.Globals.class));
+		}, getSourceFile(source.structural.wrongglobals.Globals.class));
 	}
 
 	@Test
 	public void testObjectTypes() {
 		transpile(logHandler -> {
 			logHandler.assertReportedProblems();
-		} , getSourceFile(ObjectTypes.class));
+		}, getSourceFile(ObjectTypes.class));
 	}
 
 	@Test
 	public void testWrongThisAccessOnStatic() {
 		transpile(ModuleKind.none, logHandler -> {
 			logHandler.assertReportedProblems(JSweetProblem.CANNOT_ACCESS_STATIC_MEMBER_ON_THIS, JSweetProblem.CANNOT_ACCESS_STATIC_MEMBER_ON_THIS);
-		} , getSourceFile(WrongThisAccessOnStatic.class));
+		}, getSourceFile(WrongThisAccessOnStatic.class));
 	}
 
 	@Test
 	public void testInstanceOf() {
 		eval((logHandler, r) -> {
 			logHandler.assertReportedProblems();
-		} , getSourceFile(InstanceOf.class));
+		}, getSourceFile(InstanceOf.class));
 	}
 
 	@Test
 	public void testJSNI() {
 		transpile(ModuleKind.none, logHandler -> {
 			logHandler.assertReportedProblems();
-		} , getSourceFile(JSNI.class));
+		}, getSourceFile(JSNI.class));
 	}
 
 	@Test
@@ -312,7 +313,7 @@ public class StructuralTests extends AbstractTest {
 		eval((logHandler, r) -> {
 			logHandler.assertReportedProblems();
 			assertEquals("m,m1,m2-overriden", r.get("trace"));
-		} , getSourceFile(ClassWithStaticMethod.class), getSourceFile(DefaultMethods.class), getSourceFile(DefaultMethodsConsumer.class));
+		}, getSourceFile(ClassWithStaticMethod.class), getSourceFile(DefaultMethods.class), getSourceFile(DefaultMethodsConsumer.class));
 	}
 
 	@Test
@@ -323,7 +324,7 @@ public class StructuralTests extends AbstractTest {
 			assertEquals("test2", r.get("value2"));
 			assertEquals("test3", r.get("value3"));
 			assertEquals("test4", r.get("value4"));
-		} , getSourceFile(StaticMembersInInterfaces.class));
+		}, getSourceFile(StaticMembersInInterfaces.class));
 	}
 
 	@Test
@@ -331,7 +332,24 @@ public class StructuralTests extends AbstractTest {
 		eval((logHandler, r) -> {
 			logHandler.assertReportedProblems();
 			assertEquals(true, r.get("m"));
-		} , getSourceFile(ClassWithStaticMethod.class), getSourceFile(ClassUsingStaticMethod.class));
+		}, getSourceFile(ClassWithStaticMethod.class), getSourceFile(ClassUsingStaticMethod.class));
+	}
+
+	@Test
+	public void testGetClass() {
+		eval((logHandler, r) -> {
+			logHandler.assertReportedProblems();
+			assertEquals("source.structural.AClass1", r.get("name1"));
+			assertEquals("source.structural.AClass1", r.get("name2"));
+			assertEquals("source.structural.AClass1", r.get("name3"));
+			assertEquals("source.structural.Functions", r.get("name4"));
+			assertEquals("source.structural.Functions", r.get("name5"));
+			assertEquals("AClass1", r.get("simplename1"));
+			assertEquals("AClass1", r.get("simplename2"));
+			assertEquals("AClass1", r.get("simplename3"));
+			assertEquals("Functions", r.get("simplename4"));
+			assertEquals("Functions", r.get("simplename5"));
+		}, getSourceFile(GetClass.class));
 	}
 
 }
