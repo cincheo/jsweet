@@ -1187,7 +1187,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					print("export ");
 				}
 			}
-			if (ambient) {
+			if (ambient || (getIndent() == 0 && isDefinitionScope)) {
 				print("declare ");
 			}
 			print("function ");
@@ -1741,7 +1741,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							print("export ");
 						}
 					}
-					if (ambient) {
+					if (ambient || (getIndent() == 0 && isDefinitionScope)) {
 						print("declare ");
 					}
 				}
