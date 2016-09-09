@@ -124,4 +124,9 @@ public interface JSweetOptions {
 	 */
 	boolean isSupportSaticLazyInitialization();
 
+	/**
+	 * Generated definitions from def.* packages in d.ts files.
+	 */
+	boolean isGenerateDefinitions();
+	
 }

@@ -128,6 +128,7 @@ public class JSweetCommandLineLauncher {
 				transpiler.setInterfaceTracking(!jsapArgs.getBoolean("disableJavaAddons"));
 				transpiler.setSupportGetClass(!jsapArgs.getBoolean("disableJavaAddons"));
 				transpiler.setSupportSaticLazyInitialization(!jsapArgs.getBoolean("disableJavaAddons"));
+				transpiler.setGenerateDefinitions(jsapArgs.getBoolean("definitions"));
 				transpiler.setDeclarationsOutputDir(dtsOutputDir);
 
 				transpiler.transpile(transpilationHandler, SourceFile.toSourceFiles(files));
@@ -238,6 +239,13 @@ public class JSweetCommandLineLauncher {
 		switchArg.setLongFlag("disableJavaAddons");
 		switchArg.setHelp(
 				"Tells the transpiler disable runtime addons (instanceof, overloading, class name access, static initialization [...] will not be fully supported).");
+		jsap.registerParameter(switchArg);
+
+		// Do not generate JavaScript
+		switchArg = new Switch("definitions");
+		switchArg.setLongFlag("definitions");
+		switchArg.setHelp(
+				"Tells the transpiler to generate definitions from def.* packages in d.ts definition files. Regular program elements will be ignored and no plain .ts files will be generated. The output directory is given by the tsout option. This option can be used to create candies for existing JavaScript libraries and must not be confused with the 'declaration' option, that generates the definitions along with a program written in JSweet.");
 		jsap.registerParameter(switchArg);
 
 		// Generates declarations

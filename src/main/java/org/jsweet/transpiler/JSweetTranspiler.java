@@ -151,6 +151,7 @@ public class JSweetTranspiler implements JSweetOptions {
 	private boolean interfaceTracking = true;
 	private boolean supportGetClass = true;
 	private boolean supportSaticLazyInitialization = true;
+	private boolean generateDefinitions = false;
 	private ArrayList<File> jsLibFiles = new ArrayList<>();
 
 	/**
@@ -733,7 +734,6 @@ public class JSweetTranspiler implements JSweetOptions {
 			AbstractTreePrinter printer = new Java2TypeScriptTranslator(transpilationHandler, context, cu, preserveSourceLineNumbers);
 			printer.print(cu);
 			if (StringUtils.isWhitespace(printer.getResult())) {
-				logger.info("skipping empty file");
 				continue;
 			}
 			String[] s = cu.getSourceFile().getName().split(File.separator.equals("\\") ? "\\\\" : File.separator);
@@ -746,7 +746,7 @@ public class JSweetTranspiler implements JSweetOptions {
 					cu.getSourceFile().getName().substring(0, cu.getSourceFile().getName().length() - javaSourceFileRelativeFullName.length()));
 			String packageName = isNoRootDirectories() ? Util.getRootRelativeJavaName(cu.packge) : cu.packge.getQualifiedName().toString();
 			String outputFileRelativePathNoExt = packageName.replace(".", File.separator) + File.separator + cuName;
-			String outputFileRelativePath = outputFileRelativePathNoExt + printer.getTargetFilesExtension();
+			String outputFileRelativePath = outputFileRelativePathNoExt + (cu.packge.fullname.toString().startsWith("def.") ? ".d.ts" : ".ts");
 			logger.info("output file: " + outputFileRelativePath);
 			File outputFile = new File(tsOutputDir, outputFileRelativePath);
 			outputFile.getParentFile().mkdirs();
@@ -923,7 +923,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		if (!bundleDirectory.exists()) {
 			bundleDirectory.mkdirs();
 		}
-		String bundleName = "bundle.ts";
+		String bundleName = "bundle" + (isGenerateDefinitions() ? ".d.ts" : ".ts");
 
 		File outputFile = new File(bundleDirectory, bundleName);
 
@@ -1603,6 +1603,14 @@ public class JSweetTranspiler implements JSweetOptions {
 
 	public void setSupportSaticLazyInitialization(boolean supportSaticLazyInitialization) {
 		this.supportSaticLazyInitialization = supportSaticLazyInitialization;
+	}
+
+	public boolean isGenerateDefinitions() {
+		return generateDefinitions;
+	}
+
+	public void setGenerateDefinitions(boolean generateDefinitions) {
+		this.generateDefinitions = generateDefinitions;
 	}
 
 }

@@ -17,7 +17,9 @@
 package org.jsweet.transpiler.typescript;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.jsweet.JSweetConfig.ANNOTATION_STRING_TYPE;
 import static org.jsweet.JSweetConfig.GLOBALS_CLASS_NAME;
+import static org.jsweet.transpiler.util.Util.getFirstAnnotationValue;
 import static org.jsweet.transpiler.util.Util.getRootRelativeJavaName;
 
 import java.io.File;
@@ -34,6 +36,7 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Collectors;
 
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
@@ -173,6 +176,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	private boolean isAnnotationScope = false;
 
+	private boolean isDefinitionScope = false;
+
 	private ClassScope getScope() {
 		return scope.peek();
 	}
@@ -205,14 +210,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	public Java2TypeScriptTranslator(TranspilationHandler logHandler, JSweetContext context, JCCompilationUnit compilationUnit,
 			boolean preserveSourceLineNumbers) {
 		super(logHandler, context, compilationUnit, new Java2TypeScriptAdapter(context), preserveSourceLineNumbers);
-	}
-
-	/**
-	 * '.ts' for TypeScript output.
-	 */
-	@Override
-	public String getTargetFilesExtension() {
-		return ".ts";
 	}
 
 	private static java.util.List<Class<?>> statementsWithNoSemis = Arrays
@@ -286,11 +283,16 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	@Override
 	public void visitTopLevel(JCCompilationUnit topLevel) {
 
-		if (topLevel.packge.getQualifiedName().toString().startsWith("def.")) {
+		isDefinitionScope = topLevel.packge.getQualifiedName().toString().startsWith("def.");
+
+		if (isDefinitionScope && !getContext().options.isGenerateDefinitions()) {
+			return;
+		}
+		if (!isDefinitionScope && getContext().options.isGenerateDefinitions()) {
 			return;
 		}
 
-		printIndent().print("\"Generated from Java with JSweet " + JSweetConfig.getVersionNumber() + " - http://www.jsweet.org\";").println();
+		printIndent().print("/* Generated from Java with JSweet " + JSweetConfig.getVersionNumber() + " - http://www.jsweet.org */").println();
 		PackageSymbol rootPackage = Util.getFirstEnclosingRootPackage(topLevel.packge);
 		if (rootPackage != null) {
 			if (!checkRootPackageParent(topLevel, rootPackage, (PackageSymbol) rootPackage.owner)) {
@@ -533,7 +535,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		inlinedModuleScanner.scan(compilationUnit);
 
 		if (!globalModule && !context.useModules) {
-			printIndent().print("namespace ").print(rootRelativePackageName).print(" {").startIndent().println();
+			printIndent();
+			if (isDefinitionScope) {
+				print("declare ");
+			}
+			print("namespace ").print(rootRelativePackageName).print(" {").startIndent().println();
 		}
 
 		for (JCTree def : topLevel.defs) {
@@ -642,7 +648,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 			}
 		}
-		getScope().declareClassScope = Util.hasAnnotationType(classdecl.sym, JSweetConfig.ANNOTATION_AMBIENT);
+		getScope().declareClassScope = Util.hasAnnotationType(classdecl.sym, JSweetConfig.ANNOTATION_AMBIENT) || isDefinitionScope;
 		getScope().interfaceScope = false;
 		getScope().removedSuperclass = false;
 		getScope().enumScope = false;
@@ -674,7 +680,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					getScope().enumScope = true;
 					print("enum ");
 				} else {
-					if (getScope().declareClassScope) {
+					if (getScope().declareClassScope && !(getIndent() != 0 && isDefinitionScope)) {
 						print("declare ");
 					}
 					defaultMethods = new HashSet<>();
@@ -1766,7 +1772,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							print("[]");
 						}
 					} else {
-						getAdapter().substituteAndPrintType(varDecl.vartype);
+						AnnotationMirror annotation;
+						if ((annotation = Util.getAnnotation(varDecl.vartype.type.tsym, ANNOTATION_STRING_TYPE)) != null) {
+							print("\"");
+							print(getFirstAnnotationValue(annotation, varDecl.vartype.type.tsym.name).toString());
+							print("\"");
+						} else {
+							getAdapter().substituteAndPrintType(varDecl.vartype);
+						}
 					}
 				}
 			}

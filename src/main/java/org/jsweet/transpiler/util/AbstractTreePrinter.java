@@ -58,12 +58,6 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 		return positionStack;
 	}
 
-	/**
-	 * This method must be overridden to define the printer output files
-	 * extension.
-	 */
-	public abstract String getTargetFilesExtension();
-
 	private static final String INDENT = "    ";
 
 	private StringBuilder out = new StringBuilder();
@@ -440,6 +434,10 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 
 	public String getRootRelativeName(Symbol symbol, boolean useJavaNames) {
 		return Util.getRootRelativeName(context.useModules ? context.getImportedElements(compilationUnit.packge) : null, symbol, useJavaNames);
+	}
+
+	public int getIndent() {
+		return indent;
 	}
 
 }
