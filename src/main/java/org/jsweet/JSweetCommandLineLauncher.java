@@ -245,7 +245,7 @@ public class JSweetCommandLineLauncher {
 		switchArg = new Switch("definitions");
 		switchArg.setLongFlag("definitions");
 		switchArg.setHelp(
-				"Tells the transpiler to generate definitions from def.* packages in d.ts definition files. Regular program elements will be ignored and no plain .ts files will be generated. The output directory is given by the tsout option. This option can be used to create candies for existing JavaScript libraries and must not be confused with the 'declaration' option, that generates the definitions along with a program written in JSweet.");
+				"Tells the transpiler to generate definitions from def.* packages in d.ts definition files. The output directory is given by the tsout option. This option can be used to create candies for existing JavaScript libraries and must not be confused with the 'declaration' option, that generates the definitions along with a program written in JSweet.");
 		jsap.registerParameter(switchArg);
 
 		// Generates declarations
