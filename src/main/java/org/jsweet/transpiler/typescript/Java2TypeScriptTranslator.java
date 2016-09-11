@@ -980,7 +980,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						|| (def instanceof JCVariableDecl && ((JCVariableDecl) def).sym.isStatic())) {
 					if (!nameSpace) {
 						nameSpace = true;
-						println().println().printIndent().print(isDefinitionScope ? "declare " : "export ").print("namespace ")
+						println().println().printIndent().print(getIndent() == 0 && isDefinitionScope ? "declare " : "export ").print("namespace ")
 								.print(classdecl.getSimpleName().toString()).print(" {").startIndent();
 					}
 					println().println().printIndent().print(def);
