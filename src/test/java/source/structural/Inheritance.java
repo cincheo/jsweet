@@ -19,6 +19,7 @@ package source.structural;
 import static jsweet.util.Globals.$export;
 import static jsweet.util.Globals.$get;
 
+import jsweet.lang.Array;
 import jsweet.lang.Interface;
 import jsweet.lang.JSON;
 
@@ -36,10 +37,11 @@ abstract class SuperInterface1 {
 class SuperClass1 extends SuperInterface1 {
 	public SuperClass1() {
 	}
-	
-	protected void m() {};
-	
-	protected int i;
+
+	protected void m() {
+	};
+
+	protected Array<String> a;
 }
 
 public class Inheritance extends SuperClass1 {
@@ -48,9 +50,12 @@ public class Inheritance extends SuperClass1 {
 		m();
 		super.m();
 		this.m();
-		int v = i;
-		v = super.i;
-		v = this.i;
+		Array<String> v = a;
+		v = super.a;
+		v = this.a;
+		super.a.push("a");
+		this.a.push("b");
+		a.pop();
 	}
 
 	public static void main(String[] args) {
@@ -96,28 +101,37 @@ class D extends SubInterface {
 }
 
 interface Shape {
-	
-    public Rectangle getBounds();
-    public Rectangle2D getBounds2D();	
+
+	public Rectangle getBounds();
+
+	public Rectangle2D getBounds2D();
 
 }
 
-class Rectangle2D implements Shape { 
-	
-    public Rectangle getBounds() { return null; }
-    public Rectangle2D getBounds2D() { return null; }
-	
+class Rectangle2D implements Shape {
+
+	public Rectangle getBounds() {
+		return null;
+	}
+
+	public Rectangle2D getBounds2D() {
+		return null;
+	}
+
 }
 
 class Rectangle extends Rectangle2D implements Shape {
-	
+
 }
 
 class SomeShape implements Shape {
-	
-    public Rectangle getBounds() { return getBounds2D().getBounds(); }
-    public Rectangle2D getBounds2D() { return null; }
-	
-	
-}
 
+	public Rectangle getBounds() {
+		return getBounds2D().getBounds();
+	}
+
+	public Rectangle2D getBounds2D() {
+		return null;
+	}
+
+}

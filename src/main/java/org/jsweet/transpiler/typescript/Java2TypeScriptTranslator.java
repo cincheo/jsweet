@@ -1218,12 +1218,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					print("public ");
 				}
 			}
-			if (methodDecl.mods.getFlags().contains(Modifier.PRIVATE) || methodDecl.mods.getFlags().contains(Modifier.PROTECTED)) {
+			if (methodDecl.mods.getFlags().contains(Modifier.PRIVATE)) {
 				if (!constructor) {
 					if (!getScope().innerClass) {
 						if (!getScope().interfaceScope) {
 							if (!(inOverload && overload.coreMethod.equals(methodDecl) || getScope().hasInnerClass)) {
-								print(methodDecl.mods.getFlags().contains(Modifier.PRIVATE) ? "private " : "protected ");
+								print("private ");
 							}
 						} else {
 							if (!(inOverload && overload.coreMethod.equals(methodDecl))) {
@@ -1735,17 +1735,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						}
 					}
 				}
-				if (varDecl.mods.getFlags().contains(Modifier.PROTECTED)) {
-					if (!getScope().interfaceScope) {
-						if (!getScope().innerClass && !varDecl.mods.getFlags().contains(Modifier.STATIC)) {
-							print("protected ");
-						}
-					} else {
-						if (!getScope().sharedMode) {
-							report(varDecl, varDecl.name, JSweetProblem.INVALID_PRIVATE_IN_INTERFACE, varDecl.name, ((JCClassDecl) parent).name);
-						}
-					}
-				}
 
 				if (varDecl.mods.getFlags().contains(Modifier.STATIC)) {
 					if (!getScope().interfaceScope) {
@@ -1939,7 +1928,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 				String selected = fieldAccess.selected.toString();
 				if (!selected.equals(GLOBALS_CLASS_NAME)) {
-					if (selected.equals("super") && !(getParent() instanceof JCMethodInvocation)) {
+					if (selected.equals("super") && (fieldAccess.sym instanceof VarSymbol)) {
 						print("this.");
 					} else {
 						print(fieldAccess.selected).print(".");
