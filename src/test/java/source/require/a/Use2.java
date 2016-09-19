@@ -21,5 +21,7 @@ import source.require.a.b.B1;
 public class Use2 {
 
 	B1 b1;
+
+	Use1 u;
 	
 }

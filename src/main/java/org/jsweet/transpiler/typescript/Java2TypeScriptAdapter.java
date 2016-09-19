@@ -254,7 +254,13 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 						return null;
 					}
 				}
-				return StringUtils.isBlank(name) ? null : name + "." + (fa.sym == null ? fa.name.toString() : getIdentifier(fa.sym));
+				Symbol nameSymbol = fa.sym;
+				if (nameSymbol == null) {
+					TypeSymbol t = fa.selected.type.tsym;
+					nameSymbol = Util.findFirstDeclarationInType(t, methodName);
+				}
+
+				return StringUtils.isBlank(name) ? null : name + "." + (nameSymbol == null ? methodName : getIdentifier(nameSymbol));
 			} else {
 				return null;
 			}
@@ -600,8 +606,14 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 
 		if (targetClassName != null && targetClassName.endsWith(GLOBALS_CLASS_NAME) && (invocation.getMethodSelect() instanceof JCFieldAccess)) {
 			if (getPrinter().getContext().useModules) {
-				if (JSweetConfig.GLOBALS_PACKAGE_NAME.equals(targetType.getEnclosingElement().getSimpleName().toString())) {
-					getPrinter().print(JSweetConfig.GLOBALS_PACKAGE_NAME).print(".");
+//				if(!getPrinter().getContext().getImportedNames(getPrinter().getCompilationUnit().getSourceFile().getName()).contains(targetMethodName)) {
+//					
+//				}
+				if (!((ClassSymbol) targetType).sourcefile.getName().equals(getPrinter().getCompilationUnit().sourcefile.getName())) {
+					// TODO: when using several qualified Globals classes, we
+					// need to disambiguate (use qualified name with
+					// underscores)
+					getPrinter().print(GLOBALS_CLASS_NAME).print(".");
 				}
 			}
 			Map<String, VarSymbol> vars = new HashMap<>();

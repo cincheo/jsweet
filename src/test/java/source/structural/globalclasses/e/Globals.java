@@ -27,6 +27,11 @@ public class Globals {
 		$export("Static", "invoked" + a + "_" + args.length);
 	}
 
+	@Name("ok")
+	public static void Ok(int a, String... args) {
+		$export("Ok", "invoked" + a + "_" + args.length);
+	}
+
 	public static void test2(int a, String... args) {
 		$export("test2", "invoked" + a + "_" + args.length);
 	}

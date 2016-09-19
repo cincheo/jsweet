@@ -421,6 +421,23 @@ public class Util {
 	}
 
 	/**
+	 * Find field declaration (of any kind) matching the given name.
+	 */
+	public static Symbol findFirstDeclarationInType(TypeSymbol typeSymbol, String name) {
+		if (typeSymbol == null) {
+			return null;
+		}
+		if (typeSymbol.getEnclosedElements() != null) {
+			for (Element element : typeSymbol.getEnclosedElements()) {
+				if (name.equals(element.getSimpleName().toString())) {
+					return (Symbol) element;
+				}
+			}
+		}
+		return null;
+	}
+
+	/**
 	 * Scans member declarations in type hierachy.
 	 */
 	public static boolean scanMemberDeclarationsInType(TypeSymbol typeSymbol, Set<String> ignoredTypeNames, Function<Element, Boolean> scanner) {

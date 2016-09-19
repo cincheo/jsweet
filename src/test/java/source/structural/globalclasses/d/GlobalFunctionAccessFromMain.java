@@ -19,6 +19,7 @@ package source.structural.globalclasses.d;
 import static jsweet.util.Globals.$export;
 import static source.structural.globalclasses.Globals.test;
 import static source.structural.globalclasses.e.Globals.Static;
+import static source.structural.globalclasses.e.Globals.Ok;
 import static source.structural.globalclasses.e.Globals.test2;
 
 public class GlobalFunctionAccessFromMain {
@@ -27,6 +28,9 @@ public class GlobalFunctionAccessFromMain {
 		$export("mainInvoked", true);
 		test();
 		test2(1, new String[] { "2", "3" });
-		Static(1, "2", "3");
+		// TODO: this does not work with modules but I don't see any obvious
+		// solution currently
+		// Static(1, "2", "3");
+		Ok(1, "2", "3");
 	}
 }

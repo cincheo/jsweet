@@ -36,7 +36,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -63,7 +62,6 @@ import org.jsweet.transpiler.util.ProcessUtil;
 import org.jsweet.transpiler.util.Util;
 
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
-import com.sun.tools.javac.code.Symbol.PackageSymbol;
 import com.sun.tools.javac.file.JavacFileManager;
 import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.main.Option;
@@ -495,8 +493,19 @@ public class JSweetTranspiler implements JSweetOptions {
 
 			Process runProcess;
 			if (context.useModules) {
-				File f = sourceFiles[sourceFiles.length - 1].getJsFile();
-				logger.debug("eval file: " + f);
+				File f = null;
+				if (!context.entryFiles.isEmpty()) {
+					f = context.entryFiles.get(0);
+					for (SourceFile sf : sourceFiles) {
+						if (sf.getJavaFile().equals(f)) {
+							f = sf.getJsFile();
+						}
+					}
+				}
+				if (f == null) {
+					f = sourceFiles[sourceFiles.length - 1].getJsFile();
+				}
+				logger.info("[modules] eval file: " + f);
 				runProcess = ProcessUtil.runCommand(ProcessUtil.NODE_COMMAND, line -> trace.append(line + "\n"), null, f.getPath());
 			} else {
 				File tmpFile = new File(new File(TMP_WORKING_DIR_NAME), "eval.tmp.js");
@@ -511,7 +520,7 @@ public class JSweetTranspiler implements JSweetOptions {
 					String script = FileUtils.readFileToString(sourceFile.getJsFile());
 					FileUtils.write(tmpFile, script + "\n", true);
 				}
-				logger.debug("eval file: " + tmpFile);
+				logger.info("[no modules] eval file: " + tmpFile);
 				runProcess = ProcessUtil.runCommand(ProcessUtil.NODE_COMMAND, line -> trace.append(line + "\n"), null, tmpFile.getPath());
 			}
 
@@ -654,8 +663,6 @@ public class JSweetTranspiler implements JSweetOptions {
 		Collection<SourceFile> jsweetSources = asList(files).stream() //
 				.filter(source -> source.getJavaFile() != null).collect(toList());
 		java2ts(errorHandler, jsweetSources.toArray(new SourceFile[0]));
-		auxiliaryTsModuleFiles.clear();
-		createAuxiliaryModuleFiles(tsOutputDir);
 
 		if (errorHandler.getErrorCount() == 0 && generateJsFiles) {
 			Collection<SourceFile> tsSources = asList(files).stream() //
@@ -664,39 +671,6 @@ public class JSweetTranspiler implements JSweetOptions {
 		}
 
 		logger.info("transpilation process finished in " + (System.currentTimeMillis() - transpilationStartTimestamp) + " ms");
-	}
-
-	private void createAuxiliaryModuleFiles(File rootDir) throws IOException {
-		if (context.useModules) {
-			// export-import submodules
-			File moduleFile = new File(rootDir, JSweetConfig.MODULE_FILE_NAME + ".ts");
-			boolean createModuleFile = !moduleFile.exists();
-			if (!createModuleFile) {
-				boolean isTsFromSourceFile = false;
-				for (SourceFile sourceFile : context.sourceFiles) {
-					if (sourceFile.getTsFile() != null && moduleFile.getAbsolutePath().equals(sourceFile.getTsFile().getAbsolutePath())) {
-						isTsFromSourceFile = true;
-						break;
-					}
-				}
-				createModuleFile = !isTsFromSourceFile;
-			}
-
-			if (createModuleFile) {
-				FileUtils.deleteQuietly(moduleFile);
-				auxiliaryTsModuleFiles.add(moduleFile);
-			}
-			for (File f : rootDir.listFiles()) {
-				if (f.isDirectory() && !f.getName().startsWith(".")) {
-					if (createModuleFile) {
-						logger.debug("create auxiliary module file: " + moduleFile);
-						FileUtils.write(moduleFile,
-								"export import " + f.getName() + " = require('./" + f.getName() + "/" + JSweetConfig.MODULE_FILE_NAME + "');\n", true);
-					}
-					createAuxiliaryModuleFiles(f);
-				}
-			}
-		}
 	}
 
 	private void java2ts(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files) throws IOException {
@@ -709,7 +683,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		new GlobalBeforeTranslationScanner(transpilationHandler, context).process(compilationUnits);
 
 		if (context.useModules) {
-			generateTsModules(transpilationHandler, files, compilationUnits);
+			generateTsFiles(transpilationHandler, files, compilationUnits);
 		} else {
 			if (bundle) {
 				generateTsBundle(transpilationHandler, files, compilationUnits);
@@ -721,6 +695,16 @@ public class JSweetTranspiler implements JSweetOptions {
 		getOrCreateTscRootFile();
 	}
 
+	private void generateModuleDefs(JCCompilationUnit moduleDefs) throws IOException {
+		StringBuilder out = new StringBuilder();
+		for (String line : FileUtils.readLines(new File(moduleDefs.getSourceFile().getName()))) {
+			if (line.startsWith("///")) {
+				out.append(line.substring(3));
+			}
+		}
+		FileUtils.write(new File(tsOutputDir, "module_defs.d.ts"), out, false);
+	}
+
 	private void generateTsFiles(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files, List<JCCompilationUnit> compilationUnits)
 			throws IOException {
 		// regular file-to-file generation
@@ -728,6 +712,9 @@ public class JSweetTranspiler implements JSweetOptions {
 		for (int i = 0; i < compilationUnits.length(); i++) {
 			JCCompilationUnit cu = compilationUnits.get(i);
 			if (isModuleDefsFile(cu)) {
+				if (context.useModules) {
+					generateModuleDefs(cu);
+				}
 				continue;
 			}
 			logger.info("scanning " + cu.sourcefile.getName() + "...");
@@ -768,103 +755,6 @@ public class JSweetTranspiler implements JSweetOptions {
 
 	private boolean isModuleDefsFile(JCCompilationUnit cu) {
 		return cu.getSourceFile().getName().equals("module_defs.java") || cu.getSourceFile().getName().endsWith("/module_defs.java");
-	}
-
-	private void generateTsModules(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files, List<JCCompilationUnit> compilationUnits)
-			throws IOException {
-		// when using modules, all classes of the same package are folded to
-		// one module file
-		Map<PackageSymbol, StringBuilder> modules = new HashMap<>();
-		Map<PackageSymbol, StringBuilder> moduleFooters = new HashMap<>();
-		Map<PackageSymbol, ArrayList<Integer>> fileIndexes = new HashMap<>();
-		StaticInitilializerAnalyzer analizer = new StaticInitilializerAnalyzer(context);
-		analizer.process(compilationUnits);
-		java.util.List<JCCompilationUnit> orderedCompilationUnits = new ArrayList<>();
-		for (Entry<PackageSymbol, DirectedGraph<JCCompilationUnit>> pkgCus : analizer.staticInitializersDependencies.entrySet()) {
-			orderedCompilationUnits.addAll(pkgCus.getValue().topologicalSort(n -> {
-				transpilationHandler.report(JSweetProblem.CYCLE_IN_STATIC_INITIALIZER_DEPENDENCIES, null,
-						JSweetProblem.CYCLE_IN_STATIC_INITIALIZER_DEPENDENCIES.getMessage(n.element.sourcefile.getName()));
-			}));
-		}
-		logger.debug("ordered compilation units: " + orderedCompilationUnits.stream().map(cu -> {
-			return cu.sourcefile.getName();
-		}).collect(Collectors.toList()));
-		int[] permutation = new int[orderedCompilationUnits.size()];
-		StringBuilder permutationString = new StringBuilder();
-		for (int i = 0; i < orderedCompilationUnits.size(); i++) {
-			permutation[i] = compilationUnits.indexOf(orderedCompilationUnits.get(i));
-			permutationString.append("" + i + "=" + permutation[i] + ";");
-		}
-		logger.debug("permutation: " + permutationString.toString());
-		new OverloadScanner(transpilationHandler, context).process(orderedCompilationUnits);
-		JCCompilationUnit moduleDefs = null;
-		for (int i = 0; i < orderedCompilationUnits.size(); i++) {
-			JCCompilationUnit cu = orderedCompilationUnits.get(i);
-			if (cu.packge.getQualifiedName().toString().startsWith("def.")) {
-				logger.info("skipping " + cu.sourcefile.getName() + "...");
-				continue;
-			}
-			if (isModuleDefsFile(cu)) {
-				logger.info("found module definitions " + cu.sourcefile.getName() + "...");
-				moduleDefs = cu;
-				continue;
-			}
-			logger.info("scanning " + cu.sourcefile.getName() + "...");
-			AbstractTreePrinter printer = new Java2TypeScriptTranslator(transpilationHandler, context, cu, preserveSourceLineNumbers);
-			printer.print(cu);
-			StringBuilder sb = modules.get(cu.packge);
-			if (sb == null) {
-				sb = new StringBuilder();
-				modules.put(cu.packge, sb);
-			}
-			StringBuilder sb2 = moduleFooters.get(cu.packge);
-			if (sb2 == null) {
-				sb2 = new StringBuilder();
-				moduleFooters.put(cu.packge, sb2);
-			}
-			ArrayList<Integer> indexes = fileIndexes.get(cu.packge);
-			if (indexes == null) {
-				indexes = new ArrayList<Integer>();
-				fileIndexes.put(cu.packge, indexes);
-			}
-			indexes.add(i);
-			files[permutation[i]].sourceMap = printer.sourceMap;
-			files[permutation[i]].sourceMap.shiftOutputPositions(StringUtils.countMatches(sb, "\n"));
-			sb.append(printer.getOutput());
-			sb2.append(context.getGlobalsMappingString());
-			sb2.append(context.poolFooterStatements());
-		}
-		for (Entry<PackageSymbol, StringBuilder> e : modules.entrySet()) {
-			String outputFileRelativePathNoExt = Util.getRootRelativeJavaName(e.getKey()).replace(".", File.separator) + File.separator
-					+ JSweetConfig.MODULE_FILE_NAME;
-			String outputFileRelativePath = outputFileRelativePathNoExt + ".ts";
-			logger.info("output file: " + outputFileRelativePath);
-			File outputFile = new File(tsOutputDir, outputFileRelativePath);
-			outputFile.getParentFile().mkdirs();
-			String outputFilePath = outputFile.getPath();
-			PrintWriter out = new PrintWriter(outputFilePath);
-			try {
-				out.println(e.getValue().toString());
-				out.print(moduleFooters.get(e.getKey()));
-			} finally {
-				out.close();
-			}
-			for (Integer i : fileIndexes.get(e.getKey())) {
-				files[permutation[i]].tsFile = outputFile;
-				files[permutation[i]].javaFileLastTranspiled = files[permutation[i]].getJavaFile().lastModified();
-			}
-			logger.info("created " + outputFilePath);
-		}
-		if (moduleDefs != null) {
-			StringBuilder out = new StringBuilder();
-			for (String line : FileUtils.readLines(new File(moduleDefs.getSourceFile().getName()))) {
-				if (line.startsWith("///")) {
-					out.append(line.substring(3));
-				}
-			}
-			FileUtils.write(new File(tsOutputDir, "module_defs.d.ts"), out, false);
-		}
-
 	}
 
 	private void generateTsBundle(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files, List<JCCompilationUnit> compilationUnits)

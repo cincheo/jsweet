@@ -47,7 +47,6 @@ import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.OverloadScanner.Overload;
-import org.jsweet.transpiler.SourceFile;
 import org.jsweet.transpiler.TranspilationHandler;
 import org.jsweet.transpiler.util.AbstractTreePrinter;
 import org.jsweet.transpiler.util.Util;
@@ -245,19 +244,30 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	private PackageSymbol topLevelPackage;
 
-	private void useModule(PackageSymbol targetPackage, JCTree sourceTree, String targetName, String moduleName, Symbol sourceElement) {
+	private void useModule(boolean require, PackageSymbol targetPackage, JCTree sourceTree, String targetName, String moduleName, Symbol sourceElement) {
 		if (context.useModules) {
 			context.packageDependencies.add(targetPackage);
 			context.packageDependencies.add(compilationUnit.packge);
 			context.packageDependencies.addEdge(compilationUnit.packge, targetPackage);
 		}
 		context.registerUsedModule(moduleName);
-		Set<String> importedNames = context.getImportedNames(compilationUnit.packge);
+		Set<String> importedNames = context.getImportedNames(compilationUnit.getSourceFile().getName());
 		if (!importedNames.contains(targetName)) {
 			if (context.useModules) {
-				print("import " + targetName + " = require(\"" + moduleName + "\"); ").println();
+				// TODO: when using several qualified Globals classes, we need
+				// to disambiguate (Globals__1, Globals__2, ....)
+				// TODO: IDEA FOR MODULES AND FULLY QUALIFIED NAMES
+				// when using a fully qualified name in the code, we need an
+				// import, which can be named after something like
+				// qualName.replace(".", "_")... this would work in the general
+				// case...
+				if (require || GLOBALS_CLASS_NAME.equals(targetName)) {
+					print("import " + targetName + " = require(\"" + moduleName + "\"); ").println();
+				} else {
+					print("import { " + targetName + " } from '" + moduleName + "'; ").println();
+				}
 			}
-			context.registerImportedName(compilationUnit.packge, sourceElement, targetName);
+			context.registerImportedName(compilationUnit.getSourceFile().getName(), sourceElement, targetName);
 		}
 	}
 
@@ -334,29 +344,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			report(topLevel.getPackageName(), JSweetProblem.PACKAGE_NAME_CONTAINS_KEYWORD, packageSegments);
 		}
 
-		if (!context.useModules) {
-			context.clearImportedNames(compilationUnit.packge);
-		}
-
-		if (context.useModules) {
-			// export-import submodules
-			File parent = new File(compilationUnit.getSourceFile().getName()).getParentFile();
-			File[] sourceFiles = SourceFile.toFiles(context.sourceFiles);
-			for (File file : parent.listFiles()) {
-				if (file.isDirectory() && !file.getName().startsWith(".")) {
-					if (Util.containsFile(file, sourceFiles)) {
-						Set<String> importedNames = context.getImportedNames(compilationUnit.packge);
-						if (!importedNames.contains(file.getName())) {
-							logger.debug(topLevel.getSourceFile().getName() + " export import: " + file);
-							print("export import " + file.getName() + " = require('./" + file.getName() + "/" + JSweetConfig.MODULE_FILE_NAME + "');")
-									.println();
-							context.registerImportedName(compilationUnit.packge, null, file.getName());
-						}
-					}
-				}
-			}
-		}
-
 		// generate requires by looking up imported external modules
 
 		for (JCImport importDecl : topLevel.getImports()) {
@@ -370,7 +357,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							// regular import case (qualified.sym is a package)
 							if (Util.hasAnnotationType(qualified.sym, JSweetConfig.ANNOTATION_MODULE)) {
 								String actualName = Util.getAnnotationValue(qualified.sym, JSweetConfig.ANNOTATION_MODULE, null);
-								useModule(null, importDecl, qualified.name.toString(), actualName, ((PackageSymbol) qualified.sym));
+								useModule(true, null, importDecl, qualified.name.toString(), actualName, ((PackageSymbol) qualified.sym));
 							}
 						} else {
 							// static import case (imported fields and methods)
@@ -382,7 +369,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 											if (qualified.name.equals(importedMember.getSimpleName())) {
 												if (Util.hasAnnotationType(importedMember, JSweetConfig.ANNOTATION_MODULE)) {
 													String actualName = Util.getAnnotationValue(importedMember, JSweetConfig.ANNOTATION_MODULE, null);
-													useModule(null, importDecl, importedMember.getSimpleName().toString(), actualName, importedMember);
+													useModule(true, null, importDecl, importedMember.getSimpleName().toString(), actualName, importedMember);
 													break;
 												}
 											}
@@ -408,32 +395,62 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		for (JCImport importDecl : topLevel.getImports()) {
 			if (importDecl.qualid instanceof JCFieldAccess) {
 				JCFieldAccess qualified = (JCFieldAccess) importDecl.qualid;
+				String importedName = qualified.name.toString();
 				if (importDecl.isStatic() && (qualified.selected instanceof JCFieldAccess)) {
 					qualified = (JCFieldAccess) qualified.selected;
 				}
 				if (qualified.sym instanceof ClassSymbol) {
 					ClassSymbol importedClass = (ClassSymbol) qualified.sym;
-					if (Util.isSourceType(importedClass)) {
-						PackageSymbol targetRootPackage = Util.getTopLevelPackage(importedClass);
-						if (targetRootPackage == null) {
+					if (Util.isSourceType(importedClass) && !importedClass.getQualifiedName().toString().startsWith(JSweetConfig.LIBS_PACKAGE + ".")) {
+						String importedModule = importedClass.sourcefile.getName();
+						if (importedModule.equals(compilationUnit.sourcefile.getName())) {
 							continue;
 						}
-						String targetRootPackageName = targetRootPackage.getSimpleName().toString();
-						String pathToReachRootPackage = Util.getRelativePath("/" + Util.getRootRelativeJavaName(compilationUnit.packge).replace('.', '/'),
-								"/" + targetRootPackageName);
-						if (pathToReachRootPackage == null) {
-							pathToReachRootPackage = ".";
-							// continue;
+						String pathToImportedClass = Util.getRelativePath(new File(compilationUnit.sourcefile.getName()).getParent(), importedModule);
+						pathToImportedClass = pathToImportedClass.substring(0, pathToImportedClass.length() - 5);
+						if (!pathToImportedClass.startsWith(".")) {
+							pathToImportedClass = "./" + pathToImportedClass;
 						}
-						File moduleFile = new File(new File(pathToReachRootPackage), JSweetConfig.MODULE_FILE_NAME);
+
 						if (qualified.sym.getEnclosingElement() instanceof PackageSymbol) {
-							useModule((PackageSymbol) qualified.sym.getEnclosingElement(), importDecl, targetRootPackageName,
-									moduleFile.getPath().replace('\\', '/'), null);
+							useModule(false, (PackageSymbol) qualified.sym.getEnclosingElement(), importDecl, importedName,
+									pathToImportedClass.replace('\\', '/'), null);
 						}
 					}
 				}
 			}
 		}
+
+		if (context.useModules) {
+			TreeScanner usedTypesScanner = new TreeScanner() {
+
+				private void checkType(TypeSymbol type) {
+					if (type instanceof ClassSymbol) {
+						if (type.getEnclosingElement().equals(compilationUnit.packge)) {
+							String importedModule = ((ClassSymbol) type).sourcefile.getName();
+							if (!importedModule.equals(compilationUnit.sourcefile.getName())) {
+								importedModule = "./" + new File(importedModule).getName();
+								importedModule = importedModule.substring(0, importedModule.length() - 5);
+								useModule(false, (PackageSymbol) type.getEnclosingElement(), null, type.getSimpleName().toString(), importedModule, null);
+							}
+						}
+					}
+				}
+
+				@Override
+				public void scan(JCTree t) {
+					if (t != null && t.type != null && t.type.tsym instanceof ClassSymbol) {
+						if (!(t instanceof JCTypeApply)) {
+							checkType(t.type.tsym);
+						}
+					}
+					super.scan(t);
+				}
+
+			};
+			usedTypesScanner.scan(compilationUnit);
+		}
+
 		// require root modules when using fully qualified names or reserved
 		// keywords
 		TreeScanner inlinedModuleScanner = new TreeScanner() {
@@ -489,7 +506,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					}
 					File moduleFile = new File(new File(pathToModulePackage), JSweetConfig.MODULE_FILE_NAME);
 					if (!identifierPackage.getSimpleName().toString().equals(compilationUnit.packge.getSimpleName().toString())) {
-						useModule(identifierPackage, identifier, identifierPackage.getSimpleName().toString(), moduleFile.getPath().replace('\\', '/'), null);
+						useModule(false, identifierPackage, identifier, identifierPackage.getSimpleName().toString(), moduleFile.getPath().replace('\\', '/'),
+								null);
 					}
 				} else if (identifier.sym instanceof ClassSymbol) {
 					if (JSweetConfig.GLOBALS_PACKAGE_NAME.equals(identifier.sym.getEnclosingElement().getSimpleName().toString())) {
@@ -499,7 +517,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						}
 						File moduleFile = new File(new File(pathToModulePackage), JSweetConfig.MODULE_FILE_NAME);
 						if (!identifier.sym.getEnclosingElement().equals(compilationUnit.packge.getSimpleName().toString())) {
-							useModule((PackageSymbol) identifier.sym.getEnclosingElement(), identifier, JSweetConfig.GLOBALS_PACKAGE_NAME,
+							useModule(false, (PackageSymbol) identifier.sym.getEnclosingElement(), identifier, JSweetConfig.GLOBALS_PACKAGE_NAME,
 									moduleFile.getPath().replace('\\', '/'), null);
 						}
 					}
@@ -525,14 +543,15 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					}
 					File moduleFile = new File(new File(pathToReachRootPackage), JSweetConfig.MODULE_FILE_NAME);
 					if (!invocationPackage.toString().equals(compilationUnit.packge.getSimpleName().toString())) {
-						useModule(invocationPackage, invocation, targetRootPackageName, moduleFile.getPath().replace('\\', '/'), null);
+						useModule(false, invocationPackage, invocation, targetRootPackageName, moduleFile.getPath().replace('\\', '/'), null);
 					}
 				}
 				super.visitApply(invocation);
 			}
 
 		};
-		inlinedModuleScanner.scan(compilationUnit);
+		// TODO: change the way qualified names are handled (because of new module organization)
+		// inlinedModuleScanner.scan(compilationUnit);
 
 		if (!globalModule && !context.useModules) {
 			printIndent();
@@ -1028,7 +1047,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	}
 
 	private String getTSMethodName(JCMethodDecl methodDecl) {
-		String name = methodDecl.name.toString();
+		String name = Util.getActualName(methodDecl.sym);
 		switch (name) {
 		case "<init>":
 			return "constructor";
@@ -1044,6 +1063,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	@Override
 	public void visitMethodDef(JCMethodDecl methodDecl) {
+		if (methodDecl.name.toString().equals("Ok")) {
+			System.out.println();
+		}
 		if (Util.hasAnnotationType(methodDecl.sym, JSweetConfig.ANNOTATION_ERASED)) {
 			// erased elements are ignored
 			return;
@@ -1862,14 +1884,17 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			if (importDecl.isStatic() && !qualId.contains("." + JSweetConfig.GLOBALS_CLASS_NAME + ".")) {
 				print("var ").print(qualId.substring(qualId.lastIndexOf('.') + 1)).print(": any = ").print(qualId).print(";");
 			} else {
-				String[] namePath = adaptedQualId.split("\\.");
+				String[] namePath;
+				if (context.useModules && importDecl.isStatic()) {
+					namePath = qualId.split("\\.");
+				} else {
+					namePath = adaptedQualId.split("\\.");
+				}
 				String name = namePath[namePath.length - 1];
-				// TODO: see what it breaks
-				// name = getAdapter().getIdentifier(null, name);
 				if (context.useModules) {
-					if (!context.getImportedNames(compilationUnit.packge).contains(name)) {
+					if (!context.getImportedNames(compilationUnit.getSourceFile().getName()).contains(name)) {
 						print("import ").print(name).print(" = ").print(adaptedQualId).print(";");
-						context.registerImportedName(compilationUnit.packge, null, name);
+						context.registerImportedName(compilationUnit.getSourceFile().getName(), null, name);
 					}
 				} else {
 					if (topLevelPackage == null) {
@@ -1968,7 +1993,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	@Override
 	public void visitApply(JCMethodInvocation inv) {
-		if (inv.toString().toLowerCase().startsWith("static")) {
+		if (inv.meth.toString().toLowerCase().endsWith("static")) {
 			System.out.println();
 		}
 		if (!getAdapter().substituteMethodInvocation(inv)) {
@@ -2073,7 +2098,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						// }
 					}
 					// staticImported = true;
-					if (JSweetConfig.TS_STRICT_MODE_KEYWORDS.contains(methName.toLowerCase())) {
+					if (JSweetConfig.TS_STRICT_MODE_KEYWORDS.contains(Util.getActualName(methSym))) {
+						// if (context.useModules) {
+						// keywordHandled = true;
+						// } else {
 						// if method is a reserved TS keyword, no "static
 						// import" possible, fully qualified mode
 						String targetClass = getStaticContainerFullName(staticImport);
@@ -2085,6 +2113,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						if (JSweetConfig.isLibPath(methSym.getEnclosingElement().getQualifiedName().toString())) {
 							methodName = methName.toLowerCase();
 						}
+						// }
 					}
 				}
 			} else {
@@ -3291,19 +3320,19 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (!Util.hasAnnotationType(annotation.type.tsym, JSweetConfig.ANNOTATION_DECORATOR)) {
 			return;
 		}
-		printIndent().print("@").print(annotation.getAnnotationType());
+		printIndent().print("@").print(annotation.getAnnotationType()).print("(");
 		if (annotation.getArguments() != null && !annotation.getArguments().isEmpty()) {
 			isAnnotationScope = true;
-			print("( { ");
+			print(" { ");
 			for (JCExpression e : annotation.getArguments()) {
 				print(e);
 				print(", ");
 			}
 			removeLastChars(2);
-			print(" } )");
+			print(" } ");
 			isAnnotationScope = false;
 		}
-		println();
+		print(")").println();
 	}
 
 }
