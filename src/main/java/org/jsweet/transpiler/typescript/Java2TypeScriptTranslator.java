@@ -550,7 +550,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 
 		};
-		// TODO: change the way qualified names are handled (because of new module organization)
+		// TODO: change the way qualified names are handled (because of new
+		// module organization)
 		// inlinedModuleScanner.scan(compilationUnit);
 
 		if (!globalModule && !context.useModules) {
@@ -1063,9 +1064,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	@Override
 	public void visitMethodDef(JCMethodDecl methodDecl) {
-		if (methodDecl.name.toString().equals("Ok")) {
-			System.out.println();
-		}
 		if (Util.hasAnnotationType(methodDecl.sym, JSweetConfig.ANNOTATION_ERASED)) {
 			// erased elements are ignored
 			return;
@@ -1220,12 +1218,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					print("public ");
 				}
 			}
-			if (methodDecl.mods.getFlags().contains(Modifier.PRIVATE)) {
+			if (methodDecl.mods.getFlags().contains(Modifier.PRIVATE) || methodDecl.mods.getFlags().contains(Modifier.PROTECTED)) {
 				if (!constructor) {
 					if (!getScope().innerClass) {
 						if (!getScope().interfaceScope) {
 							if (!(inOverload && overload.coreMethod.equals(methodDecl) || getScope().hasInnerClass)) {
-								print("private ");
+								print(methodDecl.mods.getFlags().contains(Modifier.PRIVATE) ? "private " : "protected ");
 							}
 						} else {
 							if (!(inOverload && overload.coreMethod.equals(methodDecl))) {
@@ -1737,6 +1735,18 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						}
 					}
 				}
+				if (varDecl.mods.getFlags().contains(Modifier.PROTECTED)) {
+					if (!getScope().interfaceScope) {
+						if (!getScope().innerClass && !varDecl.mods.getFlags().contains(Modifier.STATIC)) {
+							print("protected ");
+						}
+					} else {
+						if (!getScope().sharedMode) {
+							report(varDecl, varDecl.name, JSweetProblem.INVALID_PRIVATE_IN_INTERFACE, varDecl.name, ((JCClassDecl) parent).name);
+						}
+					}
+				}
+
 				if (varDecl.mods.getFlags().contains(Modifier.STATIC)) {
 					if (!getScope().interfaceScope) {
 						print("static ");
@@ -1929,7 +1939,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 				String selected = fieldAccess.selected.toString();
 				if (!selected.equals(GLOBALS_CLASS_NAME)) {
-					print(fieldAccess.selected).print(".");
+					if (selected.equals("super") && !(getParent() instanceof JCMethodInvocation)) {
+						print("this.");
+					} else {
+						print(fieldAccess.selected).print(".");
+					}
 				}
 
 				if (fieldAccess.sym instanceof VarSymbol && context.getFieldNameMapping(fieldAccess.sym) != null) {
@@ -1993,9 +2007,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	@Override
 	public void visitApply(JCMethodInvocation inv) {
-		if (inv.meth.toString().toLowerCase().endsWith("static")) {
-			System.out.println();
-		}
 		if (!getAdapter().substituteMethodInvocation(inv)) {
 			String meth = inv.meth.toString();
 			String methName = meth.substring(meth.lastIndexOf('.') + 1);

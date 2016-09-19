@@ -36,11 +36,21 @@ abstract class SuperInterface1 {
 class SuperClass1 extends SuperInterface1 {
 	public SuperClass1() {
 	}
+	
+	protected void m() {};
+	
+	protected int i;
 }
 
 public class Inheritance extends SuperClass1 {
 	public Inheritance() {
 		super();
+		m();
+		super.m();
+		this.m();
+		int v = i;
+		v = super.i;
+		v = this.i;
 	}
 
 	public static void main(String[] args) {
