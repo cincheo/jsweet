@@ -187,7 +187,7 @@ public class StructuralTests extends AbstractTest {
 	public void testInstanceofForInterfaces() {
 		eval((logHandler, r) -> {
 			logHandler.assertReportedProblems();
-			Assert.assertEquals("1,2,1,3", r.get("trace"));
+			Assert.assertEquals("1,2,1,3,4,5,6", r.get("trace"));
 		}, getSourceFile(InstanceofForInterfaces.class));
 	}
 

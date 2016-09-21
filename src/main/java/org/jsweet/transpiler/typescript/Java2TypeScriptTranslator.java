@@ -1918,7 +1918,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	public void visitSelect(JCFieldAccess fieldAccess) {
 		if (!getAdapter().substituteFieldAccess(fieldAccess)) {
 			if ("class".equals(fieldAccess.name.toString())) {
-				print(fieldAccess.selected);
+				if (fieldAccess.type instanceof Type.ClassType && Util.isInterface(((Type.ClassType) fieldAccess.type).typarams_field.head.tsym)) {
+					print("\"").print(Util.getRootRelativeJavaName(((Type.ClassType) fieldAccess.type).typarams_field.head.tsym)).print("\"");
+				} else {
+					print(fieldAccess.selected);
+				}
 			} else if ("this".equals(fieldAccess.name.toString()) && getScope().innerClassNotStatic) {
 				print("this." + PARENT_CLASS_FIELD_NAME);
 			} else if ("this".equals(fieldAccess.name.toString())) {
