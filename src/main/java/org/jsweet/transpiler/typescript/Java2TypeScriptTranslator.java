@@ -1851,6 +1851,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							if (varDecl.type.equals(context.symtab.charType) && varDecl.init instanceof JCLiteral
 									&& varDecl.init.type.getTag() != TypeTag.CHAR) {
 								print("String.fromCharCode(").print(varDecl.init).print(")");
+							} else if (Util.isNumber(varDecl.type) && varDecl.init instanceof JCLiteral && varDecl.init.type.getTag() == TypeTag.CHAR) {
+								print("(").print(varDecl.init).print(").charCodeAt(0)");
 							} else {
 								print(varDecl.init);
 							}
@@ -3077,7 +3079,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	public void visitAssign(JCAssign assign) {
 		if (!getAdapter().substituteAssignment(assign)) {
 			staticInitializedAssignment = getStaticInitializedField(assign.lhs) != null;
-			print(assign.lhs).print(isAnnotationScope ? ": " : " = ").print(assign.rhs);
+			print(assign.lhs).print(isAnnotationScope ? ": " : " = ");
+			if (assign.lhs.type.equals(context.symtab.charType) && assign.rhs instanceof JCLiteral && assign.rhs.type.getTag() != TypeTag.CHAR) {
+				print("String.fromCharCode(").print(assign.rhs).print(")");
+			} else if (Util.isNumber(assign.lhs.type) && assign.rhs instanceof JCLiteral && assign.rhs.type.getTag() == TypeTag.CHAR) {
+				print("(").print(assign.rhs).print(").charCodeAt(0)");
+			} else {
+				print(assign.rhs);
+			}
 			staticInitializedAssignment = false;
 		}
 	}

@@ -5,6 +5,13 @@ import static jsweet.util.Globals.$export;
 public class Chars {
 
 	public static void main(String[] args) {
+		int i = 'i';
+		long l = 'i';
+		byte b = 'i';
+		short sh = 'i';
+		double d = 'i';
+		float f = 'i';
+		f = 'f';
 		char c1 = (char) 0;
 		char c3 = 0;
 		int j = 5;
