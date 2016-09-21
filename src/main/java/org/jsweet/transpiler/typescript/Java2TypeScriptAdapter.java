@@ -606,9 +606,10 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 
 		if (targetClassName != null && targetClassName.endsWith(GLOBALS_CLASS_NAME) && (invocation.getMethodSelect() instanceof JCFieldAccess)) {
 			if (getPrinter().getContext().useModules) {
-//				if(!getPrinter().getContext().getImportedNames(getPrinter().getCompilationUnit().getSourceFile().getName()).contains(targetMethodName)) {
-//					
-//				}
+				// if(!getPrinter().getContext().getImportedNames(getPrinter().getCompilationUnit().getSourceFile().getName()).contains(targetMethodName))
+				// {
+				//
+				// }
 				if (!((ClassSymbol) targetType).sourcefile.getName().equals(getPrinter().getCompilationUnit().sourcefile.getName())) {
 					// TODO: when using several qualified Globals classes, we
 					// need to disambiguate (use qualified name with
@@ -754,6 +755,20 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					getPrinter().print(fieldAccess.getExpression()).print(".split(").print(invocation.args.head).print(").join(")
 							.print(invocation.args.tail.head).print(")");
 					return true;
+				case "toLowerCase":
+					if (!invocation.args.isEmpty()) {
+						printMacroName(targetMethodName);
+						getPrinter().print(fieldAccess.getExpression()).print(".toLowerCase()");
+						return true;
+					}
+					break;
+				case "toUpperCase":
+					if (!invocation.args.isEmpty()) {
+						printMacroName(targetMethodName);
+						getPrinter().print(fieldAccess.getExpression()).print(".toUpperCase()");
+						return true;
+					}
+					break;
 				}
 				break;
 			case "java.lang.Character":
@@ -791,6 +806,10 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 								.print(fieldAccess.getExpression()).print(")");
 						return true;
 					}
+				case "intValue":
+					printMacroName(targetMethodName);
+					getPrinter().print("(").print(fieldAccess.getExpression()).print("|0").print(")");
+					return true;
 				case "toString":
 					if (!invocation.args.isEmpty()) {
 						printMacroName(targetMethodName);
@@ -950,6 +969,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					}
 				}
 			}
+			
 		}
 
 		if ("getClass".equals(targetMethodName)) {

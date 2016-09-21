@@ -332,7 +332,8 @@ public class StructuralTests extends AbstractTest {
 
 	@Test
 	public void testStaticImport() {
-		eval((logHandler, r) -> {
+		// TODO: support with modules
+		eval(ModuleKind.none, (logHandler, r) -> {
 			logHandler.assertReportedProblems();
 			assertEquals(true, r.get("m"));
 		}, getSourceFile(ClassWithStaticMethod.class), getSourceFile(ClassUsingStaticMethod.class));
