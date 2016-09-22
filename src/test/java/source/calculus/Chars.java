@@ -13,6 +13,7 @@ public class Chars {
 		float f = 'i';
 		f = 'f';
 		char c1 = (char) 0;
+		int ii = (int) 'a';
 		char c3 = 0;
 		int j = 5;
 		char[] s = new char[1];
@@ -20,6 +21,15 @@ public class Chars {
 		$export("result", s);
 		char c2 = (char) test2();
 		test((char) 0);
+		// char expression -> int
+		int i3 = c1;
+		test3('a');
+		test3(c1);
+		f = c1;
+		"abc".lastIndexOf('a');
+		"abc".indexOf('a');
+		// would need latest j4ts
+		//Character.toUpperCase(i3);
 	}
 
 	public static final int MIN_RADIX = 2;
@@ -27,6 +37,9 @@ public class Chars {
 	public static final int MAX_RADIX = 36;
 
 	public static void test(char c) {
+	}
+
+	public static void test3(int c) {
 	}
 
 	public static int test2() {

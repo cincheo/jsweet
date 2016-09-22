@@ -1848,12 +1848,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							}
 						} else {
 							print(" = ");
-							if (varDecl.type.equals(context.symtab.charType) && varDecl.init instanceof JCLiteral
-									&& varDecl.init.type.getTag() != TypeTag.CHAR) {
-								print("String.fromCharCode(").print(varDecl.init).print(")");
-							} else if (Util.isNumber(varDecl.type) && varDecl.init instanceof JCLiteral && varDecl.init.type.getTag() == TypeTag.CHAR) {
-								print("(").print(varDecl.init).print(").charCodeAt(0)");
-							} else {
+							if (!getAdapter().substituteAssignedExpression(varDecl.type, varDecl.init)) {
 								print(varDecl.init);
 							}
 						}
@@ -2243,7 +2238,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 			for (int i = 0; i < argsLength; i++) {
 				JCExpression arg = inv.args.get(i);
-				print(arg);
+				if (inv.meth.type != null) {
+					List<Type> argTypes = ((MethodType) inv.meth.type).argtypes;
+					Type paramType = i < argTypes.size() ? argTypes.get(i) : argTypes.get(argTypes.size() - 1);
+					if (!getAdapter().substituteAssignedExpression(paramType, arg)) {
+						print(arg);
+					}
+				}
 				if (i < argsLength - 1) {
 					print(", ");
 				}
@@ -3041,11 +3042,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	@Override
 	public void visitTypeCast(JCTypeCast cast) {
-		if (cast.type.getKind() == TypeKind.CHAR && Util.isIntegral(cast.expr.type)) {
-			print("String.fromCharCode(").print(cast.expr).print(")");
+		if (getAdapter().substituteAssignedExpression(cast.type, cast.expr)) {
 			return;
 		}
-
 		if (Util.isIntegral(cast.type)) {
 			if (cast.type.getKind() == TypeKind.LONG) {
 				print("Math.round(");
@@ -3084,11 +3083,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (!getAdapter().substituteAssignment(assign)) {
 			staticInitializedAssignment = getStaticInitializedField(assign.lhs) != null;
 			print(assign.lhs).print(isAnnotationScope ? ": " : " = ");
-			if (assign.lhs.type.equals(context.symtab.charType) && assign.rhs instanceof JCLiteral && assign.rhs.type.getTag() != TypeTag.CHAR) {
-				print("String.fromCharCode(").print(assign.rhs).print(")");
-			} else if (Util.isNumber(assign.lhs.type) && assign.rhs instanceof JCLiteral && assign.rhs.type.getTag() == TypeTag.CHAR) {
-				print("(").print(assign.rhs).print(").charCodeAt(0)");
-			} else {
+			if (!getAdapter().substituteAssignedExpression(assign.lhs.type, assign.rhs)) {
 				print(assign.rhs);
 			}
 			staticInitializedAssignment = false;

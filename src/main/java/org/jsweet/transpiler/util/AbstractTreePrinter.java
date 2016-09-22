@@ -29,8 +29,12 @@ import org.jsweet.transpiler.TranspilationHandler;
 import org.jsweet.transpiler.TypeChecker;
 
 import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.Type.MethodType;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
+import com.sun.tools.javac.tree.JCTree.JCExpression;
+import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 
@@ -335,6 +339,26 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 		inArgListTail = false;
 		if (!args.isEmpty()) {
 			removeLastChars(2);
+		}
+		return this;
+	}
+
+	/**
+	 * Prints an invocation argument list, with type assignment.
+	 */
+	public AbstractTreePrinter printArgList(JCMethodInvocation inv) {
+		for (int i = 0; i < inv.args.size(); i++) {
+			JCExpression arg = inv.args.get(i);
+			if (inv.meth.type != null) {
+				List<Type> argTypes = ((MethodType) inv.meth.type).argtypes;
+				Type paramType = i < argTypes.size() ? argTypes.get(i) : argTypes.get(argTypes.size() - 1);
+				if (!getAdapter().substituteAssignedExpression(paramType, arg)) {
+					print(arg);
+				}
+			}
+			if (i < inv.args.size() - 1) {
+				print(", ");
+			}
 		}
 		return this;
 	}

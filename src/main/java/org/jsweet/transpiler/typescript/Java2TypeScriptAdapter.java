@@ -83,6 +83,8 @@ import org.jsweet.transpiler.util.Util;
 import com.sun.codemodel.internal.JJavaName;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.PackageSymbol;
@@ -755,6 +757,12 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					getPrinter().print(fieldAccess.getExpression()).print(".split(").print(invocation.args.head).print(").join(")
 							.print(invocation.args.tail.head).print(")");
 					return true;
+				case "lastIndexOf":
+					getPrinter().print(fieldAccess.getExpression()).print(".lastIndexOf(").printArgList(invocation.args).print(")");
+					return true;
+				case "indexOf":
+					getPrinter().print(fieldAccess.getExpression()).print(".indexOf(").printArgList(invocation.args).print(")");
+					return true;
 				case "toLowerCase":
 					if (!invocation.args.isEmpty()) {
 						printMacroName(targetMethodName);
@@ -969,7 +977,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					}
 				}
 			}
-			
+
 		}
 
 		if ("getClass".equals(targetMethodName)) {
@@ -1005,8 +1013,8 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 	}
 
 	private void delegateToEmulLayer(String targetClassName, String targetMethodName, JCMethodInvocation invocation) {
-		getPrinter().print("javaemul.internal." + targetClassName.substring(10) + "Helper.").print(targetMethodName).print("(")
-				.printArgList(invocation.getArguments()).print(")");
+		getPrinter().print("javaemul.internal." + targetClassName.substring(10) + "Helper.").print(targetMethodName).print("(").printArgList(invocation.args)
+				.print(")");
 	}
 
 	private void delegateToEmulLayerStatic(String targetClassName, String targetMethodName, JCExpression target) {
@@ -1349,4 +1357,18 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 	public Set<String> getErasedTypes() {
 		return langTypesMapping.keySet();
 	}
+
+	@Override
+	public boolean substituteAssignedExpression(Type assignedType, JCExpression expression) {
+		if (assignedType.getTag() == TypeTag.CHAR && expression.type.getTag() != TypeTag.CHAR) {
+			getPrinter().print("String.fromCharCode(").print(expression).print(")");
+			return true;
+		} else if (Util.isNumber(assignedType) && expression.type.getTag() == TypeTag.CHAR) {
+			getPrinter().print("(").print(expression).print(").charCodeAt(0)");
+			return true;
+		} else {
+			return false;
+		}
+	}
+
 }

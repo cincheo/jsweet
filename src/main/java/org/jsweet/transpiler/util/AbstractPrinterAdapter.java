@@ -24,6 +24,7 @@ import org.jsweet.transpiler.JSweetProblem;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Symbol.TypeVariableSymbol;
+import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.MethodType;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCArrayAccess;
@@ -321,5 +322,13 @@ public abstract class AbstractPrinterAdapter {
 	}
 
 	public abstract Set<String> getErasedTypes();
+
+	/**
+	 * Substitutes if required an expression that is being assigned to a given
+	 * type.
+	 */
+	public boolean substituteAssignedExpression(Type assignedType, JCExpression expression) {
+		return false;
+	}
 
 }
