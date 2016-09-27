@@ -1316,7 +1316,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			print(";");
 			return;
 		}
-		if (methodDecl.getBody() == null && !inCoreWrongOverload || (methodDecl.mods.getFlags().contains(Modifier.DEFAULT) && !getScope().defaultMethodScope)) {
+		if (methodDecl.getBody() == null && !(inCoreWrongOverload && !getScope().declareClassScope)
+				|| (methodDecl.mods.getFlags().contains(Modifier.DEFAULT) && !getScope().defaultMethodScope)) {
 			if (!getScope().interfaceScope && methodDecl.getModifiers().getFlags().contains(Modifier.ABSTRACT) && inOverload && !overload.isValid) {
 				print(" {");
 				// runtime error if we go there...
