@@ -57,7 +57,10 @@ public class ProcessUtil {
 	 */
 	public static File USER_HOME_DIR = new File(System.getProperty("user.home"));
 
-	private static File NPM_DIR = new File(USER_HOME_DIR, ".jsweet-node_modules");
+	/**
+	 * A static field that stores the JSweet npm directory.
+	 */
+	public static File NPM_DIR = new File(USER_HOME_DIR, ".jsweet-node_modules");
 
 	private static List<String> nodeCommands = Arrays.asList("tsc", "browserify");
 
@@ -247,13 +250,15 @@ public class ProcessUtil {
 	 * @param global
 	 *            <code>true</code> for adding the <code>-g</code> option
 	 */
-	public static void installNodePackage(String nodePackageName, boolean global) {
+	public static void installNodePackage(String nodePackageName, String version, boolean global) {
 		logger.debug("installing " + nodePackageName + " with npm");
 		initNode();
 		if (global) {
-			runCommand(NPM_COMMAND, USER_HOME_DIR, false, null, null, null, "install", "--prefix", NPM_DIR.getPath(), nodePackageName, "-g");
+			runCommand(NPM_COMMAND, USER_HOME_DIR, false, null, null, null, "install", "--prefix", NPM_DIR.getPath(),
+					version == null ? nodePackageName : nodePackageName + "@" + version, "-g");
 		} else {
-			runCommand(NPM_COMMAND, USER_HOME_DIR, false, null, null, null, "install", nodePackageName, "--save");
+			runCommand(NPM_COMMAND, USER_HOME_DIR, false, null, null, null, "install", version == null ? nodePackageName : nodePackageName + "@" + version,
+					"--save");
 		}
 	}
 
@@ -272,7 +277,7 @@ public class ProcessUtil {
 			if (!installed[0]) {
 				installed[0] = line.endsWith("/" + nodePackageName);
 			}
-		} , null, null, "ls", "--parseable", nodePackageName);
+		}, null, null, "ls", "--parseable", nodePackageName);
 		return installed[0];
 	}
 

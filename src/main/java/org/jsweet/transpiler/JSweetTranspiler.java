@@ -86,6 +86,13 @@ import com.sun.tools.javac.util.Options;
  */
 public class JSweetTranspiler implements JSweetOptions {
 
+	/**
+	 * The TypeScript version to be installed/used with this version of JSweet
+	 * (WARNING: so far, having multiple JSweet versions for the same user
+	 * account may lead to performance issues - could be fixed if necessary).
+	 */
+	public static final String TSC_VERSION = "1.8";
+
 	static {
 		JSweetConfig.initClassPath(null);
 	}
@@ -242,8 +249,20 @@ public class JSweetTranspiler implements JSweetOptions {
 			initFile.mkdirs();
 			initFile.createNewFile();
 		}
-		if (!ProcessUtil.isInstalledWithNpm("tsc")) {
-			ProcessUtil.installNodePackage("typescript", true);
+
+		String v = "";
+		File tscVersionFile = new File(ProcessUtil.NPM_DIR, "tsc-version");
+		if (tscVersionFile.exists()) {
+			v = FileUtils.readFileToString(tscVersionFile);
+		}
+		if (!ProcessUtil.isInstalledWithNpm("tsc") || !TSC_VERSION.equals(v.trim())) {
+			// this will lead to performances issues if having multiple versions
+			// of JSweet installed
+			if (ProcessUtil.isInstalledWithNpm("tsc")) {
+				ProcessUtil.uninstallNodePackage("typescript", true);
+			}
+			ProcessUtil.installNodePackage("typescript", TSC_VERSION, true);
+			FileUtils.writeStringToFile(tscVersionFile, TSC_VERSION);
 		}
 	}
 
