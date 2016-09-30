@@ -144,8 +144,8 @@ public class StaticInitilializerAnalyzer extends TreeScanner {
 					}
 				}
 			}
-			super.visitClassDef(classdecl);
 		}
+		super.visitClassDef(classdecl);
 	}
 
 	private void acceptReferences(JCTree tree) {
@@ -162,19 +162,23 @@ public class StaticInitilializerAnalyzer extends TreeScanner {
 		}
 	}
 
-//	@Override
-//	public void visitNewClass(JCNewClass newClass) {
-//		if (pass == 1) {
-//			return;
-//		}
-//		if (!Util.isInterface(newClass.type.tsym) && currentTopLevelImportedTypes.contains(newClass.type)) {
-//			JCCompilationUnit target = typesToCompilationUnits.get(newClass.type.tsym);
-//			if (target != null && !currentTopLevel.equals(target) && getGraph().contains(target)) {
-//				logger.debug("adding object construction dependency: " + currentTopLevel.getSourceFile() + " -> " + target.getSourceFile());
-//				getGraph().addEdge(target, currentTopLevel);
-//			}
-//		}
-//	}
+	// @Override
+	// public void visitNewClass(JCNewClass newClass) {
+	// if (pass == 1) {
+	// return;
+	// }
+	// if (!Util.isInterface(newClass.type.tsym) &&
+	// currentTopLevelImportedTypes.contains(newClass.type)) {
+	// JCCompilationUnit target =
+	// typesToCompilationUnits.get(newClass.type.tsym);
+	// if (target != null && !currentTopLevel.equals(target) &&
+	// getGraph().contains(target)) {
+	// logger.debug("adding object construction dependency: " +
+	// currentTopLevel.getSourceFile() + " -> " + target.getSourceFile());
+	// getGraph().addEdge(target, currentTopLevel);
+	// }
+	// }
+	// }
 
 	boolean isImported(Type type) {
 		for (JCImport i : currentTopLevel.getImports()) {

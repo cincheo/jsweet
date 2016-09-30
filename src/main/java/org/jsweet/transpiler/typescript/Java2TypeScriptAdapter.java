@@ -83,6 +83,8 @@ import org.jsweet.transpiler.util.Util;
 import com.sun.codemodel.internal.JJavaName;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.PackageSymbol;
@@ -206,13 +208,22 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				|| qualifiedName.endsWith(GLOBALS_PACKAGE_NAME + "." + GLOBALS_CLASS_NAME)) {
 			return null;
 		}
-		if (importDecl.qualid.type != null && (Util.hasAnnotationType(importDecl.qualid.type.tsym, ANNOTATION_ERASED, ANNOTATION_OBJECT_TYPE)
-				|| importDecl.qualid.type.tsym.getKind() == ElementKind.ANNOTATION_TYPE)) {
-			return null;
+		if (importDecl.qualid.type != null) {
+			if (Util.hasAnnotationType(importDecl.qualid.type.tsym, ANNOTATION_ERASED, ANNOTATION_OBJECT_TYPE)) {
+				return null;
+			}
+			if (importDecl.qualid.type.tsym.getKind() == ElementKind.ANNOTATION_TYPE
+					&& !Util.hasAnnotationType(importDecl.qualid.type.tsym, JSweetConfig.ANNOTATION_DECORATOR)) {
+				return null;
+			}
 		}
 		if (importDecl.isStatic()) {
 			if (importDecl.getQualifiedIdentifier() instanceof JCFieldAccess) {
 				JCFieldAccess fa = (JCFieldAccess) importDecl.getQualifiedIdentifier();
+				switch (fa.selected.toString()) {
+				case "java.lang.Math":
+					return null;
+				}
 				String name = getPrinter().getRootRelativeName(fa.selected.type.tsym, getPrinter().getContext().useModules);
 				String methodName = fa.name.toString();
 
@@ -245,7 +256,13 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 						return null;
 					}
 				}
-				return StringUtils.isBlank(name) ? null : name + "." + getIdentifier(methodName);
+				Symbol nameSymbol = fa.sym;
+				if (nameSymbol == null) {
+					TypeSymbol t = fa.selected.type.tsym;
+					nameSymbol = Util.findFirstDeclarationInType(t, methodName);
+				}
+
+				return StringUtils.isBlank(name) ? null : name + "." + (nameSymbol == null ? methodName : getIdentifier(nameSymbol));
 			} else {
 				return null;
 			}
@@ -306,6 +323,11 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			targetMethodName = fieldAccess.name.toString();
 		} else {
 			targetMethodName = invocation.getMethodSelect().toString();
+			if (getPrinter().getStaticImports().containsKey(targetMethodName)) {
+				JCImport i = getPrinter().getStaticImports().get(targetMethodName);
+				targetType = ((JCFieldAccess) i.qualid).selected.type.tsym;
+				targetClassName = targetType.getQualifiedName().toString();
+			}
 		}
 
 		// System.out.println(invocation+" ===> "+fieldAccess+" :
@@ -584,10 +606,17 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			return true;
 		}
 
-		if (targetClassName != null && targetClassName.endsWith(GLOBALS_CLASS_NAME)) {
+		if (targetClassName != null && targetClassName.endsWith(GLOBALS_CLASS_NAME) && (invocation.getMethodSelect() instanceof JCFieldAccess)) {
 			if (getPrinter().getContext().useModules) {
-				if (JSweetConfig.GLOBALS_PACKAGE_NAME.equals(targetType.getEnclosingElement().getSimpleName().toString())) {
-					getPrinter().print(JSweetConfig.GLOBALS_PACKAGE_NAME).print(".");
+				// if(!getPrinter().getContext().getImportedNames(getPrinter().getCompilationUnit().getSourceFile().getName()).contains(targetMethodName))
+				// {
+				//
+				// }
+				if (!((ClassSymbol) targetType).sourcefile.getName().equals(getPrinter().getCompilationUnit().sourcefile.getName())) {
+					// TODO: when using several qualified Globals classes, we
+					// need to disambiguate (use qualified name with
+					// underscores)
+					getPrinter().print(GLOBALS_CLASS_NAME).print(".");
 				}
 			}
 			Map<String, VarSymbol> vars = new HashMap<>();
@@ -595,7 +624,12 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			if (vars.containsKey(targetMethodName)) {
 				report(invocation, JSweetProblem.HIDDEN_INVOCATION, targetMethodName);
 			}
-			getPrinter().printIdentifier(targetMethodName).print("(").printArgList(invocation.args).print(")");
+			Symbol s = Util.findFirstMethodDeclarationInType(targetType, targetMethodName);
+			if (s == null) {
+				getPrinter().print(targetMethodName).print("(").printArgList(invocation.args).print(")");
+			} else {
+				getPrinter().printIdentifier(s).print("(").printArgList(invocation.args).print(")");
+			}
 			return true;
 		}
 		if (fieldAccess == null && matchesMethod(targetClassName, targetMethodName, null, "$super")) {
@@ -656,6 +690,11 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					printMacroName(targetMethodName);
 					getPrinter().print(fieldAccess.getExpression()).print(".substring(").printArgList(invocation.args).print(")");
 					return true;
+				// this macro should use 'includes' in ES6
+				case "contains":
+					printMacroName(targetMethodName);
+					getPrinter().print(fieldAccess.getExpression()).print(".indexOf(").printArgList(invocation.args).print(") != -1");
+					return true;
 				case "length":
 					getPrinter().print(fieldAccess.getExpression()).print(".length");
 					return true;
@@ -663,6 +702,12 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				case "startsWith":
 					printMacroName(targetMethodName);
 					getPrinter().print("((str, searchString, position = 0) => str.substr(position, searchString.length) === searchString)(")
+							.print(fieldAccess.getExpression()).print(", ").printArgList(invocation.args).print(")");
+					return true;
+				case "endsWith":
+					printMacroName(targetMethodName);
+					getPrinter()
+							.print("((str, searchString) => { var pos = str.length - searchString.length; var lastIndex = str.indexOf(searchString, pos); return lastIndex !== -1 && lastIndex === pos; })(")
 							.print(fieldAccess.getExpression()).print(", ").printArgList(invocation.args).print(")");
 					return true;
 				// this macro is not needed in ES6
@@ -702,6 +747,36 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					printMacroName(targetMethodName);
 					getPrinter().print("(").print(fieldAccess.getExpression()).print(").split('')");
 					return true;
+				case "replaceAll":
+					printMacroName(targetMethodName);
+					getPrinter().print(fieldAccess.getExpression()).print(".replace(new RegExp(").print(invocation.args.head).print(", 'g'),")
+							.print(invocation.args.tail.head).print(")");
+					return true;
+				case "replace":
+					printMacroName(targetMethodName);
+					getPrinter().print(fieldAccess.getExpression()).print(".split(").print(invocation.args.head).print(").join(")
+							.print(invocation.args.tail.head).print(")");
+					return true;
+				case "lastIndexOf":
+					getPrinter().print(fieldAccess.getExpression()).print(".lastIndexOf(").printArgList(invocation.args).print(")");
+					return true;
+				case "indexOf":
+					getPrinter().print(fieldAccess.getExpression()).print(".indexOf(").printArgList(invocation.args).print(")");
+					return true;
+				case "toLowerCase":
+					if (!invocation.args.isEmpty()) {
+						printMacroName(targetMethodName);
+						getPrinter().print(fieldAccess.getExpression()).print(".toLowerCase()");
+						return true;
+					}
+					break;
+				case "toUpperCase":
+					if (!invocation.args.isEmpty()) {
+						printMacroName(targetMethodName);
+						getPrinter().print(fieldAccess.getExpression()).print(".toUpperCase()");
+						return true;
+					}
+					break;
 				}
 				break;
 			case "java.lang.Character":
@@ -739,6 +814,10 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 								.print(fieldAccess.getExpression()).print(")");
 						return true;
 					}
+				case "intValue":
+					printMacroName(targetMethodName);
+					getPrinter().print("(").print(fieldAccess.getExpression()).print("|0").print(")");
+					return true;
 				case "toString":
 					if (!invocation.args.isEmpty()) {
 						printMacroName(targetMethodName);
@@ -816,23 +895,51 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					printMacroName(targetMethodName);
 					getPrinter().print("(x => x * Math.PI / 180)(").printArgList(invocation.args).print(")");
 					return true;
+				case "nextUp":
+					delegateToEmulLayer(targetClassName, targetMethodName, invocation);
+					return true;
+				case "nextDown":
+					delegateToEmulLayer(targetClassName, targetMethodName, invocation);
+					return true;
+				case "ulp":
+					delegateToEmulLayer(targetClassName, targetMethodName, invocation);
+					return true;
+				case "IEEEremainder":
+					delegateToEmulLayer(targetClassName, targetMethodName, invocation);
+					return true;
+				default:
+					getPrinter().print("Math." + targetMethodName + "(").printArgList(invocation.args).print(")");
+					return true;
 				}
-				break;
 
 			case "java.lang.Class":
 				switch (targetMethodName) {
 				case "getName":
-					if (fieldAccess != null && fieldAccess.selected.toString().endsWith(".class")) {
+					if (getPrinter().getContext().options.isSupportGetClass()) {
 						printMacroName(targetMethodName);
-						getPrinter().print("\"").print(fieldAccess.selected.type.getTypeArguments().get(0).tsym.getQualifiedName().toString()).print("\"");
+						printTarget(fieldAccess.getExpression()).print("[\"" + Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR + "\"]");
 						return true;
+					} else {
+						if (fieldAccess != null && fieldAccess.selected.toString().endsWith(".class")) {
+							printMacroName(targetMethodName);
+							getPrinter().print("\"").print(fieldAccess.selected.type.getTypeArguments().get(0).tsym.getQualifiedName().toString()).print("\"");
+							return true;
+						}
 					}
 					break;
 				case "getSimpleName":
-					if (fieldAccess != null && fieldAccess.selected.toString().endsWith(".class")) {
+					if (getPrinter().getContext().options.isSupportGetClass()) {
 						printMacroName(targetMethodName);
-						getPrinter().print("\"").print(fieldAccess.selected.type.getTypeArguments().get(0).tsym.getSimpleName().toString()).print("\"");
+						getPrinter().print("(name => name.substring(name.lastIndexOf('.')+1))(");
+						printTarget(fieldAccess.getExpression()).print("[\"" + Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR + "\"]");
+						getPrinter().print(")");
 						return true;
+					} else {
+						if (fieldAccess != null && fieldAccess.selected.toString().endsWith(".class")) {
+							printMacroName(targetMethodName);
+							getPrinter().print("\"").print(fieldAccess.selected.type.getTypeArguments().get(0).tsym.getSimpleName().toString()).print("\"");
+							return true;
+						}
 					}
 					break;
 				}
@@ -855,14 +962,33 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				} else {
 					switch (targetMethodName) {
 					case "equals":
-						getPrinter().print("(").print(fieldAccess.getExpression()).print(" === ").printArgList(invocation.args).print(")");
+						getPrinter().print("(");
+						printTarget(fieldAccess.getExpression()).print(" === ").printArgList(invocation.args).print(")");
 						return true;
 					case "hashCode":
-						getPrinter().print("(<any>").print(fieldAccess.getExpression()).print(".toString())");
+						getPrinter().print("(<any>");
+						printTarget(fieldAccess.getExpression()).print(".toString())");
+						return true;
+					case "clone":
+						// clone is not supported unless the emul layer is
+						// available
+						delegateToEmulLayerStatic(targetClassName, targetMethodName, fieldAccess.getExpression());
 						return true;
 					}
 				}
 			}
+
+		}
+
+		if ("getClass".equals(targetMethodName)) {
+			getPrinter().print("(<any>");
+			if (fieldAccess != null) {
+				printTarget(fieldAccess.getExpression());
+			} else {
+				getPrinter().print("this");
+			}
+			getPrinter().print(".constructor)");
+			return true;
 		}
 
 		if (!JSweetConfig.isJDKReplacementMode())
@@ -878,9 +1004,22 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 
 	}
 
+	private AbstractTreePrinter printTarget(JCExpression target) {
+		if ("super".equals(target.toString())) {
+			return getPrinter().print("this");
+		} else {
+			return getPrinter().print(target);
+		}
+	}
+
 	private void delegateToEmulLayer(String targetClassName, String targetMethodName, JCMethodInvocation invocation) {
-		getPrinter().print("javaemul.internal." + targetClassName.substring(10) + "Helper.").print(targetMethodName).print("(")
-				.printArgList(invocation.getArguments()).print(")");
+		getPrinter().print("javaemul.internal." + targetClassName.substring(10) + "Helper.").print(targetMethodName).print("(").printArgList(invocation.args)
+				.print(")");
+	}
+
+	private void delegateToEmulLayerStatic(String targetClassName, String targetMethodName, JCExpression target) {
+		getPrinter().print("javaemul.internal." + targetClassName.substring(10) + "Helper.").print(targetMethodName).print("(");
+		printTarget(target).print(")");
 	}
 
 	private void printMacroName(String macroName) {
@@ -916,7 +1055,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		AnnotationMirror annotation;
 		if ((annotation = Util.getAnnotation(fieldAccess.sym, ANNOTATION_STRING_TYPE)) != null) {
 			getPrinter().print("\"");
-			getPrinter().printIdentifier(getFirstAnnotationValue(annotation, fieldAccess.name).toString());
+			getPrinter().print(getFirstAnnotationValue(annotation, fieldAccess.name).toString());
 			getPrinter().print("\"");
 			return true;
 		}
@@ -924,9 +1063,10 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		if (fieldAccess.selected.type.tsym instanceof PackageSymbol) {
 			if (Util.hasAnnotationType(fieldAccess.selected.type.tsym, ANNOTATION_ROOT)) {
 				if (fieldAccess.type != null && fieldAccess.type.tsym != null) {
-					getPrinter().printIdentifier(Util.getActualName(fieldAccess.type.tsym));
+					getPrinter().printIdentifier(fieldAccess.type.tsym);
 				} else {
-					getPrinter().printIdentifier(name);
+					// TODO: see if it breaks something
+					getPrinter().print(name);
 				}
 				return true;
 			}
@@ -1155,9 +1295,12 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		AnnotationMirror annotation;
 		if ((annotation = Util.getAnnotation(identifier.sym, ANNOTATION_STRING_TYPE)) != null) {
 			getPrinter().print("\"");
-			getPrinter().printIdentifier(getFirstAnnotationValue(annotation, identifier).toString());
+			getPrinter().print(getFirstAnnotationValue(annotation, identifier).toString());
 			getPrinter().print("\"");
 			return true;
+		}
+		if (identifier.type == null) {
+			return super.substituteIdentifier(identifier);
 		}
 		if (langTypesSimpleNames.contains(identifier.toString()) && langTypesMapping.containsKey(identifier.type.toString())) {
 			getPrinter().print(langTypesMapping.get(identifier.type.toString()));
@@ -1184,8 +1327,8 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 	}
 
 	@Override
-	public String getIdentifier(String identifier) {
-		return JSweetConfig.toJsIdentifier(identifier);
+	public String getIdentifier(Symbol symbol) {
+		return Util.getActualName(symbol);
 	}
 
 	@Override
@@ -1214,4 +1357,18 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 	public Set<String> getErasedTypes() {
 		return langTypesMapping.keySet();
 	}
+
+	@Override
+	public boolean substituteAssignedExpression(Type assignedType, JCExpression expression) {
+		if (assignedType.getTag() == TypeTag.CHAR && expression.type.getTag() != TypeTag.CHAR) {
+			getPrinter().print("String.fromCharCode(").print(expression).print(")");
+			return true;
+		} else if (Util.isNumber(assignedType) && expression.type.getTag() == TypeTag.CHAR) {
+			getPrinter().print("(").print(expression).print(").charCodeAt(0)");
+			return true;
+		} else {
+			return false;
+		}
+	}
+
 }

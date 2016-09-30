@@ -14,14 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package source.require.a;
+package source.throwable;
 
-import source.require.a.b.B1;
+import static jsweet.util.Globals.$export;
 
-public class Use2 {
+import jsweet.lang.RangeError;
+import jsweet.lang.SyntaxError;
+import jsweet.lang.TypeError;
 
-	B1 b1;
+public class MultipleTryCatchTest {
 
-	Use1 u;
+	static void m() {
+		$export("executed", true);
+		throw new RangeError("test-message");
+	}
+
+	public static void main(String[] args) {
+		try {
+			MultipleTryCatchTest.m();
+		} catch (RangeError e) {
+			$export("message1", e.message);
+		} catch (TypeError e) {
+			$export("message2", e.message);
+		} catch (SyntaxError e) {
+			$export("message3", e.message);
+		} finally {
+			$export("finally_executed", true);
+		}
+	}
 	
 }

@@ -213,8 +213,8 @@ public class JSweetContext extends Context {
 		return usedModules;
 	}
 
-	private Map<PackageSymbol, Set<String>> importedNamesInPackages = new HashMap<>();
-	private Map<PackageSymbol, Map<Symbol, String>> importedElementsInPackages = new HashMap<>();
+	private Map<String, Set<String>> importedNamesInModules = new HashMap<>();
+	private Map<String, Map<Symbol, String>> importedElementsInModules = new HashMap<>();
 
 	/**
 	 * Register a name that is imported by the given package of the transpiled
@@ -224,27 +224,27 @@ public class JSweetContext extends Context {
 	 * import targetName = require("sourceName");
 	 * </pre>
 	 * 
-	 * @param package
-	 *            the package that is importing the name
+	 * @param moduleName
+	 *            the module that is importing the name
 	 * @param sourceElement
 	 *            the source element if any (null if not applicable)
 	 * @param targetName
 	 *            the target name being imported
 	 */
-	public void registerImportedName(PackageSymbol packageSymbol, Symbol sourceElement, String targetName) {
-		Set<String> importedNames = importedNamesInPackages.get(packageSymbol);
+	public void registerImportedName(String moduleName, Symbol sourceElement, String targetName) {
+		Set<String> importedNames = importedNamesInModules.get(moduleName);
 		if (importedNames == null) {
 			importedNames = new HashSet<>();
-			importedNamesInPackages.put(packageSymbol, importedNames);
+			importedNamesInModules.put(moduleName, importedNames);
 		}
 		if (!importedNames.contains(targetName)) {
 			importedNames.add(targetName);
 		}
 		if (sourceElement != null) {
-			Map<Symbol, String> importedElements = importedElementsInPackages.get(packageSymbol);
+			Map<Symbol, String> importedElements = importedElementsInModules.get(moduleName);
 			if (importedElements == null) {
 				importedElements = new HashMap<>();
-				importedElementsInPackages.put(packageSymbol, importedElements);
+				importedElementsInModules.put(moduleName, importedElements);
 			}
 			if (!importedElements.containsKey(sourceElement)) {
 				importedElements.put(sourceElement, targetName);
@@ -254,39 +254,38 @@ public class JSweetContext extends Context {
 	}
 
 	/**
-	 * The list of names imported by the given package of the transpiled
-	 * program.
+	 * The list of names imported by the given module of the transpiled program.
 	 */
-	public Set<String> getImportedNames(PackageSymbol packageSymbol) {
-		Set<String> importedNames = importedNamesInPackages.get(packageSymbol);
+	public Set<String> getImportedNames(String moduleName) {
+		Set<String> importedNames = importedNamesInModules.get(moduleName);
 		if (importedNames == null) {
 			importedNames = new HashSet<>();
-			importedNamesInPackages.put(packageSymbol, importedNames);
+			importedNamesInModules.put(moduleName, importedNames);
 		}
 		return importedNames;
 	}
 
 	/**
-	 * The list of package names imported by the given package of the transpiled
+	 * The list of package names imported by the given m of the transpiled
 	 * program.
 	 */
-	public Map<Symbol, String> getImportedElements(PackageSymbol packageSymbol) {
-		Map<Symbol, String> importedElements = importedElementsInPackages.get(packageSymbol);
+	public Map<Symbol, String> getImportedElements(String moduleName) {
+		Map<Symbol, String> importedElements = importedElementsInModules.get(moduleName);
 		if (importedElements == null) {
 			importedElements = new HashMap<>();
-			importedElementsInPackages.put(packageSymbol, importedElements);
+			importedElementsInModules.put(moduleName, importedElements);
 		}
 		return importedElements;
 	}
 
 	/**
-	 * Clears the names imported by the given package.
+	 * Clears the names imported by the given module.
 	 */
-	public void clearImportedNames(PackageSymbol packageSymbol) {
+	public void clearImportedNames(String moduleName) {
 		Set<String> importedNames = new HashSet<>();
-		importedNamesInPackages.put(packageSymbol, importedNames);
-		Map<Symbol, String> importedPackagesForNames = new HashMap<>();
-		importedElementsInPackages.put(packageSymbol, importedPackagesForNames);
+		importedNamesInModules.put(moduleName, importedNames);
+		Map<Symbol, String> importedModulesForNames = new HashMap<>();
+		importedElementsInModules.put(moduleName, importedModulesForNames);
 	}
 
 	/**

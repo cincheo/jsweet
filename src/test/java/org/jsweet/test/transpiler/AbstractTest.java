@@ -28,6 +28,7 @@ import java.util.function.Consumer;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
+import org.jsweet.transpiler.EcmaScriptComplianceLevel;
 import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.JSweetTranspiler;
 import org.jsweet.transpiler.ModuleKind;
@@ -103,6 +104,7 @@ public class AbstractTest {
 			transpiler.setPreserveSourceLineNumbers(true);
 			FileUtils.deleteQuietly(transpiler.getWorkingDirectory());
 			transpiler.getCandiesProcessor().touch();
+			transpiler.setEcmaTargetVersion(EcmaScriptComplianceLevel.ES5);
 			testSuiteInitialized = true;
 		}
 	}

@@ -29,8 +29,12 @@ import org.jsweet.transpiler.TranspilationHandler;
 import org.jsweet.transpiler.TypeChecker;
 
 import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.Type.MethodType;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
+import com.sun.tools.javac.tree.JCTree.JCExpression;
+import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 
@@ -57,12 +61,6 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	public Stack<Position> getPositionStack() {
 		return positionStack;
 	}
-
-	/**
-	 * This method must be overridden to define the printer output files
-	 * extension.
-	 */
-	public abstract String getTargetFilesExtension();
 
 	private static final String INDENT = "    ";
 
@@ -163,9 +161,11 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 			// }
 		}
 		positionStack.push(new Position(getCurrentPosition(), currentLine, currentColumn));
-		sourceMap.addEntry(new Position(tree.pos, //
-				compilationUnit.lineMap.getLineNumber(tree.pos), //
-				compilationUnit.lineMap.getColumnNumber(tree.pos)), positionStack.peek());
+		if (compilationUnit != null && tree.pos >= 0) {
+			sourceMap.addEntry(new Position(tree.pos, //
+					compilationUnit.lineMap.getLineNumber(tree.pos), //
+					compilationUnit.lineMap.getColumnNumber(tree.pos)), positionStack.peek());
+		}
 	}
 
 	@Override
@@ -238,8 +238,8 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	/**
 	 * Outputs an identifier.
 	 */
-	public AbstractTreePrinter printIdentifier(String identifier) {
-		String adaptedIdentifier = getAdapter().getIdentifier(identifier);
+	public AbstractTreePrinter printIdentifier(Symbol symbol) {
+		String adaptedIdentifier = getAdapter().getIdentifier(symbol);
 		return print(adaptedIdentifier);
 	}
 
@@ -343,6 +343,26 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 		return this;
 	}
 
+	/**
+	 * Prints an invocation argument list, with type assignment.
+	 */
+	public AbstractTreePrinter printArgList(JCMethodInvocation inv) {
+		for (int i = 0; i < inv.args.size(); i++) {
+			JCExpression arg = inv.args.get(i);
+			if (inv.meth.type != null) {
+				List<Type> argTypes = ((MethodType) inv.meth.type).argtypes;
+				Type paramType = i < argTypes.size() ? argTypes.get(i) : argTypes.get(argTypes.size() - 1);
+				if (!getAdapter().substituteAssignedExpression(paramType, arg)) {
+					print(arg);
+				}
+			}
+			if (i < inv.args.size() - 1) {
+				print(", ");
+			}
+		}
+		return this;
+	}
+
 	public AbstractTreePrinter printArgList(List<? extends JCTree> args) {
 		return printArgList(args, null);
 	}
@@ -433,11 +453,16 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	}
 
 	public String getRootRelativeName(Symbol symbol) {
-		return Util.getRootRelativeName(context.useModules ? context.getImportedElements(compilationUnit.packge) : null, symbol);
+		return Util.getRootRelativeName(context.useModules ? context.getImportedElements(compilationUnit.getSourceFile().getName()) : null, symbol);
 	}
 
 	public String getRootRelativeName(Symbol symbol, boolean useJavaNames) {
-		return Util.getRootRelativeName(context.useModules ? context.getImportedElements(compilationUnit.packge) : null, symbol, useJavaNames);
+		return Util.getRootRelativeName(context.useModules ? context.getImportedElements(compilationUnit.getSourceFile().getName()) : null, symbol,
+				useJavaNames);
+	}
+
+	public int getIndent() {
+		return indent;
 	}
 
 }

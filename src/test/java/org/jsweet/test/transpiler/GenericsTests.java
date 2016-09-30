@@ -34,7 +34,8 @@ public class GenericsTests extends AbstractTest {
 
 	@Test
 	public void testInstantiationWithGenerics() {
-		transpile(logHandler -> {
+		// TODO: qualified names do not work with modules :(
+		transpile(ModuleKind.none, logHandler -> {
 			assertEquals(0, logHandler.getReportedProblems().size());
 		} , getSourceFile(InstantiationWithGenerics.class));
 	}
@@ -48,42 +49,42 @@ public class GenericsTests extends AbstractTest {
 
 	@Test
 	public void testGenericObjectStructure() {
-		transpile(ModuleKind.none, logHandler -> {
+		transpile(logHandler -> {
 			logHandler.assertReportedProblems();
 		} , getSourceFile(GenericObjectStructure.class));
 	}
 
 	@Test
 	public void testAddThisOnGenericMethods() {
-		transpile(ModuleKind.none, logHandler -> {
+		transpile(logHandler -> {
 			logHandler.assertReportedProblems();
 		} , getSourceFile(AddThisOnGenericMethods.class));
 	}
 
 	@Test
 	public void testInnerClassNotStatic() {
-		transpile(ModuleKind.none, logHandler -> {
+		transpile(logHandler -> {
 			logHandler.assertReportedProblems();
 		} , getSourceFile(InnerClassNotStatic.class));
 	}
 
 	@Test
 	public void testRawTypes() {
-		transpile(ModuleKind.none, logHandler -> {
+		transpile(logHandler -> {
 			logHandler.assertReportedProblems();
 		} , getSourceFile(RawTypes.class));
 	}
 
 	@Test
 	public void testAbstractClassAndOverride() {
-		transpile(ModuleKind.none, logHandler -> {
+		transpile(logHandler -> {
 			logHandler.assertReportedProblems();
 		} , getSourceFile(AbstractClassAndOverride.class));
 	}
 
 	@Test
 	public void testStaticAnonymousClass() {
-		transpile(ModuleKind.none, logHandler -> {
+		transpile(logHandler -> {
 			logHandler.assertReportedProblems();
 		} , getSourceFile(StaticAnonymousClass.class));
 	}

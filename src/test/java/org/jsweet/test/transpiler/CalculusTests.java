@@ -85,6 +85,9 @@ public class CalculusTests extends AbstractTest {
 			Assert.assertEquals(Math.signum(-2342), (int) r.get("signum_2342"), 0.00001);
 			Assert.assertEquals(Math.scalb(1.2, 2), (double) r.get("scalb1_2__2"), 0.00001);
 			Assert.assertEquals(Math.toDegrees(0.5), (double) r.get("toDegres0_5"), 0.00001);
+			Assert.assertEquals(Math.abs(-1) + Math.abs(-1), (int) r.get("2"), 0.00001);
+			Assert.assertEquals(Math.cbrt(2), (double) r.get("3"), 0.00001);
+			Assert.assertEquals(Math.cbrt(2), (double) r.get("4"), 0.00001);
 		}, getSourceFile(MathApi.class));
 	}
 

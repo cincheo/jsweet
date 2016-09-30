@@ -54,27 +54,29 @@ public class RequireTests extends AbstractTest {
 	public void testClassImportImplicitRequire() {
 		transpile(ModuleKind.none, (logHandler) -> {
 			assertTrue(logHandler.getReportedProblems().size() > 0);
-		} , getSourceFile(A.class), getSourceFile(B1.class), getSourceFile(B2.class), getSourceFile(ClassImportImplicitRequire.class));
+		}, getSourceFile(A.class), getSourceFile(B1.class), getSourceFile(B2.class), getSourceFile(ClassImportImplicitRequire.class));
 
 		// we cannot evaluate this test without the express module
 		transpile(ModuleKind.commonjs, (logHandler) -> {
 			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-		} , getSourceFile(A.class), getSourceFile(B1.class), getSourceFile(B2.class), getSourceFile(ClassImportImplicitRequire.class));
+		}, getSourceFile(A.class), getSourceFile(B1.class), getSourceFile(B2.class), getSourceFile(ClassImportImplicitRequire.class));
 
 	}
 
 	@Test
 	public void testClassImport() {
-		transpile(logHandler -> {
+		eval((logHandler, r) -> {
 			logHandler.assertReportedProblems();
-		} , getSourceFile(A.class), getSourceFile(ClassImport.class));
+			assertTrue(r.get("mainInvoked"));
+			assertTrue(r.get("mInvoked"));
+		}, getSourceFile(A.class), getSourceFile(ClassImport.class));
 	}
 
 	@Test
 	public void testBlocksgame() {
-		transpile(logHandler -> {
+		transpile(ModuleKind.commonjs, logHandler -> {
 			logHandler.assertReportedProblems();
-		} , getSourceFile(Point.class), getSourceFile(Vector.class), getSourceFile(AnimatedElement.class), getSourceFile(Line.class),
+		}, getSourceFile(Point.class), getSourceFile(Vector.class), getSourceFile(AnimatedElement.class), getSourceFile(Line.class),
 				getSourceFile(MobileElement.class), getSourceFile(Rectangle.class), getSourceFile(Direction.class), getSourceFile(Collisions.class),
 				getSourceFile(Ball.class), getSourceFile(Globals.class), getSourceFile(BlockElement.class), getSourceFile(Factory.class),
 				getSourceFile(GameArea.class), getSourceFile(GameManager.class), getSourceFile(Player.class));
@@ -84,7 +86,7 @@ public class RequireTests extends AbstractTest {
 	public void testGlobalsImport() {
 		transpile(logHandler -> {
 			logHandler.assertReportedProblems();
-		} , getSourceFile(source.require.globals.Globals.class), getSourceFile(GlobalsImport.class));
+		}, getSourceFile(source.require.globals.Globals.class), getSourceFile(GlobalsImport.class));
 	}
 
 	@Test
@@ -92,7 +94,7 @@ public class RequireTests extends AbstractTest {
 		eval((logHandler, result) -> {
 			logHandler.assertReportedProblems();
 			assertTrue(result.get("mInvoked"));
-		} , getSourceFile(A.class), getSourceFile(TopLevel1.class), getSourceFile(TopLevel2.class));
+		}, getSourceFile(A.class), getSourceFile(TopLevel1.class), getSourceFile(TopLevel2.class));
 	}
 
 	@Test
@@ -100,7 +102,7 @@ public class RequireTests extends AbstractTest {
 		eval((logHandler, result) -> {
 			logHandler.assertReportedProblems();
 			assertTrue(result.get("mInvokedOnB1"));
-		} , getSourceFile(B1.class), getSourceFile(Use1.class), getSourceFile(Use2.class));
+		}, getSourceFile(B1.class), getSourceFile(Use1.class), getSourceFile(Use2.class));
 	}
 
 }

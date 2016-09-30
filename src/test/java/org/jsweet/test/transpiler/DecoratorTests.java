@@ -14,14 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package source.require.a;
+package org.jsweet.test.transpiler;
 
-import source.require.a.b.B1;
+import org.jsweet.transpiler.ModuleKind;
+import org.junit.Test;
 
-public class Use2 {
+import source.decorator.SimpleDecorator;
 
-	B1 b1;
+public class DecoratorTests extends AbstractTest {
 
-	Use1 u;
-	
+	@Test
+	public void testSimpleDecorator() {
+		transpile(ModuleKind.none, logHandler -> {
+			logHandler.assertReportedProblems();
+		}, getSourceFile(SimpleDecorator.class));
+	}
+
 }

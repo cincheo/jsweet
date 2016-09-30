@@ -29,8 +29,7 @@ public class InstantiationWithGenerics<T, V> {
 
 	public static void main(String[] args) {
 		InstantiationWithGenerics<String, Integer> foo = new InstantiationWithGenerics<String, Integer>("lolo", 4);
-		source.generics.InstantiationWithGenerics<String, Integer> bar 
-		= new source.generics.InstantiationWithGenerics<String, Integer>("lolo", 4);
+		source.generics.InstantiationWithGenerics<String, Integer> bar = new source.generics.InstantiationWithGenerics<String, Integer>("lolo", 4);
 		C<String> c = new C<String>();
 	}
 }

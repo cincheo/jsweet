@@ -21,7 +21,11 @@ import static jsweet.dom.Globals.console;
 import java.util.function.Function;
 
 public class Numbers<T> {
-	
+
+	Point2D.Float m() {
+		return new Point2D.Float();
+	}
+
 	void convertStats(Function<Double[], Integer[]> transform) {
 		Double[] stats = new Double[] { 1.0, 2.0 };
 		Integer[] converted = transform.apply(stats);
@@ -72,7 +76,7 @@ public class Numbers<T> {
 	Long getLong() {
 		return 1L;
 	}
-	
+
 	Integer getInt() {
 		return 1;
 	}
@@ -88,4 +92,12 @@ public class Numbers<T> {
 	int getPrimInt() {
 		return 1;
 	}
+}
+
+class Point2D {
+
+	static class Float extends Point2D {
+
+	}
+
 }

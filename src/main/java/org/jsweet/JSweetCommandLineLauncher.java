@@ -96,7 +96,7 @@ public class JSweetCommandLineLauncher {
 				if (jsapArgs.getFile("dtsout") != null) {
 					dtsOutputDir = jsapArgs.getFile("dtsout");
 				}
-				
+
 				File candiesJsOutputDir = null;
 				if (jsapArgs.getFile("candiesJsOut") != null) {
 					candiesJsOutputDir = jsapArgs.getFile("candiesJsOut");
@@ -124,6 +124,11 @@ public class JSweetCommandLineLauncher {
 				transpiler.setEncoding(jsapArgs.getString("encoding"));
 				transpiler.setIgnoreAssertions(jsapArgs.getBoolean("ignoreAssertions"));
 				transpiler.setGenerateDeclarations(jsapArgs.getBoolean("declaration"));
+				transpiler.setGenerateJsFiles(!jsapArgs.getBoolean("tsOnly"));
+				transpiler.setInterfaceTracking(!jsapArgs.getBoolean("disableJavaAddons"));
+				transpiler.setSupportGetClass(!jsapArgs.getBoolean("disableJavaAddons"));
+				transpiler.setSupportSaticLazyInitialization(!jsapArgs.getBoolean("disableJavaAddons"));
+				transpiler.setGenerateDefinitions(jsapArgs.getBoolean("definitions"));
 				transpiler.setDeclarationsOutputDir(dtsOutputDir);
 
 				transpiler.transpile(transpilationHandler, SourceFile.toSourceFiles(files));
@@ -223,6 +228,26 @@ public class JSweetCommandLineLauncher {
 		optionArg.setRequired(false);
 		jsap.registerParameter(optionArg);
 
+		// Do not generate JavaScript
+		switchArg = new Switch("tsOnly");
+		switchArg.setLongFlag("tsOnly");
+		switchArg.setHelp("Tells the transpiler to not compile the TypeScript output (let an external TypeScript compiler do so).");
+		jsap.registerParameter(switchArg);
+
+		// Do not generate JavaScript
+		switchArg = new Switch("disableJavaAddons");
+		switchArg.setLongFlag("disableJavaAddons");
+		switchArg.setHelp(
+				"Tells the transpiler disable runtime addons (instanceof, overloading, class name access, static initialization [...] will not be fully supported).");
+		jsap.registerParameter(switchArg);
+
+		// Do not generate JavaScript
+		switchArg = new Switch("definitions");
+		switchArg.setLongFlag("definitions");
+		switchArg.setHelp(
+				"Tells the transpiler to generate definitions from def.* packages in d.ts definition files. The output directory is given by the tsout option. This option can be used to create candies for existing JavaScript libraries and must not be confused with the 'declaration' option, that generates the definitions along with a program written in JSweet.");
+		jsap.registerParameter(switchArg);
+
 		// Generates declarations
 		switchArg = new Switch("declaration");
 		switchArg.setLongFlag("declaration");
@@ -237,7 +262,7 @@ public class JSweetCommandLineLauncher {
 		optionArg.setStringParser(FileStringParser.getParser());
 		optionArg.setRequired(false);
 		jsap.registerParameter(optionArg);
-		
+
 		// Candies javascript output directory
 		optionArg = new FlaggedOption("candiesJsOut");
 		optionArg.setLongFlag("candiesJsOut");

@@ -59,6 +59,18 @@ public class InstanceofForInterfaces {
 		new InstanceofForInterfaces().m(i2);
 		new InstanceofForInterfaces().m(new C3());
 		m2((a, b) -> a + b);
+		Class<?> it1 = I1.class;
+		Class<?> it2 = I2.class;
+		Class<?> c2 = InstanceofForInterfaces.class;
+		if (it1 == I1.class) {
+			trace.push("4");
+		}
+		if (it2 == I2.class) {
+			trace.push("5");
+		}
+		if (c2 == InstanceofForInterfaces.class) {
+			trace.push("6");
+		}
 		$export("trace", trace.join());
 	}
 

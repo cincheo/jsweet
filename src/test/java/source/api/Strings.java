@@ -11,6 +11,7 @@ public class Strings {
 	public static void main(String[] args) {
 		byte[] bytes = "abc".getBytes();
 		char[] chars = "abc".toCharArray();
+		char c = 'a';
 		String s1 = new String(bytes, 1, 1);
 		trace.push(s1);
 		trace.push("abc".substring(1, 3));
@@ -35,6 +36,20 @@ public class Strings {
 		trace.push(Strings.class.getName());
 		trace.push(Strings.class.getSimpleName());
 
+		trace.push("a b c".replaceAll(" ", ""));
+		trace.push(String.valueOf("abcdabcdabcd".replace("ab", "")));
+
+		trace.push(String.valueOf("abc".startsWith("ab")));
+		trace.push(String.valueOf("abc".startsWith("c")));
+		trace.push(String.valueOf("abc".endsWith("bc")));
+		trace.push(String.valueOf("abc".endsWith("a")));
+
+		trace.push(String.valueOf("abc".contains("a")));
+		trace.push(String.valueOf("abc".contains("ab")));
+		trace.push(String.valueOf("abc".contains("d")));
+		trace.push(String.valueOf(c));
+		trace.push("a"+c);
+		
 		$export("trace", trace.join(","));
 	}
 

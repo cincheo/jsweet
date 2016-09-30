@@ -54,77 +54,77 @@ public class CandiesTests extends AbstractTest {
 		// } , getSourceFile(GlobalsImport.class));
 		transpile(ModuleKind.commonjs, logHandler -> {
 			assertEquals(0, logHandler.getReportedProblems().size());
-		} , getSourceFile(GlobalsImport.class));
+		}, getSourceFile(GlobalsImport.class));
 	}
 
 	@Test
 	public void testQualifiedNames() {
 		transpile(ModuleKind.commonjs, logHandler -> {
 			assertEquals(0, logHandler.getReportedProblems().size());
-		} , getSourceFile(QualifiedNames.class));
+		}, getSourceFile(QualifiedNames.class));
 	}
 
 	@Test
 	public void testAngular() {
 		transpile(logHandler -> {
 			assertEquals(0, logHandler.getReportedProblems().size());
-		} , getSourceFile(Angular.class));
+		}, getSourceFile(Angular.class));
 	}
 
 	@Test
 	public void testJQuery() {
 		transpile(logHandler -> {
 			assertEquals(0, logHandler.getReportedProblems().size());
-		} , getSourceFile(JQuery.class));
+		}, getSourceFile(JQuery.class));
 	}
 
 	@Test
 	public void testBackbone() {
 		transpile(logHandler -> {
 			assertEquals(0, logHandler.getReportedProblems().size());
-		} , getSourceFile(BackboneCandy.class));
+		}, getSourceFile(BackboneCandy.class));
 	}
 
 	@Test
 	public void testExpressLib() {
 		transpile(ModuleKind.commonjs, logHandler -> {
 			assertEquals(0, logHandler.getReportedProblems().size());
-		} , getSourceFile(ExpressLib.class));
+		}, getSourceFile(ExpressLib.class));
 	}
 
 	@Test
 	public void testThreejs() {
 		transpile(logHandler -> {
 			assertEquals(0, logHandler.getReportedProblems().size());
-		} , getSourceFile(Threejs.class));
+		}, getSourceFile(Threejs.class));
 	}
 
 	@Test
 	public void testReactLib() {
 		transpile(ModuleKind.none, logHandler -> {
 			assertEquals(0, logHandler.getReportedProblems().size());
-		} , getSourceFile(ReactLib.class));
+		}, getSourceFile(ReactLib.class));
 	}
 
 	@Test
 	public void testSocketIOLib() {
 		transpile(ModuleKind.commonjs, logHandler -> {
 			assertEquals(0, logHandler.getReportedProblems().size());
-		} , getSourceFile(SocketIOLib.class));
+		}, getSourceFile(SocketIOLib.class));
 	}
-	
+
 	@Test
 	public void testBabylonjs() {
 		transpile(logHandler -> {
 			assertEquals(0, logHandler.getReportedProblems().size());
-		} , getSourceFile(Babylonjs.class), new SourceFile(new File(TEST_DIRECTORY_NAME + "/def/babylonjs/babylon/package-info.java")));
+		}, getSourceFile(Babylonjs.class), new SourceFile(new File(TEST_DIRECTORY_NAME + "/source/candies/module_defs.java")));
 	}
 
 	@Test
 	public void testMixins() {
 		transpile(logHandler -> {
 			logHandler.assertReportedProblems();
-		} , getJSweetSourceFile("source.candies.Mixins"));
+		}, getJSweetSourceFile("source.candies.Mixins"));
 	}
 
 }
