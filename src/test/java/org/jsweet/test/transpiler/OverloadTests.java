@@ -22,6 +22,7 @@ import org.jsweet.transpiler.ModuleKind;
 import org.junit.Test;
 
 import source.overload.BasicOverride;
+import source.overload.ConstructorOverloadWithFieldInitializer;
 import source.overload.InterfaceInheritance;
 import source.overload.NonPublicRootMethod;
 import source.overload.Overload;
@@ -173,6 +174,14 @@ public class OverloadTests extends AbstractTest {
 			logHandler.assertReportedProblems();
 			assertEquals("c11,t12,c13,t14", r.get("trace"));
 		} , getSourceFile(WrongOverloadConstructorWithVarargs.class));
+	}
+
+	@Test
+	public void testConstructorOverloadWithFieldInitializer() {
+		eval(ModuleKind.none, (logHandler, r) -> {
+			logHandler.assertReportedProblems();
+			assertEquals("test,1", r.get("trace"));
+		} , getSourceFile(ConstructorOverloadWithFieldInitializer.class));
 	}
 	
 }

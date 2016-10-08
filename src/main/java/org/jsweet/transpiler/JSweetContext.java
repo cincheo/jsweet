@@ -139,6 +139,11 @@ public class JSweetContext extends Context {
 	}
 
 	/**
+	 * Contains the classes that have a wrong constructor overload.
+	 */
+	public Set<ClassSymbol> classesWithWrongConstructorOverload = new HashSet<>();
+
+	/**
 	 * The Java compiler symbol table for fast access.
 	 */
 	public Symtab symtab;

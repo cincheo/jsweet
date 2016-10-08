@@ -165,6 +165,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 		private List<List<JCVariableDecl>> finalVariables = new ArrayList<>();
 
+		private boolean hasConstructorOverloadWithSuperClass;
+
+		private List<JCVariableDecl> fieldsWithInitializers = new ArrayList<>();
+
 	}
 
 	private List<JCVariableDecl> finalVariables = new ArrayList<>();
@@ -732,6 +736,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					getAdapter().disableTypeSubstitution = true;
 					getAdapter().substituteAndPrintType(classdecl.extending);
 					getAdapter().disableTypeSubstitution = false;
+					if (context.classesWithWrongConstructorOverload.contains(classdecl.sym)) {
+						getScope().hasConstructorOverloadWithSuperClass = true;
+					}
 				} else {
 					getScope().removedSuperclass = true;
 				}
@@ -824,6 +831,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		for (JCTree def : classdecl.defs) {
 			if (def instanceof JCClassDecl) {
 				getScope().hasInnerClass = true;
+			}
+			if (def instanceof JCVariableDecl) {
+				JCVariableDecl var = (JCVariableDecl) def;
+				if (!var.sym.isStatic() && var.init != null) {
+					getScope().fieldsWithInitializers.add((JCVariableDecl) def);
+				}
 			}
 		}
 
@@ -1082,7 +1095,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			return;
 		}
 
-		boolean constructor = methodDecl.name.toString().equals("<init>");
+		boolean constructor = methodDecl.sym.isConstructor();
 		if (getScope().enumScope) {
 			if (constructor) {
 				if (parent != null && parent.pos != methodDecl.pos) {
@@ -1535,6 +1548,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			com.sun.tools.javac.util.List<JCStatement> stats = skipFirst ? method.getBody().stats.tail : method.getBody().stats;
 			if (!stats.isEmpty() && stats.head.toString().startsWith("super(")) {
 				printBlockStatement(stats.head);
+				printFieldInitializations();
 				if (!initialized) {
 					printInstanceInitialization(getParent(JCClassDecl.class), method.sym);
 				}
@@ -1561,6 +1575,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 		}
 		endIndent().printIndent().print("}");
+	}
+
+	private void printFieldInitializations() {
+		for (JCVariableDecl field : getScope().fieldsWithInitializers) {
+			printIndent().print("this.").print(field.getName().toString()).print(" = ").print(field.init).print(";").println();
+		}
 	}
 
 	private void printBlockStatements(List<JCStatement> statements) {
@@ -1848,9 +1868,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 								report(varDecl, varDecl.name, JSweetProblem.INVALID_FIELD_INITIALIZER_IN_INTERFACE, varDecl.name, ((JCClassDecl) parent).name);
 							}
 						} else {
-							print(" = ");
-							if (!getAdapter().substituteAssignedExpression(varDecl.type, varDecl.init)) {
-								print(varDecl.init);
+							if (!(getScope().hasConstructorOverloadWithSuperClass && getScope().fieldsWithInitializers.contains(varDecl))) {
+								print(" = ");
+								if (!getAdapter().substituteAssignedExpression(varDecl.type, varDecl.init)) {
+									print(varDecl.init);
+								}
 							}
 						}
 					}
