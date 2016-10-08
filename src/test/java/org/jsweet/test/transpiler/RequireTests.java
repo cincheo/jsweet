@@ -40,6 +40,8 @@ import source.blocksgame.util.Vector;
 import source.require.TopLevel1;
 import source.require.TopLevel2;
 import source.require.a.A;
+import source.require.a.InnerClassAccess;
+import source.require.a.Outer;
 import source.require.a.Use1;
 import source.require.a.Use2;
 import source.require.a.b.B1;
@@ -103,6 +105,13 @@ public class RequireTests extends AbstractTest {
 			logHandler.assertReportedProblems();
 			assertTrue(result.get("mInvokedOnB1"));
 		}, getSourceFile(B1.class), getSourceFile(Use1.class), getSourceFile(Use2.class));
+	}
+
+	@Test
+	public void testInnerClassAccess() {
+		eval(/*ModuleKind.commonjs, */(logHandler, result) -> {
+			logHandler.assertReportedProblems();
+		}, getSourceFile(Outer.class), getSourceFile(InnerClassAccess.class));
 	}
 
 }

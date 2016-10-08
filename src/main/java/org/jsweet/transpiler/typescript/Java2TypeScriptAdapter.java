@@ -266,6 +266,16 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			} else {
 				return null;
 			}
+		} else {
+			if (getPrinter().getContext().useModules) {
+				// check if inner class and do not import
+				if (importDecl.qualid instanceof JCFieldAccess) {
+					JCFieldAccess qualified = (JCFieldAccess) importDecl.qualid;
+					if (qualified.sym instanceof ClassSymbol && qualified.sym.getEnclosingElement() instanceof ClassSymbol) {
+						return null;
+					}
+				}
+			}
 		}
 		return super.needsImport(importDecl, qualifiedName);
 	}
