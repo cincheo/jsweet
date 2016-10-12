@@ -1579,7 +1579,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	private void printFieldInitializations() {
 		for (JCVariableDecl field : getScope().fieldsWithInitializers) {
-			printIndent().print("this.").print(field.getName().toString()).print(" = ").print(field.init).print(";").println();
+			String name = getAdapter().getIdentifier(field.sym);
+			if (context.getFieldNameMapping(field.sym) != null) {
+				name = context.getFieldNameMapping(field.sym);
+			}
+			printIndent().print("this.").print(name).print(" = ").print(field.init).print(";").println();
 		}
 	}
 

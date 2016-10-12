@@ -19,6 +19,7 @@ public class ConstructorOverloadWithFieldInitializer extends ASuperClass {
 
 	String s = "test";
 	int i = 1;
+	boolean m = true;
 
 	public ConstructorOverloadWithFieldInitializer() {
 		super();
@@ -33,6 +34,10 @@ public class ConstructorOverloadWithFieldInitializer extends ASuperClass {
 		super();
 		trace.push("" + this.i);
 		this.i = i;
+	}
+
+	public boolean m() {
+		return true;
 	}
 
 }
