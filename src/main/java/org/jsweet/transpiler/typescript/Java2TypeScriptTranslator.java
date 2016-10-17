@@ -1510,9 +1510,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	}
 
 	private Stack<List<JCVariableDecl>> finalVariablesForInlinedMethods = new Stack<>();
-	
+
 	private void printInlinedMethod(Overload overload, JCMethodDecl method, List<? extends JCTree> args) {
 		print("{").println().startIndent();
+		printIndent().print("var __args = Array.prototype.slice.call(arguments);").println();
 		for (int j = 0; j < method.getParameters().size(); j++) {
 			if (method.getParameters().get(j).getModifiers().getFlags().contains(Modifier.FINAL)) {
 				finalVariablesForInlinedMethods.peek().add(method.getParameters().get(j));
@@ -1522,8 +1523,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					continue;
 				} else {
 					printIndent().print("var ").print(avoidJSKeyword(method.getParameters().get(j).name.toString())).print(" : ").print("any")
-							.print(Util.isVarargs(method.getParameters().get(j)) ? "[]" : "").print(" = ")
-							.print(avoidJSKeyword(((JCVariableDecl) args.get(j)).name.toString())).print(";").println();
+							.print(Util.isVarargs(method.getParameters().get(j)) ? "[]" : "").print(" = ").print("__args[" + j + "]").print(";").println();
 				}
 			} else {
 				if (method.getParameters().get(j).name.toString().equals(args.get(j).toString())) {
