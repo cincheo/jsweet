@@ -1410,7 +1410,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						printMethodParamsTest(overload, method);
 						print(") ");
 						if (i == 0 || method.sym.isConstructor()) {
+							finalVariablesForInlinedMethods.push(new ArrayList<>());
 							printInlinedMethod(overload, method, methodDecl.getParameters());
+							finalVariablesForInlinedMethods.pop();
 						} else {
 							print("{").println().startIndent().printIndent();
 							// temporary cast to any because of Java generics
@@ -1507,9 +1509,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				"$1");
 	}
 
+	private Stack<List<JCVariableDecl>> finalVariablesForInlinedMethods = new Stack<>();
+	
 	private void printInlinedMethod(Overload overload, JCMethodDecl method, List<? extends JCTree> args) {
 		print("{").println().startIndent();
 		for (int j = 0; j < method.getParameters().size(); j++) {
+			if (method.getParameters().get(j).getModifiers().getFlags().contains(Modifier.FINAL)) {
+				finalVariablesForInlinedMethods.peek().add(method.getParameters().get(j));
+			}
 			if (args.get(j) instanceof JCVariableDecl) {
 				if (method.getParameters().get(j).name.equals(((JCVariableDecl) args.get(j)).name)) {
 					continue;
@@ -1527,6 +1534,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 			}
 		}
+		finalVariables = finalVariablesForInlinedMethods.peek();
 		if (method.getBody() != null) {
 			boolean skipFirst = false;
 			boolean initialized = false;
@@ -1538,7 +1546,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					if (md.sym.equals(ms)) {
 						printIndent();
 						initialized = true;
+						finalVariablesForInlinedMethods.push(new ArrayList<>());
 						printInlinedMethod(overload, md, inv.args);
+						finalVariablesForInlinedMethods.pop();
+						finalVariables = finalVariablesForInlinedMethods.peek();
 						println();
 					}
 				}

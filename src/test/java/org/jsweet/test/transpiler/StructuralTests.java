@@ -119,7 +119,7 @@ public class StructuralTests extends AbstractTest {
 	public void testAnonymousClasses() {
 		eval((logHandler, r) -> {
 			logHandler.assertReportedProblems();
-			assertEquals("22abcfinal", r.get("trace"));
+			assertEquals("test,22abcfinal", r.get("trace"));
 		}, getSourceFile(AnonymousClass.class));
 	}
 
