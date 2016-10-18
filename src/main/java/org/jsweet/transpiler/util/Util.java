@@ -1382,4 +1382,13 @@ public class Util {
 		return null;
 	}
 
+	/**
+	 * Returns true if the given type symbol corresponds to a functional type (in the TypeScript way).
+	 */
+	public static boolean isFunctionalType(TypeSymbol type) {
+		String name = type.getQualifiedName().toString();
+		return name.startsWith("java.util.function.") || name.equals(Runnable.class.getName())
+				|| (type.isInterface()) && hasAnnotationType(type, FunctionalInterface.class.getName());
+	}
+
 }

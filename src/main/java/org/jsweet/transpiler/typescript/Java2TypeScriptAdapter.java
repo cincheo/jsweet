@@ -97,6 +97,7 @@ import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCImport;
+import com.sun.tools.javac.tree.JCTree.JCLambda;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
@@ -1377,6 +1378,15 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			getPrinter().print("(").print(expression).print(").charCodeAt(0)");
 			return true;
 		} else {
+			if (expression instanceof JCLambda) {
+				if (assignedType.tsym.isInterface() && !Util.isFunctionalType(assignedType.tsym)) {
+					JCLambda lambda = (JCLambda) expression;
+					MethodSymbol method = (MethodSymbol) assignedType.tsym.getEnclosedElements().get(0);
+					getPrinter().print("(() => { var f = function() { this."+ method.getSimpleName() + " = ").print(lambda);
+					getPrinter().print("}; return new f(); })()");
+					return true;
+				}
+			}
 			return false;
 		}
 	}
