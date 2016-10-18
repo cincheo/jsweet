@@ -1370,4 +1370,16 @@ public class Util {
 
 	}
 
+	/**
+	 * Gets the symbol on an access if exists/possible, or return null.
+	 */
+	public static Symbol getSymbol(JCTree tree) {
+		if (tree instanceof JCFieldAccess) {
+			return ((JCFieldAccess) tree).sym;
+		} else if (tree instanceof JCIdent) {
+			return ((JCIdent) tree).sym;
+		}
+		return null;
+	}
+
 }

@@ -1952,7 +1952,23 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					if (selected.equals("super") && (fieldAccess.sym instanceof VarSymbol)) {
 						print("this.");
 					} else {
-						print(fieldAccess.selected).print(".");
+						boolean accessSubstituted = false;
+						if (fieldAccess.sym instanceof VarSymbol) {
+							VarSymbol varSym = (VarSymbol) fieldAccess.sym;
+							if (varSym.isStatic() && varSym.owner.isInterface() && varSym.owner != Util.getSymbol(fieldAccess.selected)) {
+								accessSubstituted = true;
+								if (context.useModules) {
+									// TODO: we assume it has been imported, but
+									// it is clearly not always the case (to be tested)
+									print(varSym.owner.getSimpleName().toString()).print(".");
+								} else {
+									print(Util.getRootRelativeName(null, varSym.owner)).print(".");
+								}
+							}
+						}
+						if (!accessSubstituted) {
+							print(fieldAccess.selected).print(".");
+						}
 					}
 				}
 
