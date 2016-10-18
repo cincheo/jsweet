@@ -2881,27 +2881,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	public void visitReturn(JCReturn returnStatement) {
 		print("return");
 		if (returnStatement.expr != null) {
+			JCMethodDecl arg = getParent(JCMethodDecl.class);
 			if (returnStatement.expr.type == null) {
-				JCMethodDecl arg = getParent(JCMethodDecl.class);
 				report(returnStatement, JSweetProblem.CANNOT_ACCESS_THIS, arg == null ? returnStatement.toString() : arg.toString());
 				return;
 			}
-			boolean wrapChar = false;
-			if (returnStatement.expr.type.isPrimitive() && context.symtab.charType.tsym == returnStatement.expr.type.tsym) {
-				JCTree parent = getFirstParent(JCMethodDecl.class, JCLambda.class);
-				if (parent instanceof JCMethodDecl) {
-					if (Util.isNumber(((JCMethodDecl) parent).restype.type)) {
-						wrapChar = true;
-					}
-				}
-			}
 			print(" ");
-			if (wrapChar) {
-				print("(");
-			}
-			print(returnStatement.expr);
-			if (wrapChar) {
-				print(").charCodeAt(0)");
+			if (!getAdapter().substituteAssignedExpression(arg == null ? null : arg.restype.type, returnStatement.expr)) {
+				print(returnStatement.expr);
 			}
 		}
 	}

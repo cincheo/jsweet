@@ -1371,6 +1371,9 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 
 	@Override
 	public boolean substituteAssignedExpression(Type assignedType, JCExpression expression) {
+		if (assignedType == null) {
+			return false;
+		}
 		if (assignedType.getTag() == TypeTag.CHAR && expression.type.getTag() != TypeTag.CHAR) {
 			getPrinter().print("String.fromCharCode(").print(expression).print(")");
 			return true;
@@ -1382,7 +1385,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				if (assignedType.tsym.isInterface() && !Util.isFunctionalType(assignedType.tsym)) {
 					JCLambda lambda = (JCLambda) expression;
 					MethodSymbol method = (MethodSymbol) assignedType.tsym.getEnclosedElements().get(0);
-					getPrinter().print("(() => { var f = function() { this."+ method.getSimpleName() + " = ").print(lambda);
+					getPrinter().print("(() => { var f = function() { this." + method.getSimpleName() + " = ").print(lambda);
 					getPrinter().print("}; return new f(); })()");
 					return true;
 				}
