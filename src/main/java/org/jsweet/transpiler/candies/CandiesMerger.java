@@ -228,12 +228,13 @@ public class CandiesMerger {
 					CtClass packageCtClass = candyClassPool.get(packageInfo.getName());
 
 					if (packageCtClass.hasAnnotation(getAnnotationClass(ANNOTATION_ROOT))) {
-						logger.debug("root package " + packageInfo.getName() + " found in candy" + candyClassPoolEntry.getKey());
 
 						Class<?> packageClass = candyClassPool.toClass(packageCtClass,
 								new URLClassLoader(new URL[] { candyClassPoolEntry.getKey().toURI().toURL() }, candyClassLoader), null);
 						Annotation rootAnno = packageClass.getAnnotation(getAnnotationClass(ANNOTATION_ROOT));
-						mixinClasses.addAll(asList(getProperty(rootAnno, "mixins")));
+						List<Class<?>> candyMixins = asList(getProperty(rootAnno, "mixins"));
+						mixinClasses.addAll(candyMixins);
+						logger.debug(candyClassPoolEntry.getKey() + ":" + packageInfo.getName() + " mixins: " + candyMixins);
 					}
 				} catch (NotFoundException e) {
 					// not found in candy, not a problem
