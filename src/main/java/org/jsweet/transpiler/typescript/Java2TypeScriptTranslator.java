@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -163,7 +164,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 		private List<JCNewClass> anonymousClassesConstructors = new ArrayList<>();
 
-		private List<List<VarSymbol>> finalVariables = new ArrayList<>();
+		private List<LinkedHashSet<VarSymbol>> finalVariables = new ArrayList<>();
 
 		private boolean hasConstructorOverloadWithSuperClass;
 
@@ -1959,7 +1960,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 								accessSubstituted = true;
 								if (context.useModules) {
 									// TODO: we assume it has been imported, but
-									// it is clearly not always the case (to be tested)
+									// it is clearly not always the case (to be
+									// tested)
 									print(varSym.owner.getSimpleName().toString()).print(".");
 								} else {
 									print(Util.getRootRelativeName(null, varSym.owner)).print(".");
@@ -2427,7 +2429,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			anonymousClassIndex = getScope().anonymousClasses.size();
 			getScope().anonymousClasses.add(newClass.def);
 			getScope().anonymousClassesConstructors.add(newClass);
-			List<VarSymbol> finalVars = new ArrayList<>();
+			LinkedHashSet<VarSymbol> finalVars = new LinkedHashSet<>();
 			getScope().finalVariables.add(finalVars);
 			new TreeScanner() {
 				public void visitIdent(JCIdent var) {
