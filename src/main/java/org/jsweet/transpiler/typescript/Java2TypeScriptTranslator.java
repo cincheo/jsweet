@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -163,11 +164,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 		private List<JCNewClass> anonymousClassesConstructors = new ArrayList<>();
 
-		private List<List<JCVariableDecl>> finalVariables = new ArrayList<>();
+		private List<LinkedHashSet<VarSymbol>> finalVariables = new ArrayList<>();
+
+		private boolean hasConstructorOverloadWithSuperClass;
+
+		private List<JCVariableDecl> fieldsWithInitializers = new ArrayList<>();
 
 	}
-
-	private List<JCVariableDecl> finalVariables = new ArrayList<>();
 
 	private boolean isAnonymousClass = false;
 
@@ -732,6 +735,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					getAdapter().disableTypeSubstitution = true;
 					getAdapter().substituteAndPrintType(classdecl.extending);
 					getAdapter().disableTypeSubstitution = false;
+					if (context.classesWithWrongConstructorOverload.contains(classdecl.sym)) {
+						getScope().hasConstructorOverloadWithSuperClass = true;
+					}
 				} else {
 					getScope().removedSuperclass = true;
 				}
@@ -825,6 +831,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			if (def instanceof JCClassDecl) {
 				getScope().hasInnerClass = true;
 			}
+			if (def instanceof JCVariableDecl) {
+				JCVariableDecl var = (JCVariableDecl) def;
+				if (!var.sym.isStatic() && var.init != null) {
+					getScope().fieldsWithInitializers.add((JCVariableDecl) def);
+				}
+			}
 		}
 
 		if (!globals && !Util.isInterface(classdecl.sym) && context.getStaticInitializerCount(classdecl.sym) > 0) {
@@ -911,13 +923,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						}
 						print("__arg" + i + ": any");
 					}
-					for (JCVariableDecl v : getScope(1).finalVariables.get(anonymousClassIndex)) {
+					for (VarSymbol v : getScope(1).finalVariables.get(anonymousClassIndex)) {
 						if (!hasArgs) {
 							hasArgs = true;
 						} else {
 							print(", ");
 						}
-						print("private " + v.getName() + ": any");
+						print("private " + v.getSimpleName() + ": any");
 					}
 				}
 
@@ -1074,15 +1086,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			return;
 		}
 
-		finalVariables.clear();
-
 		if (JSweetConfig.INDEXED_GET_FUCTION_NAME.equals(methodDecl.getName().toString()) && methodDecl.getParameters().size() == 1) {
 			print("[").print(methodDecl.getParameters().head).print("]: ");
 			getAdapter().substituteAndPrintType(methodDecl.restype).print(";");
 			return;
 		}
 
-		boolean constructor = methodDecl.name.toString().equals("<init>");
+		boolean constructor = methodDecl.sym.isConstructor();
 		if (getScope().enumScope) {
 			if (constructor) {
 				if (parent != null && parent.pos != methodDecl.pos) {
@@ -1496,14 +1506,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	private void printInlinedMethod(Overload overload, JCMethodDecl method, List<? extends JCTree> args) {
 		print("{").println().startIndent();
+		printIndent().print("var __args = Array.prototype.slice.call(arguments);").println();
 		for (int j = 0; j < method.getParameters().size(); j++) {
 			if (args.get(j) instanceof JCVariableDecl) {
 				if (method.getParameters().get(j).name.equals(((JCVariableDecl) args.get(j)).name)) {
 					continue;
 				} else {
 					printIndent().print("var ").print(avoidJSKeyword(method.getParameters().get(j).name.toString())).print(" : ").print("any")
-							.print(Util.isVarargs(method.getParameters().get(j)) ? "[]" : "").print(" = ")
-							.print(avoidJSKeyword(((JCVariableDecl) args.get(j)).name.toString())).print(";").println();
+							.print(Util.isVarargs(method.getParameters().get(j)) ? "[]" : "").print(" = ").print("__args[" + j + "]").print(";").println();
 				}
 			} else {
 				if (method.getParameters().get(j).name.toString().equals(args.get(j).toString())) {
@@ -1535,6 +1545,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			com.sun.tools.javac.util.List<JCStatement> stats = skipFirst ? method.getBody().stats.tail : method.getBody().stats;
 			if (!stats.isEmpty() && stats.head.toString().startsWith("super(")) {
 				printBlockStatement(stats.head);
+				printFieldInitializations();
 				if (!initialized) {
 					printInstanceInitialization(getParent(JCClassDecl.class), method.sym);
 				}
@@ -1561,6 +1572,16 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 		}
 		endIndent().printIndent().print("}");
+	}
+
+	private void printFieldInitializations() {
+		for (JCVariableDecl field : getScope().fieldsWithInitializers) {
+			String name = getAdapter().getIdentifier(field.sym);
+			if (context.getFieldNameMapping(field.sym) != null) {
+				name = context.getFieldNameMapping(field.sym);
+			}
+			printIndent().print("this.").print(name).print(" = ").print(field.init).print(";").println();
+		}
 	}
 
 	private void printBlockStatements(List<JCStatement> statements) {
@@ -1700,9 +1721,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (JSweetConfig.JS_KEYWORDS.contains(name)) {
 					report(varDecl, varDecl.name, JSweetProblem.JS_KEYWORD_CONFLICT, name, name);
 					name = JSweetConfig.JS_KEYWORD_PREFIX + name;
-				}
-				if (varDecl.mods.getFlags().contains(Modifier.FINAL)) {
-					finalVariables.add(varDecl);
 				}
 			}
 
@@ -1848,9 +1866,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 								report(varDecl, varDecl.name, JSweetProblem.INVALID_FIELD_INITIALIZER_IN_INTERFACE, varDecl.name, ((JCClassDecl) parent).name);
 							}
 						} else {
-							print(" = ");
-							if (!getAdapter().substituteAssignedExpression(varDecl.type, varDecl.init)) {
-								print(varDecl.init);
+							if (!(getScope().hasConstructorOverloadWithSuperClass && getScope().fieldsWithInitializers.contains(varDecl))) {
+								print(" = ");
+								if (!getAdapter().substituteAssignedExpression(varDecl.type, varDecl.init)) {
+									print(varDecl.init);
+								}
 							}
 						}
 					}
@@ -1933,7 +1953,24 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					if (selected.equals("super") && (fieldAccess.sym instanceof VarSymbol)) {
 						print("this.");
 					} else {
-						print(fieldAccess.selected).print(".");
+						boolean accessSubstituted = false;
+						if (fieldAccess.sym instanceof VarSymbol) {
+							VarSymbol varSym = (VarSymbol) fieldAccess.sym;
+							if (varSym.isStatic() && varSym.owner.isInterface() && varSym.owner != Util.getSymbol(fieldAccess.selected)) {
+								accessSubstituted = true;
+								if (context.useModules) {
+									// TODO: we assume it has been imported, but
+									// it is clearly not always the case (to be
+									// tested)
+									print(varSym.owner.getSimpleName().toString()).print(".");
+								} else {
+									print(Util.getRootRelativeName(null, varSym.owner)).print(".");
+								}
+							}
+						}
+						if (!accessSubstituted) {
+							print(fieldAccess.selected).print(".");
+						}
 					}
 				}
 
@@ -2319,7 +2356,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							}
 						}
 					} else {
-						if (varSym.owner instanceof MethodSymbol && varSym.getModifiers().contains(Modifier.FINAL) && isAnonymousClass) {
+						if (varSym.owner instanceof MethodSymbol && isAnonymousClass
+								&& getScope(1).finalVariables.get(getScope(1).anonymousClasses.indexOf(getParent(JCClassDecl.class))).contains(varSym)) {
 							print("this.");
 						} else {
 							if (JSweetConfig.JS_KEYWORDS.contains(name)) {
@@ -2391,7 +2429,20 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			anonymousClassIndex = getScope().anonymousClasses.size();
 			getScope().anonymousClasses.add(newClass.def);
 			getScope().anonymousClassesConstructors.add(newClass);
-			getScope().finalVariables.add(new ArrayList<>(finalVariables));
+			LinkedHashSet<VarSymbol> finalVars = new LinkedHashSet<>();
+			getScope().finalVariables.add(finalVars);
+			new TreeScanner() {
+				public void visitIdent(JCIdent var) {
+					if (var.sym != null && (var.sym instanceof VarSymbol)) {
+						VarSymbol varSymbol = (VarSymbol) var.sym;
+						if (varSymbol.getEnclosingElement() instanceof MethodSymbol
+								&& varSymbol.getEnclosingElement().getEnclosingElement() == getParent(JCClassDecl.class).sym) {
+							finalVars.add((VarSymbol) var.sym);
+						}
+					}
+				}
+			}.visitClassDef(newClass.def);
+
 		}
 		return anonymousClassIndex;
 	}
@@ -2648,12 +2699,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 
 		printArgList(newClass.args);
-		if (getScope().anonymousClasses.contains(newClass.def) && !finalVariables.isEmpty()) {
+		int index = getScope().anonymousClasses.indexOf(newClass.def);
+		if (index >= 0 && !getScope().finalVariables.get(index).isEmpty()) {
 			if (printed || !newClass.args.isEmpty()) {
 				print(", ");
 			}
-			for (JCVariableDecl v : finalVariables) {
-				print(v.getName().toString());
+			for (VarSymbol v : getScope().finalVariables.get(index)) {
+				print(v.getSimpleName().toString());
 				print(", ");
 			}
 			removeLastChars(2);
@@ -2829,27 +2881,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	public void visitReturn(JCReturn returnStatement) {
 		print("return");
 		if (returnStatement.expr != null) {
+			JCMethodDecl arg = getParent(JCMethodDecl.class);
 			if (returnStatement.expr.type == null) {
-				JCMethodDecl arg = getParent(JCMethodDecl.class);
 				report(returnStatement, JSweetProblem.CANNOT_ACCESS_THIS, arg == null ? returnStatement.toString() : arg.toString());
 				return;
 			}
-			boolean wrapChar = false;
-			if (returnStatement.expr.type.isPrimitive() && context.symtab.charType.tsym == returnStatement.expr.type.tsym) {
-				JCTree parent = getFirstParent(JCMethodDecl.class, JCLambda.class);
-				if (parent instanceof JCMethodDecl) {
-					if (Util.isNumber(((JCMethodDecl) parent).restype.type)) {
-						wrapChar = true;
-					}
-				}
-			}
 			print(" ");
-			if (wrapChar) {
-				print("(");
-			}
-			print(returnStatement.expr);
-			if (wrapChar) {
-				print(").charCodeAt(0)");
+			if (!getAdapter().substituteAssignedExpression(arg == null ? null : arg.restype.type, returnStatement.expr)) {
+				print(returnStatement.expr);
 			}
 		}
 	}

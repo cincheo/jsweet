@@ -32,12 +32,16 @@ interface AnInterface {
 	int compare(String s);
 }
 
-public class AnonymousClass {
+abstract class AnAbstractClass<T> {
+	public abstract void m();
+}
+
+public class AnonymousClass<E> {
 
 	static Array<String> trace = new Array<>();
 
 	public static void main(String[] args) {
-		new AnonymousClass().m();
+		new AnonymousClass<String>("test").m();
 	}
 
 	int i = 2;
@@ -85,6 +89,20 @@ public class AnonymousClass {
 		};
 	}
 
+	void m3(AnAbstractClass<E> c) {
+	}
+
+	void m2(final E[] finalString) {
+		m3(new AnAbstractClass<E>() {
+		
+			@Override
+			public void m() {
+				trace.push("" + i + getI() + finalString);
+			}
+		});
+
+	}
+
 	static AnInterface get() {
 		return new AnInterface() {
 			@Override
@@ -92,6 +110,23 @@ public class AnonymousClass {
 				return s.length();
 			}
 		};
+	}
+	
+//	public AnonymousClass() {
+//	}
+
+	public AnonymousClass(AnAbstractClass<E> o) {
+		o.m();
+	}
+	
+	public AnonymousClass(final String finalString) {
+		this(new AnAbstractClass<E>() {
+			
+			@Override
+			public void m() {
+				trace.push(finalString);
+			}
+		});
 	}
 	
 }

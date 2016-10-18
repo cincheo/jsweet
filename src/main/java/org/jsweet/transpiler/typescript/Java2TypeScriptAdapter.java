@@ -97,6 +97,7 @@ import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCImport;
+import com.sun.tools.javac.tree.JCTree.JCLambda;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
@@ -265,6 +266,16 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				return StringUtils.isBlank(name) ? null : name + "." + (nameSymbol == null ? methodName : getIdentifier(nameSymbol));
 			} else {
 				return null;
+			}
+		} else {
+			if (getPrinter().getContext().useModules) {
+				// check if inner class and do not import
+				if (importDecl.qualid instanceof JCFieldAccess) {
+					JCFieldAccess qualified = (JCFieldAccess) importDecl.qualid;
+					if (qualified.sym instanceof ClassSymbol && qualified.sym.getEnclosingElement() instanceof ClassSymbol) {
+						return null;
+					}
+				}
 			}
 		}
 		return super.needsImport(importDecl, qualifiedName);
@@ -1360,6 +1371,9 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 
 	@Override
 	public boolean substituteAssignedExpression(Type assignedType, JCExpression expression) {
+		if (assignedType == null) {
+			return false;
+		}
 		if (assignedType.getTag() == TypeTag.CHAR && expression.type.getTag() != TypeTag.CHAR) {
 			getPrinter().print("String.fromCharCode(").print(expression).print(")");
 			return true;
@@ -1367,6 +1381,15 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			getPrinter().print("(").print(expression).print(").charCodeAt(0)");
 			return true;
 		} else {
+			if (expression instanceof JCLambda) {
+				if (assignedType.tsym.isInterface() && !Util.isFunctionalType(assignedType.tsym)) {
+					JCLambda lambda = (JCLambda) expression;
+					MethodSymbol method = (MethodSymbol) assignedType.tsym.getEnclosedElements().get(0);
+					getPrinter().print("(() => { var f = function() { this." + method.getSimpleName() + " = ").print(lambda);
+					getPrinter().print("}; return new f(); })()");
+					return true;
+				}
+			}
 			return false;
 		}
 	}

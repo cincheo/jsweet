@@ -233,7 +233,6 @@ public class OverloadScanner extends AbstractTreeScanner {
 					}
 				}
 			}
-
 		}
 
 		private static boolean hasMethodType(Types types, Overload overload, JCMethodDecl method) {
@@ -372,6 +371,11 @@ public class OverloadScanner extends AbstractTreeScanner {
 		}
 		for (Overload overload : context.getAllOverloads()) {
 			overload.calculate(types, context.symtab);
+			if (overload.methods.size() > 1 && !overload.isValid) {
+				if (overload.coreMethod.sym.isConstructor()) {
+					context.classesWithWrongConstructorOverload.add(overload.coreMethod.sym.enclClass());
+				}
+			}
 		}
 	}
 

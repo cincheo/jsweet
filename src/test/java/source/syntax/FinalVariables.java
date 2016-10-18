@@ -49,13 +49,13 @@ public class FinalVariables {
 			HTMLElement element = (HTMLElement) node;
 			element.addEventListener("keyup", (evt) -> {
 				console.log("typing...");
-				//element.classList.add("hit");
+				// element.classList.add("hit");
 			});
 		}
 	}
 
 	private HTMLDivElement spinner;
-	
+
 	Promise<Double> spawnProgressBar(int index) {
 
 		HTMLDivElement progressBackground = document.createElement(div);
@@ -76,7 +76,7 @@ public class FinalVariables {
 		bar.addEventListener(click, (event) -> {
 			double newProgress = Math.round((100 * (bar.clientHeight - event.clientY) / bar.clientHeight));
 			console.log("clicked on " + event.offsetY + " percent=" + newProgress + " height=" + bar.clientHeight);
-			bar.dataset.$set("progress", ""+newProgress);
+			bar.dataset.$set("progress", "" + newProgress);
 			return null;
 		});
 		bar.appendChild(progress);
@@ -84,26 +84,52 @@ public class FinalVariables {
 
 		double startTime = new Date().getTime();
 		return new Promise<Double>((Callback<Consumer<Double>, Consumer<Object>>) //
-				(resolve, reject) -> {
-					this.onProgress(bar, resolve, reject, startTime);
-				});
+		(resolve, reject) -> {
+			this.onProgress(bar, resolve, reject, startTime);
+		});
 	}
 
 	void onProgress(HTMLDivElement progressBar, Consumer<Double> resolve, Consumer<Object> reject, double startTime) {
-		
+
 	}
-	
+
+	void handler(ANonFunctionalInterface i) {
+
+	}
+
+	void explicitFinal() {
+		final String s = "abc";
+		handler(new ANonFunctionalInterface() {
+			@Override
+			public void m() {
+				System.out.println(s);
+			}
+		});
+	}
+
+	void implicitFinal() {
+		String s = "abc";
+		handler(new ANonFunctionalInterface() {
+			@Override
+			public void m() {
+				System.out.println(s);
+			}
+		});
+	}
+
 }
 
 // subset of promises API
 class Promise<R> {
-    public Promise(Callback<java.util.function.Consumer<R>,java.util.function.Consumer<Object>> callback){}
+	public Promise(Callback<java.util.function.Consumer<R>, java.util.function.Consumer<Object>> callback) {
+	}
 }
 
 @java.lang.FunctionalInterface
-interface Callback<T1,T2> {
-    public void apply(T1 p1, T2 p2);
+interface Callback<T1, T2> {
+	public void apply(T1 p1, T2 p2);
 }
 
-
-
+interface ANonFunctionalInterface {
+	void m();
+}
