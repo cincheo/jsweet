@@ -683,6 +683,15 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					}
 				}
 				break;
+			case "printStackTrace":
+				if (targetType instanceof ClassSymbol) {
+					if (Util.hasParent((ClassSymbol) targetType, "java.lang.Throwable")) {
+						getPrinter().print("console.error(").print(fieldAccess.getExpression()).print(".message, ").print(fieldAccess.getExpression())
+								.print(")");
+						return true;
+					}
+				}
+				break;
 			}
 
 			switch (targetClassName) {
