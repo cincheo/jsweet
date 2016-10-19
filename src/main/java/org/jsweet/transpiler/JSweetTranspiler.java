@@ -310,13 +310,15 @@ public class JSweetTranspiler implements JSweetOptions {
 				}
 			}
 		}
+		if (encoding != null) {
+			options.put(Option.ENCODING, encoding);
+		}
 		logger.debug("classpath: " + options.get(Option.CLASSPATH));
 		logger.debug("bootclasspath: " + options.get(Option.BOOTCLASSPATH));
 		logger.debug("strict mode: " + context.strictMode);
 		options.put(Option.XLINT, "path");
 		JavacFileManager.preRegister(context);
 		fileManager = context.get(JavaFileManager.class);
-
 		compiler = JavaCompiler.instance(context);
 		compiler.attrParseOnly = true;
 		compiler.verbose = false;
@@ -360,10 +362,6 @@ public class JSweetTranspiler implements JSweetOptions {
 				}
 			}
 		});
-
-		if (encoding != null) {
-			compiler.encoding = encoding;
-		}
 	}
 
 	private boolean areAllTranspiled(SourceFile... sourceFiles) {
