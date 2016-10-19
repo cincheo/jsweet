@@ -19,6 +19,12 @@ public class LambdasWithInterfaces {
 		new LambdasWithInterfaces().handler(() -> {
 			trace.push("ok2");
 		});
+		new LambdasWithInterfaces().handler3(() -> {
+			trace.push("ok3");
+		});
+		new LambdasWithInterfaces().handler4(() -> {
+			trace.push("ok4");
+		});
 		$export("trace", trace.join(","));
 	}
 
@@ -26,8 +32,25 @@ public class LambdasWithInterfaces {
 		i.m();
 	}
 
+	public void handler3(AFunctionalInterface3 i) {
+		i.apply();
+	}
+
+	public void handler4(AFunctionalInterface4 i) {
+		i.m();
+	}
+
 }
 
 interface ANonFunctionalInterface2 {
+	void m();
+}
+
+interface AFunctionalInterface3 {
+	void apply();
+}
+
+@FunctionalInterface
+interface AFunctionalInterface4 {
 	void m();
 }
