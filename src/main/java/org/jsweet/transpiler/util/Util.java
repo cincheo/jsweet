@@ -1390,10 +1390,22 @@ public class Util {
 		String name = type.getQualifiedName().toString();
 		return name.startsWith("java.util.function.") //
 				|| name.equals(Runnable.class.getName()) //
-				|| (type.isInterface() //
-						&& (hasAnnotationType(type, FunctionalInterface.class.getName()) //
-								|| (!type.getEnclosedElements().isEmpty()
-										&& JSweetConfig.ANONYMOUS_FUNCTION_NAME.equals(type.getEnclosedElements().get(0).getSimpleName().toString()))));
+				|| (type.isInterface() && (hasAnnotationType(type, FunctionalInterface.class.getName()) || hasAnonymousFunction(type)));
+	}
+
+	/**
+	 * Tells if the given type has a anonymous function (instances can be used
+	 * as lambdas).
+	 */
+	public static boolean hasAnonymousFunction(TypeSymbol type) {
+		for (Symbol s : type.getEnclosedElements()) {
+			if (s instanceof MethodSymbol) {
+				if (JSweetConfig.ANONYMOUS_FUNCTION_NAME.equals(s.getSimpleName().toString())) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 }
