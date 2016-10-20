@@ -346,7 +346,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		// targetMethodName="+targetMethodName+
 		// " ownerClassName="+ownerClassName);
 
-		if (targetType != null && targetType.getKind() == ElementKind.ENUM) {
+		if (targetType != null && targetType.getKind() == ElementKind.ENUM && !"this".equals(fieldAccess.selected.toString())) {
 			// TODO: enum type simple name will not be valid when uses as fully
 			// qualified name (not imported)
 			String relTarget = getPrinter().getContext().useModules ? targetType.getSimpleName().toString() : getPrinter().getRootRelativeName(targetType);
@@ -367,6 +367,10 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 						.print(") { if(!isNaN(<any>val)) { result.push(parseInt(val,10)); } } return result; }()");
 				return true;
 			}
+			// enum objets wrapping
+			getPrinter().print(relTarget).print("[\"" + Java2TypeScriptTranslator.ENUM_WRAPPER_CLASS_WRAPPERS + "\"][").print(fieldAccess.selected).print("].")
+					.print(fieldAccess.name.toString()).print("(").printArgList(invocation.getArguments()).print(")");
+			return true;
 		}
 
 		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "$export")) {
@@ -1098,11 +1102,22 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			}
 		}
 
+		TypeSymbol targetType = fieldAccess.selected.type.tsym;
+
 		// built-in Java support
-		String accessedType = fieldAccess.selected.type.tsym.getQualifiedName().toString();
+		String accessedType = targetType.getQualifiedName().toString();
 		if (fieldAccess.sym.isStatic() && typesMapping.containsKey(accessedType) && accessedType.startsWith("java.lang.")
 				&& !"class".equals(fieldAccess.name.toString())) {
 			delegateToEmulLayer(accessedType, fieldAccess);
+			return true;
+		}
+
+		// enum objects wrapping
+		if (targetType != null && targetType.getKind() == ElementKind.ENUM && !fieldAccess.sym.isEnum() && !"this".equals(fieldAccess.selected.toString())
+				&& !"class".equals(fieldAccess.name.toString())) {
+			String relTarget = getPrinter().getContext().useModules ? targetType.getSimpleName().toString() : getPrinter().getRootRelativeName(targetType);
+			getPrinter().print(relTarget).print("[\"" + Java2TypeScriptTranslator.ENUM_WRAPPER_CLASS_WRAPPERS + "\"][").print(fieldAccess.selected).print("].")
+					.print(fieldAccess.name.toString());
 			return true;
 		}
 

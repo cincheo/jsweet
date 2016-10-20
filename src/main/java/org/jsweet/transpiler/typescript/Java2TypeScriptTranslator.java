@@ -130,6 +130,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	public static final String STATIC_INITIALIZATION_SUFFIX = "_$LI$";
 	public static final String CLASS_NAME_IN_CONSTRUCTOR = "__classname";
 	public static final String ANONYMOUS_PREFIX = "$";
+	public static final String ENUM_WRAPPER_CLASS_SUFFIX = "_$WRAPPER";
+	public static final String ENUM_WRAPPER_CLASS_WRAPPERS = "_$wrappers";
+	public static final String ENUM_WRAPPER_CLASS_NAME = "_$name";
+	public static final String ENUM_WRAPPER_CLASS_ORDINAL = "_$ordinal";
 
 	protected static Logger logger = Logger.getLogger(Java2TypeScriptTranslator.class);
 
@@ -141,6 +145,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		private boolean sharedMode = false;
 
 		private boolean enumScope = false;
+
+		private boolean isComplexEnum = false;
+
+		private boolean enumWrapperClassScope = false;
+
+		private List<String> javaEnumKeys;
 
 		private boolean removedSuperclass = false;
 
@@ -675,6 +685,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		getScope().interfaceScope = false;
 		getScope().removedSuperclass = false;
 		getScope().enumScope = false;
+		getScope().enumWrapperClassScope = false;
 
 		HashSet<Entry<JCClassDecl, JCMethodDecl>> defaultMethods = null;
 		boolean globals = JSweetConfig.GLOBALS_CLASS_NAME.equals(classdecl.name.toString());
@@ -700,8 +711,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				getScope().sharedMode = ("" + o).endsWith("SHARED");
 			} else {
 				if (classdecl.getKind() == Kind.ENUM) {
-					getScope().enumScope = true;
-					print("enum ");
+					if (scope.size() > 1 && getScope(1).isComplexEnum) {
+						print("class ");
+						getScope().enumWrapperClassScope = true;
+						getScope().javaEnumKeys = new ArrayList<>();
+					} else {
+						print("enum ");
+						getScope().enumScope = true;
+					}
 				} else {
 					if (getScope().declareClassScope && !(getIndent() != 0 && isDefinitionScope)) {
 						print("declare ");
@@ -714,7 +731,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					print("class ");
 				}
 			}
-			print(name);
+
+			print(name + (getScope().enumWrapperClassScope ? ENUM_WRAPPER_CLASS_SUFFIX : ""));
+
 			if (classdecl.typarams != null && classdecl.typarams.size() > 0) {
 				print("<").printArgList(classdecl.typarams).print(">");
 			} else if (isAnonymousClass && classdecl.getModifiers().getFlags().contains(Modifier.STATIC)) {
@@ -868,7 +887,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 			if (def instanceof JCVariableDecl) {
 				if (getScope().enumScope && ((JCVariableDecl) def).type.tsym != classdecl.type.tsym) {
-					report(def, ((JCVariableDecl) def).name, JSweetProblem.INVALID_FIELD_IN_ENUM);
+					getScope().isComplexEnum = true;
 					continue;
 				}
 				if (!getAdapter().needsVariableDecl((JCVariableDecl) def, VariableKind.FIELD)) {
@@ -963,6 +982,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 		removeLastChar();
 
+		if (getScope().enumWrapperClassScope) {
+			printIndent().print("public name() : string { return this." + ENUM_WRAPPER_CLASS_NAME + "; }").println();
+			printIndent().print("public ordinal() : number { return this." + ENUM_WRAPPER_CLASS_ORDINAL + "; }").println();
+		}
+
 		if (getScope().enumScope) {
 			removeLastChar().println();
 		}
@@ -972,8 +996,25 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			if (getContext().options.isSupportGetClass() && !getScope().interfaceScope && !getScope().declareClassScope && !getScope().enumScope
 					&& !classdecl.sym.isAnonymous()) {
 				println().printIndent().print(classdecl.sym.getSimpleName().toString()).print("[\"" + CLASS_NAME_IN_CONSTRUCTOR + "\"] = ")
-						.print("\"" + Util.getRootRelativeName(null, classdecl.sym) + "\";").println();
+						.print("\"" + Util.getRootRelativeName(null, classdecl.sym) + "\";");
+				if (!getScope().enumWrapperClassScope) {
+					println();
+				}
 			}
+			if (getScope().enumWrapperClassScope) {
+				println().printIndent().print(classdecl.sym.getSimpleName().toString()).print("[\"" + ENUM_WRAPPER_CLASS_WRAPPERS + "\"] = [");
+				for (String k : getScope().javaEnumKeys) {
+					print(k).print(", ");
+				}
+				removeLastChars(2);
+				print("];").println();
+			}
+		}
+
+		// enum class for complex enum
+		if (getScope().isComplexEnum) {
+			println().println().printIndent();
+			visitClassDef(classdecl);
 		}
 
 		// inner and anonymous classes in a namespace ======================
@@ -1096,10 +1137,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (getScope().enumScope) {
 			if (constructor) {
 				if (parent != null && parent.pos != methodDecl.pos) {
-					report(methodDecl, methodDecl.name, JSweetProblem.INVALID_CONSTRUCTOR_IN_ENUM);
+					getScope().isComplexEnum = true;
 				}
 			} else {
-				report(methodDecl, methodDecl.name, JSweetProblem.INVALID_METHOD_IN_ENUM);
+				getScope().isComplexEnum = true;
 			}
 			return;
 		}
@@ -1296,6 +1337,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (getScope().innerClassNotStatic && methodDecl.sym.isConstructor()) {
 			print(PARENT_CLASS_FIELD_NAME + ": any, ");
 			paramPrinted = true;
+		}
+		if (constructor && getScope().enumWrapperClassScope) {
+			print("private " + ENUM_WRAPPER_CLASS_ORDINAL + " : number, ");
+			print("private " + ENUM_WRAPPER_CLASS_NAME + " : string");
+			if (!methodDecl.getParameters().isEmpty()) {
+				print(", ");
+			}
 		}
 		int i = 0;
 		for (JCVariableDecl param : methodDecl.getParameters()) {
@@ -1700,10 +1748,30 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			return;
 		}
 
-		if (getParent().getKind() == Kind.ENUM) {
+		if (getScope().enumScope) {
 			print(varDecl.name.toString());
 		} else {
 			JCTree parent = getParent();
+
+			if (getScope().enumWrapperClassScope && varDecl.sym.isEnum()) {
+				// enum fields are not part of the enum auxiliary class but will
+				// initialize the enum values
+				JCNewClass newClass = (JCNewClass) varDecl.init;
+				JCClassDecl clazz = (JCClassDecl) parent;
+				int pos = getCurrentPosition();
+				print("new ").print(clazz.getSimpleName().toString() + ENUM_WRAPPER_CLASS_SUFFIX).print("(");
+				print("" + getScope().javaEnumKeys.size() + ", ");
+				print("\"" + varDecl.sym.name.toString() + "\"");
+				if (!newClass.args.isEmpty()) {
+					print(", ");
+				}
+				printArgList(newClass.args).print(")");
+				String expr = getOutput().substring(pos);
+				removeLastChars(getCurrentPosition() - pos);
+				getScope().javaEnumKeys.add(expr);
+				return;
+			}
+
 			String name = getAdapter().getIdentifier(varDecl.sym);
 			if (context.getFieldNameMapping(varDecl.sym) != null) {
 				name = context.getFieldNameMapping(varDecl.sym);
@@ -1804,7 +1872,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					|| (getScope().interfaceScope && Util.hasAnnotationType(varDecl.sym, JSweetConfig.ANNOTATION_OPTIONAL)))) {
 				print("?");
 			}
-			if (!getScope().skipTypeAnnotations) {
+			if (!getScope().skipTypeAnnotations && !getScope().enumWrapperClassScope) {
 				if (typeChecker.checkType(varDecl, varDecl.name, varDecl.vartype)) {
 					print(" : ");
 					if (getScope().eraseVariableTypes) {
@@ -1824,7 +1892,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					}
 				}
 			}
-			if (context.lazyInitializedStatics.contains(varDecl.sym)) {
+			if (context.lazyInitializedStatics.contains(varDecl.sym) && !getScope().enumWrapperClassScope) {
 				JCClassDecl clazz = (JCClassDecl) parent;
 				String prefix = clazz.getSimpleName().toString();
 				if (GLOBALS_CLASS_NAME.equals(prefix)) {
@@ -1851,7 +1919,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					}
 				}
 				if (varDecl.init != null) {
-					print("if(" + prefix).print(name).print(" == null) ").print(prefix).print(name).print(" = ").print(varDecl.init).print("; ");
+					print("if(" + prefix).print(name).print(" == null) ").print(prefix).print(name).print(" = ");
+					if (getScope().enumWrapperClassScope) {
+						JCNewClass newClass = (JCNewClass) varDecl.init;
+						print("new ").print(clazz.getSimpleName().toString()).print("(").printArgList(newClass.args).print(")");
+					} else {
+						print(varDecl.init);
+					}
+					print("; ");
 				}
 				print("return ").print(prefix).print(name).print("; }");
 				if (!globals) {

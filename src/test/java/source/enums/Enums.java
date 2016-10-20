@@ -14,42 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package source.structural;
+package source.enums;
 
+import static jsweet.util.Globals.$export;
+import static jsweet.util.Globals.array;
 
-public enum WrongConstructsInEnums {
+public class Enums {
 
-	A, B, C;
-	
-	// fields are not allowed
-	public long l = 4;
-	
-	static String s1;
+	static MyEnum e = MyEnum.B;
 
-	private String s2;
-	
-	// constructors are not allowed
-	private WrongConstructsInEnums() {
-		l = 4;
+	public static void main(String[] args) {
+		MyEnum e = MyEnum.A;
+		$export("value", e);
+		$export("nameOfA", e.name());
+		$export("ordinalOfA", e.ordinal());
+		$export("valueOfA", MyEnum.valueOf("A").name());
+		$export("valueOfC", array(MyEnum.values()).indexOf(MyEnum.valueOf("C")));
+		$export("ref", Enums.e.name());
 	}
 
-	// methods of any kinds are not allowed
-	native public void m1();
-	
-	public void m2() {
-		l = 4;
-	}
+}
 
-	native static void m3();
-	
-	// initializers are not allowed
-	{
-		l = 4;
+enum MyEnum {
+	A, B, C
+}
+
+class C {
+	public void m() {
 	}
-	
-	// static initializers are not allowed
-	static {
-		s1 = "";
-	}
-	
 }
