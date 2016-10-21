@@ -181,6 +181,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 		private List<JCVariableDecl> fieldsWithInitializers = new ArrayList<>();
 
+		private List<String> inlinedConstructorArgs = null;
+
 	}
 
 	private boolean isAnonymousClass = false;
@@ -1568,8 +1570,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (method.getParameters().get(j).name.toString().equals(args.get(j).toString())) {
 					continue;
 				} else {
+					getScope().inlinedConstructorArgs = method.getParameters().stream().map(p -> p.sym.name.toString()).collect(Collectors.toList());
 					printIndent().print(VAR_DECL_KEYWORD + " ").print(avoidJSKeyword(method.getParameters().get(j).name.toString())).print(" : ").print("any")
 							.print(Util.isVarargs(method.getParameters().get(j)) ? "[]" : "").print(" = ").print(args.get(j)).print(";").println();
+					getScope().inlinedConstructorArgs = null;
 				}
 			}
 		}
@@ -1598,20 +1602,26 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (!initialized) {
 					printInstanceInitialization(getParent(JCClassDecl.class), method.sym);
 				}
-				printIndent().print("((").print(") => {").startIndent().println();
-				printBlockStatements(stats.tail);
-				endIndent().printIndent().print("})(").print(");").println();
+				if (!stats.tail.isEmpty()) {
+					printIndent().print("((").print(") => {").startIndent().println();
+					printBlockStatements(stats.tail);
+					endIndent().printIndent().print("})(").print(");").println();
+				}
 			} else {
 				if (!initialized) {
 					printInstanceInitialization(getParent(JCClassDecl.class), method.sym);
 				}
-				printIndent();
+				if (!stats.isEmpty() || !method.sym.isConstructor()) {
+					printIndent();
+				}
 				if (!method.sym.isConstructor()) {
 					print("return <any>");
 				}
-				print("((").print(") => {").startIndent().println();
-				printBlockStatements(stats);
-				endIndent().printIndent().print("})(").print(");").println();
+				if (!stats.isEmpty() || !method.sym.isConstructor()) {
+					print("((").print(") => {").startIndent().println();
+					printBlockStatements(stats);
+					endIndent().printIndent().print("})(").print(");").println();
+				}
 			}
 			stack.pop();
 		} else {
@@ -2390,7 +2400,16 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		// }
 		// String name = ident.sym == null ? ident.toString() :
 		// getAdapter().getIdentifier(ident.sym);
+
 		String name = ident.toString();
+
+		if (getScope().inlinedConstructorArgs != null) {
+			if (ident.sym instanceof VarSymbol && getScope().inlinedConstructorArgs.contains(name)) {
+				print("__args[" + getScope().inlinedConstructorArgs.indexOf(name)+"]");
+				return;
+			}
+		}
+
 		if (!getAdapter().substituteIdentifier(ident)) {
 			boolean lazyInitializedStatic = false;
 			// add this of class name if ident is a field
