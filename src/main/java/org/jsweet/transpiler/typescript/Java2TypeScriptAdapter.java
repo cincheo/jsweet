@@ -824,10 +824,10 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				case "isNaN":
 					printMacroName(targetMethodName);
 					if (!invocation.args.isEmpty()) {
-						getPrinter().print("(Number.NaN === ").printArgList(invocation.args).print(")");
+						getPrinter().print("isNaN(").printArgList(invocation.args).print(")");
 						return true;
 					} else {
-						getPrinter().print("(Number.NaN === ").print(fieldAccess.getExpression()).print(")");
+						getPrinter().print("isNaN(").print(fieldAccess.getExpression()).print(")");
 						return true;
 					}
 				case "isInfinite":
