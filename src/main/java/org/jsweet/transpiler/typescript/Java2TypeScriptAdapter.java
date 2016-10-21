@@ -114,6 +114,8 @@ import com.sun.tools.javac.util.Log;
  */
 public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 
+	private final static String VAR_DECL_KEYWORD = Java2TypeScriptTranslator.VAR_DECL_KEYWORD;
+
 	private Map<String, String> typesMapping = new HashMap<String, String>();
 	private Map<String, String> langTypesMapping = new HashMap<String, String>();
 	private Set<String> langTypesSimpleNames = new HashSet<String>();
@@ -363,7 +365,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				return true;
 			}
 			if (targetMethodName.equals("values")) {
-				getPrinter().print("function() { var result: number[] = []; for(var val in ").print(relTarget)
+				getPrinter().print("function() { " + VAR_DECL_KEYWORD + " result: number[] = []; for(" + VAR_DECL_KEYWORD + " val in ").print(relTarget)
 						.print(") { if(!isNaN(<any>val)) { result.push(parseInt(val,10)); } } return result; }()");
 				return true;
 			}
@@ -378,7 +380,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				getPrinter().report(invocation.args.head, JSweetProblem.STRING_LITERAL_EXPECTED);
 			}
 			String varName = "_exportedVar_" + StringUtils.strip(invocation.args.head.toString(), "\"");
-			getPrinter().footer.append("var " + varName + ";\n");
+			getPrinter().footer.append(VAR_DECL_KEYWORD + " " + varName + ";\n");
 			if (invocation.args.size() == 1) {
 				getPrinter().print(varName);
 			} else {
@@ -731,7 +733,8 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				case "endsWith":
 					printMacroName(targetMethodName);
 					getPrinter()
-							.print("((str, searchString) => { var pos = str.length - searchString.length; var lastIndex = str.indexOf(searchString, pos); return lastIndex !== -1 && lastIndex === pos; })(")
+							.print("((str, searchString) => { " + VAR_DECL_KEYWORD + " pos = str.length - searchString.length; " + VAR_DECL_KEYWORD
+									+ " lastIndex = str.indexOf(searchString, pos); return lastIndex !== -1 && lastIndex === pos; })(")
 							.print(fieldAccess.getExpression()).print(", ").printArgList(invocation.args).print(")");
 					return true;
 				// this macro is not needed in ES6
@@ -1409,7 +1412,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				if (assignedType.tsym.isInterface() && !Util.isFunctionalType(assignedType.tsym)) {
 					JCLambda lambda = (JCLambda) expression;
 					MethodSymbol method = (MethodSymbol) assignedType.tsym.getEnclosedElements().get(0);
-					getPrinter().print("(() => { var f = function() { this." + method.getSimpleName() + " = ").print(lambda);
+					getPrinter().print("(() => { " + VAR_DECL_KEYWORD + " f = function() { this." + method.getSimpleName() + " = ").print(lambda);
 					getPrinter().print("}; return new f(); })()");
 					return true;
 				}

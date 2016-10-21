@@ -24,6 +24,7 @@ import org.junit.Test;
 import source.overload.BasicOverride;
 import source.overload.ConstructorOverloadWithFieldInitializer;
 import source.overload.InterfaceInheritance;
+import source.overload.LocalVariablesNameCollision;
 import source.overload.NonPublicRootMethod;
 import source.overload.Overload;
 import source.overload.OverloadInInnerClass;
@@ -191,6 +192,13 @@ public class OverloadTests extends AbstractTest {
 			logHandler.assertReportedProblems();
 			assertEquals("test,1", r.get("trace"));
 		}, getSourceFile(ConstructorOverloadWithFieldInitializer.class));
+	}
+
+	@Test
+	public void testLocalVariablesNameCollision() {
+		eval(ModuleKind.none, (logHandler, r) -> {
+			logHandler.assertReportedProblems();
+		}, getSourceFile(LocalVariablesNameCollision.class));
 	}
 
 }

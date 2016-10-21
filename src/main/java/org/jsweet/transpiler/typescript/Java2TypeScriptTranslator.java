@@ -134,6 +134,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	public static final String ENUM_WRAPPER_CLASS_WRAPPERS = "_$wrappers";
 	public static final String ENUM_WRAPPER_CLASS_NAME = "_$name";
 	public static final String ENUM_WRAPPER_CLASS_ORDINAL = "_$ordinal";
+	public static final String VAR_DECL_KEYWORD = "let";
 
 	protected static Logger logger = Logger.getLogger(Java2TypeScriptTranslator.class);
 
@@ -1554,20 +1555,20 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	private void printInlinedMethod(Overload overload, JCMethodDecl method, List<? extends JCTree> args) {
 		print("{").println().startIndent();
-		printIndent().print("var __args = Array.prototype.slice.call(arguments);").println();
+		printIndent().print(VAR_DECL_KEYWORD + " __args = Array.prototype.slice.call(arguments);").println();
 		for (int j = 0; j < method.getParameters().size(); j++) {
 			if (args.get(j) instanceof JCVariableDecl) {
 				if (method.getParameters().get(j).name.equals(((JCVariableDecl) args.get(j)).name)) {
 					continue;
 				} else {
-					printIndent().print("var ").print(avoidJSKeyword(method.getParameters().get(j).name.toString())).print(" : ").print("any")
+					printIndent().print(VAR_DECL_KEYWORD + " ").print(avoidJSKeyword(method.getParameters().get(j).name.toString())).print(" : ").print("any")
 							.print(Util.isVarargs(method.getParameters().get(j)) ? "[]" : "").print(" = ").print("__args[" + j + "]").print(";").println();
 				}
 			} else {
 				if (method.getParameters().get(j).name.toString().equals(args.get(j).toString())) {
 					continue;
 				} else {
-					printIndent().print("var ").print(avoidJSKeyword(method.getParameters().get(j).name.toString())).print(" : ").print("any")
+					printIndent().print(VAR_DECL_KEYWORD + " ").print(avoidJSKeyword(method.getParameters().get(j).name.toString())).print(" : ").print("any")
 							.print(Util.isVarargs(method.getParameters().get(j)) ? "[]" : "").print(" = ").print(args.get(j)).print(";").println();
 				}
 			}
@@ -1855,7 +1856,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					}
 				}
 				if (!(inArgListTail && (parent instanceof JCForLoop))) {
-					print("var ");
+					print(VAR_DECL_KEYWORD + " ");
 				}
 			} else {
 				if (ambient) {
@@ -1974,7 +1975,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		String adaptedQualId = getAdapter().needsImport(importDecl, qualId);
 		if (adaptedQualId != null && adaptedQualId.contains(".")) {
 			if (importDecl.isStatic() && !qualId.contains("." + JSweetConfig.GLOBALS_CLASS_NAME + ".")) {
-				print("var ").print(qualId.substring(qualId.lastIndexOf('.') + 1)).print(": any = ").print(qualId).print(";");
+				print(VAR_DECL_KEYWORD + " ").print(qualId.substring(qualId.lastIndexOf('.') + 1)).print(": any = ").print(qualId).print(";");
 			} else {
 				String[] namePath;
 				if (context.useModules && importDecl.isStatic()) {
@@ -2845,21 +2846,21 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			return true;
 		});
 		if (!hasLength[0]) {
-			print("for(var " + indexVarName + "=").print(foreachLoop.expr).print(".iterator();" + indexVarName + ".hasNext();) {").println().startIndent()
-					.printIndent();
-			print("var " + foreachLoop.var.name.toString() + " = ").print(indexVarName + ".next();").println();
+			print("for(" + VAR_DECL_KEYWORD + " " + indexVarName + "=").print(foreachLoop.expr).print(".iterator();" + indexVarName + ".hasNext();) {")
+					.println().startIndent().printIndent();
+			print(VAR_DECL_KEYWORD + " " + foreachLoop.var.name.toString() + " = ").print(indexVarName + ".next();").println();
 		} else {
 			if (noVariable) {
-				print("for(var " + indexVarName + "=0; " + indexVarName + " < ").print(foreachLoop.expr).print("." + "length" + "; " + indexVarName + "++) {")
-						.println().startIndent().printIndent();
-				print("var " + foreachLoop.var.name.toString() + " = ").print(foreachLoop.expr).print("[" + indexVarName + "];").println();
+				print("for(" + VAR_DECL_KEYWORD + " " + indexVarName + "=0; " + indexVarName + " < ").print(foreachLoop.expr)
+						.print("." + "length" + "; " + indexVarName + "++) {").println().startIndent().printIndent();
+				print(VAR_DECL_KEYWORD + " " + foreachLoop.var.name.toString() + " = ").print(foreachLoop.expr).print("[" + indexVarName + "];").println();
 			} else {
 				String arrayVarName = "array" + Util.getId();
 				print("{").println().startIndent().printIndent();
-				print("var " + arrayVarName + " = ").print(foreachLoop.expr).print(";").println().printIndent();
-				print("for(var " + indexVarName + "=0; " + indexVarName + " < " + arrayVarName + ".length; " + indexVarName + "++) {").println().startIndent()
-						.printIndent();
-				print("var " + foreachLoop.var.name.toString() + " = " + arrayVarName + "[" + indexVarName + "];").println();
+				print(VAR_DECL_KEYWORD + " " + arrayVarName + " = ").print(foreachLoop.expr).print(";").println().printIndent();
+				print("for(" + VAR_DECL_KEYWORD + " " + indexVarName + "=0; " + indexVarName + " < " + arrayVarName + ".length; " + indexVarName + "++) {")
+						.println().startIndent().printIndent();
+				print(VAR_DECL_KEYWORD + " " + foreachLoop.var.name.toString() + " = " + arrayVarName + "[" + indexVarName + "];").println();
 			}
 		}
 		printIndent().print(foreachLoop.body);
@@ -3062,7 +3063,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			if (newArray.dims.size() == 1) {
 				print("new Array(").print(newArray.dims.head).print(")");
 			} else {
-				print("<any> (function(dims) { var allocate = function(dims) { if(dims.length==0) { return undefined; } else { var array = []; for(var i = 0; i < dims[0]; i++) { array.push(allocate(dims.slice(1))); } return array; }}; return allocate(dims);})");
+				print("<any> (function(dims) { " + VAR_DECL_KEYWORD + " allocate = function(dims) { if(dims.length==0) { return undefined; } else { "
+						+ VAR_DECL_KEYWORD + " array = []; for(" + VAR_DECL_KEYWORD
+						+ " i = 0; i < dims[0]; i++) { array.push(allocate(dims.slice(1))); } return array; }}; return allocate(dims);})");
 				print("([");
 				printArgList(newArray.dims);
 				print("])");
