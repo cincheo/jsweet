@@ -26,6 +26,7 @@ import source.overload.ConstructorOverloadWithFieldInitializer;
 import source.overload.InterfaceInheritance;
 import source.overload.LocalVariablesNameCollision;
 import source.overload.NonPublicRootMethod;
+import source.overload.ConstructorOverLoadWithArray;
 import source.overload.Overload;
 import source.overload.OverloadInInnerClass;
 import source.overload.OverloadWithStaticAndInstanceMethods;
@@ -194,6 +195,14 @@ public class OverloadTests extends AbstractTest {
 		}, getSourceFile(ConstructorOverloadWithFieldInitializer.class));
 	}
 
+	@Test
+	public void testConstructorOverloadWithArray() {
+		eval(ModuleKind.none, (logHandler, r) -> {
+			logHandler.assertReportedProblems();
+			assertEquals("1,2", r.get("trace"));
+		}, getSourceFile(ConstructorOverLoadWithArray.class));
+	}
+	
 	@Test
 	public void testLocalVariablesNameCollision() {
 		eval(ModuleKind.none, (logHandler, r) -> {
