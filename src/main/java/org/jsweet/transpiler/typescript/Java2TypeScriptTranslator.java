@@ -297,10 +297,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			return false;
 		}
 		for (Symbol s : parentPackage.getEnclosedElements()) {
-			if (!(s instanceof PackageSymbol)) {
-				report(topLevel.getPackageName(), JSweetProblem.CLASS_OUT_OF_ROOT_PACKAGE_SCOPE, s.getQualifiedName().toString(),
-						rootPackage.getQualifiedName().toString());
-				return false;
+			if (s instanceof ClassSymbol) {
+				if (Util.isSourceType((ClassSymbol) s)) {
+					report(topLevel.getPackageName(), JSweetProblem.CLASS_OUT_OF_ROOT_PACKAGE_SCOPE, s.getQualifiedName().toString(),
+							rootPackage.getQualifiedName().toString());
+					return false;
+				}
 			}
 		}
 		return checkRootPackageParent(topLevel, rootPackage, (PackageSymbol) parentPackage.owner);
@@ -704,7 +706,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 			printDocComment(classdecl, false);
 			print(classdecl.mods);
-			if (!globalModule || context.useModules) {
+			if (!globalModule || context.useModules || isAnonymousClass) {
 				print("export ");
 			}
 			if (Util.isInterface(classdecl.sym)) {
@@ -1028,7 +1030,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				JCClassDecl cdef = (JCClassDecl) def;
 				if (!nameSpace) {
 					nameSpace = true;
-					println().println().printIndent().print("export namespace ").print(name).print(" {").startIndent();
+					println().println().printIndent();
+					if (!globalModule) {
+						print("export ");
+					}
+					print("namespace ").print(name).print(" {").startIndent();
 				}
 				println().println().printIndent().print(cdef);
 			}
@@ -1037,7 +1043,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		for (JCClassDecl cdef : getScope().anonymousClasses) {
 			if (!nameSpace) {
 				nameSpace = true;
-				println().println().printIndent().print("export namespace ").print(name).print(" {").startIndent();
+				println().println().printIndent();
+				if (!globalModule) {
+					print("export ");
+				}
+				print("namespace ").print(name).print(" {").startIndent();
 			}
 			isAnonymousClass = true;
 			println().println().printIndent().print(cdef);
@@ -2405,7 +2415,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 		if (getScope().inlinedConstructorArgs != null) {
 			if (ident.sym instanceof VarSymbol && getScope().inlinedConstructorArgs.contains(name)) {
-				print("__args[" + getScope().inlinedConstructorArgs.indexOf(name)+"]");
+				print("__args[" + getScope().inlinedConstructorArgs.indexOf(name) + "]");
 				return;
 			}
 		}
