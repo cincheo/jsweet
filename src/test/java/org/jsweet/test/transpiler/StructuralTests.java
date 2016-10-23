@@ -32,7 +32,6 @@ import source.structural.AutoImportClassesInSamePackage;
 import source.structural.AutoImportClassesInSamePackageUsed;
 import source.structural.DefaultMethods;
 import source.structural.DefaultMethodsConsumer;
-import source.structural.Enums;
 import source.structural.ExtendsClassInSameFile;
 import source.structural.ExtendsObject;
 import source.structural.GetClass;
@@ -50,7 +49,6 @@ import source.structural.NoWildcardsInImports;
 import source.structural.ObjectTypes;
 import source.structural.StaticMembersInInterfaces;
 import source.structural.TwoClassesInSameFile;
-import source.structural.WrongConstructsInEnums;
 import source.structural.WrongConstructsInInterfaces;
 import source.structural.WrongConstructsInSharedInterfaces;
 import source.structural.WrongThisAccessOnStatic;
@@ -161,15 +159,6 @@ public class StructuralTests extends AbstractTest {
 	}
 
 	@Test
-	public void testWrongConstructsInEnums() {
-		transpile(logHandler -> {
-			logHandler.assertReportedProblems(JSweetProblem.INVALID_FIELD_IN_ENUM, JSweetProblem.INVALID_FIELD_IN_ENUM, JSweetProblem.INVALID_FIELD_IN_ENUM,
-					JSweetProblem.INVALID_CONSTRUCTOR_IN_ENUM, JSweetProblem.INVALID_METHOD_IN_ENUM, JSweetProblem.INVALID_METHOD_IN_ENUM,
-					JSweetProblem.INVALID_METHOD_IN_ENUM);
-		}, getSourceFile(WrongConstructsInEnums.class));
-	}
-
-	@Test
 	public void testAbstractClass() {
 		transpile(logHandler -> {
 			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
@@ -189,18 +178,6 @@ public class StructuralTests extends AbstractTest {
 			logHandler.assertReportedProblems();
 			Assert.assertEquals("1,2,1,3,4,5,6", r.get("trace"));
 		}, getSourceFile(InstanceofForInterfaces.class));
-	}
-
-	@Test
-	public void testEnums() {
-		eval((logHandler, r) -> {
-			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-			Assert.assertEquals("Wrong enum behavior", 0, ((Number) r.get("value")).intValue());
-			Assert.assertEquals("Wrong enum behavior", "A", r.get("nameOfA"));
-			Assert.assertEquals("Wrong enum behavior", 0, ((Number) r.get("ordinalOfA")).intValue());
-			Assert.assertEquals("Wrong enum behavior", 0, ((Number) r.get("valueOfA")).intValue());
-			Assert.assertEquals("Wrong enum behavior", 2, ((Number) r.get("valueOfC")).intValue());
-		}, getSourceFile(Enums.class));
 	}
 
 	@Test

@@ -14,20 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package source.structural;
+package source.enums;
 
 import static jsweet.util.Globals.$export;
 import static jsweet.util.Globals.array;
 
 public class Enums {
 
+	static MyEnum e = MyEnum.B;
+
 	public static void main(String[] args) {
 		MyEnum e = MyEnum.A;
 		$export("value", e);
 		$export("nameOfA", e.name());
 		$export("ordinalOfA", e.ordinal());
-		$export("valueOfA", MyEnum.valueOf("A"));
+		$export("valueOfA", MyEnum.valueOf("A").name());
 		$export("valueOfC", array(MyEnum.values()).indexOf(MyEnum.valueOf("C")));
+		$export("ref", Enums.e.name());
 	}
 
 }

@@ -1,10 +1,15 @@
 # JSweet: a Java to JavaScript transpiler [![Build Status](https://travis-ci.org/cincheo/jsweet.svg?branch=master)](https://travis-ci.org/cincheo/jsweet)
 
-JSweet is built on the top of TypeScript to bring the most up-to-date JavaScript APIs right to the Java world. JSweet can be seen as a Java syntax layer to TypeScript.
+JSweet allows you to write rich and responsive Web applications in Java through the use of JavaScript libraries and frameworks. With JSweet, Java programs are transpiled (source-to-source compiled) to Javascript for being run in browsers or in Node.js. 
 
-JSweet is *not* Java, it is Java syntax only. JavaScript APIs and core objects are all accessible. Java APIs are accessible with some limitations, either through compile-time mapping to TypeScript APIs, either using the [J4TS](https://github.com/cincheo/j4ts) candy, which provides an implementation of the core Java APIs in JSweet. 
+* JSweet is safe and reliable. It provides web applications with type-checking and generates fully type-checked JavaScript programs. It stands on Oracle's Java Compiler (javac) and on Microsoft's TypeScript (tsc). 
+* JSweet allows you to use your favorite JS library ([JSweet+Angular2](https://github.com/cincheo/jsweet-angular2-quickstart), [JSweet+threejs](https://github.com/cincheo/jsweet-examples-threejs), [IONIC/Cordova](https://github.com/lgrignon/jsweet-cordova-ionic-example), ...).
+* JSweet enables you to share some code between server-side Java and client-side JavaScript. JSweet provides implementations for the core Java libraries for code sharing and legacy Java migration purpose.
+* JSweet is fast, lightweight and fully JavaScript-interoperable. The generated code is regular JavaScript code, which implies no overhead compared to JavaScript, and can directly interoperate with existing JavaScript programs and libraries.
 
-JSweet programs usually run on a JavaScript VM, but the programs that only use Java APIs can also run on a Java VM. So you are able to share some code between Java and JavaScript. With JSweet, you take advantage of all the Java tooling to program *real* JavaScript applications using the *latest* JavaScript libraries. JSweet is designed to be as safe as possible and generate fully type-checked JavaScript programs.
+How it works? JSweet depends on typed descriptions of JavaScript APIs, defined in TypeScript, they are called "candies". You can even use part of the Java core API using the [J4TS](https://github.com/j4ts) candies. 
+
+JSweet programs run on a JavaScript VM, not on a JVM, unless the programs only use Java APIs. So . With JSweet, you take advantage of all the Java tooling (IDE's, Maven, ...) to program real JavaScript applications using the latest JavaScript libraries.
 
 ## Features
 
@@ -42,6 +47,7 @@ For more details, go to the [language specifications](https://github.com/cincheo
 ```
 - Step 5: Edit the project and start programming:
 	- Checkout the examples to see various use cases 
+	- Get access to hundreds of [libs (candies)](http://www.jsweet.org/jsweet-candies/)
 	- Refer to the [language specifications](https://github.com/cincheo/jsweet/blob/master/doc/jsweet-language-specifications.md) to know more about programming with JSweet
 	- Eclipse users: install the [Eclipse plugin](http://www.jsweet.org/eclipse-plugin/) to get inline error reporting, build-on-save, and easy configuration UI
 
@@ -49,10 +55,13 @@ More info at http://www.jsweet.org.
 
 ## Examples
 
-- Examples illustrating the use of various frameworks in Java (jQuery, Underscore, Backbone, AngularJS, Knockout). [Go to project](https://github.com/cincheo/jsweet-examples). 
-- Examples illustrating the use of the Threejs framework in Java. [Go to project](https://github.com/cincheo/jsweet-examples-threejs). 
-- Node.js + Socket.IO + AngularJS. [Go to project](https://github.com/lgrignon/jsweet-node-example).
-- Some simple examples to get started with React.js. [Go to project](https://github.com/cincheo/jsweet-examples-react).
+- Simple examples illustrating the use of various frameworks in Java (jQuery, Underscore, Backbone, AngularJS, Knockout): https://github.com/cincheo/jsweet-examples 
+- Simple examples illustrating the use of the Threejs framework in Java: https://github.com/cincheo/jsweet-examples-threejs) 
+- Node.js + Socket.IO + AngularJS: https://github.com/lgrignon/jsweet-node-example
+- Some simple examples to get started with React.js: https://github.com/cincheo/jsweet-examples-react
+- JSweet JAX-RS server example (how to share a Java model between client and server): https://github.com/lgrignon/jsweet-jaxrs-server-example 
+- JSweet Cordova / Polymer example: https://github.com/lgrignon/jsweet-cordova-polymer-example
+- JSweet Cordova / Ionic example: https://github.com/lgrignon/jsweet-cordova-ionic-example
 
 ## Tooling
 

@@ -65,6 +65,7 @@ import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.file.JavacFileManager;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
+import com.sun.tools.javac.tree.JCTree.JCAssignOp;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCCase;
 import com.sun.tools.javac.tree.JCTree.JCCatch;
@@ -72,6 +73,7 @@ import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCEnhancedForLoop;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
+import com.sun.tools.javac.tree.JCTree.JCExpressionStatement;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCForLoop;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
@@ -1256,21 +1258,56 @@ public class Util {
 	 * Returns true if this new class expression defines an anonymous class.
 	 */
 	public static boolean isAnonymousClass(JCNewClass newClass) {
-		boolean isAnonymousClass = false;
 		if (newClass.clazz != null && newClass.def != null) {
-			if (Util.hasAnnotationType(newClass.clazz.type.tsym, JSweetConfig.ANNOTATION_OBJECT_TYPE)) {
+			if (Util.hasAnnotationType(newClass.clazz.type.tsym, JSweetConfig.ANNOTATION_OBJECT_TYPE)
+					|| Util.hasAnnotationType(newClass.clazz.type.tsym, JSweetConfig.ANNOTATION_INTERFACE)) {
 				return false;
 			}
+			if (newClass.def.defs.size() > 2) {
+				// a map has a constructor (implicit) and an initializer
+				return true;
+			}
 			for (JCTree def : newClass.def.defs) {
-				if (def instanceof JCVariableDecl || def instanceof JCMethodDecl) {
-					if (def instanceof JCMethodDecl && "<init>".equals(((JCMethodDecl) def).name.toString())) {
-						continue;
+				if (def instanceof JCVariableDecl) {
+					// no variables in maps
+					return true;
+				}
+				if (def instanceof JCMethodDecl && !((JCMethodDecl) def).sym.isConstructor()) {
+					// no regular methods in maps
+					return true;
+				}
+				if (def instanceof JCBlock) {
+					for (JCStatement s : ((JCBlock) def).stats) {
+						if (!isAllowedStatementInMap(s)) {
+							return true;
+						}
 					}
-					isAnonymousClass = true;
 				}
 			}
 		}
-		return isAnonymousClass;
+		return false;
+	}
+
+	private static boolean isAllowedStatementInMap(JCStatement statement) {
+		if (statement instanceof JCExpressionStatement) {
+			JCExpressionStatement exprStat = (JCExpressionStatement) statement;
+			if (exprStat.getExpression() instanceof JCAssignOp) {
+				return true;
+			}
+			if (exprStat.getExpression() instanceof JCMethodInvocation) {
+				JCMethodInvocation inv = (JCMethodInvocation) exprStat.getExpression();
+				String methodName;
+				if (inv.meth instanceof JCFieldAccess) {
+					methodName = ((JCFieldAccess) inv.meth).name.toString();
+				} else {
+					methodName = inv.meth.toString();
+				}
+				if (JSweetConfig.INDEXED_GET_FUCTION_NAME.equals(methodName) || JSweetConfig.INDEXED_SET_FUCTION_NAME.equals(methodName)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -1383,12 +1420,29 @@ public class Util {
 	}
 
 	/**
-	 * Returns true if the given type symbol corresponds to a functional type (in the TypeScript way).
+	 * Returns true if the given type symbol corresponds to a functional type
+	 * (in the TypeScript way).
 	 */
 	public static boolean isFunctionalType(TypeSymbol type) {
 		String name = type.getQualifiedName().toString();
-		return name.startsWith("java.util.function.") || name.equals(Runnable.class.getName())
-				|| (type.isInterface()) && hasAnnotationType(type, FunctionalInterface.class.getName());
+		return name.startsWith("java.util.function.") //
+				|| name.equals(Runnable.class.getName()) //
+				|| (type.isInterface() && (hasAnnotationType(type, FunctionalInterface.class.getName()) || hasAnonymousFunction(type)));
+	}
+
+	/**
+	 * Tells if the given type has a anonymous function (instances can be used
+	 * as lambdas).
+	 */
+	public static boolean hasAnonymousFunction(TypeSymbol type) {
+		for (Symbol s : type.getEnclosedElements()) {
+			if (s instanceof MethodSymbol) {
+				if (JSweetConfig.ANONYMOUS_FUNCTION_NAME.equals(s.getSimpleName().toString())) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 }

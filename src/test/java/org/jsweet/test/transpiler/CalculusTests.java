@@ -28,6 +28,7 @@ import source.calculus.Integers;
 import source.calculus.Longs;
 import source.calculus.MathApi;
 import source.calculus.Null;
+import source.calculus.Numbers;
 import source.calculus.Operators;
 
 public class CalculusTests extends AbstractTest {
@@ -111,6 +112,14 @@ public class CalculusTests extends AbstractTest {
 		eval(ModuleKind.none, (logHandler, r) -> {
 			logHandler.assertReportedProblems();
 		}, getSourceFile(Null.class));
+	}
+
+	@Test
+	public void testNumbers() {
+		eval(ModuleKind.none, (logHandler, r) -> {
+			logHandler.assertReportedProblems();
+			Assert.assertTrue(r.get("NaN_test"));
+		}, getSourceFile(Numbers.class));
 	}
 
 }

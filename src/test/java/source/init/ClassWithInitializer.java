@@ -14,42 +14,49 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package source.structural;
+package source.init;
 
+import jsweet.lang.Interface;
+import jsweet.lang.ObjectType;
 
-public enum WrongConstructsInEnums {
+class DataStruct12 {
+	String field;
 
-	A, B, C;
-	
-	// fields are not allowed
-	public long l = 4;
-	
-	static String s1;
-
-	private String s2;
-	
-	// constructors are not allowed
-	private WrongConstructsInEnums() {
-		l = 4;
+	public void setField(String f) {
+		field = f;
 	}
+}
 
-	// methods of any kinds are not allowed
-	native public void m1();
-	
-	public void m2() {
-		l = 4;
-	}
+public class ClassWithInitializer extends jsweet.lang.Object {
 
-	native static void m3();
-	
-	// initializers are not allowed
-	{
-		l = 4;
-	}
-	
-	// static initializers are not allowed
-	static {
-		s1 = "";
-	}
-	
+	DataStruct10 d2 = new DataStruct10() {
+	};
+
+	DataStruct10 d3 = new DataStruct10() {
+		{
+			field = "a";
+		}
+	};
+
+	DataStruct11 d4 = new DataStruct11() {
+		{
+			field = "a";
+		}
+	};
+
+	DataStruct12 d5 = new DataStruct12() {
+		{
+			setField("a");
+		}
+	};
+}
+
+@Interface
+abstract class DataStruct10 {
+	String field;
+}
+
+@ObjectType
+abstract class DataStruct11 {
+	String field;
 }

@@ -28,6 +28,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import source.init.ArrayNew;
+import source.init.ClassWithInitializer;
 import source.init.Constructor;
 import source.init.ConstructorField;
 import source.init.ConstructorFieldInInterface;
@@ -212,6 +213,13 @@ public class InitTests extends AbstractTest {
 	}
 
 	@Test
+	public void testClassWithInitializer() {
+		eval(ModuleKind.none, (handler, result) -> {
+			handler.assertReportedProblems();
+		}, getSourceFile(ClassWithInitializer.class));
+	}
+
+	@Test
 	public void testInterfaceWithSuperInterface() {
 		TestTranspilationHandler logHandler = new TestTranspilationHandler();
 		try {
@@ -222,7 +230,7 @@ public class InitTests extends AbstractTest {
 			fail("Exception occured while running test");
 		}
 	}
-	
+
 	@Test
 	public void testMultipleMains() {
 		TestTranspilationHandler logHandler = new TestTranspilationHandler();
@@ -289,6 +297,5 @@ public class InitTests extends AbstractTest {
 			h.assertReportedProblems();
 		}, getSourceFile(StaticFieldWithInnerClass.class));
 	}
-	
-	
+
 }

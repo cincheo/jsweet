@@ -114,6 +114,8 @@ import com.sun.tools.javac.util.Log;
  */
 public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 
+	private final static String VAR_DECL_KEYWORD = Java2TypeScriptTranslator.VAR_DECL_KEYWORD;
+
 	private Map<String, String> typesMapping = new HashMap<String, String>();
 	private Map<String, String> langTypesMapping = new HashMap<String, String>();
 	private Set<String> langTypesSimpleNames = new HashSet<String>();
@@ -346,7 +348,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		// targetMethodName="+targetMethodName+
 		// " ownerClassName="+ownerClassName);
 
-		if (targetType != null && targetType.getKind() == ElementKind.ENUM) {
+		if (targetType != null && targetType.getKind() == ElementKind.ENUM && !"this".equals(fieldAccess.selected.toString())) {
 			// TODO: enum type simple name will not be valid when uses as fully
 			// qualified name (not imported)
 			String relTarget = getPrinter().getContext().useModules ? targetType.getSimpleName().toString() : getPrinter().getRootRelativeName(targetType);
@@ -363,10 +365,14 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				return true;
 			}
 			if (targetMethodName.equals("values")) {
-				getPrinter().print("function() { var result: number[] = []; for(var val in ").print(relTarget)
+				getPrinter().print("function() { " + VAR_DECL_KEYWORD + " result: number[] = []; for(" + VAR_DECL_KEYWORD + " val in ").print(relTarget)
 						.print(") { if(!isNaN(<any>val)) { result.push(parseInt(val,10)); } } return result; }()");
 				return true;
 			}
+			// enum objets wrapping
+			getPrinter().print(relTarget).print("[\"" + Java2TypeScriptTranslator.ENUM_WRAPPER_CLASS_WRAPPERS + "\"][").print(fieldAccess.selected).print("].")
+					.print(fieldAccess.name.toString()).print("(").printArgList(invocation.getArguments()).print(")");
+			return true;
 		}
 
 		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "$export")) {
@@ -374,7 +380,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				getPrinter().report(invocation.args.head, JSweetProblem.STRING_LITERAL_EXPECTED);
 			}
 			String varName = "_exportedVar_" + StringUtils.strip(invocation.args.head.toString(), "\"");
-			getPrinter().footer.append("var " + varName + ";\n");
+			getPrinter().footer.append(VAR_DECL_KEYWORD + " " + varName + ";\n");
 			if (invocation.args.size() == 1) {
 				getPrinter().print(varName);
 			} else {
@@ -683,6 +689,15 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					}
 				}
 				break;
+			case "printStackTrace":
+				if (targetType instanceof ClassSymbol) {
+					if (Util.hasParent((ClassSymbol) targetType, "java.lang.Throwable")) {
+						getPrinter().print("console.error(").print(fieldAccess.getExpression()).print(".message, ").print(fieldAccess.getExpression())
+								.print(")");
+						return true;
+					}
+				}
+				break;
 			}
 
 			switch (targetClassName) {
@@ -718,7 +733,8 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				case "endsWith":
 					printMacroName(targetMethodName);
 					getPrinter()
-							.print("((str, searchString) => { var pos = str.length - searchString.length; var lastIndex = str.indexOf(searchString, pos); return lastIndex !== -1 && lastIndex === pos; })(")
+							.print("((str, searchString) => { " + VAR_DECL_KEYWORD + " pos = str.length - searchString.length; " + VAR_DECL_KEYWORD
+									+ " lastIndex = str.indexOf(searchString, pos); return lastIndex !== -1 && lastIndex === pos; })(")
 							.print(fieldAccess.getExpression()).print(", ").printArgList(invocation.args).print(")");
 					return true;
 				// this macro is not needed in ES6
@@ -808,10 +824,10 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				case "isNaN":
 					printMacroName(targetMethodName);
 					if (!invocation.args.isEmpty()) {
-						getPrinter().print("(Number.NaN === ").printArgList(invocation.args).print(")");
+						getPrinter().print("isNaN(").printArgList(invocation.args).print(")");
 						return true;
 					} else {
-						getPrinter().print("(Number.NaN === ").print(fieldAccess.getExpression()).print(")");
+						getPrinter().print("isNaN(").print(fieldAccess.getExpression()).print(")");
 						return true;
 					}
 				case "isInfinite":
@@ -1089,11 +1105,22 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			}
 		}
 
+		TypeSymbol targetType = fieldAccess.selected.type.tsym;
+
 		// built-in Java support
-		String accessedType = fieldAccess.selected.type.tsym.getQualifiedName().toString();
+		String accessedType = targetType.getQualifiedName().toString();
 		if (fieldAccess.sym.isStatic() && typesMapping.containsKey(accessedType) && accessedType.startsWith("java.lang.")
 				&& !"class".equals(fieldAccess.name.toString())) {
 			delegateToEmulLayer(accessedType, fieldAccess);
+			return true;
+		}
+
+		// enum objects wrapping
+		if (targetType != null && targetType.getKind() == ElementKind.ENUM && !fieldAccess.sym.isEnum() && !"this".equals(fieldAccess.selected.toString())
+				&& !"class".equals(fieldAccess.name.toString())) {
+			String relTarget = getPrinter().getContext().useModules ? targetType.getSimpleName().toString() : getPrinter().getRootRelativeName(targetType);
+			getPrinter().print(relTarget).print("[\"" + Java2TypeScriptTranslator.ENUM_WRAPPER_CLASS_WRAPPERS + "\"][").print(fieldAccess.selected).print("].")
+					.print(fieldAccess.name.toString());
 			return true;
 		}
 
@@ -1385,7 +1412,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				if (assignedType.tsym.isInterface() && !Util.isFunctionalType(assignedType.tsym)) {
 					JCLambda lambda = (JCLambda) expression;
 					MethodSymbol method = (MethodSymbol) assignedType.tsym.getEnclosedElements().get(0);
-					getPrinter().print("(() => { var f = function() { this." + method.getSimpleName() + " = ").print(lambda);
+					getPrinter().print("(() => { " + VAR_DECL_KEYWORD + " f = function() { this." + method.getSimpleName() + " = ").print(lambda);
 					getPrinter().print("}; return new f(); })()");
 					return true;
 				}
