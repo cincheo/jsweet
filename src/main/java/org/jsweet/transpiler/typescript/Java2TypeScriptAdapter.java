@@ -83,15 +83,16 @@ import org.jsweet.transpiler.util.Util;
 import com.sun.codemodel.internal.JJavaName;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.PackageSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Symbol.TypeVariableSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
+import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCArrayTypeTree;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
@@ -1320,6 +1321,10 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					}
 				}
 			} else {
+				if (!(typeTree instanceof JCArrayTypeTree) && typeFullName.startsWith("java.util.function.")) {
+					// case of a raw functional type (programmer's mistake)
+					return getPrinter().print("any");
+				}
 				if (typesMapping.containsKey(typeFullName)) {
 					return getPrinter().print(typesMapping.get(typeFullName));
 				}
@@ -1414,6 +1419,13 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					MethodSymbol method = (MethodSymbol) assignedType.tsym.getEnclosedElements().get(0);
 					getPrinter().print("(() => { " + VAR_DECL_KEYWORD + " f = function() { this." + method.getSimpleName() + " = ").print(lambda);
 					getPrinter().print("}; return new f(); })()");
+					return true;
+				}
+			} else if (expression instanceof JCNewClass) {
+				JCNewClass newClass = (JCNewClass) expression;
+				// raw generic type
+				if (!newClass.type.tsym.getTypeParameters().isEmpty() && newClass.typeargs.isEmpty()) {
+					getPrinter().print("<any>(").print(expression).print(")");
 					return true;
 				}
 			}
