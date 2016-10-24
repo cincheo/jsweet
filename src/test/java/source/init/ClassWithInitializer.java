@@ -49,6 +49,13 @@ public class ClassWithInitializer extends jsweet.lang.Object {
 			setField("a");
 		}
 	};
+
+	DataStruct12 d6 = new DataStruct12() {
+		{
+			field = "a";
+		}
+	};
+
 }
 
 @Interface
