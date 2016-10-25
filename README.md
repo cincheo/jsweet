@@ -7,7 +7,7 @@ JSweet allows you to write rich and responsive Web applications in Java through 
 * JSweet enables code sharing between server-side Java and client-side JavaScript. JSweet provides implementations for the core Java libraries for code sharing and legacy Java migration purpose.
 * JSweet is fast, lightweight and fully JavaScript-interoperable. The generated code is regular JavaScript code, which implies no overhead compared to JavaScript, and can directly interoperate with existing JavaScript programs and libraries.
 
-How does it work? JSweet depends on well-typed descriptions of JavaScript APIs, so-called "candies". There are several sources of candies for existing libraries and you can easily build a candy for any library out there (see [more details](http://www.jsweet.org/jsweet-candies/)). 
+How does it work? JSweet depends on well-typed descriptions of JavaScript APIs, so-called "candies". These API descriptions in Java can be seen as headers (similarly to *.h header files in C) to bridge JavaSript libraries from Java. There are several sources of candies for existing libraries and you can easily build a candy for any library out there (see [more details](http://www.jsweet.org/jsweet-candies/)). 
 
 With JSweet, you take advantage of all the Java tooling (IDE's, Maven, ...) to program real JavaScript applications using the latest JavaScript libraries.
 
