@@ -159,6 +159,18 @@ public class JSweetTranspiler implements JSweetOptions {
 	private boolean generateDefinitions = false;
 	private ArrayList<File> jsLibFiles = new ArrayList<>();
 
+	@Override
+	public String toString() {
+		return "workingDir=" + workingDir + "\ntsOutputDir=" + tsOutputDir + "\njsOutputDir=" + jsOutputDir + "\nclassPath=" + classPath + "\ngenerateJsFiles="
+				+ generateJsFiles + "\ntscWatchMode=" + tscWatchMode + "\ntsDefDirs=" + (tsDefDirs == null ? null : Arrays.asList(tsDefDirs)) + "\nmoduleKind="
+				+ moduleKind + "\necmaTargertVersion=" + ecmaTargetVersion + "\nbundle=" + bundle + "\nbundleDirectory=" + bundlesDirectory + "\nencoding="
+				+ encoding + "\nnoRootDirectories=" + noRootDirectories + "\nignoreAssertions=" + ignoreAssertions + "\nignoreJavaFileNameError="
+				+ ignoreJavaFileNameError + "\ngenerateDeclarations=" + generateDeclarations + "\ndeclarationsOutputDir=" + declarationsOutputDir
+				+ "\njdkAllowed=" + jdkAllowed + "\ninterfaceTracking=" + interfaceTracking + "\nsupportGetClass=" + supportGetClass
+				+ "\nsupportSaticLazyInitialization=" + supportSaticLazyInitialization + "\ngenerateDefinitions=" + generateDefinitions + "\njsLibFiles="
+				+ jsLibFiles;
+	}
+
 	/**
 	 * Creates a JSweet transpiler, with the default values.
 	 * 
@@ -685,6 +697,10 @@ public class JSweetTranspiler implements JSweetOptions {
 			Collection<SourceFile> tsSources = asList(files).stream() //
 					.filter(source -> source.getTsFile() != null).collect(toList());
 			ts2js(errorHandler, tsSources.toArray(new SourceFile[0]));
+		}
+
+		if (!generateJsFiles) {
+			transpilationHandler.onCompleted(this, !isTscWatchMode(), files);
 		}
 
 		logger.info("transpilation process finished in " + (System.currentTimeMillis() - transpilationStartTimestamp) + " ms");
