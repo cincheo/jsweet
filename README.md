@@ -13,7 +13,7 @@ With JSweet, you take advantage of all the Java tooling (IDE's, Maven, ...) to p
 
 ## Java -> TypeScript -> JavaScript
 
-Hare is a first taste of what you get when using JSweet. Consider this simple Java program:
+Here is a first taste of what you get by using JSweet. Consider this simple Java program:
 
 ```java
 package org.jsweet;
