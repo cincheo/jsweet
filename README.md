@@ -11,9 +11,9 @@ How does it work? JSweet depends on well-typed descriptions of JavaScript APIs, 
 
 With JSweet, you take advantage of all the Java tooling (IDE's, Maven, ...) to program real JavaScript applications using the latest JavaScript libraries.
 
-## A first taste
+## Java -> TypeScript -> JavaScript
 
-To give you a first taste of what you get when using JSweet, you can consider this simple Java program:
+Hare is a first taste of what you get when using JSweet. Consider this simple Java program:
 
 ```java
 package org.jsweet;
@@ -30,7 +30,7 @@ public class HelloWorld {
 }
 ```
 
-Transpiling with JSweet will give you the following TypeScript program:
+Transpiling with JSweet gives the following TypeScript program:
 
 ```TypeScript
 namespace org.jsweet {
@@ -46,7 +46,7 @@ namespace org.jsweet {
 org.jsweet.HelloWorld.main(null);
 ```
 
-Which in turn will produce the following JavaScript output:
+Which in turn produces the following JavaScript output:
 
 ```JavaScript
 var org;
@@ -70,7 +70,7 @@ var org;
 org.jsweet.HelloWorld.main(null);
 ```
 
-Feel free to transpile more programs and type in your own Java code using the [live sandbox](http://www.jsweet.org/jsweet-live-sandbox/).
+More with the [live sandbox](http://www.jsweet.org/jsweet-live-sandbox/).
 
 ## Features
 
