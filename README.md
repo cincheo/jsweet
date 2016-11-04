@@ -11,6 +11,67 @@ How does it work? JSweet depends on well-typed descriptions of JavaScript APIs, 
 
 With JSweet, you take advantage of all the Java tooling (IDE's, Maven, ...) to program real JavaScript applications using the latest JavaScript libraries.
 
+## A first taste
+
+To give you a first taste of what you get when using JSweet, you can consider this simple Java program:
+
+```java
+package org.jsweet;
+
+import static jsweet.dom.Globals.*;
+
+/**
+ * This is a very simple example that just shows an alert.
+ */
+public class HelloWorld {
+	public static void main(String[] args) {
+		alert("Hi there!");
+	}
+}
+```
+
+Transpiling with JSweet will give you the following TypeScript program:
+
+```TypeScript
+namespace org.jsweet {
+    /**
+     * This is a very simple example that just shows an alert.
+     */
+    export class HelloWorld {
+        public static main(args : string[]) {
+            alert("Hi there!");
+        }
+    }
+}
+org.jsweet.HelloWorld.main(null);
+```
+
+Which in turn will produce the following JavaScript output:
+
+```JavaScript
+var org;
+(function (org) {
+    var jsweet;
+    (function (jsweet) {
+        /**
+         * This is a very simple example that just shows an alert.
+         */
+        var HelloWorld = (function () {
+            function HelloWorld() {
+            }
+            HelloWorld.main = function (args) {
+                alert("Hi there!");
+            };
+            return HelloWorld;
+        }());
+        jsweet.HelloWorld = HelloWorld;
+    })(jsweet = org.jsweet || (org.jsweet = {}));
+})(org || (org = {}));
+org.jsweet.HelloWorld.main(null);
+```
+
+Feel free to transpile more programs and type in your own Java code using the [live sandbox](http://www.jsweet.org/jsweet-live-sandbox/).
+
 ## Features
 
 - Full syntax mapping between Java and TypeScript, including classes, interfaces, functional types, union types, tuple types, object types, string types, and so on.
