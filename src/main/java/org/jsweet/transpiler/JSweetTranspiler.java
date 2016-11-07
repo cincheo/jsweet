@@ -21,6 +21,7 @@ import static java.util.stream.Collectors.toList;
 import static org.jsweet.transpiler.util.Util.toJavaFileObjects;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -823,6 +824,14 @@ public class JSweetTranspiler implements JSweetOptions {
 			permutationString.append("" + i + "=" + permutation[i] + ";");
 		}
 		logger.debug("permutation: " + permutationString.toString());
+		createBundle(transpilationHandler, files, permutation, orderedCompilationUnits, false);
+		if (isGenerateDefinitions()) {
+			createBundle(transpilationHandler, files, permutation, orderedCompilationUnits, true);
+		}
+	}
+
+	private void createBundle(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files, int[] permutation,
+			java.util.List<JCCompilationUnit> orderedCompilationUnits, boolean definitionBundle) throws FileNotFoundException {
 		context.bundleMode = true;
 		StringBuilder sb = new StringBuilder();
 		int lineCount = 0;
@@ -830,6 +839,15 @@ public class JSweetTranspiler implements JSweetOptions {
 			JCCompilationUnit cu = orderedCompilationUnits.get(i);
 			if (isModuleDefsFile(cu)) {
 				continue;
+			}
+			if (cu.packge.fullname.toString().startsWith("def.")) {
+				if (!definitionBundle) {
+					continue;
+				}
+			} else {
+				if (definitionBundle) {
+					continue;
+				}
 			}
 			logger.info("scanning " + cu.sourcefile.getName() + "...");
 			AbstractTreePrinter printer = new Java2TypeScriptTranslator(transpilationHandler, context, cu, preserveSourceLineNumbers);
@@ -846,7 +864,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		if (!bundleDirectory.exists()) {
 			bundleDirectory.mkdirs();
 		}
-		String bundleName = "bundle" + (isGenerateDefinitions() ? ".d.ts" : ".ts");
+		String bundleName = "bundle" + (definitionBundle ? ".d.ts" : ".ts");
 
 		File outputFile = new File(bundleDirectory, bundleName);
 
@@ -862,6 +880,16 @@ public class JSweetTranspiler implements JSweetOptions {
 			out.close();
 		}
 		for (int i = 0; i < orderedCompilationUnits.size(); i++) {
+			JCCompilationUnit cu = orderedCompilationUnits.get(i);
+			if (cu.packge.fullname.toString().startsWith("def.")) {
+				if (!definitionBundle) {
+					continue;
+				}
+			} else {
+				if (definitionBundle) {
+					continue;
+				}
+			}
 			files[permutation[i]].tsFile = outputFile;
 			files[permutation[i]].javaFileLastTranspiled = files[permutation[i]].getJavaFile().lastModified();
 		}

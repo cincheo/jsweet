@@ -313,13 +313,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 		isDefinitionScope = topLevel.packge.getQualifiedName().toString().startsWith("def.");
 
-		if (isDefinitionScope && !getContext().options.isGenerateDefinitions()) {
-			return;
-		}
-		if (!isDefinitionScope && getContext().options.isGenerateDefinitions()) {
-			return;
-		}
-
 		printIndent().print("/* Generated from Java with JSweet " + JSweetConfig.getVersionNumber() + " - http://www.jsweet.org */").println();
 		PackageSymbol rootPackage = Util.getFirstEnclosingRootPackage(topLevel.packge);
 		if (rootPackage != null) {
