@@ -6,6 +6,8 @@ public class GetClass {
 
 	public static void main(String[] args) {
 		AClass1 o = new AClass1();
+		String s = "";
+		Long l = 12L;
 		$export("name1", AClass1.class.getName());
 		$export("name2", o.getClass().getName());
 		$export("simplename1", AClass1.class.getSimpleName());
@@ -13,6 +15,8 @@ public class GetClass {
 		Functions.m1(o);
 		new Functions().m2();
 		new Functions().m3();
+		$export("string", s.getClass().getSimpleName());
+		$export("number", l.getClass().getSimpleName());
 	}
 
 }

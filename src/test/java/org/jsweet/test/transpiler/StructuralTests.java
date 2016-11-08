@@ -28,6 +28,7 @@ import org.junit.Test;
 
 import source.structural.AbstractClass;
 import source.structural.AnonymousClass;
+import source.structural.AnonymousClassForLambda;
 import source.structural.AutoImportClassesInSamePackage;
 import source.structural.AutoImportClassesInSamePackageUsed;
 import source.structural.DefaultMethods;
@@ -121,6 +122,13 @@ public class StructuralTests extends AbstractTest {
 		}, getSourceFile(AnonymousClass.class));
 	}
 
+	@Test
+	public void testAnonymousClassForLambda() {
+		eval((logHandler, r) -> {
+			logHandler.assertReportedProblems();
+		}, getSourceFile(AnonymousClassForLambda.class));
+	}
+	
 	@Test
 	public void testInheritance() {
 		eval((logHandler, r) -> {
@@ -330,6 +338,8 @@ public class StructuralTests extends AbstractTest {
 			assertEquals("AClass1", r.get("simplename3"));
 			assertEquals("Functions", r.get("simplename4"));
 			assertEquals("Functions", r.get("simplename5"));
+			assertEquals("String", r.get("string"));
+			assertEquals("Number", r.get("number"));
 		}, getSourceFile(GetClass.class));
 	}
 

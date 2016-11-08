@@ -945,7 +945,10 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				case "getName":
 					if (getPrinter().getContext().options.isSupportGetClass()) {
 						printMacroName(targetMethodName);
-						printTarget(fieldAccess.getExpression()).print("[\"" + Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR + "\"]");
+						getPrinter().print("(c => c[\"" + Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR + "\"]?c[\""
+								+ Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR + "\"]:c.name)(");
+						printTarget(fieldAccess.getExpression());
+						getPrinter().print(")");
 						return true;
 					} else {
 						if (fieldAccess != null && fieldAccess.selected.toString().endsWith(".class")) {
@@ -958,8 +961,11 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				case "getSimpleName":
 					if (getPrinter().getContext().options.isSupportGetClass()) {
 						printMacroName(targetMethodName);
-						getPrinter().print("(name => name.substring(name.lastIndexOf('.')+1))(");
-						printTarget(fieldAccess.getExpression()).print("[\"" + Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR + "\"]");
+						getPrinter().print("(c => c[\"" + Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR + "\"]?c[\""
+								+ Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR + "\"].substring(c[\""
+								+ Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR
+								+ "\"].lastIndexOf('.')+1):c.name.substring(c.name.lastIndexOf('.')+1))(");
+						printTarget(fieldAccess.getExpression());
 						getPrinter().print(")");
 						return true;
 					} else {
@@ -1422,11 +1428,36 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					return true;
 				}
 			} else if (expression instanceof JCNewClass) {
-				JCNewClass newClass = (JCNewClass) expression;
-				// raw generic type
-				if (!newClass.type.tsym.getTypeParameters().isEmpty() && newClass.typeargs.isEmpty()) {
-					getPrinter().print("<any>(").print(expression).print(")");
-					return true;
+				if (((JCNewClass) expression).def != null && (assignedType.tsym.getQualifiedName().toString().startsWith("java.util.function")
+						|| assignedType.tsym.getQualifiedName().toString().startsWith(JSweetConfig.FUNCTION_CLASSES_PACKAGE)
+						|| Util.hasAnnotationType(assignedType.tsym, JSweetConfig.ANNOTATION_FUNCTIONAL_INTERFACE))) {
+					List<JCTree> defs = ((JCNewClass) expression).def.defs;
+					boolean printed = false;
+					for (JCTree def : defs) {
+						if (def instanceof JCMethodDecl) {
+							if (printed) {
+								// should never happen... report error?
+							}
+							JCMethodDecl method = (JCMethodDecl) def;
+							if (method.sym.isConstructor()) {
+								continue;
+							}
+							getPrinter().getStack().push(method);
+							getPrinter().print("(").printArgList(method.getParameters()).print(") => ").print(method.body);
+							getPrinter().getStack().pop();
+							printed = true;
+						}
+					}
+					if (printed) {
+						return true;
+					}
+				} else {
+					JCNewClass newClass = (JCNewClass) expression;
+					// raw generic type
+					if (!newClass.type.tsym.getTypeParameters().isEmpty() && newClass.typeargs.isEmpty()) {
+						getPrinter().print("<any>(").print(expression).print(")");
+						return true;
+					}
 				}
 			}
 			return false;
