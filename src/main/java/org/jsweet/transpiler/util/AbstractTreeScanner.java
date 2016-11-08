@@ -155,8 +155,36 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 			} else {
 				throw rollback;
 			}
+		} catch (Exception e) {
+			report(tree, JSweetProblem.INTERNAL_TRANSPILER_ERROR);
+			dumpStackTrace();
 		} finally {
 			exit();
+		}
+	}
+
+	protected void dumpStackTrace() {
+		System.err.println("dumping transpiler's strack trace:");
+		for (int i = stack.size() - 1; i >= 0; i--) {
+			JCTree tree = stack.get(i);
+			if (tree == null) {
+				continue;
+			}
+			String str = tree.toString().trim();
+			int intialLength = str.length();
+			int index = str.indexOf('\n');
+			if (index > 0) {
+				str = str.substring(0, index + 1);
+			}
+			str = str.replace('\n', ' ');
+			str = str.substring(0, Math.min(str.length() - 1, 30));
+			System.err.print("   [" + stack.get(i).getClass().getSimpleName() + "] " + str + (str.length() < intialLength ? "..." : "") + " ("
+					+ compilationUnit.getSourceFile().getName() + ":");
+			if (diagnosticSource == null) {
+				System.err.println(tree.pos + ")");
+			} else {
+				System.err.println(diagnosticSource.getLineNumber(tree.pos) + ")");
+			}
 		}
 	}
 
