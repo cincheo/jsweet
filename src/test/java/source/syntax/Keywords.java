@@ -17,6 +17,7 @@
 package source.syntax;
 
 import static jsweet.util.Globals.$export;
+import static jsweet.util.Globals.string;
 
 import jsweet.lang.Array;
 
@@ -24,7 +25,7 @@ public class Keywords {
 
 	static Array<String> trace = new Array<String>();
 
-	public static void main(String[] args) {
+	public static void main(String[] arguments) {
 		Keywords k = new Keywords("a");
 		trace.push(k.in);
 		k.m();
@@ -37,6 +38,8 @@ public class Keywords {
 	Keywords(String in) {
 		super();
 		this.in = in;
+		String arguments = "";
+		System.out.println(arguments);
 	}
 
 	Keywords(String in, int i) {
