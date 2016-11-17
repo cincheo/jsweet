@@ -3154,7 +3154,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			if (caseStatement.pat.type.isPrimitive() || String.class.getName().equals(caseStatement.pat.type.toString())) {
 				print(caseStatement.pat);
 			} else {
-				print(getRootRelativeName(caseStatement.pat.type.tsym) + "." + caseStatement.pat);
+				if (context.useModules) {
+					print(caseStatement.pat.type.tsym.getSimpleName() + "." + caseStatement.pat);
+				} else {
+					print(getRootRelativeName(caseStatement.pat.type.tsym) + "." + caseStatement.pat);
+				}
 			}
 		} else {
 			print("default");

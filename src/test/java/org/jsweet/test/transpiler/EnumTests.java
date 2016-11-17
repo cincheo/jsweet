@@ -22,7 +22,9 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import source.enums.ComplexEnums;
+import source.enums.EnumInSamePackage;
 import source.enums.Enums;
+import source.enums.other.EnumInOtherPackage;
 
 public class EnumTests extends AbstractTest {
 
@@ -36,7 +38,8 @@ public class EnumTests extends AbstractTest {
 			Assert.assertEquals("A", r.get("valueOfA"));
 			Assert.assertEquals(2, ((Number) r.get("valueOfC")).intValue());
 			Assert.assertEquals("B", r.get("ref"));
-		}, getSourceFile(Enums.class));
+			Assert.assertEquals("A", r.get("switch"));
+		}, getSourceFile(EnumInSamePackage.class), getSourceFile(EnumInOtherPackage.class), getSourceFile(Enums.class));
 	}
 
 	@Test
