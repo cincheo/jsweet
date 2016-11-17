@@ -158,6 +158,7 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 		} catch (Exception e) {
 			report(tree, JSweetProblem.INTERNAL_TRANSPILER_ERROR);
 			dumpStackTrace();
+			e.printStackTrace();
 		} finally {
 			exit();
 		}
