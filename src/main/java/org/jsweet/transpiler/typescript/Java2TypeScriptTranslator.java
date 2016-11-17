@@ -2474,8 +2474,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						print(clazz.getEnclosingElement().getSimpleName() + ".");
 						prefixAdded = true;
 					} else {
-						JCClassDecl parent = getParent(JCClassDecl.class);
-						if (parent.sym == clazz.getEnclosingElement() || parent.sym.isSubClass(clazz.getEnclosingElement(), context.types)) {
+						// if the class has not been imported, we need to add the containing class prefix 
+						if (!getCompilationUnit().getImports().stream().map(i -> i.qualid.type == null ? null : i.qualid.type.tsym).anyMatch(
+								t -> t == clazz)) {
 							print(clazz.getEnclosingElement().getSimpleName() + ".");
 							prefixAdded = true;
 						}
@@ -2564,7 +2565,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 			if (isInterface || Util.hasAnnotationType(newClass.clazz.type.tsym, JSweetConfig.ANNOTATION_OBJECT_TYPE)) {
 				if (isInterface) {
-					print("<").print(newClass.clazz).print(">"); // .print("<any>");
+					// print("<").print(newClass.clazz).print(">");
+					print("<any>");
 				}
 
 				Set<String> interfaces = new HashSet<>();
