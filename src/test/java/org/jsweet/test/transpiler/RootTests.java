@@ -40,7 +40,7 @@ public class RootTests extends AbstractTest {
 			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
 			Assert.assertEquals(true, r.get("m1"));
 			Assert.assertEquals(true, r.get("m2"));
-		} , getSourceFile(GlobalsInRoot.class));
+		}, getSourceFile(GlobalsInRoot.class));
 	}
 
 	@Test
@@ -49,31 +49,37 @@ public class RootTests extends AbstractTest {
 			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
 			Assert.assertEquals(true, r.get("m1"));
 			Assert.assertEquals(true, r.get("m2"));
-		} , getSourceFile(GlobalsInNoRoot.class));
+		}, getSourceFile(GlobalsInNoRoot.class));
 	}
 
 	@Test
 	public void testNoClassesInRootParent() {
 		transpile((logHandler) -> {
 			logHandler.assertReportedProblems(JSweetProblem.CLASS_OUT_OF_ROOT_PACKAGE_SCOPE);
-		} , getSourceFile(InvalidClassLocation.class), getSourceFile(NoClassesInRootParent.class));
+		}, getSourceFile(InvalidClassLocation.class), getSourceFile(NoClassesInRootParent.class));
 	}
 
 	@Test
 	public void testNoRootInRoot() {
 		transpile((logHandler) -> {
 			logHandler.assertReportedProblems(JSweetProblem.ENCLOSED_ROOT_PACKAGES);
-		} , getSourceFile(NoRootInRoot.class));
+		}, getSourceFile(NoRootInRoot.class));
 	}
 
 	@Test
 	public void testAccessFromClassInRoot() {
 		transpile(ModuleKind.none, (logHandler) -> {
 			logHandler.assertReportedProblems();
-		} , getSourceFile(AccessFromClassInRoot.class), getSourceFile(A.class), getSourceFile(B.class));
+		}, getSourceFile(AccessFromClassInRoot.class), getSourceFile(A.class), getSourceFile(B.class));
 		transpile(ModuleKind.commonjs, (logHandler) -> {
 			logHandler.assertReportedProblems(JSweetProblem.MULTIPLE_ROOT_PACKAGES_NOT_ALLOWED_WITH_MODULES);
-		} , getSourceFile(AccessFromClassInRoot.class), getSourceFile(A.class), getSourceFile(B.class));
+		}, getSourceFile(AccessFromClassInRoot.class), getSourceFile(A.class), getSourceFile(B.class));
+		// with bundles
+		transpiler.setBundle(true);
+		transpile(ModuleKind.none, (logHandler) -> {
+			logHandler.assertReportedProblems();
+		}, getSourceFile(AccessFromClassInRoot.class), getSourceFile(A.class), getSourceFile(B.class));
+		transpiler.setBundle(false);
 	}
 
 }

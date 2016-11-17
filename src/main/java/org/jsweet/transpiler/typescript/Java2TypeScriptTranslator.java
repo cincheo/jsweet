@@ -1982,9 +1982,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			report(importDecl, JSweetProblem.WILDCARD_IMPORT);
 			return;
 		}
-		if (context.bundleMode) {
-			return;
-		}
 		String adaptedQualId = getAdapter().needsImport(importDecl, qualId);
 		if (adaptedQualId != null && adaptedQualId.contains(".")) {
 			if (importDecl.isStatic() && !qualId.contains("." + JSweetConfig.GLOBALS_CLASS_NAME + ".")) {
@@ -2174,11 +2171,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						if (getScope().defaultMethodScope) {
 							TypeSymbol target = Util.getStaticImportTarget(getContext().getDefaultMethodCompilationUnit(getParent(JCMethodDecl.class)),
 									methName);
-							if (target != null) {
-								print(getRootRelativeName(target) + ".");
-							}
-						} else if (context.bundleMode) {
-							TypeSymbol target = Util.getStaticImportTarget(compilationUnit, methName);
 							if (target != null) {
 								print(getRootRelativeName(target) + ".");
 							}
@@ -2446,11 +2438,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 								lazyInitializedStatic = true;
 							}
 							if (!varSym.owner.getQualifiedName().toString().endsWith("." + GLOBALS_CLASS_NAME)) {
-								if (context.bundleMode && !varSym.owner.equals(getParent(JCClassDecl.class).sym)) {
-									print(Util.getRootRelativeName(null, varSym.owner) + ".");
-								} else {
-									print(varSym.owner.getSimpleName() + ".");
-								}
+								print(varSym.owner.getSimpleName() + ".");
 							}
 						}
 					} else {
@@ -2479,11 +2467,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					print(clazz.getEnclosingElement().getSimpleName() + ".");
 					prefixAdded = true;
 				}
-				if (!prefixAdded && context.bundleMode && !clazz.equals(getParent(JCClassDecl.class).sym)) {
-					print(getRootRelativeName(clazz));
-				} else {
-					print(name);
-				}
+				print(name);
 			} else {
 				print(name);
 				if (lazyInitializedStatic) {
