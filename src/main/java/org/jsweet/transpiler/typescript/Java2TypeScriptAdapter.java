@@ -1387,8 +1387,14 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			qualifiedName = langTypesMapping.get(type.getQualifiedName().toString());
 		} else {
 			if (getPrinter().getContext().useModules) {
-				int dotIndex = qualifiedName.lastIndexOf(".");
-				qualifiedName = qualifiedName.substring(dotIndex + 1);
+				String[] namePath = qualifiedName.split("\\.");
+				int i = namePath.length - 1;
+				Symbol s = type;
+				qualifiedName = "";
+				while (i >= 0 && !(s instanceof PackageSymbol)) {
+					qualifiedName = namePath[i--] + ("".equals(qualifiedName) ? "" : "." + qualifiedName);
+					s = s.getEnclosingElement();
+				}
 			}
 			if (globals) {
 				int dotIndex = qualifiedName.lastIndexOf(".");

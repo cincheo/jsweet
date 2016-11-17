@@ -40,6 +40,7 @@ import source.structural.GlobalsAccess;
 import source.structural.Inheritance;
 import source.structural.InnerClass;
 import source.structural.InnerClassNotStatic;
+import source.structural.InnerClassUse;
 import source.structural.InstanceOf;
 import source.structural.InstanceofForInterfaces;
 import source.structural.JSNI;
@@ -60,6 +61,7 @@ import source.structural.globalclasses.c.ClassUsingStaticMethod;
 import source.structural.globalclasses.c.GlobalFunctionGetSetDelete;
 import source.structural.globalclasses.d.GlobalFunctionAccessFromMain;
 import source.structural.globalclasses.f.InvalidGlobalSetGetDelete;
+import source.structural.other.Wrapping;
 
 public class StructuralTests extends AbstractTest {
 
@@ -106,6 +108,13 @@ public class StructuralTests extends AbstractTest {
 		}, getSourceFile(InnerClass.class));
 	}
 
+	@Test
+	public void testInnerClassUse() {
+		transpile(ModuleKind.commonjs, logHandler -> {
+			logHandler.assertReportedProblems();
+		}, getSourceFile(InnerClass.class), getSourceFile(Wrapping.class), getSourceFile(InnerClassUse.class));
+	}
+	
 	@Test
 	public void testInnerClassNotStatic() {
 		eval((logHandler, r) -> {

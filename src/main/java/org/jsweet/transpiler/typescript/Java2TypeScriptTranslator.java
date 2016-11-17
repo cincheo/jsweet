@@ -423,9 +423,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							pathToImportedClass = "./" + pathToImportedClass;
 						}
 
-						if (qualified.sym.getEnclosingElement() instanceof PackageSymbol) {
-							useModule(false, (PackageSymbol) qualified.sym.getEnclosingElement(), importDecl, importedName,
-									pathToImportedClass.replace('\\', '/'), null);
+						Symbol symbol = qualified.sym.getEnclosingElement();
+						while (!(symbol instanceof PackageSymbol)) {
+							importedName = symbol.getSimpleName().toString();
+							symbol = symbol.getEnclosingElement();
+						}
+						if (symbol != null) {
+							useModule(false, (PackageSymbol) symbol, importDecl, importedName, pathToImportedClass.replace('\\', '/'), null);
 						}
 					}
 				}
@@ -1995,6 +1999,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 				String name = namePath[namePath.length - 1];
 				if (context.useModules) {
+					// I don't think this is used anymore!
 					if (!context.getImportedNames(compilationUnit.getSourceFile().getName()).contains(name)) {
 						print("import ").print(name).print(" = ").print(adaptedQualId).print(";");
 						context.registerImportedName(compilationUnit.getSourceFile().getName(), null, name);
@@ -2462,10 +2467,19 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						prefixAdded = true;
 					}
 				}
-				// add parent class name if ident is an inner class
+				// add parent class name if ident is an inner class of the
+				// current class
 				if (!prefixAdded && clazz.getEnclosingElement() instanceof ClassSymbol) {
-					print(clazz.getEnclosingElement().getSimpleName() + ".");
-					prefixAdded = true;
+					if (context.useModules) {
+						print(clazz.getEnclosingElement().getSimpleName() + ".");
+						prefixAdded = true;
+					} else {
+						JCClassDecl parent = getParent(JCClassDecl.class);
+						if (parent.sym == clazz.getEnclosingElement() || parent.sym.isSubClass(clazz.getEnclosingElement(), context.types)) {
+							print(clazz.getEnclosingElement().getSimpleName() + ".");
+							prefixAdded = true;
+						}
+					}
 				}
 				print(name);
 			} else {
