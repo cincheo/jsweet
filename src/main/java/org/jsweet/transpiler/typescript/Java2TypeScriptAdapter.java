@@ -1315,16 +1315,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					}
 				}
 				if (typeFullName.startsWith(Class.class.getName() + "<")) {
-					if (typeApply.arguments.head.type.tsym instanceof TypeVariableSymbol || typeApply.arguments.head.toString().startsWith("?")) {
-						return getPrinter().print("any");
-					} else {
-						getPrinter().print("typeof ");
-						if (langTypesMapping.containsKey(typeApply.arguments.head.type.tsym.getQualifiedName().toString())) {
-							return getPrinter().print(langTypesMapping.get(typeApply.arguments.head.type.tsym.getQualifiedName().toString()));
-						} else {
-							return substituteAndPrintType(typeApply.arguments.head, arrayComponent, inTypeParameters, completeRawTypes, disableSubstitution);
-						}
-					}
+					return getPrinter().print("any");
 				}
 			} else {
 				if (!(typeTree instanceof JCArrayTypeTree) && typeFullName.startsWith("java.util.function.")) {
