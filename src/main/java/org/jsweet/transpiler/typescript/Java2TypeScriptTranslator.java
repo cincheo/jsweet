@@ -2339,7 +2339,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					// {} by default
 					if (methSym != null && !methSym.getTypeParameters().isEmpty()) {
 						// invalid overload type parameters are erased
-						if (!context.isInvalidOverload(methSym)) {
+						Overload overload = context.getOverload((ClassSymbol) methSym.getEnclosingElement(), methSym);
+						boolean inOverload = overload != null && overload.methods.size() > 1;
+						if (!(inOverload && context.isInvalidOverload(methSym))) {
 							printAnyTypeArguments(methSym.getTypeParameters().size());
 						}
 					}
