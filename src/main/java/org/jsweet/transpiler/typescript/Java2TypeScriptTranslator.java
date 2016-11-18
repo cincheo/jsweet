@@ -650,18 +650,25 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 	}
 
-	@Override
-	public void visitClassDef(JCClassDecl classdecl) {
+	private boolean isIgnored(JCClassDecl classdecl) {
 		if (Util.hasAnnotationType(classdecl.type.tsym, JSweetConfig.ANNOTATION_OBJECT_TYPE)) {
 			// object types are ignored
-			return;
+			return true;
 		}
 		if (Util.hasAnnotationType(classdecl.type.tsym, JSweetConfig.ANNOTATION_ERASED)) {
 			// erased types are ignored
-			return;
+			return true;
 		}
 		if (classdecl.type.tsym.getKind() == ElementKind.ANNOTATION_TYPE) {
 			// annotation types are ignored
+			return true;
+		}
+		return false;
+	}
+
+	@Override
+	public void visitClassDef(JCClassDecl classdecl) {
+		if (isIgnored(classdecl)) {
 			return;
 		}
 		String name = classdecl.getSimpleName().toString();
@@ -1025,11 +1032,18 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		for (JCTree def : classdecl.defs) {
 			if (def instanceof JCClassDecl) {
 				JCClassDecl cdef = (JCClassDecl) def;
+				if (isIgnored(cdef)) {
+					continue;
+				}
 				if (!nameSpace) {
 					nameSpace = true;
 					println().println().printIndent();
 					if (!globalModule) {
 						print("export ");
+					} else {
+						if (isDefinitionScope) {
+							print("declare ");
+						}
 					}
 					print("namespace ").print(name).print(" {").startIndent();
 				}
@@ -2474,9 +2488,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						print(clazz.getEnclosingElement().getSimpleName() + ".");
 						prefixAdded = true;
 					} else {
-						// if the class has not been imported, we need to add the containing class prefix 
-						if (!getCompilationUnit().getImports().stream().map(i -> i.qualid.type == null ? null : i.qualid.type.tsym).anyMatch(
-								t -> t == clazz)) {
+						// if the class has not been imported, we need to add
+						// the containing class prefix
+						if (!getCompilationUnit().getImports().stream().map(i -> i.qualid.type == null ? null : i.qualid.type.tsym).anyMatch(t -> t == clazz)) {
 							print(clazz.getEnclosingElement().getSimpleName() + ".");
 							prefixAdded = true;
 						}
