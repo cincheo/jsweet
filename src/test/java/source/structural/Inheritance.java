@@ -62,12 +62,12 @@ public class Inheritance extends SuperClass1 {
 		B b = new B();
 		$export("X", b instanceof X);
 		$export("Y", b instanceof Y);
-		$export("itfb", $get(b, "__interfaces") != null);
 		$export("s1b", $get(b, "s1"));
 		$export("s2b", $get(b, "s2"));
 		String s = JSON.stringify(b);
 		Object o = JSON.parse(s);
-		$export("itfo", $get(o, "__interfaces") != null);
+		// by default, serialization looses types
+		$export("itfo", o instanceof X);
 		$export("s1o", $get(o, "s1"));
 		$export("s2o", $get(o, "s2"));
 	}

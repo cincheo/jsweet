@@ -128,7 +128,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	public static final String PARENT_CLASS_FIELD_NAME = "__parent";
 	public static final String INTERFACES_FIELD_NAME = "__interfaces";
 	public static final String STATIC_INITIALIZATION_SUFFIX = "_$LI$";
-	public static final String CLASS_NAME_IN_CONSTRUCTOR = "__classname";
+	public static final String CLASS_NAME_IN_CONSTRUCTOR = "__class";
 	public static final String ANONYMOUS_PREFIX = "$";
 	public static final String ENUM_WRAPPER_CLASS_SUFFIX = "_$WRAPPER";
 	public static final String ENUM_WRAPPER_CLASS_WRAPPERS = "_$wrappers";
@@ -1006,6 +1006,18 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					&& !classdecl.sym.isAnonymous()) {
 				println().printIndent().print(classdecl.sym.getSimpleName().toString()).print("[\"" + CLASS_NAME_IN_CONSTRUCTOR + "\"] = ")
 						.print("\"" + Util.getRootRelativeName(null, classdecl.sym) + "\";");
+
+				Set<String> interfaces = new HashSet<>();
+				Util.grabSupportedInterfaceNames(interfaces, classdecl.sym);
+				if (!interfaces.isEmpty()) {
+					println().printIndent().print(classdecl.sym.getSimpleName().toString()).print("[\"" + INTERFACES_FIELD_NAME + "\"] = ");
+					print("[");
+					for (String itf : interfaces) {
+						print("\"").print(itf).print("\",");
+					}
+					removeLastChar();
+					print("];").println();
+				}
 				if (!getScope().enumWrapperClassScope) {
 					println();
 				}
@@ -1529,17 +1541,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	private void printInstanceInitialization(JCClassDecl clazz, MethodSymbol method) {
 		if (getContext().options.isInterfaceTracking() && method == null || method.isConstructor()) {
 			getScope().hasDeclaredConstructor = true;
-			Set<String> interfaces = new HashSet<>();
-			Util.grabSupportedInterfaceNames(interfaces, clazz.sym);
-			if (!interfaces.isEmpty()) {
-				printIndent().print("Object.defineProperty(this, '" + INTERFACES_FIELD_NAME + "', { configurable: true, value: ");
-				print("[");
-				for (String itf : interfaces) {
-					print("\"").print(itf).print("\",");
-				}
-				removeLastChar();
-				print("] });").println();
-			}
 			if (getScope().innerClassNotStatic) {
 				printIndent().print("this." + PARENT_CLASS_FIELD_NAME + " = " + PARENT_CLASS_FIELD_NAME + ";").println();
 			}
@@ -3446,18 +3447,24 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			print(exprStr, expr);
 			if (Util.isInterface(type.tsym)) {
 				print(" != null && ");
-				if (CharSequence.class.getName().equals(type.tsym.getQualifiedName().toString())) {
-					print("(");
-				}
+				print("(");
 				print(exprStr, expr);
 				print("[\"" + INTERFACES_FIELD_NAME + "\"]").print(" != null && ");
 				print(exprStr, expr);
 				print("[\"" + INTERFACES_FIELD_NAME + "\"].indexOf(\"").print(type.tsym.getQualifiedName().toString()).print("\") >= 0");
+				print(" || ");
+				print(exprStr, expr);
+				print(".constructor != null && ");
+				print(exprStr, expr);
+				print(".constructor[\"" + INTERFACES_FIELD_NAME + "\"]").print(" != null && ");
+				print(exprStr, expr);
+				print(".constructor[\"" + INTERFACES_FIELD_NAME + "\"].indexOf(\"").print(type.tsym.getQualifiedName().toString()).print("\") >= 0");
 				if (CharSequence.class.getName().equals(type.tsym.getQualifiedName().toString())) {
 					print(" || typeof ");
 					print(exprStr, expr);
-					print(" === \"string\")");
+					print(" === \"string\"");
 				}
+				print(")");
 			} else {
 				if (type.tsym instanceof TypeVariableSymbol || Object.class.getName().equals(type.tsym.getQualifiedName().toString())) {
 					print(" != null");

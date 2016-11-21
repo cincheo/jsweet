@@ -155,7 +155,6 @@ public class StructuralTests extends AbstractTest {
 			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
 			assertEquals(true, r.<Boolean> get("X"));
 			assertEquals(true, r.<Boolean> get("Y"));
-			assertEquals(true, r.<Boolean> get("itfb"));
 			assertEquals("s1", r.<Boolean> get("s1b"));
 			assertEquals("s2", r.<Boolean> get("s2b"));
 			assertEquals(false, r.<Boolean> get("itfo"));
