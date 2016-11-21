@@ -22,10 +22,16 @@ import source.require.a.A;
 
 public class ClassImport {
 
+	A a;
+
 	public static void main(String[] args) {
 		$export("mainInvoked", true);
 		A a = new A();
 		a.m();
 	}
-	
+
+	public void m() {
+		a.m();
+	}
+
 }

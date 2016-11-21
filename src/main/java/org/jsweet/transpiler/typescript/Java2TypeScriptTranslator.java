@@ -19,6 +19,7 @@ package org.jsweet.transpiler.typescript;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.jsweet.JSweetConfig.ANNOTATION_STRING_TYPE;
 import static org.jsweet.JSweetConfig.GLOBALS_CLASS_NAME;
+import static org.jsweet.JSweetConfig.GLOBALS_PACKAGE_NAME;
 import static org.jsweet.transpiler.util.Util.getFirstAnnotationValue;
 import static org.jsweet.transpiler.util.Util.getRootRelativeJavaName;
 
@@ -320,6 +321,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				return;
 			}
 		}
+		context.importedTopPackages.clear();
 		context.rootPackages.add(rootPackage);
 		if (context.useModules && context.rootPackages.size() > 1) {
 			if (!context.reportedMultipleRootPackages) {
@@ -1819,6 +1821,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					report(varDecl, varDecl.name, JSweetProblem.CONSTRUCTOR_MEMBER);
 				}
 			} else {
+				if (context.bundleMode) {
+					if (context.importedTopPackages.contains(name)) {
+						name = "__var_" + name;
+					}
+				}
 				if (JSweetConfig.JS_KEYWORDS.contains(name)) {
 					report(varDecl, varDecl.name, JSweetProblem.JS_KEYWORD_CONFLICT, name, name);
 					name = JSweetConfig.JS_KEYWORD_PREFIX + name;
@@ -2004,7 +2011,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		String adaptedQualId = getAdapter().needsImport(importDecl, qualId);
 		if (adaptedQualId != null && adaptedQualId.contains(".")) {
 			if (importDecl.isStatic() && !qualId.contains("." + JSweetConfig.GLOBALS_CLASS_NAME + ".")) {
-				print(VAR_DECL_KEYWORD + " ").print(qualId.substring(qualId.lastIndexOf('.') + 1)).print(": any = ").print(qualId).print(";");
+				if (!context.bundleMode) {
+					print(VAR_DECL_KEYWORD + " ").print(qualId.substring(qualId.lastIndexOf('.') + 1)).print(": any = ").print(qualId).print(";");
+				}
 			} else {
 				String[] namePath;
 				if (context.useModules && importDecl.isStatic()) {
@@ -2029,7 +2038,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						}
 						context.globalImports.add(name);
 					}
-					print("import ").print(name).print(" = ").print(adaptedQualId).print(";");
+					if (context.bundleMode) {
+						// in bundle mode, we do not use imports to minimize
+						// dependencies
+						// (imports create unavoidable dependencies!)
+						context.importedTopPackages.add(namePath[0]);
+					} else {
+						print("import ").print(name).print(" = ").print(adaptedQualId).print(";");
+					}
 				}
 			}
 		}
@@ -2194,6 +2210,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							if (target != null) {
 								print(getRootRelativeName(target) + ".");
 							}
+						} else if (context.bundleMode) {
+							TypeSymbol target = Util.getStaticImportTarget(compilationUnit, methName);
+							if (target != null) {
+								print(getRootRelativeName(target) + ".");
+							}
 						}
 
 						if (getScope().innerClass) {
@@ -2233,9 +2254,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						if (vars.containsKey(methSym.getSimpleName().toString())) {
 							report(inv, JSweetProblem.HIDDEN_INVOCATION, methSym.getSimpleName());
 						}
-						// if (context.expandTypeNames) {
-						// methodName = Util.getRootRelativeName(null, methSym);
-						// }
+						if (context.bundleMode && methSym.owner.getSimpleName().toString().equals(GLOBALS_CLASS_NAME) && methSym.owner.owner != null
+								&& !methSym.owner.owner.getSimpleName().toString().equals(GLOBALS_PACKAGE_NAME)) {
+							String prefix = getRootRelativeName(methSym.owner.owner);
+							if (!StringUtils.isEmpty(prefix)) {
+								print(getRootRelativeName(methSym.owner.owner) + ".");
+							}
+						}
 					}
 					// staticImported = true;
 					if (JSweetConfig.TS_STRICT_MODE_KEYWORDS.contains(Util.getActualName(methSym))) {
@@ -2460,7 +2485,24 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 								lazyInitializedStatic = true;
 							}
 							if (!varSym.owner.getQualifiedName().toString().endsWith("." + GLOBALS_CLASS_NAME)) {
-								print(varSym.owner.getSimpleName() + ".");
+								if (context.bundleMode && !varSym.owner.equals(getParent(JCClassDecl.class).sym)) {
+									String prefix = Util.getRootRelativeName(null, varSym.owner);
+									if (!StringUtils.isEmpty(prefix)) {
+										print(Util.getRootRelativeName(null, varSym.owner) + ".");
+									}
+								} else {
+									if (!varSym.owner.getSimpleName().toString().equals(GLOBALS_PACKAGE_NAME)) {
+										print(varSym.owner.getSimpleName() + ".");
+									}
+								}
+							} else {
+								if (context.bundleMode) {
+									String prefix = Util.getRootRelativeName(null, varSym.owner);
+									prefix = prefix.substring(0, prefix.length() - GLOBALS_CLASS_NAME.length());
+									if (!prefix.equals(GLOBALS_PACKAGE_NAME + ".") && !prefix.endsWith("." + GLOBALS_PACKAGE_NAME + ".")) {
+										print(prefix);
+									}
+								}
 							}
 						}
 					} else {
@@ -2468,6 +2510,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 								&& getScope(1).finalVariables.get(getScope(1).anonymousClasses.indexOf(getParent(JCClassDecl.class))).contains(varSym)) {
 							print("this.");
 						} else {
+							if (context.bundleMode && varSym.owner instanceof MethodSymbol) {
+								if (context.importedTopPackages.contains(name)) {
+									name = "__var_" + name;
+								}
+							}
 							if (JSweetConfig.JS_KEYWORDS.contains(name)) {
 								name = JSweetConfig.JS_KEYWORD_PREFIX + name;
 							}
@@ -2499,7 +2546,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						}
 					}
 				}
-				print(name);
+				if (!prefixAdded && context.bundleMode && !clazz.equals(getParent(JCClassDecl.class).sym)) {
+					print(getRootRelativeName(clazz));
+				} else {
+					print(name);
+				}
 			} else {
 				print(name);
 				if (lazyInitializedStatic) {

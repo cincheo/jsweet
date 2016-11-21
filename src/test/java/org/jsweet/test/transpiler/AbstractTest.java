@@ -183,6 +183,10 @@ public class AbstractTest {
 	}
 
 	protected void eval(ModuleKind moduleKind, BiConsumer<TestTranspilationHandler, EvaluationResult> assertions, SourceFile... files) {
+		eval(moduleKind, true, assertions, files);
+	}
+
+	protected void eval(ModuleKind moduleKind, boolean testBundle, BiConsumer<TestTranspilationHandler, EvaluationResult> assertions, SourceFile... files) {
 		ModuleKind initialModuleKind = transpiler.getModuleKind();
 		File initialOutputDir = transpiler.getTsOutputDir();
 		try {
@@ -206,7 +210,7 @@ public class AbstractTest {
 			transpiler.setModuleKind(initialModuleKind);
 			transpiler.setTsOutputDir(initialOutputDir);
 		}
-		if (moduleKind == ModuleKind.none && !transpiler.isBundle() && files.length > 1) {
+		if (testBundle && moduleKind == ModuleKind.none && !transpiler.isBundle() && files.length > 1) {
 			ArrayUtils.reverse(files);
 			transpiler.setBundle(true);
 			try {
