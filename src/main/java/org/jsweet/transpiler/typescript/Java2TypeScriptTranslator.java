@@ -2023,10 +2023,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 				String name = namePath[namePath.length - 1];
 				if (context.useModules) {
-					// I don't think this is used anymore!
-					if (!context.getImportedNames(compilationUnit.getSourceFile().getName()).contains(name)) {
-						print("import ").print(name).print(" = ").print(adaptedQualId).print(";");
-						context.registerImportedName(compilationUnit.getSourceFile().getName(), null, name);
+					if (!adaptedQualId.startsWith(GLOBALS_PACKAGE_NAME)) {
+						if (!context.getImportedNames(compilationUnit.getSourceFile().getName()).contains(name)) {
+							print("import ").print(name).print(" = ").print(adaptedQualId).print(";");
+							context.registerImportedName(compilationUnit.getSourceFile().getName(), null, name);
+						}
 					}
 				} else {
 					if (topLevelPackage == null) {
