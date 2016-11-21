@@ -18,7 +18,7 @@ package org.jsweet.test.transpiler;
 
 import static org.junit.Assert.assertEquals;
 
-import org.jsweet.transpiler.util.EvaluationResult;
+import org.jsweet.transpiler.ModuleKind;
 import org.junit.Test;
 
 import source.doc.LanguageSpecifications;
@@ -27,10 +27,11 @@ public class DocTests extends AbstractTest {
 
 	@Test
 	public void testLanguageSpecifications() {
-		EvaluationResult result = eval(getSourceFile(LanguageSpecifications.class));
+		eval(ModuleKind.none, (ctx, result) -> {
+			assertEquals(4, result.<Number> get("main_n"));
+			assertEquals(true, result.<Boolean> get("finished"));
+		}, getSourceFile(LanguageSpecifications.class));
 
-		assertEquals(4, result.<Number> get("main_n"));
-		assertEquals(true, result.<Boolean> get("finished"));
 	}
 
 }

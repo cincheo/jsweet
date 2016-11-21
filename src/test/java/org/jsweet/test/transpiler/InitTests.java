@@ -47,96 +47,63 @@ import source.init.StaticFieldWithInnerClass;
 import source.init.StaticInitializer;
 import source.init.UntypedObject;
 import source.init.UntypedObjectWrongUses;
+import source.structural.TwoClassesInSameFile;
 
 public class InitTests extends AbstractTest {
 
 	@Test
 	public void testStaticInitializer() {
-		TestTranspilationHandler logHandler = new TestTranspilationHandler();
-		try {
-			EvaluationResult result = transpiler.eval(logHandler, getSourceFile(StaticInitializer.class));
+		eval(ModuleKind.none, (logHandler, result) -> {
+			assertEquals(0, logHandler.reportedProblems.size());
 			assertEquals(4, result.<Number> get("n").intValue());
 			assertEquals("test", result.<String> get("s"));
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail("Exception occured while running test");
-		}
+		}, getSourceFile(StaticInitializer.class));
 	}
 
 	@Test
 	public void testInitializer() {
-		TestTranspilationHandler logHandler = new TestTranspilationHandler();
-		try {
-			EvaluationResult result = transpiler.eval(logHandler, getSourceFile(Initializer.class));
+		eval(ModuleKind.none, (logHandler, result) -> {
 			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
 			assertEquals(4, result.<Number> get("out").intValue());
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail("Exception occured while running test");
-		}
+		}, getSourceFile(Initializer.class));
 	}
 
 	@Test
 	public void testInitializerStatementError() {
-		TestTranspilationHandler logHandler = new TestTranspilationHandler();
-		try {
-			transpiler.transpile(logHandler, getSourceFile(InitializerStatementError.class));
+		transpile(logHandler -> {
 			assertEquals("There should be 1 problem", 1, logHandler.reportedProblems.size());
 			assertTrue("Missing expected error on wrong initializer", logHandler.reportedProblems.contains(JSweetProblem.INVALID_INITIALIZER_STATEMENT));
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail("Exception occured while running test");
-		}
+		}, getSourceFile(InitializerStatementError.class));
 	}
 
 	@Test
 	public void testInitializerStatementWithConditionError() {
-		TestTranspilationHandler logHandler = new TestTranspilationHandler();
-		try {
-			transpiler.transpile(logHandler, getSourceFile(InitializerStatementConditionError.class));
+		transpile(logHandler -> {
 			assertEquals("Missing expected error on non-optional field", 1, logHandler.reportedProblems.size());
 			assertEquals("Missing expected error on wrong initializer", JSweetProblem.INVALID_INITIALIZER_STATEMENT, logHandler.reportedProblems.get(0));
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail("Exception occured while running test");
-		}
+		}, getSourceFile(InitializerStatementConditionError.class));
 	}
 
 	@Test
 	public void testOptionalField() {
-		TestTranspilationHandler logHandler = new TestTranspilationHandler();
-		try {
-			transpiler.transpile(logHandler, getSourceFile(OptionalField.class));
+		transpile(logHandler -> {
 			logHandler.assertReportedProblems();
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail("Exception occured while running test");
-		}
+		}, getSourceFile(OptionalField.class));
 	}
 
 	@Test
 	public void testOptionalFieldError() {
-		TestTranspilationHandler logHandler = new TestTranspilationHandler();
-		try {
-			transpiler.transpile(logHandler, getSourceFile(OptionalFieldError.class));
+		transpile(logHandler -> {
 			logHandler.assertReportedProblems(JSweetProblem.UNINITIALIZED_FIELD);
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail("Exception occured while running test");
-		}
+		}, getSourceFile(OptionalFieldError.class));
 	}
 
 	@Test
 	public void testNoOptionalFieldsInClass() {
-		TestTranspilationHandler logHandler = new TestTranspilationHandler();
-		try {
-			transpiler.transpile(logHandler, getSourceFile(NoOptionalFieldsInClass.class));
+		transpile(logHandler -> {
 			assertEquals("Missing expected warning on non-optional field", 1, logHandler.reportedProblems.size());
 			assertTrue("Missing expected warning on non-optional field", logHandler.reportedProblems.contains(JSweetProblem.USELESS_OPTIONAL_ANNOTATION));
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail("Exception occured while running test");
-		}
+		}, getSourceFile(NoOptionalFieldsInClass.class));
 	}
 
 	@Test
@@ -151,65 +118,40 @@ public class InitTests extends AbstractTest {
 
 	@Test
 	public void testConstructorMethod() {
-		TestTranspilationHandler logHandler = new TestTranspilationHandler();
-		try {
-			transpiler.transpile(logHandler, getSourceFile(ConstructorMethod.class));
+		transpile(logHandler -> {
 			Assert.assertEquals("Missing constructor keyword error", 1, logHandler.reportedProblems.size());
 			Assert.assertEquals("Missing constructor keyword error", JSweetProblem.CONSTRUCTOR_MEMBER, logHandler.reportedProblems.get(0));
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail("Exception occured while running test");
-		}
+		}, getSourceFile(ConstructorMethod.class));
 	}
 
 	@Test
 	public void testConstructorField() {
-		TestTranspilationHandler logHandler = new TestTranspilationHandler();
-		try {
-			transpiler.transpile(logHandler, getSourceFile(ConstructorField.class));
+		transpile(logHandler -> {
 			Assert.assertEquals("Missing constructor keyword error", 1, logHandler.reportedProblems.size());
 			Assert.assertEquals("Missing constructor keyword error", JSweetProblem.CONSTRUCTOR_MEMBER, logHandler.reportedProblems.get(0));
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail("Exception occured while running test");
-		}
+		}, getSourceFile(ConstructorField.class));
 	}
 
 	@Test
 	public void testConstructorFieldInInterface() {
-		TestTranspilationHandler logHandler = new TestTranspilationHandler();
-		try {
-			transpiler.transpile(logHandler, getSourceFile(ConstructorFieldInInterface.class));
-			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail("Exception occured while running test");
-		}
+		transpile(logHandler -> {
+			assertEquals("There should be 0 problems", 0, logHandler.reportedProblems.size());
+		}, getSourceFile(ConstructorFieldInInterface.class));
 	}
 
 	@Test
 	public void testConstructorMethodInInterface() {
-		TestTranspilationHandler logHandler = new TestTranspilationHandler();
-		try {
-			transpiler.transpile(logHandler, getSourceFile(ConstructorMethodInInterface.class));
+		transpile(logHandler -> {
 			Assert.assertEquals("Missing expected error on constructor method", 1, logHandler.reportedProblems.size());
 			Assert.assertEquals("Missing expected error on constructor method", JSweetProblem.CONSTRUCTOR_MEMBER, logHandler.reportedProblems.get(0));
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail("Exception occured while running test");
-		}
+		}, getSourceFile(ConstructorMethodInInterface.class));
 	}
 
 	@Test
 	public void testInterfaceRawConstruction() {
-		TestTranspilationHandler logHandler = new TestTranspilationHandler();
-		try {
-			transpiler.transpile(logHandler, getSourceFile(InterfaceRawConstruction.class));
-			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail("Exception occured while running test");
-		}
+		transpile(logHandler -> {
+			assertEquals("There should be 0 problems", 0, logHandler.reportedProblems.size());
+		}, getSourceFile(InterfaceRawConstruction.class));
 	}
 
 	@Test
@@ -221,74 +163,49 @@ public class InitTests extends AbstractTest {
 
 	@Test
 	public void testInterfaceWithSuperInterface() {
-		TestTranspilationHandler logHandler = new TestTranspilationHandler();
-		try {
-			transpiler.transpile(logHandler, getSourceFile(InterfaceWithSuperInterface.class));
-			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail("Exception occured while running test");
-		}
+		transpile(logHandler -> {
+			assertEquals("There should be 0 problems", 0, logHandler.reportedProblems.size());
+		}, getSourceFile(InterfaceWithSuperInterface.class));
 	}
 
 	@Test
 	public void testMultipleMains() {
-		TestTranspilationHandler logHandler = new TestTranspilationHandler();
-		try {
-			EvaluationResult result = transpiler.eval(logHandler, getSourceFile(MultipleMains.class));
+		eval(ModuleKind.none, (logHandler, result) -> {
 			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
 
 			assertEquals(0, result.<Number> get("a").intValue());
 			assertNull(result.<Number> get("b"));
 			assertEquals(1, result.<Number> get("c").intValue());
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail("Exception occured while running test");
-		}
+		}, getSourceFile(MultipleMains.class));
 	}
 
 	@Test
 	public void testArrayNew() {
-		TestTranspilationHandler logHandler = new TestTranspilationHandler();
-		try {
-			EvaluationResult result = transpiler.eval(logHandler, getSourceFile(ArrayNew.class));
+		eval(ModuleKind.none, (logHandler, result) -> {
 			logHandler.assertReportedProblems();
 			assertEquals("..........", result.get("result"));
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail("Exception occured while running test");
-		}
+		}, getSourceFile(ArrayNew.class));
 	}
 
 	@Test
 	public void testUntypedObject() {
-		TestTranspilationHandler logHandler = new TestTranspilationHandler();
-		try {
-			EvaluationResult result = transpiler.eval(logHandler, getSourceFile(UntypedObject.class));
+		eval(ModuleKind.none, (logHandler, result) -> {
 			logHandler.assertReportedProblems();
 
 			assertEquals(1, result.<Number> get("a").intValue());
 			assertEquals(true, result.<Boolean> get("b"));
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail("Exception occured while running test");
-		}
+		}, getSourceFile(UntypedObject.class));
 	}
 
 	@Test
 	public void testUntypedObjectWrongUses() {
-		TestTranspilationHandler logHandler = new TestTranspilationHandler();
-		try {
-			transpiler.transpile(logHandler, getSourceFile(UntypedObjectWrongUses.class));
+		transpile(logHandler -> {
 			logHandler.assertReportedProblems( //
 					JSweetProblem.UNTYPED_OBJECT_ODD_PARAMETER_COUNT, //
 					JSweetProblem.UNTYPED_OBJECT_WRONG_KEY, //
 					JSweetProblem.UNTYPED_OBJECT_WRONG_KEY, //
 					JSweetProblem.UNTYPED_OBJECT_WRONG_KEY);
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail("Exception occured while running test");
-		}
+		}, getSourceFile(UntypedObjectWrongUses.class));
 	}
 
 	@Test

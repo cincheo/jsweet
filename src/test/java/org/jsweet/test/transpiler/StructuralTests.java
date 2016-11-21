@@ -113,11 +113,6 @@ public class StructuralTests extends AbstractTest {
 		transpile(logHandler -> {
 			logHandler.assertReportedProblems();
 		}, getSourceFile(InnerClass.class), getSourceFile(Wrapping.class), getSourceFile(InnerClassUse.class));
-		transpiler.setBundle(true);
-		transpile(ModuleKind.none, logHandler -> {
-			logHandler.assertReportedProblems();
-		}, getSourceFile(InnerClass.class), getSourceFile(Wrapping.class), getSourceFile(InnerClassUse.class));
-		transpiler.setBundle(false);
 	}
 
 	@Test
@@ -126,12 +121,6 @@ public class StructuralTests extends AbstractTest {
 			logHandler.assertReportedProblems();
 			assertEquals("22abc,22a,22ABC,22a,22b,22c,22ABC,test22a,staticMethod", r.get("trace"));
 		}, getSourceFile(InnerClassNotStatic.class));
-		transpiler.setBundle(true);
-		eval(ModuleKind.none, (logHandler, r) -> {
-			logHandler.assertReportedProblems();
-			assertEquals("22abc,22a,22ABC,22a,22b,22c,22ABC,test22a,staticMethod", r.get("trace"));
-		}, getSourceFile(InnerClassNotStatic.class));
-		transpiler.setBundle(false);
 	}
 
 	@Test

@@ -76,7 +76,7 @@ public class RequireTests extends AbstractTest {
 
 	@Test
 	public void testBlocksgame() {
-		transpile(ModuleKind.commonjs, logHandler -> {
+		transpile(logHandler -> {
 			logHandler.assertReportedProblems();
 		}, getSourceFile(Point.class), getSourceFile(Vector.class), getSourceFile(AnimatedElement.class), getSourceFile(Line.class),
 				getSourceFile(MobileElement.class), getSourceFile(Rectangle.class), getSourceFile(Direction.class), getSourceFile(Collisions.class),

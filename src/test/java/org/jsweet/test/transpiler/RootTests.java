@@ -74,12 +74,6 @@ public class RootTests extends AbstractTest {
 		transpile(ModuleKind.commonjs, (logHandler) -> {
 			logHandler.assertReportedProblems(JSweetProblem.MULTIPLE_ROOT_PACKAGES_NOT_ALLOWED_WITH_MODULES);
 		}, getSourceFile(AccessFromClassInRoot.class), getSourceFile(A.class), getSourceFile(B.class));
-		// with bundles
-		transpiler.setBundle(true);
-		transpile(ModuleKind.none, (logHandler) -> {
-			logHandler.assertReportedProblems();
-		}, getSourceFile(AccessFromClassInRoot.class), getSourceFile(A.class), getSourceFile(B.class));
-		transpiler.setBundle(false);
 	}
 
 }
