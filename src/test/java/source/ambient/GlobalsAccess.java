@@ -1,5 +1,6 @@
 package source.ambient;
 
+import static source.ambient.globals.Globals.Map;
 import static source.ambient.three.Globals.globalFunction;
 import static source.ambient.three.Globals.globalVariable;
 
@@ -9,5 +10,9 @@ public class GlobalsAccess {
 		String s = globalVariable;
 		globalFunction(s);
 	}
+
+	public static jsweet.lang.Object getJsMapConstructor() {
+		return Map;
+	};
 
 }

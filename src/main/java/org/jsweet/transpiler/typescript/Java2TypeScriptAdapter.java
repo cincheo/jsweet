@@ -83,15 +83,16 @@ import org.jsweet.transpiler.util.Util;
 import com.sun.codemodel.internal.JJavaName;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.PackageSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Symbol.TypeVariableSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
+import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCArrayTypeTree;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
@@ -944,7 +945,10 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				case "getName":
 					if (getPrinter().getContext().options.isSupportGetClass()) {
 						printMacroName(targetMethodName);
-						printTarget(fieldAccess.getExpression()).print("[\"" + Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR + "\"]");
+						getPrinter().print("(c => c[\"" + Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR + "\"]?c[\""
+								+ Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR + "\"]:c.name)(");
+						printTarget(fieldAccess.getExpression());
+						getPrinter().print(")");
 						return true;
 					} else {
 						if (fieldAccess != null && fieldAccess.selected.toString().endsWith(".class")) {
@@ -957,8 +961,11 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				case "getSimpleName":
 					if (getPrinter().getContext().options.isSupportGetClass()) {
 						printMacroName(targetMethodName);
-						getPrinter().print("(name => name.substring(name.lastIndexOf('.')+1))(");
-						printTarget(fieldAccess.getExpression()).print("[\"" + Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR + "\"]");
+						getPrinter().print("(c => c[\"" + Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR + "\"]?c[\""
+								+ Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR + "\"].substring(c[\""
+								+ Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR
+								+ "\"].lastIndexOf('.')+1):c.name.substring(c.name.lastIndexOf('.')+1))(");
+						printTarget(fieldAccess.getExpression());
 						getPrinter().print(")");
 						return true;
 					} else {
@@ -1308,18 +1315,13 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					}
 				}
 				if (typeFullName.startsWith(Class.class.getName() + "<")) {
-					if (typeApply.arguments.head.type.tsym instanceof TypeVariableSymbol || typeApply.arguments.head.toString().startsWith("?")) {
-						return getPrinter().print("any");
-					} else {
-						getPrinter().print("typeof ");
-						if (langTypesMapping.containsKey(typeApply.arguments.head.type.tsym.getQualifiedName().toString())) {
-							return getPrinter().print(langTypesMapping.get(typeApply.arguments.head.type.tsym.getQualifiedName().toString()));
-						} else {
-							return substituteAndPrintType(typeApply.arguments.head, arrayComponent, inTypeParameters, completeRawTypes, disableSubstitution);
-						}
-					}
+					return getPrinter().print("any");
 				}
 			} else {
+				if (!(typeTree instanceof JCArrayTypeTree) && typeFullName.startsWith("java.util.function.")) {
+					// case of a raw functional type (programmer's mistake)
+					return getPrinter().print("any");
+				}
 				if (typesMapping.containsKey(typeFullName)) {
 					return getPrinter().print(typesMapping.get(typeFullName));
 				}
@@ -1376,8 +1378,14 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			qualifiedName = langTypesMapping.get(type.getQualifiedName().toString());
 		} else {
 			if (getPrinter().getContext().useModules) {
-				int dotIndex = qualifiedName.lastIndexOf(".");
-				qualifiedName = qualifiedName.substring(dotIndex + 1);
+				String[] namePath = qualifiedName.split("\\.");
+				int i = namePath.length - 1;
+				Symbol s = type;
+				qualifiedName = "";
+				while (i >= 0 && !(s instanceof PackageSymbol)) {
+					qualifiedName = namePath[i--] + ("".equals(qualifiedName) ? "" : "." + qualifiedName);
+					s = s.getEnclosingElement();
+				}
 			}
 			if (globals) {
 				int dotIndex = qualifiedName.lastIndexOf(".");
@@ -1415,6 +1423,38 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					getPrinter().print("(() => { " + VAR_DECL_KEYWORD + " f = function() { this." + method.getSimpleName() + " = ").print(lambda);
 					getPrinter().print("}; return new f(); })()");
 					return true;
+				}
+			} else if (expression instanceof JCNewClass) {
+				if (((JCNewClass) expression).def != null && (assignedType.tsym.getQualifiedName().toString().startsWith("java.util.function")
+						|| assignedType.tsym.getQualifiedName().toString().startsWith(JSweetConfig.FUNCTION_CLASSES_PACKAGE)
+						|| Util.hasAnnotationType(assignedType.tsym, JSweetConfig.ANNOTATION_FUNCTIONAL_INTERFACE))) {
+					List<JCTree> defs = ((JCNewClass) expression).def.defs;
+					boolean printed = false;
+					for (JCTree def : defs) {
+						if (def instanceof JCMethodDecl) {
+							if (printed) {
+								// should never happen... report error?
+							}
+							JCMethodDecl method = (JCMethodDecl) def;
+							if (method.sym.isConstructor()) {
+								continue;
+							}
+							getPrinter().getStack().push(method);
+							getPrinter().print("(").printArgList(method.getParameters()).print(") => ").print(method.body);
+							getPrinter().getStack().pop();
+							printed = true;
+						}
+					}
+					if (printed) {
+						return true;
+					}
+				} else {
+					JCNewClass newClass = (JCNewClass) expression;
+					// raw generic type
+					if (!newClass.type.tsym.getTypeParameters().isEmpty() && newClass.typeargs.isEmpty()) {
+						getPrinter().print("<any>(").print(expression).print(")");
+						return true;
+					}
 				}
 			}
 			return false;

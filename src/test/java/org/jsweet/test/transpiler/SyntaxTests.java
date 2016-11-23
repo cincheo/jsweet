@@ -62,7 +62,7 @@ public class SyntaxTests extends AbstractTest {
 	@Test
 	public void testKeywords() {
 		eval(ModuleKind.none, (logHandler, r) -> {
-			Assert.assertEquals(8, logHandler.reportedProblems.size());
+			Assert.assertEquals(10, logHandler.reportedProblems.size());
 			for (JSweetProblem problem : logHandler.reportedProblems) {
 				Assert.assertEquals(JSweetProblem.JS_KEYWORD_CONFLICT, problem);
 			}

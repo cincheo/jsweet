@@ -60,10 +60,10 @@ public class AmbientTests extends AbstractTest {
 
 		// TODO: also test with modules (we need a requirable lib and a way to
 		// specify modules in ambients)
-		eval(ModuleKind.none, (logHandler, result) -> {
+		eval(ModuleKind.none, false, (logHandler, result) -> {
 			Assert.assertTrue("test was not executed", result.get("baseExecuted"));
 			Assert.assertTrue("extension was not executed", result.get("extensionExecuted"));
-		} , libJs, getSourceFile(LibAccess.class));
+		}, libJs, getSourceFile(LibAccess.class));
 	}
 
 	@Test
@@ -90,24 +90,24 @@ public class AmbientTests extends AbstractTest {
 
 		// TODO: also test with modules (we need a requirable lib and a way to
 		// specify modules in ambients)
-		eval(ModuleKind.none, (logHandler, result) -> {
+		eval(ModuleKind.none, false, (logHandler, result) -> {
 			Assert.assertTrue("test was not executed", result.get("baseExecuted"));
 			Assert.assertTrue("extension was not executed", result.get("extensionExecuted"));
-		} , libJs, getSourceFile(LibAccessSubModule.class), getSourceFile(Base.class), getSourceFile(Extension.class), getSourceFile(C.class));
+		}, libJs, getSourceFile(LibAccessSubModule.class), getSourceFile(Base.class), getSourceFile(Extension.class), getSourceFile(C.class));
 	}
 
 	@Test
 	public void testGlobalsAccess() {
 		transpile(logHandler -> {
 			logHandler.assertReportedProblems();
-		} , getSourceFile(GlobalsAccess.class), getSourceFile(Globals.class));
+		}, getSourceFile(GlobalsAccess.class), getSourceFile(Globals.class));
 	}
 
 	@Test
 	public void testWrongUseOfAmbientAnnotations() {
 		transpile(ModuleKind.none, logHandler -> {
 			logHandler.assertReportedProblems(JSweetProblem.WRONG_USE_OF_AMBIENT, JSweetProblem.WRONG_USE_OF_AMBIENT);
-		} , getSourceFile(WrongUseOfAmbientAnnotations.class));
+		}, getSourceFile(WrongUseOfAmbientAnnotations.class));
 	}
 
 }

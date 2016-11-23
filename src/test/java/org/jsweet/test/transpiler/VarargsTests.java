@@ -18,7 +18,7 @@ package org.jsweet.test.transpiler;
 
 import static org.junit.Assert.assertEquals;
 
-import org.jsweet.transpiler.util.EvaluationResult;
+import org.jsweet.transpiler.ModuleKind;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -35,9 +35,10 @@ public class VarargsTests extends AbstractTest {
 	@Test
 	@Ignore
 	public void testVarargsOnAnonymous() {
-		EvaluationResult res = eval(getSourceFile(VarargsOnAnonymous.class));
-		assertEquals("3", res.get("argsLength").toString());
-		assertEquals("called", res.get("firstArg"));
+		eval(ModuleKind.none,(ctx, res) -> {
+			assertEquals("3", res.get("argsLength").toString());
+			assertEquals("called", res.get("firstArg"));
+		}, getSourceFile(VarargsOnAnonymous.class));
 	}
 
 	@Test
