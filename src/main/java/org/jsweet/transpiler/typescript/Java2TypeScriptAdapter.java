@@ -371,6 +371,13 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				return true;
 			}
 			// enum objets wrapping
+			if (fieldAccess != null && fieldAccess.sym instanceof MethodSymbol) {
+				if (((MethodSymbol) fieldAccess.sym).isStatic()) {
+					getPrinter().print(fieldAccess.selected).print(Java2TypeScriptTranslator.ENUM_WRAPPER_CLASS_SUFFIX + ".").print(fieldAccess.name.toString())
+							.print("(").printArgList(invocation.getArguments()).print(")");
+					return true;
+				}
+			}
 			getPrinter().print(relTarget).print("[\"" + Java2TypeScriptTranslator.ENUM_WRAPPER_CLASS_WRAPPERS + "\"][").print(fieldAccess.selected).print("].")
 					.print(fieldAccess.name.toString()).print("(").printArgList(invocation.getArguments()).print(")");
 			return true;

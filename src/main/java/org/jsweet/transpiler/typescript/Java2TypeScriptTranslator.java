@@ -2186,7 +2186,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					methSym = p == null ? null : Util.findMethodDeclarationInType(context.types, p.sym, methName, type);
 					if (methSym != null) {
 						typeChecker.checkApply(inv, methSym);
-						if (!methSym.getModifiers().contains(Modifier.STATIC)) {
+						if (!methSym.isStatic()) {
 							if (!meth.startsWith("this.")) {
 								print("this");
 								if (!anonymous) {
@@ -2194,11 +2194,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 								}
 							}
 						} else {
-							if (meth.startsWith("this.") && methSym.getModifiers().contains(Modifier.STATIC)) {
+							if (meth.startsWith("this.") && methSym.isStatic()) {
 								report(inv, JSweetProblem.CANNOT_ACCESS_STATIC_MEMBER_ON_THIS, methSym.getSimpleName());
 							}
 							if (!JSweetConfig.GLOBALS_CLASS_NAME.equals(methSym.owner.getSimpleName().toString())) {
 								print("" + methSym.owner.getSimpleName());
+								if (methSym.owner.isEnum()) {
+									print(ENUM_WRAPPER_CLASS_SUFFIX);
+								}
 								if (!anonymous) {
 									print(".");
 								}
