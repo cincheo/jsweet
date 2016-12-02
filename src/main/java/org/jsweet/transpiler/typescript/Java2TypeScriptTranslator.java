@@ -2650,9 +2650,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 				print("{").println().startIndent();
 				boolean statementPrinted = false;
+				boolean initializationBlockFound = false;
 				if (newClass.def != null) {
 					for (JCTree m : newClass.def.getMembers()) {
 						if (m instanceof JCBlock) {
+							initializationBlockFound = true;
 							List<VarSymbol> initializedVars = new ArrayList<>();
 							for (JCTree s : ((JCBlock) m).stats) {
 								boolean currentStatementPrinted = false;
@@ -2706,6 +2708,15 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							}
 							if (statementPrinted) {
 								removeLastChars(2);
+							}
+						}
+					}
+				}
+				if (!statementPrinted && !initializationBlockFound) {
+					for (Symbol s : clazz.getEnclosedElements()) {
+						if (s instanceof VarSymbol) {
+							if (!Util.hasAnnotationType(s, JSweetConfig.ANNOTATION_OPTIONAL)) {
+								report(newClass, JSweetProblem.UNINITIALIZED_FIELD, s);
 							}
 						}
 					}

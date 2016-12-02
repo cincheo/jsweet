@@ -150,7 +150,7 @@ public class InitTests extends AbstractTest {
 	@Test
 	public void testInterfaceRawConstruction() {
 		transpile(logHandler -> {
-			assertEquals("There should be 0 problems", 0, logHandler.reportedProblems.size());
+			logHandler.assertReportedProblems(JSweetProblem.UNINITIALIZED_FIELD, JSweetProblem.UNINITIALIZED_FIELD);
 		}, getSourceFile(InterfaceRawConstruction.class));
 	}
 
