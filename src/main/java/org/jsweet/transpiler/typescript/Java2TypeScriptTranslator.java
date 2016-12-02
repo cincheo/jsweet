@@ -2214,7 +2214,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							if (target != null) {
 								print(getRootRelativeName(target) + ".");
 							}
-						} else if (context.bundleMode) {
+						} else {
 							TypeSymbol target = Util.getStaticImportTarget(compilationUnit, methName);
 							if (target != null) {
 								print(getRootRelativeName(target) + ".");
