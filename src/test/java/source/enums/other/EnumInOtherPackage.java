@@ -14,24 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package source.require.b;
+package source.enums.other;
 
-import static jsweet.util.Globals.$export;
+public enum EnumInOtherPackage {
 
-import source.require.a.A;
-
-public class ClassImport {
-
-	A a;
-
-	public static void main(String[] args) {
-		$export("mainInvoked", true);
-		A a = new A();
-		a.m();
-	}
-
-	public void m() {
-		a.m();
-	}
+	V1, V2
 
 }
+

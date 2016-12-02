@@ -24,6 +24,7 @@ import org.junit.Test;
 import source.generics.AbstractClassAndOverride;
 import source.generics.AddThisOnGenericMethods;
 import source.generics.GenericObjectStructure;
+import source.generics.InferenceWithClassParameter;
 import source.generics.InnerClassNotStatic;
 import source.generics.InstantiationWithGenerics;
 import source.generics.RawTypes;
@@ -87,6 +88,13 @@ public class GenericsTests extends AbstractTest {
 		transpile(logHandler -> {
 			logHandler.assertReportedProblems();
 		} , getSourceFile(StaticAnonymousClass.class));
+	}
+
+	@Test
+	public void testInferenceWithClassParameter() {
+		transpile(logHandler -> {
+			logHandler.assertReportedProblems();
+		} , getSourceFile(InferenceWithClassParameter.class));
 	}
 	
 }

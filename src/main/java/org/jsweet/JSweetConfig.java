@@ -325,6 +325,7 @@ public abstract class JSweetConfig {
 		JS_KEYWORDS.add("var");
 		JS_KEYWORDS.add("typeof");
 		JS_KEYWORDS.add("in");
+		JS_KEYWORDS.add("arguments");
 
 		TS_STRICT_MODE_KEYWORDS.add("as");
 		TS_STRICT_MODE_KEYWORDS.add("implements");

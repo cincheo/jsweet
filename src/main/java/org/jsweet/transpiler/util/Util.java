@@ -65,7 +65,7 @@ import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.file.JavacFileManager;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
-import com.sun.tools.javac.tree.JCTree.JCAssignOp;
+import com.sun.tools.javac.tree.JCTree.JCAssign;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCCase;
 import com.sun.tools.javac.tree.JCTree.JCCatch;
@@ -1291,7 +1291,7 @@ public class Util {
 	private static boolean isAllowedStatementInMap(JCStatement statement) {
 		if (statement instanceof JCExpressionStatement) {
 			JCExpressionStatement exprStat = (JCExpressionStatement) statement;
-			if (exprStat.getExpression() instanceof JCAssignOp) {
+			if (exprStat.getExpression() instanceof JCAssign) {
 				return true;
 			}
 			if (exprStat.getExpression() instanceof JCMethodInvocation) {

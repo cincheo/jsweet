@@ -1,15 +1,76 @@
 # JSweet: a Java to JavaScript transpiler [![Build Status](https://travis-ci.org/cincheo/jsweet.svg?branch=master)](https://travis-ci.org/cincheo/jsweet)
 
-JSweet allows you to write rich and responsive Web applications in Java through the use of JavaScript libraries and frameworks. With JSweet, Java programs are transpiled (source-to-source compiled) to Javascript for being run in browsers or in Node.js. 
+JSweet leverages TypeScript to write rich and responsive Web applications in Java through the use of JavaScript libraries and frameworks. With JSweet, Java programs are transpiled (source-to-source compiled) to TypeScript and JavaScript for being run in browsers, mobile Web views, or in Node.js. 
 
 * JSweet is safe and reliable. It provides web applications with type-checking and generates fully type-checked JavaScript programs. It stands on Oracle's Java Compiler (javac) and on Microsoft's TypeScript (tsc). 
 * JSweet allows you to use your favorite JS library ([JSweet+Angular2](https://github.com/cincheo/jsweet-angular2-quickstart), [JSweet+threejs](https://github.com/cincheo/jsweet-examples-threejs), [IONIC/Cordova](https://github.com/lgrignon/jsweet-cordova-ionic-example), ...).
-* JSweet enables you to share some code between server-side Java and client-side JavaScript. JSweet provides implementations for the core Java libraries for code sharing and legacy Java migration purpose.
+* JSweet enables code sharing between server-side Java and client-side JavaScript. JSweet provides implementations for the core Java libraries for code sharing and legacy Java migration purpose.
 * JSweet is fast, lightweight and fully JavaScript-interoperable. The generated code is regular JavaScript code, which implies no overhead compared to JavaScript, and can directly interoperate with existing JavaScript programs and libraries.
 
-How it works? JSweet depends on typed descriptions of JavaScript APIs, defined in TypeScript, they are called "candies". You can even use part of the Java core API using the [J4TS](https://github.com/j4ts) candies. 
+How does it work? JSweet depends on well-typed descriptions of JavaScript APIs, so-called "candies", most of them being automatically generated from TypeScript definition files. These API descriptions in Java can be seen as headers (similarly to *.h header files in C) to bridge JavaSript libraries from Java. There are several sources of candies for existing libraries and you can easily build a candy for any library out there (see [more details](http://www.jsweet.org/jsweet-candies/)). 
 
-JSweet programs run on a JavaScript VM, not on a JVM, unless the programs only use Java APIs. So . With JSweet, you take advantage of all the Java tooling (IDE's, Maven, ...) to program real JavaScript applications using the latest JavaScript libraries.
+With JSweet, you take advantage of all the Java tooling (IDE's, Maven, ...) to program real JavaScript applications using the latest JavaScript libraries.
+
+## Java -> TypeScript -> JavaScript
+
+Here is a first taste of what you get by using JSweet. Consider this simple Java program:
+
+```java
+package org.jsweet;
+
+import static jsweet.dom.Globals.*;
+
+/**
+ * This is a very simple example that just shows an alert.
+ */
+public class HelloWorld {
+	public static void main(String[] args) {
+		alert("Hi there!");
+	}
+}
+```
+
+Transpiling with JSweet gives the following TypeScript program:
+
+```TypeScript
+namespace org.jsweet {
+    /**
+     * This is a very simple example that just shows an alert.
+     */
+    export class HelloWorld {
+        public static main(args : string[]) {
+            alert("Hi there!");
+        }
+    }
+}
+org.jsweet.HelloWorld.main(null);
+```
+
+Which in turn produces the following JavaScript output:
+
+```JavaScript
+var org;
+(function (org) {
+    var jsweet;
+    (function (jsweet) {
+        /**
+         * This is a very simple example that just shows an alert.
+         */
+        var HelloWorld = (function () {
+            function HelloWorld() {
+            }
+            HelloWorld.main = function (args) {
+                alert("Hi there!");
+            };
+            return HelloWorld;
+        }());
+        jsweet.HelloWorld = HelloWorld;
+    })(jsweet = org.jsweet || (org.jsweet = {}));
+})(org || (org = {}));
+org.jsweet.HelloWorld.main(null);
+```
+
+More with the [live sandbox](http://www.jsweet.org/jsweet-live-sandbox/).
 
 ## Features
 
@@ -62,6 +123,8 @@ More info at http://www.jsweet.org.
 - JSweet JAX-RS server example (how to share a Java model between client and server): https://github.com/lgrignon/jsweet-jaxrs-server-example 
 - JSweet Cordova / Polymer example: https://github.com/lgrignon/jsweet-cordova-polymer-example
 - JSweet Cordova / Ionic example: https://github.com/lgrignon/jsweet-cordova-ionic-example
+- JSweet Angular 2 example: https://github.com/cincheo/jsweet-angular2-quickstart
+- JSweet Angular 2 + PrimeNG: https://github.com/cincheo/jsweet-primeng-quickstart 
 
 ## Tooling
 

@@ -14,24 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package source.require.b;
+package org.jsweet.test.transpiler;
 
-import static jsweet.util.Globals.$export;
+import org.junit.Test;
 
-import source.require.a.A;
+import def.test.ClassWithObjectType;
 
-public class ClassImport {
+public class DefinitionsTest extends AbstractTest {
 
-	A a;
-
-	public static void main(String[] args) {
-		$export("mainInvoked", true);
-		A a = new A();
-		a.m();
-	}
-
-	public void m() {
-		a.m();
+	@Test
+	public void testObjectType() {
+		transpiler.setGenerateDefinitions(true);
+		transpile(h -> {
+			h.assertReportedProblems();
+		}, getSourceFile(ClassWithObjectType.class));
+		transpiler.setGenerateDefinitions(false);
 	}
 
 }

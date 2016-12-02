@@ -10,7 +10,8 @@ abstract class LocalAbstractClass {
 public class AccessFromClassInRoot {
 
 	public static void main(String[] args) {
-		new A();
+		// potential name clash
+		A a = new A();
 		new B();
 		new LocalAbstractClass() {
 			@Override

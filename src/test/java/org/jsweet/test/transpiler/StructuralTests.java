@@ -28,6 +28,7 @@ import org.junit.Test;
 
 import source.structural.AbstractClass;
 import source.structural.AnonymousClass;
+import source.structural.AnonymousClassForLambda;
 import source.structural.AutoImportClassesInSamePackage;
 import source.structural.AutoImportClassesInSamePackageUsed;
 import source.structural.DefaultMethods;
@@ -39,6 +40,7 @@ import source.structural.GlobalsAccess;
 import source.structural.Inheritance;
 import source.structural.InnerClass;
 import source.structural.InnerClassNotStatic;
+import source.structural.InnerClassUse;
 import source.structural.InstanceOf;
 import source.structural.InstanceofForInterfaces;
 import source.structural.JSNI;
@@ -59,6 +61,7 @@ import source.structural.globalclasses.c.ClassUsingStaticMethod;
 import source.structural.globalclasses.c.GlobalFunctionGetSetDelete;
 import source.structural.globalclasses.d.GlobalFunctionAccessFromMain;
 import source.structural.globalclasses.f.InvalidGlobalSetGetDelete;
+import source.structural.other.Wrapping;
 
 public class StructuralTests extends AbstractTest {
 
@@ -106,6 +109,13 @@ public class StructuralTests extends AbstractTest {
 	}
 
 	@Test
+	public void testInnerClassUse() {
+		transpile(logHandler -> {
+			logHandler.assertReportedProblems();
+		}, getSourceFile(InnerClass.class), getSourceFile(Wrapping.class), getSourceFile(InnerClassUse.class));
+	}
+
+	@Test
 	public void testInnerClassNotStatic() {
 		eval((logHandler, r) -> {
 			logHandler.assertReportedProblems();
@@ -122,12 +132,18 @@ public class StructuralTests extends AbstractTest {
 	}
 
 	@Test
+	public void testAnonymousClassForLambda() {
+		eval((logHandler, r) -> {
+			logHandler.assertReportedProblems();
+		}, getSourceFile(AnonymousClassForLambda.class));
+	}
+
+	@Test
 	public void testInheritance() {
 		eval((logHandler, r) -> {
 			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
 			assertEquals(true, r.<Boolean> get("X"));
 			assertEquals(true, r.<Boolean> get("Y"));
-			assertEquals(true, r.<Boolean> get("itfb"));
 			assertEquals("s1", r.<Boolean> get("s1b"));
 			assertEquals("s2", r.<Boolean> get("s2b"));
 			assertEquals(false, r.<Boolean> get("itfo"));
@@ -330,6 +346,8 @@ public class StructuralTests extends AbstractTest {
 			assertEquals("AClass1", r.get("simplename3"));
 			assertEquals("Functions", r.get("simplename4"));
 			assertEquals("Functions", r.get("simplename5"));
+			assertEquals("String", r.get("string"));
+			assertEquals("Number", r.get("number"));
 		}, getSourceFile(GetClass.class));
 	}
 

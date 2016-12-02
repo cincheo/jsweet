@@ -46,7 +46,7 @@ public class TsComparisonTest extends AbstractTest {
 	public void strongerTypingTest() {
 		// jsweet part
 		SourceFile file = getSourceFile(StrongerTyping.class);
-		eval(file);
+		eval(ModuleKind.none, null, file);
 
 		// ts part
 		evalTs(getTsSourceFile(file));
@@ -57,7 +57,7 @@ public class TsComparisonTest extends AbstractTest {
 	public void compileTimeWarningsTest() {
 		// jsweet part
 		SourceFile file = getSourceFile(CompileTimeWarnings.class);
-		eval(file);
+		eval(ModuleKind.none, null, file);
 
 		// ts part
 		evalTs(getTsSourceFile(file));
@@ -67,8 +67,8 @@ public class TsComparisonTest extends AbstractTest {
 	public void abstractClassesTest() {
 		// jsweet part
 		SourceFile file = getSourceFile(AbstractClasses.class);
-		eval(file);
-		
+		eval(ModuleKind.none, null, file);
+
 		// ts part
 		evalTs(getTsSourceFile(file));
 	}
@@ -78,7 +78,7 @@ public class TsComparisonTest extends AbstractTest {
 	public void actualScopingTest() {
 		// jsweet part
 		SourceFile file = getSourceFile(ActualScoping.class);
-		eval(file);
+		eval(ModuleKind.none, null, file);
 
 		// ts part
 		evalTs(getTsSourceFile(file));
@@ -89,7 +89,7 @@ public class TsComparisonTest extends AbstractTest {
 	public void thisIsThisTest() {
 		// jsweet part
 		SourceFile file = getSourceFile(ThisIsThis.class);
-		eval(file);
+		eval(ModuleKind.none, null, file);
 
 		// ts part
 		evalTs(getTsSourceFile(file));
@@ -99,24 +99,25 @@ public class TsComparisonTest extends AbstractTest {
 	public void otherThisExampleTest() {
 		eval(ModuleKind.none, (logHandler, r) -> {
 			logHandler.assertReportedProblems();
-			System.out.println(""+r.get("results"));
-			Assert.assertEquals("3,4,5", ""+r.get("results"));
-		} , getSourceFile(Globals.class), getSourceFile(OtherThisExample.class));
-		
+			System.out.println("" + r.get("results"));
+			Assert.assertEquals("3,4,5", "" + r.get("results"));
+		}, getSourceFile(Globals.class), getSourceFile(OtherThisExample.class));
+
 	}
-	
+
 	@Ignore
 	@Test
 	public void saferVarargsTest() {
 		// jsweet part
 
 		SourceFile file = getSourceFile(SaferVarargs.class);
-		EvaluationResult result = eval(file);
-		assertEquals("foo", result.get("firstArg"));
+		eval(ModuleKind.none, (ctx, result) -> {
+			assertEquals("foo", result.get("firstArg"));
+		}, file);
 
 		// ts part
-		result = evalTs(getTsSourceFile(file));
-		
+		EvaluationResult result = evalTs(getTsSourceFile(file));
+
 		assertTrue(result.get("firstArg").getClass().isArray());
 		Object[] res = (Object[]) result.get("firstArg");
 		assertEquals("blah", res[0]);
@@ -137,9 +138,10 @@ public class TsComparisonTest extends AbstractTest {
 	private EvaluationResult evalTs(TsSourceFile sourceFile, boolean expectErrors) {
 		try {
 			System.out.println("running tsc: " + sourceFile);
+			TestTranspilationHandler logHandler = new TestTranspilationHandler();
 
 			transpiler.setTsOutputDir(sourceFile.getTsFile().getParentFile());
-			EvaluationResult result = eval(sourceFile);
+			EvaluationResult result = transpiler.eval(logHandler, sourceFile);
 			FileUtils.deleteQuietly(sourceFile.getJsFile());
 
 			return result;

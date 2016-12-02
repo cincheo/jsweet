@@ -8,6 +8,7 @@ public class ComplexEnums {
 	static Array<String> trace = new Array<String>();
 
 	public static void main(String[] args) {
+		MyComplexEnum.aStaticMethod();
 		trace.push("" + MyComplexEnum.RATIO_2_1.getValue());
 		trace.push("" + MyComplexEnum.RATIO_2_1.str);
 		trace.push("" + MyComplexEnum.RATIO_2_1.otherName);
@@ -32,10 +33,26 @@ enum MyComplexEnum {
 		this.value = value;
 		this.str = "--" + value.intValue() + "--";
 		this.otherName = this.name().toLowerCase() + "_" + ordinal();
+		aNonStaticMethod();
+		this.aNonStaticMethod();
+		aStaticMethod2();
 	}
 
 	public Float getValue() {
+		aNonStaticMethod();
+		this.aNonStaticMethod();
+		aStaticMethod2();
 		return value;
 	}
 
+	public static void aStaticMethod() {
+		ComplexEnums.trace.push("static");
+	}
+
+	public static void aStaticMethod2() {
+	}
+
+	public void aNonStaticMethod() {
+	}
+	
 }

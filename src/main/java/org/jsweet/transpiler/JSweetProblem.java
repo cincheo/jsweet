@@ -35,6 +35,11 @@ public enum JSweetProblem {
 	 */
 	INTERNAL_JAVA_ERROR(Severity.ERROR),
 	/**
+	 * Raised when the transpiler meets an error while scanning the program's
+	 * AST.
+	 */
+	INTERNAL_TRANSPILER_ERROR(Severity.ERROR),
+	/**
 	 * Raised when the Tsc transpiler reports an error.
 	 */
 	INTERNAL_TSC_ERROR(Severity.ERROR),
@@ -266,10 +271,10 @@ public enum JSweetProblem {
 	 * Raised when a class tries to extend a Globals class.
 	 */
 	GLOBALS_CLASS_CANNOT_BE_SUBCLASSED(Severity.ERROR),
-    /**
+	/**
 	 * Raised when trying to access this from scope it isn't defined.
 	 */
-    CANNOT_ACCESS_THIS(Severity.ERROR),
+	CANNOT_ACCESS_THIS(Severity.ERROR),
 	/**
 	 * Raised when invoking a static method on this (this is allowed in Java,
 	 * but not in JSweet).
@@ -422,7 +427,7 @@ public enum JSweetProblem {
 			return String.format("globals classes cannot extend any class", params);
 		case GLOBALS_CLASS_CANNOT_BE_SUBCLASSED:
 			return String.format("globals classes cannot be subclassed", params);
-        case CANNOT_ACCESS_THIS:
+		case CANNOT_ACCESS_THIS:
 			return String.format("'this' isn't defined in scope of %s", params);
 		case CANNOT_ACCESS_STATIC_MEMBER_ON_THIS:
 			return String.format("member '%s' is static and cannot be accessed on 'this'", params);
@@ -432,6 +437,8 @@ public enum JSweetProblem {
 			return String.format("wrong key: method '$object' expects a list of key/value pairs as parameters, where keys are string literals", params);
 		case CYCLE_IN_STATIC_INITIALIZER_DEPENDENCIES:
 			return String.format("a cycle was detected in static intializers involving '%s'", params);
+		case INTERNAL_TRANSPILER_ERROR:
+			return String.format("internal transpiler error");
 		}
 		return null;
 	}

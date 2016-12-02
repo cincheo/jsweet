@@ -34,7 +34,7 @@ public class AssertionTests extends AbstractTest {
 		eval(ModuleKind.none, (logHandler, r) -> {
 			assertEquals(0, logHandler.reportedProblems.size());
 			Assert.assertEquals(true, r.get("assertion"));
-		} , getSourceFile(PassingAssertion.class));
+		}, getSourceFile(PassingAssertion.class));
 	}
 
 	@Test
@@ -43,17 +43,17 @@ public class AssertionTests extends AbstractTest {
 			assertEquals(0, logHandler.reportedProblems.size());
 			Assert.assertNull(r.get("assertion1"));
 			Assert.assertFalse(r.get("assertion2"));
-		} , getSourceFile(FailingAssertions.class));
+		}, getSourceFile(FailingAssertions.class));
 	}
 
 	@Test
 	public void testIgnoreAssertions() {
-		TestTranspilationHandler logHandler = new TestTranspilationHandler();
 		try {
 			transpiler.setIgnoreAssertions(true);
-			EvaluationResult r = transpiler.eval(logHandler, getSourceFile(FailingAssertions.class));
-			Assert.assertTrue(r.get("assertion1"));
-			Assert.assertNull(r.get("assertion2"));
+			eval(ModuleKind.none, (logHandler, r) -> {
+				Assert.assertTrue(r.get("assertion1"));
+				Assert.assertNull(r.get("assertion2"));
+			}, getSourceFile(FailingAssertions.class));
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail("Exception occured while running test");

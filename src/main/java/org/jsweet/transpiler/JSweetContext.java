@@ -330,6 +330,12 @@ public class JSweetContext extends Context {
 	public Set<String> globalImports = new HashSet<>();
 
 	/**
+	 * Imported top packages (used to avoid clashes with local variables when
+	 * bundle is on).
+	 */
+	public Set<String> importedTopPackages = new HashSet<>();
+
+	/**
 	 * A flag that indicates if the transpilation is in "strict" mode, which
 	 * means that the <code>jsweet-core-strict</code> jar is in the classpath.
 	 */
