@@ -43,6 +43,7 @@ import source.structural.InnerClassNotStatic;
 import source.structural.InnerClassUse;
 import source.structural.InstanceOf;
 import source.structural.InstanceofForInterfaces;
+import source.structural.InterfaceInheritance;
 import source.structural.JSNI;
 import source.structural.Name;
 import source.structural.NameClashesWithMethodInvocations;
@@ -188,6 +189,13 @@ public class StructuralTests extends AbstractTest {
 		}, getSourceFile(ExtendsObject.class));
 	}
 
+	@Test
+	public void testInterfaceInheritance() {
+		transpile(logHandler -> {
+			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+		}, getSourceFile(InterfaceInheritance.class));
+	}
+	
 	@Test
 	public void testInstanceofForInterfaces() {
 		eval((logHandler, r) -> {
