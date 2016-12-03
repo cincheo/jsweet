@@ -511,7 +511,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				}
 			}
 
-			if (fieldAccess != null && !fieldAccess.toString().equals(UTIL_CLASSNAME + "." + INDEXED_GET_FUCTION_NAME)) {
+			if (fieldAccess != null && !UTIL_CLASSNAME.equals(targetClassName)) {
 				getPrinter().print(fieldAccess.selected).print("[").print(invocation.args.head).print("]");
 			} else {
 				if (invocation.args.length() == 1) {
@@ -546,7 +546,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				}
 			}
 
-			if (fieldAccess != null && !fieldAccess.toString().equals(UTIL_CLASSNAME + "." + INDEXED_SET_FUCTION_NAME)) {
+			if (fieldAccess != null && !UTIL_CLASSNAME.equals(targetClassName)) {
 				// check the type through the getter
 				for (Symbol e : fieldAccess.selected.type.tsym.getEnclosedElements()) {
 					if (e instanceof MethodSymbol && INDEXED_GET_FUCTION_NAME.equals(e.getSimpleName().toString())) {
@@ -601,7 +601,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				}
 			}
 
-			if (fieldAccess != null && !fieldAccess.toString().equals(UTIL_CLASSNAME + "." + INDEXED_DELETE_FUCTION_NAME)) {
+			if (fieldAccess != null && !UTIL_CLASSNAME.equals(targetClassName)) {
 				getPrinter().print("delete ").print(fieldAccess.selected).print("[").print(invocation.args.head).print("]");
 			} else {
 				if (invocation.args.length() == 1) {
@@ -619,7 +619,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				return true;
 			}
 
-			if (fieldAccess != null && !fieldAccess.toString().equals(UTIL_CLASSNAME + "." + INDEXED_GET_FUCTION_NAME)) {
+			if (fieldAccess != null && !UTIL_CLASSNAME.equals(targetClassName)) {
 				getPrinter().print("delete ").print(fieldAccess.selected).print("[").print(invocation.args.head).print("]");
 			} else {
 				if (invocation.args.length() == 1) {
