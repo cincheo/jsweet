@@ -362,7 +362,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				return true;
 			}
 			if (targetMethodName.equals("valueOf") && invocation.getArguments().size() == 1) {
-				getPrinter().print(fieldAccess.selected).print("[").print(invocation.getArguments().head).print("]");
+				getPrinter().print("<any>").print(fieldAccess.selected).print("[").print(invocation.getArguments().head).print("]");
 				return true;
 			}
 			if (targetMethodName.equals("values")) {
