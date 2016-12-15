@@ -21,11 +21,15 @@ import java.io.File;
 public interface JSweetOptions {
 
 	/**
-	 * Tells if the transpiler preserves the generated TypeScript source line
-	 * numbers wrt the Java original source file (allows for Java debugging
-	 * through js.map files).
+	 * Tells if the transpiler generates js.map files for Java debugging.
 	 */
 	boolean isPreserveSourceLineNumbers();
+
+	/**
+	 * Gets the source root for the source map files. Use this option if the
+	 * Java source is located in a different place at runtime.
+	 */
+	File getSourceRoot();
 
 	/**
 	 * Gets the current TypeScript output directory.

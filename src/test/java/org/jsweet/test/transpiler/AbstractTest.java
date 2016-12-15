@@ -100,7 +100,7 @@ public class AbstractTest {
 			transpiler = new JSweetTranspiler(outDir, null, new File(JSweetTranspiler.TMP_WORKING_DIR_NAME + "/candies/js"),
 					System.getProperty("java.class.path"));
 			transpiler.setModuleKind(ModuleKind.none);
-			transpiler.setPreserveSourceLineNumbers(true);
+			//transpiler.setPreserveSourceLineNumbers(true);
 			FileUtils.deleteQuietly(transpiler.getWorkingDirectory());
 			transpiler.getCandiesProcessor().touch();
 			transpiler.setEcmaTargetVersion(EcmaScriptComplianceLevel.ES5);

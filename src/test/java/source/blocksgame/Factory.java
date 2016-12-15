@@ -26,7 +26,15 @@ public class Factory {
 	public Factory(GameManager gameManager) {
 		this.gameManager = gameManager;
 	}
-
+	
+	// this is for testing source maps
+	public static class InnerClass {
+		
+		String m() {
+			return "inner class";
+		}
+	}
+	
 	public GameArea createDefaultEmptyLevel(int width, int height) {
 		GameArea area;
 		Player player;
@@ -61,6 +69,7 @@ public class Factory {
 	}
 
 	public GameManager getGameManager() {
+		new InnerClass().m();
 		return gameManager;
 	}
 
