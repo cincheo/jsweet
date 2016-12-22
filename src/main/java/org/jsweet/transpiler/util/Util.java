@@ -1194,6 +1194,9 @@ public class Util {
 	 * unit.
 	 */
 	public static TypeSymbol getStaticImportTarget(JCCompilationUnit compilationUnit, String name) {
+		if (compilationUnit == null) {
+			return null;
+		}
 		for (JCImport i : compilationUnit.getImports()) {
 			if (!i.isStatic()) {
 				continue;

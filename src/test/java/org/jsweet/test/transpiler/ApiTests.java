@@ -26,6 +26,7 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import source.api.AccessStaticMethod;
 import source.api.ArrayBuffers;
 import source.api.CastMethods;
 import source.api.ErasingJava;
@@ -106,6 +107,14 @@ public class ApiTests extends AbstractTest {
 		} , getSourceFile(PrimitiveInstantiation.class));
 	}
 
+	@Test
+	public void testAccessStaticMethod() {
+		transpile(logHandler -> {
+			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+		} , getSourceFile(AccessStaticMethod.class));
+	}
+
+	
 	@Test
 	public void testQualifiedInstantiation() {
 		transpile(logHandler -> {

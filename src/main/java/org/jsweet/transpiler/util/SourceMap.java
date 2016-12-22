@@ -16,6 +16,9 @@
  */
 package org.jsweet.transpiler.util;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -66,6 +69,10 @@ public class SourceMap {
 	}
 
 	private SortedSet<Entry> entries = new TreeSet<>();
+	private List<Entry> insertionOrderEntries = new ArrayList<>();
+
+	private int minOutputLine = 0;
+	private int maxOutputLine = 0;
 
 	/**
 	 * Adds an entry to the source map (entry must be added in order).
@@ -79,6 +86,8 @@ public class SourceMap {
 	public final Entry addEntry(Position inputPosition, Position outputPosition) {
 		Entry entry = new Entry(inputPosition, outputPosition);
 		entries.add(entry);
+		insertionOrderEntries.add(entry);
+		maxOutputLine = Math.max(maxOutputLine, outputPosition.getLine());
 		return entry;
 	}
 
@@ -106,16 +115,19 @@ public class SourceMap {
 		if (entries.isEmpty()) {
 			return null;
 		}
-		if (outputLine < entries.first().getOutputPosition().getLine()) {
+		if (outputLine < minOutputLine) {
 			return null;
 		}
-		if (outputLine > entries.last().getOutputPosition().getLine()) {
+		if (outputLine > maxOutputLine) {
 			return null;
 		}
 		if (entries != null) {
 			Entry[] e = entries.toArray(new Entry[0]);
 			for (int i = 0; i < entries.size(); i++) {
 				if (i == e.length - 1 || (e[i].getOutputPosition().getLine() == outputLine || e[i + 1].getOutputPosition().getLine() > outputLine)) {
+					while (i + 1 < e.length && e[i + 1].getOutputPosition().getLine() == outputLine && e[i].getOutputPosition().getColumn() < outputColumn) {
+						i++;
+					}
 					return e[i].getInputPosition();
 				}
 			}
@@ -130,6 +142,8 @@ public class SourceMap {
 		for (Entry entry : entries) {
 			entry.setOutputPosition(new Position(entry.getOutputPosition().getLine() + lineOffset, entry.getOutputPosition().getColumn()));
 		}
+		minOutputLine += lineOffset;
+		maxOutputLine += lineOffset;
 	}
 
 	@Override
@@ -140,6 +154,24 @@ public class SourceMap {
 			sb.append(" ");
 		}
 		return sb.toString();
+	}
+
+	public List<Entry> getSortedEntries(Comparator<Entry> comparator) {
+		List<Entry> list = new ArrayList<Entry>(entries);
+		list.sort(comparator);
+		return list;
+	}
+
+	public void removeLastInsertedEntry() {
+		if (entries.isEmpty()) {
+			return;
+		}
+		Entry e = insertionOrderEntries.remove(insertionOrderEntries.size() - 1);
+		entries.remove(e);
+		maxOutputLine = 0;
+		for (Entry entry : entries) {
+			maxOutputLine = Math.max(maxOutputLine, entry.getOutputPosition().getLine());
+		}
 	}
 
 }

@@ -19,11 +19,9 @@ package org.jsweet.test.transpiler;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.ModuleKind;
-import org.jsweet.transpiler.util.EvaluationResult;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -43,11 +41,11 @@ import source.init.MultipleMains;
 import source.init.NoOptionalFieldsInClass;
 import source.init.OptionalField;
 import source.init.OptionalFieldError;
+import source.init.ParentInstanceAccess;
 import source.init.StaticFieldWithInnerClass;
 import source.init.StaticInitializer;
 import source.init.UntypedObject;
 import source.init.UntypedObjectWrongUses;
-import source.structural.TwoClassesInSameFile;
 
 public class InitTests extends AbstractTest {
 
@@ -150,7 +148,7 @@ public class InitTests extends AbstractTest {
 	@Test
 	public void testInterfaceRawConstruction() {
 		transpile(logHandler -> {
-			assertEquals("There should be 0 problems", 0, logHandler.reportedProblems.size());
+			logHandler.assertReportedProblems(JSweetProblem.UNINITIALIZED_FIELD, JSweetProblem.UNINITIALIZED_FIELD);
 		}, getSourceFile(InterfaceRawConstruction.class));
 	}
 
@@ -213,6 +211,15 @@ public class InitTests extends AbstractTest {
 		eval((h, r) -> {
 			h.assertReportedProblems();
 		}, getSourceFile(StaticFieldWithInnerClass.class));
+	}
+
+	@Test
+	public void testParentInstanceAccess() {
+		eval((logHandler, result) -> {
+			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+			assertEquals("test", result.get("field1"));
+			assertEquals("test", result.get("field2"));
+		}, getSourceFile(ParentInstanceAccess.class));
 	}
 
 }

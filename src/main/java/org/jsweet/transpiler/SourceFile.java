@@ -19,9 +19,11 @@ package org.jsweet.transpiler;
 import static java.util.Arrays.asList;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 
+import org.jsweet.transpiler.util.Position;
 import org.jsweet.transpiler.util.SourceMap;
 
 /**
@@ -126,6 +128,33 @@ public class SourceFile {
 		return dest;
 	}
 
+	public static SourcePosition findOriginPosition(SourcePosition position, SourceFile[] sourceFiles) {
+		return findOriginPosition(position, Arrays.asList(sourceFiles));
+	}
+	
+	/**
+	 * Finds the mapped position in one of the origin Java source file.
+	 * 
+	 * @param position
+	 *            the position in one of the generated TypeScript file
+	 * @param sourceFiles
+	 *            the origin source files
+	 * @return the origin position
+	 */
+	public static SourcePosition findOriginPosition(SourcePosition position, Collection<SourceFile> sourceFiles) {
+		for (SourceFile sourceFile : sourceFiles) {
+			if (sourceFile.tsFile != null && sourceFile.tsFile.getAbsolutePath().endsWith(position.getFile().getPath())) {
+				if (sourceFile.getSourceMap() != null) {
+					Position inputPosition = sourceFile.getSourceMap().findInputPosition(position.getStartLine(), position.getStartColumn());
+					if (inputPosition != null) {
+						return new SourcePosition(sourceFile.getJavaFile(), null, inputPosition);
+					}
+				}
+			}
+		}
+		return null;
+	}
+
 	private File javaFile;
 
 	/**
@@ -163,10 +192,7 @@ public class SourceFile {
 	 */
 	long jsFileLastTranspiled = 0;
 
-	/**
-	 * Internally used by {@link JSweetTranspiler}.
-	 */
-	SourceMap sourceMap;
+	private SourceMap sourceMap;
 
 	/**
 	 * Creates a source file from a file.
@@ -263,6 +289,14 @@ public class SourceFile {
 		jsMapFile = null;
 		javaFileLastTranspiled = 0;
 		jsFileLastTranspiled = 0;
+	}
+
+	public SourceMap getSourceMap() {
+		return sourceMap;
+	}
+
+	public void setSourceMap(SourceMap sourceMap) {
+		this.sourceMap = sourceMap;
 	}
 
 }

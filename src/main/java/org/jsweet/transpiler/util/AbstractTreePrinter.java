@@ -16,14 +16,10 @@
  */
 package org.jsweet.transpiler.util;
 
-import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.apache.commons.lang3.StringUtils.join;
-
 import java.util.List;
 import java.util.Stack;
 import java.util.function.Consumer;
 
-import org.apache.log4j.Logger;
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.TranspilationHandler;
 import org.jsweet.transpiler.TypeChecker;
@@ -32,10 +28,13 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.MethodType;
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
+import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
+import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 
 /**
@@ -45,8 +44,6 @@ import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
  * @author Renaud Pawlak
  */
 public abstract class AbstractTreePrinter extends AbstractTreeScanner {
-
-	private static final Logger logger = Logger.getLogger(AbstractTreePrinter.class);
 
 	private Stack<Position> positionStack = new Stack<>();
 
@@ -76,7 +73,7 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 
 	private int currentColumn = 0;
 
-	private boolean preserveSourceLineNumbers = true;
+	private boolean fillSourceMap = true;
 
 	public SourceMap sourceMap = new SourceMap();
 
@@ -91,17 +88,16 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	 *            the source file to be printed
 	 * @param adapter
 	 *            the printer adapter
-	 * @param preserveSourceLineNumbers
-	 *            tells if the output source code should try to preserve the
-	 *            line numbers of the original Java code
+	 * @param fillSourceMap
+	 *            tells if printer fills the source map
 	 */
 	public AbstractTreePrinter(TranspilationHandler logHandler, JSweetContext context, JCCompilationUnit compilationUnit, AbstractPrinterAdapter adapter,
-			boolean preserveSourceLineNumbers) {
+			boolean fillSourceMap) {
 		super(logHandler, context, compilationUnit);
 		this.typeChecker = new TypeChecker(this);
 		this.adapter = adapter;
 		this.adapter.setPrinter(this);
-		this.preserveSourceLineNumbers = preserveSourceLineNumbers;
+		this.fillSourceMap = fillSourceMap;
 	}
 
 	/**
@@ -124,48 +120,16 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	 */
 	protected void enter(JCTree tree) {
 		super.enter(tree);
-		if (this.preserveSourceLineNumbers && !stack.isEmpty()) {
-			int line = compilationUnit.lineMap.getLineNumber(stack.peek().pos);
-			// adjusting line...
-			while (currentLine < line) {
-				out.append("\n");
-				currentColumn = 0;
-				currentLine++;
-			}
-			while (currentLine != 1 && currentLine > line && out.charAt(out.length() - 1) == '\n') {
-				out.deleteCharAt(out.length() - 1);
-				currentColumn = 0;
-				currentLine--;
-			}
-			if (currentLine != line) {
-				logger.warn("cannot adjust line for: " + tree.getClass() + " at line " + line);
-			}
-			// adjusting columns... (TODO: does not work)
-			// int column =
-			// compilationUnit.lineMap.getColumnNumber(stack.peek().pos);
-			// while (currentColumn < column) {
-			// // System.out.println("adding a column on "+tree.getClass());
-			// out.append(" ");
-			// currentColumn++;
-			// }
-			// while (currentColumn > column
-			// && ((currentColumn == 1 && out.charAt(out.length() - 1) == ' ')
-			// || (currentColumn > 1 && out.charAt(out.length() - 2) == ' '))) {
-			// out.deleteCharAt(out.length() - 1);
-			// currentColumn--;
-			// }
-			// if (currentColumn != column) {
-			// System.out.println("cannot adjust column for: " + tree.getClass()
-			// + " at position " + line + ", " + column + " - " + (currentColumn
-			// - column));
-			// }
-		}
 		positionStack.push(new Position(getCurrentPosition(), currentLine, currentColumn));
-		if (compilationUnit != null && tree.pos >= 0) {
+		if (compilationUnit != null && tree.pos >= 0 && inSourceMap(tree)) {
 			sourceMap.addEntry(new Position(tree.pos, //
 					compilationUnit.lineMap.getLineNumber(tree.pos), //
 					compilationUnit.lineMap.getColumnNumber(tree.pos)), positionStack.peek());
 		}
+	}
+
+	private boolean inSourceMap(JCTree tree) {
+		return (tree instanceof JCExpression || tree instanceof JCStatement || tree instanceof JCMethodDecl);
 	}
 
 	@Override
@@ -182,6 +146,13 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	 */
 	@Override
 	protected void exit() {
+		JCTree tree = stack.peek();
+		if (compilationUnit != null && tree instanceof JCBlock) {
+			int endPos = tree.getEndPosition(diagnosticSource.getEndPosTable());
+			sourceMap.addEntry(new Position(endPos, //
+					compilationUnit.lineMap.getLineNumber(endPos), //
+					compilationUnit.lineMap.getColumnNumber(endPos)), new Position(getCurrentPosition(), currentLine, currentColumn));
+		}
 		super.exit();
 		positionStack.pop();
 	}
@@ -289,11 +260,6 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	 * Outputs a new line.
 	 */
 	public AbstractTreePrinter println() {
-		if (this.preserveSourceLineNumbers) {
-			out.append(" ");
-			currentColumn++;
-			return this;
-		}
 		out.append("\n");
 		currentLine++;
 		currentColumn = 0;
@@ -422,34 +388,8 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	 * Tells if this printer tries to preserve the original line numbers of the
 	 * Java input.
 	 */
-	public boolean isPreserveLineNumbers() {
-		return preserveSourceLineNumbers;
-	}
-
-	/**
-	 * Gets the Javadoc attached to the given element if any.
-	 */
-	protected String getJavaDoc(JCTree element) {
-		String javaDoc = compilationUnit.docComments.getCommentText(element);
-		return javaDoc;
-	}
-
-	/**
-	 * Prints the Javadoc attached to the given element if any.
-	 */
-	protected AbstractTreePrinter printJavaDoc(JCTree element) {
-		String doc = getJavaDoc(element);
-		if (!isBlank(doc)) {
-			print("/**");
-			println();
-			print(" * ");
-			print(join(doc.split("\n"), "\n * "));
-			println();
-			print(" */");
-			println();
-		}
-
-		return this;
+	public boolean isFillSourceMap() {
+		return fillSourceMap;
 	}
 
 	public String getRootRelativeName(Symbol symbol) {

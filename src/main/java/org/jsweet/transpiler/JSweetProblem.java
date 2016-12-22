@@ -348,7 +348,7 @@ public enum JSweetProblem {
 		case INVALID_INITIALIZER_STATEMENT:
 			return String.format("invalid initializer statement; only field assignments are allowed", params);
 		case UNINITIALIZED_FIELD:
-			return String.format("field %s is not optional (see @Optional) but has not been initialized", params);
+			return String.format("field '%s' is not optional (see @Optional) but has not been initialized", params);
 		case USELESS_OPTIONAL_ANNOTATION:
 			return String.format("useless @Optional field %s (fields are optional by default in classes, use @Interface to define %s as an interface)", params);
 		case JS_KEYWORD_CONFLICT:

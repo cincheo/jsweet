@@ -102,6 +102,11 @@ public class JSweetCommandLineLauncher {
 					candiesJsOutputDir = jsapArgs.getFile("candiesJsOut");
 				}
 
+				File sourceRootDir = null;
+				if (jsapArgs.getFile("sourceRoot") != null) {
+					sourceRootDir = jsapArgs.getFile("sourceRoot");
+				}
+
 				File inputDir = new File(jsapArgs.getString("input"));
 				logger.info("input dir: " + inputDir);
 
@@ -120,6 +125,9 @@ public class JSweetCommandLineLauncher {
 				logger.info("bundles directory: " + bundlesDirectory);
 				transpiler.setBundlesDirectory(bundlesDirectory);
 				transpiler.setPreserveSourceLineNumbers(jsapArgs.getBoolean("sourceMap"));
+				if (sourceRootDir != null) {
+					transpiler.setSourceRoot(sourceRootDir);
+				}
 				transpiler.setModuleKind(ModuleKind.valueOf(jsapArgs.getString("module")));
 				transpiler.setEncoding(jsapArgs.getString("encoding"));
 				transpiler.setIgnoreAssertions(jsapArgs.getBoolean("ignoreAssertions"));
@@ -268,6 +276,15 @@ public class JSweetCommandLineLauncher {
 		optionArg.setLongFlag("candiesJsOut");
 		optionArg.setDefault("js/candies");
 		optionArg.setHelp("Specify where to place extracted JavaScript files from candies.");
+		optionArg.setStringParser(FileStringParser.getParser());
+		optionArg.setRequired(false);
+		jsap.registerParameter(optionArg);
+
+		// Source root directory for source maps
+		optionArg = new FlaggedOption("sourceRoot");
+		optionArg.setLongFlag("sourceRoot");
+		optionArg.setHelp(
+				"Specifies the location where debugger should locate Java files instead of source locations. Use this flag if the sources will be located at run-time in a different location than that at design-time. The location specified will be embedded in the sourceMap to direct the debugger where the source files will be located.");
 		optionArg.setStringParser(FileStringParser.getParser());
 		optionArg.setRequired(false);
 		jsap.registerParameter(optionArg);

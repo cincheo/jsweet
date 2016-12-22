@@ -22,19 +22,39 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.LinkedList;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jsweet.JSweetCommandLineLauncher;
 import org.jsweet.transpiler.JSweetTranspiler;
 import org.jsweet.transpiler.ModuleKind;
 import org.jsweet.transpiler.SourceFile;
+import org.jsweet.transpiler.SourcePosition;
 import org.jsweet.transpiler.util.ProcessUtil;
 import org.jsweet.transpiler.util.Util;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import source.blocksgame.Ball;
+import source.blocksgame.BlockElement;
+import source.blocksgame.Factory;
+import source.blocksgame.GameArea;
+import source.blocksgame.GameManager;
+import source.blocksgame.Globals;
+import source.blocksgame.Player;
+import source.blocksgame.util.AnimatedElement;
+import source.blocksgame.util.Collisions;
+import source.blocksgame.util.Direction;
+import source.blocksgame.util.Line;
+import source.blocksgame.util.MobileElement;
+import source.blocksgame.util.Point;
+import source.blocksgame.util.Rectangle;
+import source.blocksgame.util.Vector;
 import source.overload.Overload;
 import source.structural.AbstractClass;
+import source.transpiler.CanvasDrawing;
 
 public class TranspilerTests extends AbstractTest {
 
@@ -117,7 +137,7 @@ public class TranspilerTests extends AbstractTest {
 		ProcessUtil.uninstallNodePackage("typescript", true);
 		assertFalse(ProcessUtil.isInstalledWithNpm("tsc"));
 		globalSetUp();
-		//transpiler.cleanWorkingDirectory();
+		// transpiler.cleanWorkingDirectory();
 		transpile(ModuleKind.none, h -> h.assertReportedProblems(), getSourceFile(Overload.class));
 	}
 
@@ -127,7 +147,7 @@ public class TranspilerTests extends AbstractTest {
 
 		Process process = ProcessUtil.runCommand("java", line -> {
 			System.out.println(line);
-		} , null, "-cp", System.getProperty("java.class.path"), //
+		}, null, "-cp", System.getProperty("java.class.path"), //
 				JSweetCommandLineLauncher.class.getName(), //
 				"--tsout", outDir.getPath(), //
 				"--jsout", outDir.getPath(), //
@@ -143,6 +163,88 @@ public class TranspilerTests extends AbstractTest {
 		Util.addFiles(".js.map", outDir, files);
 		assertTrue(!files.isEmpty());
 
+	}
+
+	@Test
+	public void testSourceMapsSimple() throws Throwable {
+		boolean sourceMaps = transpiler.isPreserveSourceLineNumbers();
+		try {
+			transpiler.setPreserveSourceLineNumbers(true);
+			SourceFile[] sourceFiles = { getSourceFile(CanvasDrawing.class) };
+			transpile(ModuleKind.none, logHandler -> {
+
+				logger.info("transpilation finished: " + transpiler.getModuleKind());
+				logHandler.assertReportedProblems();
+				logger.info(sourceFiles[0].getSourceMap().toString());
+
+				assertEqualPositions(sourceFiles, sourceFiles[0], "angle += 0.05");
+				assertEqualPositions(sourceFiles, sourceFiles[0], "aTestVar");
+				assertEqualPositions(sourceFiles, sourceFiles[0], "for");
+
+				assertEqualPositions(sourceFiles, sourceFiles[0], "aTestParam1");
+				assertEqualPositions(sourceFiles, sourceFiles[0], "aTestParam2");
+
+				assertEqualPositions(sourceFiles, sourceFiles[0], "aTestString");
+				
+			}, Arrays.copyOf(sourceFiles, sourceFiles.length));
+		} finally {
+			transpiler.setPreserveSourceLineNumbers(sourceMaps);
+		}
+	}
+
+	@Test
+	public void testSourceMaps() throws Throwable {
+		boolean sourceMaps = transpiler.isPreserveSourceLineNumbers();
+		try {
+			transpiler.setPreserveSourceLineNumbers(true);
+			SourceFile[] sourceFiles = { getSourceFile(Point.class), getSourceFile(Vector.class), getSourceFile(AnimatedElement.class),
+					getSourceFile(Line.class), getSourceFile(MobileElement.class), getSourceFile(Rectangle.class), getSourceFile(Direction.class),
+					getSourceFile(Collisions.class), getSourceFile(Ball.class), getSourceFile(Globals.class), getSourceFile(BlockElement.class),
+					getSourceFile(Factory.class), getSourceFile(GameArea.class), getSourceFile(GameManager.class), getSourceFile(Player.class) };
+			transpile(logHandler -> {
+
+				logger.info("transpilation finished: " + transpiler.getModuleKind());
+				logHandler.assertReportedProblems();
+				logger.info(sourceFiles[11].getSourceMap().toString());
+
+				assertEqualPositions(sourceFiles, sourceFiles[0], " distance(");
+				assertEqualPositions(sourceFiles, sourceFiles[0], "class Point");
+				assertEqualPositions(sourceFiles, sourceFiles[3], "invalid query on non-vertical lines");
+
+				assertEqualPositions(sourceFiles, sourceFiles[11], "class InnerClass");
+				assertEqualPositions(sourceFiles, sourceFiles[11], "inner class");
+
+			}, Arrays.copyOf(sourceFiles, sourceFiles.length));
+		} finally {
+			transpiler.setPreserveSourceLineNumbers(sourceMaps);
+		}
+	}
+
+	private void assertEqualPositions(SourceFile[] sourceFiles, SourceFile sourceFile, String codeSnippet) {
+		assertEqualPositions(sourceFiles, sourceFile, codeSnippet, codeSnippet);
+	}
+
+	private void assertEqualPositions(SourceFile[] sourceFiles, SourceFile sourceFile, String javaCodeSnippet, String tsCodeSnippet) {
+		logger.info("assert equal positions for '" + javaCodeSnippet + "' -> '" + tsCodeSnippet + "'");
+		SourcePosition tsPosition = getPosition(sourceFile.getTsFile(), tsCodeSnippet);
+		SourcePosition javaPosition = SourceFile.findOriginPosition(tsPosition, Arrays.asList(sourceFiles));
+		logger.info("org: " + javaPosition + " --> " + tsPosition);
+		assertEquals(getPosition(sourceFile.getJavaFile(), javaCodeSnippet).getStartLine(), javaPosition.getStartLine());
+	}
+
+	private SourcePosition getPosition(File f, String codeSnippet) {
+		try {
+			String s1 = FileUtils.readFileToString(f);
+			int index = s1.indexOf(codeSnippet);
+			if (index == -1) {
+				System.out.println("DO NOT FIND: " + codeSnippet);
+				System.out.println(s1);
+			}
+			String s = s1.substring(0, index);
+			return new SourcePosition(f, null, StringUtils.countMatches(s, "\n") + 1, s.length() - s.lastIndexOf("\n") - 1);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 }

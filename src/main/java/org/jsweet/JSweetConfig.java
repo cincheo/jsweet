@@ -46,7 +46,7 @@ public abstract class JSweetConfig {
 	public static Properties APPLICATION_PROPERTIES = new Properties();
 
 	static {
-		try (InputStream in = JSweetConfig.class.getResourceAsStream("/application.properties")) {
+		try (InputStream in = JSweetConfig.class.getResourceAsStream("/jsweet-transpiler-application.properties")) {
 			APPLICATION_PROPERTIES.load(in);
 			in.close();
 		} catch (Exception e) {

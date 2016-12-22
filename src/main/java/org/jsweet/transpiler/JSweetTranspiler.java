@@ -22,16 +22,19 @@ import static org.jsweet.transpiler.util.Util.toJavaFileObjects;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Field;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -60,8 +63,18 @@ import org.jsweet.transpiler.util.ErrorCountTranspilationHandler;
 import org.jsweet.transpiler.util.EvaluationResult;
 import org.jsweet.transpiler.util.Position;
 import org.jsweet.transpiler.util.ProcessUtil;
+import org.jsweet.transpiler.util.SourceMap;
+import org.jsweet.transpiler.util.SourceMap.Entry;
 import org.jsweet.transpiler.util.Util;
 
+import com.google.debugging.sourcemap.FilePosition;
+import com.google.debugging.sourcemap.SourceMapConsumerFactory;
+import com.google.debugging.sourcemap.SourceMapFormat;
+import com.google.debugging.sourcemap.SourceMapGenerator;
+import com.google.debugging.sourcemap.SourceMapGeneratorFactory;
+import com.google.debugging.sourcemap.SourceMapGeneratorV3;
+import com.google.debugging.sourcemap.SourceMapping;
+import com.google.debugging.sourcemap.proto.Mapping.OriginalMapping;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.file.JavacFileManager;
 import com.sun.tools.javac.main.JavaCompiler;
@@ -135,7 +148,7 @@ public class JSweetTranspiler implements JSweetOptions {
 	private JavaCompiler compiler;
 	private Log log;
 	private CandiesProcessor candiesProcessor;
-	private boolean preserveSourceLineNumbers = false;
+	private boolean generateSourceMap = false;
 	private File workingDir;
 	private File tsOutputDir;
 	private File jsOutputDir;
@@ -159,6 +172,7 @@ public class JSweetTranspiler implements JSweetOptions {
 	private boolean supportSaticLazyInitialization = true;
 	private boolean generateDefinitions = false;
 	private ArrayList<File> jsLibFiles = new ArrayList<>();
+	private File sourceRoot = null;
 
 	@Override
 	public String toString() {
@@ -752,7 +766,7 @@ public class JSweetTranspiler implements JSweetOptions {
 				continue;
 			}
 			logger.info("scanning " + cu.sourcefile.getName() + "...");
-			AbstractTreePrinter printer = new Java2TypeScriptTranslator(transpilationHandler, context, cu, preserveSourceLineNumbers);
+			AbstractTreePrinter printer = new Java2TypeScriptTranslator(transpilationHandler, context, cu, generateSourceMap);
 			printer.print(cu);
 			if (StringUtils.isWhitespace(printer.getResult())) {
 				continue;
@@ -782,9 +796,38 @@ public class JSweetTranspiler implements JSweetOptions {
 			}
 			files[i].tsFile = outputFile;
 			files[i].javaFileLastTranspiled = files[i].getJavaFile().lastModified();
-			files[i].sourceMap = printer.sourceMap;
+			files[i].setSourceMap(printer.sourceMap);
+			if (generateSourceMap && !generateJsFiles) {
+				generateTypeScriptSourceMapFile(files[i]);
+			}
 			logger.info("created " + outputFilePath);
 		}
+	}
+
+	private void generateTypeScriptSourceMapFile(SourceFile sourceFile) throws IOException {
+		if (sourceFile.getSourceMap() == null) {
+			return;
+		}
+		SourceMapGenerator generator = SourceMapGeneratorFactory.getInstance(SourceMapFormat.V3);
+		String javaSourceFilePath = sourceFile.getTsFile().getAbsoluteFile().getCanonicalFile().getParentFile().toPath()
+				.relativize(sourceFile.getJavaFile().getAbsoluteFile().getCanonicalFile().toPath()).toString();
+		for (Entry entry : sourceFile.getSourceMap().getSortedEntries(new Comparator<SourceMap.Entry>() {
+			@Override
+			public int compare(Entry e1, Entry e2) {
+				return e1.getOutputPosition().compareTo(e2.getOutputPosition());
+			}
+		})) {
+			generator.addMapping(javaSourceFilePath, null, new FilePosition(entry.getInputPosition().getLine(), entry.getInputPosition().getColumn()),
+					new FilePosition(entry.getOutputPosition().getLine(), entry.getOutputPosition().getColumn()),
+					new FilePosition(entry.getOutputPosition().getLine(), entry.getOutputPosition().getColumn() + 1));
+		}
+		File outputFile = new File(sourceFile.getTsFile().getPath() + ".map");
+		try (FileWriter writer = new FileWriter(outputFile, false)) {
+			generator.appendTo(writer, sourceFile.getTsFile().getName());
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+
 	}
 
 	private boolean isModuleDefsFile(JCCompilationUnit cu) {
@@ -830,6 +873,18 @@ public class JSweetTranspiler implements JSweetOptions {
 		}
 	}
 
+	private void initSourceFileJavaPaths(SourceFile file, JCCompilationUnit cu) {
+		String[] s = cu.getSourceFile().getName().split(File.separator.equals("\\") ? "\\\\" : File.separator);
+		String cuName = s[s.length - 1];
+		s = cuName.split("\\.");
+		cuName = s[0];
+
+		String javaSourceFileRelativeFullName = (cu.packge.getQualifiedName().toString().replace(".", File.separator) + File.separator + cuName + ".java");
+		file.javaSourceDirRelativeFile = new File(javaSourceFileRelativeFullName);
+		file.javaSourceDir = new File(
+				cu.getSourceFile().getName().substring(0, cu.getSourceFile().getName().length() - javaSourceFileRelativeFullName.length()));
+	}
+
 	private void createBundle(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files, int[] permutation,
 			java.util.List<JCCompilationUnit> orderedCompilationUnits, boolean definitionBundle) throws FileNotFoundException {
 		context.bundleMode = true;
@@ -850,12 +905,15 @@ public class JSweetTranspiler implements JSweetOptions {
 				}
 			}
 			logger.info("scanning " + cu.sourcefile.getName() + "...");
-			AbstractTreePrinter printer = new Java2TypeScriptTranslator(transpilationHandler, context, cu, preserveSourceLineNumbers);
+			AbstractTreePrinter printer = new Java2TypeScriptTranslator(transpilationHandler, context, cu, generateSourceMap);
 			printer.print(cu);
-			files[permutation[i]].sourceMap = printer.sourceMap;
-			files[permutation[i]].sourceMap.shiftOutputPositions(lineCount);
+			printer.sourceMap.shiftOutputPositions(lineCount);
+			files[permutation[i]].setSourceMap(printer.sourceMap);
+
 			sb.append(printer.getOutput());
-			lineCount += printer.getCurrentLine();
+			lineCount += (printer.getCurrentLine() - 1);
+
+			initSourceFileJavaPaths(files[permutation[i]], cu);
 		}
 
 		context.bundleMode = false;
@@ -915,21 +973,6 @@ public class JSweetTranspiler implements JSweetOptions {
 		public String toString() {
 			return message + " - " + position;
 		}
-
-		public SourcePosition findOriginalPosition(Collection<SourceFile> sourceFiles) {
-			for (SourceFile sourceFile : sourceFiles) {
-				if (sourceFile.tsFile != null && sourceFile.tsFile.getAbsolutePath().endsWith(position.getFile().getPath())) {
-					if (sourceFile.sourceMap != null) {
-						Position inputPosition = sourceFile.sourceMap.findInputPosition(position.getStartLine(), position.getStartColumn());
-						if (inputPosition != null) {
-							return new SourcePosition(sourceFile.getJavaFile(), null, inputPosition);
-						}
-					}
-				}
-			}
-			return null;
-		}
-
 	}
 
 	private static Pattern errorRE = Pattern.compile("(.*)\\((.*)\\): error TS[0-9]+: (.*)");
@@ -1089,7 +1132,7 @@ public class JSweetTranspiler implements JSweetOptions {
 			logger.info(line);
 			TscOutput output = parseTscOutput(line);
 			if (output.position != null) {
-				SourcePosition position = output.findOriginalPosition(Arrays.asList(files));
+				SourcePosition position = SourceFile.findOriginPosition(output.position, Arrays.asList(files));
 				if (position == null) {
 					transpilationHandler.report(JSweetProblem.INTERNAL_TSC_ERROR, output.position, output.message);
 				} else {
@@ -1165,23 +1208,52 @@ public class JSweetTranspiler implements JSweetOptions {
 						handledFiles.add(outputFile);
 						logger.info("js output file: " + outputFile);
 						File mapFile = new File(outputFile.getAbsolutePath() + ".map");
-						if (mapFile.exists() && preserveSourceLineNumbers) {
+
+						if (mapFile.exists() && generateSourceMap) {
+
+							SourceMapGeneratorV3 generator = (SourceMapGeneratorV3) SourceMapGeneratorFactory.getInstance(SourceMapFormat.V3);
+							Path javaSourcePath = sourceFile.javaSourceDir.getCanonicalFile().toPath();
+							String sourceRoot = getSourceRoot() != null ? getSourceRoot().toString()
+									: sourceFile.getJsFile().getParentFile().getCanonicalFile().toPath().relativize(javaSourcePath) + "/";
+							generator.setSourceRoot(sourceRoot);
+
 							sourceFile.jsMapFile = mapFile;
 							logger.info("redirecting map file: " + mapFile);
-							String map = FileUtils.readFileToString(mapFile);
-							try {
-								if (sourceFile.javaSourceDir != null) {
-									map = StringUtils.replacePattern(map, "\"sourceRoot\":\"\"", "\"sourceRoot\":\"" + sourceFile.getJsFile().getParentFile()
-											.getCanonicalFile().toPath().relativize(sourceFile.javaSourceDir.getCanonicalFile().toPath()) + "/\"");
-									map = StringUtils.replacePattern(map, "\"sources\":\\[\".*\"\\]",
-											"\"sources\":\\[\"" + sourceFile.javaSourceDirRelativeFile.getPath() + "\"\\]");
+							String contents = FileUtils.readFileToString(mapFile);
+							SourceMapping mapping = SourceMapConsumerFactory.parse(contents);
+
+							int line = 1;
+							int columnIndex = 0;
+							for (String lineContent : FileUtils.readLines(outputFile, (Charset) null)) {
+								columnIndex = 0;
+								while (columnIndex < lineContent.length()
+										&& (lineContent.charAt(columnIndex) == ' ' || lineContent.charAt(columnIndex) == '\t')) {
+									columnIndex++;
 								}
-							} catch (Exception e) {
-								logger.warn("cannot resolve path to source file for .map", e);
+
+								OriginalMapping originalMapping = mapping.getMappingForLine(line, columnIndex + 1);
+								if (originalMapping != null) {
+									// TODO: this is quite slow and should be
+									// optimized
+									SourcePosition originPosition = SourceFile.findOriginPosition(new SourcePosition(sourceFile.tsFile, null,
+											new Position(originalMapping.getLineNumber(), originalMapping.getColumnPosition())), files);
+									if (originPosition != null) {
+										// as a first approximation, we only map
+										// line numbers (ignore columns)
+										generator.addMapping(javaSourcePath.relativize(originPosition.getFile().getCanonicalFile().toPath()).toString(), null,
+												new FilePosition(originPosition.getStartLine() - 1, 0), new FilePosition(line - 1, 0),
+												new FilePosition(line - 1, lineContent.length() - 1));
+									}
+								}
+
+								line++;
 							}
-							FileUtils.writeStringToFile(mapFile, map);
-							// mapFile.setLastModified(sourceFile)
-							sourceFile.jsFileLastTranspiled = outputFile.lastModified();
+
+							try (FileWriter writer = new FileWriter(mapFile, false)) {
+								generator.appendTo(writer, outputFile.getName());
+							} catch (Exception ex) {
+								ex.printStackTrace();
+							}
 						}
 					}
 				}
@@ -1200,7 +1272,7 @@ public class JSweetTranspiler implements JSweetOptions {
 	 */
 	@Override
 	public boolean isPreserveSourceLineNumbers() {
-		return preserveSourceLineNumbers;
+		return generateSourceMap;
 	}
 
 	/**
@@ -1209,7 +1281,7 @@ public class JSweetTranspiler implements JSweetOptions {
 	 * for Java debugging through js.map files).
 	 */
 	public void setPreserveSourceLineNumbers(boolean preserveSourceLineNumbers) {
-		this.preserveSourceLineNumbers = preserveSourceLineNumbers;
+		this.generateSourceMap = preserveSourceLineNumbers;
 	}
 
 	/*
@@ -1562,6 +1634,14 @@ public class JSweetTranspiler implements JSweetOptions {
 
 	public void setGenerateDefinitions(boolean generateDefinitions) {
 		this.generateDefinitions = generateDefinitions;
+	}
+
+	public File getSourceRoot() {
+		return sourceRoot;
+	}
+
+	public void setSourceRoot(File sourceRoot) {
+		this.sourceRoot = sourceRoot;
 	}
 
 }

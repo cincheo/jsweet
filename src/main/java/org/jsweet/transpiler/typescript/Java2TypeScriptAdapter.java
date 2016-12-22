@@ -362,7 +362,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				return true;
 			}
 			if (targetMethodName.equals("valueOf") && invocation.getArguments().size() == 1) {
-				getPrinter().print(fieldAccess.selected).print("[").print(invocation.getArguments().head).print("]");
+				getPrinter().print("<any>").print(fieldAccess.selected).print("[").print(invocation.getArguments().head).print("]");
 				return true;
 			}
 			if (targetMethodName.equals("values")) {
@@ -371,6 +371,13 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				return true;
 			}
 			// enum objets wrapping
+			if (fieldAccess != null && fieldAccess.sym instanceof MethodSymbol) {
+				if (((MethodSymbol) fieldAccess.sym).isStatic()) {
+					getPrinter().print(fieldAccess.selected).print(Java2TypeScriptTranslator.ENUM_WRAPPER_CLASS_SUFFIX + ".").print(fieldAccess.name.toString())
+							.print("(").printArgList(invocation.getArguments()).print(")");
+					return true;
+				}
+			}
 			getPrinter().print(relTarget).print("[\"" + Java2TypeScriptTranslator.ENUM_WRAPPER_CLASS_WRAPPERS + "\"][").print(fieldAccess.selected).print("].")
 					.print(fieldAccess.name.toString()).print("(").printArgList(invocation.getArguments()).print(")");
 			return true;
@@ -504,7 +511,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				}
 			}
 
-			if (fieldAccess != null && !fieldAccess.toString().equals(UTIL_CLASSNAME + "." + INDEXED_GET_FUCTION_NAME)) {
+			if (fieldAccess != null && !UTIL_CLASSNAME.equals(targetClassName)) {
 				getPrinter().print(fieldAccess.selected).print("[").print(invocation.args.head).print("]");
 			} else {
 				if (invocation.args.length() == 1) {
@@ -539,7 +546,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				}
 			}
 
-			if (fieldAccess != null && !fieldAccess.toString().equals(UTIL_CLASSNAME + "." + INDEXED_SET_FUCTION_NAME)) {
+			if (fieldAccess != null && !UTIL_CLASSNAME.equals(targetClassName)) {
 				// check the type through the getter
 				for (Symbol e : fieldAccess.selected.type.tsym.getEnclosedElements()) {
 					if (e instanceof MethodSymbol && INDEXED_GET_FUCTION_NAME.equals(e.getSimpleName().toString())) {
@@ -594,7 +601,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				}
 			}
 
-			if (fieldAccess != null && !fieldAccess.toString().equals(UTIL_CLASSNAME + "." + INDEXED_DELETE_FUCTION_NAME)) {
+			if (fieldAccess != null && !UTIL_CLASSNAME.equals(targetClassName)) {
 				getPrinter().print("delete ").print(fieldAccess.selected).print("[").print(invocation.args.head).print("]");
 			} else {
 				if (invocation.args.length() == 1) {
@@ -612,7 +619,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				return true;
 			}
 
-			if (fieldAccess != null && !fieldAccess.toString().equals(UTIL_CLASSNAME + "." + INDEXED_GET_FUCTION_NAME)) {
+			if (fieldAccess != null && !UTIL_CLASSNAME.equals(targetClassName)) {
 				getPrinter().print("delete ").print(fieldAccess.selected).print("[").print(invocation.args.head).print("]");
 			} else {
 				if (invocation.args.length() == 1) {

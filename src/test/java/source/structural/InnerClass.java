@@ -29,6 +29,7 @@ public class InnerClass {
 
 	public void m() {
 		new InnerClass.InnerClass2().m2();
+		new InnerClass2().m2();
 	}
 
 	static int i = 1;

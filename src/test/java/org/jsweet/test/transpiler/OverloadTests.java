@@ -30,6 +30,7 @@ import source.overload.ConstructorOverLoadWithArray;
 import source.overload.Overload;
 import source.overload.OverloadInInnerClass;
 import source.overload.OverloadWithEnums;
+import source.overload.OverloadWithInterfaces;
 import source.overload.OverloadWithStaticAndInstanceMethods;
 import source.overload.WrongOverload;
 import source.overload.WrongOverloadConstructorWithParamNameCollision;
@@ -217,6 +218,14 @@ public class OverloadTests extends AbstractTest {
 			logHandler.assertReportedProblems();
 			assertEquals("1,2,3,4", r.get("trace"));
 		}, getSourceFile(OverloadWithEnums.class));
+	}
+
+	@Test
+	public void testOverloadWithInterfaces() {
+		eval((logHandler, r) -> {
+			logHandler.assertReportedProblems();
+			assertEquals("1,2,3,3", r.get("trace"));
+		}, getSourceFile(OverloadWithInterfaces.class));
 	}
 	
 }
