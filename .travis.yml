@@ -5,8 +5,11 @@ sudo: false
 jdk:
   - oraclejdk8
 
+env:
+  - TEST_DIR=jsweet-transpiler
+
 script:
-  - mvn clean verify
+  - cd $TEST_DIR && mvn clean verify
 
 cache:
   directories:
