@@ -23,7 +23,7 @@ public class ExtendsObject extends Object {
 	
 }
 
-class ExtendObject2 extends jsweet.lang.Object {
+class ExtendObject2 extends def.js.Object {
 
 	public ExtendObject2() {
 	}

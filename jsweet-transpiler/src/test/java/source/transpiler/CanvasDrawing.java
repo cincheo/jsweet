@@ -1,15 +1,15 @@
 package source.transpiler;
 
-import static jsweet.dom.Globals.console;
-import static jsweet.dom.Globals.document;
-import static jsweet.dom.Globals.window;
+import static def.dom.Globals.console;
+import static def.dom.Globals.document;
+import static def.dom.Globals.window;
 import static jsweet.util.Globals.union;
 
-import jsweet.dom.CanvasRenderingContext2D;
-import jsweet.dom.Element;
-import jsweet.dom.HTMLCanvasElement;
-import jsweet.lang.Array;
-import jsweet.lang.Math;
+import def.dom.CanvasRenderingContext2D;
+import def.dom.Element;
+import def.dom.HTMLCanvasElement;
+import def.js.Array;
+import def.js.Math;
 import jsweet.util.StringTypes;
 
 public class CanvasDrawing {

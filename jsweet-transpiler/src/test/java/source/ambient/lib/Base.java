@@ -20,7 +20,7 @@ import jsweet.lang.Ambient;
 
 @Ambient
 //@Interface
-public class Base extends jsweet.lang.Object {
+public class Base extends def.js.Object {
 	public Base() {
 	}
 

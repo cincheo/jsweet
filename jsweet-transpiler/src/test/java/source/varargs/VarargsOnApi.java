@@ -20,10 +20,10 @@ import static jsweet.util.Globals.$export;
 
 public class VarargsOnApi {
 	public static void main(String[] args) {
-		Double d = jsweet.lang.Math.min(2d, 1d);
+		Double d = def.js.Math.min(2d, 1d);
 		$export("out", d);
 		
-		Double d2 = jsweet.lang.Math.max(new double[] { 2d, 1d });
+		Double d2 = def.js.Math.max(new double[] { 2d, 1d });
 		$export("d2", d2.toString());		
 	}
 }

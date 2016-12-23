@@ -20,7 +20,7 @@ import static jsweet.util.Globals.$export;
 import static jsweet.util.Globals.string;
 import static source.structural.Globals.toTitleCase;
 
-import jsweet.lang.RegExp;
+import def.js.RegExp;
 
 public class GlobalsAccess {
 

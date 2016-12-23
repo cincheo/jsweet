@@ -21,7 +21,7 @@ import static jsweet.util.Globals.$export;
 import java.util.function.BinaryOperator;
 import java.util.function.IntFunction;
 
-import jsweet.lang.Array;
+import def.js.Array;
 import jsweet.lang.Interface;
 import jsweet.lang.Optional;
 

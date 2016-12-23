@@ -16,8 +16,8 @@
  */
 package source.structural;
 
-import static jsweet.dom.Globals.*;
-import jsweet.dom.*;
+import static def.dom.Globals.*;
+import def.dom.*;
 
 public class NoWildcardsInImports {
 

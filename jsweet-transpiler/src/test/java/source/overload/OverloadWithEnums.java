@@ -2,7 +2,7 @@ package source.overload;
 
 import static jsweet.util.Globals.$export;
 
-import jsweet.lang.Array;
+import def.js.Array;
 
 enum MyEnum {
 	A, B

@@ -18,9 +18,9 @@ package source.typing;
 
 import static jsweet.util.StringTypes.pointerleave;
 
-import jsweet.dom.CanvasRenderingContext2D;
-import jsweet.dom.Element;
-import jsweet.dom.HTMLCanvasElement;
+import def.dom.CanvasRenderingContext2D;
+import def.dom.Element;
+import def.dom.HTMLCanvasElement;
 import jsweet.util.StringTypes;
 
 public class StringTypesUsage {

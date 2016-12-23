@@ -2,7 +2,7 @@ package source.enums;
 
 import static jsweet.util.Globals.$export;
 
-import jsweet.lang.Array;
+import def.js.Array;
 
 public class ComplexEnums {
 	static Array<String> trace = new Array<String>();

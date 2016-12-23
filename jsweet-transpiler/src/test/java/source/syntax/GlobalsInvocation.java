@@ -19,7 +19,7 @@ package source.syntax;
 import static jsweet.util.Globals.string;
 import static source.syntax.Globals.toTitleCase;
 
-import jsweet.lang.RegExp;
+import def.js.RegExp;
 
 public class GlobalsInvocation {
 
@@ -45,7 +45,7 @@ class Globals {
 	 */
 	public static String toTitleCase(String str) {
 		return string(str).replace(new RegExp("/\\w\\S*/g"), (tok, i) -> {
-			jsweet.lang.String txt = string(tok);
+			def.js.String txt = string(tok);
 			return string(txt.charAt(0)).toUpperCase() + string(txt.substr(1)).toLowerCase();
 		});
 	}

@@ -16,9 +16,9 @@
  */
 package source.tscomparison;
 
-import static jsweet.dom.Globals.document;
+import static def.dom.Globals.document;
 
-import jsweet.dom.Element;
+import def.dom.Element;
 
 public class ActualScoping {
 	public static void main(String[] args) {

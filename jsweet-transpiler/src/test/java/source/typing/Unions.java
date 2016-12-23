@@ -20,7 +20,7 @@ import static jsweet.util.Globals.$export;
 import static jsweet.util.Globals.function;
 import static jsweet.util.Globals.union;
 
-import jsweet.lang.Function;
+import def.js.Function;
 import jsweet.util.union.Union;
 import jsweet.util.union.Union4;
 

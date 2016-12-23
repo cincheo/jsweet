@@ -1,6 +1,6 @@
 package source.init;
 
-import jsweet.dom.Event;
+import def.dom.Event;
 import jsweet.lang.Interface;
 
 public class InterfaceWithSuperInterface {

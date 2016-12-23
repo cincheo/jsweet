@@ -19,7 +19,7 @@ package source.overload;
 import static jsweet.util.Globals.$export;
 import static jsweet.util.Globals.string;
 
-import jsweet.lang.Date;
+import def.js.Date;
 
 public class Overload {
 
@@ -59,7 +59,7 @@ public class Overload {
         if (!Overload.isDate(date)) {
             return "";
         }
-        jsweet.lang.String dateFormatted = string(format);
+        def.js.String dateFormatted = string(format);
 
         dateFormatted = string(dateFormatted.replace("yyyy", formatNumber(date.getFullYear(), 4)));
         dateFormatted = string(dateFormatted.replace("MM", formatNumber(date.getMonth() + 1, 2)));

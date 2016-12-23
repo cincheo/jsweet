@@ -2,7 +2,7 @@ package source.init;
 
 import static jsweet.util.Globals.$map;
 
-import jsweet.lang.Object;
+import def.js.Object;
 
 public class UntypedObjectWrongUses {
 

@@ -16,8 +16,8 @@
  */
 package source.api;
 
-import jsweet.lang.Array;
-import jsweet.lang.IArguments;
+import def.js.Array;
+import def.js.IArguments;
 import jsweet.util.Globals;
 
 public class ForeachIteration {

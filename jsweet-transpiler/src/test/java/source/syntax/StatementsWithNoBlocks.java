@@ -1,6 +1,6 @@
 package source.syntax;
 
-import static jsweet.dom.Globals.console;
+import static def.dom.Globals.console;
 
 public class StatementsWithNoBlocks {
 

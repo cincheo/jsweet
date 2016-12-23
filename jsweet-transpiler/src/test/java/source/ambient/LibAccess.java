@@ -42,7 +42,7 @@ public class LibAccess {
 // args
 @Ambient
 //@Interface
-class Base extends jsweet.lang.Object {
+class Base extends def.js.Object {
 	public Base() {
 	}
 

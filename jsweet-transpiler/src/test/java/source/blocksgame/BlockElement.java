@@ -16,11 +16,11 @@
  */
 package source.blocksgame;
 
-import static jsweet.dom.Globals.document;
+import static def.dom.Globals.document;
 import static jsweet.util.Globals.union;
 
-import jsweet.dom.CanvasRenderingContext2D;
-import jsweet.dom.HTMLImageElement;
+import def.dom.CanvasRenderingContext2D;
+import def.dom.HTMLImageElement;
 import source.blocksgame.util.AnimatedElement;
 import source.blocksgame.util.Collisions;
 import source.blocksgame.util.MobileElement;

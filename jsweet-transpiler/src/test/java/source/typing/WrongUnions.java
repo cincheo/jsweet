@@ -18,8 +18,8 @@ package source.typing;
 
 import static jsweet.util.Globals.union;
 
-import jsweet.lang.Date;
-import jsweet.lang.Function;
+import def.js.Date;
+import def.js.Function;
 import jsweet.util.union.Union;
 import jsweet.util.union.Union3;
 

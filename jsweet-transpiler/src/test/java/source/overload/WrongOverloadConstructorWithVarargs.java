@@ -4,7 +4,7 @@ import static jsweet.util.Globals.$export;
 
 import java.util.function.BinaryOperator;
 
-import jsweet.lang.Array;
+import def.js.Array;
 
 public class WrongOverloadConstructorWithVarargs<T> {
 

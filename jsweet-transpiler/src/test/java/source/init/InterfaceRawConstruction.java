@@ -18,7 +18,7 @@ package source.init;
 
 import jsweet.lang.Interface;
 
-public class InterfaceRawConstruction extends jsweet.lang.Object {
+public class InterfaceRawConstruction extends def.js.Object {
 
 	DataStruct6 d2 = new DataStruct6() {
 	};

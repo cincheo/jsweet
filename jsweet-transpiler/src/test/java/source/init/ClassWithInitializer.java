@@ -27,7 +27,7 @@ class DataStruct12 {
 	}
 }
 
-public class ClassWithInitializer extends jsweet.lang.Object {
+public class ClassWithInitializer extends def.js.Object {
 
 	DataStruct10 d3 = new DataStruct10() {
 		{

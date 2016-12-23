@@ -16,7 +16,7 @@
  */
 package source.blocksgame.util;
 
-import jsweet.lang.Math;
+import def.js.Math;
 
 public class Point {
 	public double x;

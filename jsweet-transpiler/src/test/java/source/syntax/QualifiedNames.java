@@ -18,15 +18,15 @@ package source.syntax;
 
 public class QualifiedNames {
 
-	jsweet.lang.Function func = null;
+	def.js.Function func = null;
 
-	jsweet.dom.Element element = null;
+	def.dom.Element element = null;
 
-	jsweet.lang.Array<jsweet.lang.Object> array = null;
+	def.js.Array<def.js.Object> array = null;
 	
 	public static void main(String[] args) {
-		jsweet.lang.Math.min(1, 2);	
-		new jsweet.dom.Element();
+		def.js.Math.min(1, 2);	
+		new def.dom.Element();
 	}
 	
 	// TODO

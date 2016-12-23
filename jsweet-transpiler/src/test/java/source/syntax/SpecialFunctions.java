@@ -37,13 +37,13 @@ public class SpecialFunctions {
 }
 
 @jsweet.lang.Interface
-abstract class ApplyI1 extends jsweet.lang.Object {
+abstract class ApplyI1 extends def.js.Object {
 	abstract public String apply();
 
 	abstract public ApplyI1 apply(String a);
 }
 
 @jsweet.lang.Interface
-abstract class ConstrI1 extends jsweet.lang.Object {
+abstract class ConstrI1 extends def.js.Object {
 	abstract public ConstrI1 $new(String a);
 }

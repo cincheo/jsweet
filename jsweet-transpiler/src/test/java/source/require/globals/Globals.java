@@ -16,9 +16,9 @@
  */
 package source.require.globals;
 
-import static jsweet.dom.Globals.window;
+import static def.dom.Globals.window;
 
-import jsweet.dom.Event;
+import def.dom.Event;
 
 public class Globals {
 

@@ -16,10 +16,10 @@
  */
 package source.typing;
 
-import static jsweet.dom.Globals.document;
+import static def.dom.Globals.document;
 import static jsweet.util.StringTypes.div;
 
-import jsweet.dom.HTMLDivElement;
+import def.dom.HTMLDivElement;
 
 public class InvalidIndexedAccesses {
 

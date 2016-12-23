@@ -11,7 +11,7 @@ public class GlobalsAccess {
 		globalFunction(s);
 	}
 
-	public static jsweet.lang.Object getJsMapConstructor() {
+	public static def.js.Object getJsMapConstructor() {
 		return Map;
 	};
 

@@ -4,8 +4,8 @@ import java.util.function.Consumer;
 
 import def.es6_promise.Promise;
 import def.es6_promise.Promise.CallbackBiConsumer;
-import jsweet.dom.Event;
-import jsweet.dom.XMLHttpRequest;
+import def.dom.Event;
+import def.dom.XMLHttpRequest;
 
 public class AddThisOnGenericMethods<T> {
 

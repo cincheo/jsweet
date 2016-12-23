@@ -19,11 +19,11 @@ package source.structural;
 import static jsweet.util.Globals.$export;
 import static jsweet.util.Globals.$get;
 
-import jsweet.lang.Array;
+import def.js.Array;
 import jsweet.lang.Interface;
-import jsweet.lang.JSON;
+import def.js.JSON;
 
-class AloneInTheDarkClass extends jsweet.lang.Object {
+class AloneInTheDarkClass extends def.js.Object {
 	public AloneInTheDarkClass() {
 		// super() call shouldn't be generated
 		int i = 5;

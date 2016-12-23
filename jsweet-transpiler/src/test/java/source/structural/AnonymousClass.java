@@ -18,7 +18,7 @@ package source.structural;
 
 import static jsweet.util.Globals.$export;
 
-import jsweet.lang.Array;
+import def.js.Array;
 
 class AClass<T> {
 	String s;

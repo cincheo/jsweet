@@ -16,7 +16,7 @@
  */
 package source.structural;
 
-import jsweet.lang.Array;
+import def.js.Array;
 
 public class Name {
 

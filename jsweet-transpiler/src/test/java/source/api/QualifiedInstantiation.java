@@ -20,12 +20,12 @@ public class QualifiedInstantiation {
 
 	@SuppressWarnings("unused")
 	public static void main(String[] args) {
-		jsweet.lang.Array<String> array = new jsweet.lang.Array<String>();
-		jsweet.lang.Array<jsweet.lang.String> array2 = new jsweet.lang.Array<jsweet.lang.String>();
-		jsweet.lang.String string = new jsweet.lang.String("1");
-		jsweet.lang.Number number = new jsweet.lang.Number("3.0");
-		jsweet.lang.Date date = new jsweet.lang.Date("2015-05-01");
-		jsweet.lang.Error error = new jsweet.lang.Error("bloody error");
-		jsweet.lang.RegExp regex = new jsweet.lang.RegExp("\\d", "g");
+		def.js.Array<String> array = new def.js.Array<String>();
+		def.js.Array<def.js.String> array2 = new def.js.Array<def.js.String>();
+		def.js.String string = new def.js.String("1");
+		def.js.Number number = new def.js.Number("3.0");
+		def.js.Date date = new def.js.Date("2015-05-01");
+		def.js.Error error = new def.js.Error("bloody error");
+		def.js.RegExp regex = new def.js.RegExp("\\d", "g");
 	}
 }

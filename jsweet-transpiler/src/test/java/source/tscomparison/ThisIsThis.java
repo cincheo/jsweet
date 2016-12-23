@@ -16,7 +16,7 @@
  */
 package source.tscomparison;
 
-import static jsweet.dom.Globals.console;
+import static def.dom.Globals.console;
 
 public class ThisIsThis {
 	public static void main(String[] args) {

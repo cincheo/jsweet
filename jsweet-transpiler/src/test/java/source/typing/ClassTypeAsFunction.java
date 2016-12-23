@@ -18,20 +18,20 @@ package source.typing;
 
 import static jsweet.util.Globals.function;
 
-import jsweet.lang.Function;
+import def.js.Function;
 
 public class ClassTypeAsFunction {
 
 	Function field = function(ClassTypeAsFunction.class);
 	
 	void m2() {
-		jsweet.lang.Function func = function(ClassTypeAsFunction.class);
+		def.js.Function func = function(ClassTypeAsFunction.class);
 		m1(func);
 	}
 	
 	void m1(Function param) {
 		@SuppressWarnings("unused")
-		jsweet.lang.Function func = function(ClassTypeAsFunction.class);
+		def.js.Function func = function(ClassTypeAsFunction.class);
 	}
 
 	Function m3() {

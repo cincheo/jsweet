@@ -20,8 +20,8 @@ import static jsweet.util.Globals.array;
 import static jsweet.util.Globals.bool;
 import static jsweet.util.Globals.object;
 
-import jsweet.lang.Boolean;
-import jsweet.lang.Number;
+import def.js.Boolean;
+import def.js.Number;
 import jsweet.util.Globals;
 
 public class CastMethods {
