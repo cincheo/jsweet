@@ -24,7 +24,7 @@ import java.util.function.Consumer;
 
 import def.angularjs.ng.route.IRoute;
 import def.angularjs.ng.route.IRouteProvider;
-import jsweet.lang.Array;
+import def.js.Array;
 
 public class Angular {
 
