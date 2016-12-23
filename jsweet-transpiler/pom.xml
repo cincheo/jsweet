@@ -216,18 +216,26 @@
 		</dependency>
 		<!-- Test-only dependencies for testing candies -->
 		<dependency>
-			<groupId>org.jsweet.candies</groupId>
+			<groupId>org.jsweet</groupId>
 			<artifactId>jsweet-core</artifactId>
 			<version>5-SNAPSHOT</version>
 			<scope>test</scope>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
-			<groupId>org.jsweet.candies</groupId>
+			<groupId>org.jsweet.candies.trusted</groupId>
 			<artifactId>es6-promise</artifactId>
 			<version>0.0.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
+			<groupId>org.jsweet</groupId>
+			<artifactId>j4ts</artifactId>
+			<version>0.4.0-SNAPSHOT</version>
+			<scope>test</scope>
+			<optional>true</optional>
+		</dependency>
+		
+<!-- 		<dependency>
 			<groupId>org.jsweet.candies</groupId>
 			<artifactId>body-parser</artifactId>
 			<version>0.0.0-SNAPSHOT</version>
@@ -299,14 +307,14 @@
 		</dependency>
 		<dependency>
 			<groupId>org.jsweet.candies</groupId>
-			<artifactId>threejs--three</artifactId>
+			<artifactId>threejs-three</artifactId>
 			<version>0.0.0-SNAPSHOT</version>
 			<scope>test</scope>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.jsweet.candies</groupId>
-			<artifactId>babylonjs--babylon</artifactId>
+			<artifactId>babylonjs-babylon</artifactId>
 			<version>2.3.0-SNAPSHOT</version>
 			<scope>test</scope>
 			<optional>true</optional>
@@ -317,7 +325,7 @@
 			<version>0.14.0-SNAPSHOT</version>
 			<scope>test</scope>
 			<optional>true</optional>
-		</dependency>
+		</dependency> -->
 
 	</dependencies>
 	<organization>

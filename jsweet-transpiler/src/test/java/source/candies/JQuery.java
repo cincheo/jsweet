@@ -16,12 +16,12 @@
  */
 package source.candies;
 
-import static def.jquery.Globals.$;
+//import static def.jquery.Globals.$;
 
 public class JQuery {
 
-	public static void main(String[] args) {
-		$("p").append(" (end)");	
-	}
+//	public static void main(String[] args) {
+//		$("p").append(" (end)");	
+//	}
 
 }

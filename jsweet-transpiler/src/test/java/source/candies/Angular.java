@@ -16,47 +16,47 @@
  */
 package source.candies;
 
-import static def.angularjs.Globals.angular;
-import static jsweet.util.Globals.array;
-import static jsweet.util.Globals.union;
-
-import java.util.function.Consumer;
-
-import def.angularjs.ng.route.IRoute;
-import def.angularjs.ng.route.IRouteProvider;
-import def.js.Array;
+//import static def.angularjs.Globals.angular;
+//import static jsweet.util.Globals.array;
+//import static jsweet.util.Globals.union;
+//
+//import java.util.function.Consumer;
+//
+//import def.angularjs.ng.route.IRoute;
+//import def.angularjs.ng.route.IRouteProvider;
+//import def.js.Array;
 
 public class Angular {
 
-	public static void main(String[] args) {
-
-		Array<String> modules = new Array<>("app.controllers", "app.directives", "app.filters", "app.services", "Model");
-		modules.forEach(module -> angular.module(module, new String[0]));
-		modules.push("ngRoute");
-		modules.push("ngAnimate");
-		modules.push("ngMaterial");
-		modules.push("socket-io");
-
-		angular.module("app", array(modules));
-
-		// ROUTING
-		angular.module("app").config(new Object[] { "$routeProvider", (Consumer<IRouteProvider>) (IRouteProvider $routeProvider) -> {
-			$routeProvider.when("/", new IRoute() {
-				{
-					templateUrl = union("../views/login.html");
-					controller = union("app.controllers.LoginController as ctrl");
-				}
-			}).when("/chatroom", new IRoute() {
-				{
-					templateUrl = union("../views/chatroom.html");
-					controller = union("app.controllers.ChatController as ctrl");
-				}
-			}).otherwise(new IRoute() {
-				{
-					redirectTo = union("/");
-				}
-			});
-		} });
-	}
+//	public static void main(String[] args) {
+//
+//		Array<String> modules = new Array<>("app.controllers", "app.directives", "app.filters", "app.services", "Model");
+//		modules.forEach(module -> angular.module(module, new String[0]));
+//		modules.push("ngRoute");
+//		modules.push("ngAnimate");
+//		modules.push("ngMaterial");
+//		modules.push("socket-io");
+//
+//		angular.module("app", array(modules));
+//
+//		// ROUTING
+//		angular.module("app").config(new Object[] { "$routeProvider", (Consumer<IRouteProvider>) (IRouteProvider $routeProvider) -> {
+//			$routeProvider.when("/", new IRoute() {
+//				{
+//					templateUrl = union("../views/login.html");
+//					controller = union("app.controllers.LoginController as ctrl");
+//				}
+//			}).when("/chatroom", new IRoute() {
+//				{
+//					templateUrl = union("../views/chatroom.html");
+//					controller = union("app.controllers.ChatController as ctrl");
+//				}
+//			}).otherwise(new IRoute() {
+//				{
+//					redirectTo = union("/");
+//				}
+//			});
+//		} });
+//	}
 
 }

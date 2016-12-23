@@ -16,40 +16,40 @@
  */
 package source.candies;
 
-import static def.body_parser.body_parser.Globals.json;
-import static def.body_parser.body_parser.Globals.urlencoded;
-import static def.express.Globals.express;
-import static def.express.express.Globals.Static;
-import static def.node.Globals.__dirname;
-import static jsweet.util.Globals.string;
-
-import def.body_parser.body_parser.OptionsDto;
-import def.express.express.RequestHandler;
-import def.express_serve_static_core.express_serve_static_core.Express;
+//import static def.body_parser.body_parser.Globals.json;
+//import static def.body_parser.body_parser.Globals.urlencoded;
+//import static def.express.Globals.express;
+//import static def.express.express.Globals.Static;
+//import static def.node.Globals.__dirname;
+//import static jsweet.util.Globals.string;
+//
+//import def.body_parser.body_parser.OptionsDto;
+//import def.express.express.RequestHandler;
+//import def.express_serve_static_core.express_serve_static_core.Express;
 
 public class ExpressLib {
 
-	public static void main(String[] args) {
-
-		Express app = express();
-
-		// Configuration
-		app.set("views", __dirname);
-		app.set("view engine", "jade");
-		app.use(urlencoded(new OptionsDto() {
-			{
-				extended = true;
-			}
-		}));
-		app.use(json());
-		app.use("/", // the URL throught which you want to access to you static
-						// content
-				(RequestHandler) Static(string(__dirname)) // where your static
-															// content is
-															// located
-		// in your filesystem
-		);
-		
-	}
+//	public static void main(String[] args) {
+//
+//		Express app = express();
+//
+//		// Configuration
+//		app.set("views", __dirname);
+//		app.set("view engine", "jade");
+//		app.use(urlencoded(new OptionsDto() {
+//			{
+//				extended = true;
+//			}
+//		}));
+//		app.use(json());
+//		app.use("/", // the URL throught which you want to access to you static
+//						// content
+//				(RequestHandler) Static(string(__dirname)) // where your static
+//															// content is
+//															// located
+//		// in your filesystem
+//		);
+//		
+//	}
 
 }
