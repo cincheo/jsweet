@@ -161,7 +161,7 @@ public class ApiTests extends AbstractTest {
 
 	@Test
 	public void testExpressionBuilder() {
-		transpiler.addJsLibFiles(new File(JSweetTranspiler.TMP_WORKING_DIR_NAME + "/candies/js/j4ts-0.1.0/bundle.js"));
+		transpiler.addJsLibFiles(new File(JSweetTranspiler.TMP_WORKING_DIR_NAME + "/candies/js/j4ts-0.4.0/bundle.js"));
 		try {
 			eval(ModuleKind.none, (logHandler, r) -> {
 				logHandler.assertReportedProblems();

@@ -122,9 +122,7 @@ public class CandiesTests extends AbstractTest {
 
 	@Test
 	public void testMixins() {
-		transpile(logHandler -> {
-			logHandler.assertReportedProblems();
-		}, getJSweetSourceFile("source.candies.Mixins"));
+		// TODO
 	}
 
 }

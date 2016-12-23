@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.jsweet.transpiler.ModuleKind;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import source.blocksgame.Ball;
@@ -52,6 +53,8 @@ import source.require.b.GlobalsImport;
 
 public class RequireTests extends AbstractTest {
 
+	// TODO: reactivate when candies are back
+	@Ignore
 	@Test
 	public void testClassImportImplicitRequire() {
 		transpile(ModuleKind.none, (logHandler) -> {
