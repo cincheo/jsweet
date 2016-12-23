@@ -1,0 +1,67 @@
+package def.dom;
+@jsweet.lang.Extends({XMLHttpRequestEventTarget.class})
+public class XMLHttpRequest extends EventTarget {
+    public String msCaching;
+    public java.util.function.Function<ProgressEvent,Object> onreadystatechange;
+    public double readyState;
+    public Object response;
+    public Object responseBody;
+    public String responseText;
+    public String responseType;
+    public Object responseXML;
+    public double status;
+    public String statusText;
+    public double timeout;
+    public XMLHttpRequestUpload upload;
+    public Boolean withCredentials;
+    native public void abort();
+    native public String getAllResponseHeaders();
+    native public String getResponseHeader(String header);
+    native public Boolean msCachingEnabled();
+    native public void open(String method, String url, Boolean async, String user, String password);
+    native public void overrideMimeType(String mime);
+    native public void send(Document data);
+    native public void send(String data);
+    native public void send(Object data);
+    native public void setRequestHeader(String header, String value);
+    public double DONE;
+    public double HEADERS_RECEIVED;
+    public double LOADING;
+    public double OPENED;
+    public double UNSENT;
+    native public void addEventListener(jsweet.util.StringTypes.readystatechange type, java.util.function.Function<ProgressEvent,Object> listener, Boolean useCapture);
+    public static XMLHttpRequest prototype;
+    public XMLHttpRequest(){}
+    native public static XMLHttpRequest create();
+    public java.util.function.Function<Event,Object> onabort;
+    public java.util.function.Function<Event,Object> onerror;
+    public java.util.function.Function<Event,Object> onload;
+    public java.util.function.Function<ProgressEvent,Object> onloadend;
+    public java.util.function.Function<Event,Object> onloadstart;
+    public java.util.function.Function<ProgressEvent,Object> onprogress;
+    public java.util.function.Function<ProgressEvent,Object> ontimeout;
+    native public void addEventListener(jsweet.util.StringTypes.abort type, java.util.function.Function<Event,Object> listener, Boolean useCapture);
+    native public void addEventListener(jsweet.util.StringTypes.error type, java.util.function.Function<ErrorEvent,Object> listener, Boolean useCapture);
+    native public void addEventListener(jsweet.util.StringTypes.load type, java.util.function.Function<Event,Object> listener, Boolean useCapture);
+    native public void addEventListener(jsweet.util.StringTypes.loadend type, java.util.function.Function<ProgressEvent,Object> listener, Boolean useCapture);
+    native public void addEventListener(jsweet.util.StringTypes.loadstart type, java.util.function.Function<Event,Object> listener, Boolean useCapture);
+    native public void addEventListener(jsweet.util.StringTypes.progress type, java.util.function.Function<ProgressEvent,Object> listener, Boolean useCapture);
+    native public void addEventListener(jsweet.util.StringTypes.timeout type, java.util.function.Function<ProgressEvent,Object> listener, Boolean useCapture);
+    native public void addEventListener(String type, EventListener listener, Boolean useCapture);
+    native public void open(String method, String url, Boolean async, String user);
+    native public void open(String method, String url, Boolean async);
+    native public void open(String method, String url);
+    native public void send();
+    native public void addEventListener(jsweet.util.StringTypes.abort type, java.util.function.Function<Event,Object> listener);
+    native public void addEventListener(jsweet.util.StringTypes.error type, java.util.function.Function<ErrorEvent,Object> listener);
+    native public void addEventListener(jsweet.util.StringTypes.load type, java.util.function.Function<Event,Object> listener);
+    native public void addEventListener(jsweet.util.StringTypes.loadend type, java.util.function.Function<ProgressEvent,Object> listener);
+    native public void addEventListener(jsweet.util.StringTypes.loadstart type, java.util.function.Function<Event,Object> listener);
+    native public void addEventListener(jsweet.util.StringTypes.progress type, java.util.function.Function<ProgressEvent,Object> listener);
+    native public void addEventListener(jsweet.util.StringTypes.readystatechange type, java.util.function.Function<ProgressEvent,Object> listener);
+    native public void addEventListener(jsweet.util.StringTypes.timeout type, java.util.function.Function<ProgressEvent,Object> listener);
+    native public void addEventListener(String type, EventListener listener);
+    native public void addEventListener(String type, EventListenerObject listener, Boolean useCapture);
+    native public void addEventListener(String type, EventListenerObject listener);
+}
+

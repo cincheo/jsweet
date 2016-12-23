@@ -20,7 +20,7 @@ import static jsweet.util.Globals.$export;
 import static jsweet.util.Globals.$get;
 import static jsweet.util.Globals.$set;
 
-import jsweet.lang.Date;
+import def.js.Date;
 import jsweet.lang.Interface;
 
 public class ValidIndexedAccesses {
@@ -73,7 +73,7 @@ public class ValidIndexedAccesses {
 
 	public static void main(String[] args) {
 
-		jsweet.lang.Object validAccesses = new jsweet.lang.Object() {
+		def.js.Object validAccesses = new def.js.Object() {
 			{
 				$set("field1", "value");
 				$set("field2", "to be deleted");
@@ -98,7 +98,7 @@ public class ValidIndexedAccesses {
 	}
 }
 
-class ValidIndexedAccesses2 extends jsweet.lang.Object {
+class ValidIndexedAccesses2 extends def.js.Object {
 
 	{
 		$get("a");

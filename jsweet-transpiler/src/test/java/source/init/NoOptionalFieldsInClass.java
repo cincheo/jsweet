@@ -18,7 +18,7 @@ package source.init;
 
 import jsweet.lang.Optional;
 
-public class NoOptionalFieldsInClass extends jsweet.lang.Object {
+public class NoOptionalFieldsInClass extends def.js.Object {
 
 	DataStruct3 d = new DataStruct3() {
 		{

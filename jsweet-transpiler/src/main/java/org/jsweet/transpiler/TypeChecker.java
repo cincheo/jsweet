@@ -198,7 +198,7 @@ public class TypeChecker {
 				return false;
 			}
 		} else {
-			if((JSweetConfig.LANG_PACKAGE+".Function").equals(union.args.head.type.toString())) {
+			if((JSweetConfig.LANG_PACKAGE_ALT+".Function").equals(union.args.head.type.toString())) {
 				// type checking is ignored here!
 				// TODO: test betters (see Backbone test)
 				return true;

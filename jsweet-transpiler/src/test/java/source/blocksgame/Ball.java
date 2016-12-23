@@ -18,8 +18,8 @@ package source.blocksgame;
 
 import static jsweet.util.Globals.union;
 
-import jsweet.dom.CanvasRenderingContext2D;
-import jsweet.lang.Math;
+import def.dom.CanvasRenderingContext2D;
+import def.js.Math;
 import source.blocksgame.util.MobileElement;
 import source.blocksgame.util.Point;
 import source.blocksgame.util.Vector;

@@ -20,8 +20,8 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
-import jsweet.lang.RangeError;
-import jsweet.lang.TypeError;
+import def.js.RangeError;
+import def.js.TypeError;
 
 public class InvalidTryCatchTest {
 

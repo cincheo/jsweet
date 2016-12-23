@@ -146,20 +146,22 @@ public abstract class JSweetConfig {
 	 */
 	public static String MAVEN_JAVA_OVERRIDE_ARTIFACT = "jsweet-core-strict";
 
-	private final static String JAVA_PACKAGE = "java";
-	private final static String JAVAX_PACKAGE = "javax";
-	private final static String ROOT_PACKAGE = "jsweet";
-	/** The constant for the JSweet lang package. */
-	public final static String LANG_PACKAGE = ROOT_PACKAGE + ".lang";
-	/** The constant for the JSweet util package. */
-	public final static String UTIL_PACKAGE = ROOT_PACKAGE + ".util";
-	/** The constant for the JSweet dom package. */
-	public final static String DOM_PACKAGE = ROOT_PACKAGE + ".dom";
 	/**
 	 * The constant for the JSweet lib package (where the definitions need to
 	 * be).
 	 */
 	public final static String LIBS_PACKAGE = "def";
+	private final static String JAVA_PACKAGE = "java";
+	private final static String JAVAX_PACKAGE = "javax";
+	private final static String ROOT_PACKAGE = "jsweet";
+	/** The constant for the JSweet lang package. */
+	public final static String LANG_PACKAGE = ROOT_PACKAGE + ".lang";
+	/** The constant for the JSweet lang package. */
+	public final static String LANG_PACKAGE_ALT = LIBS_PACKAGE + ".js";
+	/** The constant for the JSweet util package. */
+	public final static String UTIL_PACKAGE = ROOT_PACKAGE + ".util";
+	/** The constant for the JSweet dom package. */
+	public final static String DOM_PACKAGE = LIBS_PACKAGE + ".dom";
 	/**
 	 * The constant for the package generates top-level classes (one cannot use
 	 * unnamed package in Java).
@@ -218,7 +220,7 @@ public abstract class JSweetConfig {
 	 */
 	public static final String MODULE_FILE_NAME = "module";
 
-	public static final String OBJECT_CLASSNAME = JSweetConfig.LANG_PACKAGE + ".Object";
+	public static final String OBJECT_CLASSNAME = JSweetConfig.LANG_PACKAGE_ALT + ".Object";
 
 	public static final String ANNOTATION_DISABLED = JSweetConfig.LANG_PACKAGE + ".Disabled";
 	public static final String ANNOTATION_ERASED = JSweetConfig.LANG_PACKAGE + ".Erased";
@@ -350,13 +352,6 @@ public abstract class JSweetConfig {
 	}
 
 	/**
-	 * Gets the JSweet object's fully qualified name.
-	 */
-	public static String getObjectClassName() {
-		return LANG_PACKAGE + ".Object";
-	}
-
-	/**
 	 * Tells if this qualified name belongs to the JDK (starts with
 	 * {@value #JAVA_PACKAGE} or {@value #JAVAX_PACKAGE}).
 	 */
@@ -373,11 +368,11 @@ public abstract class JSweetConfig {
 	}
 
 	/**
-	 * Tells if this qualified name belongs to one of the JSweet core package
-	 * (starts with {@value #ROOT_PACKAGE}).
+	 * Tells if this qualified name belongs to one of the JSweet core package.
 	 */
 	public static boolean isJSweetPath(String qualifiedName) {
-		return qualifiedName.startsWith(ROOT_PACKAGE + ".");
+		return qualifiedName.startsWith(ROOT_PACKAGE + ".") || qualifiedName.startsWith(LANG_PACKAGE_ALT + ".")
+				|| qualifiedName.startsWith(DOM_PACKAGE + ".");
 	}
 
 }

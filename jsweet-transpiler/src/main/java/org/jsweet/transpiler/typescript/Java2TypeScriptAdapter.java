@@ -30,6 +30,7 @@ import static org.jsweet.JSweetConfig.INDEXED_GET_STATIC_FUCTION_NAME;
 import static org.jsweet.JSweetConfig.INDEXED_SET_FUCTION_NAME;
 import static org.jsweet.JSweetConfig.INDEXED_SET_STATIC_FUCTION_NAME;
 import static org.jsweet.JSweetConfig.LANG_PACKAGE;
+import static org.jsweet.JSweetConfig.LANG_PACKAGE_ALT;
 import static org.jsweet.JSweetConfig.TUPLE_CLASSES_PACKAGE;
 import static org.jsweet.JSweetConfig.UNION_CLASS_NAME;
 import static org.jsweet.JSweetConfig.UTIL_CLASSNAME;
@@ -176,6 +177,10 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		typesMapping.put(LANG_PACKAGE + ".Boolean", "boolean");
 		typesMapping.put(LANG_PACKAGE + ".String", "string");
 		typesMapping.put(LANG_PACKAGE + ".Number", "number");
+		typesMapping.put(LANG_PACKAGE_ALT + ".Object", "Object");
+		typesMapping.put(LANG_PACKAGE_ALT + ".Boolean", "boolean");
+		typesMapping.put(LANG_PACKAGE_ALT + ".String", "string");
+		typesMapping.put(LANG_PACKAGE_ALT + ".Number", "number");
 
 		langTypesMapping.put("java.lang.Object", "Object");
 		langTypesMapping.put("java.lang.String", "String");
@@ -207,8 +212,9 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 
 	@Override
 	public String needsImport(JCImport importDecl, String qualifiedName) {
-		if (isJSweetPath(qualifiedName) || typesMapping.containsKey(qualifiedName) || langTypesMapping.containsKey(qualifiedName)
-				|| qualifiedName.startsWith("java.util.function.") || (isJDKPath(qualifiedName) && !getPrinter().getContext().options.isJDKAllowed())
+		if (isJSweetPath(qualifiedName) || typesMapping.containsKey(qualifiedName)
+				|| langTypesMapping.containsKey(qualifiedName) || qualifiedName.startsWith("java.util.function.")
+				|| (isJDKPath(qualifiedName) && !getPrinter().getContext().options.isJDKAllowed())
 				|| qualifiedName.endsWith(GLOBALS_PACKAGE_NAME + "." + GLOBALS_CLASS_NAME)) {
 			return null;
 		}
@@ -228,14 +234,16 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				case "java.lang.Math":
 					return null;
 				}
-				String name = getPrinter().getRootRelativeName(fa.selected.type.tsym, getPrinter().getContext().useModules);
+				String name = getPrinter().getRootRelativeName(fa.selected.type.tsym,
+						getPrinter().getContext().useModules);
 				String methodName = fa.name.toString();
 
 				// function is a top-level global function (no need to import)
 				if (GLOBALS_CLASS_NAME.equals(name)) {
 					return null;
 				}
-				if (!getPrinter().getContext().useModules && name.endsWith(GLOBALS_PACKAGE_NAME + "." + GLOBALS_CLASS_NAME)) {
+				if (!getPrinter().getContext().useModules
+						&& name.endsWith(GLOBALS_PACKAGE_NAME + "." + GLOBALS_CLASS_NAME)) {
 					return null;
 				}
 
@@ -250,7 +258,8 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				}
 				// function belong to the current package (no need to
 				// import)
-				String current = getPrinter().getRootRelativeName(getPrinter().getCompilationUnit().packge, getPrinter().getContext().useModules);
+				String current = getPrinter().getRootRelativeName(getPrinter().getCompilationUnit().packge,
+						getPrinter().getContext().useModules);
 				if (getPrinter().getContext().useModules) {
 					if (current.equals(name)) {
 						return null;
@@ -266,7 +275,8 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					nameSymbol = Util.findFirstDeclarationInType(t, methodName);
 				}
 
-				return StringUtils.isBlank(name) ? null : name + "." + (nameSymbol == null ? methodName : getIdentifier(nameSymbol));
+				return StringUtils.isBlank(name) ? null
+						: name + "." + (nameSymbol == null ? methodName : getIdentifier(nameSymbol));
 			} else {
 				return null;
 			}
@@ -275,7 +285,8 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				// check if inner class and do not import
 				if (importDecl.qualid instanceof JCFieldAccess) {
 					JCFieldAccess qualified = (JCFieldAccess) importDecl.qualid;
-					if (qualified.sym instanceof ClassSymbol && qualified.sym.getEnclosingElement() instanceof ClassSymbol) {
+					if (qualified.sym instanceof ClassSymbol
+							&& qualified.sym.getEnclosingElement() instanceof ClassSymbol) {
 						return null;
 					}
 				}
@@ -312,7 +323,8 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			}
 			// special case when subclassing a Java exception type
 			if (invocation.meth instanceof JCIdent) {
-				String superClassName = ((JCIdent) invocation.meth).sym.getEnclosingElement().getQualifiedName().toString();
+				String superClassName = ((JCIdent) invocation.meth).sym.getEnclosingElement().getQualifiedName()
+						.toString();
 				if (baseThrowables.contains(superClassName)) {
 					// ES6 would take the cause, but we ignore it so far for
 					// backward compatibility
@@ -349,37 +361,47 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		// targetMethodName="+targetMethodName+
 		// " ownerClassName="+ownerClassName);
 
-		if (targetType != null && targetType.getKind() == ElementKind.ENUM && !"this".equals(fieldAccess.selected.toString())) {
+		if (targetType != null && targetType.getKind() == ElementKind.ENUM
+				&& !"this".equals(fieldAccess.selected.toString())) {
 			// TODO: enum type simple name will not be valid when uses as fully
 			// qualified name (not imported)
-			String relTarget = getPrinter().getContext().useModules ? targetType.getSimpleName().toString() : getPrinter().getRootRelativeName(targetType);
+			String relTarget = getPrinter().getContext().useModules ? targetType.getSimpleName().toString()
+					: getPrinter().getRootRelativeName(targetType);
 			if (targetMethodName.equals("name")) {
 				getPrinter().print(relTarget).print("[").print(fieldAccess.selected).print("]");
 				return true;
 			}
 			if (targetMethodName.equals("ordinal")) {
-				getPrinter().print(relTarget).print("[").print(relTarget).print("[").print(fieldAccess.selected).print("]").print("]");
+				getPrinter().print(relTarget).print("[").print(relTarget).print("[").print(fieldAccess.selected)
+						.print("]").print("]");
 				return true;
 			}
 			if (targetMethodName.equals("valueOf") && invocation.getArguments().size() == 1) {
-				getPrinter().print("<any>").print(fieldAccess.selected).print("[").print(invocation.getArguments().head).print("]");
+				getPrinter().print("<any>").print(fieldAccess.selected).print("[").print(invocation.getArguments().head)
+						.print("]");
 				return true;
 			}
 			if (targetMethodName.equals("values")) {
-				getPrinter().print("function() { " + VAR_DECL_KEYWORD + " result: number[] = []; for(" + VAR_DECL_KEYWORD + " val in ").print(relTarget)
+				getPrinter()
+						.print("function() { " + VAR_DECL_KEYWORD + " result: number[] = []; for(" + VAR_DECL_KEYWORD
+								+ " val in ")
+						.print(relTarget)
 						.print(") { if(!isNaN(<any>val)) { result.push(parseInt(val,10)); } } return result; }()");
 				return true;
 			}
 			// enum objets wrapping
 			if (fieldAccess != null && fieldAccess.sym instanceof MethodSymbol) {
 				if (((MethodSymbol) fieldAccess.sym).isStatic()) {
-					getPrinter().print(fieldAccess.selected).print(Java2TypeScriptTranslator.ENUM_WRAPPER_CLASS_SUFFIX + ".").print(fieldAccess.name.toString())
-							.print("(").printArgList(invocation.getArguments()).print(")");
+					getPrinter().print(fieldAccess.selected)
+							.print(Java2TypeScriptTranslator.ENUM_WRAPPER_CLASS_SUFFIX + ".")
+							.print(fieldAccess.name.toString()).print("(").printArgList(invocation.getArguments())
+							.print(")");
 					return true;
 				}
 			}
-			getPrinter().print(relTarget).print("[\"" + Java2TypeScriptTranslator.ENUM_WRAPPER_CLASS_WRAPPERS + "\"][").print(fieldAccess.selected).print("].")
-					.print(fieldAccess.name.toString()).print("(").printArgList(invocation.getArguments()).print(")");
+			getPrinter().print(relTarget).print("[\"" + Java2TypeScriptTranslator.ENUM_WRAPPER_CLASS_WRAPPERS + "\"][")
+					.print(fieldAccess.selected).print("].").print(fieldAccess.name.toString()).print("(")
+					.printArgList(invocation.getArguments()).print(")");
 			return true;
 		}
 
@@ -393,7 +415,9 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				getPrinter().print(varName);
 			} else {
 				getPrinter().print(varName + " = ").print(invocation.args.tail.head).print("; ");
-				getPrinter().print("console.log('" + JSweetTranspiler.EXPORTED_VAR_BEGIN + StringUtils.strip(invocation.args.head.toString(), "\"") + "='+")
+				getPrinter()
+						.print("console.log('" + JSweetTranspiler.EXPORTED_VAR_BEGIN
+								+ StringUtils.strip(invocation.args.head.toString(), "\"") + "='+")
 						.print(varName).print("+'" + JSweetTranspiler.EXPORTED_VAR_END + "')");
 			}
 			return true;
@@ -433,7 +457,8 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			return true;
 		}
 		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "union")) {
-			getPrinter().typeChecker.checkUnionTypeAssignment(getPrinter().getContext().types, getPrinter().getParent(), invocation);
+			getPrinter().typeChecker.checkUnionTypeAssignment(getPrinter().getContext().types, getPrinter().getParent(),
+					invocation);
 			getPrinter().print("(<any>");
 			printCastMethodInvocation(invocation);
 			getPrinter().print(")");
@@ -444,19 +469,23 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			return true;
 		}
 		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "equalsStrict")) {
-			getPrinter().print("(").print(invocation.getArguments().head).print(" === ").print(invocation.getArguments().tail.head).print(")");
+			getPrinter().print("(").print(invocation.getArguments().head).print(" === ")
+					.print(invocation.getArguments().tail.head).print(")");
 			return true;
 		}
 		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "notEqualsStrict")) {
-			getPrinter().print("(").print(invocation.getArguments().head).print(" !== ").print(invocation.getArguments().tail.head).print(")");
+			getPrinter().print("(").print(invocation.getArguments().head).print(" !== ")
+					.print(invocation.getArguments().tail.head).print(")");
 			return true;
 		}
 		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "equalsLoose")) {
-			getPrinter().print("(").print(invocation.getArguments().head).print(" == ").print(invocation.getArguments().tail.head).print(")");
+			getPrinter().print("(").print(invocation.getArguments().head).print(" == ")
+					.print(invocation.getArguments().tail.head).print(")");
 			return true;
 		}
 		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "notEqualsLoose")) {
-			getPrinter().print("(").print(invocation.getArguments().head).print(" != ").print(invocation.getArguments().tail.head).print(")");
+			getPrinter().print("(").print(invocation.getArguments().head).print(" != ")
+					.print(invocation.getArguments().tail.head).print(")");
 			return true;
 		}
 		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "$map")) {
@@ -489,12 +518,14 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		}
 
 		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "$apply")) {
-			getPrinter().print("(<any>").print(invocation.args.head).print(")(").printArgList(invocation.args.tail).print(")");
+			getPrinter().print("(<any>").print(invocation.args.head).print(")(").printArgList(invocation.args.tail)
+					.print(")");
 			return true;
 		}
 
 		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "$new")) {
-			getPrinter().print("new (<any>").print(invocation.args.head).print(")(").printArgList(invocation.args.tail).print(")");
+			getPrinter().print("new (<any>").print(invocation.args.head).print(")(").printArgList(invocation.args.tail)
+					.print(")");
 			return true;
 		}
 
@@ -559,19 +590,22 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 
 						boolean sameIndexType = getterIndexType.equals(invokedIndexType);
 
-						if (sameIndexType && !Util.isAssignable(getPrinter().getContext().types, getterType, invokedValueType)) {
+						if (sameIndexType
+								&& !Util.isAssignable(getPrinter().getContext().types, getterType, invokedValueType)) {
 							report(invocation.args.tail.head, JSweetProblem.INDEXED_SET_TYPE_MISMATCH, getterType);
 						}
 					}
 				}
 
-				getPrinter().print(fieldAccess.selected).print("[").print(invocation.args.head).print("] = ").print(invocation.args.tail.head);
+				getPrinter().print(fieldAccess.selected).print("[").print(invocation.args.head).print("] = ")
+						.print(invocation.args.tail.head);
 			} else {
 				if (invocation.args.length() == 2) {
-					getPrinter().print("this[").print(invocation.args.head).print("] = <any>").print(invocation.args.tail.head);
+					getPrinter().print("this[").print(invocation.args.head).print("] = <any>")
+							.print(invocation.args.tail.head);
 				} else {
-					getPrinter().print(invocation.args.head).print("[").print(invocation.args.tail.head).print("] = <any>")
-							.print(invocation.args.tail.tail.head);
+					getPrinter().print(invocation.args.head).print("[").print(invocation.args.tail.head)
+							.print("] = <any>").print(invocation.args.tail.tail.head);
 				}
 			}
 			return true;
@@ -584,7 +618,8 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				return true;
 			}
 
-			getPrinter().print(fieldAccess.selected).print("[").print(invocation.args.head).print("] = ").print(invocation.args.tail.head);
+			getPrinter().print(fieldAccess.selected).print("[").print(invocation.args.head).print("] = ")
+					.print(invocation.args.tail.head);
 			return true;
 		}
 
@@ -602,12 +637,14 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			}
 
 			if (fieldAccess != null && !UTIL_CLASSNAME.equals(targetClassName)) {
-				getPrinter().print("delete ").print(fieldAccess.selected).print("[").print(invocation.args.head).print("]");
+				getPrinter().print("delete ").print(fieldAccess.selected).print("[").print(invocation.args.head)
+						.print("]");
 			} else {
 				if (invocation.args.length() == 1) {
 					getPrinter().print("delete this[").print(invocation.args.head).print("]");
 				} else {
-					getPrinter().print("delete ").print(invocation.args.head).print("[").print(invocation.args.tail.head).print("]");
+					getPrinter().print("delete ").print(invocation.args.head).print("[")
+							.print(invocation.args.tail.head).print("]");
 				}
 			}
 			return true;
@@ -620,24 +657,28 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			}
 
 			if (fieldAccess != null && !UTIL_CLASSNAME.equals(targetClassName)) {
-				getPrinter().print("delete ").print(fieldAccess.selected).print("[").print(invocation.args.head).print("]");
+				getPrinter().print("delete ").print(fieldAccess.selected).print("[").print(invocation.args.head)
+						.print("]");
 			} else {
 				if (invocation.args.length() == 1) {
 					getPrinter().print("delete ").print("this[").print(invocation.args.head).print("]");
 				} else {
-					getPrinter().print("delete ").print(invocation.args.head).print("[").print(invocation.args.tail.head).print("]");
+					getPrinter().print("delete ").print(invocation.args.head).print("[")
+							.print(invocation.args.tail.head).print("]");
 				}
 			}
 			return true;
 		}
 
-		if (targetClassName != null && targetClassName.endsWith(GLOBALS_CLASS_NAME) && (invocation.getMethodSelect() instanceof JCFieldAccess)) {
+		if (targetClassName != null && targetClassName.endsWith(GLOBALS_CLASS_NAME)
+				&& (invocation.getMethodSelect() instanceof JCFieldAccess)) {
 			if (getPrinter().getContext().useModules) {
 				// if(!getPrinter().getContext().getImportedNames(getPrinter().getCompilationUnit().getSourceFile().getName()).contains(targetMethodName))
 				// {
 				//
 				// }
-				if (!((ClassSymbol) targetType).sourcefile.getName().equals(getPrinter().getCompilationUnit().sourcefile.getName())) {
+				if (!((ClassSymbol) targetType).sourcefile.getName()
+						.equals(getPrinter().getCompilationUnit().sourcefile.getName())) {
 					// TODO: when using several qualified Globals classes, we
 					// need to disambiguate (use qualified name with
 					// underscores)
@@ -645,7 +686,8 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				}
 			}
 			Map<String, VarSymbol> vars = new HashMap<>();
-			Util.fillAllVariablesInScope(vars, getPrinter().getStack(), invocation, getPrinter().getParent(JCMethodDecl.class));
+			Util.fillAllVariablesInScope(vars, getPrinter().getStack(), invocation,
+					getPrinter().getParent(JCMethodDecl.class));
 			if (vars.containsKey(targetMethodName)) {
 				report(invocation, JSweetProblem.HIDDEN_INVOCATION, targetMethodName);
 			}
@@ -661,16 +703,18 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			getPrinter().print("super(").printArgList(invocation.args).print(")");
 			return true;
 		}
-		if (fieldAccess != null && targetClassName != null
-				&& (targetClassName.startsWith(UTIL_PACKAGE + ".function.") || targetClassName.startsWith(Function.class.getPackage().getName()))) {
-			if (!getPrinter().getContext().options.isJDKAllowed() && targetClassName.startsWith(Function.class.getPackage().getName())
+		if (fieldAccess != null && targetClassName != null && (targetClassName.startsWith(UTIL_PACKAGE + ".function.")
+				|| targetClassName.startsWith(Function.class.getPackage().getName()))) {
+			if (!getPrinter().getContext().options.isJDKAllowed()
+					&& targetClassName.startsWith(Function.class.getPackage().getName())
 					&& TypeChecker.FORBIDDEN_JDK_FUNCTIONAL_METHODS.contains(targetMethodName)) {
 				getPrinter().report(invocation, JSweetProblem.JDK_METHOD, targetMethodName);
 			}
 			getPrinter().print(fieldAccess.getExpression()).print("(").printArgList(invocation.args).print(")");
 			return true;
 		}
-		if (fieldAccess != null && targetClassName != null && targetClassName.equals(java.lang.Runnable.class.getName())) {
+		if (fieldAccess != null && targetClassName != null
+				&& targetClassName.equals(java.lang.Runnable.class.getName())) {
 			getPrinter().print(fieldAccess.getExpression()).print("(").printArgList(invocation.args).print(")");
 			return true;
 		}
@@ -700,8 +744,8 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			case "printStackTrace":
 				if (targetType instanceof ClassSymbol) {
 					if (Util.hasParent((ClassSymbol) targetType, "java.lang.Throwable")) {
-						getPrinter().print("console.error(").print(fieldAccess.getExpression()).print(".message, ").print(fieldAccess.getExpression())
-								.print(")");
+						getPrinter().print("console.error(").print(fieldAccess.getExpression()).print(".message, ")
+								.print(fieldAccess.getExpression()).print(")");
 						return true;
 					}
 				}
@@ -715,19 +759,22 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				case "valueOf":
 					printMacroName(targetMethodName);
 					if (invocation.args.length() == 3) {
-						getPrinter().print("((str, index, len) => str.join('').substring(index, index + len))(").printArgList(invocation.args).print(")");
+						getPrinter().print("((str, index, len) => str.join('').substring(index, index + len))(")
+								.printArgList(invocation.args).print(")");
 					} else {
 						getPrinter().print("new String(").printArgList(invocation.args).print(").toString()");
 					}
 					return true;
 				case "subSequence":
 					printMacroName(targetMethodName);
-					getPrinter().print(fieldAccess.getExpression()).print(".substring(").printArgList(invocation.args).print(")");
+					getPrinter().print(fieldAccess.getExpression()).print(".substring(").printArgList(invocation.args)
+							.print(")");
 					return true;
 				// this macro should use 'includes' in ES6
 				case "contains":
 					printMacroName(targetMethodName);
-					getPrinter().print(fieldAccess.getExpression()).print(".indexOf(").printArgList(invocation.args).print(") != -1");
+					getPrinter().print(fieldAccess.getExpression()).print(".indexOf(").printArgList(invocation.args)
+							.print(") != -1");
 					return true;
 				case "length":
 					getPrinter().print(fieldAccess.getExpression()).print(".length");
@@ -735,20 +782,23 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				// this macro is not needed in ES6
 				case "startsWith":
 					printMacroName(targetMethodName);
-					getPrinter().print("((str, searchString, position = 0) => str.substr(position, searchString.length) === searchString)(")
+					getPrinter()
+							.print("((str, searchString, position = 0) => str.substr(position, searchString.length) === searchString)(")
 							.print(fieldAccess.getExpression()).print(", ").printArgList(invocation.args).print(")");
 					return true;
 				case "endsWith":
 					printMacroName(targetMethodName);
 					getPrinter()
-							.print("((str, searchString) => { " + VAR_DECL_KEYWORD + " pos = str.length - searchString.length; " + VAR_DECL_KEYWORD
+							.print("((str, searchString) => { " + VAR_DECL_KEYWORD
+									+ " pos = str.length - searchString.length; " + VAR_DECL_KEYWORD
 									+ " lastIndex = str.indexOf(searchString, pos); return lastIndex !== -1 && lastIndex === pos; })(")
 							.print(fieldAccess.getExpression()).print(", ").printArgList(invocation.args).print(")");
 					return true;
 				// this macro is not needed in ES6
 				case "codePointAt":
 					printMacroName(targetMethodName);
-					getPrinter().print(fieldAccess.getExpression()).print(".charCodeAt(").printArgList(invocation.args).print(")");
+					getPrinter().print(fieldAccess.getExpression()).print(".charCodeAt(").printArgList(invocation.args)
+							.print(")");
 					return true;
 				case "isEmpty":
 					printMacroName(targetMethodName);
@@ -756,17 +806,18 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					return true;
 				case "compareToIgnoreCase":
 					printMacroName(targetMethodName);
-					getPrinter().print(fieldAccess.getExpression()).print(".toUpperCase().localeCompare(").printArgList(invocation.args)
-							.print(".toUpperCase())");
+					getPrinter().print(fieldAccess.getExpression()).print(".toUpperCase().localeCompare(")
+							.printArgList(invocation.args).print(".toUpperCase())");
 					return true;
 				case "compareTo":
 					printMacroName(targetMethodName);
-					getPrinter().print(fieldAccess.getExpression()).print(".localeCompare(").printArgList(invocation.args).print(")");
+					getPrinter().print(fieldAccess.getExpression()).print(".localeCompare(")
+							.printArgList(invocation.args).print(")");
 					return true;
 				case "equalsIgnoreCase":
 					printMacroName(targetMethodName);
-					getPrinter().print("((o1, o2) => o1.toUpperCase() === (o2===null?o2:o2.toUpperCase()))(").print(fieldAccess.getExpression()).print(", ")
-							.printArgList(invocation.args).print(")");
+					getPrinter().print("((o1, o2) => o1.toUpperCase() === (o2===null?o2:o2.toUpperCase()))(")
+							.print(fieldAccess.getExpression()).print(", ").printArgList(invocation.args).print(")");
 					return true;
 				case "toChars":
 					printMacroName(targetMethodName);
@@ -775,7 +826,8 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				// In ES6, we can use the Array.from method
 				case "getBytes":
 					printMacroName(targetMethodName);
-					getPrinter().print("(").print(fieldAccess.getExpression()).print(").split('').map(s => s.charCodeAt(0))");
+					getPrinter().print("(").print(fieldAccess.getExpression())
+							.print(").split('').map(s => s.charCodeAt(0))");
 					return true;
 				// In ES6, we can use the Array.from method
 				case "toCharArray":
@@ -784,19 +836,21 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					return true;
 				case "replaceAll":
 					printMacroName(targetMethodName);
-					getPrinter().print(fieldAccess.getExpression()).print(".replace(new RegExp(").print(invocation.args.head).print(", 'g'),")
-							.print(invocation.args.tail.head).print(")");
+					getPrinter().print(fieldAccess.getExpression()).print(".replace(new RegExp(")
+							.print(invocation.args.head).print(", 'g'),").print(invocation.args.tail.head).print(")");
 					return true;
 				case "replace":
 					printMacroName(targetMethodName);
-					getPrinter().print(fieldAccess.getExpression()).print(".split(").print(invocation.args.head).print(").join(")
-							.print(invocation.args.tail.head).print(")");
+					getPrinter().print(fieldAccess.getExpression()).print(".split(").print(invocation.args.head)
+							.print(").join(").print(invocation.args.tail.head).print(")");
 					return true;
 				case "lastIndexOf":
-					getPrinter().print(fieldAccess.getExpression()).print(".lastIndexOf(").printArgList(invocation.args).print(")");
+					getPrinter().print(fieldAccess.getExpression()).print(".lastIndexOf(").printArgList(invocation.args)
+							.print(")");
 					return true;
 				case "indexOf":
-					getPrinter().print(fieldAccess.getExpression()).print(".indexOf(").printArgList(invocation.args).print(")");
+					getPrinter().print(fieldAccess.getExpression()).print(".indexOf(").printArgList(invocation.args)
+							.print(")");
 					return true;
 				case "toLowerCase":
 					if (!invocation.args.isEmpty()) {
@@ -841,11 +895,13 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				case "isInfinite":
 					printMacroName(targetMethodName);
 					if (!invocation.args.isEmpty()) {
-						getPrinter().print("((value) => Number.NEGATIVE_INFINITY === value || Number.POSITIVE_INFINITY === value)(")
+						getPrinter()
+								.print("((value) => Number.NEGATIVE_INFINITY === value || Number.POSITIVE_INFINITY === value)(")
 								.printArgList(invocation.args).print(")");
 						return true;
 					} else {
-						getPrinter().print("((value) => Number.NEGATIVE_INFINITY === value || Number.POSITIVE_INFINITY === value)(")
+						getPrinter()
+								.print("((value) => Number.NEGATIVE_INFINITY === value || Number.POSITIVE_INFINITY === value)(")
 								.print(fieldAccess.getExpression()).print(")");
 						return true;
 					}
@@ -875,7 +931,8 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					return true;
 				case "cosh":
 					printMacroName(targetMethodName);
-					getPrinter().print("(x => (Math.exp(x) + Math.exp(-x)) / 2)(").printArgList(invocation.args).print(")");
+					getPrinter().print("(x => (Math.exp(x) + Math.exp(-x)) / 2)(").printArgList(invocation.args)
+							.print(")");
 					return true;
 				case "expm1":
 					printMacroName(targetMethodName);
@@ -909,12 +966,14 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					return true;
 				case "signum":
 					printMacroName(targetMethodName);
-					getPrinter().print("(f => { if (f > 0) { return 1; } else if (f < 0) { return -1; } else { return 0; } })(").printArgList(invocation.args)
-							.print(")");
+					getPrinter()
+							.print("(f => { if (f > 0) { return 1; } else if (f < 0) { return -1; } else { return 0; } })(")
+							.printArgList(invocation.args).print(")");
 					return true;
 				case "sinh":
 					printMacroName(targetMethodName);
-					getPrinter().print("(x => (Math.exp(x) - Math.exp(-x)) / 2)(").printArgList(invocation.args).print(")");
+					getPrinter().print("(x => (Math.exp(x) - Math.exp(-x)) / 2)(").printArgList(invocation.args)
+							.print(")");
 					return true;
 				case "tanh":
 					printMacroName(targetMethodName);
@@ -952,15 +1011,16 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				case "getName":
 					if (getPrinter().getContext().options.isSupportGetClass()) {
 						printMacroName(targetMethodName);
-						getPrinter().print("(c => c[\"" + Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR + "\"]?c[\""
-								+ Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR + "\"]:c.name)(");
+						getPrinter().print("(c => c[\"" + Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR
+								+ "\"]?c[\"" + Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR + "\"]:c.name)(");
 						printTarget(fieldAccess.getExpression());
 						getPrinter().print(")");
 						return true;
 					} else {
 						if (fieldAccess != null && fieldAccess.selected.toString().endsWith(".class")) {
 							printMacroName(targetMethodName);
-							getPrinter().print("\"").print(fieldAccess.selected.type.getTypeArguments().get(0).tsym.getQualifiedName().toString()).print("\"");
+							getPrinter().print("\"").print(fieldAccess.selected.type.getTypeArguments().get(0).tsym
+									.getQualifiedName().toString()).print("\"");
 							return true;
 						}
 					}
@@ -968,9 +1028,9 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				case "getSimpleName":
 					if (getPrinter().getContext().options.isSupportGetClass()) {
 						printMacroName(targetMethodName);
-						getPrinter().print("(c => c[\"" + Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR + "\"]?c[\""
-								+ Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR + "\"].substring(c[\""
-								+ Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR
+						getPrinter().print("(c => c[\"" + Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR
+								+ "\"]?c[\"" + Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR
+								+ "\"].substring(c[\"" + Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR
 								+ "\"].lastIndexOf('.')+1):c.name.substring(c.name.lastIndexOf('.')+1))(");
 						printTarget(fieldAccess.getExpression());
 						getPrinter().print(")");
@@ -978,7 +1038,9 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					} else {
 						if (fieldAccess != null && fieldAccess.selected.toString().endsWith(".class")) {
 							printMacroName(targetMethodName);
-							getPrinter().print("\"").print(fieldAccess.selected.type.getTypeArguments().get(0).tsym.getSimpleName().toString()).print("\"");
+							getPrinter().print("\"").print(
+									fieldAccess.selected.type.getTypeArguments().get(0).tsym.getSimpleName().toString())
+									.print("\"");
 							return true;
 						}
 					}
@@ -995,7 +1057,8 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			// break;
 			}
 
-			if (fieldAccess != null && typesMapping.containsKey(targetClassName) && targetClassName.startsWith("java.lang.")) {
+			if (fieldAccess != null && typesMapping.containsKey(targetClassName)
+					&& targetClassName.startsWith("java.lang.")) {
 				if (fieldAccess.sym.isStatic()) {
 					// delegation to javaemul
 					delegateToEmulLayer(targetClassName, targetMethodName, invocation);
@@ -1004,7 +1067,8 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					switch (targetMethodName) {
 					case "equals":
 						getPrinter().print("(");
-						printTarget(fieldAccess.getExpression()).print(" === ").printArgList(invocation.args).print(")");
+						printTarget(fieldAccess.getExpression()).print(" === ").printArgList(invocation.args)
+								.print(")");
 						return true;
 					case "hashCode":
 						getPrinter().print("(<any>");
@@ -1037,7 +1101,8 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		{
 			Log log = Log.instance(getPrinter().getContext());
 			if (String.class.getName().equals(targetClassName)) {
-				log.rawError(invocation.pos, "Invalid use of native Java class. Use string(a_java_string) to convert to JSweet String first.");
+				log.rawError(invocation.pos,
+						"Invalid use of native Java class. Use string(a_java_string) to convert to JSweet String first.");
 			}
 		}
 
@@ -1054,12 +1119,13 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 	}
 
 	private void delegateToEmulLayer(String targetClassName, String targetMethodName, JCMethodInvocation invocation) {
-		getPrinter().print("javaemul.internal." + targetClassName.substring(10) + "Helper.").print(targetMethodName).print("(").printArgList(invocation.args)
-				.print(")");
+		getPrinter().print("javaemul.internal." + targetClassName.substring(10) + "Helper.").print(targetMethodName)
+				.print("(").printArgList(invocation.args).print(")");
 	}
 
 	private void delegateToEmulLayerStatic(String targetClassName, String targetMethodName, JCExpression target) {
-		getPrinter().print("javaemul.internal." + targetClassName.substring(10) + "Helper.").print(targetMethodName).print("(");
+		getPrinter().print("javaemul.internal." + targetClassName.substring(10) + "Helper.").print(targetMethodName)
+				.print("(");
 		printTarget(target).print(")");
 	}
 
@@ -1123,18 +1189,19 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 
 		// built-in Java support
 		String accessedType = targetType.getQualifiedName().toString();
-		if (fieldAccess.sym.isStatic() && typesMapping.containsKey(accessedType) && accessedType.startsWith("java.lang.")
-				&& !"class".equals(fieldAccess.name.toString())) {
+		if (fieldAccess.sym.isStatic() && typesMapping.containsKey(accessedType)
+				&& accessedType.startsWith("java.lang.") && !"class".equals(fieldAccess.name.toString())) {
 			delegateToEmulLayer(accessedType, fieldAccess);
 			return true;
 		}
 
 		// enum objects wrapping
-		if (targetType != null && targetType.getKind() == ElementKind.ENUM && !fieldAccess.sym.isEnum() && !"this".equals(fieldAccess.selected.toString())
-				&& !"class".equals(fieldAccess.name.toString())) {
-			String relTarget = getPrinter().getContext().useModules ? targetType.getSimpleName().toString() : getPrinter().getRootRelativeName(targetType);
-			getPrinter().print(relTarget).print("[\"" + Java2TypeScriptTranslator.ENUM_WRAPPER_CLASS_WRAPPERS + "\"][").print(fieldAccess.selected).print("].")
-					.print(fieldAccess.name.toString());
+		if (targetType != null && targetType.getKind() == ElementKind.ENUM && !fieldAccess.sym.isEnum()
+				&& !"this".equals(fieldAccess.selected.toString()) && !"class".equals(fieldAccess.name.toString())) {
+			String relTarget = getPrinter().getContext().useModules ? targetType.getSimpleName().toString()
+					: getPrinter().getRootRelativeName(targetType);
+			getPrinter().print(relTarget).print("[\"" + Java2TypeScriptTranslator.ENUM_WRAPPER_CLASS_WRAPPERS + "\"][")
+					.print(fieldAccess.selected).print("].").print(fieldAccess.name.toString());
 			return true;
 		}
 
@@ -1142,7 +1209,8 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 	}
 
 	private void delegateToEmulLayer(String targetClassName, JCFieldAccess fieldAccess) {
-		getPrinter().print("javaemul.internal." + targetClassName.substring(10) + "Helper.").print(fieldAccess.name.toString());
+		getPrinter().print("javaemul.internal." + targetClassName.substring(10) + "Helper.")
+				.print(fieldAccess.name.toString());
 	}
 
 	private AbstractTreePrinter printArguments(List<JCExpression> arguments) {
@@ -1175,7 +1243,8 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		// macros
 		if (newClass.clazz.type.equals(getPrinter().getContext().symtab.stringType)) {
 			if (newClass.args.length() >= 3) {
-				getPrinter().print("((str, index, len) => ").print("str.substring(index, index + len))((").print(newClass.args.head).print(")");
+				getPrinter().print("((str, index, len) => ").print("str.substring(index, index + len))((")
+						.print(newClass.args.head).print(")");
 				if ("byte[]".equals(newClass.args.get(0).type.toString())) {
 					getPrinter().print(".map(s => String.fromCharCode(s))");
 				}
@@ -1188,8 +1257,8 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 	}
 
 	@Override
-	public AbstractTreePrinter substituteAndPrintType(JCTree typeTree, boolean arrayComponent, boolean inTypeParameters, boolean completeRawTypes,
-			boolean disableSubstitution) {
+	public AbstractTreePrinter substituteAndPrintType(JCTree typeTree, boolean arrayComponent, boolean inTypeParameters,
+			boolean completeRawTypes, boolean disableSubstitution) {
 		if (typeTree.type.tsym instanceof TypeVariableSymbol) {
 			if (typeVariablesToErase.contains(typeTree.type.tsym)) {
 				return getPrinter().print("any");
@@ -1221,7 +1290,8 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				if (typeFullName.startsWith(TUPLE_CLASSES_PACKAGE + ".")) {
 					getPrinter().print("[");
 					for (JCExpression argument : typeApply.arguments) {
-						substituteAndPrintType(argument, arrayComponent, inTypeParameters, completeRawTypes, false).print(",");
+						substituteAndPrintType(argument, arrayComponent, inTypeParameters, completeRawTypes, false)
+								.print(",");
 					}
 					if (typeApply.arguments.length() > 0) {
 						getPrinter().removeLastChar();
@@ -1232,7 +1302,8 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				if (typeFullName.startsWith(UNION_CLASS_NAME)) {
 					getPrinter().print("(");
 					for (JCExpression argument : typeApply.arguments) {
-						substituteAndPrintType(argument, arrayComponent, inTypeParameters, completeRawTypes, false).print("|");
+						substituteAndPrintType(argument, arrayComponent, inTypeParameters, completeRawTypes, false)
+								.print("|");
 					}
 					if (typeApply.arguments.length() > 0) {
 						getPrinter().removeLastChar();
@@ -1246,7 +1317,8 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 							getPrinter().print("(");
 						}
 						getPrinter().print("(");
-						if (typeName.startsWith("Int") || typeName.startsWith("Long") || typeName.startsWith("Double")) {
+						if (typeName.startsWith("Int") || typeName.startsWith("Long")
+								|| typeName.startsWith("Double")) {
 							getPrinter().print("p0 : number");
 						} else {
 							printArguments(typeApply.arguments);
@@ -1261,14 +1333,15 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 							getPrinter().print("(");
 						}
 						getPrinter().print("(");
-						if (typeName.startsWith("Int") || typeName.startsWith("Long") || typeName.startsWith("Double")) {
+						if (typeName.startsWith("Int") || typeName.startsWith("Long")
+								|| typeName.startsWith("Double")) {
 							getPrinter().print("p0 : number");
 						} else {
 							printArguments(typeApply.arguments.subList(0, typeApply.arguments.length() - 1));
 						}
 						getPrinter().print(") => ");
-						substituteAndPrintType(typeApply.arguments.get(typeApply.arguments.length() - 1), arrayComponent, inTypeParameters, completeRawTypes,
-								false);
+						substituteAndPrintType(typeApply.arguments.get(typeApply.arguments.length() - 1),
+								arrayComponent, inTypeParameters, completeRawTypes, false);
 						if (arrayComponent) {
 							getPrinter().print(")");
 						}
@@ -1279,10 +1352,12 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 						}
 						getPrinter().print("(");
 						getPrinter().print(") => ");
-						if (typeName.startsWith("Int") || typeName.startsWith("Long") || typeName.startsWith("Double")) {
+						if (typeName.startsWith("Int") || typeName.startsWith("Long")
+								|| typeName.startsWith("Double")) {
 							getPrinter().print("number");
 						} else {
-							substituteAndPrintType(typeApply.arguments.get(0), arrayComponent, inTypeParameters, completeRawTypes, false);
+							substituteAndPrintType(typeApply.arguments.get(0), arrayComponent, inTypeParameters,
+									completeRawTypes, false);
 						}
 						if (arrayComponent) {
 							getPrinter().print(")");
@@ -1293,7 +1368,8 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 							getPrinter().print("(");
 						}
 						getPrinter().print("(");
-						if (typeName.startsWith("Int") || typeName.startsWith("Long") || typeName.startsWith("Double")) {
+						if (typeName.startsWith("Int") || typeName.startsWith("Long")
+								|| typeName.startsWith("Double")) {
 							getPrinter().print("p0 : number");
 						} else {
 							printArguments(typeApply.arguments);
@@ -1314,7 +1390,8 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 							printArgument(typeApply.arguments.head, 2);
 						}
 						getPrinter().print(") => ");
-						substituteAndPrintType(typeApply.arguments.head, arrayComponent, inTypeParameters, completeRawTypes, false);
+						substituteAndPrintType(typeApply.arguments.head, arrayComponent, inTypeParameters,
+								completeRawTypes, false);
 						if (arrayComponent) {
 							getPrinter().print(")");
 						}
@@ -1334,7 +1411,8 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				}
 			}
 		}
-		return super.substituteAndPrintType(typeTree, arrayComponent, inTypeParameters, completeRawTypes, disableSubstitution);
+		return super.substituteAndPrintType(typeTree, arrayComponent, inTypeParameters, completeRawTypes,
+				disableSubstitution);
 	}
 
 	@Override
@@ -1349,7 +1427,8 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		if (identifier.type == null) {
 			return super.substituteIdentifier(identifier);
 		}
-		if (langTypesSimpleNames.contains(identifier.toString()) && langTypesMapping.containsKey(identifier.type.toString())) {
+		if (langTypesSimpleNames.contains(identifier.toString())
+				&& langTypesMapping.containsKey(identifier.type.toString())) {
 			getPrinter().print(langTypesMapping.get(identifier.type.toString()));
 			return true;
 		}
@@ -1366,7 +1445,8 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 
 	@Override
 	public boolean needsTypeCast(JCTypeCast cast) {
-		if (Util.hasAnnotationType(cast.clazz.type.tsym, ANNOTATION_ERASED, ANNOTATION_OBJECT_TYPE, ANNOTATION_FUNCTIONAL_INTERFACE)) {
+		if (Util.hasAnnotationType(cast.clazz.type.tsym, ANNOTATION_ERASED, ANNOTATION_OBJECT_TYPE,
+				ANNOTATION_FUNCTIONAL_INTERFACE)) {
 			return false;
 		} else {
 			return super.needsTypeCast(cast);
@@ -1427,14 +1507,19 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				if (assignedType.tsym.isInterface() && !Util.isFunctionalType(assignedType.tsym)) {
 					JCLambda lambda = (JCLambda) expression;
 					MethodSymbol method = (MethodSymbol) assignedType.tsym.getEnclosedElements().get(0);
-					getPrinter().print("(() => { " + VAR_DECL_KEYWORD + " f = function() { this." + method.getSimpleName() + " = ").print(lambda);
+					getPrinter().print(
+							"(() => { " + VAR_DECL_KEYWORD + " f = function() { this." + method.getSimpleName() + " = ")
+							.print(lambda);
 					getPrinter().print("}; return new f(); })()");
 					return true;
 				}
 			} else if (expression instanceof JCNewClass) {
-				if (((JCNewClass) expression).def != null && (assignedType.tsym.getQualifiedName().toString().startsWith("java.util.function")
-						|| assignedType.tsym.getQualifiedName().toString().startsWith(JSweetConfig.FUNCTION_CLASSES_PACKAGE)
-						|| Util.hasAnnotationType(assignedType.tsym, JSweetConfig.ANNOTATION_FUNCTIONAL_INTERFACE))) {
+				if (((JCNewClass) expression).def != null
+						&& (assignedType.tsym.getQualifiedName().toString().startsWith("java.util.function")
+								|| assignedType.tsym.getQualifiedName().toString()
+										.startsWith(JSweetConfig.FUNCTION_CLASSES_PACKAGE)
+								|| Util.hasAnnotationType(assignedType.tsym,
+										JSweetConfig.ANNOTATION_FUNCTIONAL_INTERFACE))) {
 					List<JCTree> defs = ((JCNewClass) expression).def.defs;
 					boolean printed = false;
 					for (JCTree def : defs) {
@@ -1447,7 +1532,8 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 								continue;
 							}
 							getPrinter().getStack().push(method);
-							getPrinter().print("(").printArgList(method.getParameters()).print(") => ").print(method.body);
+							getPrinter().print("(").printArgList(method.getParameters()).print(") => ")
+									.print(method.body);
 							getPrinter().getStack().pop();
 							printed = true;
 						}

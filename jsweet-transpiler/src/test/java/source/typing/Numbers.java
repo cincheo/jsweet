@@ -16,7 +16,7 @@
  */
 package source.typing;
 
-import static jsweet.dom.Globals.console;
+import static def.dom.Globals.console;
 
 import java.util.function.Function;
 

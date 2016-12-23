@@ -2,8 +2,8 @@ package source.overload;
 
 import static jsweet.util.Globals.$export;
 
-import jsweet.lang.Array;
-import jsweet.lang.Date;
+import def.js.Array;
+import def.js.Date;
 
 public class WrongOverloadWithInheritance {
 

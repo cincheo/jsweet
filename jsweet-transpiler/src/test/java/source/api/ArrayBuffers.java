@@ -3,9 +3,9 @@ package source.api;
 import static jsweet.util.Globals.$export;
 import static jsweet.util.Globals.any;
 
-import jsweet.lang.Array;
-import jsweet.lang.ArrayBuffer;
-import jsweet.lang.Int32Array;
+import def.js.Array;
+import def.js.ArrayBuffer;
+import def.js.Int32Array;
 
 public class ArrayBuffers {
 

@@ -16,7 +16,7 @@
  */
 package source.structural;
 
-import static jsweet.dom.Globals.alert;
+import static def.dom.Globals.alert;
 
 public class NameClashesWithMethodInvocations {
 
@@ -41,7 +41,7 @@ public class NameClashesWithMethodInvocations {
 	public void m4(boolean alert) {
 		// name clash between local variable and qualified method call
 		//String alert = "test";
-		jsweet.dom.Globals.alert(alert);
+		def.dom.Globals.alert(alert);
 	}
 	
 	

@@ -21,7 +21,7 @@ import java.util.Iterator;
 import java.util.function.Consumer;
 
 import def.es6_promise.Promise;
-import jsweet.lang.Array;
+import def.js.Array;
 
 class CC {
 
@@ -43,7 +43,7 @@ public class WrongJdkInvocations {
 			return null;
 		});
 
-		Object o = new jsweet.lang.Object() {
+		Object o = new def.js.Object() {
 			{
 				$set("test", s2.codePointAt(1));
 			}
@@ -122,7 +122,7 @@ class Other3 {
 			return null;
 		});
 
-		Object o = new jsweet.lang.Object() {
+		Object o = new def.js.Object() {
 			{
 				$set("test", s2.codePointAt(1));
 			}

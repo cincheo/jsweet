@@ -19,7 +19,7 @@ package source.enums;
 import static jsweet.util.Globals.$export;
 import static jsweet.util.Globals.array;
 
-import jsweet.lang.Error;
+import def.js.Error;
 import source.enums.other.EnumInOtherPackage;
 
 public class Enums {

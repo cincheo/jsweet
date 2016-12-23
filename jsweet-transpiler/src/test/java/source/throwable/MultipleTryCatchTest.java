@@ -18,9 +18,9 @@ package source.throwable;
 
 import static jsweet.util.Globals.$export;
 
-import jsweet.lang.RangeError;
-import jsweet.lang.SyntaxError;
-import jsweet.lang.TypeError;
+import def.js.RangeError;
+import def.js.SyntaxError;
+import def.js.TypeError;
 
 public class MultipleTryCatchTest {
 

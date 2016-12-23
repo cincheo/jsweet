@@ -16,7 +16,7 @@
  */
 package source.blocksgame.util;
 
-import jsweet.lang.Error;
+import def.js.Error;
 
 public class Line {
 

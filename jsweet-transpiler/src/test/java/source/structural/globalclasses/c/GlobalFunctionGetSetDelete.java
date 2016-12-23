@@ -33,7 +33,7 @@ class Globals {
 		$delete(GlobalFunctionGetSetDelete.class, "ttest");
 		
 		// valid
-		jsweet.lang.Object otherObject = null;
+		def.js.Object otherObject = null;
 		otherObject.$get("test");
 		otherObject.$set("test", val);
 		otherObject.$delete("test");

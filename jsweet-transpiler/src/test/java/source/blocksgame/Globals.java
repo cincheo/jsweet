@@ -16,10 +16,10 @@
  */
 package source.blocksgame;
 
-import static jsweet.dom.Globals.window;
+import static def.dom.Globals.window;
 
-import jsweet.dom.Event;
-import jsweet.lang.Date;
+import def.dom.Event;
+import def.js.Date;
 
 public class Globals {
 

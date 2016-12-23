@@ -1,6 +1,6 @@
 package source.calculus;
 
-import static jsweet.lang.Globals.NaN;
+import static def.js.Globals.NaN;
 import static jsweet.util.Globals.$export;
 
 public class Numbers {

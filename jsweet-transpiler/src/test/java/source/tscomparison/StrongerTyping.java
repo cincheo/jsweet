@@ -16,7 +16,7 @@
  */
 package source.tscomparison;
 
-import static jsweet.dom.Globals.console;
+import static def.dom.Globals.console;
 import static jsweet.util.Globals.$set;
 
 import java.util.function.Consumer;

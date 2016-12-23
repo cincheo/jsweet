@@ -16,8 +16,8 @@
  */
 package source.blocksgame;
 
-import static jsweet.dom.Globals.console;
-import static jsweet.dom.Globals.document;
+import static def.dom.Globals.console;
+import static def.dom.Globals.document;
 import static jsweet.util.StringTypes.mousedown;
 import static jsweet.util.StringTypes.mousemove;
 import static jsweet.util.StringTypes.mouseup;
@@ -26,13 +26,13 @@ import static jsweet.util.StringTypes.touchmove;
 import static jsweet.util.StringTypes.touchstart;
 import static source.blocksgame.Globals.animate;
 
-import jsweet.dom.Event;
-import jsweet.dom.HTMLCanvasElement;
-import jsweet.dom.HTMLElement;
-import jsweet.dom.MouseEvent;
-import jsweet.dom.NodeList;
-import jsweet.dom.TouchEvent;
-import jsweet.lang.Math;
+import def.dom.Event;
+import def.dom.HTMLCanvasElement;
+import def.dom.HTMLElement;
+import def.dom.MouseEvent;
+import def.dom.NodeList;
+import def.dom.TouchEvent;
+import def.js.Math;
 import source.blocksgame.util.Point;
 
 public class GameManager {

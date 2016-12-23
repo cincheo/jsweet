@@ -19,7 +19,7 @@ package source.overload;
 import static jsweet.util.Globals.$export;
 import static jsweet.util.Globals.array;
 
-import jsweet.lang.Array;
+import def.js.Array;
 
 public class WrongOverload {
 

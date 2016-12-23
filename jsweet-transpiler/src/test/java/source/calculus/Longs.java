@@ -2,7 +2,7 @@ package source.calculus;
 
 import static jsweet.util.Globals.$export;
 
-import jsweet.lang.Date;
+import def.js.Date;
 
 public class Longs {
 

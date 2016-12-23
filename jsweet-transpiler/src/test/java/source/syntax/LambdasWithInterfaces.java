@@ -2,7 +2,7 @@ package source.syntax;
 
 import static jsweet.util.Globals.$export;
 
-import jsweet.lang.Array;
+import def.js.Array;
 
 public class LambdasWithInterfaces {
 

@@ -20,7 +20,7 @@ import static jsweet.util.Globals.array;
 
 import java.util.function.Consumer;
 
-import jsweet.lang.Array;
+import def.js.Array;
 
 public class ArraysOfLambdas {
 

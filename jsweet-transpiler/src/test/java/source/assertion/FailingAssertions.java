@@ -2,7 +2,7 @@ package source.assertion;
 
 import static jsweet.util.Globals.$export;
 
-import jsweet.lang.Error;
+import def.js.Error;
 
 public class FailingAssertions {
 
