@@ -1,6 +1,6 @@
 package org.jsweet.input.typescriptdef.visitor;
 
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -30,13 +30,13 @@ public class ParentMethodReturnTypeSusbtitutor extends Scanner {
 	}
 
 	private void applyToParentMethod(TypeDeclaration declaringType, FunctionDeclaration childFunction,
-			TypeDeclaration parentType, Consumer<FunctionDeclaration> apply) {
+			TypeDeclaration parentType, BiConsumer<TypeDeclaration, FunctionDeclaration> apply) {
 		int index = -1;
 		if (declaringType != parentType) {
 			index = ArrayUtils.indexOf(parentType.getMembers(), childFunction);
 		}
 		if (index != -1) {
-			apply.accept((FunctionDeclaration) parentType.getMembers()[index]);
+			apply.accept(parentType, (FunctionDeclaration) parentType.getMembers()[index]);
 		} else {
 			if (parentType.getSuperTypes() != null && parentType.getSuperTypes().length > 0) {
 				for (TypeReference ref : parentType.getSuperTypes()) {
@@ -60,22 +60,29 @@ public class ParentMethodReturnTypeSusbtitutor extends Scanner {
 		if (declaringType != null && functionDeclaration.getType() != null
 				&& functionDeclaration.getType().getName() != null
 				&& !functionDeclaration.getType().getName().equals("void")) {
-			applyToParentMethod(
-					declaringType,
-					functionDeclaration,
-					declaringType,
-					(function) -> {
-						if (functionDeclaration.getType().isPrimitive() && !function.getType().isPrimitive()) {
-							functionDeclaration.getType().setName(
-									StringUtils.capitalize(functionDeclaration.getType().getName()));
+			applyToParentMethod(declaringType, functionDeclaration, declaringType, (parentType, parentFunction) -> {
+				if (functionDeclaration.getType().isPrimitive() && !parentFunction.getType().isPrimitive()) {
+					functionDeclaration.getType()
+							.setName(StringUtils.capitalize(functionDeclaration.getType().getName()));
+				} else {
+					if ("void".equals(parentFunction.getType().getName())) {
+
+						if (context.isInDependency(parentType)) {
+							// if parent belongs to a dependency, we cant change
+							// it
+							logger.info("modify return type of " + context.getTypeName(declaringType) + "."
+									+ functionDeclaration + ": " + functionDeclaration.getType() + " -> "
+									+ parentFunction.getType());
+							functionDeclaration.setType(parentFunction.getType());
 						} else {
-							if ("void".equals(function.getType().getName())) {
-								System.out.println("modify return type of " + function + ": " + function.getType()
-										+ " -> " + functionDeclaration.getType());
-								function.setType(functionDeclaration.getType());
-							}
+							logger.info(
+									"modify return type of " + context.getTypeName(parentType) + "." + parentFunction
+											+ ": " + parentFunction.getType() + " -> " + functionDeclaration.getType());
+							parentFunction.setType(functionDeclaration.getType());
 						}
-					});
+					}
+				}
+			});
 		}
 	}
 

@@ -1,5 +1,7 @@
 package org.jsweet.input.typescriptdef.ast;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -598,6 +600,10 @@ public class Context {
 		return mixins.get(libModule);
 	}
 
+	public CompilationUnit getCompilationUnitForLibModule(String libModule) {
+		return libModulesCompilationUnits.get(libModule);
+	}
+	
 	public CompilationUnit getCompilationUnit(File tsDefFile) {
 		for (CompilationUnit compilUnit : compilationUnits) {
 			if (tsDefFile.equals(compilUnit.file)) {
@@ -612,4 +618,11 @@ public class Context {
 		return typeNames;
 	}
 
+	/**
+	 * @return true if the given TypeDeclaration comes from a dependency (a compilation unit which won't be generated)
+	 */
+	public boolean isInDependency(TypeDeclaration typeDeclaration) {
+		String libModule = getLibModule(getTypeName(typeDeclaration));
+		return isBlank(libModule) || isDependency(getCompilationUnitForLibModule(libModule));
+	}
 }

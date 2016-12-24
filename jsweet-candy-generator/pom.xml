@@ -188,7 +188,7 @@
 		<name>JSweet</name>
 		<url>http://www.jsweet.org</url>
 	</organization>
-	<description>A project that defines translators that translate Javascript API definitions such as Typescript or IDL to Candies: JSweet defition APIs.</description>
+	<description>A project that defines translators that translate Javascript API definitions such as Typescript or IDL to Candies: JSweet definition APIs.</description>
 
 	<distributionManagement>
 		<repository>

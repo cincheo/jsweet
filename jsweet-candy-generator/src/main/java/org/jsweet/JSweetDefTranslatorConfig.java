@@ -42,18 +42,21 @@ public abstract class JSweetDefTranslatorConfig {
 	public final static String MAVEN_CANDIES_GROUP = "org.jsweet.candies";
 
 	private final static String JAVA_PACKAGE = "java";
-	public final static String ROOT_PACKAGE = "jsweet";
+
 	/** The constant for the JSweet lang package. */
-	public final static String LANG_PACKAGE = ROOT_PACKAGE + ".lang";
+	public final static String LANG_PACKAGE = "def.js";
+	
+	public final static String ANNOTATIONS_PACKAGE = "jsweet.lang";
+	
 	/** The constant for the JSweet util package. */
-	public final static String UTIL_PACKAGE = ROOT_PACKAGE + ".util";
+	public final static String UTIL_PACKAGE = "jsweet.util";
 	/**
 	 * The constant for the JSweet lib package (where the definitions need to
 	 * be).
 	 */
 	public final static String LIBS_PACKAGE = "def";
 	/** The constant for the JSweet dom package. */
-	public final static String DOM_PACKAGE = ROOT_PACKAGE + ".dom";
+	public final static String DOM_PACKAGE = LIBS_PACKAGE + ".dom";
 	/**
 	 * The constant for the package generates top-level classes (one cannot use
 	 * unnamed package in Java).
@@ -104,18 +107,18 @@ public abstract class JSweetDefTranslatorConfig {
 
 	public static final String OBJECT_CLASSNAME = JSweetDefTranslatorConfig.LANG_PACKAGE + ".Object";
 
-	public static final String ANNOTATION_DISABLED = JSweetDefTranslatorConfig.LANG_PACKAGE + ".Disabled";
-	public static final String ANNOTATION_ERASED = JSweetDefTranslatorConfig.LANG_PACKAGE + ".Erased";
-	public static final String ANNOTATION_AMBIENT = JSweetDefTranslatorConfig.LANG_PACKAGE + ".Ambient";
-	public static final String ANNOTATION_MIXIN = JSweetDefTranslatorConfig.LANG_PACKAGE + ".Mixin";
-	public static final String ANNOTATION_OBJECT_TYPE = JSweetDefTranslatorConfig.LANG_PACKAGE + ".ObjectType";
-	public static final String ANNOTATION_INTERFACE = JSweetDefTranslatorConfig.LANG_PACKAGE + ".Interface";
-	public static final String ANNOTATION_OPTIONAL = JSweetDefTranslatorConfig.LANG_PACKAGE + ".Optional";
-	public static final String ANNOTATION_STRING_TYPE = JSweetDefTranslatorConfig.LANG_PACKAGE + ".StringType";
-	public static final String ANNOTATION_MODULE = JSweetDefTranslatorConfig.LANG_PACKAGE + ".Module";
-	public static final String ANNOTATION_ROOT = JSweetDefTranslatorConfig.LANG_PACKAGE + ".Root";
-	public static final String ANNOTATION_NAME = JSweetDefTranslatorConfig.LANG_PACKAGE + ".Name";
-	public static final String ANNOTATION_EXTENDS = JSweetDefTranslatorConfig.LANG_PACKAGE + ".Extends";
+	public static final String ANNOTATION_DISABLED = ANNOTATIONS_PACKAGE + ".Disabled";
+	public static final String ANNOTATION_ERASED = ANNOTATIONS_PACKAGE + ".Erased";
+	public static final String ANNOTATION_AMBIENT = ANNOTATIONS_PACKAGE + ".Ambient";
+	public static final String ANNOTATION_MIXIN = ANNOTATIONS_PACKAGE + ".Mixin";
+	public static final String ANNOTATION_OBJECT_TYPE = ANNOTATIONS_PACKAGE + ".ObjectType";
+	public static final String ANNOTATION_INTERFACE = ANNOTATIONS_PACKAGE + ".Interface";
+	public static final String ANNOTATION_OPTIONAL = ANNOTATIONS_PACKAGE + ".Optional";
+	public static final String ANNOTATION_STRING_TYPE = ANNOTATIONS_PACKAGE + ".StringType";
+	public static final String ANNOTATION_MODULE = ANNOTATIONS_PACKAGE + ".Module";
+	public static final String ANNOTATION_ROOT = ANNOTATIONS_PACKAGE + ".Root";
+	public static final String ANNOTATION_NAME = ANNOTATIONS_PACKAGE + ".Name";
+	public static final String ANNOTATION_EXTENDS = ANNOTATIONS_PACKAGE + ".Extends";
 	public static final String ANNOTATION_FUNCTIONAL_INTERFACE = FunctionalInterface.class.getName();
 
 	/**
@@ -225,7 +228,7 @@ public abstract class JSweetDefTranslatorConfig {
 	 * Gets the JSweet object's fully qualified name.
 	 */
 	public static String getObjectClassName() {
-		return LANG_PACKAGE + ".Object";
+		return OBJECT_CLASSNAME;
 	}
 
 	/**
@@ -249,7 +252,9 @@ public abstract class JSweetDefTranslatorConfig {
 	 * (starts with {@value #ROOT_PACKAGE}).
 	 */
 	public static boolean isJSweetPath(String qualifiedName) {
-		return qualifiedName.startsWith(ROOT_PACKAGE + ".");
+		return qualifiedName.startsWith(LANG_PACKAGE) //
+				|| qualifiedName.startsWith(UTIL_PACKAGE) //
+				|| qualifiedName.startsWith(DOM_PACKAGE);
 	}
 
 }
