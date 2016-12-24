@@ -1,0 +1,628 @@
+
+/*
+ * This source code file is the exclusive property of its author. No copy or 
+ * usage of the source code is permitted unless the author contractually 
+ * allows it under the terms of a well-defined agreement.
+ */
+
+import java.util.*;
+import java.io.*;
+import org.apache.commons.lang3.*;
+import org.jsweet.input.typescriptdef.ast.*;
+
+parser code {:
+
+	public PrintStream out = System.out;
+	public PrintStream err = System.err;
+	public CompilationUnit compilationUnit;
+	public Stack<Token[]> comments = new Stack<Token[]>();
+
+	protected static TypescriptDefParser createParser(File file) throws java.io.FileNotFoundException {
+      TypescriptDefScanner scanner= new TypescriptDefScanner(new java.io.FileReader(file));
+      scanner.setFileName(file.getPath());
+      TypescriptDefParser parser= new TypescriptDefParser(scanner);
+      parser.compilationUnit = new CompilationUnit(file);
+      return parser;
+	}
+
+	public static TypescriptDefParser parseFile(File file) throws java.io.FileNotFoundException {
+	  TypescriptDefParser parser= createParser(file);
+      try {
+    	parser.parse();
+	  } catch(Exception e) {
+	  	e.printStackTrace();
+	  	parser.errors.add(new SyntaxError(null, "internal parser error"));
+	  }
+      return parser;
+	}
+
+	public List<SyntaxError> errors = new ArrayList<SyntaxError>();
+	
+    public void syntax_error(java_cup.runtime.Symbol current) {
+      //errors.add(new SyntaxError("syntax error: '"+current.value + "' is not expected", at " + (current.left+1)+"("+(current.right+1)+")" );
+      SyntaxError e = new SyntaxError((Token)current.value, "'"+current.value + "' is not expected");
+      errors.add(e);
+      System.err.println(e);
+    }
+
+    public void syntax_error(Token current) {
+      SyntaxError e = new SyntaxError(current, "'"+current + "' is not expected");
+      errors.add(e);
+      System.err.println(e);
+    }
+  
+    public void unrecovered_syntax_error(java_cup.runtime.Symbol current) {
+	  System.err.println("unable to recover from previous error(s)... giving up!");
+    }
+  
+  	public void printErrors(PrintStream out) {
+		for (SyntaxError error : errors) {
+			out.println(error.toString());
+		}
+	}
+
+	public boolean hasErrors() {
+		return !errors.isEmpty();
+	}
+  
+  
+  
+:};
+
+terminal COL, COMMA, DOT, DOTDOT, DOTDOTDOT, SEMI;
+terminal LPAREN, RPAREN, LCPAREN, RCPAREN, LSPAREN, RSPAREN, SQUARE;
+terminal LT, LTE, GTE, GT, ASSIGN, EQUALS, NOTEQUALS, MULT, DIV, MINUS, MINUSMINUS, PLUS, PLUSPLUS;
+terminal DOC, REFERENCE;
+
+terminal OROR, ANDAND, AND, NOT, TUBE, IMPLIES, MATCHES;
+terminal AT, ARROW_RIGHT;
+terminal INT, NUM, TRUE, FALSE;
+terminal IDENTIFIER;
+terminal QUESTION, DOLLAR;
+// keywords
+terminal IMPORT, EXPORT, FUNCTION, PRIVATE, PROTECTED, PUBLIC, ABSTRACT;
+terminal DECLARE, /*DECLARE_VAR,*/ DECLARE_MODULE, DECLARE_FUNCTION, DECLARE_CLASS, DECLARE_ENUM, TYPE_MACRO;
+terminal INTERFACE, CLASS, VAR, EXTENDS, IMPLEMENTS, NEW;
+//terminal MODULE;
+terminal STATIC, TYPEOF, CONST, IS, AS, FROM;
+terminal ENUM;
+terminal LF;
+terminal LPAREN_FUNC, RPAREN_FUNC;
+
+non terminal comp_unit, declaration_list_opt, declaration_list, declaration_with_error, declaration, declaration_nodoc; 
+non terminal type_macro, type_decl, type_kind, var_decl, module_decl, func_decl, constructor_decl, index_sig_decl, export_decl, import_decl; 
+non terminal param_list_opt, param_list, param, optional_opt, varargs_opt;
+non terminal member_list_opt, member_list, member_elt_with_error, member_elt, member_elt_nodoc; 
+non terminal enum_decl, enum_member_list, enum_member_list_opt, enum_member_elt_with_error, enum_member_elt, enum_member_elt_nodoc; 
+non terminal type_annotation_opt, type_annotation, type, basic_type, union_type, intersection_type, array_type, functional_type, new_functional_type, simple_type, object_type, typeof_type, is_type, tuple_type; 
+non terminal declare_opt, var_opt, const_opt; 
+non terminal qual_id; 
+non terminal import_spec; 
+non terminal type_param_list_opt, type_param_list, type_param;
+non terminal type_arg_list_opt, type_arg_list, type_arg_and;
+non terminal extends_opt, implements_opt;
+non terminal lf, semi_or_lf, semi_or_lf_opt, lf_opt, semi_or_comma_or_lf, semi_or_comma_or_lf_opt;
+non terminal type_list;
+non terminal doc_list, doc_list_opt, doc_opt;
+non terminal literal, export_opt, var_or_const, abstract_opt, export_element_list, export_element;
+
+precedence left AND, TUBE;
+precedence right LF;
+precedence right COMMA;
+precedence right DOC;
+
+start with comp_unit;
+
+/***************************************************************/
+/***          TYPESCRIPT DEFINITION FILES GRAMMAR             **/    
+/***************************************************************/
+
+comp_unit ::= declaration_list_opt:decls {: parser.compilationUnit.setDeclarations((Declaration[])decls); :};
+
+declaration_list_opt ::= lf_opt declaration_list:l semi_or_lf_opt {: 
+		parser.comments.pop();
+		RESULT = l; 
+	:} | lf_opt {: RESULT = new Declaration[0]; :};
+
+declaration_list ::= declaration_list:l semi_or_lf declaration_with_error:d
+	{:
+		if(d instanceof Declaration) {
+			Declaration[] list = (Declaration[])l;
+			Token doc = parser.comments.peek()[0];
+			if(doc!=null) {
+				((Declaration)d).setDocumentation(doc.toString());
+				parser.comments.peek()[0]=null;
+			}
+			RESULT = ArrayUtils.add(list, (Declaration)d);
+		} else {
+			if(d instanceof Token) {
+				parser.comments.peek()[0] = (Token)d;
+			}
+			RESULT = l;
+		}
+	:} 
+ 	| declaration_with_error:d {: 
+ 		if(d instanceof Declaration) {
+			parser.comments.push(new Token[] { null });
+	 		RESULT = new Declaration[] { (Declaration)d }; 
+	 	} else {
+			parser.comments.push(new Token[] { (Token)d });
+	 		RESULT = new Declaration[0]; 
+	 	}
+ 	:}
+ ;
+
+declaration_with_error ::= declaration:d {: RESULT=d; :} | error;
+
+declaration ::= declaration_nodoc:d {: RESULT=d; :}
+	| DOC:d {: 
+		RESULT=d; 
+	:}
+;
+
+declaration_nodoc ::= 
+      type_macro:d {: RESULT=d; :} 
+	| type_decl:d {: RESULT=d; :} 
+	| enum_decl:d {: RESULT=d; :} 
+	| module_decl:d {: RESULT=d; :} 
+	| var_decl:d {: RESULT=d; :} 
+	| func_decl:d {: RESULT=d; :} 
+	| export_decl:d {: RESULT=d; :}
+	| import_decl:d {: RESULT=d; :}
+;
+
+export_decl ::= EXPORT ASSIGN IDENTIFIER:exportedIdentifier lf_opt 
+	{:
+		RESULT = new ReferenceDeclaration((Token)exportedIdentifier, null, exportedIdentifier.toString());  
+	:} 
+	| EXPORT LCPAREN export_element_list RCPAREN lf_opt
+	;
+
+export_element_list ::= export_element_list:l COMMA lf_opt export_element:t 
+	| export_element:t 
+;
+
+export_element ::= IDENTIFIER | IDENTIFIER AS IDENTIFIER;
+
+export_opt ::= EXPORT |;
+
+import_decl ::= 
+	export_opt IMPORT import_spec:s
+	{:
+		RESULT = s;
+	:}
+;
+
+import_spec ::= 
+	MULT AS IDENTIFIER:alias FROM qual_id:imported
+	{:
+		RESULT = new ReferenceDeclaration((Token)alias, alias.toString(), imported.toString());
+	:}
+	| IDENTIFIER:alias ASSIGN qual_id:imported
+	{:
+		RESULT = new ReferenceDeclaration((Token)alias, alias.toString(), imported.toString());
+	:} 
+	| IDENTIFIER:alias ASSIGN IDENTIFIER:require LPAREN qual_id:imported RPAREN
+	{:
+		if(!"require".equals(require.toString())) {
+			parser.syntax_error((Token)require);
+		} else {
+			RESULT = new ReferenceDeclaration((Token)alias, alias.toString(), imported.toString());
+		}
+	:}
+
+;
+
+type_macro ::= TYPE_MACRO IDENTIFIER:alias type_param_list_opt:tparams ASSIGN lf_opt type:type 
+	{: 
+		RESULT = new TypeMacroDeclaration((Token)alias, alias.toString(), (TypeParameterDeclaration[])tparams, (TypeReference)type);
+	:}
+	| 
+	EXPORT TYPE_MACRO IDENTIFIER:alias type_param_list_opt:tparams ASSIGN type:type 
+	{: 
+		RESULT = new TypeMacroDeclaration((Token)alias, alias.toString(), (TypeParameterDeclaration[])tparams, (TypeReference)type);
+	:}
+;
+
+type_decl ::= declare_opt abstract_opt type_kind:def IDENTIFIER:name type_param_list_opt:tparams extends_opt:t implements_opt:t2 lf_opt LCPAREN member_list_opt:members RCPAREN
+	{:
+		RESULT = new TypeDeclaration((Token)name,def.toString(),name.toString(),(TypeParameterDeclaration[])tparams,t==null?(TypeReference[])t2:ArrayUtils.addAll((TypeReference[])t,(TypeReference[])t2),(Declaration[])members);
+	:} | declare_opt DECLARE_CLASS IDENTIFIER:name type_param_list_opt:tparams extends_opt:t implements_opt:t2 lf_opt LCPAREN member_list_opt:members RCPAREN
+	{:
+		RESULT = new TypeDeclaration((Token)name,"class",name.toString(),(TypeParameterDeclaration[])tparams,t==null?(TypeReference[])t2:ArrayUtils.addAll((TypeReference[])t,(TypeReference[])t2),(Declaration[])members);
+	:}
+;
+
+const_opt ::= CONST {: RESULT = true; :} | {: RESULT = false; :};
+
+abstract_opt ::= ABSTRACT {: RESULT = "abstract"; :} | ;
+
+enum_decl ::= declare_opt DECLARE_ENUM IDENTIFIER:name type_param_list_opt:tparams lf_opt LCPAREN enum_member_list_opt:members RCPAREN
+	{:
+		RESULT = new TypeDeclaration((Token)name,"enum",name.toString(),(TypeParameterDeclaration[])tparams,null,(Declaration[])members);
+	:} 
+	| declare_opt const_opt ENUM IDENTIFIER:name type_param_list_opt:tparams lf_opt LCPAREN enum_member_list_opt:members RCPAREN
+	{:
+		RESULT = new TypeDeclaration((Token)name,"enum",name.toString(),(TypeParameterDeclaration[])tparams,null,(Declaration[])members);
+	:}
+;
+
+enum_member_list_opt ::= lf_opt enum_member_list:l lf_opt {: RESULT = l; :}
+	| lf_opt {: RESULT = new Declaration[0]; :};
+
+enum_member_list ::= enum_member_list:l COMMA lf_opt enum_member_elt_with_error:e
+	{:
+		if(e!=null) {
+			Declaration[] list = (Declaration[])l;
+			RESULT = ArrayUtils.add(list, (Declaration)e);
+		} else {
+			RESULT=l;
+		}
+	:} 
+	| enum_member_elt_with_error:e
+	{: 
+		if(e!=null) {
+			RESULT=new Declaration[] { (Declaration)e };
+		} else {
+			RESULT=new Declaration[0];
+		} 
+	:}
+	| enum_member_list:l COMMA lf_opt
+	{: 
+		RESULT=l;
+	:}
+	| enum_member_list:l lf_opt doc_list lf_opt
+	{: 
+		RESULT=l;
+	:}
+	| enum_member_list:l COMMA lf_opt doc_list lf_opt
+	{: 
+		RESULT=l;
+	:}
+;
+
+enum_member_elt_with_error ::= enum_member_elt:d {: RESULT=d; :} | error;
+
+enum_member_elt ::= doc_list:doc lf_opt enum_member_elt_nodoc:d
+	{: 
+		if(d!=null) {
+			Declaration decl = (Declaration)d; 
+			decl.setDocumentation(doc.toString()); 
+			RESULT=d; 
+		}
+	:}
+	| enum_member_elt_nodoc:d 
+	{: 	    
+	 	RESULT=d; 
+	:}
+;
+
+enum_member_elt_nodoc ::= IDENTIFIER:name {: 
+		RESULT = new VariableDeclaration((Token)name, name.toString(), null, false, true);
+	:} 
+	| IDENTIFIER:name ASSIGN literal:value {: 
+		Literal literal = new Literal((Token)value, value.toString());
+		VariableDeclaration var = new VariableDeclaration((Token)name, name.toString(), null, false, true);
+		var.setInitializer(literal);
+		RESULT = var;
+	:}
+;
+
+literal ::= INT:i {: RESULT=i; :};
+
+type_kind ::= INTERFACE:def {: RESULT=def; :} | CLASS:def {: RESULT=def; :};
+
+extends_opt ::= EXTENDS type_list:t {: RESULT = t; :} | ;
+
+implements_opt ::= IMPLEMENTS lf_opt type_list:t {: RESULT = t; :} | ;
+
+type_list ::= type_list:l COMMA lf_opt type:t 
+	{:
+		TypeReference[] list = (TypeReference[])l;
+		RESULT = ArrayUtils.add(list, (TypeReference)t);
+	:} 
+| type:t 
+	{: 
+		RESULT=new TypeReference[] { (TypeReference)t }; 
+	:}
+;
+
+member_list_opt ::= lf_opt member_list:l semi_or_comma_or_lf_opt {: 
+		parser.comments.pop();
+		RESULT = l; 
+	:} 
+	| lf_opt {: RESULT = new Declaration[0]; :};
+
+lf ::= lf LF | LF;
+
+lf_opt ::= lf |;
+
+semi_or_lf ::= SEMI lf | SEMI | lf;
+
+semi_or_lf_opt ::= semi_or_lf |;
+
+semi_or_comma_or_lf ::= SEMI lf | SEMI | COMMA lf | COMMA | lf;
+
+semi_or_comma_or_lf_opt ::= semi_or_comma_or_lf |;
+
+member_list ::= member_list:l semi_or_comma_or_lf member_elt_with_error:d
+	{:
+		if(d instanceof Declaration) {
+			Declaration[] list = (Declaration[])l;
+			Token doc = parser.comments.peek()[0];
+			if(doc!=null) {
+				((Declaration)d).setDocumentation(doc.toString());
+				parser.comments.peek()[0]=null;
+			}
+			RESULT = ArrayUtils.add(list, (Declaration)d);
+		} else {
+			if(d instanceof Token) {
+				parser.comments.peek()[0] = (Token)d;
+			}
+			RESULT=l;
+		}
+	:} 
+	| member_elt_with_error:d 
+	{: 
+ 		if(d instanceof Declaration) {
+			parser.comments.push(new Token[] { null });
+	 		RESULT = new Declaration[] { (Declaration)d }; 
+	 	} else {
+			parser.comments.push(new Token[] { (Token)d });
+	 		RESULT = new Declaration[0]; 
+	 	}
+	:}
+;
+
+member_elt_with_error ::=  member_elt:d {: RESULT=d; :} | error;
+
+member_elt ::= member_elt_nodoc:d 
+	{: 
+		RESULT=d; 
+	:} 	
+	| DOC:doc
+	{: 
+		RESULT=doc; 
+	:} 	
+;
+
+doc_list ::= DOC:doc lf_opt doc_list {: RESULT=doc; :} | DOC:doc lf_opt {: RESULT=doc; :};
+
+doc_list_opt ::= doc_list:l {: RESULT=l; :} |;
+
+doc_opt ::= DOC | ;
+
+member_elt_nodoc ::= 
+	  var_decl:d {: RESULT=d; :} 
+	| func_decl:d {: RESULT=d; :} 
+	| index_sig_decl:d {: RESULT=d; :} 
+	| constructor_decl:d {: RESULT=d; :}
+;
+
+module_decl ::= declare_opt IDENTIFIER:t qual_id:name lf_opt LCPAREN declaration_list_opt:declarations RCPAREN
+	{:
+		if(!(t.toString().equals("module")||t.toString().equals("namespace"))) {
+			parser.syntax_error((Token)t);
+		}
+		RESULT = ModuleDeclaration.createQualifiedModuleDeclaration((Token)t,name.toString(),(Declaration[])declarations);
+	:} 
+	| DECLARE_MODULE:t qual_id:name lf_opt LCPAREN declaration_list_opt:declarations RCPAREN
+	{:
+		RESULT = ModuleDeclaration.createQualifiedModuleDeclaration((Token)t,name.toString(),(Declaration[])declarations);
+	:}	
+;
+
+var_or_const ::= VAR {: RESULT=false; :} | CONST {: RESULT = true; :};
+
+var_decl ::= declare_opt:mod var_or_const:readonly IDENTIFIER:name optional_opt:opt lf_opt type_annotation_opt:t
+	{:
+		VariableDeclaration var = new VariableDeclaration((Token)name,name.toString(),(TypeReference)t, (Boolean)opt, (Boolean)readonly);
+		if(mod!=null) var.addModifier((String)mod);
+		var.setHidden(var.hasModifier("private"));
+		RESULT = var;
+	:}
+	| declare_opt:mod IDENTIFIER:name optional_opt:opt lf_opt type_annotation_opt:t
+	{:
+		VariableDeclaration var = new VariableDeclaration((Token)name,name.toString(),(TypeReference)t, (Boolean)opt, false);
+		if(mod!=null) var.addModifier((String)mod);
+		var.setHidden(var.hasModifier("private"));
+		RESULT = var;
+	:}
+	| declare_opt:mod INT:name optional_opt:opt lf_opt type_annotation_opt:t
+	{:
+		VariableDeclaration var = new VariableDeclaration((Token)name,name.toString(),(TypeReference)t, (Boolean)opt, false);
+		if(mod!=null) var.addModifier((String)mod);
+		var.setHidden(var.hasModifier("private"));
+		RESULT = var;
+	:}
+	// case of a variable called 'new'
+	| declare_opt:mod NEW:name optional_opt:opt lf_opt type_annotation_opt:t
+	{:
+		VariableDeclaration var = new VariableDeclaration((Token)name,name.toString(),(TypeReference)t, (Boolean)opt, false);
+		if(mod!=null) var.addModifier((String)mod);
+		var.setHidden(var.hasModifier("private"));
+		RESULT = var;
+	:}
+//	| DECLARE_VAR IDENTIFIER:name optional_opt:opt type_annotation_opt:t
+//	{:
+//		RESULT = new VariableDeclaration((Token)name,name.toString(),(TypeReference)t, (Boolean)opt);
+//	:}
+;
+
+optional_opt ::= QUESTION {: RESULT=true; :} | {: RESULT=false; :};
+
+func_decl ::= declare_opt:mod IDENTIFIER:name optional_opt:opt type_param_list_opt:tparams LPAREN param_list_opt:params RPAREN type_annotation_opt:t
+	{:
+		//System.err.println("1");
+		FunctionDeclaration func = new FunctionDeclaration((Token)name,name.toString(),(TypeReference)t, (ParameterDeclaration[])params, (TypeParameterDeclaration[])tparams);
+		if(mod!=null) func.addModifier((String)mod);
+		func.setHidden(func.hasModifier("private"));
+		RESULT = func;
+	:} 
+	| declare_opt:mod FUNCTION IDENTIFIER:name optional_opt:opt type_param_list_opt:tparams LPAREN param_list_opt:params RPAREN type_annotation_opt:t
+	{:
+		//System.err.println("2");
+		FunctionDeclaration func = new FunctionDeclaration((Token)name,name.toString(),(TypeReference)t, (ParameterDeclaration[])params, (TypeParameterDeclaration[])tparams);
+		if(mod!=null) func.addModifier((String)mod);
+		func.setHidden(func.hasModifier("private"));
+		RESULT = func;
+	:}
+	| DECLARE_FUNCTION IDENTIFIER:name optional_opt:opt type_param_list_opt:tparams LPAREN param_list_opt:params RPAREN type_annotation_opt:t
+	{:
+		//System.err.println("3");
+		RESULT = new FunctionDeclaration((Token)name,name.toString(),(TypeReference)t, (ParameterDeclaration[])params, (TypeParameterDeclaration[])tparams);
+	:}
+;
+
+constructor_decl ::= declare_opt:mod type_param_list_opt:tparams LPAREN:token param_list_opt:params RPAREN type_annotation_opt:t
+	{:
+		//System.err.println("4");
+		RESULT = new FunctionDeclaration((Token)token,FunctionDeclaration.ANONYMOUS_FUNCTION_RESERVED_NAME,(TypeReference)t, (ParameterDeclaration[])params, (TypeParameterDeclaration[])tparams);
+	:}
+	| declare_opt:mod NEW type_param_list_opt:tparams LPAREN:token param_list_opt:params RPAREN type_annotation_opt:t
+	{:
+		//System.err.println("5");
+		RESULT = new FunctionDeclaration((Token)token,FunctionDeclaration.NEW_FUNCTION_RESERVED_NAME,(TypeReference)t, (ParameterDeclaration[])params, (TypeParameterDeclaration[])tparams);
+	:}
+;
+
+index_sig_decl ::= declare_opt type_param_list_opt:tparams LSPAREN:token param:param RSPAREN type_annotation_opt:t
+	{:
+		RESULT = new FunctionDeclaration((Token)token,FunctionDeclaration.INDEXSIG_RESERVED_NAME,(TypeReference)t, new ParameterDeclaration[] {(ParameterDeclaration)param}, (TypeParameterDeclaration[])tparams);
+	:} |
+	declare_opt CONST:readonly type_param_list_opt:tparams LSPAREN:token param:param RSPAREN type_annotation_opt:t
+	{:
+		RESULT = new FunctionDeclaration((Token)token,FunctionDeclaration.INDEXSIG_RESERVED_NAME,(TypeReference)t, new ParameterDeclaration[] {(ParameterDeclaration)param}, (TypeParameterDeclaration[])tparams);
+	:}	
+;
+
+param_list_opt ::= lf_opt param_list:l lf_opt {: RESULT = l; :}
+	| lf_opt {: RESULT = new ParameterDeclaration[0]; :}
+;
+
+param_list ::= param_list:l lf_opt COMMA lf_opt param:p
+	{:
+		ParameterDeclaration[] list = (ParameterDeclaration[])l;
+		RESULT = ArrayUtils.add(list, (ParameterDeclaration)p);
+	:}
+		| param:p
+	{:
+		RESULT=new ParameterDeclaration[] { (ParameterDeclaration)p };
+	:}
+;
+
+param ::= doc_opt lf_opt varargs_opt:varargs IDENTIFIER:i optional_opt:opt type_annotation_opt:t doc_opt lf_opt
+	{: 
+		RESULT = new ParameterDeclaration( (Token)i, i.toString(), (TypeReference)t, (Boolean)opt, varargs!=null); 
+	:}
+;
+
+varargs_opt ::= DOTDOTDOT:varargs {: RESULT=varargs; :} | ;
+
+type_annotation_opt ::= type_annotation:t {: RESULT=t; :} |
+;
+
+type_annotation ::= COL lf_opt doc_opt lf_opt type:t {: RESULT=t; :}
+;
+
+type ::= 
+      functional_type:t {: RESULT=t; :}
+	| typeof_type:t {: RESULT=t; :}
+	| is_type:t {: RESULT=t; :}
+	| union_type:t {: RESULT=t; :}
+	| intersection_type:t {: RESULT=t; :}
+	| object_type:t {: RESULT=t; :}
+    | array_type:t {: RESULT=t; :}
+    | simple_type:t {: RESULT=t; :}
+    | tuple_type:t {: RESULT=t; :}
+;
+
+union_type ::= type:t1 TUBE:t lf_opt type:t2 {: RESULT=new UnionTypeReference((Token)t, (TypeReference)t1, (TypeReference)t2); :}
+	| LPAREN union_type:t RPAREN {: RESULT=t; :}
+;
+
+intersection_type ::= type:t1 AND:t lf_opt type:t2 {: RESULT=new UnionTypeReference((Token)t, (TypeReference)t1, (TypeReference)t2, true); :}
+	| LPAREN intersection_type:t RPAREN {: RESULT=t; :}
+;
+
+simple_type ::= qual_id:q type_arg_list_opt:tparams {: RESULT=new TypeReference(null, (String)q, (TypeReference[])tparams); :};
+
+tuple_type ::= 
+	LSPAREN type_list:types RSPAREN  {: RESULT=new TypeReference(null, "$tuple$", (TypeReference[])types); :}
+;
+
+array_type ::= 
+	  simple_type:t SQUARE {: RESULT=new ArrayTypeReference( null, (TypeReference)t); :}
+	| object_type:t SQUARE {: RESULT=new ArrayTypeReference( null, (TypeReference)t); :}
+	| tuple_type:t SQUARE {: RESULT=new ArrayTypeReference( null, (TypeReference)t); :}
+    | LPAREN functional_type:t RPAREN SQUARE {: RESULT=new ArrayTypeReference(null, (TypeReference)t); :} 
+    | array_type:t SQUARE {: RESULT=new ArrayTypeReference(null, (TypeReference)t); :} 
+    | LPAREN union_type:t RPAREN SQUARE {: RESULT=new ArrayTypeReference(null, (TypeReference)t); :} 
+;
+
+functional_type ::= 
+	  type_param_list_opt:tparams LPAREN_FUNC:token param_list_opt:params RPAREN_FUNC IMPLIES type:t {: 
+	  	RESULT=new FunctionalTypeReference((Token)token, (TypeReference)t, (ParameterDeclaration[])params, (TypeParameterDeclaration[])tparams); 
+	:}
+	| NEW:i type_param_list_opt:tparams LPAREN_FUNC param_list_opt:params RPAREN_FUNC IMPLIES type:t {: 
+		RESULT=new FunctionalTypeReference((Token)i, true, (TypeReference)t, (ParameterDeclaration[])params, (TypeParameterDeclaration[])tparams); 
+	:}
+	| LPAREN functional_type:t RPAREN {: RESULT=t; :}
+;
+
+object_type ::= LCPAREN:token member_list_opt:members RCPAREN {: RESULT=new TypeReference((Token)token, (Declaration[])members); :}
+	| LPAREN object_type:t RPAREN {: RESULT=t; :}
+;
+
+typeof_type ::= TYPEOF qual_id:name {: TypeReference t = new TypeReference(null, (String)name, null); t.setTypeOf(true); RESULT=t; :}
+	| LPAREN TYPEOF qual_id:name RPAREN {: TypeReference t = new TypeReference(null, (String)name, null); t.setTypeOf(true); RESULT=t; :}
+;
+
+is_type ::= IDENTIFIER IS type {: RESULT=new TypeReference(null, "boolean", null); :}
+	| LPAREN IDENTIFIER IS type RPAREN {: RESULT=new TypeReference(null, "boolean", null); :}
+;
+
+declare_opt ::= EXPORT | DECLARE | STATIC {: RESULT = "static"; :} | PRIVATE {: RESULT = "private"; :} | PROTECTED {: RESULT = "protected"; :} | PRIVATE STATIC {: RESULT = "private static"; :} | PROTECTED STATIC {: RESULT = "protected static"; :} | PUBLIC {: RESULT = "public"; :} | PUBLIC STATIC {: RESULT = "public static"; :} | ;
+//declare_opt ::= DECLARE | EXPORT | ;
+//declare_opt ::= IDENTIFIER:i {: if(!i.toString().equals("declare") || !i.toString().equals("declare")) { throw new RuntimeException("declare or export expected: "); } RESULT=i; :} | ;
+
+qual_id ::= IDENTIFIER:i {: RESULT=i.toString(); :} 
+	| IDENTIFIER:i DOT qual_id:q {: RESULT=i.toString()+"."+q.toString(); :} 
+;
+
+type_arg_list_opt ::= LT type_arg_list:tparams GT {: RESULT = tparams; :} | ;
+
+type_arg_list ::= type_arg_list:l COMMA type:p
+	{:
+		TypeReference[] list = (TypeReference[])l;
+		RESULT = ArrayUtils.add(list, (TypeReference)p);
+	:}
+		| type:p
+	{:
+		RESULT=new TypeReference[] { (TypeReference)p };
+	:}
+;
+
+type_param_list_opt ::= LT type_param_list:tparams GT {: RESULT = tparams; :} | ;
+
+type_param_list ::= type_param_list:l COMMA type_param:p
+	{:
+		TypeParameterDeclaration[] list = (TypeParameterDeclaration[])l;
+		RESULT = ArrayUtils.add(list, (TypeParameterDeclaration)p);
+	:}
+		| type_param:p
+	{:
+		RESULT=new TypeParameterDeclaration[] { (TypeParameterDeclaration)p };
+	:}
+;
+
+type_param ::= type:t 
+	{: 
+		RESULT=new TypeParameterDeclaration(((TypeReference)t).getToken(), ((TypeReference)t).getName()); 
+	:} 
+		| type:t EXTENDS type:s 
+	{: 
+		RESULT=new TypeParameterDeclaration(((TypeReference)t).getToken(), ((TypeReference)t).getName()); 
+		((TypeParameterDeclaration)RESULT).setUpperBound((TypeReference)s); 
+	:}
+;
