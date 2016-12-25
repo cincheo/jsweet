@@ -201,14 +201,14 @@ public class DuplicateMethodsCleaner extends Scanner {
 		if (dump) {
 			for (Set<FullFunctionDeclaration> s : duplicatesList) {
 				TypeDeclaration type = s.iterator().next().declaringType;
-				System.out.println(" -- " + context.getTypeName(type));
+				logger.info(" -- " + context.getTypeName(type));
 				for (FullFunctionDeclaration d : s) {
-					System.out.println(" * " + d);
+					logger.info(" * " + d);
 					if (context.overrides.get(d) != null) {
-						System.out.println("    -> overrides: " + context.overrides.get(d));
+						logger.info("    -> overrides: " + context.overrides.get(d));
 					}
 					if (context.overridens.get(d) != null) {
-						System.out.println("    -> overridens: " + context.overridens.get(d));
+						logger.info("    -> overridens: " + context.overridens.get(d));
 					}
 				}
 			}
@@ -236,11 +236,11 @@ public class DuplicateMethodsCleaner extends Scanner {
 
 		for (Set<FullFunctionDeclaration> duplicates : newDuplicatesList) {
 			Map<FullFunctionDeclaration, List<String>> nameMatrix = null;
-			// System.out.println("disambiguation for " + duplicates);
+			// logger.info("disambiguation for " + duplicates);
 			nameMatrix = calculateNames(duplicates, Strategy.USER_FRIENDLY);
 			dumpNameMatrix(nameMatrix);
 			if (hasDuplicate(nameMatrix)) {
-				// System.out.println("found duplicate!");
+				// logger.info("found duplicate!");
 				nameMatrix = calculateNames(duplicates, Strategy.FULL);
 				dumpNameMatrix(nameMatrix);
 			}
@@ -250,9 +250,9 @@ public class DuplicateMethodsCleaner extends Scanner {
 
 	private void dumpNameMatrix(Map<FullFunctionDeclaration, List<String>> nameMatrix) {
 		if (dump) {
-			System.out.println("Dumping name matrix:");
+			logger.info("Dumping name matrix:");
 			for (Entry<FullFunctionDeclaration, List<String>> e : nameMatrix.entrySet()) {
-				System.out.println("# " + e.getKey() + " ---> " + e.getValue());
+				logger.info("# " + e.getKey() + " ---> " + e.getValue());
 			}
 		}
 	}
@@ -264,7 +264,7 @@ public class DuplicateMethodsCleaner extends Scanner {
 				m.remove(f);
 			}
 		}
-		// System.out.println("TESTING DUPLICATES ON:");
+		// logger.info("TESTING DUPLICATES ON:");
 		// dumpNameMatrix(m);
 		List<String> signatures = new ArrayList<String>();
 		for (List<String> l : m.values()) {

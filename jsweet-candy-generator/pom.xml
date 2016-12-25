@@ -34,13 +34,6 @@
 			<name>libs-release</name>
 			<url>http://repository.jsweet.org/artifactory/ext-release-local</url>
 		</repository>
-		<repository>
-			<releases />
-			<snapshots />
-			<id>cincheo</id>
-			<name>cincheo</name>
-			<url>http://repository.jsweet.org/artifactory/cincheo</url>
-		</repository>
 	</repositories>
 	<build>
 		<sourceDirectory>src/main/java</sourceDirectory>

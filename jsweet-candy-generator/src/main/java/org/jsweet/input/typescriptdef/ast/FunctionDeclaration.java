@@ -27,6 +27,7 @@ import org.jsweet.JSweetDefTranslatorConfig;
  * A function declaration in the TypeScript source code.
  * 
  * @author Renaud Pawlak
+ * @author Louis Grignon
  */
 public class FunctionDeclaration extends AbstractTypedDeclaration implements TypeParameterizedElement {
 
@@ -42,8 +43,6 @@ public class FunctionDeclaration extends AbstractTypedDeclaration implements Typ
 		super(token, name, type);
 		this.parameters = parameters;
 		this.typeParameters = typeParameters;
-
-		// System.out.println("new " + this);
 	}
 
 	public boolean isConstructor() {

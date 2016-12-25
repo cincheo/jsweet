@@ -40,6 +40,7 @@ import org.jsweet.input.typescriptdef.util.DirectedGraph;
  * The TypeScript definitions to Java translation context.
  * 
  * @author Renaud Pawlak
+ * @author Louis Grignon
  */
 public class Context {
 
@@ -248,8 +249,6 @@ public class Context {
 					&& "number".equals(getFunction.getParameters()[0].getType().getName())) {
 				if (t.getTypeParameters()[0].getName() != null
 						&& t.getTypeParameters()[0].getName().equals(getFunction.getType().getName())) {
-					// System.out.println("found array type: " + getTypeName(t)
-					// + " - " + Arrays.asList(t.getMembers()));
 					arrayTypes.add(t);
 				}
 			}

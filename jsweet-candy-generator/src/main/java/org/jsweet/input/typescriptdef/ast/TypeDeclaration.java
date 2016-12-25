@@ -28,6 +28,7 @@ import org.apache.commons.lang3.ArrayUtils;
  * Type declarations in source code of TypeScript defintions.
  * 
  * @author Renaud Pawlak
+ * @author Louis Grignon
  */
 public class TypeDeclaration extends AbstractDeclaration
 		implements Type, TypeParameterizedElement, DeclarationContainer {
@@ -66,7 +67,6 @@ public class TypeDeclaration extends AbstractDeclaration
 		} else {
 			this.members = new Declaration[0];
 		}
-		// System.out.println("new TypeDeclaration: " + this);
 	}
 
 	@Override
