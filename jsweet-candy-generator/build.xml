@@ -1,0 +1,66 @@
+<project name="jsweet-def-translators" basedir="." default="install-toolsjar">
+
+	<property environment="env" />
+
+	<condition property="maven.bin" value="${env.MAVEN_HOME}\bin\mvn.bat" else="${env.MAVEN_HOME}/bin/mvn">
+		<os family="winnt" />
+	</condition>
+
+	<property name="maven.repository" value="${env.M2_HOME}/repository" />
+	<property name="jflex.jar" value="${maven.repository}/de/jflex/jflex/1.3.5/jflex-1.3.5.jar" />
+	<property name="java-cup.jar" value="${maven.repository}/edu/princeton/cup/java-cup/10k/java-cup-10k.jar" />
+	<property name="commons-lang3.jar" value="${maven.repository}/org/apache/commons/commons-lang3/3.3.2/commons-lang3-3.3.2.jar" />
+	<property name="jsweet-api.jar" value="${maven.repository}/org/jsweet/jsweet-api-bundle-frameworks/0.0.2-SNAPSHOT/jsweet-api-bundle-frameworks-0.0.2-SNAPSHOT.jar" />
+	<property name="tools.jar" value="${maven.repository}/com/sun/tools/8/tools-8.jar" />
+
+	<target name="install-toolsjar">
+		<property name="lib.path" value="${env.JAVA_HOME}/lib/tools.jar">
+		</property>
+		<echo>installing local tools.jar in local maven: ${lib.path}</echo>
+		<echo>WARNING: this script requires that your JAVA_HOME environment variable points to the Java 8 JDK (not JRE)</echo>
+		<echo>note that under Eclipse, you can locally set your JAVA_HOME variable in "External tools configuration -> Environment"</echo>
+		<property name="lib.name" value="tools">
+		</property>
+		<property name="lib.version" value="8">
+		</property>
+		<exec executable="${maven.bin}" failonerror="true">
+			<arg line="install:install-file -Dfile='${lib.path}' -DgroupId=com.sun -DartifactId=${lib.name} -Dpackaging=jar -Dversion=${lib.version}" />
+		</exec>
+		<echo>WARNING: a successful build does not necessarily mean that you installed the right version of tools.jar</echo>
+	</target>
+
+	<target name="translate-defs">
+		<java classname="org.cincheo.jsweet.input.typescriptdef.TypescriptDef2Java" fork="true">
+			<arg value="tsdef" />
+			<arg value="javadef" />
+			<classpath>
+				<pathelement path="./target/classes" />
+			</classpath>
+		</java>
+	</target>
+
+	<target name="gen-parser">
+		<echo>Generating TSDef API parser...</echo>
+		<echo message="compile classpath: ${compile_classpath}" />
+		<java classname="java_cup.Main" fork="true" failonerror="true" classpath="${compile_classpath}">
+			<arg value="-expect" />
+			<arg value="0" />
+			<arg value="-package" />
+			<arg value="org.jsweet.input.typescriptdef.parser" />
+			<arg value="-parser" />
+			<arg value="TypescriptDefParser" />
+			<arg value="src/org/jsweet/input/typescriptdef/parser/typescriptdef.cup" />
+		</java>
+		<move file="TypescriptDefParser.java" todir="src/org/jsweet/input/typescriptdef/parser" overwrite="true">
+		</move>
+		<move file="sym.java" todir="src/org/jsweet/input/typescriptdef/parser" overwrite="true">
+		</move>
+		<echo>Generating TSDef API lexer...</echo>
+		<java classname="JFlex.Main" fork="true" failonerror="true" classpath="${compile_classpath}">
+			<arg value="src/org/jsweet/input/typescriptdef/parser/typescriptdef.lex" />
+		</java>
+
+	</target>
+
+
+</project>

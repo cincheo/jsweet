@@ -178,14 +178,6 @@ Note that the following command will output the document in HTML:
 ```
 
 ## License
+
 JSweet is under the Apache 2.0 Open Source license.
 
-# Sub projects
-* [JSweet transpiler](https://github.com/cincheo/jsweet/tree/master/jsweet-transpiler)
-* [JSweet documentation](https://github.com/cincheo/jsweet/tree/master/doc)
-* [JSweet core candy](https://github.com/cincheo/jsweet/tree/master/jsweet-core)
-* [JDK runtime for TypeScript](https://github.com/cincheo/jsweet/tree/master/j4ts)
-* [JSweet candy generator](https://github.com/cincheo/jsweet/tree/master/jsweet-candy-generator)
-
-## License
-Each project has its own licensing, we therefore invite you to check each one individually.
