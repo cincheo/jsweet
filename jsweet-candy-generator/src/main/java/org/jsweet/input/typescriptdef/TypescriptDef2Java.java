@@ -63,6 +63,13 @@ import org.jsweet.input.typescriptdef.visitor.UnionInterfacesCreator;
 import org.jsweet.input.typescriptdef.visitor.UnionTypesEraser;
 import org.jsweet.input.typescriptdef.visitor.UnionTypesExpander;
 
+/**
+ * Entry point for candy generation from TypeScript definition files
+ * 
+ * @author Louis Grignon
+ * @author Renaud Pawlak
+ *
+ */
 public class TypescriptDef2Java {
 
 	private final static Logger logger = Logger.getLogger(TypescriptDef2Java.class);

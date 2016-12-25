@@ -67,27 +67,6 @@
 
 				</configuration>
 			</plugin>
-
-			<plugin>
-				<artifactId>maven-antrun-plugin</artifactId>
-				<version>1.7</version>
-				<executions>
-					<execution>
-						<phase>generate-sources</phase>
-						<configuration>
-							<target>
-								<property name="compile_classpath" refid="maven.compile.classpath" />
-								<property name="outputDir" value="${project.build.outputDirectory}" />
-								<property name="sourceDir" value="${project.build.sourceDirectory}" />
-								<ant antfile="${basedir}/build.xml" target="gen-parser" />
-							</target>
-						</configuration>
-						<goals>
-							<goal>run</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
 		</plugins>
 		<pluginManagement>
 			<plugins>
@@ -126,6 +105,36 @@
 			</plugins>
 		</pluginManagement>
 	</build>
+	<profiles>
+		<profile>
+			<id>genparser</id>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<version>1.7</version>
+						<executions>
+							<execution>
+								<phase>generate-sources</phase>
+								<configuration>
+									<target>
+										<property name="compile_classpath" refid="maven.compile.classpath" />
+										<property name="outputDir" value="${project.build.outputDirectory}" />
+										<property name="sourceDir" value="${project.build.sourceDirectory}" />
+										<ant antfile="${basedir}/build.xml" target="gen-parser" />
+									</target>
+								</configuration>
+								<goals>
+									<goal>run</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+
+		</profile>
+	</profiles>
 	<dependencies>
 		<dependency>
 			<groupId>com.martiansoftware</groupId>
@@ -189,17 +198,16 @@
 		<url>http://www.jsweet.org</url>
 	</organization>
 	<description>A project that defines translators that translate Javascript API definitions such as Typescript or IDL to Candies: JSweet definition APIs.</description>
-
 	<distributionManagement>
 		<repository>
-			<id>cincheo</id>
-			<name>cincheo</name>
-			<url>http://repository.jsweet.org/artifactory/cincheo</url>
+			<id>jsweet-release</id>
+			<name>libs-release</name>
+			<url>http://repository.jsweet.org/artifactory/libs-release-local</url>
 		</repository>
 		<snapshotRepository>
-			<id>cincheo</id>
-			<name>cincheo</name>
-			<url>http://repository.jsweet.org/artifactory/cincheo</url>
+			<id>jsweet-snapshots</id>
+			<name>libs-snapshot</name>
+			<url>http://repository.jsweet.org/artifactory/libs-snapshot-local</url>
 		</snapshotRepository>
 	</distributionManagement>
 
