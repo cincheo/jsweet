@@ -126,12 +126,6 @@ More info at http://www.jsweet.org.
 - JSweet Angular 2 example: https://github.com/cincheo/jsweet-angular2-quickstart
 - JSweet Angular 2 + PrimeNG: https://github.com/cincheo/jsweet-primeng-quickstart 
 
-## Tooling
-
-- [Eclipse plugin](https://github.com/cincheo/jsweet-eclipse-plugin)
-- [Maven plugin](https://github.com/lgrignon/jsweet-maven-plugin)
-- [Gradle plugin](https://github.com/lgrignon/jsweet-gradle-plugin)
-
 ## Sub-projects
 
 This repository is organized in sub-projects. Each sub-project has its own build process.
@@ -142,18 +136,16 @@ This repository is organized in sub-projects. Each sub-project has its own build
 * [JDK runtime](https://github.com/cincheo/jsweet/tree/master/j4ts)
 * [JSweet candy generator](https://github.com/cincheo/jsweet/tree/master/jsweet-candy-generator)
 
+Additionally, some tools for JSweet are available in external repositories.
+
+- [Maven plugin](https://github.com/lgrignon/jsweet-maven-plugin)
+- [Gradle plugin](https://github.com/lgrignon/jsweet-gradle-plugin)
+- [Eclipse plugin](https://github.com/cincheo/jsweet-eclipse-plugin)
+
 ## How to build
 
 Please check each sub-project README file.
 
 ## License
 
-This project contains multiple licenses depending on the sub-project. Check each sub-project individually.
-
-* JSweet transpiler (since version 2.0.0): GPLv3 - was Apache 2 before
-* JSweet core: Apache 2
-* JSweet candy generator: GPLv3
-* JSweet documentation: CC-BY-SA
-* JDK runtime (J4TS): Apache 2
- 
-IMPORTANT NOTE: JSweet licensing is designed so that one can use JSweet to program closed-source and commercial applications. Limitations of the GPL only holds when using/modifying JSweet source code of the transpiler and of the candy generator. If you want to embed the transpiler or the candy generator in a non-open source commercial project, please contact Renaud Pawlak for discussing a commercial license.
+Please read the [LICENSE file](https://github.com/cincheo/jsweet/tree/master/LICENSE).
