@@ -1,3 +1,21 @@
+/* 
+ * TypeScript definitions to Java translator - http://www.jsweet.org
+ * Copyright (C) 2015 CINCHEO SAS <renaud.pawlak@cincheo.fr>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
 package org.jsweet.input.typescriptdef.visitor;
 
 import static org.apache.commons.lang3.StringUtils.defaultString;
@@ -17,6 +35,11 @@ import org.jsweet.input.typescriptdef.ast.TypeReference;
 import org.jsweet.input.typescriptdef.ast.TypedDeclaration;
 import org.jsweet.input.typescriptdef.util.Util;
 
+/**
+ * Merges explicit Java object types in case several ones have been created.
+ * 
+ * @author Renaud Pawlak
+ */
 public class ObjectTypeDuplicateMerger extends Scanner {
 
 	public ObjectTypeDuplicateMerger(Context context) {
@@ -63,8 +86,8 @@ public class ObjectTypeDuplicateMerger extends Scanner {
 		if (replacement != null) {
 			logger.trace("replace reference " + qualifiedName + " with " + replacement);
 			TypedDeclaration parentDeclaration = getParent(TypedDeclaration.class);
-			Util.substituteTypeReference(this, parentDeclaration, typeReference, new TypeReference(null, replacement,
-					typeReference.getTypeArguments()));
+			Util.substituteTypeReference(this, parentDeclaration, typeReference,
+					new TypeReference(null, replacement, typeReference.getTypeArguments()));
 		}
 		super.visitTypeReference(typeReference);
 	}
