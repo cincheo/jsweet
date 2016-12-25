@@ -40,6 +40,7 @@ import org.jsweet.input.typescriptdef.ast.VariableDeclaration;
  * parent method with actually return an object to avoid Java compile errors.
  * 
  * @author Renaud Pawlak
+ * @author Louis Grignon
  */
 public class ParentMethodReturnTypeSusbtitutor extends Scanner {
 
@@ -86,8 +87,8 @@ public class ParentMethodReturnTypeSusbtitutor extends Scanner {
 					if ("void".equals(parentFunction.getType().getName())) {
 
 						if (context.isInDependency(parentType)) {
-							// if parent belongs to a dependency, we cant change
-							// it
+							// if parent class belongs to a dependency, we cant
+							// change its definition
 							logger.info("modify return type of " + context.getTypeName(declaringType) + "."
 									+ functionDeclaration + ": " + functionDeclaration.getType() + " -> "
 									+ parentFunction.getType());

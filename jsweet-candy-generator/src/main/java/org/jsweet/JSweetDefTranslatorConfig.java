@@ -27,6 +27,7 @@ import java.util.Set;
  * This class contains static constants and utilities.
  * 
  * @author Renaud Pawlak
+ * @author Louis Grignon
  */
 public abstract class JSweetDefTranslatorConfig {
 
