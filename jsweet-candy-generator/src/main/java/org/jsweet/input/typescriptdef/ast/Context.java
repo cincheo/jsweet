@@ -18,6 +18,8 @@
  */
 package org.jsweet.input.typescriptdef.ast;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,6 +40,7 @@ import org.jsweet.input.typescriptdef.util.DirectedGraph;
  * The TypeScript definitions to Java translation context.
  * 
  * @author Renaud Pawlak
+ * @author Louis Grignon
  */
 public class Context {
 
@@ -246,8 +249,6 @@ public class Context {
 					&& "number".equals(getFunction.getParameters()[0].getType().getName())) {
 				if (t.getTypeParameters()[0].getName() != null
 						&& t.getTypeParameters()[0].getName().equals(getFunction.getType().getName())) {
-					// System.out.println("found array type: " + getTypeName(t)
-					// + " - " + Arrays.asList(t.getMembers()));
 					arrayTypes.add(t);
 				}
 			}
@@ -621,6 +622,10 @@ public class Context {
 		return mixins.get(libModule);
 	}
 
+	public CompilationUnit getCompilationUnitForLibModule(String libModule) {
+		return libModulesCompilationUnits.get(libModule);
+	}
+	
 	public CompilationUnit getCompilationUnit(File tsDefFile) {
 		for (CompilationUnit compilUnit : compilationUnits) {
 			if (tsDefFile.equals(compilUnit.file)) {
@@ -635,4 +640,11 @@ public class Context {
 		return typeNames;
 	}
 
+	/**
+	 * @return true if the given TypeDeclaration comes from a dependency (a compilation unit which won't be generated)
+	 */
+	public boolean isInDependency(TypeDeclaration typeDeclaration) {
+		String libModule = getLibModule(getTypeName(typeDeclaration));
+		return isBlank(libModule) || isDependency(getCompilationUnitForLibModule(libModule));
+	}
 }

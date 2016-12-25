@@ -622,7 +622,7 @@ public class JavaDefModelPrinter extends AbstractPrinter {
 				.findDeclarations(ModuleDeclaration.class, "*")) {
 			String module = context.getModuleName(moduleDeclaration.getDeclaration());
 			if (context.moduleDocumentations.containsKey(module)) {
-				System.out.println("generating package-info.java for " + module);
+				logger.info("generating package-info.java for " + module);
 				File f = new File(outputDir, module.replace('.', '/') + "/package-info.java");
 				f.getParentFile().mkdirs();
 				try {

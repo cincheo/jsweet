@@ -145,7 +145,7 @@ public class TypeMacroReplacer extends Scanner {
 	public void onScanEnded() {
 		if (referencesCount > 0) {
 			logger.debug(referencesCount + " type macros redirected.");
-			System.out.println(context.findDeclarations(VariableDeclaration.class, "*.fieldWithUnion"));
+			logger.info("===> " + context.findDeclarations(VariableDeclaration.class, "*.fieldWithUnion"));
 		}
 	}
 

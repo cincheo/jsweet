@@ -81,6 +81,13 @@ import org.jsweet.input.typescriptdef.visitor.UnionInterfacesCreator;
 import org.jsweet.input.typescriptdef.visitor.UnionTypesEraser;
 import org.jsweet.input.typescriptdef.visitor.UnionTypesExpander;
 
+/**
+ * Entry point for candy generation from TypeScript definition files
+ * 
+ * @author Louis Grignon
+ * @author Renaud Pawlak
+ *
+ */
 public class TypescriptDef2Java {
 
 	private final static Logger logger = Logger.getLogger(TypescriptDef2Java.class);
@@ -141,7 +148,7 @@ public class TypescriptDef2Java {
 				asList(new File("typings/globals/jquery/index.d.ts")), //
 				asList(new File("typings/lib.core/lib.core.d.ts"), new File("typings/lib.core/lib.core.ext.d.ts"),
 						new File("typings/lib.core/lib.dom.d.ts")), //
-				new File("OUT"), //
+				new File("../../jsweet-examples/src/main/jsweetdef"), //
 				null, //
 				false);
 	}
@@ -261,7 +268,7 @@ public class TypescriptDef2Java {
 		// comp.compile(fileObjects);
 		logger.info("input files: " + tsDefFiles);
 		logger.info("dependencies: " + tsDefDependencies);
-		logger.info("output directory: " + outputDir);
+		logger.info("output directory: " + outputDir.getAbsolutePath());
 
 		outputDir.mkdirs();
 

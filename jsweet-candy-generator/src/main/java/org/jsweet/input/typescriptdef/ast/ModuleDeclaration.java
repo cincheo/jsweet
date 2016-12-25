@@ -24,6 +24,13 @@ import java.util.List;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
+/**
+ * Module/Namespace declaration node in TypeScript definition file 
+ * 
+ * @author Renaud Pawlak
+ * @author Louis Grignon
+ *
+ */
 public class ModuleDeclaration extends AbstractDeclaration implements DeclarationContainer {
 
 	Declaration[] members;
@@ -47,7 +54,6 @@ public class ModuleDeclaration extends AbstractDeclaration implements Declaratio
 	public ModuleDeclaration(Token token, String name, Declaration[] members) {
 		super(token, name);
 		this.members = members;
-		// System.out.println("new " + this);
 	}
 
 	@Override

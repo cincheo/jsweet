@@ -25,6 +25,7 @@ import java.util.HashSet;
  * A variable declaration in the source code of TypeScript definitions.
  * 
  * @author Renaud Pawlak
+ * @author Louis Grignon
  */
 public class VariableDeclaration extends AbstractTypedDeclaration {
 
@@ -36,7 +37,6 @@ public class VariableDeclaration extends AbstractTypedDeclaration {
 		super(token, name, type);
 		this.optional = optional;
 		this.readonly = readonly;
-		// System.out.println("new VariableDeclaration: " + this);
 	}
 
 	@Override
