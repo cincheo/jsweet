@@ -150,10 +150,10 @@ Please check each sub-project README file.
 
 This project contains multiple licenses depending on the sub-project. Check each sub-project individually.
 
-JSweet transpiler (since version 2.0.0): GPLv3 - was Apache 2 before
-JSweet core: Apache 2
-JSweet candy generator: GPLv3
-JSweet documentation: CC-BY-SA
-JDK runtime (J4TS): Apache 2
+* JSweet transpiler (since version 2.0.0): GPLv3 - was Apache 2 before
+* JSweet core: Apache 2
+* JSweet candy generator: GPLv3
+* JSweet documentation: CC-BY-SA
+* JDK runtime (J4TS): Apache 2
  
-IMPORTANT NOTE: Licenses are designed so that one can use JSweet to program closed-source and commercial applications. Limitations of the GPL only hold when using/modifying JSweet source code of the transpiler and of the candy generator. If you want to embed the transpiler or the candy generator in a non-open source commercial project, please contact Renaud Pawlak for discussing a commercial license.
+IMPORTANT NOTE: JSweet licensing is designed so that one can use JSweet to program closed-source and commercial applications. Limitations of the GPL only holds when using/modifying JSweet source code of the transpiler and of the candy generator. If you want to embed the transpiler or the candy generator in a non-open source commercial project, please contact Renaud Pawlak for discussing a commercial license.
