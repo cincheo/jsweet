@@ -1,18 +1,20 @@
 /* 
- * JSweet - http://www.jsweet.org
+ * JSweet transpiler - http://www.jsweet.org
  * Copyright (C) 2015 CINCHEO SAS <renaud.pawlak@cincheo.fr>
  * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *     http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 package org.jsweet;
 
@@ -78,7 +80,8 @@ public class JSweetCommandLineLauncher {
 			String classPath = jsapArgs.getString("classpath");
 			logger.info("classpath: " + classPath);
 
-			ErrorCountTranspilationHandler transpilationHandler = new ErrorCountTranspilationHandler(new ConsoleTranspilationHandler());
+			ErrorCountTranspilationHandler transpilationHandler = new ErrorCountTranspilationHandler(
+					new ConsoleTranspilationHandler());
 
 			try {
 				File tsOutputDir = jsapArgs.getFile("tsout");
@@ -113,7 +116,8 @@ public class JSweetCommandLineLauncher {
 				LinkedList<File> files = new LinkedList<File>();
 				Util.addFiles(".java", inputDir, files);
 
-				JSweetTranspiler transpiler = new JSweetTranspiler(tsOutputDir, jsOutputDir, candiesJsOutputDir, classPath);
+				JSweetTranspiler transpiler = new JSweetTranspiler(tsOutputDir, jsOutputDir, candiesJsOutputDir,
+						classPath);
 
 				transpiler.setBundle(jsapArgs.getBoolean("bundle"));
 				transpiler.setNoRootDirectories(jsapArgs.getBoolean("noRootDirectories"));
@@ -141,15 +145,18 @@ public class JSweetCommandLineLauncher {
 
 				transpiler.transpile(transpilationHandler, SourceFile.toSourceFiles(files));
 			} catch (NoClassDefFoundError error) {
-				transpilationHandler.report(JSweetProblem.JAVA_COMPILER_NOT_FOUND, null, JSweetProblem.JAVA_COMPILER_NOT_FOUND.getMessage());
+				transpilationHandler.report(JSweetProblem.JAVA_COMPILER_NOT_FOUND, null,
+						JSweetProblem.JAVA_COMPILER_NOT_FOUND.getMessage());
 			}
 
 			errorCount = transpilationHandler.getErrorCount();
 			if (errorCount > 0) {
-				OUTPUT_LOGGER.info("transpilation failed with " + errorCount + " error(s) and " + transpilationHandler.getWarningCount() + " warning(s)");
+				OUTPUT_LOGGER.info("transpilation failed with " + errorCount + " error(s) and "
+						+ transpilationHandler.getWarningCount() + " warning(s)");
 			} else {
 				if (transpilationHandler.getWarningCount() > 0) {
-					OUTPUT_LOGGER.info("transpilation completed with " + transpilationHandler.getWarningCount() + " warning(s)");
+					OUTPUT_LOGGER.info(
+							"transpilation completed with " + transpilationHandler.getWarningCount() + " warning(s)");
 				} else {
 					OUTPUT_LOGGER.info("transpilation successfully completed with no errors and no warnings");
 				}
@@ -239,7 +246,8 @@ public class JSweetCommandLineLauncher {
 		// Do not generate JavaScript
 		switchArg = new Switch("tsOnly");
 		switchArg.setLongFlag("tsOnly");
-		switchArg.setHelp("Tells the transpiler to not compile the TypeScript output (let an external TypeScript compiler do so).");
+		switchArg.setHelp(
+				"Tells the transpiler to not compile the TypeScript output (let an external TypeScript compiler do so).");
 		jsap.registerParameter(switchArg);
 
 		// Do not generate JavaScript
@@ -259,7 +267,8 @@ public class JSweetCommandLineLauncher {
 		// Generates declarations
 		switchArg = new Switch("declaration");
 		switchArg.setLongFlag("declaration");
-		switchArg.setHelp("Tells the transpiler to generate the d.ts files along with the js files, so that other programs can use them to compile.");
+		switchArg.setHelp(
+				"Tells the transpiler to generate the d.ts files along with the js files, so that other programs can use them to compile.");
 		jsap.registerParameter(switchArg);
 
 		// Declarations output directory
@@ -292,7 +301,8 @@ public class JSweetCommandLineLauncher {
 		// Classpath
 		optionArg = new FlaggedOption("classpath");
 		optionArg.setLongFlag("classpath");
-		optionArg.setHelp("The JSweet transpilation classpath (candy jars). This classpath should at least contain the core candy.");
+		optionArg.setHelp(
+				"The JSweet transpilation classpath (candy jars). This classpath should at least contain the core candy.");
 		optionArg.setStringParser(JSAP.STRING_PARSER);
 		optionArg.setRequired(false);
 		jsap.registerParameter(optionArg);
@@ -335,7 +345,8 @@ public class JSweetCommandLineLauncher {
 		// Ignore assertions
 		switchArg = new Switch("ignoreAssertions");
 		switchArg.setLongFlag("ignoreAssertions");
-		switchArg.setHelp("Set the transpiler to ignore 'assert' statements, i.e. no code is generated for assertions.");
+		switchArg
+				.setHelp("Set the transpiler to ignore 'assert' statements, i.e. no code is generated for assertions.");
 		switchArg.setDefault("false");
 		jsap.registerParameter(switchArg);
 
@@ -343,7 +354,8 @@ public class JSweetCommandLineLauncher {
 	}
 
 	private static JSAPResult parseArgs(JSAP jsapSpec, String[] commandLineArgs) {
-		OUTPUT_LOGGER.info("JSweet transpiler version " + JSweetConfig.getVersionNumber() + " (build date: " + JSweetConfig.getBuildDate() + ")");
+		OUTPUT_LOGGER.info("JSweet transpiler version " + JSweetConfig.getVersionNumber() + " (build date: "
+				+ JSweetConfig.getBuildDate() + ")");
 
 		if (jsapSpec == null) {
 			throw new IllegalStateException("no args, please call setArgs before");

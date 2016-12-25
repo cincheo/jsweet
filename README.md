@@ -126,66 +126,26 @@ More info at http://www.jsweet.org.
 - JSweet Angular 2 example: https://github.com/cincheo/jsweet-angular2-quickstart
 - JSweet Angular 2 + PrimeNG: https://github.com/cincheo/jsweet-primeng-quickstart 
 
-## Tooling
+## Sub-projects
 
-- [Eclipse plugin](https://github.com/cincheo/jsweet-eclipse-plugin)
-- [Maven plugin](https://github.com/lgrignon/jsweet-maven-plugin)
-- [Gradle plugin](https://github.com/lgrignon/jsweet-gradle-plugin)
+This repository is organized in sub-projects. Each sub-project has its own build process.
 
-## News and more information
-
-Most information is available on the http://www.jsweet.org. Developers, check out the [wiki](https://github.com/cincheo/jsweet/wiki).
-
-## How to build
-
-Prerequisites: `node` and `npm` executables must be in the path (https://nodejs.org). Note that there seem to be an issue with the `node` executable on some Unix-based machines, which should be fixed (see for instance: http://askubuntu.com/questions/235655/node-js-conflicts-sbin-node-vs-usr-bin-node).
-
-To build the `jsweet-transpiler` jars (in the project's directory):
-
-```
-> mvn package
-```
-
-To install the `jsweet-transpiler` artifact in your local Maven repository:
-
-```
-> mvn install
-```
-
-Note that current JUnit tests launch a Node.js instance for each test and will be quite slow (this will be improved). In order to easily test some changes locally without having to run all the tests, use the following command:
-
-```
-> mvn package -Dmaven.test.skip=true
-```
-
-or
-
-```
-> mvn install -Dmaven.test.skip=true
-```
-
-To generate the markdown language specifications from the Latex source file with [Pandoc](http://pandoc.org/):
-
-```
-> cd doc
-> pandoc -r latex -w markdown_github --base-header-level=2 -s --toc --number-sections -B header.md -o jsweet-language-specifications.md jsweet-language-specifications.tex
-```
-
-Note that the following command will output the document in HTML:
-
-```
-> pandoc -r latex -w html5 --base-header-level=3 -o jsweet-language-specifications.html jsweet-language-specifications.tex
-```
-
-## License
-JSweet is under the Apache 2.0 Open Source license.
-
-# Sub projects
 * [JSweet transpiler](https://github.com/cincheo/jsweet/tree/master/jsweet-transpiler)
 * [JSweet documentation](https://github.com/cincheo/jsweet/tree/master/doc)
 * [JSweet core candy](https://github.com/cincheo/jsweet/tree/master/jsweet-core)
-* [JDK runtime for TypeScript](https://github.com/cincheo/jsweet/tree/master/j4ts)
+* [JDK runtime](https://github.com/cincheo/jsweet/tree/master/j4ts)
 * [JSweet candy generator](https://github.com/cincheo/jsweet/tree/master/jsweet-candy-generator)
 
+Additionally, some tools for JSweet are available in external repositories.
+
+- [Maven plugin](https://github.com/lgrignon/jsweet-maven-plugin)
+- [Gradle plugin](https://github.com/lgrignon/jsweet-gradle-plugin)
+- [Eclipse plugin](https://github.com/cincheo/jsweet-eclipse-plugin)
+
+## How to build
+
+Please check each sub-project README file.
+
 ## License
-Each project has its own licensing, we therefore invite you to check each one individually.
+
+Please read the [LICENSE file](https://github.com/cincheo/jsweet/tree/master/LICENSE).
