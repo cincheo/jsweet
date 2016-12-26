@@ -1,0 +1,132 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>${{CANDIES_GROUP_ID}}</groupId>
+	<artifactId>${{ARTIFACT_ID}}</artifactId>
+	<version>${{VERSION}}</version>
+	<properties>
+		<jsweet.transpiler.version>${{TRANSPILER_VERSION}}</jsweet.transpiler.version>
+	</properties>
+	<repositories>
+		<repository>
+			<id>jsweet-central</id>
+			<name>libs-release</name>
+			<url>http://repository.jsweet.org/artifactory/libs-release-local</url>
+		</repository>
+		<repository>
+			<snapshots />
+			<id>jsweet-snapshots</id>
+			<name>libs-snapshot</name>
+			<url>http://repository.jsweet.org/artifactory/libs-snapshot-local</url>
+		</repository>
+	</repositories>
+	<dependencies>
+		${{DEPENDENCIES}}
+	</dependencies>
+	<build>
+		<sourceDirectory>src</sourceDirectory>
+		<resources>
+			<resource>
+				<directory>
+					src/main/resources
+				</directory>
+			</resource>
+			<resource>
+				<directory>
+					resources
+				</directory>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.6</version>
+				<configuration>
+					${{JAR_INCLUDES}}
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.1</version>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+					<execution>
+						<phase>deploy</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.10.3</version>
+				<configuration>
+					<javadocVersion>1.8</javadocVersion>
+					<sourcepath>src${{LIB_NAME}}</sourcepath>
+					<skip>${skipJavadoc}</skip>
+					<encoding>UTF-8</encoding>
+					<fixTags>all</fixTags>
+					<failOnError>false</failOnError>
+					<header><![CDATA[<a href="http://www.jsweet.org" target="_blank" style="text-transform: lowercase">http://www.jsweet.org<a>]]></header>
+					<bottom><![CDATA[<center>Copyright 2015, <a href="http://www.cincheo.org" target="_blank">Cinchéo SAS<a> - Web site: <a href="http://www.jsweet.org" target="_blank">http://www.jsweet.org<a><center>]]></bottom>
+					<stylesheetfile>/var/www/apidocs/stylesheet.css</stylesheetfile>
+
+					<!-- the following lines work but doclet is very slow and not that useful -->
+					<!-- <doclet>org.umlgraph.doclet.UmlGraphDoc</doclet> -->
+					<!-- <docletArtifact> -->
+					<!-- <groupId>org.umlgraph</groupId> -->
+					<!-- <artifactId>doclet</artifactId> -->
+					<!-- <version>5.1</version> -->
+					<!-- </docletArtifact> -->
+					<!-- <additionalparam>-views</additionalparam> -->
+					<!-- <useStandardDocletOptions>true</useStandardDocletOptions> -->
+
+				</configuration>
+				<executions>
+					<execution>
+						<id>attach-javadoc</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+	<distributionManagement>
+		<repository>
+			<id>jsweet-release</id>
+			<name>libs-release</name>
+			<url>http://repository.jsweet.org/artifactory/libs-release-local</url>
+		</repository>
+		<snapshotRepository>
+			<id>jsweet-snapshots</id>
+			<name>libs-snapshot</name>
+			<url>http://repository.jsweet.org/artifactory/libs-snapshot-local</url>
+		</snapshotRepository>
+	</distributionManagement>
+	<organization>
+		<name>JSweet</name>
+		<url>http://www.jsweet.org</url>
+	</organization>
+</project>
