@@ -1,11 +1,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>${{CANDIES_GROUP_ID}}</groupId>
+	<groupId>org.jsweet.candies</groupId>
 	<artifactId>${{ARTIFACT_ID}}</artifactId>
 	<version>${{VERSION}}</version>
 	<properties>
-		<jsweet.transpiler.version>${{TRANSPILER_VERSION}}</jsweet.transpiler.version>
 	</properties>
 	<repositories>
 		<repository>
@@ -21,19 +20,19 @@
 		</repository>
 	</repositories>
 	<dependencies>
+		<dependency>
+			<groupId>org.jsweet</groupId>
+			<artifactId>jsweet-core</artifactId>
+			<version>5-SNAPSHOT</version>
+		</dependency>
 		${{DEPENDENCIES}}
 	</dependencies>
 	<build>
-		<sourceDirectory>src</sourceDirectory>
+		<sourceDirectory>src/main/java</sourceDirectory>
 		<resources>
 			<resource>
 				<directory>
 					src/main/resources
-				</directory>
-			</resource>
-			<resource>
-				<directory>
-					resources
 				</directory>
 				<filtering>true</filtering>
 			</resource>
@@ -44,7 +43,7 @@
 				<artifactId>maven-jar-plugin</artifactId>
 				<version>2.6</version>
 				<configuration>
-					${{JAR_INCLUDES}}
+<!-- 					${{JAR_INCLUDES}} -->
 				</configuration>
 			</plugin>
 

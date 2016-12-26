@@ -15,9 +15,14 @@ Generate parser from syntax files:
 mvn generate-sources -P genparser
 ```
 
-Deploy translator:
+To generate the basic sources for your candy, based on a TypeScript definition file, just type:
 ```
-mvn deploy
+scripts\scaffold-candy
+```
+
+To prepare a project for your candy, ready to package/deploy, type the following:
+```
+scripts\package-candy
 ```
 
 ## License

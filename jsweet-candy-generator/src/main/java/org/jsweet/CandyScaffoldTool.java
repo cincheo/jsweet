@@ -82,7 +82,7 @@ public class CandyScaffoldTool {
 				+ "* candyVersion: " + candyVersion + "\n" //
 				+ "* tsFiles: " + tsFiles + "\n" //
 				+ "* tsDependencies: " + tsDependencies + "\n" //
-				+ " to out: " + outDir);
+				+ " to out: " + outDir.getAbsolutePath());
 
 		TypescriptDef2Java.translate( //
 				tsFiles, //
