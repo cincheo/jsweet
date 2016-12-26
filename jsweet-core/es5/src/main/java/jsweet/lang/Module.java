@@ -33,7 +33,7 @@ import java.lang.annotation.Target;
  * 
  * @author Renaud Pawlak
  */
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(RetentionPolicy.CLASS)
 @Target({ ElementType.PACKAGE, ElementType.METHOD, ElementType.FIELD })
 public @interface Module {
 	/**

@@ -23,6 +23,8 @@ import java.util.List;
 
 /**
  * A class that is serialized to store information on the processed candies.
+ * 
+ * @author Louis Grignon
  */
 class CandiesStore {
 	List<CandyDescriptor> candies = new LinkedList<>();

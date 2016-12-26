@@ -38,7 +38,7 @@ import java.lang.annotation.Target;
  * @see Interface
  * @author Renaud Pawlak
  */
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(RetentionPolicy.CLASS)
 @Target(ElementType.TYPE)
 public @interface Extends {
 

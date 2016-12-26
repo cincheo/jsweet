@@ -39,6 +39,8 @@ import com.google.gson.GsonBuilder;
  * A candy descriptor for the candies store.
  * 
  * @see CandiesStore
+ * 
+ * @author Louis Grignon
  */
 class CandyDescriptor {
 	final String name;

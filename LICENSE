@@ -9,7 +9,7 @@ Check each sub-project individually.
  
 DISCLAIMER: JSweet licensing is designed so that one can use JSweet to 
 program closed-source and commercial applications. Limitations of the GPL 
-only holds when using/modifying JSweet source code of the transpiler and of 
+only hold when using/modifying JSweet source code of the transpiler and of 
 the candy generator. If you want to embed the transpiler or the candy 
 generator in a non-open source commercial project, please contact Renaud 
 Pawlak for discussing a commercial license.

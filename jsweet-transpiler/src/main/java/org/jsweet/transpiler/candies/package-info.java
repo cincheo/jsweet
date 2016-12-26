@@ -24,5 +24,7 @@
  * merges the bytecode of classes that are declared as mixins. Candies jar files
  * contains the sources (for Javadoc), bytecode (for Java compiling), and the
  * original TypeScript source code for compiling with <code>tsc</code>.
+ * 
+ * @author Louis Grignon
  */
 package org.jsweet.transpiler.candies;

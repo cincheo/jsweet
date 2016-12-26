@@ -53,7 +53,7 @@ import java.lang.annotation.Target;
  * </pre>
  * 
  */
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(RetentionPolicy.CLASS)
 @Target({ ElementType.ANNOTATION_TYPE })
 public @interface Decorator {
 }
