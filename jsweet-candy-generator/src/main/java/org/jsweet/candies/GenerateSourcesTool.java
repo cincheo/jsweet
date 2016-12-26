@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jsweet;
+package org.jsweet.candies;
 
 import static java.util.stream.Collectors.toList;
+import static org.apache.commons.lang3.StringUtils.defaultString;
 
 import java.io.File;
 import java.util.List;
@@ -25,6 +26,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.jsweet.JSweetDefTranslatorConfig;
 import org.jsweet.input.typescriptdef.TypescriptDef2Java;
 
 import com.martiansoftware.jsap.FlaggedOption;
@@ -35,13 +37,13 @@ import com.martiansoftware.jsap.Switch;
 import com.martiansoftware.jsap.stringparsers.FileStringParser;
 
 /**
- * executable tool to generate candy sources
+ * executable tool to generate / package candies
  * 
  * @author Louis Grignon
  */
-public class CandyScaffoldTool {
+public class GenerateSourcesTool {
 
-	private static final Logger logger = Logger.getLogger(CandyScaffoldTool.class);
+	private static final Logger logger = Logger.getLogger(GenerateSourcesTool.class);
 
 	public static void main(String[] args) throws Throwable {
 
@@ -60,7 +62,6 @@ public class CandyScaffoldTool {
 		}
 
 		String candyName = jsapArgs.getString("name");
-		String candyVersion = jsapArgs.getString("version");
 
 		File outDir = jsapArgs.getFile("out");
 		if (outDir == null || StringUtils.isBlank(outDir.getPath())) {
@@ -72,14 +73,13 @@ public class CandyScaffoldTool {
 				.map(File::new) //
 				.filter(file -> file.exists()) //
 				.collect(toList());
-		List<File> tsDependencies = Stream.of(jsapArgs.getString("tsDeps").split(",")) //
+		List<File> tsDependencies = Stream.of(defaultString(jsapArgs.getString("tsDeps")).split(",")) //
 				.map(File::new) //
 				.filter(file -> file.exists()) //
 				.collect(toList());
 
 		logger.info("scaffolding candy: \n" //
 				+ "* candyName: " + candyName + "\n" //
-				+ "* candyVersion: " + candyVersion + "\n" //
 				+ "* tsFiles: " + tsFiles + "\n" //
 				+ "* tsDependencies: " + tsDependencies + "\n" //
 				+ " to out: " + outDir.getAbsolutePath());
@@ -126,27 +126,18 @@ public class CandyScaffoldTool {
 		optionArg.setHelp("Name / artifactId of the candy");
 		jsap.registerParameter(optionArg);
 
-		// Candy version
-		optionArg = new FlaggedOption("version");
-		optionArg.setLongFlag("version");
-		optionArg.setStringParser(JSAP.STRING_PARSER);
-		optionArg.setRequired(false);
-		optionArg.setDefault("1");
-		optionArg.setHelp("Version of the library defined by the candy");
-		jsap.registerParameter(optionArg);
-
 		// Output directory
 		optionArg = new FlaggedOption("out");
 		optionArg.setLongFlag("out");
 		optionArg.setShortFlag('o');
 		optionArg.setHelp("Specify where to place generated candy sources");
 		optionArg.setStringParser(FileStringParser.getParser());
-		optionArg.setRequired(false);
 		jsap.registerParameter(optionArg);
 
 		// ts files
 		optionArg = new FlaggedOption("tsFiles");
 		optionArg.setLongFlag("tsFiles");
+		optionArg.setRequired(true);
 		optionArg.setHelp("list of ts definition file paths describing the library");
 		jsap.registerParameter(optionArg);
 

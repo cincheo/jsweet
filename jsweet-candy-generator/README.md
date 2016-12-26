@@ -10,19 +10,27 @@ It comes with a scaffold mode that will generate a default JSweet candy Maven pr
 
 ## Usage 
 
-Generate parser from syntax files:
+Start by compiling/assembling the candy-tool running the following: 
 ```
-mvn generate-sources -P genparser
+ mvn clean compile assembly:single
 ```
 
-To generate the basic sources for your candy, based on a TypeScript definition file, just type:
+To generate the basic sources for your candy, based on a TypeScript definition file, use the scaffold command.
+
+Example:
 ```
-scripts\scaffold-candy
+java -jar target\candy-tool.jar scaffold --name=jquery --version=1.10 --tsFiles=typings\globals\jquery\index.d.ts --tsDeps=typings\lib.core\lib.core.d.ts,typings\lib.core\lib.core.ext.d.ts,typings\lib.core\lib.dom.d.ts
 ```
 
 To prepare a project for your candy, ready to package/deploy, type the following:
 ```
 scripts\package-candy
+```
+
+## Regenerate CUP parser
+Generate parser from syntax files:
+```
+mvn generate-sources -P genparser
 ```
 
 ## License

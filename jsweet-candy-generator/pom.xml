@@ -65,7 +65,7 @@
 
 				</configuration>
 			</plugin>
-			
+
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
 				<version>3.0.2</version>
@@ -88,7 +88,7 @@
 					</execution>
 				</executions>
 			</plugin>
-			
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
@@ -107,6 +107,26 @@
 					</execution>
 				</executions>
 			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.4</version>
+				<configuration>
+					<archive>
+						<manifest>
+							<mainClass>org.jsweet.CandyTool</mainClass>
+						</manifest>
+					</archive>
+					<descriptorRefs>
+						<descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
+					<finalName>candy-tool</finalName>
+					<appendAssemblyId>false</appendAssemblyId>
+					<classifier></classifier>
+				</configuration>
+			</plugin>
+
 		</plugins>
 		<pluginManagement>
 			<plugins>
