@@ -15,19 +15,19 @@
  */
 package org.jsweet.candies;
 
-import static java.util.stream.Collectors.toList;
+import static java.util.Arrays.asList;
 import static org.apache.commons.lang3.StringUtils.defaultString;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.io.File;
 import java.util.List;
-import java.util.stream.Stream;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.jsweet.JSweetDefTranslatorConfig;
-import org.jsweet.input.typescriptdef.TypescriptDef2Java;
 
 import com.martiansoftware.jsap.FlaggedOption;
 import com.martiansoftware.jsap.JSAP;
@@ -47,55 +47,91 @@ public class InitProjectTool {
 
 	public static void main(String[] args) throws Throwable {
 
-		logger.info("JSweet candy scaffold tool - version: " + JSweetDefTranslatorConfig.getVersionNumber());
+		logger.info("JSweet init candy project tool - version: " + JSweetDefTranslatorConfig.getVersionNumber());
 
 		JSAP jsapSpec = defineArgs();
 		JSAPResult jsapArgs = parseArgs(jsapSpec, args);
-
 		if (!jsapArgs.success() || jsapArgs.getBoolean("help")) {
 			printUsage(jsapSpec);
 			System.exit(0);
 		}
-
 		if (jsapArgs.getBoolean("verbose")) {
 			LogManager.getLogger("org.jsweet").setLevel(Level.ALL);
 		}
 
-		String candyName = jsapArgs.getString("name");
-		String candyVersion = jsapArgs.getString("version");
+		String artifactId = jsapArgs.getString("artifactId");
+		String version = jsapArgs.getString("version");
 
+		List<String> dependencyLocators = asList(defaultString(jsapArgs.getString("deps")).split(","));
+		
 		File outDir = jsapArgs.getFile("out");
 		if (outDir == null || StringUtils.isBlank(outDir.getPath())) {
-			outDir = new File("./candy-" + candyName + "-sources");
+			outDir = new File("./target/candy-projects");
 		}
 		outDir.mkdirs();
 
-		List<File> tsFiles = Stream.of(jsapArgs.getString("tsFiles").split(",")) //
-				.map(File::new) //
-				.filter(file -> file.exists()) //
-				.collect(toList());
-		List<File> tsDependencies = Stream.of(defaultString(jsapArgs.getString("tsDeps")).split(",")) //
-				.map(File::new) //
-				.filter(file -> file.exists()) //
-				.collect(toList());
+		String projectName = "candy-" + artifactId;
+		File projectDir = new File(outDir, projectName);
 
-		logger.info("scaffolding candy: \n" //
-				+ "* candyName: " + candyName + "\n" //
-				+ "* candyVersion: " + candyVersion + "\n" //
-				+ "* tsFiles: " + tsFiles + "\n" //
-				+ "* tsDependencies: " + tsDependencies + "\n" //
-				+ " to out: " + outDir.getAbsolutePath());
+		logger.info("init candy project: \n" //
+				+ "* projectName: " + projectName + "\n" //
+				+ "* artifactId: " + artifactId + "\n" //
+				+ "* version: " + version + "\n" //
+				+ " to: " + projectDir.getAbsolutePath());
 
-		TypescriptDef2Java.translate( //
-				tsFiles, //
-				tsDependencies, //
-				outDir, //
-				null, //
-				false);
+		FileUtils.copyDirectory(new File("templates/candy-project"), projectDir);
 
-		logger.info("**************************************************************");
-		logger.info("candy " + candyName + " successfully generated to " + outDir);
-		logger.info("**************************************************************");
+		logger.info("generating .project");
+		File projectFile = new File(projectDir, ".project");
+		String projectFileContent = FileUtils.readFileToString(projectFile) //
+				.replace("${{PROJECT_NAME}}", projectName);
+		FileUtils.write(projectFile, projectFileContent);
+
+		logger.info("generating README");
+		File readmeFile = new File(projectDir, "README.md");
+		String readmeFileContent = FileUtils.readFileToString(projectFile) //
+				.replace("${{CANDY_NAME}}", artifactId);
+		FileUtils.write(readmeFile, readmeFileContent);
+		
+		logger.info("generating pom.xml");
+		File pomFile = new File(projectDir, "pom.xml");
+		String pomFileContent = FileUtils.readFileToString(pomFile) //
+				.replace("${{ARTIFACT_ID}}", artifactId) //
+				.replace("${{VERSION}}", version) //
+				.replace("${{DEPENDENCIES}}", generateMavenXmlForDependencies(dependencyLocators));
+		FileUtils.write(pomFile, pomFileContent);
+		
+		// TypescriptDef2Java.translate( //
+		// tsFiles, //
+		// tsDependencies, //
+		// outDir, //
+		// null, //
+		// false);
+
+		logger.info("***************************************************************************");
+		logger.info("candy project " + projectName + " successfully created to " + projectDir);
+		logger.info("***************************************************************************");
+	}
+	
+	private static CharSequence generateMavenXmlForDependencies(List<String> dependencyLocators) {
+		StringBuilder dependenciesBuilder = new StringBuilder();
+		for (String dependencyLocator : dependencyLocators) {
+			if (isBlank(dependencyLocator)) {
+				continue;
+			}
+			
+			String[] dependencyParts = dependencyLocator.split("[:]");
+			if (dependencyParts.length != 2) {
+				logger.warn("dependency format not correct: " + dependencyLocator);
+				continue;
+			}
+			dependenciesBuilder.append("<dependency>\n");
+			dependenciesBuilder.append("  <groupId>org.jsweet.candies</groupId>\n");
+			dependenciesBuilder.append("  <artifactId>" + dependencyParts[0] + "</artifactId>\n");
+			dependenciesBuilder.append("  <version>" + dependencyParts[1] + "</version>\n");
+			dependenciesBuilder.append("</dependency>\n");
+		}
+		return dependenciesBuilder;
 	}
 
 	private static JSAP defineArgs() throws JSAPException {
@@ -122,9 +158,9 @@ public class InitProjectTool {
 		// Candy name
 		optionArg = new FlaggedOption("artifactId");
 		optionArg.setLongFlag("artifactId");
+		optionArg.setShortFlag('a');
 		optionArg.setStringParser(JSAP.STRING_PARSER);
 		optionArg.setRequired(true);
-		optionArg.setDefault("UTF-8");
 		optionArg.setHelp("artifactId of the candy");
 		jsap.registerParameter(optionArg);
 
@@ -140,22 +176,15 @@ public class InitProjectTool {
 		optionArg = new FlaggedOption("out");
 		optionArg.setLongFlag("out");
 		optionArg.setShortFlag('o');
-		optionArg.setHelp("Specify where to place generated candy sources");
+		optionArg.setHelp("Specify the folder where to place generated candy project directory");
 		optionArg.setStringParser(FileStringParser.getParser());
 		jsap.registerParameter(optionArg);
 
-		// ts files
-		optionArg = new FlaggedOption("tsFiles");
-		optionArg.setLongFlag("tsFiles");
-		optionArg.setRequired(true);
-		optionArg.setHelp("list of ts definition file paths describing the library");
-		jsap.registerParameter(optionArg);
-
-		// ts dependencies
-		optionArg = new FlaggedOption("tsDeps");
-		optionArg.setLongFlag("tsDeps");
-		optionArg.setHelp(
-				"list of ts definition file paths describing the library dependencies (ex lib.core.d.ts, ...)");
+		// Declared dependencies
+		optionArg = new FlaggedOption("deps");
+		optionArg.setLongFlag("deps");
+		optionArg.setShortFlag('d');
+		optionArg.setHelp("Candy's dependencies (other candies on which this one relies) - ex: --deps=jquery:1.10.0-SNAPSHOT,jqueryui:1.9.0");
 		jsap.registerParameter(optionArg);
 
 		return jsap;
@@ -177,7 +206,7 @@ public class InitProjectTool {
 	}
 
 	private static void printUsage(JSAP jsapSpec) {
-		System.out.println("Command line options:");
+		System.out.println("init project options:");
 		System.out.println(jsapSpec.getHelp());
 	}
 }

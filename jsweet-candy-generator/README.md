@@ -22,6 +22,13 @@ Example:
 java -jar target\candy-tool.jar scaffold --name=jquery --version=1.10 --tsFiles=typings\globals\jquery\index.d.ts --tsDeps=typings\lib.core\lib.core.d.ts,typings\lib.core\lib.core.ext.d.ts,typings\lib.core\lib.dom.d.ts
 ```
 
+If you are all set and want to prepare your project for pushing / deploying your JSweet candy  
+```
+java -jar target\candy-tool.jar init-project --artifactId=jquery --version=1.10.0-SNAPSHOT --deps=jquery:1.10.0-SNAPSHOT -o ../workspace
+```
+
+*TODO : init git repository automatically + init project from existing sources*
+
 To prepare a project for your candy, ready to package/deploy, type the following:
 ```
 scripts\package-candy

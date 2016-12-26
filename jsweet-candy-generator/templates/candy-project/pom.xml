@@ -19,6 +19,19 @@
 			<url>http://repository.jsweet.org/artifactory/libs-snapshot-local</url>
 		</repository>
 	</repositories>
+	<pluginRepositories>
+		<pluginRepository>
+			<id>jsweet-plugins-release</id>
+			<name>plugins-release</name>
+			<url>http://repository.jsweet.org/artifactory/plugins-release-local</url>
+		</pluginRepository>
+		<pluginRepository>
+			<snapshots />
+			<id>jsweet-plugins-snapshots</id>
+			<name>plugins-snapshot</name>
+			<url>http://repository.jsweet.org/artifactory/plugins-snapshot-local</url>
+		</pluginRepository>
+	</pluginRepositories>
 	<dependencies>
 		<dependency>
 			<groupId>org.jsweet</groupId>
@@ -31,29 +44,71 @@
 		<sourceDirectory>src/main/java</sourceDirectory>
 		<resources>
 			<resource>
-				<directory>
-					src/main/resources
-				</directory>
+				<directory>src/main/resources</directory>
 				<filtering>true</filtering>
 			</resource>
 		</resources>
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.6</version>
-				<configuration>
-<!-- 					${{JAR_INCLUDES}} -->
-				</configuration>
-			</plugin>
-
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.1</version>
 				<configuration>
 					<source>1.8</source>
 					<target>1.8</target>
+					<fork>true</fork>
 				</configuration>
+			</plugin>
+			
+			<plugin>
+				<groupId>org.jsweet</groupId>
+				<artifactId>jsweet-maven-plugin</artifactId>
+				<version>2.0.0-SNAPSHOT</version>
+				<configuration>
+					<!-- <verbose>true</verbose> -->
+					<bundle>true</bundle>
+					<declaration>true</declaration>
+					<outDir>src/main/resources/META-INF/resources/webjars/${project.artifactId}/${project.version}</outDir>
+					<dtsOut>src/main/resources/src/typings/${project.artifactId}/${project.version}</dtsOut>
+					<targetVersion>ES5</targetVersion>
+				</configuration>
+				<executions>
+					<execution>
+						<id>generate-js</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>jsweet</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			
+			<plugin>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>1.8</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<configuration>
+							<target>
+								<echo message="copying generated bundles to dist..." />
+								
+								<mkdir dir="dist/"></mkdir>
+								
+								<copy
+									file="src/main/resources/META-INF/resources/webjars/${project.artifactId}/${project.version}/bundle.js"
+									tofile="dist/${project.artifactId}.js" verbose="true"
+									failonerror="false" />
+								<copy
+									file="src/main/resources/src/typings/${project.artifactId}/${project.version}/bundle.d.ts"
+									tofile="dist/${project.artifactId}.d.ts" verbose="true"
+									failonerror="false" />
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 
 			<plugin>
@@ -74,14 +129,14 @@
 					</execution>
 				</executions>
 			</plugin>
-
+			
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>2.10.3</version>
 				<configuration>
 					<javadocVersion>1.8</javadocVersion>
-					<sourcepath>src${{LIB_NAME}}</sourcepath>
+					<sourcepath>src/main/java</sourcepath>
 					<skip>${skipJavadoc}</skip>
 					<encoding>UTF-8</encoding>
 					<fixTags>all</fixTags>
@@ -111,6 +166,43 @@
 				</executions>
 			</plugin>
 		</plugins>
+		
+		<pluginManagement>
+			<plugins>
+				<!--This plugin's configuration is used to store Eclipse m2e settings 
+					only. It has no influence on the Maven build itself. -->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											org.jsweet
+										</groupId>
+										<artifactId>
+											jsweet-maven-plugin
+										</artifactId>
+										<versionRange>
+											[1.1.0-SNAPSHOT,)
+										</versionRange>
+										<goals>
+											<goal>jsweet</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 	</build>
 	<distributionManagement>
 		<repository>

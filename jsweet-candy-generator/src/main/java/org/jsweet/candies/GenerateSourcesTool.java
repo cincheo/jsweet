@@ -120,9 +120,9 @@ public class GenerateSourcesTool {
 		// Candy name
 		optionArg = new FlaggedOption("name");
 		optionArg.setLongFlag("name");
+		optionArg.setShortFlag('n');
 		optionArg.setStringParser(JSAP.STRING_PARSER);
 		optionArg.setRequired(true);
-		optionArg.setDefault("UTF-8");
 		optionArg.setHelp("Name / artifactId of the candy");
 		jsap.registerParameter(optionArg);
 
@@ -137,6 +137,7 @@ public class GenerateSourcesTool {
 		// ts files
 		optionArg = new FlaggedOption("tsFiles");
 		optionArg.setLongFlag("tsFiles");
+		optionArg.setShortFlag('f');
 		optionArg.setRequired(true);
 		optionArg.setHelp("list of ts definition file paths describing the library");
 		jsap.registerParameter(optionArg);
@@ -144,6 +145,7 @@ public class GenerateSourcesTool {
 		// ts dependencies
 		optionArg = new FlaggedOption("tsDeps");
 		optionArg.setLongFlag("tsDeps");
+		optionArg.setShortFlag('d');
 		optionArg.setHelp(
 				"list of ts definition file paths describing the library dependencies (ex lib.core.d.ts, ...)");
 		jsap.registerParameter(optionArg);
@@ -167,7 +169,7 @@ public class GenerateSourcesTool {
 	}
 
 	private static void printUsage(JSAP jsapSpec) {
-		System.out.println("Command line options:");
+		System.out.println("scaffold options:");
 		System.out.println(jsapSpec.getHelp());
 	}
 }
