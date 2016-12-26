@@ -34,7 +34,7 @@ import java.lang.annotation.Target;
  * This annotation is used for API definitions and most programmers will not
  * have to use it directly.
  */
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(RetentionPolicy.CLASS)
 @Target({ ElementType.TYPE })
 public @interface Mixin {
 	/**

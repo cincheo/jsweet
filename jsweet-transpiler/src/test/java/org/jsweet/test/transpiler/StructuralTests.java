@@ -53,7 +53,6 @@ import source.structural.ObjectTypes;
 import source.structural.StaticMembersInInterfaces;
 import source.structural.TwoClassesInSameFile;
 import source.structural.WrongConstructsInInterfaces;
-import source.structural.WrongConstructsInSharedInterfaces;
 import source.structural.WrongThisAccessOnStatic;
 import source.structural.globalclasses.Globals;
 import source.structural.globalclasses.a.ClassWithStaticMethod;
@@ -166,13 +165,6 @@ public class StructuralTests extends AbstractTest {
 					JSweetProblem.INVALID_INITIALIZER_IN_INTERFACE, //
 					JSweetProblem.INVALID_INITIALIZER_IN_INTERFACE);
 		}, getSourceFile(WrongConstructsInInterfaces.class));
-	}
-
-	@Test
-	public void testWrongConstructsInSharedInterfaces() {
-		transpile(logHandler -> {
-			logHandler.assertReportedProblems();
-		}, getSourceFile(WrongConstructsInSharedInterfaces.class));
 	}
 
 	@Test

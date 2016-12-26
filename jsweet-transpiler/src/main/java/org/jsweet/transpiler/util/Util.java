@@ -52,7 +52,6 @@ import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.JSweetContext;
 
 import com.sun.source.tree.Tree.Kind;
-import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.Attribute.Compound;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
@@ -111,7 +110,8 @@ public class Util {
 	 */
 	public static boolean isSourceType(ClassSymbol clazz) {
 		// hack to know if it is a source file or a class file
-		return (clazz.sourcefile != null && clazz.sourcefile.getClass().getName().equals("com.sun.tools.javac.file.RegularFileObject"));
+		return (clazz.sourcefile != null
+				&& clazz.sourcefile.getClass().getName().equals("com.sun.tools.javac.file.RegularFileObject"));
 	}
 
 	/**
@@ -145,7 +145,7 @@ public class Util {
 	 * Tells if the given symbol is annotated with one of the given annotation
 	 * type names.
 	 */
-	public static boolean hasAnnotationType(Symbol symbol, String... annotationTypes) {
+	public static <T> boolean hasAnnotationType(Symbol symbol, String... annotationTypes) {
 		for (Compound a : symbol.getAnnotationMirrors()) {
 			for (String annotationType : annotationTypes) {
 				if (annotationType.equals(a.type.toString())) {
@@ -167,33 +167,6 @@ public class Util {
 			}
 		}
 		return null;
-	}
-
-	/**
-	 * Gets repeatable annotations. By convention, the container must be named
-	 * after the contained name + 's'.
-	 * 
-	 * @param symbol
-	 *            the annotated symbol
-	 * @param annotationType
-	 *            the qualified name of the repeated annotation
-	 * @return
-	 */
-	public static List<AnnotationMirror> getAnnotations(Symbol symbol, String annotationType) {
-		List<AnnotationMirror> annotations = new ArrayList<>();
-		for (Compound a : symbol.getAnnotationMirrors()) {
-			if ((annotationType + "s").equals(a.type.toString())) {
-				Attribute.Array array = (Attribute.Array) a.values.head.snd;
-				for (Attribute attr : array.values) {
-					annotations.add((AnnotationMirror) attr);
-				}
-				return annotations;
-			} else if (annotationType.equals(a.type.toString())) {
-				annotations.add(a);
-				return annotations;
-			}
-		}
-		return annotations;
 	}
 
 	/**
@@ -245,7 +218,8 @@ public class Util {
 	/**
 	 * Finds all the variables accessible within the current scanning scope.
 	 */
-	public static void fillAllVariablesInScope(Map<String, VarSymbol> vars, Stack<JCTree> scanningStack, JCTree from, JCTree to) {
+	public static void fillAllVariablesInScope(Map<String, VarSymbol> vars, Stack<JCTree> scanningStack, JCTree from,
+			JCTree to) {
 		if (from == to) {
 			return;
 		}
@@ -323,7 +297,8 @@ public class Util {
 	 * Finds the method declaration within the given type, for the given
 	 * invocation.
 	 */
-	public static MethodSymbol findMethodDeclarationInType(Types types, TypeSymbol typeSymbol, JCMethodInvocation invocation) {
+	public static MethodSymbol findMethodDeclarationInType(Types types, TypeSymbol typeSymbol,
+			JCMethodInvocation invocation) {
 		String meth = invocation.meth.toString();
 		String methName = meth.substring(meth.lastIndexOf('.') + 1);
 		return findMethodDeclarationInType(types, typeSymbol, methName, (MethodType) invocation.meth.type);
@@ -333,7 +308,8 @@ public class Util {
 	 * Finds the method in the given type that matches the given name and
 	 * signature.
 	 */
-	public static MethodSymbol findMethodDeclarationInType(Types types, TypeSymbol typeSymbol, String methodName, MethodType methodType) {
+	public static MethodSymbol findMethodDeclarationInType(Types types, TypeSymbol typeSymbol, String methodName,
+			MethodType methodType) {
 		return findMethodDeclarationInType(types, typeSymbol, methodName, methodType, false);
 	}
 
@@ -341,14 +317,16 @@ public class Util {
 	 * Finds the method in the given type that matches the given name and
 	 * signature.
 	 */
-	public static MethodSymbol findMethodDeclarationInType(Types types, TypeSymbol typeSymbol, String methodName, MethodType methodType, boolean overrides) {
+	public static MethodSymbol findMethodDeclarationInType(Types types, TypeSymbol typeSymbol, String methodName,
+			MethodType methodType, boolean overrides) {
 		if (typeSymbol == null) {
 			return null;
 		}
 		if (typeSymbol.getEnclosedElements() != null) {
 			for (Element element : typeSymbol.getEnclosedElements()) {
 				if ((element instanceof MethodSymbol) && (methodName.equals(element.getSimpleName().toString())
-						|| ((MethodSymbol) element).getKind() == ElementKind.CONSTRUCTOR && "this".equals(methodName))) {
+						|| ((MethodSymbol) element).getKind() == ElementKind.CONSTRUCTOR
+								&& "this".equals(methodName))) {
 					MethodSymbol methodSymbol = (MethodSymbol) element;
 					if (methodType == null) {
 						return methodSymbol;
@@ -362,7 +340,8 @@ public class Util {
 		}
 		MethodSymbol result = null;
 		if (typeSymbol instanceof ClassSymbol && ((ClassSymbol) typeSymbol).getSuperclass() != null) {
-			result = findMethodDeclarationInType(types, ((ClassSymbol) typeSymbol).getSuperclass().tsym, methodName, methodType);
+			result = findMethodDeclarationInType(types, ((ClassSymbol) typeSymbol).getSuperclass().tsym, methodName,
+					methodType);
 		}
 		if (result == null) {
 			if (typeSymbol instanceof ClassSymbol && ((ClassSymbol) typeSymbol).getInterfaces() != null) {
@@ -380,8 +359,8 @@ public class Util {
 	/**
 	 * Finds methods by name.
 	 */
-	public static void findMethodDeclarationsInType(TypeSymbol typeSymbol, Collection<String> methodNames, Set<String> ignoredTypeNames,
-			List<MethodSymbol> result) {
+	public static void findMethodDeclarationsInType(TypeSymbol typeSymbol, Collection<String> methodNames,
+			Set<String> ignoredTypeNames, List<MethodSymbol> result) {
 		if (typeSymbol == null) {
 			return;
 		}
@@ -396,7 +375,8 @@ public class Util {
 			}
 		}
 		if (typeSymbol instanceof ClassSymbol && ((ClassSymbol) typeSymbol).getSuperclass() != null) {
-			findMethodDeclarationsInType(((ClassSymbol) typeSymbol).getSuperclass().tsym, methodNames, ignoredTypeNames, result);
+			findMethodDeclarationsInType(((ClassSymbol) typeSymbol).getSuperclass().tsym, methodNames, ignoredTypeNames,
+					result);
 		}
 		if (result == null) {
 			if (typeSymbol instanceof ClassSymbol && ((ClassSymbol) typeSymbol).getInterfaces() != null) {
@@ -444,7 +424,8 @@ public class Util {
 	/**
 	 * Scans member declarations in type hierachy.
 	 */
-	public static boolean scanMemberDeclarationsInType(TypeSymbol typeSymbol, Set<String> ignoredTypeNames, Function<Element, Boolean> scanner) {
+	public static boolean scanMemberDeclarationsInType(TypeSymbol typeSymbol, Set<String> ignoredTypeNames,
+			Function<Element, Boolean> scanner) {
 		if (typeSymbol == null) {
 			return true;
 		}
@@ -459,7 +440,8 @@ public class Util {
 			}
 		}
 		if (typeSymbol instanceof ClassSymbol && ((ClassSymbol) typeSymbol).getSuperclass() != null) {
-			if (!scanMemberDeclarationsInType(((ClassSymbol) typeSymbol).getSuperclass().tsym, ignoredTypeNames, scanner)) {
+			if (!scanMemberDeclarationsInType(((ClassSymbol) typeSymbol).getSuperclass().tsym, ignoredTypeNames,
+					scanner)) {
 				return false;
 			}
 		}
@@ -490,7 +472,8 @@ public class Util {
 			return false;
 		}
 		for (int i = 0; i < from.getParameterTypes().length(); i++) {
-			if (!types.isAssignable(types.erasure(from.getParameterTypes().get(i)), types.erasure(target.getParameterTypes().get(i)))) {
+			if (!types.isAssignable(types.erasure(from.getParameterTypes().get(i)),
+					types.erasure(target.getParameterTypes().get(i)))) {
 				return false;
 			}
 		}
@@ -520,7 +503,8 @@ public class Util {
 	 * Fills the given set with all the default methods found in the current
 	 * type and super interfaces.
 	 */
-	public static void findDefaultMethodsInType(Set<Entry<JCClassDecl, JCMethodDecl>> defaultMethods, JSweetContext context, ClassSymbol classSymbol) {
+	public static void findDefaultMethodsInType(Set<Entry<JCClassDecl, JCMethodDecl>> defaultMethods,
+			JSweetContext context, ClassSymbol classSymbol) {
 		if (context.getDefaultMethods(classSymbol) != null) {
 			defaultMethods.addAll(context.getDefaultMethods(classSymbol));
 		}
@@ -598,7 +582,8 @@ public class Util {
 		if ((symbol instanceof PackageSymbol) && Util.hasAnnotationType(symbol, JSweetConfig.ANNOTATION_ROOT)) {
 			return null;
 		}
-		Symbol parent = (symbol instanceof PackageSymbol) ? ((PackageSymbol) symbol).owner : symbol.getEnclosingElement();
+		Symbol parent = (symbol instanceof PackageSymbol) ? ((PackageSymbol) symbol).owner
+				: symbol.getEnclosingElement();
 		if (parent != null && Util.hasAnnotationType(parent, JSweetConfig.ANNOTATION_ROOT)) {
 			if (symbol instanceof PackageSymbol) {
 				return (PackageSymbol) symbol;
@@ -652,8 +637,8 @@ public class Util {
 	 * Tells if this qualified name denotes a JSweet globals class.
 	 */
 	public static boolean isGlobalsClassName(String qualifiedName) {
-		return qualifiedName != null
-				&& (JSweetConfig.GLOBALS_CLASS_NAME.equals(qualifiedName) || qualifiedName.endsWith("." + JSweetConfig.GLOBALS_CLASS_NAME));
+		return qualifiedName != null && (JSweetConfig.GLOBALS_CLASS_NAME.equals(qualifiedName)
+				|| qualifiedName.endsWith("." + JSweetConfig.GLOBALS_CLASS_NAME));
 	}
 
 	/**
@@ -724,7 +709,8 @@ public class Util {
 	 */
 	@SuppressWarnings("unchecked")
 	public static <T> T getAnnotationValue(AnnotationMirror annotation, String propertyName, T defaultValue) {
-		for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> annoProperty : annotation.getElementValues().entrySet()) {
+		for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> annoProperty : annotation
+				.getElementValues().entrySet()) {
 			if (annoProperty.getKey().getSimpleName().toString().equals(propertyName)) {
 				return (T) annoProperty.getValue().getValue();
 			}
@@ -770,8 +756,8 @@ public class Util {
 	/**
 	 * Transforms a list of source files to Java file objects (used by javac).
 	 */
-	public static com.sun.tools.javac.util.List<JavaFileObject> toJavaFileObjects(JavaFileManager fileManager, Collection<File> sourceFiles)
-			throws IOException {
+	public static com.sun.tools.javac.util.List<JavaFileObject> toJavaFileObjects(JavaFileManager fileManager,
+			Collection<File> sourceFiles) throws IOException {
 		com.sun.tools.javac.util.List<JavaFileObject> fileObjects = com.sun.tools.javac.util.List.nil();
 		JavacFileManager javacFileManager = (JavacFileManager) fileManager;
 		for (JavaFileObject fo : javacFileManager.getJavaFileObjectsFromFiles(sourceFiles)) {
@@ -1173,7 +1159,8 @@ public class Util {
 	 * Tells if the given method has varargs.
 	 */
 	public static boolean hasVarargs(MethodSymbol methodSymbol) {
-		return methodSymbol != null && methodSymbol.getParameters().length() > 0 && (methodSymbol.flags() & Flags.VARARGS) != 0;
+		return methodSymbol != null && methodSymbol.getParameters().length() > 0
+				&& (methodSymbol.flags() & Flags.VARARGS) != 0;
 	}
 
 	/**
@@ -1248,7 +1235,8 @@ public class Util {
 		if (expr instanceof JCLiteral) {
 			constant = true;
 		} else if (expr instanceof JCFieldAccess) {
-			if (((JCFieldAccess) expr).sym.isStatic() && ((JCFieldAccess) expr).sym.getModifiers().contains(Modifier.FINAL)) {
+			if (((JCFieldAccess) expr).sym.isStatic()
+					&& ((JCFieldAccess) expr).sym.getModifiers().contains(Modifier.FINAL)) {
 				constant = true;
 			}
 		} else if (expr instanceof JCIdent) {
@@ -1307,7 +1295,8 @@ public class Util {
 				} else {
 					methodName = inv.meth.toString();
 				}
-				if (JSweetConfig.INDEXED_GET_FUCTION_NAME.equals(methodName) || JSweetConfig.INDEXED_SET_FUCTION_NAME.equals(methodName)) {
+				if (JSweetConfig.INDEXED_GET_FUCTION_NAME.equals(methodName)
+						|| JSweetConfig.INDEXED_SET_FUCTION_NAME.equals(methodName)) {
 					return true;
 				}
 			}
@@ -1327,8 +1316,8 @@ public class Util {
 	 * literal value.
 	 */
 	public static boolean isConstantOrNullField(JCVariableDecl var) {
-		return !var.getModifiers().getFlags().contains(Modifier.STATIC)
-				&& (var.init == null || var.getModifiers().getFlags().contains(Modifier.FINAL) && var.init instanceof JCLiteral);
+		return !var.getModifiers().getFlags().contains(Modifier.STATIC) && (var.init == null
+				|| var.getModifiers().getFlags().contains(Modifier.FINAL) && var.init instanceof JCLiteral);
 	}
 
 	/**
@@ -1432,7 +1421,8 @@ public class Util {
 		String name = type.getQualifiedName().toString();
 		return name.startsWith("java.util.function.") //
 				|| name.equals(Runnable.class.getName()) //
-				|| (type.isInterface() && (hasAnnotationType(type, FunctionalInterface.class.getName()) || hasAnonymousFunction(type)));
+				|| (type.isInterface() && (hasAnnotationType(type, FunctionalInterface.class.getName())
+						|| hasAnonymousFunction(type)));
 	}
 
 	/**

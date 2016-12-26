@@ -34,8 +34,7 @@ import java.lang.annotation.Target;
  * @see Extends
  * @author Renaud Pawlak
  */
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(RetentionPolicy.CLASS)
 @Target(ElementType.TYPE)
 public @interface Interface {
-	Mode value() default Mode.STRICT;
 }

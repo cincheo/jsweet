@@ -21,14 +21,11 @@ package org.jsweet.transpiler.candies;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -50,6 +47,8 @@ import com.google.gson.GsonBuilder;
  * <li>The embedded TypeScript definition files (*.d.ts)</li>
  * <li>Cross-candies mixins, which are merged by {@link CandiesMerger}</li>
  * </ul>
+ * 
+ * @author Louis Grignon
  */
 public class CandiesProcessor {
 
@@ -168,21 +167,12 @@ public class CandiesProcessor {
 		try {
 			extractCandies(newCandiesDescriptors);
 
-			mergeCandies(newCandiesDescriptors);
-
 			writeCandiesStore();
 
 		} catch (Throwable t) {
 			logger.error("cannot generate candies bundle", t);
 			// exit with fatal if no jar ?
 		}
-	}
-
-	private void mergeCandies(Map<File, CandyDescriptor> candies) {
-		logger.info("merging candies");
-		CandiesMerger merger = new CandiesMerger(candiesProcessedDir, new ArrayList<>(candies.keySet()));
-		Map<Class<?>, List<Class<?>>> mergedMixins = merger.merge();
-		extractSourcesForClasses(candies, mergedMixins.keySet());
 	}
 
 	private LinkedHashMap<File, CandyDescriptor> getCandiesDescriptorsFromClassPath(TranspilationHandler transpilationHandler) throws IOException {
@@ -299,28 +289,6 @@ public class CandiesProcessor {
 			FileUtils.copyInputStreamToFile(jarFile.getInputStream(entry), out);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
-		}
-	}
-
-	private void extractSourcesForClasses(Map<File, CandyDescriptor> candies, Collection<Class<?>> classes) {
-		logger.info("extract sources for: " + classes);
-
-		List<String> files = classes.stream().map(c -> "src/" + c.getName().replace('.', '/') + ".java").collect(Collectors.toList());
-		for (File candyClassPathEntry : candies.keySet()) {
-			try (JarFile jarFile = new JarFile(candyClassPathEntry)) {
-				jarFile.stream().filter(entry -> files.contains(entry.getName())) //
-						.forEach(entry -> {
-							File out = new File(candiesSourceDir + "/" + entry.getName().substring(4));
-							out.getParentFile().mkdirs();
-							try {
-								FileUtils.copyInputStreamToFile(jarFile.getInputStream(entry), out);
-							} catch (Exception e) {
-								throw new RuntimeException(e);
-							}
-						});
-			} catch (Exception e) {
-				logger.error("error extracting sources for " + candyClassPathEntry, e);
-			}
 		}
 	}
 
