@@ -33,14 +33,14 @@ public class CandyTool {
 			System.out.println("usage: java -jar candy-tool.jar <command> [<args>]");
 			System.out.println();
 			System.out.println("A list of available commands:");
-			System.out.println("scaffold      generate candy sources from a TypeScript definition file");
-			System.out.println("init-project  create a candy project, GitHub & Maven ready");
+			System.out.println("init-project        create a candy project, GitHub & Maven ready");
+			System.out.println("generate-sources    generate candy sources from a TypeScript definition file");
 			System.exit(1);
 		}
 
 		String[] commandArgs = Arrays.copyOfRange(args, 1, args.length);
 		switch (args[0]) {
-		case "scaffold":
+		case "generate-sources":
 			GenerateSourcesTool.main(commandArgs);
 			break;
 		case "init-project":

@@ -58,6 +58,7 @@ import org.jsweet.input.typescriptdef.ast.TypeParameterizedElement;
 import org.jsweet.input.typescriptdef.ast.TypeReference;
 import org.jsweet.input.typescriptdef.ast.TypedDeclaration;
 import org.jsweet.input.typescriptdef.ast.Visitable;
+import org.jsweet.util.DirectedGraph;
 
 public class Util {
 

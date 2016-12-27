@@ -34,7 +34,7 @@ import java.util.regex.Pattern;
 import org.apache.log4j.Logger;
 import org.jsweet.JSweetDefTranslatorConfig;
 import org.jsweet.input.typescriptdef.util.DeclarationFinder;
-import org.jsweet.input.typescriptdef.util.DirectedGraph;
+import org.jsweet.util.DirectedGraph;
 
 /**
  * The TypeScript definitions to Java translation context.

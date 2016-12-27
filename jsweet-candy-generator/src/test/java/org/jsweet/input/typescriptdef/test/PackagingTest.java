@@ -13,9 +13,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.jsweet.JSweetDefTranslatorConfig;
-import org.jsweet.input.typescriptdef.util.DirectedGraph;
-import org.jsweet.input.typescriptdef.util.Tree;
-import org.jsweet.input.typescriptdef.util.Tree.Matcher;
+import org.jsweet.util.DirectedGraph;
+import org.jsweet.util.Tree;
+import org.jsweet.util.Tree.Matcher;
 import org.jsweet.input.typescriptdef.util.Util;
 import org.junit.Test;
 

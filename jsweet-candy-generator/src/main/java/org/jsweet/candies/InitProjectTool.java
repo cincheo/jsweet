@@ -45,8 +45,7 @@ public class InitProjectTool {
 
 	private static final Logger logger = Logger.getLogger(InitProjectTool.class);
 
-	public static void main(String[] args) throws Throwable {
-
+		public static void main(String[] args) throws Throwable {
 		logger.info("JSweet init candy project tool - version: " + JSweetDefTranslatorConfig.getVersionNumber());
 
 		JSAP jsapSpec = defineArgs();
@@ -63,7 +62,7 @@ public class InitProjectTool {
 		String version = jsapArgs.getString("version");
 
 		List<String> dependencyLocators = asList(defaultString(jsapArgs.getString("deps")).split(","));
-		
+
 		File outDir = jsapArgs.getFile("out");
 		if (outDir == null || StringUtils.isBlank(outDir.getPath())) {
 			outDir = new File("./target/candy-projects");
@@ -92,7 +91,7 @@ public class InitProjectTool {
 		String readmeFileContent = FileUtils.readFileToString(projectFile) //
 				.replace("${{CANDY_NAME}}", artifactId);
 		FileUtils.write(readmeFile, readmeFileContent);
-		
+
 		logger.info("generating pom.xml");
 		File pomFile = new File(projectDir, "pom.xml");
 		String pomFileContent = FileUtils.readFileToString(pomFile) //
@@ -100,26 +99,19 @@ public class InitProjectTool {
 				.replace("${{VERSION}}", version) //
 				.replace("${{DEPENDENCIES}}", generateMavenXmlForDependencies(dependencyLocators));
 		FileUtils.write(pomFile, pomFileContent);
-		
-		// TypescriptDef2Java.translate( //
-		// tsFiles, //
-		// tsDependencies, //
-		// outDir, //
-		// null, //
-		// false);
 
 		logger.info("***************************************************************************");
 		logger.info("candy project " + projectName + " successfully created to " + projectDir);
 		logger.info("***************************************************************************");
 	}
-	
+
 	private static CharSequence generateMavenXmlForDependencies(List<String> dependencyLocators) {
 		StringBuilder dependenciesBuilder = new StringBuilder();
 		for (String dependencyLocator : dependencyLocators) {
 			if (isBlank(dependencyLocator)) {
 				continue;
 			}
-			
+
 			String[] dependencyParts = dependencyLocator.split("[:]");
 			if (dependencyParts.length != 2) {
 				logger.warn("dependency format not correct: " + dependencyLocator);
@@ -184,7 +176,8 @@ public class InitProjectTool {
 		optionArg = new FlaggedOption("deps");
 		optionArg.setLongFlag("deps");
 		optionArg.setShortFlag('d');
-		optionArg.setHelp("Candy's dependencies (other candies on which this one relies) - ex: --deps=jquery:1.10.0-SNAPSHOT,jqueryui:1.9.0");
+		optionArg.setHelp(
+				"Candy's dependencies (other candies on which this one relies) - ex: --deps=jquery:1.10.0-SNAPSHOT,jqueryui:1.9.0");
 		jsap.registerParameter(optionArg);
 
 		return jsap;

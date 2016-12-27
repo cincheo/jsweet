@@ -10,29 +10,25 @@ It comes with a scaffold mode that will generate a default JSweet candy Maven pr
 
 ## Usage 
 
-Start by compiling/assembling the candy-tool running the following: 
+### Start by compiling/assembling the candy-tool running the following: 
 ```
- mvn clean compile assembly:single
-```
-
-To generate the basic sources for your candy, based on a TypeScript definition file, use the scaffold command.
-
-Example:
-```
-java -jar target\candy-tool.jar scaffold --name=jquery --version=1.10 --tsFiles=typings\globals\jquery\index.d.ts --tsDeps=typings\lib.core\lib.core.d.ts,typings\lib.core\lib.core.ext.d.ts,typings\lib.core\lib.dom.d.ts
+ mvn clean package
 ```
 
-If you are all set and want to prepare your project for pushing / deploying your JSweet candy  
+### Init the candy project using the `init-project` command:
 ```
-java -jar target\candy-tool.jar init-project --artifactId=jquery --version=1.10.0-SNAPSHOT --deps=jquery:1.10.0-SNAPSHOT -o ../workspace
+java -jar target\candy-tool.jar init-project --artifactId=jquery --version=1.10.0-SNAPSHOT --deps=jquery:1.10.0-SNAPSHOT -o ../candies
 ```
 
-*TODO : init git repository automatically + init project from existing sources*
+This will create a development ready project, bound to the GitHub candies repository and configured for deployment on the candies Maven repository
 
-To prepare a project for your candy, ready to package/deploy, type the following:
+### Generate the candy's sources using the `generate-sources` command: 
+
 ```
-scripts\package-candy
+java -jar target\candy-tool.jar generate-sources --name=jquery --tsFiles=typings\globals\jquery\index.d.ts -o ../candies/candy-jquery/src/main/java 
 ```
+
+*TODO : init git repository automatically + init project from existing sources + use JSweet definitions instead of TS defs for dependencies*
 
 ## Regenerate CUP parser
 Generate parser from syntax files:
