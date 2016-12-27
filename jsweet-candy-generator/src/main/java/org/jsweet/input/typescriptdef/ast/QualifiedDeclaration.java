@@ -23,6 +23,7 @@ import org.jsweet.input.typescriptdef.util.Util;
 /**
  * A fully qualified declaration.
  * 
+ * @author Louis Grignon
  * @author Renaud Pawlak
  */
 public class QualifiedDeclaration<T extends Declaration> {

@@ -23,6 +23,8 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
+import org.jsweet.input.typescriptdef.ast.Context;
+
 /**
  * This class contains static constants and utilities.
  * 
@@ -64,9 +66,9 @@ public abstract class JSweetDefTranslatorConfig {
 
 	/** The constant for the JSweet lang package. */
 	public final static String LANG_PACKAGE = "def.js";
-	
+
 	public final static String ANNOTATIONS_PACKAGE = "jsweet.lang";
-	
+
 	/** The constant for the JSweet util package. */
 	public final static String UTIL_PACKAGE = "jsweet.util";
 	/**
@@ -88,11 +90,7 @@ public abstract class JSweetDefTranslatorConfig {
 	public static final String GLOBALS_CLASS_NAME = "Globals";
 	/** The constant for predefined utilities. */
 	public static final String UTIL_CLASSNAME = UTIL_PACKAGE + ".Globals";
-	/**
-	 * The constant for the interface name that contains all the generated
-	 * string types (short name).
-	 */
-	public static final String STRING_TYPES_INTERFACE_NAME = "StringTypes";
+
 	/** The constant for the function classes package. */
 	public static final String FUNCTION_CLASSES_PACKAGE = UTIL_PACKAGE + ".function";
 	/** The constant for the tuple classes package. */
@@ -237,6 +235,22 @@ public abstract class JSweetDefTranslatorConfig {
 		// return "$$" + identifier.charAt(0) + "$$" + identifier.substring(1);
 		// }
 		return identifier;
+	}
+
+	/**
+	 * The constant for the interface name that contains generated string types
+	 * (short name / typed strings).
+	 */
+	public static final String STRING_TYPES_INTERFACE_NAME = "StringTypes";
+
+	/**
+	 * Each lib module has holds a list of string types, this methods returns
+	 * the full class name of this StringTypes class for the given lib module
+	 * 
+	 * @see Context#getLibModule(String)
+	 */
+	public static String getStringTypesClassName(String libModule) {
+		return libModule + "." + STRING_TYPES_INTERFACE_NAME;
 	}
 
 	public static boolean isJDKReplacementMode() {

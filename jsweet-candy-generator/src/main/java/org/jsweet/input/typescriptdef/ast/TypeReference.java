@@ -206,6 +206,10 @@ public class TypeReference extends AbstractAstNode implements NamedElement {
 	}
 
 	public boolean isSubtypeOf(TypeReference type) {
+		if (type.isStringType()) {
+			return false;
+		}
+		
 		if (declaration == null) {
 			throw new RuntimeException("unattributed type reference: " + this);
 		}

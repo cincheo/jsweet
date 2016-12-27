@@ -35,6 +35,7 @@ import org.jsweet.input.typescriptdef.ast.Declaration;
 import org.jsweet.input.typescriptdef.ast.DeclarationHelper;
 import org.jsweet.input.typescriptdef.ast.FullFunctionDeclaration;
 import org.jsweet.input.typescriptdef.ast.FunctionDeclaration;
+import org.jsweet.input.typescriptdef.ast.ModuleDeclaration;
 import org.jsweet.input.typescriptdef.ast.ParameterDeclaration;
 import org.jsweet.input.typescriptdef.ast.Scanner;
 import org.jsweet.input.typescriptdef.ast.TypeDeclaration;
@@ -66,6 +67,15 @@ public class DuplicateMethodsCleaner extends Scanner {
 
 	public DuplicateMethodsCleaner(Context context) {
 		super(context);
+	}
+	
+	@Override
+	public void visitModuleDeclaration(ModuleDeclaration moduleDeclaration) {
+		if (context.isInDependency(moduleDeclaration)) {
+			return;
+		}
+		
+		super.visitModuleDeclaration(moduleDeclaration);
 	}
 
 	private void hideDuplicatesInDeclarations(TypeDeclaration originalDeclaringType,
@@ -126,7 +136,7 @@ public class DuplicateMethodsCleaner extends Scanner {
 							}
 						} catch (Exception e) {
 							context.reportError("unattributed type ref for " + f + " at " + f.getLocation()
-									+ ", declaring type: " + declaringType + " at " + declaringType.getLocation());
+									+ ", declaring type: " + declaringType + " at " + declaringType.getLocation(), e);
 						}
 					}
 					if (duplicate) {

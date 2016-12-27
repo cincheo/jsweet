@@ -109,7 +109,6 @@ public class TypescriptDef2Java {
 				files.add(input);
 			}
 		}
-
 	}
 
 	private static void scan(CompilationUnit compilationUnit, Scanner scanner) {

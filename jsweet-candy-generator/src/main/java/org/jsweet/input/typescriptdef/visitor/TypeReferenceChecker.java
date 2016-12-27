@@ -20,16 +20,27 @@ package org.jsweet.input.typescriptdef.visitor;
 
 import org.jsweet.input.typescriptdef.TypescriptDef2Java;
 import org.jsweet.input.typescriptdef.ast.Context;
+import org.jsweet.input.typescriptdef.ast.ModuleDeclaration;
 import org.jsweet.input.typescriptdef.ast.Scanner;
 import org.jsweet.input.typescriptdef.ast.TypeReference;
 
 /**
  * @author Renaud Pawlak
+ * @author Louis Grignon
  */
 public class TypeReferenceChecker extends Scanner {
 
 	public TypeReferenceChecker(Context context) {
 		super(context);
+	}
+	
+	@Override
+	public void visitModuleDeclaration(ModuleDeclaration moduleDeclaration) {
+		if (context.isInDependency(moduleDeclaration)) {
+			return;
+		}
+		
+		super.visitModuleDeclaration(moduleDeclaration);
 	}
 
 	@Override

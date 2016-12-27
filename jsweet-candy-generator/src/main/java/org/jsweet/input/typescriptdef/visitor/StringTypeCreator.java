@@ -21,13 +21,14 @@ package org.jsweet.input.typescriptdef.visitor;
 import static org.apache.commons.lang3.StringUtils.strip;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jsweet.JSweetDefTranslatorConfig;
 import org.jsweet.input.typescriptdef.ast.CompilationUnit;
 import org.jsweet.input.typescriptdef.ast.Context;
 import org.jsweet.input.typescriptdef.ast.Declaration;
-import org.jsweet.input.typescriptdef.ast.DeclarationContainer;
-import org.jsweet.input.typescriptdef.ast.DeclarationHelper;
+import org.jsweet.input.typescriptdef.ast.FunctionDeclaration;
 import org.jsweet.input.typescriptdef.ast.ModuleDeclaration;
+import org.jsweet.input.typescriptdef.ast.QualifiedDeclaration;
 import org.jsweet.input.typescriptdef.ast.Scanner;
 import org.jsweet.input.typescriptdef.ast.TypeDeclaration;
 import org.jsweet.input.typescriptdef.ast.TypeReference;
@@ -65,85 +66,119 @@ public class StringTypeCreator extends Scanner {
 	}
 
 	@Override
+	public void visitModuleDeclaration(ModuleDeclaration moduleDeclaration) {
+		if (context.isInDependency(moduleDeclaration)) {
+			return;
+		}
+
+		super.visitModuleDeclaration(moduleDeclaration);
+	}
+
+	@Override
 	public void visitTypeReference(TypeReference typeReference) {
+		super.visitTypeReference(typeReference);
 		if (typeReference.isStringType()) {
 			TypedDeclaration parentDeclaration = getParent(TypedDeclaration.class);
 
-			String stripped = strip(typeReference.getName(), "['\"]");
-			String name = toJavaStringType(typeReference.getName());
+			String jsName = strip(typeReference.getName(), "['\"]");
+			String javaName = toJavaStringType(typeReference.getName());
+			TypeReference stringTypeReference = null;
 
-			DeclarationContainer stringsContainer = getStringsDeclarationContainer();
-			TypeDeclaration newInterface = stringsContainer.findTypeIgnoreCase(name);
-			if (newInterface == null) {
-				newInterface = new TypeDeclaration(null, "interface", name, null, null, new Declaration[0]);
-				newInterface.setDocumentation("/**\n" + " * Generated to type the string " + typeReference.getName()
-						+ ".\n" + " * @exclude\n" + " */");
-				stringsContainer.addMember(newInterface);
-				context.registerType(
-						JSweetDefTranslatorConfig.UTIL_PACKAGE + "."
-								+ JSweetDefTranslatorConfig.STRING_TYPES_INTERFACE_NAME + "." + newInterface.getName(),
-						newInterface);
-				if (stripped.equals(name)) {
-					newInterface.addStringAnnotation(JSweetDefTranslatorConfig.ANNOTATION_STRING_TYPE);
-				} else {
-					newInterface.addStringAnnotation(
-							JSweetDefTranslatorConfig.ANNOTATION_STRING_TYPE + "(\"" + stripped + "\")");
+			// try to get parent type reference
+			FunctionDeclaration method = getParent(FunctionDeclaration.class, parentDeclaration);
+			TypeDeclaration declaringType = getParent(TypeDeclaration.class, method);
+			if (method != null && declaringType != null) {
+				Pair<TypeDeclaration, FunctionDeclaration> parentMethod = findSuperMethod(declaringType, method);
+				if (parentMethod != null) {
+					String superMethodQualifiedName = context.getTypeName(parentMethod.getKey()) + "."
+							+ parentMethod.getValue().getName();
+					QualifiedDeclaration<TypedDeclaration> superDeclaration = context.findFirstDeclaration(
+							TypedDeclaration.class, superMethodQualifiedName + "." + parentDeclaration.getName());
+
+					logger.info("\n\n)))))) => " + superMethodQualifiedName + "." + parentDeclaration.getName() + " =>  "
+							+ superDeclaration);
+
+					stringTypeReference = superDeclaration.getDeclaration().getType();
 				}
 			}
-			VariableDeclaration var = null;
-			if ((var = stringsContainer.findVariableIgnoreCase(name)) == null) {
-				VariableDeclaration value = new VariableDeclaration(null, name, new TypeReference(null,
-						JSweetDefTranslatorConfig.UTIL_PACKAGE + "."
-								+ JSweetDefTranslatorConfig.STRING_TYPES_INTERFACE_NAME + "." + newInterface.getName(),
-						null), false, false);
-				value.setDocumentation("/**\n" + " * Generated to type the string " + typeReference.getName() + ".\n"
-						+ " * @exclude\n" + " */");
-				value.addModifier("static");
-				stringsContainer.addMember(value);
-				if (stripped.equals(name)) {
-					value.addStringAnnotation(JSweetDefTranslatorConfig.ANNOTATION_STRING_TYPE);
-				} else {
-					value.addStringAnnotation(
-							JSweetDefTranslatorConfig.ANNOTATION_STRING_TYPE + "(\"" + stripped + "\")");
-				}
-			}
-			Util.substituteTypeReference(this, parentDeclaration, typeReference,
-					new TypeReference(null,
-							JSweetDefTranslatorConfig.UTIL_PACKAGE + "."
-									+ JSweetDefTranslatorConfig.STRING_TYPES_INTERFACE_NAME + "."
-									+ (var == null ? name : var.getName()),
-							null));
 
+			// if type is not resolved, we add it
+			if (stringTypeReference == null) {
+				stringTypeReference = addStringType(typeReference, jsName, javaName);
+			}
+
+			assert !stringTypeReference.isStringType() : "String type should be expanded by now";
+
+			Util.substituteTypeReference(this, parentDeclaration, typeReference, stringTypeReference);
 		}
-		super.visitTypeReference(typeReference);
 	}
 
-	private DeclarationContainer getStringsDeclarationContainer() {
+	private TypeReference addStringType(TypeReference typeReference, String jsName, String javaName) {
+
+		String containerName = getCurrentContainerName();
+		String libModule = context.getLibModule(containerName);
+
+		logger.info("add string type '" + javaName + "' IN " + libModule + " for " + containerName);
+
+		TypeDeclaration stringsContainer = getStringsDeclarationContainer(libModule);
+
+		// 1. create string type
+		TypeDeclaration newInterface = stringsContainer.findTypeIgnoreCase(javaName);
+		if (newInterface == null) {
+			newInterface = new TypeDeclaration(null, "interface", javaName, null, null, new Declaration[0]);
+			newInterface.setDocumentation("/**\n" + " * Generated to type the string " + typeReference.getName() + ".\n"
+					+ " * @exclude\n" + " */");
+			stringsContainer.addMember(newInterface);
+			context.registerType(JSweetDefTranslatorConfig.UTIL_PACKAGE + "."
+					+ JSweetDefTranslatorConfig.STRING_TYPES_INTERFACE_NAME + "." + newInterface.getName(),
+					newInterface);
+			if (jsName.equals(javaName)) {
+				newInterface.addStringAnnotation(JSweetDefTranslatorConfig.ANNOTATION_STRING_TYPE);
+			} else {
+				newInterface
+						.addStringAnnotation(JSweetDefTranslatorConfig.ANNOTATION_STRING_TYPE + "(\"" + jsName + "\")");
+			}
+		}
+
+		// 2. create string type static variable
+		VariableDeclaration var = null;
+		if ((var = stringsContainer.findVariableIgnoreCase(javaName)) == null) {
+			VariableDeclaration value = new VariableDeclaration(null, javaName, new TypeReference(
+					null, JSweetDefTranslatorConfig.UTIL_PACKAGE + "."
+							+ JSweetDefTranslatorConfig.STRING_TYPES_INTERFACE_NAME + "." + newInterface.getName(),
+					null), false, false);
+			value.setDocumentation("/**\n" + " * Generated to type the string " + typeReference.getName() + ".\n"
+					+ " * @exclude\n" + " */");
+			value.addModifier("static");
+			stringsContainer.addMember(value);
+			if (jsName.equals(javaName)) {
+				value.addStringAnnotation(JSweetDefTranslatorConfig.ANNOTATION_STRING_TYPE);
+			} else {
+				value.addStringAnnotation(JSweetDefTranslatorConfig.ANNOTATION_STRING_TYPE + "(\"" + jsName + "\")");
+			}
+		}
+
+		String stringTypeFullName = context.getTypeName(stringsContainer) + "."
+				+ (var == null ? javaName : var.getName());
+		return new TypeReference(null, stringTypeFullName, null);
+	}
+
+	private TypeDeclaration getStringsDeclarationContainer(String libModule) {
 		// string declarations are all merged in the same package / class:
 		// jsweet util
-		CompilationUnit destinationCompilUnit = context.getTranslatedCompilationUnits().get(0);
+		CompilationUnit destinationCompilUnit = context.getCompilationUnitForLibModule(libModule);
+		ModuleDeclaration destinationModule = destinationCompilUnit.getMainModule();
 
-		ModuleDeclaration destinationModule = getOrCreateModule(destinationCompilUnit,
-				JSweetDefTranslatorConfig.UTIL_PACKAGE);
-		String name = JSweetDefTranslatorConfig.STRING_TYPES_INTERFACE_NAME;
-		TypeDeclaration candidate = destinationModule.findType(name);
+		TypeDeclaration candidate = destinationModule.findType(JSweetDefTranslatorConfig.STRING_TYPES_INTERFACE_NAME);
 		if (candidate == null) {
 			candidate = new TypeDeclaration(null, "interface", JSweetDefTranslatorConfig.STRING_TYPES_INTERFACE_NAME,
 					null, null, new Declaration[0]);
 			candidate.addModifier("public");
 			destinationModule.addMember(candidate);
-			context.registerType(destinationModule + "." + name, candidate);
+			context.registerType(destinationModule + "." + JSweetDefTranslatorConfig.STRING_TYPES_INTERFACE_NAME,
+					candidate);
 		}
 		return candidate;
-	}
-
-	private ModuleDeclaration getOrCreateModule(DeclarationContainer container, String name) {
-		ModuleDeclaration m = DeclarationHelper.findModule(container, name);
-		if (m == null) {
-			m = new ModuleDeclaration(null, name, new Declaration[0]);
-			container.addMember(m);
-		}
-		return m;
 	}
 
 }

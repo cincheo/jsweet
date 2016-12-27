@@ -106,8 +106,7 @@ public class Context {
 	public final boolean fetchJavadoc;
 
 	public void reportError(String errorMessage) {
-		errors.add(errorMessage);
-		logger.error(errorMessage, new Exception());
+		reportError(errorMessage, new Exception());
 	}
 
 	public void reportError(String errorMessage, Throwable cause) {
@@ -646,5 +645,17 @@ public class Context {
 	public boolean isInDependency(TypeDeclaration typeDeclaration) {
 		String libModule = getLibModule(getTypeName(typeDeclaration));
 		return isBlank(libModule) || isDependency(getCompilationUnitForLibModule(libModule));
+	}
+	
+	/**
+	 * @return true if the given TypeDeclaration comes from a dependency (a compilation unit which won't be generated)
+	 */
+	public boolean isInDependency(ModuleDeclaration moduleDeclaration) {
+		String libModule = getLibModule(getModuleName(moduleDeclaration));
+		return isBlank(libModule) || isDependency(getCompilationUnitForLibModule(libModule));
+	}
+	
+	public boolean isDependency(String libModule) {
+		return isDependency(getCompilationUnitForLibModule(libModule));
 	}
 }

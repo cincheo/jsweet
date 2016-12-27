@@ -283,6 +283,15 @@ public abstract class DeclarationHelper {
 		}
 		return null;
 	}
+	
+	public static ModuleDeclaration getOrCreateModule(DeclarationContainer container, String name) {
+		ModuleDeclaration m = findModule(container, name);
+		if (m == null) {
+			m = new ModuleDeclaration(null, name, new Declaration[0]);
+			container.addMember(m);
+		}
+		return m;
+	}
 
 	public static Declaration findDeclaration(DeclarationContainer container, String name) {
 		if (container.getMembers() == null) {

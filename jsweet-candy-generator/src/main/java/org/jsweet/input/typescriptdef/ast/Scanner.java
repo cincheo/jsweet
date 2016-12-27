@@ -24,10 +24,13 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
+import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.MutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import org.jsweet.JSweetDefTranslatorConfig;
 
@@ -392,7 +395,7 @@ public abstract class Scanner implements Visitor {
 			return t;
 		}
 	}
-		
+
 	protected QualifiedDeclaration<FunctionDeclaration> lookupFunctionDeclaration(String name) {
 		Set<String> possibleNames = new LinkedHashSet<String>();
 		String mainModuleName = "";
@@ -762,5 +765,46 @@ public abstract class Scanner implements Visitor {
 
 	@Override
 	public void visitReferenceDeclaration(ReferenceDeclaration referenceDeclaration) {
+	}
+
+	protected Pair<TypeDeclaration, FunctionDeclaration> findSuperMethod(TypeDeclaration declaringType,
+			FunctionDeclaration method) {
+		MutablePair<TypeDeclaration, FunctionDeclaration> superMethodInfos = new MutablePair<>();
+		applyToSuperMethod(declaringType, method, (superType, superMethod) -> {
+			superMethodInfos.setLeft(superType);
+			superMethodInfos.setRight(superMethod);
+		});
+		
+		return superMethodInfos.getRight() == null ? null : superMethodInfos;
+	}
+
+	protected void applyToSuperMethod(TypeDeclaration declaringType, FunctionDeclaration childFunction,
+			BiConsumer<TypeDeclaration, FunctionDeclaration> apply) {
+		applyToSuperMethod(declaringType, childFunction, declaringType, apply);
+	}
+
+	private void applyToSuperMethod(TypeDeclaration declaringType, FunctionDeclaration childFunction,
+			TypeDeclaration parentType, BiConsumer<TypeDeclaration, FunctionDeclaration> apply) {
+		int index = -1;
+		if (declaringType != parentType) {
+			index = ArrayUtils.indexOf(parentType.getMembers(), childFunction);
+		}
+		if (index != -1) {
+			apply.accept(parentType, (FunctionDeclaration) parentType.getMembers()[index]);
+		} else {
+			if (parentType.getSuperTypes() != null && parentType.getSuperTypes().length > 0) {
+				for (TypeReference ref : parentType.getSuperTypes()) {
+					Type decl = lookupType(ref, null);
+					if (decl instanceof TypeDeclaration) {
+						applyToSuperMethod(declaringType, childFunction, (TypeDeclaration) decl, apply);
+					}
+				}
+			} else if (!JSweetDefTranslatorConfig.getObjectClassName().equals(context.getTypeName(parentType))) {
+				TypeDeclaration decl = context.getTypeDeclaration(JSweetDefTranslatorConfig.getObjectClassName());
+				if (decl != null) {
+					applyToSuperMethod(declaringType, childFunction, (TypeDeclaration) decl, apply);
+				}
+			}
+		}
 	}
 }
