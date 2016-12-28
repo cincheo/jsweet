@@ -18,10 +18,12 @@
  */
 package org.jsweet.candies;
 
+import static org.jsweet.CandyTool.getResourceFile;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.defaultString;
 
 import java.io.File;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -45,6 +47,18 @@ import com.martiansoftware.jsap.stringparsers.FileStringParser;
  * @author Louis Grignon
  */
 public class GenerateSourcesTool {
+
+	public static enum JSweetCoreVersion {
+		ES5, ES6;
+
+		public static JSweetCoreVersion parse(String value) {
+			try {
+				return valueOf(value);
+			} catch (Exception e) {
+				return ES5;
+			}
+		}
+	}
 
 	private static final Logger logger = Logger.getLogger(GenerateSourcesTool.class);
 
@@ -81,10 +95,15 @@ public class GenerateSourcesTool {
 				.map(File::new) //
 				.collect(toList());
 
+		JSweetCoreVersion coreVersion = JSweetCoreVersion.parse(jsapArgs.getString("coreVersion"));
+
+		addCoreDependencies(coreVersion, tsDependencies);
+
 		logger.info("scaffolding candy: \n" //
 				+ "* candyName: " + candyName + "\n" //
 				+ "* tsFiles: " + tsFiles + "\n" //
 				+ "* tsDependencies: " + tsDependencies + "\n" //
+				+ "* coreVersion: " + coreVersion + "\n" //
 				+ " to out: " + outDir.getAbsolutePath());
 
 		TypescriptDef2Java.translate( //
@@ -97,6 +116,22 @@ public class GenerateSourcesTool {
 		logger.info("**************************************************************");
 		logger.info("candy " + candyName + " successfully generated to " + outDir);
 		logger.info("**************************************************************");
+	}
+
+	private static void addCoreDependencies(JSweetCoreVersion coreVersion, List<File> tsDependencies)
+			throws URISyntaxException {
+		switch (coreVersion) {
+		case ES5:
+		default:
+			tsDependencies.add(getResourceFile("typings/lib.core/lib.core.d.ts"));
+			tsDependencies.add(getResourceFile("typings/lib.core/lib.core.ext.d.ts"));
+			tsDependencies.add(getResourceFile("typings/lib.core/lib.dom.d.ts"));
+			break;
+		case ES6:
+			tsDependencies.add(getResourceFile("typings/lib.core/lib.es6.d.ts"));
+			tsDependencies.add(getResourceFile("typings/lib.core/lib.core.ext.d.ts"));
+			break;
+		}
 	}
 
 	private static JSAP defineArgs() throws JSAPException {
@@ -151,6 +186,15 @@ public class GenerateSourcesTool {
 		optionArg.setShortFlag('d');
 		optionArg.setHelp(
 				"list of ts definition file paths describing the library dependencies (ex lib.core.d.ts, ...)");
+		jsap.registerParameter(optionArg);
+
+		// ES version
+		optionArg = new FlaggedOption("coreVersion");
+		optionArg.setLongFlag("coreVersion");
+		optionArg.setShortFlag('c');
+		optionArg.setDefault("es5");
+		optionArg.setHelp(
+				"Version of jsweet-core (ES version) to be used - one of es5, es6 - will be included by default for generation");
 		jsap.registerParameter(optionArg);
 
 		return jsap;

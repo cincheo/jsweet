@@ -21,6 +21,7 @@ package org.jsweet.candies;
 import static java.util.Arrays.asList;
 import static org.apache.commons.lang3.StringUtils.defaultString;
 import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.jsweet.CandyTool.getResourceFile;
 
 import java.io.Console;
 import java.io.File;
@@ -84,8 +85,8 @@ public class InitProjectTool {
 				+ "* artifactId: " + artifactId + "\n" //
 				+ "* version: " + version + "\n" //
 				+ " to: " + projectDir.getAbsolutePath());
-
-		FileUtils.copyDirectory(new File("templates/candy-project"), projectDir);
+		
+		FileUtils.copyDirectory(getResourceFile("templates/candy-project"), projectDir);
 
 		logger.info("generating .project");
 		File projectFile = new File(projectDir, ".project");

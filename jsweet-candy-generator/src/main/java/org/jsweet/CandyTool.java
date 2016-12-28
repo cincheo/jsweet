@@ -18,6 +18,7 @@
  */
 package org.jsweet;
 
+import java.io.File;
 import java.util.Arrays;
 
 import org.jsweet.candies.GenerateSourcesTool;
@@ -30,7 +31,7 @@ import org.jsweet.candies.InitProjectTool;
  */
 public class CandyTool {
 
-		public static void main(String[] args) throws Throwable {
+	public static void main(String[] args) throws Throwable {
 
 		if (args.length < 1) {
 			System.out.println("usage: java -jar candy-tool.jar <command> [<args>]");
@@ -52,6 +53,18 @@ public class CandyTool {
 
 		default:
 			throw new RuntimeException("command not found: " + args[1]);
+		}
+	}
+
+	public static File getResourceFile(String uri) {
+		try {
+			// URL url = Thread.currentThread().getContextClassLoader() //
+			// .getResource(uri);
+			// File file = new File(url.toURI());
+			// return file;
+			return new File(uri);
+		} catch (Exception e) {
+			throw new RuntimeException("cannot get resource file: " + uri, e);
 		}
 	}
 }
