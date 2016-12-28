@@ -647,7 +647,7 @@ public class DuplicateMethodsCleaner extends Scanner {
 		FullFunctionDeclaration first = duplicates.iterator().next();
 		TypeDeclaration hightest = first.declaringType;
 		TypeDeclaration t = hightest;
-		while (t.getSuperTypes() != null && t.getSuperTypes().length > 0) {
+		while (t != null && t.getSuperTypes() != null && t.getSuperTypes().length > 0) {
 			TypeDeclaration st = (TypeDeclaration) lookupType(t.getSuperTypes()[0], null);
 			if (st == null) {
 				context.reportError("undefined type " + t.getSuperTypes()[0]);
