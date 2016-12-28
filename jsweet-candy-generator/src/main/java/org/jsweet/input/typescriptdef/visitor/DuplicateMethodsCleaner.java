@@ -126,7 +126,7 @@ public class DuplicateMethodsCleaner extends Scanner {
 							}
 						} catch (Exception e) {
 							context.reportError("unattributed type ref for " + f + " at " + f.getLocation()
-									+ ", declaring type: " + declaringType + " at " + declaringType.getLocation());
+									+ ", declaring type: " + declaringType, declaringType.getToken());
 						}
 					}
 					if (duplicate) {
@@ -649,8 +649,8 @@ public class DuplicateMethodsCleaner extends Scanner {
 		TypeDeclaration t = hightest;
 		while (t != null && t.getSuperTypes() != null && t.getSuperTypes().length > 0) {
 			TypeDeclaration st = (TypeDeclaration) lookupType(t.getSuperTypes()[0], null);
-			if (st == null) {
-				context.reportError("undefined type " + t.getSuperTypes()[0]);
+			if (st == null && t.getToken() != null) {
+				context.reportError("undefined type " + t.getSuperTypes()[0], t.getToken());
 			}
 			if (isTypePresent(st, duplicates)) {
 				hightest = st;

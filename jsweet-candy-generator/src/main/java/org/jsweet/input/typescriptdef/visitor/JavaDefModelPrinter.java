@@ -276,8 +276,9 @@ public class JavaDefModelPrinter extends AbstractPrinter {
 					if ("interface".equals(t.getKind())) {
 						print(" extends ").print(typeDeclaration.getSuperTypes()[0]);
 					} else {
-						context.reportError("wrong subclassing link between " + typeDeclaration.getName() + " and "
-								+ t.getName() + " at " + typeDeclaration.getToken().getLocation());
+						context.reportError(
+								"wrong subclassing link between " + typeDeclaration.getName() + " and " + t.getName(),
+								typeDeclaration.getToken());
 					}
 				}
 			}
@@ -301,9 +302,8 @@ public class JavaDefModelPrinter extends AbstractPrinter {
 
 			if (extendList.size() > 1) {
 
-				context.reportError(
-						"multiple inheritance should not appear at this stage for " + typeDeclaration.getName() + " at "
-								+ typeDeclaration.getToken().getLocation() + " extends=" + extendList);
+				context.reportError("multiple inheritance should not appear at this stage for "
+						+ typeDeclaration.getName() + " extends=" + extendList, typeDeclaration.getToken());
 			} else if (extendList.size() == 1) {
 				print(" extends ").print(extendList.get(0));
 			} else if (!JSweetDefTranslatorConfig.isJDKReplacementMode()

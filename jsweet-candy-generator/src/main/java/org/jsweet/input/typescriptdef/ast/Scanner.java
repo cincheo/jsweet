@@ -382,8 +382,7 @@ public abstract class Scanner implements Visitor {
 					if (verboseIfNotFound) {
 						Token token = getCurrentToken();
 						context.reportError("cannot find reference " + reference + " (" + getCurrentContainerName()
-								+ "." + reference.getName() + ")" + " at "
-								+ (token == null ? "" : token.getLocation()));
+								+ "." + reference.getName() + ")", token);
 					}
 				}
 			}
@@ -392,7 +391,7 @@ public abstract class Scanner implements Visitor {
 			return t;
 		}
 	}
-		
+
 	protected QualifiedDeclaration<FunctionDeclaration> lookupFunctionDeclaration(String name) {
 		Set<String> possibleNames = new LinkedHashSet<String>();
 		String mainModuleName = "";

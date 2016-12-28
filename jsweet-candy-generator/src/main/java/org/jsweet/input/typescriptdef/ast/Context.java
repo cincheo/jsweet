@@ -51,7 +51,7 @@ public class Context {
 
 	// contructor type -> target type
 	public Map<TypeDeclaration, TypeDeclaration> mergedContructors = new HashMap<TypeDeclaration, TypeDeclaration>();
-	
+
 	public Context(List<File> libraries, List<File> dependencies, boolean fetchJavadoc) {
 		this.librariesDefinitions = libraries;
 		this.dependenciesDefinitions = dependencies;
@@ -81,13 +81,13 @@ public class Context {
 	private Map<String, TypeDeclaration> types = new HashMap<String, TypeDeclaration>();
 
 	private Set<String> clashingWithModulesTypes = new HashSet<String>();
-		
+
 	private Map<TypeDeclaration, String> typeNames = new HashMap<TypeDeclaration, String>();
 
 	private Map<ModuleDeclaration, String> moduleNames = new HashMap<ModuleDeclaration, String>();
 
 	public Map<DeclarationContainer, List<TypeDeclaration>> generatedObjectTypes = new HashMap<>();
-	
+
 	/**
 	 * Holds the (fully qualified module names -> original name) that are
 	 * external (can be imported with require).
@@ -105,16 +105,21 @@ public class Context {
 
 	public final boolean fetchJavadoc;
 
-	public void reportError(String errorMessage) {
+	private void reportError(String errorMessage) {
 		errors.add(errorMessage);
-		logger.error(errorMessage, new Exception());
+		logger.error(errorMessage);
+	}
+
+	public void reportError(String errorMessage, Token token) {
+		reportError(errorMessage + (token == null || token.getLocation() == null ? " (undefined position)"
+				: " at " + token.getLocation()));
 	}
 
 	public void reportError(String errorMessage, Throwable cause) {
 		errors.add(errorMessage);
 		logger.error(errorMessage, cause);
 	}
-	
+
 	public void reportWarning(String errorMessage) {
 		warnings.add(errorMessage);
 		logger.warn(errorMessage);
@@ -171,11 +176,11 @@ public class Context {
 	public boolean setTypeClashingWithModule(String typeName) {
 		return clashingWithModulesTypes.add(typeName);
 	}
-	
+
 	public boolean isTypeClashingWithModule(String typeName) {
 		return clashingWithModulesTypes.contains(typeName);
 	}
-	
+
 	public String getTypeName(TypeDeclaration typeDeclaration) {
 		return typeNames.get(typeDeclaration);
 	}
@@ -625,14 +630,14 @@ public class Context {
 	public CompilationUnit getCompilationUnitForLibModule(String libModule) {
 		return libModulesCompilationUnits.get(libModule);
 	}
-	
+
 	public CompilationUnit getCompilationUnit(File tsDefFile) {
 		for (CompilationUnit compilUnit : compilationUnits) {
 			if (tsDefFile.equals(compilUnit.file)) {
 				return compilUnit;
 			}
 		}
-		
+
 		return null;
 	}
 
@@ -641,7 +646,8 @@ public class Context {
 	}
 
 	/**
-	 * @return true if the given TypeDeclaration comes from a dependency (a compilation unit which won't be generated)
+	 * @return true if the given TypeDeclaration comes from a dependency (a
+	 *         compilation unit which won't be generated)
 	 */
 	public boolean isInDependency(TypeDeclaration typeDeclaration) {
 		String libModule = getLibModule(getTypeName(typeDeclaration));

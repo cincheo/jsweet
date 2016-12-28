@@ -38,6 +38,7 @@ import org.jsweet.JSweetDefTranslatorConfig;
 import org.jsweet.input.typescriptdef.ast.CompilationUnit;
 import org.jsweet.input.typescriptdef.ast.Context;
 import org.jsweet.input.typescriptdef.ast.Scanner;
+import org.jsweet.input.typescriptdef.ast.Token;
 import org.jsweet.input.typescriptdef.parser.TypescriptDefParser;
 import org.jsweet.input.typescriptdef.util.Util;
 import org.jsweet.input.typescriptdef.visitor.ConstructorInterfacesMerger;
@@ -163,7 +164,7 @@ public class TypescriptDef2Java {
 			}
 		}
 	}
-	
+
 	@SuppressWarnings("serial")
 	private static final Map<String, String[]> IGNORED_REFERENCES = new HashMap<String, String[]>() {
 		{
@@ -187,7 +188,7 @@ public class TypescriptDef2Java {
 			if (path != null) {
 				File dep = new File(f.getParent(), path);
 				if (!dep.exists()) {
-					context.reportError("dependency '" + dep + "' does not exist");
+					context.reportError("dependency '" + dep + "' does not exist", (Token) null);
 				} else {
 					File tsDefFile = parser.compilationUnit.getFile();
 					boolean ignored = isIgnoredReference(tsDefFile, path);
@@ -216,11 +217,11 @@ public class TypescriptDef2Java {
 	}
 
 	private static boolean isIgnoredReference(File tsDefFile, String path) {
-		
+
 		for (Map.Entry<String, String[]> ignoredReferenceEntry : IGNORED_REFERENCES.entrySet()) {
-			
+
 			if (tsDefFile.getPath().endsWith(ignoredReferenceEntry.getKey())) {
-				
+
 				String[] ignoredPaths = ignoredReferenceEntry.getValue();
 				for (String ignoredPathRegex : ignoredPaths) {
 					if (Pattern.matches(ignoredPathRegex, path)) {
@@ -229,7 +230,7 @@ public class TypescriptDef2Java {
 				}
 			}
 		}
-		
+
 		return false;
 	}
 
@@ -285,7 +286,7 @@ public class TypescriptDef2Java {
 		translateAst(context);
 
 		printAst(outputDir, context);
-		
+
 		// copies core built-in srcs
 		// if (context.getLibrariesDefinitions()
 		// .contains(new File(JSweetDefTranslatorConfig.TS_LIBS_DIR_NAME +

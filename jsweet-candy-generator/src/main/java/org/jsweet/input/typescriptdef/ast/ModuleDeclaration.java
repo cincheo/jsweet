@@ -25,11 +25,9 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * Module/Namespace declaration node in TypeScript definition file 
+ * Module/Namespace declaration node in TypeScript definition file
  * 
  * @author Renaud Pawlak
- * @author Louis Grignon
- *
  */
 public class ModuleDeclaration extends AbstractDeclaration implements DeclarationContainer {
 
@@ -102,7 +100,7 @@ public class ModuleDeclaration extends AbstractDeclaration implements Declaratio
 	public VariableDeclaration findVariableIgnoreCase(String name) {
 		return DeclarationHelper.findVariableIgnoreCase(this, name);
 	}
-	
+
 	@Override
 	public TypeDeclaration findType(String name) {
 		return DeclarationHelper.findType(this, name);
@@ -112,7 +110,7 @@ public class ModuleDeclaration extends AbstractDeclaration implements Declaratio
 	public TypeDeclaration findTypeIgnoreCase(String name) {
 		return DeclarationHelper.findTypeIgnoreCase(this, name);
 	}
-	
+
 	@Override
 	public Declaration findDeclaration(String name) {
 		return DeclarationHelper.findDeclaration(this, name);
@@ -130,7 +128,7 @@ public class ModuleDeclaration extends AbstractDeclaration implements Declaratio
 
 	@Override
 	public ModuleDeclaration copy() {
-		ModuleDeclaration copy = new ModuleDeclaration(null, getName(), DeclarationHelper.copy(members));
+		ModuleDeclaration copy = new ModuleDeclaration(this.getToken(), getName(), DeclarationHelper.copy(members));
 		copy.setStringAnnotations(
 				this.getStringAnnotations() == null ? null : new ArrayList<String>(getStringAnnotations()));
 		copy.quotedName = this.quotedName;

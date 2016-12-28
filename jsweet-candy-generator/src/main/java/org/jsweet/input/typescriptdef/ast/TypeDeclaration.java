@@ -25,10 +25,9 @@ import java.util.List;
 import org.apache.commons.lang3.ArrayUtils;
 
 /**
- * Type declarations in source code of TypeScript defintions.
+ * Type declarations in source code of TypeScript definitions.
  * 
  * @author Renaud Pawlak
- * @author Louis Grignon
  */
 public class TypeDeclaration extends AbstractDeclaration
 		implements Type, TypeParameterizedElement, DeclarationContainer {
@@ -145,7 +144,7 @@ public class TypeDeclaration extends AbstractDeclaration
 	public VariableDeclaration findVariableIgnoreCase(String name) {
 		return DeclarationHelper.findVariableIgnoreCase(this, name);
 	}
-		
+
 	@Override
 	public TypeDeclaration findType(String name) {
 		return DeclarationHelper.findType(this, name);
@@ -155,7 +154,7 @@ public class TypeDeclaration extends AbstractDeclaration
 	public TypeDeclaration findTypeIgnoreCase(String name) {
 		return DeclarationHelper.findTypeIgnoreCase(this, name);
 	}
-	
+
 	@Override
 	public Declaration findDeclaration(String name) {
 		return DeclarationHelper.findDeclaration(this, name);
@@ -182,7 +181,7 @@ public class TypeDeclaration extends AbstractDeclaration
 
 	@Override
 	public TypeDeclaration copy() {
-		TypeDeclaration copy = new TypeDeclaration(null, getKind(), getName(),
+		TypeDeclaration copy = new TypeDeclaration(this.getToken(), getKind(), getName(),
 				DeclarationHelper.copy(getTypeParameters()), DeclarationHelper.copyReferences(superTypes),
 				DeclarationHelper.copy(members));
 		copy.setDocumentation(getDocumentation());

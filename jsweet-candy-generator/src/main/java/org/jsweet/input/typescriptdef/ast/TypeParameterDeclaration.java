@@ -46,7 +46,7 @@ public class TypeParameterDeclaration extends AbstractDeclaration implements Typ
 
 	@Override
 	public TypeParameterDeclaration copy() {
-		TypeParameterDeclaration copy = new TypeParameterDeclaration(null, getName());
+		TypeParameterDeclaration copy = new TypeParameterDeclaration(this.getToken(), getName());
 		copy.upperBound = upperBound == null ? null : upperBound.copy();
 		return copy;
 	}

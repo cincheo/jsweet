@@ -27,6 +27,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.jsweet.JSweetDefTranslatorConfig;
 import org.jsweet.input.typescriptdef.ast.Context;
 import org.jsweet.input.typescriptdef.ast.Scanner;
+import org.jsweet.input.typescriptdef.ast.Token;
 import org.jsweet.input.typescriptdef.ast.TypeDeclaration;
 
 /**
@@ -78,7 +79,7 @@ public class TypeMerger extends Scanner {
 						List<String> dependencies = context.dependencyGraph.getDestinationElements(libModule);
 						if (dependencies == null) {
 							context.reportError("cannot find dependency for module " + libModule + " (type "
-									+ typeDeclaration + "): check dependecy graph initialization");
+									+ typeDeclaration + "): check dependecy graph initialization", (Token) null);
 						} else {
 							for (String targetLibModule : context.dependencyGraph.getDestinationElements(libModule)) {
 								if (targetLibModule == null) {
