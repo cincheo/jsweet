@@ -493,10 +493,10 @@ public class TranslationTest extends AbstractTest {
 				.getDeclaration();
 		FunctionDeclaration f = d.findFirstFunction("m1");
 
-		Assert.assertEquals("parameter of function m1 should be a string type 'abc'", "jsweet.util.StringTypes.abc",
+		Assert.assertEquals("parameter of function m1 should be a string type 'abc'", "def.types.StringTypes.abc",
 				f.getParameters()[0].getType().getName());
 		f = d.findFirstFunction("m2");
-		Assert.assertEquals("parameter of function m2 should be a string type, 'abc'", "jsweet.util.StringTypes.abc",
+		Assert.assertEquals("parameter of function m2 should be a string type, 'abc'", "def.types.StringTypes.abc",
 				f.getParameters()[0].getType().getName());
 
 		f = context.findFirstDeclaration(FunctionDeclaration.class, "def.types.I.items").getDeclaration();

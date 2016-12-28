@@ -70,6 +70,9 @@
 					<outDir>src/main/resources/META-INF/resources/webjars/${project.artifactId}/${project.version}</outDir>
 					<dtsOut>src/main/resources/src/typings/${project.artifactId}/${project.version}</dtsOut>
 					<targetVersion>ES5</targetVersion>
+					<excludes>
+						<exclude>**jsweet/util/function/**</exclude>
+					</excludes>
 				</configuration>
 				<executions>
 					<execution>

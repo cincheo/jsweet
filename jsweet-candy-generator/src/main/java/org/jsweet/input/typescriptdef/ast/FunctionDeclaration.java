@@ -132,12 +132,13 @@ public class FunctionDeclaration extends AbstractTypedDeclaration implements Typ
 
 	@Override
 	public FunctionDeclaration copy() {
-		FunctionDeclaration copy = new FunctionDeclaration(null, name, getType() == null ? null : getType().copy(),
-				DeclarationHelper.copy(parameters), DeclarationHelper.copy(typeParameters));
+		FunctionDeclaration copy = new FunctionDeclaration(this.getToken(), name,
+				getType() == null ? null : getType().copy(), DeclarationHelper.copy(parameters),
+				DeclarationHelper.copy(typeParameters));
 		copy.setDocumentation(getDocumentation());
 		copy.setModifiers(this.getModifiers() == null ? null : new HashSet<String>(getModifiers()));
-		copy.setStringAnnotations(this.getStringAnnotations() == null ? null : new ArrayList<String>(
-				getStringAnnotations()));
+		copy.setStringAnnotations(
+				this.getStringAnnotations() == null ? null : new ArrayList<String>(getStringAnnotations()));
 		return copy;
 	}
 }

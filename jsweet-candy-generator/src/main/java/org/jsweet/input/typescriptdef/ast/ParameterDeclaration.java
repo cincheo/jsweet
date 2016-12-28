@@ -50,10 +50,11 @@ public class ParameterDeclaration extends VariableDeclaration {
 
 	@Override
 	public ParameterDeclaration copy() {
-		ParameterDeclaration copy = new ParameterDeclaration(null, name, getType().copy(), isOptional(), isVarargs());
+		ParameterDeclaration copy = new ParameterDeclaration(this.getToken(), name, getType().copy(), isOptional(),
+				isVarargs());
 		copy.setModifiers(this.getModifiers() == null ? null : new HashSet<String>(this.getModifiers()));
-		copy.setStringAnnotations(this.getStringAnnotations() == null ? null : new ArrayList<String>(
-				getStringAnnotations()));
+		copy.setStringAnnotations(
+				this.getStringAnnotations() == null ? null : new ArrayList<String>(getStringAnnotations()));
 		copy.setDocumentation(this.getDocumentation());
 		return copy;
 	}

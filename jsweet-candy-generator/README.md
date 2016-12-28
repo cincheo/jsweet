@@ -33,9 +33,12 @@ java -jar target\candy-tool.jar generate-sources --name=jquery.ui.datetimepicker
 ```
 
 ```
-java -jar target\candy-tool.jar generate-sources --name=angular-agility --tsFiles=typings\angular-agility\angular-agility.d.ts --tsDeps=typings\angularjs\angular.d.ts,typings\lib.core\lib.core.d.ts,typings\lib.core\lib.core.ext.d.ts,typings\lib.core\lib.dom.d.ts -o ../candies/candy-jquery/src/main/java 
+java -jar target\candy-tool.jar generate-sources --name=three --tsFiles=typings\threejs\three.d.ts,typings\threejs\three-copyshader.d.ts --tsDeps=typings\lib.core\lib.core.d.ts,typings\lib.core\lib.core.ext.d.ts,typings\lib.core\lib.dom.d.ts -o ../candies/candy-three/src/main/java 
 ```
 
+```
+java -jar target\candy-tool.jar generate-sources --name=devextreme --tsFiles=typings\devextreme\devextreme.d.ts,typings\devextreme\dx.devextreme.d.ts --tsDeps=typings\globals\jquery\index.d.ts,typings\lib.core\lib.core.d.ts,typings\lib.core\lib.core.ext.d.ts,typings\lib.core\lib.dom.d.ts -o ../candies/candy-devextreme/src/main/java 
+```
 
 
 *TODO : init git repository automatically + init project from existing sources + use JSweet definitions instead of TS defs for dependencies*

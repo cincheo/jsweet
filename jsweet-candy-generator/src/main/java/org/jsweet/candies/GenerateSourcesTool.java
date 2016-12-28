@@ -73,12 +73,12 @@ public class GenerateSourcesTool {
 		outDir.mkdirs();
 
 		List<File> tsFiles = Stream.of(jsapArgs.getString("tsFiles").split(",")) //
+				.filter(StringUtils::isNotBlank) //
 				.map(File::new) //
-				.filter(file -> file.exists()) //
 				.collect(toList());
 		List<File> tsDependencies = Stream.of(defaultString(jsapArgs.getString("tsDeps")).split(",")) //
+				.filter(StringUtils::isNotBlank) //
 				.map(File::new) //
-				.filter(file -> file.exists()) //
 				.collect(toList());
 
 		logger.info("scaffolding candy: \n" //
