@@ -222,7 +222,7 @@ public class InitProjectTool {
 		optionArg.setShortFlag('r');
 		optionArg.setLongFlag("createGitHubRepository");
 		optionArg.setHelp("If true, automatically creates a GitHub repository for the candy - default: true \n provide gitHubUser and gitHubPass if you don't want to be prompted");
-		optionArg.setDefault("true");
+		optionArg.setDefault("false");
 		jsap.registerParameter(optionArg);
 
 		// GitHub username

@@ -28,8 +28,6 @@ This will create a development ready project, bound to the GitHub candies reposi
 java -jar target\candy-tool.jar generate-sources --name=jquery --tsFiles=typings\globals\jquery\index.d.ts -o ../candies/candy-jquery/src/main/java  
 ```
 
-*TODO : init git repository automatically + init project from existing sources + use JSweet definitions instead of TS defs for dependencies*
-
 ## Regenerate CUP parser
 Generate parser from syntax files:
 ```
