@@ -53,7 +53,7 @@ public class GenerateSourcesTool {
 
 		public static JSweetCoreVersion parse(String value) {
 			try {
-				return valueOf(value);
+				return valueOf(value.toUpperCase());
 			} catch (Exception e) {
 				return ES5;
 			}

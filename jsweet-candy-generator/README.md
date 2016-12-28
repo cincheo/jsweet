@@ -16,6 +16,7 @@ It comes with a scaffold mode that will generate a default JSweet candy Maven pr
 ```
 
 ### Init the candy project using the `init-project` command:
+*Execute in the project's directory*
 ```
 java -jar target\candy-tool.jar init-project --artifactId=jquery --version=1.10.0-SNAPSHOT --deps=jquery:1.10.0-SNAPSHOT -o ../candies --createGitHubRepository=true --gitHubUser=lgrignon
 ```
@@ -23,7 +24,7 @@ java -jar target\candy-tool.jar init-project --artifactId=jquery --version=1.10.
 This will create a development ready project, bound to the GitHub candies repository and configured for deployment on the candies Maven repository
 
 ### Generate the candy's sources using the `generate-sources` command: 
-
+*Execute in the project's directory*
 ```
 java -jar target\candy-tool.jar generate-sources --name=jquery --tsFiles=typings\globals\jquery\index.d.ts -o ../candies/candy-jquery/src/main/java  
 ```
