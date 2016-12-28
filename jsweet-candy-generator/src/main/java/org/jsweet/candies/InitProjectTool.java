@@ -22,15 +22,19 @@ import static java.util.Arrays.asList;
 import static org.apache.commons.lang3.StringUtils.defaultString;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
+import java.io.Console;
 import java.io.File;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.jsweet.JSweetDefTranslatorConfig;
+import org.jsweet.util.ProcessUtil;
+import org.jsweet.util.Server;
 
 import com.martiansoftware.jsap.FlaggedOption;
 import com.martiansoftware.jsap.JSAP;
@@ -48,7 +52,7 @@ public class InitProjectTool {
 
 	private static final Logger logger = Logger.getLogger(InitProjectTool.class);
 
-		public static void main(String[] args) throws Throwable {
+	public static void main(String[] args) throws Throwable {
 		logger.info("JSweet init candy project tool - version: " + JSweetDefTranslatorConfig.getVersionNumber());
 
 		JSAP jsapSpec = defineArgs();
@@ -103,9 +107,39 @@ public class InitProjectTool {
 				.replace("${{DEPENDENCIES}}", generateMavenXmlForDependencies(dependencyLocators));
 		FileUtils.write(pomFile, pomFileContent);
 
+		if (BooleanUtils.toBoolean(jsapArgs.getString("createGitHubRepository"))) {
+			String gitHubUser = jsapArgs.getString("gitHubUser");
+			String gitHubPass = jsapArgs.getString("gitHubPass");
+
+	        Console console = System.console();
+			if (isBlank(gitHubUser)) {
+				gitHubUser = console.readLine("GitHub username: ");
+			}
+
+			if (isBlank(gitHubPass)) {
+				gitHubPass = new String(console.readPassword("GitHub password for " + gitHubUser + ": "));
+			}
+
+			createGitHubRepo(projectName, "A JSweet candy for " + artifactId, gitHubUser, gitHubPass);
+
+			ProcessUtil.runCmd(projectDir, (out) -> {
+				logger.info("git: " + out);
+			}, "git init && git remote add origin https://github.com/jsweet-candies/" + projectName);
+		}
+
 		logger.info("***************************************************************************");
 		logger.info("candy project " + projectName + " successfully created to " + projectDir);
 		logger.info("***************************************************************************");
+	}
+
+	private static void createGitHubRepo(String repoName, String repoDescription, String gitHubUser,
+			String gitHubPassword) {
+		Server gitHubServer = new Server("https", "api.github.com", 443);
+		gitHubServer.addPermanentHeader("Accept", "application/vnd.github.v3+json");
+		gitHubServer.setCredentials(gitHubUser, gitHubPassword);
+		gitHubServer.post("/orgs/jsweet-candies/repos", //
+				"name", repoName, //
+				"description", "candy-test body");
 	}
 
 	private static CharSequence generateMavenXmlForDependencies(List<String> dependencyLocators) {
@@ -181,6 +215,28 @@ public class InitProjectTool {
 		optionArg.setShortFlag('d');
 		optionArg.setHelp(
 				"Candy's dependencies (other candies on which this one relies) - ex: --deps=jquery:1.10.0-SNAPSHOT,jqueryui:1.9.0");
+		jsap.registerParameter(optionArg);
+
+		// Create GitHub repository
+		optionArg = new FlaggedOption("createGitHubRepository");
+		optionArg.setShortFlag('r');
+		optionArg.setLongFlag("createGitHubRepository");
+		optionArg.setHelp("If true, automatically creates a GitHub repository for the candy - default: true \n provide gitHubUser and gitHubPass if you don't want to be prompted");
+		optionArg.setDefault("true");
+		jsap.registerParameter(optionArg);
+
+		// GitHub username
+		optionArg = new FlaggedOption("gitHubUser");
+		optionArg.setLongFlag("gitHubUser");
+		optionArg.setShortFlag('u');
+		optionArg.setHelp("GitHub username");
+		jsap.registerParameter(optionArg);
+
+		// GitHub password
+		optionArg = new FlaggedOption("gitHubPass");
+		optionArg.setLongFlag("gitHubPass");
+		optionArg.setShortFlag('p');
+		optionArg.setHelp("GitHub password");
 		jsap.registerParameter(optionArg);
 
 		return jsap;
