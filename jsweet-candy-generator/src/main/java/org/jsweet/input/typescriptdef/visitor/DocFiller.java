@@ -103,7 +103,8 @@ public class DocFiller extends Scanner {
 						traversor = new NodeTraversor(new MdnMainDescriptionGrabber(this, typeDeclaration));
 						traversor.traverse(doc.body());
 					} catch (Throwable t) {
-						context.reportError("cannot fill documentation for " + context.getTypeName(typeDeclaration), t);
+						context.reportError("cannot fill documentation for " + context.getTypeName(typeDeclaration),
+								typeDeclaration.getToken(), t);
 					}
 				}
 			}

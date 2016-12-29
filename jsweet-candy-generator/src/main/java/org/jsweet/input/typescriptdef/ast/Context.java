@@ -106,21 +106,21 @@ public class Context {
 	public final boolean fetchJavadoc;
 
 	public void reportError(String errorMessage, Token token) {
-		reportError(errorMessage, token, new Exception());
+		reportError(errorMessage, token, null);
 	}
-	
+
 	public void reportError(String errorMessage, Token token, Throwable cause) {
 		reportError(errorMessage + (token == null || token.getLocation() == null ? " (undefined position)"
 				: " at " + token.getLocation()), cause);
 	}
 
-	public void reportError(String errorMessage) {
-		reportError(errorMessage, new Exception());
-	}
-	
-	public void reportError(String errorMessage, Throwable cause) {
+	private void reportError(String errorMessage, Throwable cause) {
 		errors.add(errorMessage);
-		logger.error(errorMessage, cause);
+		if (cause == null) {
+			logger.error(errorMessage);
+		} else {
+			logger.error(errorMessage, cause);
+		}
 	}
 
 	public void reportWarning(String errorMessage) {
@@ -208,12 +208,12 @@ public class Context {
 		logger.info("context consistency check");
 		for (QualifiedDeclaration<ModuleDeclaration> m : findDeclarations(ModuleDeclaration.class, "*")) {
 			if (getModuleName(m.getDeclaration()) == null) {
-				reportError("unregistered module: " + m);
+				reportError("unregistered module: " + m, (Token) null);
 			}
 		}
 		for (QualifiedDeclaration<TypeDeclaration> t : findDeclarations(TypeDeclaration.class, "*")) {
 			if (!t.getDeclaration().isAnonymous() && getTypeName(t.getDeclaration()) == null) {
-				reportError("unregistered type: " + t + " at " + t.getDeclaration().getLocation());
+				reportError("unregistered type: " + t, t.getDeclaration().getToken());
 			}
 		}
 	}
