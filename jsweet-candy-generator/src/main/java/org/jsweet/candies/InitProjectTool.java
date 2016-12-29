@@ -85,19 +85,13 @@ public class InitProjectTool {
 				+ "* artifactId: " + artifactId + "\n" //
 				+ "* version: " + version + "\n" //
 				+ " to: " + projectDir.getAbsolutePath());
-		
-		FileUtils.copyDirectory(getResourceFile("templates/candy-project"), projectDir);
 
-		logger.info("generating .project");
-		File projectFile = new File(projectDir, ".project");
-		String projectFileContent = FileUtils.readFileToString(projectFile) //
-				.replace("${{PROJECT_NAME}}", projectName);
-		FileUtils.write(projectFile, projectFileContent);
+		FileUtils.copyDirectory(getResourceFile("templates/candy-project"), projectDir);
 
 		logger.info("generating README");
 		File readmeFile = new File(projectDir, "README.md");
-		String readmeFileContent = FileUtils.readFileToString(projectFile) //
-				.replace("${{CANDY_NAME}}", artifactId);
+		String readmeFileContent = FileUtils.readFileToString(readmeFile) //
+				.replace("${{CANDY_NAME}}", artifactId).replace("${{CANDY_VERSION}}", version);
 		FileUtils.write(readmeFile, readmeFileContent);
 
 		logger.info("generating pom.xml");
@@ -112,7 +106,7 @@ public class InitProjectTool {
 			String gitHubUser = jsapArgs.getString("gitHubUser");
 			String gitHubPass = jsapArgs.getString("gitHubPass");
 
-	        Console console = System.console();
+			Console console = System.console();
 			if (isBlank(gitHubUser)) {
 				gitHubUser = console.readLine("GitHub username: ");
 			}
@@ -222,7 +216,8 @@ public class InitProjectTool {
 		optionArg = new FlaggedOption("createGitHubRepository");
 		optionArg.setShortFlag('r');
 		optionArg.setLongFlag("createGitHubRepository");
-		optionArg.setHelp("If true, automatically creates a GitHub repository for the candy - default: true \n provide gitHubUser and gitHubPass if you don't want to be prompted");
+		optionArg.setHelp(
+				"If true, automatically creates a GitHub repository for the candy - default: true \n provide gitHubUser and gitHubPass if you don't want to be prompted");
 		optionArg.setDefault("false");
 		jsap.registerParameter(optionArg);
 
