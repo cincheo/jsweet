@@ -23,15 +23,15 @@
 			<arg value="org.jsweet.input.typescriptdef.parser" />
 			<arg value="-parser" />
 			<arg value="TypescriptDefParser" />
-			<arg value="src/org/jsweet/input/typescriptdef/parser/typescriptdef.cup" />
+			<arg value="src/main/java/org/jsweet/input/typescriptdef/parser/typescriptdef.cup" />
 		</java>
-		<move file="TypescriptDefParser.java" todir="src/org/jsweet/input/typescriptdef/parser" overwrite="true">
+		<move file="TypescriptDefParser.java" todir="src/main/java/org/jsweet/input/typescriptdef/parser" overwrite="true">
 		</move>
-		<move file="sym.java" todir="src/org/jsweet/input/typescriptdef/parser" overwrite="true">
+		<move file="sym.java" todir="src/main/java/org/jsweet/input/typescriptdef/parser" overwrite="true">
 		</move>
 		<echo>Generating TSDef API lexer...</echo>
 		<java classname="JFlex.Main" fork="true" failonerror="true" classpath="${compile_classpath}">
-			<arg value="src/org/jsweet/input/typescriptdef/parser/typescriptdef.lex" />
+			<arg value="src/main/java/org/jsweet/input/typescriptdef/parser/typescriptdef.lex" />
 		</java>
 
 	</target>

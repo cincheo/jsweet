@@ -49,7 +49,7 @@ import com.martiansoftware.jsap.stringparsers.FileStringParser;
 public class GenerateSourcesTool {
 
 	public static enum JSweetCoreVersion {
-		ES5, ES6;
+		ES5, ES6, NONE;
 
 		public static JSweetCoreVersion parse(String value) {
 			try {
@@ -130,6 +130,8 @@ public class GenerateSourcesTool {
 		case ES6:
 			tsDependencies.add(getResourceFile("typings/lib.core/lib.es6.d.ts"));
 			tsDependencies.add(getResourceFile("typings/lib.core/lib.core.ext.d.ts"));
+			break;
+		case NONE:
 			break;
 		}
 	}

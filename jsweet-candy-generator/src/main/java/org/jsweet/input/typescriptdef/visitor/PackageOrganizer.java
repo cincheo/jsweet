@@ -53,8 +53,7 @@ public class PackageOrganizer extends Scanner {
 			} else {
 				currentModule = new ModuleDeclaration(null, JSweetDefTranslatorConfig.DOM_PACKAGE, new Declaration[0]);
 			}
-		}
-		if (compilationUnit.getFile().getParentFile().getName().equals(TypescriptDef2Java.TS_DOM_LIB_DIR)) {
+		} else if (compilationUnit.getFile().getParentFile().getName().equals(TypescriptDef2Java.TS_DOM_LIB_DIR)) {
 			currentModule = new ModuleDeclaration(null, JSweetDefTranslatorConfig.DOM_PACKAGE, new Declaration[0]);
 		}
 		if (currentModule == null) {
@@ -67,20 +66,21 @@ public class PackageOrganizer extends Scanner {
 				currentModule.addStringAnnotation(JSweetDefTranslatorConfig.ANNOTATION_NAME + "(\"" + filename + "\")");
 				currentModule.setQuotedName(true);
 			}
-			if (!context.libModules.contains(name)) {
-				context.libModulesCompilationUnits.put(name, compilationUnit);
-				context.libModules.add(name);
-				context.libModules.sort(new Comparator<String>() {
-					@Override
-					public int compare(String s1, String s2) {
-						return -s1.compareTo(s2);
-					}
-				});
-			} else {
-				// this is the case when a group contains several definition
-				// files
-				context.reportWarning("root package has already been registered: " + name);
-			}
+		}
+		
+		if (!context.libModules.contains(currentModule.getName())) {
+			context.libModulesCompilationUnits.put(currentModule.getName(), compilationUnit);
+			context.libModules.add(currentModule.getName());
+			context.libModules.sort(new Comparator<String>() {
+				@Override
+				public int compare(String s1, String s2) {
+					return -s1.compareTo(s2);
+				}
+			});
+		} else {
+			// this is the case when a group contains several definition
+			// files
+			context.reportWarning("root package has already been registered: " + currentModule.getName());
 		}
 
 		for (Declaration declaration : compilationUnit.getMembers()) {

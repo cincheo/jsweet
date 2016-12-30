@@ -68,9 +68,11 @@ public class StringTypeCreator extends Scanner {
 	@Override
 	public void visitModuleDeclaration(ModuleDeclaration moduleDeclaration) {
 		if (context.isInDependency(moduleDeclaration)) {
+			logger.info("ignore StringType creation for dependency: "  + moduleDeclaration);
 			return;
 		}
 
+		logger.info("enter StringType creation for: "  + moduleDeclaration);
 		super.visitModuleDeclaration(moduleDeclaration);
 	}
 

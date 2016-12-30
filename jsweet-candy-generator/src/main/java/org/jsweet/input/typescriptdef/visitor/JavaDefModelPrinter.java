@@ -109,6 +109,9 @@ public class JavaDefModelPrinter extends AbstractPrinter {
 
 	@Override
 	public void visitModuleDeclaration(ModuleDeclaration moduleDeclaration) {
+
+		logger.trace("PRINT " + moduleDeclaration.getName());
+
 		currentModuleName = getCurrentModuleName();
 		String dependenciesNamesString = null;
 		if (context.libModules.contains(currentModuleName)) {
