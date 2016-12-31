@@ -1304,8 +1304,10 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				if (typeFullName.startsWith(UNION_CLASS_NAME)) {
 					getPrinter().print("(");
 					for (JCExpression argument : typeApply.arguments) {
-						substituteAndPrintType(argument, arrayComponent, inTypeParameters, completeRawTypes, false)
-								.print("|");
+						getPrinter().print("(");
+						substituteAndPrintType(argument, arrayComponent, inTypeParameters, completeRawTypes, false);
+						getPrinter().print(")");
+						getPrinter().print("|");
 					}
 					if (typeApply.arguments.length() > 0) {
 						getPrinter().removeLastChar();
