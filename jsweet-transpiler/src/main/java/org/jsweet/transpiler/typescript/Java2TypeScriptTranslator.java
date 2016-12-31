@@ -315,7 +315,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	@Override
 	public void visitTopLevel(JCCompilationUnit topLevel) {
 
-		isDefinitionScope = topLevel.packge.getQualifiedName().toString().startsWith("def.");
+		isDefinitionScope = topLevel.packge.getQualifiedName().toString().startsWith(JSweetConfig.LIBS_PACKAGE + ".");
 
 		printIndent().print(
 				"/* Generated from Java with JSweet " + JSweetConfig.getVersionNumber() + " - http://www.jsweet.org */")

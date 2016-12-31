@@ -27,8 +27,10 @@ import java.util.Set;
 import javax.lang.model.element.Modifier;
 
 import org.apache.log4j.Logger;
+import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.util.DirectedGraph;
 import org.jsweet.transpiler.util.ReferenceGrabber;
+import org.jsweet.transpiler.util.Util;
 
 import com.sun.tools.javac.code.Symbol.PackageSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
@@ -94,6 +96,10 @@ public class StaticInitilializerAnalyzer extends TreeScanner {
 
 	@Override
 	public void visitTopLevel(JCCompilationUnit compilationUnit) {
+		if (compilationUnit.packge.getQualifiedName().toString().startsWith(JSweetConfig.LIBS_PACKAGE + ".")) {
+			// skip definitions
+			return;
+		}
 		currentTopLevel = compilationUnit;
 		if (pass == 1) {
 			getGraph().add(compilationUnit);
@@ -128,7 +134,8 @@ public class StaticInitilializerAnalyzer extends TreeScanner {
 			if (classdecl.extending != null) {
 				JCCompilationUnit target = typesToCompilationUnits.get(classdecl.extending.type.tsym);
 				if (target != null && getGraph().contains(target)) {
-					logger.debug("adding inheritance dependency: " + currentTopLevel.getSourceFile() + " -> " + target.getSourceFile());
+					logger.debug("adding inheritance dependency: " + currentTopLevel.getSourceFile() + " -> "
+							+ target.getSourceFile());
 					getGraph().addEdge(target, currentTopLevel);
 				}
 			}
@@ -136,7 +143,9 @@ public class StaticInitilializerAnalyzer extends TreeScanner {
 			for (JCTree member : classdecl.defs) {
 				if (member instanceof JCVariableDecl) {
 					JCVariableDecl field = (JCVariableDecl) member;
-					if (field.getModifiers().getFlags().contains(Modifier.STATIC) && field.getInitializer() != null) {
+					if (field.getModifiers().getFlags().contains(Modifier.STATIC) && field.getInitializer() != null
+							&& !Util.hasAnnotationType(field.sym, JSweetConfig.ANNOTATION_STRING_TYPE,
+									JSweetConfig.ANNOTATION_ERASED)) {
 						acceptReferences(field.getInitializer());
 					}
 				} else if (member instanceof JCBlock) {
@@ -157,7 +166,8 @@ public class StaticInitilializerAnalyzer extends TreeScanner {
 			if (!context.useModules || currentTopLevel.packge.equals(type.packge())) {
 				JCCompilationUnit target = typesToCompilationUnits.get(type);
 				if (target != null && !currentTopLevel.equals(target) && getGraph().contains(target)) {
-					logger.debug("adding static initializer dependency: " + currentTopLevel.getSourceFile() + " -> " + target.getSourceFile());
+					logger.debug("adding static initializer dependency: " + currentTopLevel.getSourceFile() + " -> "
+							+ target.getSourceFile());
 					getGraph().addEdge(target, currentTopLevel);
 				}
 			}
