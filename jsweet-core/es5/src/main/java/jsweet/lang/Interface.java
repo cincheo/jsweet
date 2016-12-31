@@ -34,7 +34,7 @@ import java.lang.annotation.Target;
  * @see Extends
  * @author Renaud Pawlak
  */
-@Retention(RetentionPolicy.CLASS)
+@Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface Interface {
 }

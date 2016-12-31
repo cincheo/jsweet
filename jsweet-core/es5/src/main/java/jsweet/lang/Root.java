@@ -36,7 +36,7 @@ import java.lang.annotation.Target;
  * 
  * @author Renaud Pawlak
  */
-@Retention(RetentionPolicy.CLASS)
+@Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.PACKAGE })
 public @interface Root {
 	/**

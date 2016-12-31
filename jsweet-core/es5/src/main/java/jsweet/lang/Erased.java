@@ -32,7 +32,7 @@ import java.lang.annotation.Target;
  * 
  * @author Renaud Pawlak
  */
-@Retention(RetentionPolicy.CLASS)
+@Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE, ElementType.METHOD, ElementType.CONSTRUCTOR, ElementType.FIELD })
 public @interface Erased {
 }

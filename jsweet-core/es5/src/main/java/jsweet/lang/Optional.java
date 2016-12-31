@@ -41,7 +41,7 @@ import java.lang.annotation.Target;
  * 
  * @author Renaud Pawlak
  */
-@Retention(RetentionPolicy.CLASS)
+@Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.FIELD, ElementType.PARAMETER })
 public @interface Optional {
 

@@ -57,7 +57,7 @@ import def.js.String;
  * This solution is cleaner than using the {@link Object#$get(String)} function,
  * which is not typed.
  */
-@Retention(RetentionPolicy.CLASS)
+@Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE, ElementType.FIELD, ElementType.METHOD })
 public @interface Ambient {
 
