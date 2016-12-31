@@ -111,6 +111,7 @@ public class GenerateSourcesTool {
 				tsDependencies, //
 				outDir, //
 				null, //
+				false, //
 				false);
 
 		logger.info("**************************************************************");

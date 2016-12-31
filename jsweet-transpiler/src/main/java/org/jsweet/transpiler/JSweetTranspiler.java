@@ -700,10 +700,6 @@ public class JSweetTranspiler implements JSweetOptions {
 		}
 		candiesProcessor.processCandies(transpilationHandler);
 		addTsDefDir(candiesProcessor.getCandiesTsdefsDir());
-		if (classPath != null && !ArrayUtils.contains(classPath.split(File.pathSeparator), candiesProcessor.getCandiesProcessedDir().getPath())) {
-			classPath = candiesProcessor.getCandiesProcessedDir() + File.pathSeparator + classPath;
-			logger.debug("updated classpath: " + classPath);
-		}
 
 		ErrorCountTranspilationHandler errorHandler = new ErrorCountTranspilationHandler(transpilationHandler);
 		Collection<SourceFile> jsweetSources = asList(files).stream() //

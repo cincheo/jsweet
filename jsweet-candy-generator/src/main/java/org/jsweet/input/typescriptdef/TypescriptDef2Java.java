@@ -150,7 +150,7 @@ public class TypescriptDef2Java {
 						new File("typings/lib.core/lib.dom.d.ts")), //
 				new File("../../jsweet-examples/src/main/jsweetdef"), //
 				null, //
-				false);
+				false, true);
 	}
 
 	private static Pattern refPattern = Pattern.compile("^///\\p{Blank}*<.*$");
@@ -238,6 +238,7 @@ public class TypescriptDef2Java {
 			File outputDir, //
 			String cacheDirPath, //
 			boolean fetchJavadoc, //
+			boolean copyTsDefs, //
 			Predicate<File> libFilter, //
 			Predicate<File> dependenciesFilter) throws Throwable {
 
@@ -255,7 +256,7 @@ public class TypescriptDef2Java {
 			cacheDir = new File(cacheDirPath);
 		}
 
-		return translate(tsDefFiles, tsDefDependencies, outputDir, cacheDir, fetchJavadoc);
+		return translate(tsDefFiles, tsDefDependencies, outputDir, cacheDir, fetchJavadoc, copyTsDefs);
 	}
 
 	public static Context translate( //
@@ -263,7 +264,8 @@ public class TypescriptDef2Java {
 			List<File> tsDefDependencies, //
 			File outputDir, //
 			File cacheDir, //
-			boolean fetchJavadoc) throws Throwable {
+			boolean fetchJavadoc, //
+			boolean copyTsDefs) throws Throwable {
 
 		// comp.compile(fileObjects);
 		logger.info("input files: " + tsDefFiles);
@@ -315,27 +317,29 @@ public class TypescriptDef2Java {
 		// }
 
 		// =====
-		File tsdefDir = new File(outputDir, JSweetDefTranslatorConfig.TS_LIBS_DIR_NAME);
-		logger.info("copying tsdef: '" + context.getAllDefinitions() + "' -> '" + tsdefDir);
-		tsdefDir.mkdirs();
 
-		for (File tsDefFile : context.getAllDefinitions()) {
+		if (copyTsDefs) {
+			File tsdefDir = new File(outputDir, JSweetDefTranslatorConfig.TS_LIBS_DIR_NAME);
+			logger.info("copying tsdef: '" + context.getAllDefinitions() + "' -> '" + tsdefDir);
+			tsdefDir.mkdirs();
 
-			File destDir = new File( //
-					tsdefDir, //
-					tsDefFile.getParentFile().getName() + "_" + tsDefFile.getName());
-			FileUtils.copyFileToDirectory(tsDefFile, destDir);
-			File extFile = new File(tsDefFile.getParentFile(), tsDefFile.getName().replace(".d.ts", ".ext.d.ts"));
-			if (extFile.isFile() && extFile.canRead()) {
+			for (File tsDefFile : context.getAllDefinitions()) {
+
+				File destDir = new File( //
+						tsdefDir, //
+						tsDefFile.getParentFile().getName() + "_" + tsDefFile.getName());
 				FileUtils.copyFileToDirectory(tsDefFile, destDir);
-				logger.info("ext file '" + extFile + "' copied as well");
+				File extFile = new File(tsDefFile.getParentFile(), tsDefFile.getName().replace(".d.ts", ".ext.d.ts"));
+				if (extFile.isFile() && extFile.canRead()) {
+					FileUtils.copyFileToDirectory(tsDefFile, destDir);
+					logger.info("ext file '" + extFile + "' copied as well");
+				}
 			}
+
+			mergeExtFiles(tsdefDir);
+			// createLibFile(tsdefDir);
+			// mergeDomToCore(tsdefDir);
 		}
-
-		mergeExtFiles(tsdefDir);
-		// createLibFile(tsdefDir);
-		// mergeDomToCore(tsdefDir);
-
 		return context;
 	}
 
