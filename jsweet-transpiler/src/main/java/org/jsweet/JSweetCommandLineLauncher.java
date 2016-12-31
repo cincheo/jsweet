@@ -140,7 +140,7 @@ public class JSweetCommandLineLauncher {
 				transpiler.setInterfaceTracking(!jsapArgs.getBoolean("disableJavaAddons"));
 				transpiler.setSupportGetClass(!jsapArgs.getBoolean("disableJavaAddons"));
 				transpiler.setSupportSaticLazyInitialization(!jsapArgs.getBoolean("disableJavaAddons"));
-				transpiler.setGenerateDefinitions(jsapArgs.getBoolean("definitions"));
+				transpiler.setGenerateDefinitions(!jsapArgs.getBoolean("ignoreDefinitions"));
 				transpiler.setDeclarationsOutputDir(dtsOutputDir);
 
 				transpiler.transpile(transpilationHandler, SourceFile.toSourceFiles(files));
@@ -250,18 +250,18 @@ public class JSweetCommandLineLauncher {
 				"Tells the transpiler to not compile the TypeScript output (let an external TypeScript compiler do so).");
 		jsap.registerParameter(switchArg);
 
-		// Do not generate JavaScript
+		// Do not generate code for extended Java compatibility
 		switchArg = new Switch("disableJavaAddons");
 		switchArg.setLongFlag("disableJavaAddons");
 		switchArg.setHelp(
 				"Tells the transpiler disable runtime addons (instanceof, overloading, class name access, static initialization [...] will not be fully supported).");
 		jsap.registerParameter(switchArg);
 
-		// Do not generate JavaScript
-		switchArg = new Switch("definitions");
-		switchArg.setLongFlag("definitions");
+		// Do not generate d.ts files that correspond to def.* packages
+		switchArg = new Switch("ignoreDefinitions");
+		switchArg.setLongFlag("ignoreDefinitions");
 		switchArg.setHelp(
-				"Tells the transpiler to generate definitions from def.* packages in d.ts definition files. The output directory is given by the tsout option. This option can be used to create candies for existing JavaScript libraries and must not be confused with the 'declaration' option, that generates the definitions along with a program written in JSweet.");
+				"Tells the transpiler to ignore definitions from def.* packages, so that they are not generated in d.ts definition files. If this option is not set, the transpiler generates d.ts definition files in the directory given by the tsout option.");
 		jsap.registerParameter(switchArg);
 
 		// Generates declarations
