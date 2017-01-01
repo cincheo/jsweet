@@ -308,7 +308,8 @@ public class JavaDefModelPrinter extends AbstractPrinter {
 				print(" extends ").print(extendList.get(0));
 			} else if (!JSweetDefTranslatorConfig.isJDKReplacementMode()
 					&& !((JSweetDefTranslatorConfig.getObjectClassName())
-							.equals(currentModuleName + "." + typeDeclaration.getName()))) {
+							.equals(currentModuleName + "." + typeDeclaration.getName()))
+					&& !typeDeclaration.getName().equals(JSweetDefTranslatorConfig.GLOBALS_CLASS_NAME)) {
 				print(" extends ").print(JSweetDefTranslatorConfig.getObjectClassName());
 			}
 			if (!implementList.isEmpty()) {
