@@ -43,7 +43,8 @@ public class IterableInjector extends Scanner {
 
 	@Override
 	public void visitTypeDeclaration(TypeDeclaration typeDeclaration) {
-		for (FunctionDeclaration getFunction : typeDeclaration.findFunctions(JSweetDefTranslatorConfig.INDEXED_GET_FUCTION_NAME)) {
+		for (FunctionDeclaration getFunction : typeDeclaration
+				.findFunctions(JSweetDefTranslatorConfig.INDEXED_GET_FUCTION_NAME)) {
 			if (getFunction.isHidden()) {
 				continue;
 			}
@@ -59,7 +60,8 @@ public class IterableInjector extends Scanner {
 				if (typeDeclaration.getSuperTypes() != null) {
 					for (TypeReference t : typeDeclaration.getSuperTypes()) {
 						FunctionDeclaration alreadyInSupertype = lookupFunctionDeclaration(t,
-								JSweetDefTranslatorConfig.INDEXED_GET_FUCTION_NAME, new TypeReference(null, "number", null));
+								JSweetDefTranslatorConfig.INDEXED_GET_FUCTION_NAME,
+								new TypeReference(null, "number", null));
 						if (alreadyInSupertype != null) {
 							return;
 						}
@@ -72,13 +74,16 @@ public class IterableInjector extends Scanner {
 					if (!ArrayUtils.contains(typeDeclaration.getSuperTypes(), iterableType)) {
 						logger.trace("add " + getFunction.getType() + " iterator to "
 								+ context.getTypeName(typeDeclaration));
+						typeDeclaration.addStringAnnotation(JSweetDefTranslatorConfig.ANNOTATION_SYNTACTIC_ITERABLE);
 						typeDeclaration.setSuperTypes(ArrayUtils.add(typeDeclaration.getSuperTypes(), iterableType));
 						if (!"interface".equals(typeDeclaration.getKind())) {
-							FunctionDeclaration iterator = new FunctionDeclaration(null, "iterator", new TypeReference(
-									null, "java.util.Iterator",
-									new TypeReference[] { Util.wrapTypeReferences(getFunction.getType().copy()) }),
+							FunctionDeclaration iterator = new FunctionDeclaration(null, "iterator",
+									new TypeReference(null, "java.util.Iterator",
+											new TypeReference[] {
+													Util.wrapTypeReferences(getFunction.getType().copy()) }),
 									new ParameterDeclaration[0], null);
-							iterator.setDocumentation("/** From Iterable, to allow foreach loop (do not use directly). */");
+							iterator.setDocumentation(
+									"/** From Iterable, to allow foreach loop (do not use directly). */");
 							iterator.addStringAnnotation(JSweetDefTranslatorConfig.ANNOTATION_ERASED);
 
 							typeDeclaration.addMember(iterator);

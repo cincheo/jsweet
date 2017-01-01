@@ -126,6 +126,7 @@ public abstract class JSweetDefTranslatorConfig {
 
 	public static final String ANNOTATION_DISABLED = ANNOTATIONS_PACKAGE + ".Disabled";
 	public static final String ANNOTATION_ERASED = ANNOTATIONS_PACKAGE + ".Erased";
+	public static final String ANNOTATION_SYNTACTIC_ITERABLE = ANNOTATIONS_PACKAGE + ".SyntacticIterable";
 	public static final String ANNOTATION_AMBIENT = ANNOTATIONS_PACKAGE + ".Ambient";
 	public static final String ANNOTATION_MIXIN = ANNOTATIONS_PACKAGE + ".Mixin";
 	public static final String ANNOTATION_OBJECT_TYPE = ANNOTATIONS_PACKAGE + ".ObjectType";
