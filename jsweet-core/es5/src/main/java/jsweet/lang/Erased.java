@@ -22,7 +22,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * This annotation type is used on types that should be erased at generation
+ * This annotation type is used on elements that should be erased at generation
  * time (casts and constructor invocations are removed).
  * 
  * <p>
