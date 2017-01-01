@@ -470,6 +470,9 @@ public class Context {
 	}
 
 	public boolean isDependency(CompilationUnit compilationUnit) {
+		if (compilationUnit == null) {
+			return false;
+		}
 		String currentLibPath = compilationUnit.getFile().getAbsolutePath();
 		for (File dependencyFile : getLibrariesDefinitions()) {
 			if (currentLibPath.equals(dependencyFile.getAbsolutePath())) {
@@ -495,13 +498,13 @@ public class Context {
 		if (libModules.contains(qualifiedName)) {
 			return qualifiedName;
 		}
-		
+
 		if (qualifiedName.equals(LANG_PACKAGE) //
 				|| qualifiedName.equals(UTIL_PACKAGE) //
 				|| qualifiedName.equals(DOM_PACKAGE)) {
 			return qualifiedName;
 		}
-		
+
 		// TODO: we need a faster way
 		for (String m : libModules) {
 			if (qualifiedName.startsWith(m + ".")) {
