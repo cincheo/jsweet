@@ -18,6 +18,7 @@
  */
 package org.jsweet.input.typescriptdef.ast;
 
+import static org.jsweet.JSweetDefTranslatorConfig.*;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.io.File;
@@ -494,6 +495,13 @@ public class Context {
 		if (libModules.contains(qualifiedName)) {
 			return qualifiedName;
 		}
+		
+		if (qualifiedName.equals(LANG_PACKAGE) //
+				|| qualifiedName.equals(UTIL_PACKAGE) //
+				|| qualifiedName.equals(DOM_PACKAGE)) {
+			return qualifiedName;
+		}
+		
 		// TODO: we need a faster way
 		for (String m : libModules) {
 			if (qualifiedName.startsWith(m + ".")) {

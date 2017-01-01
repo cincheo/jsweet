@@ -58,6 +58,7 @@ public class CandyTool {
 
 	public static File getResourceFile(String uri) {
 		try {
+			// TODO : put files in resources and extract resources from all-in-one jar
 			// URL url = Thread.currentThread().getContextClassLoader() //
 			// .getResource(uri);
 			// File file = new File(url.toURI());

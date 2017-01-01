@@ -115,7 +115,7 @@ non terminal type_arg_list_opt, type_arg_list, type_arg_and;
 non terminal extends_opt, implements_opt;
 non terminal lf, semi_or_lf, semi_or_lf_opt, lf_opt, semi_or_comma_or_lf, semi_or_comma_or_lf_opt;
 non terminal type_list;
-non terminal doc_list, doc_list_opt, doc_opt;
+non terminal doc_list, doc_opt;
 non terminal literal, export_opt, var_or_const, abstract_opt, export_element_list, export_element;
 
 precedence left AND, TUBE;
@@ -400,8 +400,6 @@ member_elt ::= member_elt_nodoc:d
 
 doc_list ::= DOC:doc lf_opt doc_list {: RESULT=doc; :} | DOC:doc lf_opt {: RESULT=doc; :};
 
-doc_list_opt ::= doc_list:l {: RESULT=l; :} |;
-
 doc_opt ::= DOC | ;
 
 member_elt_nodoc ::= 
@@ -470,7 +468,7 @@ func_decl ::= declare_opt:mod IDENTIFIER:name optional_opt:opt type_param_list_o
 		if(mod!=null) func.addModifier((String)mod);
 		func.setHidden(func.hasModifier("private"));
 		RESULT = func;
-	:} 
+	:}
 	| declare_opt:mod FUNCTION IDENTIFIER:name optional_opt:opt type_param_list_opt:tparams LPAREN param_list_opt:params RPAREN type_annotation_opt:t
 	{:
 		//System.err.println("2");
@@ -498,9 +496,27 @@ constructor_decl ::= declare_opt:mod type_param_list_opt:tparams LPAREN:token pa
 	:}
 ;
 
-index_sig_decl ::= declare_opt type_param_list_opt:tparams LSPAREN:token param:param RSPAREN type_annotation_opt:t
+index_sig_decl ::= declare_opt doc_opt LSPAREN:token IDENTIFIER:paramName type_annotation:paramType RSPAREN type_annotation_opt:t
 	{:
-		RESULT = new FunctionDeclaration((Token)token,FunctionDeclaration.INDEXSIG_RESERVED_NAME,(TypeReference)t, new ParameterDeclaration[] {(ParameterDeclaration)param}, (TypeParameterDeclaration[])tparams);
+		// System.err.println("standard index====> " + paramName + ": " + paramType);
+		ParameterDeclaration param = new ParameterDeclaration((Token) token, paramName.toString(), (TypeReference) paramType, false, false); 
+		RESULT = new FunctionDeclaration((Token)token,FunctionDeclaration.INDEXSIG_RESERVED_NAME,
+		    (TypeReference)t, new ParameterDeclaration[] { param }, (TypeParameterDeclaration[])null);
+	:} |
+	
+	declare_opt doc_opt LSPAREN:token IDENTIFIER:prefix DOT IDENTIFIER:name RSPAREN type_annotation_opt:t
+	{:
+		// System.err.println("index with symbol====> " + prefix + "." + name);
+		ParameterDeclaration param = new ParameterDeclaration((Token) token,  name.toString(), new TypeReference((Token) prefix,  prefix.toString(), null), false, false); 
+		RESULT = new FunctionDeclaration((Token)token,FunctionDeclaration.INDEXSIG_RESERVED_NAME,
+		    (TypeReference)t, new ParameterDeclaration[] { param }, (TypeParameterDeclaration[])null);
+	:} |
+	
+	declare_opt doc_opt LSPAREN:token IDENTIFIER:prefix DOT IDENTIFIER:name RSPAREN LPAREN RPAREN type_annotation_opt:t
+	{:
+		System.err.println("Method with symbol (not implemented): " + prefix + "." + name );
+		// TODO : implement in transpiler
+//		RESULT = new FunctionDeclaration((Token)token,FunctionDeclaration.INDEXSIG_RESERVED_NAME,(TypeReference)t, new ParameterDeclaration[] {(ParameterDeclaration)param}, (TypeParameterDeclaration[])tparams);
 	:} |
 	declare_opt CONST:readonly type_param_list_opt:tparams LSPAREN:token param:param RSPAREN type_annotation_opt:t
 	{:

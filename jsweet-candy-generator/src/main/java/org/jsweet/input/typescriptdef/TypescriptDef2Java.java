@@ -397,6 +397,8 @@ public class TypescriptDef2Java {
 		// does not work (prototype clashing)
 		// scan(context.compilationUnits, new
 		// FunctionalParametersExpander(context));
+		
+		logger.info("TypeReferenceExpander");
 		scan(context.compilationUnits, new TypeReferenceExpander(context));
 
 		context.calculateArrayTypes();
