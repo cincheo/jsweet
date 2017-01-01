@@ -1144,6 +1144,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			for (JCTree def : classdecl.defs) {
 				if ((def instanceof JCMethodDecl && ((JCMethodDecl) def).sym.isStatic())
 						|| (def instanceof JCVariableDecl && ((JCVariableDecl) def).sym.isStatic())) {
+					if (def instanceof JCVariableDecl && Util.hasAnnotationType(((JCVariableDecl) def).sym,
+							ANNOTATION_STRING_TYPE, JSweetConfig.ANNOTATION_ERASED)) {
+						continue;
+					}
 					if (!nameSpace) {
 						nameSpace = true;
 						println().println().printIndent()
