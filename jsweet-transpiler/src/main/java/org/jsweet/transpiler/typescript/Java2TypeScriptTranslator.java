@@ -774,7 +774,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 			boolean extendsInterface = false;
 			if (classdecl.extending != null) {
-				if (!JSweetConfig.isJDKReplacementMode()
+				boolean removeIterable = false;
+				if (Util.hasAnnotationType(classdecl.sym, JSweetConfig.ANNOTATION_SYNTACTIC_ITERABLE)
+						&& classdecl.extending.type.tsym.getQualifiedName().toString()
+								.equals(Iterable.class.getName())) {
+					removeIterable = true;
+				}
+				if (!removeIterable && !JSweetConfig.isJDKReplacementMode()
 						&& !(JSweetConfig.OBJECT_CLASSNAME.equals(classdecl.extending.type.toString())
 								|| Object.class.getName().equals(classdecl.extending.type.toString()))) {
 					if (!getScope().interfaceScope && Util.isInterface(classdecl.extending.type.tsym)) {
@@ -794,24 +800,37 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					getScope().removedSuperclass = true;
 				}
 			}
+
 			if (classdecl.implementing != null && !classdecl.implementing.isEmpty()) {
-				if (!extendsInterface) {
-					if (getScope().interfaceScope) {
-						print(" extends ");
-					} else {
-						print(" implements ");
+				List<JCExpression> implementing = classdecl.implementing;
+				if (Util.hasAnnotationType(classdecl.sym, JSweetConfig.ANNOTATION_SYNTACTIC_ITERABLE)) {
+					implementing = new ArrayList<>(classdecl.implementing);
+
+					for (JCExpression itf : classdecl.implementing) {
+						if (itf.type.tsym.getQualifiedName().toString().equals(Iterable.class.getName())) {
+							implementing.remove(itf);
+						}
 					}
-				} else {
-					print(", ");
 				}
-				for (JCExpression itf : classdecl.implementing) {
-					getAdapter().disableTypeSubstitution = true;
-					getAdapter().substituteAndPrintType(itf);
-					getAdapter().disableTypeSubstitution = false;
-					implementedInterfaces.add(itf.type);
-					print(", ");
+				if (!implementing.isEmpty()) {
+					if (!extendsInterface) {
+						if (getScope().interfaceScope) {
+							print(" extends ");
+						} else {
+							print(" implements ");
+						}
+					} else {
+						print(", ");
+					}
+					for (JCExpression itf : implementing) {
+						getAdapter().disableTypeSubstitution = true;
+						getAdapter().substituteAndPrintType(itf);
+						getAdapter().disableTypeSubstitution = false;
+						implementedInterfaces.add(itf.type);
+						print(", ");
+					}
+					removeLastChars(2);
 				}
-				removeLastChars(2);
 			}
 			print(" {").println().startIndent();
 		}
@@ -1318,6 +1337,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (parent == null) {
 			print("function ");
 		} else if (globals) {
+			if (constructor && methodDecl.sym.isPrivate() && methodDecl.getParameters().isEmpty()) {
+				return;
+			}
 			if (constructor) {
 				report(methodDecl, methodDecl.name, JSweetProblem.GLOBAL_CONSTRUCTOR_DEF);
 				return;
