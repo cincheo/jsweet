@@ -96,14 +96,14 @@ public class StaticInitilializerAnalyzer extends TreeScanner {
 
 	@Override
 	public void visitTopLevel(JCCompilationUnit compilationUnit) {
-		if (compilationUnit.packge.getQualifiedName().toString().startsWith(JSweetConfig.LIBS_PACKAGE + ".")) {
-			// skip definitions
-			return;
-		}
 		currentTopLevel = compilationUnit;
 		if (pass == 1) {
 			getGraph().add(compilationUnit);
 		} else {
+			if (compilationUnit.packge.getQualifiedName().toString().startsWith(JSweetConfig.LIBS_PACKAGE + ".")) {
+				// skip definitions
+				return;
+			}
 			currentTopLevelImportedTypes.clear();
 			for (JCImport i : compilationUnit.getImports()) {
 				if (i.qualid.type != null) {
