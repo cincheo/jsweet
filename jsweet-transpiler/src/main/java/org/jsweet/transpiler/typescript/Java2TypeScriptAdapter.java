@@ -1316,7 +1316,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					return getPrinter();
 				}
 				if (typeFullName.startsWith(UTIL_PACKAGE + ".") || typeFullName.startsWith("java.util.function.")) {
-					if (typeName.endsWith("Consumer")) {
+					if (typeName.endsWith("Consumer") || typeName.startsWith("Consumer")) {
 						if (arrayComponent) {
 							getPrinter().print("(");
 						}
@@ -1332,7 +1332,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 							getPrinter().print(")");
 						}
 						return getPrinter();
-					} else if (typeName.endsWith("Function")) {
+					} else if (typeName.endsWith("Function") || typeName.startsWith("Function")) {
 						if (arrayComponent) {
 							getPrinter().print("(");
 						}
@@ -1350,7 +1350,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 							getPrinter().print(")");
 						}
 						return getPrinter();
-					} else if (typeName.endsWith("Supplier")) {
+					} else if (typeName.endsWith("Supplier") || typeName.startsWith("Supplier")) {
 						if (arrayComponent) {
 							getPrinter().print("(");
 						}
