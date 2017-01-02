@@ -66,6 +66,7 @@ import com.sun.tools.javac.code.Symbol.TypeVariableSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.ArrayType;
+import com.sun.tools.javac.code.Type.ClassType;
 import com.sun.tools.javac.code.Type.MethodType;
 import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.parser.Tokens.Comment;
@@ -772,8 +773,16 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						.get(getScope(1).anonymousClasses.indexOf(classdecl));
 				printAnonymousClassTypeArgs(newClass);
 			}
+			String mixin = null;
+			if (Util.hasAnnotationType(classdecl.sym, JSweetConfig.ANNOTATION_MIXIN)) {
+				AnnotationMirror anno = Util.getAnnotation(classdecl.sym, JSweetConfig.ANNOTATION_MIXIN);
+				mixin = ((ClassType) anno.getElementValues().values().iterator().next().getValue()).tsym
+						.getQualifiedName().toString();
+			}
+
 			boolean extendsInterface = false;
 			if (classdecl.extending != null) {
+
 				boolean removeIterable = false;
 				if (Util.hasAnnotationType(classdecl.sym, JSweetConfig.ANNOTATION_SYNTACTIC_ITERABLE)
 						&& classdecl.extending.type.tsym.getQualifiedName().toString()
@@ -782,7 +791,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 				if (!removeIterable && !JSweetConfig.isJDKReplacementMode()
 						&& !(JSweetConfig.OBJECT_CLASSNAME.equals(classdecl.extending.type.toString())
-								|| Object.class.getName().equals(classdecl.extending.type.toString()))) {
+								|| Object.class.getName().equals(classdecl.extending.type.toString()))
+						&& !(mixin != null && mixin.equals(classdecl.extending.type.toString()))) {
 					if (!getScope().interfaceScope && Util.isInterface(classdecl.extending.type.tsym)) {
 						extendsInterface = true;
 						print(" implements ");
