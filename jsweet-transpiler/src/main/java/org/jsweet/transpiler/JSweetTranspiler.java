@@ -107,7 +107,7 @@ public class JSweetTranspiler implements JSweetOptions {
 	 * (WARNING: so far, having multiple JSweet versions for the same user
 	 * account may lead to performance issues - could be fixed if necessary).
 	 */
-	public static final String TSC_VERSION = "1.8";
+	public static final String TSC_VERSION = "2.1";
 
 	static {
 		JSweetConfig.initClassPath(null);
@@ -178,14 +178,16 @@ public class JSweetTranspiler implements JSweetOptions {
 
 	@Override
 	public String toString() {
-		return "workingDir=" + workingDir + "\ntsOutputDir=" + tsOutputDir + "\njsOutputDir=" + jsOutputDir + "\nclassPath=" + classPath + "\ngenerateJsFiles="
-				+ generateJsFiles + "\ntscWatchMode=" + tscWatchMode + "\ntsDefDirs=" + (tsDefDirs == null ? null : Arrays.asList(tsDefDirs)) + "\nmoduleKind="
-				+ moduleKind + "\necmaTargertVersion=" + ecmaTargetVersion + "\nbundle=" + bundle + "\nbundleDirectory=" + bundlesDirectory + "\nencoding="
-				+ encoding + "\nnoRootDirectories=" + noRootDirectories + "\nignoreAssertions=" + ignoreAssertions + "\nignoreJavaFileNameError="
-				+ ignoreJavaFileNameError + "\ngenerateDeclarations=" + generateDeclarations + "\ndeclarationsOutputDir=" + declarationsOutputDir
-				+ "\njdkAllowed=" + jdkAllowed + "\ninterfaceTracking=" + interfaceTracking + "\nsupportGetClass=" + supportGetClass
-				+ "\nsupportSaticLazyInitialization=" + supportSaticLazyInitialization + "\ngenerateDefinitions=" + generateDefinitions + "\njsLibFiles="
-				+ jsLibFiles;
+		return "workingDir=" + workingDir + "\ntsOutputDir=" + tsOutputDir + "\njsOutputDir=" + jsOutputDir
+				+ "\nclassPath=" + classPath + "\ngenerateJsFiles=" + generateJsFiles + "\ntscWatchMode=" + tscWatchMode
+				+ "\ntsDefDirs=" + (tsDefDirs == null ? null : Arrays.asList(tsDefDirs)) + "\nmoduleKind=" + moduleKind
+				+ "\necmaTargertVersion=" + ecmaTargetVersion + "\nbundle=" + bundle + "\nbundleDirectory="
+				+ bundlesDirectory + "\nencoding=" + encoding + "\nnoRootDirectories=" + noRootDirectories
+				+ "\nignoreAssertions=" + ignoreAssertions + "\nignoreJavaFileNameError=" + ignoreJavaFileNameError
+				+ "\ngenerateDeclarations=" + generateDeclarations + "\ndeclarationsOutputDir=" + declarationsOutputDir
+				+ "\njdkAllowed=" + jdkAllowed + "\ninterfaceTracking=" + interfaceTracking + "\nsupportGetClass="
+				+ supportGetClass + "\nsupportSaticLazyInitialization=" + supportSaticLazyInitialization
+				+ "\ngenerateDefinitions=" + generateDefinitions + "\njsLibFiles=" + jsLibFiles;
 	}
 
 	/**
@@ -232,7 +234,8 @@ public class JSweetTranspiler implements JSweetOptions {
 	 *            the classpath as a string (check out system-specific
 	 *            requirements for Java classpaths)
 	 */
-	public JSweetTranspiler(File workingDir, File tsOutputDir, File jsOutputDir, File extractedCandiesJavascriptDir, String classPath) {
+	public JSweetTranspiler(File workingDir, File tsOutputDir, File jsOutputDir, File extractedCandiesJavascriptDir,
+			String classPath) {
 		this.workingDir = workingDir.getAbsoluteFile();
 		this.extractedCandyJavascriptDir = extractedCandiesJavascriptDir;
 		try {
@@ -247,7 +250,8 @@ public class JSweetTranspiler implements JSweetOptions {
 			throw new RuntimeException("cannot locate output dirs", e);
 		}
 		this.classPath = classPath == null ? System.getProperty("java.class.path") : classPath;
-		logger.info("creating transpiler version " + JSweetConfig.getVersionNumber() + " (build date: " + JSweetConfig.getBuildDate() + ")");
+		logger.info("creating transpiler version " + JSweetConfig.getVersionNumber() + " (build date: "
+				+ JSweetConfig.getBuildDate() + ")");
 		logger.info("curent dir: " + new File(".").getAbsolutePath());
 		logger.info("tsOut: " + tsOutputDir + (tsOutputDir == null ? "" : " - " + tsOutputDir.getAbsolutePath()));
 		logger.info("jsOut: " + jsOutputDir + (jsOutputDir == null ? "" : " - " + jsOutputDir.getAbsolutePath()));
@@ -272,7 +276,8 @@ public class JSweetTranspiler implements JSweetOptions {
 		boolean initialized = initFile.exists();
 		if (!initialized) {
 			ProcessUtil.runCommand(ProcessUtil.NODE_COMMAND, null, () -> {
-				transpilationHandler.report(JSweetProblem.NODE_CANNOT_START, null, JSweetProblem.NODE_CANNOT_START.getMessage());
+				transpilationHandler.report(JSweetProblem.NODE_CANNOT_START, null,
+						JSweetProblem.NODE_CANNOT_START.getMessage());
 				throw new RuntimeException("cannot find node.js");
 			}, "--version");
 			initFile.mkdirs();
@@ -365,9 +370,12 @@ public class JSweetTranspiler implements JSweetOptions {
 			@Override
 			public String format(JCDiagnostic diagnostic, Locale locale) {
 				if (diagnostic.getKind() == Kind.ERROR) {
-					if (!(ignoreJavaFileNameError && "compiler.err.class.public.should.be.in.file".equals(diagnostic.getCode()))) {
-						transpilationHandler.report(JSweetProblem.INTERNAL_JAVA_ERROR, new SourcePosition(new File(diagnostic.getSource().getName()), null,
-								(int) diagnostic.getLineNumber(), (int) diagnostic.getColumnNumber()), diagnostic.getMessage(locale));
+					if (!(ignoreJavaFileNameError
+							&& "compiler.err.class.public.should.be.in.file".equals(diagnostic.getCode()))) {
+						transpilationHandler.report(JSweetProblem.INTERNAL_JAVA_ERROR,
+								new SourcePosition(new File(diagnostic.getSource().getName()), null,
+										(int) diagnostic.getLineNumber(), (int) diagnostic.getColumnNumber()),
+								diagnostic.getMessage(locale));
 					}
 				}
 				switch (diagnostic.getKind()) {
@@ -385,7 +393,8 @@ public class JSweetTranspiler implements JSweetOptions {
 					break;
 				}
 				if (diagnostic.getSource() != null) {
-					return diagnostic.getMessage(locale) + " at " + diagnostic.getSource().getName() + "(" + diagnostic.getLineNumber() + ")";
+					return diagnostic.getMessage(locale) + " at " + diagnostic.getSource().getName() + "("
+							+ diagnostic.getLineNumber() + ")";
 				} else {
 					return diagnostic.getMessage(locale);
 				}
@@ -416,7 +425,8 @@ public class JSweetTranspiler implements JSweetOptions {
 	 * @throws Exception
 	 *             when an internal error occurs
 	 */
-	public EvaluationResult eval(TranspilationHandler transpilationHandler, SourceFile... sourceFiles) throws Exception {
+	public EvaluationResult eval(TranspilationHandler transpilationHandler, SourceFile... sourceFiles)
+			throws Exception {
 		return eval("JavaScript", transpilationHandler, sourceFiles);
 	}
 
@@ -435,7 +445,8 @@ public class JSweetTranspiler implements JSweetOptions {
 	};
 
 	private void initExportedVarMap() throws Exception {
-		Field f = Thread.currentThread().getContextClassLoader().loadClass("jsweet.util.Globals").getDeclaredField("EXPORTED_VARS");
+		Field f = Thread.currentThread().getContextClassLoader().loadClass("jsweet.util.Globals")
+				.getDeclaredField("EXPORTED_VARS");
 		f.setAccessible(true);
 		@SuppressWarnings("unchecked")
 		ThreadLocal<Map<String, Object>> exportedVars = (ThreadLocal<Map<String, Object>>) f.get(null);
@@ -443,7 +454,8 @@ public class JSweetTranspiler implements JSweetOptions {
 	}
 
 	private Map<String, Object> getExportedVarMap() throws Exception {
-		Field f = Thread.currentThread().getContextClassLoader().loadClass("jsweet.util.Globals").getDeclaredField("EXPORTED_VARS");
+		Field f = Thread.currentThread().getContextClassLoader().loadClass("jsweet.util.Globals")
+				.getDeclaredField("EXPORTED_VARS");
 		f.setAccessible(true);
 		@SuppressWarnings("unchecked")
 		ThreadLocal<Map<String, Object>> exportedVars = (ThreadLocal<Map<String, Object>>) f.get(null);
@@ -467,7 +479,8 @@ public class JSweetTranspiler implements JSweetOptions {
 	 * @throws Exception
 	 *             when an internal error occurs
 	 */
-	public EvaluationResult eval(String engineName, TranspilationHandler transpilationHandler, SourceFile... sourceFiles) throws Exception {
+	public EvaluationResult eval(String engineName, TranspilationHandler transpilationHandler,
+			SourceFile... sourceFiles) throws Exception {
 		logger.info("[" + engineName + " engine] eval files: " + Arrays.asList(sourceFiles));
 		if ("Java".equals(engineName)) {
 			// search for main functions
@@ -480,7 +493,8 @@ public class JSweetTranspiler implements JSweetOptions {
 			JavacFileManager.preRegister(context);
 			JavaFileManager fileManager = context.get(JavaFileManager.class);
 
-			List<JavaFileObject> fileObjects = toJavaFileObjects(fileManager, Arrays.asList(SourceFile.toFiles(sourceFiles)));
+			List<JavaFileObject> fileObjects = toJavaFileObjects(fileManager,
+					Arrays.asList(SourceFile.toFiles(sourceFiles)));
 
 			JavaCompiler compiler = JavaCompiler.instance(context);
 			compiler.attrParseOnly = true;
@@ -500,7 +514,8 @@ public class JSweetTranspiler implements JSweetOptions {
 			if (mainMethodFinder.mainMethod != null) {
 				try {
 					initExportedVarMap();
-					Class<?> c = Class.forName(mainMethodFinder.mainMethod.getEnclosingElement().getQualifiedName().toString());
+					Class<?> c = Class
+							.forName(mainMethodFinder.mainMethod.getEnclosingElement().getQualifiedName().toString());
 					c.getMethod("main", String[].class).invoke(null, (Object) null);
 				} catch (Exception e) {
 					throw new Exception("evalution error", e);
@@ -552,7 +567,8 @@ public class JSweetTranspiler implements JSweetOptions {
 					f = sourceFiles[sourceFiles.length - 1].getJsFile();
 				}
 				logger.info("[modules] eval file: " + f);
-				runProcess = ProcessUtil.runCommand(ProcessUtil.NODE_COMMAND, line -> trace.append(line + "\n"), null, f.getPath());
+				runProcess = ProcessUtil.runCommand(ProcessUtil.NODE_COMMAND, line -> trace.append(line + "\n"), null,
+						f.getPath());
 			} else {
 				File tmpFile = new File(new File(TMP_WORKING_DIR_NAME), "eval.tmp.js");
 				FileUtils.deleteQuietly(tmpFile);
@@ -567,7 +583,8 @@ public class JSweetTranspiler implements JSweetOptions {
 					FileUtils.write(tmpFile, script + "\n", true);
 				}
 				logger.info("[no modules] eval file: " + tmpFile);
-				runProcess = ProcessUtil.runCommand(ProcessUtil.NODE_COMMAND, line -> trace.append(line + "\n"), null, tmpFile.getPath());
+				runProcess = ProcessUtil.runCommand(ProcessUtil.NODE_COMMAND, line -> trace.append(line + "\n"), null,
+						tmpFile.getPath());
 			}
 
 			int returnCode = runProcess.exitValue();
@@ -636,7 +653,8 @@ public class JSweetTranspiler implements JSweetOptions {
 		}
 	}
 
-	public List<JCCompilationUnit> setupCompiler(java.util.List<File> files, ErrorCountTranspilationHandler transpilationHandler) throws IOException {
+	public List<JCCompilationUnit> setupCompiler(java.util.List<File> files,
+			ErrorCountTranspilationHandler transpilationHandler) throws IOException {
 		initJavac(transpilationHandler);
 		List<JavaFileObject> fileObjects = toJavaFileObjects(fileManager, files);
 
@@ -654,13 +672,15 @@ public class JSweetTranspiler implements JSweetOptions {
 		context.useModules = isUsingModules();
 
 		if (context.useModules && bundle) {
-			transpilationHandler.report(JSweetProblem.BUNDLE_WITH_MODULE, null, JSweetProblem.BUNDLE_WITH_MODULE.getMessage());
+			transpilationHandler.report(JSweetProblem.BUNDLE_WITH_MODULE, null,
+					JSweetProblem.BUNDLE_WITH_MODULE.getMessage());
 			return null;
 		}
 		return compilationUnits;
 	}
 
-	private String ts2js(ErrorCountTranspilationHandler handler, String tsCode, String targetFileName) throws IOException {
+	private String ts2js(ErrorCountTranspilationHandler handler, String tsCode, String targetFileName)
+			throws IOException {
 		SourceFile sf = new SourceFile(null);
 		sf.setTsFile(File.createTempFile(targetFileName, ".ts", tsOutputDir));
 		sf.setJsFile(File.createTempFile(targetFileName, ".js", jsOutputDir));
@@ -671,7 +691,8 @@ public class JSweetTranspiler implements JSweetOptions {
 		} catch (IOException ex) {
 			throw new UncheckedIOException(ex);
 		}
-		runTSC(handler, new SourceFile[] { sf }, "--target", ecmaTargetVersion.name(), "--outFile", sf.getJsFile().toString(), sf.getTsFile().toString());
+		runTSC(handler, new SourceFile[] { sf }, "--target", ecmaTargetVersion.name(), "--outFile",
+				sf.getJsFile().toString(), sf.getTsFile().toString());
 		try {
 			return new String(Files.readAllBytes(sf.jsFile.toPath()));
 		} catch (IOException ex) {
@@ -690,7 +711,8 @@ public class JSweetTranspiler implements JSweetOptions {
 	 *            the files to be transpiled
 	 * @throws IOException
 	 */
-	synchronized public void transpile(TranspilationHandler transpilationHandler, SourceFile... files) throws IOException {
+	synchronized public void transpile(TranspilationHandler transpilationHandler, SourceFile... files)
+			throws IOException {
 		transpilationStartTimestamp = System.currentTimeMillis();
 		try {
 			initNode(transpilationHandler);
@@ -716,11 +738,13 @@ public class JSweetTranspiler implements JSweetOptions {
 			transpilationHandler.onCompleted(this, !isTscWatchMode(), files);
 		}
 
-		logger.info("transpilation process finished in " + (System.currentTimeMillis() - transpilationStartTimestamp) + " ms");
+		logger.info("transpilation process finished in " + (System.currentTimeMillis() - transpilationStartTimestamp)
+				+ " ms");
 	}
 
 	private void java2ts(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files) throws IOException {
-		List<JCCompilationUnit> compilationUnits = setupCompiler(Arrays.asList(SourceFile.toFiles(files)), transpilationHandler);
+		List<JCCompilationUnit> compilationUnits = setupCompiler(Arrays.asList(SourceFile.toFiles(files)),
+				transpilationHandler);
 		if (compilationUnits == null) {
 			return;
 		}
@@ -751,8 +775,8 @@ public class JSweetTranspiler implements JSweetOptions {
 		FileUtils.write(new File(tsOutputDir, "module_defs.d.ts"), out, false);
 	}
 
-	private void generateTsFiles(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files, List<JCCompilationUnit> compilationUnits)
-			throws IOException {
+	private void generateTsFiles(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files,
+			List<JCCompilationUnit> compilationUnits) throws IOException {
 		// regular file-to-file generation
 		new OverloadScanner(transpilationHandler, context).process(compilationUnits);
 		for (int i = 0; i < compilationUnits.length(); i++) {
@@ -764,7 +788,8 @@ public class JSweetTranspiler implements JSweetOptions {
 				continue;
 			}
 			logger.info("scanning " + cu.sourcefile.getName() + "...");
-			AbstractTreePrinter printer = new Java2TypeScriptTranslator(transpilationHandler, context, cu, generateSourceMap);
+			AbstractTreePrinter printer = new Java2TypeScriptTranslator(transpilationHandler, context, cu,
+					generateSourceMap);
 			printer.print(cu);
 			if (StringUtils.isWhitespace(printer.getResult())) {
 				continue;
@@ -773,13 +798,16 @@ public class JSweetTranspiler implements JSweetOptions {
 			String cuName = s[s.length - 1];
 			s = cuName.split("\\.");
 			cuName = s[0];
-			String javaSourceFileRelativeFullName = (cu.packge.getQualifiedName().toString().replace(".", File.separator) + File.separator + cuName + ".java");
+			String javaSourceFileRelativeFullName = (cu.packge.getQualifiedName().toString().replace(".",
+					File.separator) + File.separator + cuName + ".java");
 			files[i].javaSourceDirRelativeFile = new File(javaSourceFileRelativeFullName);
-			files[i].javaSourceDir = new File(
-					cu.getSourceFile().getName().substring(0, cu.getSourceFile().getName().length() - javaSourceFileRelativeFullName.length()));
-			String packageName = isNoRootDirectories() ? Util.getRootRelativeJavaName(cu.packge) : cu.packge.getQualifiedName().toString();
+			files[i].javaSourceDir = new File(cu.getSourceFile().getName().substring(0,
+					cu.getSourceFile().getName().length() - javaSourceFileRelativeFullName.length()));
+			String packageName = isNoRootDirectories() ? Util.getRootRelativeJavaName(cu.packge)
+					: cu.packge.getQualifiedName().toString();
 			String outputFileRelativePathNoExt = packageName.replace(".", File.separator) + File.separator + cuName;
-			String outputFileRelativePath = outputFileRelativePathNoExt + (cu.packge.fullname.toString().startsWith("def.") ? ".d.ts" : ".ts");
+			String outputFileRelativePath = outputFileRelativePathNoExt
+					+ (cu.packge.fullname.toString().startsWith("def.") ? ".d.ts" : ".ts");
 			logger.info("output file: " + outputFileRelativePath);
 			File outputFile = new File(tsOutputDir, outputFileRelativePath);
 			outputFile.getParentFile().mkdirs();
@@ -815,7 +843,8 @@ public class JSweetTranspiler implements JSweetOptions {
 				return e1.getOutputPosition().compareTo(e2.getOutputPosition());
 			}
 		})) {
-			generator.addMapping(javaSourceFilePath, null, new FilePosition(entry.getInputPosition().getLine(), entry.getInputPosition().getColumn()),
+			generator.addMapping(javaSourceFilePath, null,
+					new FilePosition(entry.getInputPosition().getLine(), entry.getInputPosition().getColumn()),
 					new FilePosition(entry.getOutputPosition().getLine(), entry.getOutputPosition().getColumn()),
 					new FilePosition(entry.getOutputPosition().getLine(), entry.getOutputPosition().getColumn() + 1));
 		}
@@ -829,23 +858,26 @@ public class JSweetTranspiler implements JSweetOptions {
 	}
 
 	private boolean isModuleDefsFile(JCCompilationUnit cu) {
-		return cu.getSourceFile().getName().equals("module_defs.java") || cu.getSourceFile().getName().endsWith("/module_defs.java");
+		return cu.getSourceFile().getName().equals("module_defs.java")
+				|| cu.getSourceFile().getName().endsWith("/module_defs.java");
 	}
 
-	private void generateTsBundle(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files, List<JCCompilationUnit> compilationUnits)
-			throws IOException {
+	private void generateTsBundle(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files,
+			List<JCCompilationUnit> compilationUnits) throws IOException {
 		if (context.useModules) {
 			return;
 		}
 		StaticInitilializerAnalyzer analizer = new StaticInitilializerAnalyzer(context);
 		analizer.process(compilationUnits);
 		ArrayList<Node<JCCompilationUnit>> sourcesInCycle = new ArrayList<>();
-		java.util.List<JCCompilationUnit> orderedCompilationUnits = analizer.globalStaticInitializersDependencies.topologicalSort(n -> {
-			sourcesInCycle.add(n);
-		});
+		java.util.List<JCCompilationUnit> orderedCompilationUnits = analizer.globalStaticInitializersDependencies
+				.topologicalSort(n -> {
+					sourcesInCycle.add(n);
+				});
 		if (!sourcesInCycle.isEmpty()) {
-			transpilationHandler.report(JSweetProblem.CYCLE_IN_STATIC_INITIALIZER_DEPENDENCIES, null, JSweetProblem.CYCLE_IN_STATIC_INITIALIZER_DEPENDENCIES
-					.getMessage(sourcesInCycle.stream().map(n -> n.element.sourcefile.getName()).collect(Collectors.toList())));
+			transpilationHandler.report(JSweetProblem.CYCLE_IN_STATIC_INITIALIZER_DEPENDENCIES, null,
+					JSweetProblem.CYCLE_IN_STATIC_INITIALIZER_DEPENDENCIES.getMessage(sourcesInCycle.stream()
+							.map(n -> n.element.sourcefile.getName()).collect(Collectors.toList())));
 
 			DirectedGraph.dumpCycles(sourcesInCycle, u -> u.sourcefile.getName());
 
@@ -857,7 +889,8 @@ public class JSweetTranspiler implements JSweetOptions {
 		logger.debug("ordered compilation units: " + orderedCompilationUnits.stream().map(cu -> {
 			return cu.sourcefile.getName();
 		}).collect(Collectors.toList()));
-		logger.debug("count: " + compilationUnits.size() + " (initial), " + orderedCompilationUnits.size() + " (ordered)");
+		logger.debug(
+				"count: " + compilationUnits.size() + " (initial), " + orderedCompilationUnits.size() + " (ordered)");
 		int[] permutation = new int[orderedCompilationUnits.size()];
 		StringBuilder permutationString = new StringBuilder();
 		for (int i = 0; i < orderedCompilationUnits.size(); i++) {
@@ -877,14 +910,16 @@ public class JSweetTranspiler implements JSweetOptions {
 		s = cuName.split("\\.");
 		cuName = s[0];
 
-		String javaSourceFileRelativeFullName = (cu.packge.getQualifiedName().toString().replace(".", File.separator) + File.separator + cuName + ".java");
+		String javaSourceFileRelativeFullName = (cu.packge.getQualifiedName().toString().replace(".", File.separator)
+				+ File.separator + cuName + ".java");
 		file.javaSourceDirRelativeFile = new File(javaSourceFileRelativeFullName);
-		file.javaSourceDir = new File(
-				cu.getSourceFile().getName().substring(0, cu.getSourceFile().getName().length() - javaSourceFileRelativeFullName.length()));
+		file.javaSourceDir = new File(cu.getSourceFile().getName().substring(0,
+				cu.getSourceFile().getName().length() - javaSourceFileRelativeFullName.length()));
 	}
 
-	private void createBundle(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files, int[] permutation,
-			java.util.List<JCCompilationUnit> orderedCompilationUnits, boolean definitionBundle) throws FileNotFoundException {
+	private void createBundle(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files,
+			int[] permutation, java.util.List<JCCompilationUnit> orderedCompilationUnits, boolean definitionBundle)
+			throws FileNotFoundException {
 		context.bundleMode = true;
 		StringBuilder sb = new StringBuilder();
 		int lineCount = 0;
@@ -903,7 +938,8 @@ public class JSweetTranspiler implements JSweetOptions {
 				}
 			}
 			logger.info("scanning " + cu.sourcefile.getName() + "...");
-			AbstractTreePrinter printer = new Java2TypeScriptTranslator(transpilationHandler, context, cu, generateSourceMap);
+			AbstractTreePrinter printer = new Java2TypeScriptTranslator(transpilationHandler, context, cu,
+					generateSourceMap);
 			printer.print(cu);
 			printer.sourceMap.shiftOutputPositions(lineCount);
 			files[permutation[i]].setSourceMap(printer.sourceMap);
@@ -932,6 +968,14 @@ public class JSweetTranspiler implements JSweetOptions {
 			out.println(sb.toString());
 			out.print(context.getGlobalsMappingString());
 			out.print(context.poolFooterStatements());
+			if (definitionBundle && context.getExportedElements() != null) {
+				for (java.util.Map.Entry<String, java.util.List<JCTree>> exportedElements : context
+						.getExportedElements().entrySet()) {
+					out.println();
+					out.print("declare module \"" + exportedElements.getKey() + "\";");
+					out.println();
+				}
+			}
 		} finally {
 			out.close();
 		}
@@ -980,7 +1024,8 @@ public class JSweetTranspiler implements JSweetOptions {
 		TscOutput error = new TscOutput();
 		if (m.matches()) {
 			String[] pos = m.group(2).split(",");
-			error.position = new SourcePosition(new File(m.group(1)), null, Integer.parseInt(pos[0]), Integer.parseInt(pos[1]));
+			error.position = new SourcePosition(new File(m.group(1)), null, Integer.parseInt(pos[0]),
+					Integer.parseInt(pos[1]));
 			StringBuilder sb = new StringBuilder(m.group(3));
 			sb.setCharAt(0, Character.toLowerCase(sb.charAt(0)));
 			if (sb.charAt(sb.length() - 1) == '.') {
@@ -1000,7 +1045,8 @@ public class JSweetTranspiler implements JSweetOptions {
 
 	private Path relativizeTsFile(File file) {
 		try {
-			return getTsOutputDir().getAbsoluteFile().getCanonicalFile().toPath().relativize(file.getAbsoluteFile().getCanonicalFile().toPath());
+			return getTsOutputDir().getAbsoluteFile().getCanonicalFile().toPath()
+					.relativize(file.getAbsoluteFile().getCanonicalFile().toPath());
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
@@ -1166,7 +1212,8 @@ public class JSweetTranspiler implements JSweetOptions {
 		// }
 	}
 
-	private void onTsTranspilationCompleted(boolean fullPass, ErrorCountTranspilationHandler handler, SourceFile[] files) {
+	private void onTsTranspilationCompleted(boolean fullPass, ErrorCountTranspilationHandler handler,
+			SourceFile[] files) {
 		try {
 			if (isGenerateDeclarations()) {
 				if (getDeclarationsOutputDir() != null) {
@@ -1175,7 +1222,8 @@ public class JSweetTranspiler implements JSweetOptions {
 					File rootDir = jsOutputDir == null ? tsOutputDir : jsOutputDir;
 					Util.addFiles(".d.ts", rootDir, dtsFiles);
 					for (File dtsFile : dtsFiles) {
-						String relativePath = Util.getRelativePath(rootDir.getAbsolutePath(), dtsFile.getAbsolutePath());
+						String relativePath = Util.getRelativePath(rootDir.getAbsolutePath(),
+								dtsFile.getAbsolutePath());
 						File targetFile = new File(getDeclarationsOutputDir(), relativePath);
 						logger.info("moving " + dtsFile + " to " + targetFile);
 						if (targetFile.exists()) {
@@ -1193,11 +1241,13 @@ public class JSweetTranspiler implements JSweetOptions {
 				Set<File> handledFiles = new HashSet<>();
 				for (SourceFile sourceFile : files) {
 					if (!sourceFile.getTsFile().getAbsolutePath().startsWith(tsOutputDir.getAbsolutePath())) {
-						throw new RuntimeException("ts directory isn't configured properly, please use setTsDir: " + sourceFile.getTsFile().getAbsolutePath()
-								+ " != " + tsOutputDir.getAbsolutePath());
+						throw new RuntimeException("ts directory isn't configured properly, please use setTsDir: "
+								+ sourceFile.getTsFile().getAbsolutePath() + " != " + tsOutputDir.getAbsolutePath());
 					}
-					String outputFileRelativePath = sourceFile.getTsFile().getAbsolutePath().substring(tsOutputDir.getAbsolutePath().length());
-					File outputFile = new File(jsOutputDir == null ? tsOutputDir : jsOutputDir, Util.removeExtension(outputFileRelativePath) + ".js");
+					String outputFileRelativePath = sourceFile.getTsFile().getAbsolutePath()
+							.substring(tsOutputDir.getAbsolutePath().length());
+					File outputFile = new File(jsOutputDir == null ? tsOutputDir : jsOutputDir,
+							Util.removeExtension(outputFileRelativePath) + ".js");
 					sourceFile.jsFile = outputFile;
 					if (outputFile.lastModified() > sourceFile.jsFileLastTranspiled) {
 						if (handledFiles.contains(outputFile)) {
@@ -1209,10 +1259,12 @@ public class JSweetTranspiler implements JSweetOptions {
 
 						if (mapFile.exists() && generateSourceMap) {
 
-							SourceMapGeneratorV3 generator = (SourceMapGeneratorV3) SourceMapGeneratorFactory.getInstance(SourceMapFormat.V3);
+							SourceMapGeneratorV3 generator = (SourceMapGeneratorV3) SourceMapGeneratorFactory
+									.getInstance(SourceMapFormat.V3);
 							Path javaSourcePath = sourceFile.javaSourceDir.getCanonicalFile().toPath();
 							String sourceRoot = getSourceRoot() != null ? getSourceRoot().toString()
-									: sourceFile.getJsFile().getParentFile().getCanonicalFile().toPath().relativize(javaSourcePath) + "/";
+									: sourceFile.getJsFile().getParentFile().getCanonicalFile().toPath()
+											.relativize(javaSourcePath) + "/";
 							generator.setSourceRoot(sourceRoot);
 
 							sourceFile.jsMapFile = mapFile;
@@ -1224,8 +1276,8 @@ public class JSweetTranspiler implements JSweetOptions {
 							int columnIndex = 0;
 							for (String lineContent : FileUtils.readLines(outputFile, (Charset) null)) {
 								columnIndex = 0;
-								while (columnIndex < lineContent.length()
-										&& (lineContent.charAt(columnIndex) == ' ' || lineContent.charAt(columnIndex) == '\t')) {
+								while (columnIndex < lineContent.length() && (lineContent.charAt(columnIndex) == ' '
+										|| lineContent.charAt(columnIndex) == '\t')) {
 									columnIndex++;
 								}
 
@@ -1233,13 +1285,20 @@ public class JSweetTranspiler implements JSweetOptions {
 								if (originalMapping != null) {
 									// TODO: this is quite slow and should be
 									// optimized
-									SourcePosition originPosition = SourceFile.findOriginPosition(new SourcePosition(sourceFile.tsFile, null,
-											new Position(originalMapping.getLineNumber(), originalMapping.getColumnPosition())), files);
+									SourcePosition originPosition = SourceFile.findOriginPosition(new SourcePosition(
+											sourceFile.tsFile, null, new Position(originalMapping.getLineNumber(),
+													originalMapping.getColumnPosition())),
+											files);
 									if (originPosition != null) {
 										// as a first approximation, we only map
 										// line numbers (ignore columns)
-										generator.addMapping(javaSourcePath.relativize(originPosition.getFile().getCanonicalFile().toPath()).toString(), null,
-												new FilePosition(originPosition.getStartLine() - 1, 0), new FilePosition(line - 1, 0),
+										generator.addMapping(
+												javaSourcePath
+														.relativize(
+																originPosition.getFile().getCanonicalFile().toPath())
+														.toString(),
+												null, new FilePosition(originPosition.getStartLine() - 1, 0),
+												new FilePosition(line - 1, 0),
 												new FilePosition(line - 1, lineContent.length() - 1));
 									}
 								}
@@ -1593,7 +1652,8 @@ public class JSweetTranspiler implements JSweetOptions {
 	 *            transpilation output
 	 * @throws IOException
 	 */
-	public String transpile(ErrorCountTranspilationHandler handler, JCTree tree, String targetFileName) throws IOException {
+	public String transpile(ErrorCountTranspilationHandler handler, JCTree tree, String targetFileName)
+			throws IOException {
 		Java2TypeScriptTranslator translator = new Java2TypeScriptTranslator(handler, context, null, false);
 		translator.enterScope();
 		translator.scan(tree);

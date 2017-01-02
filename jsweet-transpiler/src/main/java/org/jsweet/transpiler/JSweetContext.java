@@ -40,6 +40,7 @@ import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Types;
+import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
@@ -190,7 +191,8 @@ public class JSweetContext extends Context {
 	 * Increments the count of static initialization blocks for the given class.
 	 */
 	public void countStaticInitializer(ClassSymbol clazz) {
-		staticInitializerCounts.put(clazz, (staticInitializerCounts.containsKey(clazz) ? staticInitializerCounts.get(clazz) : 0) + 1);
+		staticInitializerCounts.put(clazz,
+				(staticInitializerCounts.containsKey(clazz) ? staticInitializerCounts.get(clazz) : 0) + 1);
 	}
 
 	/**
@@ -293,6 +295,27 @@ public class JSweetContext extends Context {
 		importedNamesInModules.put(moduleName, importedNames);
 		Map<Symbol, String> importedModulesForNames = new HashMap<>();
 		importedElementsInModules.put(moduleName, importedModulesForNames);
+	}
+
+	private Map<String, List<JCTree>> exportedElements = new HashMap<>();
+
+	/**
+	 * Gets the exported elements for all the modules defined in the program.
+	 */
+	public Map<String, List<JCTree>> getExportedElements() {
+		return exportedElements;
+	}
+
+	/**
+	 * Adds an exported element for a module.
+	 */
+	public void addExportedElement(String moduleName, JCTree exportedElement) {
+		List<JCTree> exportedNamesForModule = exportedElements.get(moduleName);
+		if (exportedNamesForModule == null) {
+			exportedNamesForModule = new ArrayList<JCTree>();
+			exportedElements.put(moduleName, exportedNamesForModule);
+		}
+		exportedNamesForModule.add(exportedElement);
 	}
 
 	/**

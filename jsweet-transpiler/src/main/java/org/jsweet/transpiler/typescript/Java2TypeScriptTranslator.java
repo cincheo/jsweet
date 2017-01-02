@@ -1354,6 +1354,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				return;
 			}
 
+			if (Util.hasAnnotationType(methodDecl.sym, JSweetConfig.ANNOTATION_MODULE)) {
+				getContext().addExportedElement(
+						Util.getAnnotationValue(methodDecl.sym, JSweetConfig.ANNOTATION_MODULE, null), methodDecl);
+			}
+
 			if (context.useModules) {
 				if (!methodDecl.mods.getFlags().contains(Modifier.PRIVATE)) {
 					print("export ");
@@ -1947,6 +1952,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			if (globals || !(parent instanceof JCClassDecl || parent instanceof JCMethodDecl
 					|| parent instanceof JCLambda)) {
 				if (globals) {
+					if (Util.hasAnnotationType(varDecl.sym, JSweetConfig.ANNOTATION_MODULE)) {
+						getContext().addExportedElement(
+								Util.getAnnotationValue(varDecl.sym, JSweetConfig.ANNOTATION_MODULE, null), varDecl);
+					}
 					if (context.useModules) {
 						if (!varDecl.mods.getFlags().contains(Modifier.PRIVATE)) {
 							print("export ");
