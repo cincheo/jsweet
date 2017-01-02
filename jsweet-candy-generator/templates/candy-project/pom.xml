@@ -39,7 +39,7 @@
 			<artifactId>jsweet-core</artifactId>
 			<version>5-SNAPSHOT</version>
 		</dependency>
-		${{DEPENDENCIES}}
+${{DEPENDENCIES}}
 	</dependencies>
 	<build>
 		<sourceDirectory>src/main/java</sourceDirectory>

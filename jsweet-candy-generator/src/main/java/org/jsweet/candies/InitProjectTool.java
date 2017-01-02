@@ -149,11 +149,11 @@ public class InitProjectTool {
 				logger.warn("dependency format not correct: " + dependencyLocator);
 				continue;
 			}
-			dependenciesBuilder.append("<dependency>\n");
-			dependenciesBuilder.append("  <groupId>org.jsweet.candies</groupId>\n");
-			dependenciesBuilder.append("  <artifactId>" + dependencyParts[0] + "</artifactId>\n");
-			dependenciesBuilder.append("  <version>" + dependencyParts[1] + "</version>\n");
-			dependenciesBuilder.append("</dependency>\n");
+			dependenciesBuilder.append("\t\t<dependency>\n");
+			dependenciesBuilder.append("\t\t\t<groupId>org.jsweet.candies.ext</groupId>\n");
+			dependenciesBuilder.append("\t\t\t<artifactId>" + dependencyParts[0] + "</artifactId>\n");
+			dependenciesBuilder.append("\t\t\t<version>" + dependencyParts[1] + "</version>\n");
+			dependenciesBuilder.append("\t\t</dependency>\n");
 		}
 		return dependenciesBuilder;
 	}
