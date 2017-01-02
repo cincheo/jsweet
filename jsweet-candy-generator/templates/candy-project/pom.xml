@@ -5,8 +5,9 @@
 	<artifactId>${{ARTIFACT_ID}}</artifactId>
 	<version>${{VERSION}}</version>
 	<properties>
+		<jsweet.transpiler.version>2.0.0</jsweet.transpiler.version>
 	</properties>
-	<repositories>
+		<repositories>
 		<repository>
 			<id>jsweet-central</id>
 			<name>libs-release</name>
@@ -64,11 +65,9 @@
 				<artifactId>jsweet-maven-plugin</artifactId>
 				<version>2.0.0-SNAPSHOT</version>
 				<configuration>
-					<!-- <verbose>true</verbose> -->
+					<verbose>true</verbose>
 					<bundle>true</bundle>
-					<declaration>true</declaration>
-					<outDir>src/main/resources/META-INF/resources/webjars/${project.artifactId}/${project.version}</outDir>
-					<dtsOut>src/main/resources/src/typings/${project.artifactId}/${project.version}</dtsOut>
+					<tsOut>src/main/resources/src/typings/${project.artifactId}/${project.version}</tsOut>
 					<targetVersion>ES5</targetVersion>
 					<excludes>
 						<exclude>**jsweet/util/function/**</exclude>
@@ -97,10 +96,6 @@
 								
 								<mkdir dir="dist/"></mkdir>
 								
-								<copy
-									file="src/main/resources/META-INF/resources/webjars/${project.artifactId}/${project.version}/bundle.js"
-									tofile="dist/${project.artifactId}.js" verbose="true"
-									failonerror="false" />
 								<copy
 									file="src/main/resources/src/typings/${project.artifactId}/${project.version}/bundle.d.ts"
 									tofile="dist/${project.artifactId}.d.ts" verbose="true"
@@ -147,17 +142,6 @@
 					<header><![CDATA[<a href="http://www.jsweet.org" target="_blank" style="text-transform: lowercase">http://www.jsweet.org<a>]]></header>
 					<bottom><![CDATA[<center>Copyright 2015, <a href="http://www.cincheo.org" target="_blank">Cinchéo SAS<a> - Web site: <a href="http://www.jsweet.org" target="_blank">http://www.jsweet.org<a><center>]]></bottom>
 					<stylesheetfile>/var/www/apidocs/stylesheet.css</stylesheetfile>
-
-					<!-- the following lines work but doclet is very slow and not that useful -->
-					<!-- <doclet>org.umlgraph.doclet.UmlGraphDoc</doclet> -->
-					<!-- <docletArtifact> -->
-					<!-- <groupId>org.umlgraph</groupId> -->
-					<!-- <artifactId>doclet</artifactId> -->
-					<!-- <version>5.1</version> -->
-					<!-- </docletArtifact> -->
-					<!-- <additionalparam>-views</additionalparam> -->
-					<!-- <useStandardDocletOptions>true</useStandardDocletOptions> -->
-
 				</configuration>
 				<executions>
 					<execution>
