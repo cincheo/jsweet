@@ -20,25 +20,42 @@ The ``init-project`` command generates a default Maven project with all the appr
 
 For example, the following command creates and publishes to Github a default (empty) candy project on Github for jquery-1.10.0-SNAPSHOT.
 
-```shell
-java -jar target\candy-tool.jar init-project --artifactId=jquery --version=1.10.0-SNAPSHOT -o ../candies --createGitHubRepository=true --gitHubUser=lgrignon
+```bash
+> java -jar target\candy-tool.jar init-project --artifactId=jquery --version=1.10.0-SNAPSHOT -o ../candies --createGitHubRepository=true --gitHubUser=lgrignon
 ```
 
-The created project's directory is ``candy-jquery`` and is placed in the ``../candies`` directory, as specified by the ``-o`` option.
+The created project's directory is ``candy-jquery`` and is placed in the ``../candies`` directory, as specified with the ``-o`` option. If you specify the ``createGitHubRepository`` option, an empty Github repository with a default name and description will be created in the [jsweet-candies organization](https://github.com/jsweet-candies). Please contact us to get authorized.
 
 You can create a candy project with dependencies to other projects. For example, the following command creates a project for ``jqueryui-1.11.0-SNAPSHOT``, which depends on the ``jquery-1.10.0-SNAPSHOT`` candy.
 
-
-```shell
-java -jar target/candy-tool.jar init-project --artifactId=jqueryui --version=1.11.0-SNAPSHOT --deps=jquery:1.10.0-SNAPSHOT -o ../candies
+```bash
+> java -jar target/candy-tool.jar init-project --artifactId=jqueryui --version=1.11.0-SNAPSHOT --deps=jquery:1.10.0-SNAPSHOT -o ../candies
 ```
 
-### Generate the candy's sources using the `generate-sources` command
+### Generate the candy's Java sources from TypeScript using the `generate-sources` command
 
-The `generate-sources` command parses the given TypeScript definition file and translates it to a Java API (``*.java`` files). You don't need to have an initialized project to run this command.
+The `generate-sources` command parses the given TypeScript definition file and translates it to a Java API (``*.java`` files). You don't need to have an initialized project to run this command. Note that TypeScript definitions can be easily fetched with external tools such as ``typings`` or ``npm``.
 
+```bash
+> java -jar target/candy-tool.jar generate-sources --name=jquery --tsFiles=typings/globals/jquery/index.d.ts -o ../candies/candy-jquery/src/main/java  
 ```
-java -jar target/candy-tool.jar generate-sources --name=jquery --tsFiles=typings/globals/jquery/index.d.ts -o ../candies/candy-jquery/src/main/java  
+
+When a TypeScript definition depend on another definition, should shall specify it as a dependency:
+
+```bash
+> java -jar target/candy-tool.jar generate-sources --name=jqueryui --tsFiles=typings/jqueryui/index.d.ts --tsDeps=typings/jquery/index.d.ts -o ../candies/candy-jqueryui/src/main/java  
+```
+
+### Push your candy to a remote Github repository
+
+Go to your candy's project (here ``candy-jquery``).
+
+```bash
+> git init 
+> git add .
+> git commit -m "Initial commit"
+> git remote add origin https://github.com/jsweet-candies/candy-jquery.git
+> git push origin master 
 ```
 
 ## How to build
@@ -55,7 +72,7 @@ Then build the entire project:
  mvn clean package
 ```
 
-Optionally, in order to generate the Jar file used to run the tool.
+Optionally, if you need to re-package the Jar file used to run the tool.
 
 ```shell
 mvn clean compile assembly:single

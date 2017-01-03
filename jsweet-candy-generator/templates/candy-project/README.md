@@ -14,7 +14,13 @@ Clone this project with git and install the JSweet candy in your local Maven rep
 > mvn install
 ```
 
-Note: if you want to publish the candy in a remote Maven repository, please refer to existing documentation on that particular topic.
+To deploy the candy to the [jsweet-candies](https://github.com/jsweet-candies) organization (please contact us to get an authorized access):
+
+```bash
+> mvn deploy
+```
+
+Note: if you want to publish the candy in your own Maven repository, please refer to existing documentation on that particular topic.
 
 ## Use from a Java/JSweet project
 
