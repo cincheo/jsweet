@@ -67,7 +67,7 @@ ${{DEPENDENCIES}}
 				<configuration>
 					<verbose>true</verbose>
 					<bundle>true</bundle>
-					<tsOut>src/main/resources/src/typings/${project.artifactId}/${project.version}</tsOut>
+					<tsOut>src/main/resources/META-INF/resources/typings/${project.artifactId}/${project.version}</tsOut>
 					<targetVersion>ES5</targetVersion>
 					<excludes>
 						<exclude>**jsweet/util/function/**</exclude>
