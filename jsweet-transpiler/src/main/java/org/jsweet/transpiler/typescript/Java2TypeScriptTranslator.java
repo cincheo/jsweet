@@ -318,6 +318,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 		isDefinitionScope = topLevel.packge.getQualifiedName().toString().startsWith(JSweetConfig.LIBS_PACKAGE + ".");
 
+		if (Util.hasAnnotationType(topLevel.packge, JSweetConfig.ANNOTATION_MODULE)) {
+			context.addExportedElement(Util.getAnnotationValue(topLevel.packge, JSweetConfig.ANNOTATION_MODULE, null),
+					topLevel.packge);
+		}
+
 		printIndent().print(
 				"/* Generated from Java with JSweet " + JSweetConfig.getVersionNumber() + " - http://www.jsweet.org */")
 				.println();
@@ -1366,7 +1371,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 			if (Util.hasAnnotationType(methodDecl.sym, JSweetConfig.ANNOTATION_MODULE)) {
 				getContext().addExportedElement(
-						Util.getAnnotationValue(methodDecl.sym, JSweetConfig.ANNOTATION_MODULE, null), methodDecl);
+						Util.getAnnotationValue(methodDecl.sym, JSweetConfig.ANNOTATION_MODULE, null), methodDecl.sym);
 			}
 
 			if (context.useModules) {
@@ -1964,7 +1969,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (globals) {
 					if (Util.hasAnnotationType(varDecl.sym, JSweetConfig.ANNOTATION_MODULE)) {
 						getContext().addExportedElement(
-								Util.getAnnotationValue(varDecl.sym, JSweetConfig.ANNOTATION_MODULE, null), varDecl);
+								Util.getAnnotationValue(varDecl.sym, JSweetConfig.ANNOTATION_MODULE, null),
+								varDecl.sym);
 					}
 					if (context.useModules) {
 						if (!varDecl.mods.getFlags().contains(Modifier.PRIVATE)) {

@@ -77,7 +77,9 @@ import com.google.debugging.sourcemap.SourceMapGeneratorFactory;
 import com.google.debugging.sourcemap.SourceMapGeneratorV3;
 import com.google.debugging.sourcemap.SourceMapping;
 import com.google.debugging.sourcemap.proto.Mapping.OriginalMapping;
+import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
+import com.sun.tools.javac.code.Symbol.PackageSymbol;
 import com.sun.tools.javac.file.JavacFileManager;
 import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.main.Option;
@@ -803,8 +805,7 @@ public class JSweetTranspiler implements JSweetOptions {
 			files[i].javaSourceDirRelativeFile = new File(javaSourceFileRelativeFullName);
 			files[i].javaSourceDir = new File(cu.getSourceFile().getName().substring(0,
 					cu.getSourceFile().getName().length() - javaSourceFileRelativeFullName.length()));
-			String packageName = isNoRootDirectories()
-					? Util.getRootRelativeJavaName(cu.packge)
+			String packageName = isNoRootDirectories() ? Util.getRootRelativeJavaName(cu.packge)
 					: cu.packge.getQualifiedName().toString();
 			String outputFileRelativePathNoExt = packageName.replace(".", File.separator) + File.separator + cuName;
 			String outputFileRelativePath = outputFileRelativePathNoExt
@@ -970,10 +971,25 @@ public class JSweetTranspiler implements JSweetOptions {
 			out.print(context.getGlobalsMappingString());
 			out.print(context.poolFooterStatements());
 			if (definitionBundle && context.getExportedElements() != null) {
-				for (java.util.Map.Entry<String, java.util.List<JCTree>> exportedElements : context
+				for (java.util.Map.Entry<String, java.util.List<Symbol>> exportedElements : context
 						.getExportedElements().entrySet()) {
 					out.println();
-					out.print("declare module \"" + exportedElements.getKey() + "\";");
+					out.print("declare module \"" + exportedElements.getKey() + "\"");
+					boolean exported = false;
+					for (Symbol element : exportedElements.getValue()) {
+						if (element instanceof PackageSymbol) {
+							out.print(" {");
+							out.println();
+							out.print("    export = " + Util.getActualName(element) + ";");
+							out.println();
+							out.print("}");
+							exported = true;
+							break;
+						}
+					}
+					if (!exported) {
+						out.print(";");
+					}
 					out.println();
 				}
 			}

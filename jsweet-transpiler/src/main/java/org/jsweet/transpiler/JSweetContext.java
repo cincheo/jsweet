@@ -297,22 +297,22 @@ public class JSweetContext extends Context {
 		importedElementsInModules.put(moduleName, importedModulesForNames);
 	}
 
-	private Map<String, List<JCTree>> exportedElements = new HashMap<>();
+	private Map<String, List<Symbol>> exportedElements = new HashMap<>();
 
 	/**
 	 * Gets the exported elements for all the modules defined in the program.
 	 */
-	public Map<String, List<JCTree>> getExportedElements() {
+	public Map<String, List<Symbol>> getExportedElements() {
 		return exportedElements;
 	}
 
 	/**
 	 * Adds an exported element for a module.
 	 */
-	public void addExportedElement(String moduleName, JCTree exportedElement) {
-		List<JCTree> exportedNamesForModule = exportedElements.get(moduleName);
+	public void addExportedElement(String moduleName, Symbol exportedElement) {
+		List<Symbol> exportedNamesForModule = exportedElements.get(moduleName);
 		if (exportedNamesForModule == null) {
-			exportedNamesForModule = new ArrayList<JCTree>();
+			exportedNamesForModule = new ArrayList<Symbol>();
 			exportedElements.put(moduleName, exportedNamesForModule);
 		}
 		exportedNamesForModule.add(exportedElement);
