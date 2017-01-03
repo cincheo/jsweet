@@ -301,6 +301,22 @@ public class Util {
 				}
 				dependencyGraph.addEdge(lib, refLib);
 			}
+			if (context.getLibrariesDefinitions().contains(compilationUnit.getFile())) {
+				for (File depFile : context.getDependenciesDefinitions()) {
+					String refLib = context.getCompilationUnit(depFile).getMainModule().getName();
+					if (refLib == null) {
+						continue;
+					}
+					if (refLib.equals(lib)) {
+						// ignore self references
+						continue;
+					}
+					if (!dependencyGraph.contains(refLib)) {
+						dependencyGraph.add(refLib);
+					}
+					dependencyGraph.addEdge(lib, refLib);
+				}
+			}
 		}
 		context.dependencyGraph = dependencyGraph;
 	}
@@ -420,7 +436,7 @@ public class Util {
 
 	public static void checkAndAdjustDeclarationName(Declaration declaration, boolean forceLowerCase) {
 		String oldName = declaration.getName();
-		
+
 		if (StringUtil.isBlank(oldName)) {
 			return;
 		}
@@ -635,11 +651,9 @@ public class Util {
 		File parent = libFile.getParentFile();
 		String pack = parent.getName().toLowerCase().replaceAll("[.-]", "_");
 		parent = parent.getParentFile();
-		
+
 		String packageName;
-		if (parent.getParentFile() != null
-				&& !parent.getName().equals("test")
-				&& !parent.getName().equals("typings")
+		if (parent.getParentFile() != null && !parent.getName().equals("test") && !parent.getName().equals("typings")
 				&& !parent.getName().equals("globals")) {
 			pack = parent.getName().toLowerCase().replaceAll("[.-]", "_") + (pack == null ? "" : "." + pack);
 			packageName = JSweetDefTranslatorConfig.LIBS_PACKAGE + "." + pack;
@@ -647,9 +661,9 @@ public class Util {
 			packageName = JSweetDefTranslatorConfig.LIBS_PACKAGE + "."
 					+ libFile.getParentFile().getName().toLowerCase().replaceAll("[.-]", "_");
 		}
-		
+
 		logger.debug(libFile.getPath() + " ==> " + packageName);
-		
+
 		return packageName;
 	}
 }
