@@ -244,18 +244,18 @@ public class CandiesProcessor {
 				+ " tsDefOutputDirectory=" + tsDefOutputDirectory + " jsOutputDir=" + jsOutputDirectory);
 
 		jarFile.stream()
-				.filter(entry -> entry.getName().endsWith(".d.ts") && entry.getName().startsWith("src/")
-						|| entry.getName().endsWith("package-info.class")) //
+				.filter(entry -> entry.getName().endsWith(".d.ts")
+						&& (entry.getName().startsWith("src/") || entry.getName().startsWith("META-INF/resources/"))) //
 				.forEach(entry -> {
 
 					File out;
 					if (entry.getName().endsWith(".java")) {
+						// RP: this looks like dead code...
 						out = new File(javaOutputDirectory + "/" + entry.getName().substring(4));
 					} else if (entry.getName().endsWith(".d.ts")) {
 						if (isTsDefToBeExtracted != null && !isTsDefToBeExtracted.test(entry.getName())) {
 							return;
 						}
-
 						out = new File(tsDefOutputDirectory + "/" + entry.getName());
 					} else {
 						out = null;
