@@ -4,6 +4,10 @@ import java.util.Deque;
 import java.util.LinkedList;
 import java.util.function.Function;
 
+class Cls<T> {
+	
+}
+
 @SuppressWarnings("rawtypes")
 public class RawTypes<T> extends Cls implements Itf {
 
@@ -24,6 +28,3 @@ interface Itf<T> {
 	
 }
 
-class Cls<T> {
-	
-}
