@@ -251,6 +251,20 @@
 			<scope>test</scope>
 			<optional>true</optional>
 		</dependency>
+		<dependency>
+			<groupId>org.jsweet.candies.ext</groupId>
+			<artifactId>angular</artifactId>
+			<version>1.4.0-SNAPSHOT</version>
+			<scope>test</scope>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.jsweet.candies.ext</groupId>
+			<artifactId>angular-route</artifactId>
+			<version>1.2.0-SNAPSHOT</version>
+			<scope>test</scope>
+			<optional>true</optional>
+		</dependency>
 		
 		
 <!-- 		<dependency>
@@ -278,20 +292,6 @@
 			<groupId>org.jsweet.candies</groupId>
 			<artifactId>socket.io</artifactId>
 			<version>1.4.4-SNAPSHOT</version>
-			<scope>test</scope>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>org.jsweet.candies</groupId>
-			<artifactId>angular</artifactId>
-			<version>1.4.0-SNAPSHOT</version>
-			<scope>test</scope>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>org.jsweet.candies</groupId>
-			<artifactId>angular-route</artifactId>
-			<version>1.3.0-SNAPSHOT</version>
 			<scope>test</scope>
 			<optional>true</optional>
 		</dependency>
