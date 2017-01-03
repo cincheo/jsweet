@@ -229,6 +229,21 @@
 			<scope>test</scope>
 			<optional>true</optional>
 		</dependency>
+
+ 		<dependency>
+			<groupId>org.jsweet.candies.ext</groupId>
+			<artifactId>jquery</artifactId>
+			<version>1.10.0-SNAPSHOT</version>
+			<scope>test</scope>
+			<optional>true</optional>
+		</dependency>
+ 		<dependency>
+			<groupId>org.jsweet.candies.ext</groupId>
+			<artifactId>jqueryui</artifactId>
+			<version>1.11.0-SNAPSHOT</version>
+			<scope>test</scope>
+			<optional>true</optional>
+		</dependency>
 		
 <!-- 		<dependency>
 			<groupId>org.jsweet.candies</groupId>

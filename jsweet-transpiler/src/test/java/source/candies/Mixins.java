@@ -18,10 +18,13 @@ package source.candies;
 
 import static def.jquery.Globals.$;
 
-public class JQuery {
+public class Mixins {
 
 	public static void main(String[] args) {
-		$("p").append(" (end)");	
+		$("p").append(" (end)");
+		def.jqueryui.JQuery p1 = (def.jqueryui.JQuery)$("p");
+		def.jquery.JQuery p2 = (def.jquery.JQuery)$("p");
+		((def.jqueryui.JQuery)$("p")).accordion();
 	}
 
 }

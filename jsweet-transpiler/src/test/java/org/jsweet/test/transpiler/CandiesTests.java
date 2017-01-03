@@ -30,6 +30,7 @@ import source.candies.BackboneCandy;
 import source.candies.ExpressLib;
 import source.candies.GlobalsImport;
 import source.candies.JQuery;
+import source.candies.Mixins;
 import source.candies.QualifiedNames;
 import source.candies.ReactLib;
 import source.candies.SocketIOLib;
@@ -122,7 +123,9 @@ public class CandiesTests extends AbstractTest {
 
 	@Test
 	public void testMixins() {
-		// TODO
+		transpile(logHandler -> {
+			assertEquals(0, logHandler.getReportedProblems().size());
+		}, getSourceFile(Mixins.class));
 	}
 
 }
