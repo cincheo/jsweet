@@ -118,6 +118,7 @@ public class InitProjectTool {
 			createGitHubRepo(projectName, "Java API bridge for " + artifactId + " (JSweet candy)", gitHubUser,
 					gitHubPass);
 
+			ProcessUtil.init();
 			ProcessUtil.runCmd(projectDir, (out) -> {
 				logger.info("git: " + out);
 			}, "git init && git remote add origin https://github.com/jsweet-candies/" + projectName);

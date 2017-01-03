@@ -34,21 +34,21 @@ public class ProcessUtil {
 	public static String MVN_COMMAND = "mvn";
 	public static String BOWER_COMMAND = "bower";
 	public static String EXTRA_PATH;
-	
+
 	public static void init() {
 		// hack for Eclipse under Mac OSX
 		if (!System.getenv("PATH").contains("/usr/local/bin") && new File("/usr/local/bin/tsd").exists()) {
-			ProcessUtil.EXTRA_PATH = "/usr/local/bin";
+			ProcessUtil.EXTRA_PATH = "usr/bin" + File.pathSeparator + "/usr/local/bin";
 			ProcessUtil.TSD_COMMAND = "/usr/local/bin/tsd";
 			ProcessUtil.MVN_COMMAND = "/usr/local/bin/mvn";
 			ProcessUtil.BOWER_COMMAND = "/usr/local/bin/bower";
 		}
 	}
-	
+
 	public static void runCmd(Consumer<String> stdoutConsumer, String... cmd) {
 		runCmd(null, stdoutConsumer, cmd);
 	}
-	
+
 	public static void runCmd(File directory, Consumer<String> stdoutConsumer, String... cmd) {
 		System.out.println("run command: " + StringUtils.join(cmd, " "));
 
@@ -71,9 +71,10 @@ public class ProcessUtil {
 				processBuilder.directory(directory);
 			}
 			if (!StringUtils.isBlank(EXTRA_PATH)) {
-				processBuilder.environment().put("PATH", processBuilder.environment().get("PATH") + File.pathSeparator + EXTRA_PATH);
+				processBuilder.environment().put("PATH",
+						processBuilder.environment().get("PATH") + File.pathSeparator + EXTRA_PATH);
 			}
-			
+
 			Process process = processBuilder.start();
 
 			try (BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
@@ -89,8 +90,8 @@ public class ProcessUtil {
 
 			code = process.waitFor();
 			if (code != 0) {
-				throw new RuntimeException("error while exectuting: " + StringUtils.join(args, " ") + ", error code: "
-						+ code);
+				throw new RuntimeException(
+						"error while exectuting: " + StringUtils.join(args, " ") + ", error code: " + code);
 			}
 		} catch (Exception e) {
 			throw new RuntimeException(e);
