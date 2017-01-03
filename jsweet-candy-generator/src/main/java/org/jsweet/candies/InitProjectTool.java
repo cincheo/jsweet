@@ -115,7 +115,8 @@ public class InitProjectTool {
 				gitHubPass = new String(console.readPassword("GitHub password for " + gitHubUser + ": "));
 			}
 
-			createGitHubRepo(projectName, "A JSweet candy for " + artifactId, gitHubUser, gitHubPass);
+			createGitHubRepo(projectName, "Java API bridge for " + artifactId + " (JSweet candy)", gitHubUser,
+					gitHubPass);
 
 			ProcessUtil.runCmd(projectDir, (out) -> {
 				logger.info("git: " + out);
@@ -134,7 +135,7 @@ public class InitProjectTool {
 		gitHubServer.setCredentials(gitHubUser, gitHubPassword);
 		gitHubServer.post("/orgs/jsweet-candies/repos", //
 				"name", repoName, //
-				"description", "candy-test body");
+				"description", repoDescription);
 	}
 
 	private static CharSequence generateMavenXmlForDependencies(List<String> dependencyLocators) {
