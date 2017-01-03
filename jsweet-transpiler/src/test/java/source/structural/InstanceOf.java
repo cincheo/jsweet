@@ -17,6 +17,7 @@
 package source.structural;
 
 import static def.js.Globals.eval;
+import static jsweet.util.Globals.any;
 import static jsweet.util.Globals.equalsStrict;
 import static jsweet.util.Globals.typeof;
 
@@ -31,12 +32,12 @@ public class InstanceOf {
 		C2 c = new C2();
 		Object anArray = new int[0];
 		InstanceOf object = new InstanceOf();
-		
+
 		assert n1 instanceof Number;
 		assert n2 instanceof Number;
 		assert n2 instanceof Integer;
 		assert !(n2 instanceof String);
-		assert !(n2 instanceof Array);
+		assert !(any(n2) instanceof Array);
 		assert s instanceof String;
 		assert !(s instanceof Integer);
 		assert c instanceof C2;

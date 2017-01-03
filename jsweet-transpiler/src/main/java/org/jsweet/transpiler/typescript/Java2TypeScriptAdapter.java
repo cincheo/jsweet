@@ -1013,7 +1013,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					if (getPrinter().getContext().options.isSupportGetClass()) {
 						printMacroName(targetMethodName);
 						getPrinter().print("(c => c[\"" + Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR
-								+ "\"]?c[\"" + Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR + "\"]:c.name)(");
+								+ "\"]?c[\"" + Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR + "\"]:c[\"name\"])(");
 						printTarget(fieldAccess.getExpression());
 						getPrinter().print(")");
 						return true;
@@ -1032,7 +1032,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 						getPrinter().print("(c => c[\"" + Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR
 								+ "\"]?c[\"" + Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR
 								+ "\"].substring(c[\"" + Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR
-								+ "\"].lastIndexOf('.')+1):c.name.substring(c.name.lastIndexOf('.')+1))(");
+								+ "\"].lastIndexOf('.')+1):c[\"name\"].substring(c[\"name\"].lastIndexOf('.')+1))(");
 						printTarget(fieldAccess.getExpression());
 						getPrinter().print(")");
 						return true;

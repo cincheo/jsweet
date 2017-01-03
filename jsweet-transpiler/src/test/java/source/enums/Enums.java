@@ -37,7 +37,7 @@ public class Enums {
 		$export("valueOfC", array(MyEnum.values()).indexOf(MyEnum.valueOf("C")));
 		$export("ref", Enums.e.name());
 		String s = null;
-		switch (e) {
+		switch ((MyEnum) e) {
 		case A:
 			s = "A";
 			break;
@@ -49,7 +49,7 @@ public class Enums {
 			break;
 		}
 		$export("switch", s);
-		switch (e2) {
+		switch ((EnumInSamePackage) e2) {
 		case V1:
 			break;
 		case V2:
@@ -57,7 +57,7 @@ public class Enums {
 		default:
 			throw new Error();
 		}
-		switch (e3) {
+		switch ((EnumInOtherPackage) e3) {
 		case V1:
 			break;
 		case V2:

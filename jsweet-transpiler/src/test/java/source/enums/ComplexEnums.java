@@ -15,7 +15,7 @@ public class ComplexEnums {
 		trace.push("" + (MyComplexEnum.RATIO_16_9 == MyComplexEnum.RATIO_16_9));
 		trace.push("" + (MyComplexEnum.RATIO_16_9.name() == MyComplexEnum.RATIO_16_9.name()));
 		trace.push("" + (MyComplexEnum.RATIO_16_9.ordinal() == MyComplexEnum.RATIO_16_9.ordinal()));
-		trace.push("" + (MyComplexEnum.RATIO_16_9 != MyComplexEnum.RATIO_3_2));
+		trace.push("" + (MyComplexEnum.RATIO_16_9 != (MyComplexEnum)MyComplexEnum.RATIO_3_2));
 		$export("trace", ">" + trace.join(","));
 	}
 }
