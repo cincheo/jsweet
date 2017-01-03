@@ -803,7 +803,8 @@ public class JSweetTranspiler implements JSweetOptions {
 			files[i].javaSourceDirRelativeFile = new File(javaSourceFileRelativeFullName);
 			files[i].javaSourceDir = new File(cu.getSourceFile().getName().substring(0,
 					cu.getSourceFile().getName().length() - javaSourceFileRelativeFullName.length()));
-			String packageName = isNoRootDirectories() ? Util.getRootRelativeJavaName(cu.packge)
+			String packageName = isNoRootDirectories()
+					? Util.getRootRelativeJavaName(cu.packge)
 					: cu.packge.getQualifiedName().toString();
 			String outputFileRelativePathNoExt = packageName.replace(".", File.separator) + File.separator + cuName;
 			String outputFileRelativePath = outputFileRelativePathNoExt

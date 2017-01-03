@@ -21,7 +21,6 @@ package org.jsweet.transpiler.typescript;
 import static org.jsweet.JSweetConfig.ANNOTATION_ERASED;
 import static org.jsweet.JSweetConfig.ANNOTATION_FUNCTIONAL_INTERFACE;
 import static org.jsweet.JSweetConfig.ANNOTATION_OBJECT_TYPE;
-import static org.jsweet.JSweetConfig.ANNOTATION_ROOT;
 import static org.jsweet.JSweetConfig.ANNOTATION_STRING_TYPE;
 import static org.jsweet.JSweetConfig.GLOBALS_CLASS_NAME;
 import static org.jsweet.JSweetConfig.GLOBALS_PACKAGE_NAME;
@@ -1170,7 +1169,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		}
 
 		if (fieldAccess.selected.type.tsym instanceof PackageSymbol) {
-			if (Util.hasAnnotationType(fieldAccess.selected.type.tsym, ANNOTATION_ROOT)) {
+			if (Util.isRootPackage(fieldAccess.selected.type.tsym)) {
 				if (fieldAccess.type != null && fieldAccess.type.tsym != null) {
 					getPrinter().printIdentifier(fieldAccess.type.tsym);
 				} else {

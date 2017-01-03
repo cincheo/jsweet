@@ -296,7 +296,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (parentPackage == null) {
 			return true;
 		}
-		if (Util.hasAnnotationType(parentPackage, JSweetConfig.ANNOTATION_ROOT)) {
+		if (Util.isRootPackage(parentPackage)) {
 			report(topLevel.getPackageName(), JSweetProblem.ENCLOSED_ROOT_PACKAGES,
 					rootPackage.getQualifiedName().toString(), parentPackage.getQualifiedName().toString());
 			return false;

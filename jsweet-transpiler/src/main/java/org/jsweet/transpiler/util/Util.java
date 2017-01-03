@@ -141,6 +141,17 @@ public class Util {
 		return method.getEnclosingElement().getQualifiedName() + "." + method.toString();
 	}
 
+	private static Pattern libPackagePattern = Pattern.compile(JSweetConfig.LIBS_PACKAGE + "\\.[^.]*");
+
+	/**
+	 * Returns true if the given symbol is a root package (annotated with @Root
+	 * or a definition package).
+	 */
+	public static boolean isRootPackage(Symbol symbol) {
+		return Util.hasAnnotationType(symbol, JSweetConfig.ANNOTATION_ROOT) || (symbol instanceof PackageSymbol
+				&& libPackagePattern.matcher(symbol.getQualifiedName().toString()).matches());
+	}
+
 	/**
 	 * Tells if the given symbol is annotated with one of the given annotation
 	 * type names.
@@ -547,7 +558,7 @@ public class Util {
 	}
 
 	private static void getRootRelativeName(Map<Symbol, String> nameMapping, StringBuilder sb, Symbol symbol) {
-		if (!Util.hasAnnotationType(symbol, JSweetConfig.ANNOTATION_ROOT)) {
+		if (!isRootPackage(symbol)) {
 			if (sb.length() > 0 && !"".equals(symbol.toString())) {
 				sb.insert(0, ".");
 			}
@@ -579,12 +590,12 @@ public class Util {
 	 * package.
 	 */
 	public static PackageSymbol getTopLevelPackage(Symbol symbol) {
-		if ((symbol instanceof PackageSymbol) && Util.hasAnnotationType(symbol, JSweetConfig.ANNOTATION_ROOT)) {
+		if ((symbol instanceof PackageSymbol) && Util.isRootPackage(symbol)) {
 			return null;
 		}
 		Symbol parent = (symbol instanceof PackageSymbol) ? ((PackageSymbol) symbol).owner
 				: symbol.getEnclosingElement();
-		if (parent != null && Util.hasAnnotationType(parent, JSweetConfig.ANNOTATION_ROOT)) {
+		if (parent != null && Util.isRootPackage(parent)) {
 			if (symbol instanceof PackageSymbol) {
 				return (PackageSymbol) symbol;
 			} else {
@@ -611,14 +622,14 @@ public class Util {
 		if (packageSymbol == null) {
 			return null;
 		}
-		if (Util.hasAnnotationType(packageSymbol, JSweetConfig.ANNOTATION_ROOT)) {
+		if (Util.isRootPackage(packageSymbol)) {
 			return packageSymbol;
 		}
 		return getFirstEnclosingRootPackage((PackageSymbol) packageSymbol.owner);
 	}
 
 	private static void getRootRelativeJavaName(StringBuilder sb, Symbol symbol) {
-		if (!Util.hasAnnotationType(symbol, JSweetConfig.ANNOTATION_ROOT)) {
+		if (!isRootPackage(symbol)) {
 			if (sb.length() > 0 && !"".equals(symbol.toString())) {
 				sb.insert(0, ".");
 			}
@@ -654,7 +665,8 @@ public class Util {
 	 *            <code>jsweet.lang.Name</code> annotations
 	 * @return
 	 */
-	public static String getRootRelativeName(Map<Symbol, String> nameMapping, Symbol symbol, boolean useJavaNames) {
+	public static String getRootRelativeName(Map<Symbol, String> nameMapping, Symbol symbol,
+			boolean useJavaNames) {
 		if (useJavaNames) {
 			return getRootRelativeJavaName(symbol);
 		} else {
