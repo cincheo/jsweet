@@ -20,6 +20,10 @@ import static jsweet.util.Globals.$export;
 
 import java.util.function.DoubleConsumer;
 
+class C10<T> {
+	
+}
+
 public class InnerClassNotStatic<T> {
 
 	public static void main(String[] args) {
@@ -43,10 +47,6 @@ public class InnerClassNotStatic<T> {
 
 	}
 
-}
-
-class C10<T> {
-	
 }
 
 class C11 extends C10<DoubleConsumer> {
