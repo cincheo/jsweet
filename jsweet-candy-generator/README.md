@@ -21,7 +21,7 @@ The ``init-project`` command generates a default Maven project with all the appr
 For example, the following command creates and publishes to Github a default (empty) candy project on Github for jquery-1.10.0-SNAPSHOT.
 
 ```bash
-$ java -jar target\candy-tool.jar init-project --artifactId=jquery --version=1.10.0-SNAPSHOT -o ../candies --createGitHubRepository=true --gitHubUser=lgrignon
+$ java -jar target/candy-tool.jar init-project --artifactId=jquery --version=1.10.0-SNAPSHOT -o ../candies --createGitHubRepository=true --gitHubUser=lgrignon
 ```
 
 The created project's directory is ``candy-jquery`` and is placed in the ``../candies`` directory, as specified with the ``-o`` option. If you specify the ``createGitHubRepository`` option, an empty Github repository with a default name and description will be created in the [jsweet-candies organization](https://github.com/jsweet-candies). Please contact us to get authorized.
