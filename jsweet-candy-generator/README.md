@@ -50,7 +50,7 @@ Note that you can specify multiple definition files in the ``tsFiles`` and ``tsD
 
 ### Push your candy to a remote Github repository
 
-Go to your candy's project (here ``candy-jquery``).
+Go to your candy's project directory (here ``candy-jquery``).
 
 ```bash
 $ git init 
@@ -59,6 +59,24 @@ $ git commit -m "Initial commit"
 $ git remote add origin https://github.com/jsweet-candies/candy-jquery.git
 $ git push origin master 
 ```
+
+### Compile/Package/Install/Deploy your candy
+
+Go to your candy's project directory.
+
+```bash
+$ mvn install 
+```
+
+Or, if you have the deployment authorization:
+
+```bash
+$ mvn deploy 
+```
+
+By default, candies will be deployed to [jsweet-candies](https://github.com/jsweet-candies), contact us if you want to share your candies with the community.
+
+*IMPORTANT: The candy generation tool is in "best effort" mode, which means that it will try to generate Java code out of the TypeScript definitions even when meeting unsupported cases. There are known limitations to the tool because TypeScript is a language that is evolving quite fast (especially, you should avoid complex module constructs in TypeScript definitions). If you hit errors while installing your candy, you must first open the project with your favorite IDE and fix the Java compilation errors manually. Please refer to the documentation and to existing candies to write valid definitions.*
 
 ## How to build
 
