@@ -1296,6 +1296,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 
 		boolean ambient = Util.hasAnnotationType(methodDecl.sym, JSweetConfig.ANNOTATION_AMBIENT);
+
+		if (inOverload && !inCoreWrongOverload && (ambient || isDefinitionScope)) {
+			// do not generate method stubs for definitions
+			return;
+		}
+
 		int jsniLine = -1;
 		String[] content = null;
 
@@ -1335,7 +1341,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (parent != null) {
 			VarSymbol v = Util.findFieldDeclaration(parent.sym, methodDecl.name);
 			if (v != null && context.getFieldNameMapping(v) == null) {
-				report(methodDecl, methodDecl.name, JSweetProblem.METHOD_CONFLICTS_FIELD, methodDecl.name, v.owner);
+				if (isDefinitionScope) {
+					return;
+				} else {
+					report(methodDecl, methodDecl.name, JSweetProblem.METHOD_CONFLICTS_FIELD, methodDecl.name, v.owner);
+				}
 			}
 		}
 		if (JSweetConfig.MAIN_FUNCTION_NAME.equals(methodDecl.name.toString())
@@ -1901,11 +1911,17 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				name = context.getFieldNameMapping(varDecl.sym);
 			}
 
+			boolean confictInDefinitionScope = false;
+
 			if (parent instanceof JCClassDecl) {
 				MethodSymbol m = Util.findMethodDeclarationInType(context.types, ((JCClassDecl) parent).sym, name,
 						null);
 				if (m != null) {
-					report(varDecl, varDecl.name, JSweetProblem.FIELD_CONFLICTS_METHOD, name, m.owner);
+					if (!isDefinitionScope) {
+						report(varDecl, varDecl.name, JSweetProblem.FIELD_CONFLICTS_METHOD, name, m.owner);
+					} else {
+						confictInDefinitionScope = true;
+					}
 				}
 				if (!getScope().interfaceScope && name.equals("constructor")) {
 					report(varDecl, varDecl.name, JSweetProblem.CONSTRUCTOR_MEMBER);
@@ -1986,7 +2002,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					}
 				}
 				if (!(inArgListTail && (parent instanceof JCForLoop))) {
-					print(VAR_DECL_KEYWORD + " ");
+					if (isDefinitionScope) {
+						print("var ");
+					} else {
+						print(VAR_DECL_KEYWORD + " ");
+					}
 				}
 			} else {
 				if (ambient) {
@@ -2006,20 +2026,24 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			if (!getScope().skipTypeAnnotations && !getScope().enumWrapperClassScope) {
 				if (typeChecker.checkType(varDecl, varDecl.name, varDecl.vartype)) {
 					print(" : ");
-					if (getScope().eraseVariableTypes) {
+					if (confictInDefinitionScope) {
 						print("any");
-						if (Util.isVarargs(varDecl)) {
-							print("[]");
-						}
 					} else {
-						AnnotationMirror annotation;
-						if ((annotation = Util.getAnnotation(varDecl.vartype.type.tsym,
-								ANNOTATION_STRING_TYPE)) != null) {
-							print("\"");
-							print(getFirstAnnotationValue(annotation, varDecl.vartype.type.tsym.name).toString());
-							print("\"");
+						if (getScope().eraseVariableTypes) {
+							print("any");
+							if (Util.isVarargs(varDecl)) {
+								print("[]");
+							}
 						} else {
-							getAdapter().substituteAndPrintType(varDecl.vartype);
+							AnnotationMirror annotation;
+							if ((annotation = Util.getAnnotation(varDecl.vartype.type.tsym,
+									ANNOTATION_STRING_TYPE)) != null) {
+								print("\"");
+								print(getFirstAnnotationValue(annotation, varDecl.vartype.type.tsym.name).toString());
+								print("\"");
+							} else {
+								getAdapter().substituteAndPrintType(varDecl.vartype);
+							}
 						}
 					}
 				}
@@ -2457,11 +2481,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					// force type arguments to any because they are inferred to
 					// {} by default
 					if (methSym != null && !methSym.getTypeParameters().isEmpty()) {
-						// invalid overload type parameters are erased
-						Overload overload = context.getOverload((ClassSymbol) methSym.getEnclosingElement(), methSym);
-						boolean inOverload = overload != null && overload.methods.size() > 1;
-						if (!(inOverload && context.isInvalidOverload(methSym))) {
-							printAnyTypeArguments(methSym.getTypeParameters().size());
+						ClassSymbol target = (ClassSymbol) methSym.getEnclosingElement();
+						if (!target.getQualifiedName().toString().startsWith(JSweetConfig.LIBS_PACKAGE + ".")) {
+							// invalid overload type parameters are erased
+							Overload overload = context.getOverload(target, methSym);
+							boolean inOverload = overload != null && overload.methods.size() > 1;
+							if (!(inOverload && overload.isValid)) {
+								printAnyTypeArguments(methSym.getTypeParameters().size());
+							}
 						}
 					}
 				}

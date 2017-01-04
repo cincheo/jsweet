@@ -58,6 +58,9 @@ public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {
 
 	@Override
 	public void visitTopLevel(JCCompilationUnit topLevel) {
+		if(topLevel.packge.getQualifiedName().toString().startsWith(JSweetConfig.LIBS_PACKAGE + ".")) {
+			return;
+		}
 		this.compilationUnit = topLevel;
 		super.visitTopLevel(topLevel);
 	}
