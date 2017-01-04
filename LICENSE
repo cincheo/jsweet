@@ -8,8 +8,12 @@ Check each sub-project individually.
 * JSweet documentation: CC-BY-SA
  
 DISCLAIMER: JSweet licensing is designed so that one can use JSweet to 
-program closed-source and commercial applications. Limitations of the GPL 
-only hold when using/modifying JSweet source code of the transpiler and of 
-the candy generator. If you want to embed the transpiler or the candy 
-generator in a non-open source commercial project, please contact Renaud 
-Pawlak for discussing a commercial license.
+program closed-source and commercial applications. JSweet Java to TypeScript 
+transpilers are under GPL and all the APIs are in Apache 2, which makes it 
+very clear that you can build commercial applications using JSweet (similarly 
+to when using GNU's GCC C/C++ compiler, which is also a GPL software).
+
+Constraints of the GPL only hold when using/modifying JSweet source code of 
+the transpiler and/or of the candy generator. If you want to embed the 
+transpiler or the candy generator in a non-open source commercial project, 
+please contact Renaud Pawlak for discussing a commercial license.

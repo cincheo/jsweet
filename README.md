@@ -94,17 +94,17 @@ For more details, go to the [language specifications](https://github.com/cincheo
 
 - Step 1: Install (or check that you have installed) [Git](https://git-scm.com/downloads), [Node.js](https://nodejs.org) and [Maven](https://maven.apache.org/) (commands `git`, `node`, `npm` and `mvn` should be in your path).
 - Step 2: Clone the [jsweet-quickstart](https://github.com/cincheo/jsweet-quickstart) project from Github:
-```
-> git clone https://github.com/cincheo/jsweet-quickstart.git
+```bash
+$ git clone https://github.com/cincheo/jsweet-quickstart.git
 ```
 - Step 3: Run the transpiler to generate the JavaScript code:
-```
-> cd jsweet-quickstart
-> mvn generate-sources
+```bash
+$ cd jsweet-quickstart
+$ mvn generate-sources
 ```
 - Step 4: Check out the result in your browser:
-```
-> firefox webapp/index.html
+```bash
+$ firefox webapp/index.html
 ```
 - Step 5: Edit the project and start programming:
 	- Checkout the examples to see various use cases 
@@ -130,11 +130,11 @@ More info at http://www.jsweet.org.
 
 This repository is organized in sub-projects. Each sub-project has its own build process.
 
-* [JSweet transpiler](https://github.com/cincheo/jsweet/tree/master/jsweet-transpiler)
-* [JSweet documentation](https://github.com/cincheo/jsweet/tree/master/doc)
-* [JSweet core candy](https://github.com/cincheo/jsweet/tree/master/jsweet-core)
-* [JDK runtime](https://github.com/cincheo/jsweet/tree/master/j4ts)
-* [JSweet candy generator](https://github.com/cincheo/jsweet/tree/master/jsweet-candy-generator)
+* [JSweet transpiler](https://github.com/cincheo/jsweet/tree/master/jsweet-transpiler): the Java to TypeScript/JavaScript compiler.
+* [JSweet core candy](https://github.com/cincheo/jsweet/tree/master/jsweet-core): the core APIs (JavaScript language, JavaScript DOM, and JSweet language utilities).
+* [JDK runtime](https://github.com/cincheo/jsweet/tree/master/j4ts): a fork from GWT's JRE emulation to implement main JDK APIs in JSweet/TypeScript/JavaScript.
+* [JSweet candy generator](https://github.com/cincheo/jsweet/tree/master/jsweet-candy-generator): a tool to generate Java APIs from TypeScript definition files, and package them as JSweet candies.
+* [JSweet documentation](https://github.com/cincheo/jsweet/tree/master/doc): JSweet documentation.
 
 Additionally, some tools for JSweet are available in external repositories.
 

@@ -8,8 +8,8 @@ It contains a Maven project for each JavaScript version (so far only ES5 version
 
 - a ``def.js`` package, which contains all the JavaScript language core APIs for the appropriate JavaScript version.
 - a ``def.dom`` package, which contains all the JavaScript language W3C DOM APIs for the appropriate JavaScript version.
-- a ``jsweet.lang`` package that contains the JSweet language extensions for Java (mainly annotations)
-- a ``jsweet.util`` package that contains some utilities (helpers)
+- a ``jsweet.lang`` package that contains the JSweet language extensions for Java (mainly annotations).
+- a ``jsweet.util`` package that contains some utilities (helpers).
 
 ## License
 
