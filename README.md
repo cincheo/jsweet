@@ -130,10 +130,10 @@ More info at http://www.jsweet.org.
 
 This repository is organized in sub-projects. Each sub-project has its own build process.
 
-* [JSweet transpiler](https://github.com/cincheo/jsweet/tree/master/jsweet-transpiler): the Java to TypeScript/JavaScript compiler.
-* [JSweet core candy](https://github.com/cincheo/jsweet/tree/master/jsweet-core): the core APIs (JavaScript language, JavaScript DOM, and JSweet language utilities).
+* [JSweet transpiler](https://github.com/cincheo/jsweet/tree/master/transpiler): the Java to TypeScript/JavaScript compiler.
+* [JSweet core candy](https://github.com/cincheo/jsweet/tree/master/core-lib): the core APIs (JavaScript language, JavaScript DOM, and JSweet language utilities).
 * [JDK runtime](https://github.com/cincheo/jsweet/tree/master/j4ts): a fork from GWT's JRE emulation to implement main JDK APIs in JSweet/TypeScript/JavaScript.
-* [JSweet candy generator](https://github.com/cincheo/jsweet/tree/master/jsweet-candy-generator): a tool to generate Java APIs from TypeScript definition files, and package them as JSweet candies.
+* [JSweet candy generator](https://github.com/cincheo/jsweet/tree/master/candy-generator): a tool to generate Java APIs from TypeScript definition files, and package them as JSweet candies.
 * [JSweet documentation](https://github.com/cincheo/jsweet/tree/master/doc): JSweet documentation.
 
 Additionally, some tools for JSweet are available in external repositories.
