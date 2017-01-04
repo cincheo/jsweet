@@ -3650,7 +3650,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				} else {
 					print(" != null && ");
 					print(exprStr, expr);
-					print(" instanceof ").print(getQualifiedTypeName(type.tsym, false));
+					String qualifiedName = getQualifiedTypeName(type.tsym, false);
+					if(qualifiedName.startsWith(JSweetConfig.LIBS_PACKAGE+".")) {
+						print(" instanceof ").print(qualifiedName);
+					} else {
+						print(" instanceof <any>").print(qualifiedName);
+					}
 				}
 			}
 		}
