@@ -1163,9 +1163,8 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 
 		if (getPrinter().getContext().hasAnnotationType(fieldAccess.sym, ANNOTATION_STRING_TYPE)) {
 			getPrinter().print("\"");
-			getPrinter().print(getPrinter().getContext()
-					.getAnnotationValue(fieldAccess.sym, ANNOTATION_STRING_TYPE, fieldAccess.name.toString())
-					.toString());
+			getPrinter().print(getPrinter().getContext().getAnnotationValue(fieldAccess.sym, ANNOTATION_STRING_TYPE,
+					fieldAccess.name.toString()));
 			getPrinter().print("\"");
 			return true;
 		}
@@ -1424,8 +1423,8 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 	public boolean substituteIdentifier(JCIdent identifier) {
 		if (getPrinter().getContext().hasAnnotationType(identifier.sym, ANNOTATION_STRING_TYPE)) {
 			getPrinter().print("\"");
-			getPrinter().print(getPrinter().getContext()
-					.getAnnotationValue(identifier.sym, ANNOTATION_STRING_TYPE, identifier.toString()).toString());
+			getPrinter().print(getPrinter().getContext().getAnnotationValue(identifier.sym, ANNOTATION_STRING_TYPE,
+					identifier.toString()));
 			getPrinter().print("\"");
 			return true;
 		}

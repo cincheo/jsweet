@@ -859,8 +859,7 @@ public class JSweetContext extends Context {
 	 * Gets the first value of the 'value' property for the given annotation
 	 * type if found on the given symbol.
 	 */
-	@SuppressWarnings("unchecked")
-	public <T> T getAnnotationValue(Symbol symbol, String annotationType, T defaultValue) {
+	public String getAnnotationValue(Symbol symbol, String annotationType, String defaultValue) {
 		if (options.getConfiguration() != null) {
 			String signature = symbol.toString();
 			if (symbol.getEnclosingElement() != null) {
@@ -885,17 +884,13 @@ public class JSweetContext extends Context {
 								if (filterDescriptor.parameter == null) {
 									return defaultValue;
 								} else if (filterDescriptor.parameter.startsWith("'")) {
-									return (T) filterDescriptor.parameter.substring(1,
+									return filterDescriptor.parameter.substring(1,
 											filterDescriptor.parameter.length() - 1);
 								} else if (filterDescriptor.parameter.endsWith(".class")) {
-									try {
-										return (T) Class.forName(filterDescriptor.parameter.substring(0,
-												filterDescriptor.parameter.length() - 6));
-									} catch (Exception e) {
-										throw new RuntimeException("invalid class name", e);
-									}
+									return filterDescriptor.parameter.substring(0,
+											filterDescriptor.parameter.length() - 6);
 								} else {
-									return (T) filterDescriptor.parameter;
+									return filterDescriptor.parameter;
 								}
 							}
 						}
@@ -905,9 +900,9 @@ public class JSweetContext extends Context {
 		}
 
 		AnnotationMirror anno = getAnnotation(symbol, annotationType);
-		T val = defaultValue;
+		String val = defaultValue;
 		if (anno != null) {
-			val = (T) getFirstAnnotationValue(anno, defaultValue);
+			val = "" + getFirstAnnotationValue(anno, defaultValue);
 		}
 		return val;
 	}
