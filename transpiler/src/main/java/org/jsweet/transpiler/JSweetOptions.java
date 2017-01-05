@@ -19,8 +19,14 @@
 package org.jsweet.transpiler;
 
 import java.io.File;
+import java.util.Map;
 
 public interface JSweetOptions {
+
+	/**
+	 * Returns the configuration from the configuration file.
+	 */
+	Map<String, Map<String, Object>> getConfiguration();
 
 	/**
 	 * Tells if the transpiler generates js.map files for Java debugging.

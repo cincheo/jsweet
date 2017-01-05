@@ -273,6 +273,11 @@ public abstract class JSweetConfig {
 	 */
 	public static final String FIELD_METHOD_CLASH_RESOLVER_PREFIX = "__";
 
+	/**
+	 * The configuration file name.
+	 */
+	public static final String CONFIGURATION_FILE_NAME = "jsweetconfig.json";
+	
 	static {
 		// note TS keywords are removed from that list
 		JAVA_KEYWORDS.add("abstract");

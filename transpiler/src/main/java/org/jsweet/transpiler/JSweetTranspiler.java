@@ -77,6 +77,7 @@ import com.google.debugging.sourcemap.SourceMapGeneratorFactory;
 import com.google.debugging.sourcemap.SourceMapGeneratorV3;
 import com.google.debugging.sourcemap.SourceMapping;
 import com.google.debugging.sourcemap.proto.Mapping.OriginalMapping;
+import com.google.gson.Gson;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.PackageSymbol;
@@ -221,6 +222,26 @@ public class JSweetTranspiler implements JSweetOptions {
 		this(new File(TMP_WORKING_DIR_NAME), tsOutputDir, jsOutputDir, extractedCandiesJavascriptDir, classPath);
 	}
 
+	private Map<String, Map<String, Object>> configuration;
+
+	private void readConfiguration() {
+		File confFile = new File(JSweetConfig.CONFIGURATION_FILE_NAME);
+		if (confFile.exists()) {
+			try {
+				logger.info("configuration file found");
+				@SuppressWarnings("unchecked")
+				Map<String, Map<String, Object>> fromJson = new Gson().fromJson(FileUtils.readFileToString(confFile),
+						Map.class);
+				configuration = fromJson;
+				System.out.println(configuration);
+			} catch (Exception e) {
+				logger.warn("error reading configuration file", e);
+			}
+		} else {
+			logger.info("no configuration file found");
+		}
+	}
+
 	/**
 	 * Creates a JSweet transpiler.
 	 * 
@@ -238,6 +259,7 @@ public class JSweetTranspiler implements JSweetOptions {
 	 */
 	public JSweetTranspiler(File workingDir, File tsOutputDir, File jsOutputDir, File extractedCandiesJavascriptDir,
 			String classPath) {
+		readConfiguration();
 		this.workingDir = workingDir.getAbsoluteFile();
 		this.extractedCandyJavascriptDir = extractedCandiesJavascriptDir;
 		try {
@@ -751,7 +773,6 @@ public class JSweetTranspiler implements JSweetOptions {
 			return;
 		}
 		context.sourceFiles = files;
-
 		new GlobalBeforeTranslationScanner(transpilationHandler, context).process(compilationUnits);
 
 		if (context.useModules) {
@@ -805,7 +826,7 @@ public class JSweetTranspiler implements JSweetOptions {
 			files[i].javaSourceDirRelativeFile = new File(javaSourceFileRelativeFullName);
 			files[i].javaSourceDir = new File(cu.getSourceFile().getName().substring(0,
 					cu.getSourceFile().getName().length() - javaSourceFileRelativeFullName.length()));
-			String packageName = isNoRootDirectories() ? Util.getRootRelativeJavaName(cu.packge)
+			String packageName = isNoRootDirectories() ? context.getRootRelativeJavaName(cu.packge)
 					: cu.packge.getQualifiedName().toString();
 			String outputFileRelativePathNoExt = packageName.replace(".", File.separator) + File.separator + cuName;
 			String outputFileRelativePath = outputFileRelativePathNoExt
@@ -980,7 +1001,7 @@ public class JSweetTranspiler implements JSweetOptions {
 						if (element instanceof PackageSymbol) {
 							out.print(" {");
 							out.println();
-							out.print("    export = " + Util.getActualName(element) + ";");
+							out.print("    export = " + context.getActualName(element) + ";");
 							out.println();
 							out.print("}");
 							exported = true;
@@ -1679,6 +1700,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		return ts2js(handler, tsCode, targetFileName);
 	}
 
+	@Override
 	public boolean isInterfaceTracking() {
 		return interfaceTracking;
 	}
@@ -1687,6 +1709,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		this.interfaceTracking = interfaceTracking;
 	}
 
+	@Override
 	public boolean isSupportGetClass() {
 		return supportGetClass;
 	}
@@ -1695,6 +1718,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		this.supportGetClass = supportGetClass;
 	}
 
+	@Override
 	public boolean isSupportSaticLazyInitialization() {
 		return supportSaticLazyInitialization;
 	}
@@ -1703,6 +1727,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		this.supportSaticLazyInitialization = supportSaticLazyInitialization;
 	}
 
+	@Override
 	public boolean isGenerateDefinitions() {
 		return generateDefinitions;
 	}
@@ -1711,12 +1736,18 @@ public class JSweetTranspiler implements JSweetOptions {
 		this.generateDefinitions = generateDefinitions;
 	}
 
+	@Override
 	public File getSourceRoot() {
 		return sourceRoot;
 	}
 
 	public void setSourceRoot(File sourceRoot) {
 		this.sourceRoot = sourceRoot;
+	}
+
+	@Override
+	public Map<String, Map<String, Object>> getConfiguration() {
+		return configuration;
 	}
 
 }

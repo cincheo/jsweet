@@ -38,7 +38,6 @@ import static org.jsweet.JSweetConfig.UTIL_CLASSNAME;
 import static org.jsweet.JSweetConfig.UTIL_PACKAGE;
 import static org.jsweet.JSweetConfig.isJDKPath;
 import static org.jsweet.JSweetConfig.isJSweetPath;
-import static org.jsweet.transpiler.util.Util.getFirstAnnotationValue;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -69,7 +68,6 @@ import java.util.function.LongToDoubleFunction;
 import java.util.function.LongToIntFunction;
 import java.util.function.LongUnaryOperator;
 
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
 
 import org.apache.commons.lang3.StringUtils;
@@ -220,11 +218,12 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			return null;
 		}
 		if (importDecl.qualid.type != null) {
-			if (Util.hasAnnotationType(importDecl.qualid.type.tsym, ANNOTATION_ERASED, ANNOTATION_OBJECT_TYPE)) {
+			if (getPrinter().getContext().hasAnnotationType(importDecl.qualid.type.tsym, ANNOTATION_ERASED,
+					ANNOTATION_OBJECT_TYPE)) {
 				return null;
 			}
-			if (importDecl.qualid.type.tsym.getKind() == ElementKind.ANNOTATION_TYPE
-					&& !Util.hasAnnotationType(importDecl.qualid.type.tsym, JSweetConfig.ANNOTATION_DECORATOR)) {
+			if (importDecl.qualid.type.tsym.getKind() == ElementKind.ANNOTATION_TYPE && !getPrinter().getContext()
+					.hasAnnotationType(importDecl.qualid.type.tsym, JSweetConfig.ANNOTATION_DECORATOR)) {
 				return null;
 			}
 		}
@@ -319,7 +318,8 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			// we omit call to super if class extends nothing or if parent is an
 			// interface
 			if (getPrinter().getParent(JCClassDecl.class).extending == null //
-					|| Util.isInterface(getPrinter().getParent(JCClassDecl.class).extending.type.tsym)) {
+					|| getPrinter().getContext()
+							.isInterface(getPrinter().getParent(JCClassDecl.class).extending.type.tsym)) {
 				return true;
 			}
 			// special case when subclassing a Java exception type
@@ -1012,8 +1012,9 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				case "getName":
 					if (getPrinter().getContext().options.isSupportGetClass()) {
 						printMacroName(targetMethodName);
-						getPrinter().print("(c => c[\"" + Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR
-								+ "\"]?c[\"" + Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR + "\"]:c[\"name\"])(");
+						getPrinter()
+								.print("(c => c[\"" + Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR + "\"]?c[\""
+										+ Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR + "\"]:c[\"name\"])(");
 						printTarget(fieldAccess.getExpression());
 						getPrinter().print(")");
 						return true;
@@ -1160,16 +1161,17 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			}
 		}
 
-		AnnotationMirror annotation;
-		if ((annotation = Util.getAnnotation(fieldAccess.sym, ANNOTATION_STRING_TYPE)) != null) {
+		if (getPrinter().getContext().hasAnnotationType(fieldAccess.sym, ANNOTATION_STRING_TYPE)) {
 			getPrinter().print("\"");
-			getPrinter().print(getFirstAnnotationValue(annotation, fieldAccess.name).toString());
+			getPrinter().print(getPrinter().getContext()
+					.getAnnotationValue(fieldAccess.sym, ANNOTATION_STRING_TYPE, fieldAccess.name.toString())
+					.toString());
 			getPrinter().print("\"");
 			return true;
 		}
 
 		if (fieldAccess.selected.type.tsym instanceof PackageSymbol) {
-			if (Util.isRootPackage(fieldAccess.selected.type.tsym)) {
+			if (getPrinter().getContext().isRootPackage(fieldAccess.selected.type.tsym)) {
 				if (fieldAccess.type != null && fieldAccess.type.tsym != null) {
 					getPrinter().printIdentifier(fieldAccess.type.tsym);
 				} else {
@@ -1266,10 +1268,10 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			}
 		}
 		if (!disableSubstitution) {
-			if (Util.hasAnnotationType(typeTree.type.tsym, ANNOTATION_ERASED)) {
+			if (getPrinter().getContext().hasAnnotationType(typeTree.type.tsym, ANNOTATION_ERASED)) {
 				return getPrinter().print("any");
 			}
-			if (Util.hasAnnotationType(typeTree.type.tsym, ANNOTATION_OBJECT_TYPE)) {
+			if (getPrinter().getContext().hasAnnotationType(typeTree.type.tsym, ANNOTATION_OBJECT_TYPE)) {
 				// TODO: in case of object types, we should replace with the org
 				// object type...
 				return getPrinter().print("any");
@@ -1420,10 +1422,10 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 
 	@Override
 	public boolean substituteIdentifier(JCIdent identifier) {
-		AnnotationMirror annotation;
-		if ((annotation = Util.getAnnotation(identifier.sym, ANNOTATION_STRING_TYPE)) != null) {
+		if (getPrinter().getContext().hasAnnotationType(identifier.sym, ANNOTATION_STRING_TYPE)) {
 			getPrinter().print("\"");
-			getPrinter().print(getFirstAnnotationValue(annotation, identifier).toString());
+			getPrinter().print(getPrinter().getContext()
+					.getAnnotationValue(identifier.sym, ANNOTATION_STRING_TYPE, identifier.toString()).toString());
 			getPrinter().print("\"");
 			return true;
 		}
@@ -1448,7 +1450,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 
 	@Override
 	public boolean needsTypeCast(JCTypeCast cast) {
-		if (Util.hasAnnotationType(cast.clazz.type.tsym, ANNOTATION_ERASED, ANNOTATION_OBJECT_TYPE,
+		if (getPrinter().getContext().hasAnnotationType(cast.clazz.type.tsym, ANNOTATION_ERASED, ANNOTATION_OBJECT_TYPE,
 				ANNOTATION_FUNCTIONAL_INTERFACE)) {
 			return false;
 		} else {
@@ -1458,7 +1460,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 
 	@Override
 	public String getIdentifier(Symbol symbol) {
-		return Util.getActualName(symbol);
+		return getPrinter().getContext().getActualName(symbol);
 	}
 
 	@Override
@@ -1507,7 +1509,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			return true;
 		} else {
 			if (expression instanceof JCLambda) {
-				if (assignedType.tsym.isInterface() && !Util.isFunctionalType(assignedType.tsym)) {
+				if (assignedType.tsym.isInterface() && !getPrinter().getContext().isFunctionalType(assignedType.tsym)) {
 					JCLambda lambda = (JCLambda) expression;
 					MethodSymbol method = (MethodSymbol) assignedType.tsym.getEnclosedElements().get(0);
 					getPrinter().print(
@@ -1521,7 +1523,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 						&& (assignedType.tsym.getQualifiedName().toString().startsWith("java.util.function")
 								|| assignedType.tsym.getQualifiedName().toString()
 										.startsWith(JSweetConfig.FUNCTION_CLASSES_PACKAGE)
-								|| Util.hasAnnotationType(assignedType.tsym,
+								|| getPrinter().getContext().hasAnnotationType(assignedType.tsym,
 										JSweetConfig.ANNOTATION_FUNCTIONAL_INTERFACE))) {
 					List<JCTree> defs = ((JCNewClass) expression).def.defs;
 					boolean printed = false;

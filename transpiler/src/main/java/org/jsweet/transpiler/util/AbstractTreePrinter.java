@@ -395,11 +395,11 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	}
 
 	public String getRootRelativeName(Symbol symbol) {
-		return Util.getRootRelativeName(context.useModules ? context.getImportedElements(compilationUnit.getSourceFile().getName()) : null, symbol);
+		return context.getRootRelativeName(context.useModules ? context.getImportedElements(compilationUnit.getSourceFile().getName()) : null, symbol);
 	}
 
 	public String getRootRelativeName(Symbol symbol, boolean useJavaNames) {
-		return Util.getRootRelativeName(context.useModules ? context.getImportedElements(compilationUnit.getSourceFile().getName()) : null, symbol,
+		return context.getRootRelativeName(context.useModules ? context.getImportedElements(compilationUnit.getSourceFile().getName()) : null, symbol,
 				useJavaNames);
 	}
 

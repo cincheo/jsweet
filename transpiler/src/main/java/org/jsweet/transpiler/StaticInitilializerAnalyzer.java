@@ -144,7 +144,7 @@ public class StaticInitilializerAnalyzer extends TreeScanner {
 				if (member instanceof JCVariableDecl) {
 					JCVariableDecl field = (JCVariableDecl) member;
 					if (field.getModifiers().getFlags().contains(Modifier.STATIC) && field.getInitializer() != null
-							&& !Util.hasAnnotationType(field.sym, JSweetConfig.ANNOTATION_STRING_TYPE,
+							&& !context.hasAnnotationType(field.sym, JSweetConfig.ANNOTATION_STRING_TYPE,
 									JSweetConfig.ANNOTATION_ERASED)) {
 						acceptReferences(field.getInitializer());
 					}

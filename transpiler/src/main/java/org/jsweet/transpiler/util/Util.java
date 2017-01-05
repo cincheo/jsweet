@@ -19,7 +19,6 @@
 package org.jsweet.transpiler.util;
 
 import static java.util.Arrays.asList;
-import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,23 +35,18 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.JSweetContext;
 
 import com.sun.source.tree.Tree.Kind;
-import com.sun.tools.javac.code.Attribute.Compound;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
@@ -65,8 +59,6 @@ import com.sun.tools.javac.code.Type.MethodType;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.file.JavacFileManager;
 import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.JCAnnotation;
-import com.sun.tools.javac.tree.JCTree.JCAssign;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCCase;
 import com.sun.tools.javac.tree.JCTree.JCCatch;
@@ -74,7 +66,6 @@ import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCEnhancedForLoop;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
-import com.sun.tools.javac.tree.JCTree.JCExpressionStatement;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCForLoop;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
@@ -83,7 +74,6 @@ import com.sun.tools.javac.tree.JCTree.JCLambda;
 import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
-import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.TreeScanner;
@@ -141,57 +131,6 @@ public class Util {
 		return method.getEnclosingElement().getQualifiedName() + "." + method.toString();
 	}
 
-	private static Pattern libPackagePattern = Pattern.compile(JSweetConfig.LIBS_PACKAGE + "\\.[^.]*");
-
-	/**
-	 * Returns true if the given symbol is a root package (annotated with @Root
-	 * or a definition package).
-	 */
-	public static boolean isRootPackage(Symbol symbol) {
-		return Util.hasAnnotationType(symbol, JSweetConfig.ANNOTATION_ROOT) || (symbol instanceof PackageSymbol
-				&& libPackagePattern.matcher(symbol.getQualifiedName().toString()).matches());
-	}
-
-	/**
-	 * Tells if the given symbol is annotated with one of the given annotation
-	 * type names.
-	 */
-	public static <T> boolean hasAnnotationType(Symbol symbol, String... annotationTypes) {
-		for (Compound a : symbol.getAnnotationMirrors()) {
-			for (String annotationType : annotationTypes) {
-				if (annotationType.equals(a.type.toString())) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
-	/**
-	 * Gets the symbol's annotation that correspond to the given annotation type
-	 * name if exists.
-	 */
-	public static AnnotationMirror getAnnotation(Symbol symbol, String annotationType) {
-		for (Compound a : symbol.getAnnotationMirrors()) {
-			if (annotationType.equals(a.type.toString())) {
-				return a;
-			}
-		}
-		return null;
-	}
-
-	/**
-	 * Gets the annotation tree that matches the given type name.
-	 */
-	public static JCAnnotation getAnnotation(List<JCAnnotation> annotations, String annotationType) {
-		for (JCAnnotation a : annotations) {
-			if (annotationType.equals(a.type.toString())) {
-				return a;
-			}
-		}
-		return null;
-	}
-
 	/**
 	 * Tells if the given type declaration contains some method declarations.
 	 */
@@ -213,13 +152,6 @@ public class Util {
 			}
 		}
 		return false;
-	}
-
-	/**
-	 * Tells if the given type is a Java interface.
-	 */
-	public static boolean isInterface(TypeSymbol typeSymbol) {
-		return (typeSymbol.type.isInterface() || Util.hasAnnotationType(typeSymbol, JSweetConfig.ANNOTATION_INTERFACE));
 	}
 
 	private static void putVar(Map<String, VarSymbol> vars, VarSymbol varSymbol) {
@@ -543,205 +475,11 @@ public class Util {
 	}
 
 	/**
-	 * Gets the actual name of a symbol from a JSweet convention, so including
-	 * potential <code>jsweet.lang.Name</code> annotation.
-	 */
-	public static String getActualName(Symbol symbol) {
-		String name = symbol.getSimpleName().toString();
-		if (Util.hasAnnotationType(symbol, JSweetConfig.ANNOTATION_NAME)) {
-			String originalName = Util.getAnnotationValue(symbol, JSweetConfig.ANNOTATION_NAME, null);
-			if (!isBlank(originalName)) {
-				name = originalName;
-			}
-		}
-		return name;
-	}
-
-	private static void getRootRelativeName(Map<Symbol, String> nameMapping, StringBuilder sb, Symbol symbol) {
-		if (!isRootPackage(symbol)) {
-			if (sb.length() > 0 && !"".equals(symbol.toString())) {
-				sb.insert(0, ".");
-			}
-
-			String name = symbol.getSimpleName().toString();
-
-			if (nameMapping != null && nameMapping.containsKey(symbol)) {
-				name = nameMapping.get(symbol);
-			} else {
-				if (Util.hasAnnotationType(symbol, JSweetConfig.ANNOTATION_NAME)) {
-					String originalName = Util.getAnnotationValue(symbol, JSweetConfig.ANNOTATION_NAME, null);
-					if (!isBlank(originalName)) {
-						name = originalName;
-					}
-				}
-			}
-			sb.insert(0, name);
-			symbol = (symbol instanceof PackageSymbol) ? ((PackageSymbol) symbol).owner : symbol.getEnclosingElement();
-			if (symbol != null) {
-				getRootRelativeName(nameMapping, sb, symbol);
-			}
-		}
-	}
-
-	/**
-	 * Gets the top-level package enclosing the given symbol. The top-level
-	 * package is the one that is enclosed within a root package (see
-	 * <code>jsweet.lang.Root</code>) or the one in the default (unnamed)
-	 * package.
-	 */
-	public static PackageSymbol getTopLevelPackage(Symbol symbol) {
-		if ((symbol instanceof PackageSymbol) && Util.isRootPackage(symbol)) {
-			return null;
-		}
-		Symbol parent = (symbol instanceof PackageSymbol) ? ((PackageSymbol) symbol).owner
-				: symbol.getEnclosingElement();
-		if (parent != null && Util.isRootPackage(parent)) {
-			if (symbol instanceof PackageSymbol) {
-				return (PackageSymbol) symbol;
-			} else {
-				return null;
-			}
-		} else {
-			if (parent == null || (parent instanceof PackageSymbol && StringUtils.isBlank(parent.getSimpleName()))) {
-				if (symbol instanceof PackageSymbol) {
-					return (PackageSymbol) symbol;
-				} else {
-					return null;
-				}
-			} else {
-				return getTopLevelPackage(parent);
-			}
-		}
-	}
-
-	/**
-	 * Finds the first (including itself) enclosing package annotated
-	 * with @Root.
-	 */
-	public static PackageSymbol getFirstEnclosingRootPackage(PackageSymbol packageSymbol) {
-		if (packageSymbol == null) {
-			return null;
-		}
-		if (Util.isRootPackage(packageSymbol)) {
-			return packageSymbol;
-		}
-		return getFirstEnclosingRootPackage((PackageSymbol) packageSymbol.owner);
-	}
-
-	private static void getRootRelativeJavaName(StringBuilder sb, Symbol symbol) {
-		if (!isRootPackage(symbol)) {
-			if (sb.length() > 0 && !"".equals(symbol.toString())) {
-				sb.insert(0, ".");
-			}
-
-			String name = symbol.getSimpleName().toString();
-
-			sb.insert(0, name);
-			symbol = (symbol instanceof PackageSymbol) ? ((PackageSymbol) symbol).owner : symbol.getEnclosingElement();
-			if (symbol != null) {
-				getRootRelativeJavaName(sb, symbol);
-			}
-		}
-	}
-
-	/**
 	 * Tells if this qualified name denotes a JSweet globals class.
 	 */
 	public static boolean isGlobalsClassName(String qualifiedName) {
 		return qualifiedName != null && (JSweetConfig.GLOBALS_CLASS_NAME.equals(qualifiedName)
 				|| qualifiedName.endsWith("." + JSweetConfig.GLOBALS_CLASS_NAME));
-	}
-
-	/**
-	 * Gets the qualified name of a symbol relatively to the root package
-	 * (potentially annotated with <code>jsweet.lang.Root</code>).
-	 * 
-	 * @param nameMapping
-	 *            a map to redirect names
-	 * @param symbol
-	 *            the symbol to get the name of
-	 * @param useJavaNames
-	 *            if true uses plain Java names, if false uses
-	 *            <code>jsweet.lang.Name</code> annotations
-	 * @return
-	 */
-	public static String getRootRelativeName(Map<Symbol, String> nameMapping, Symbol symbol,
-			boolean useJavaNames) {
-		if (useJavaNames) {
-			return getRootRelativeJavaName(symbol);
-		} else {
-			return getRootRelativeName(nameMapping, symbol);
-		}
-	}
-
-	/**
-	 * Gets the qualified name of a symbol relatively to the root package
-	 * (potentially annotated with <code>jsweet.lang.Root</code>). This function
-	 * takes into account potential <code>jsweet.lang.Name</code> annotations).
-	 */
-	public static String getRootRelativeName(Map<Symbol, String> nameMapping, Symbol symbol) {
-		StringBuilder sb = new StringBuilder();
-		getRootRelativeName(nameMapping, sb, symbol);
-		if (sb.length() > 0 && sb.charAt(0) == '.') {
-			sb.deleteCharAt(0);
-		}
-		return sb.toString();
-	}
-
-	/**
-	 * Gets the qualified name of a symbol relatively to the root package
-	 * (potentially annotated with <code>jsweet.lang.Root</code>). This function
-	 * ignores <code>jsweet.lang.Name</code> annotations).
-	 */
-	public static String getRootRelativeJavaName(Symbol symbol) {
-		StringBuilder sb = new StringBuilder();
-		getRootRelativeJavaName(sb, symbol);
-		return sb.toString();
-	}
-
-	/**
-	 * Gets the first value of the 'value' property.
-	 */
-	public static Object getFirstAnnotationValue(AnnotationMirror annotation, Object defaultValue) {
-		for (AnnotationValue value : annotation.getElementValues().values()) {
-			return value.getValue();
-		}
-		return defaultValue;
-	}
-
-	/**
-	 * Gets the value of the given annotation property.
-	 * 
-	 * @param annotation
-	 *            the annotation
-	 * @param propertyName
-	 *            the name of the annotation property to get the value of
-	 * @param defaultValue
-	 *            the value to return if not found
-	 */
-	@SuppressWarnings("unchecked")
-	public static <T> T getAnnotationValue(AnnotationMirror annotation, String propertyName, T defaultValue) {
-		for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> annoProperty : annotation
-				.getElementValues().entrySet()) {
-			if (annoProperty.getKey().getSimpleName().toString().equals(propertyName)) {
-				return (T) annoProperty.getValue().getValue();
-			}
-		}
-		return defaultValue;
-	}
-
-	/**
-	 * Gets the first value of the 'value' property for the given annotation
-	 * type if found on the given symbol.
-	 */
-	@SuppressWarnings("unchecked")
-	public static <T> T getAnnotationValue(Symbol symbol, String annotationType, T defaultValue) {
-		AnnotationMirror anno = getAnnotation(symbol, annotationType);
-		T val = defaultValue;
-		if (anno != null) {
-			val = (T) getFirstAnnotationValue(anno, defaultValue);
-		}
-		return val;
 	}
 
 	/**
@@ -1075,44 +813,6 @@ public class Util {
 	}
 
 	/**
-	 * Grabs the names of all the support interfaces in the class and interface
-	 * hierarchy.
-	 */
-	public static void grabSupportedInterfaceNames(Set<String> interfaces, TypeSymbol type) {
-		if (type == null) {
-			return;
-		}
-		if (Util.isInterface(type)) {
-			interfaces.add(type.getQualifiedName().toString());
-		}
-		if (type instanceof ClassSymbol) {
-			for (Type t : ((ClassSymbol) type).getInterfaces()) {
-				grabSupportedInterfaceNames(interfaces, t.tsym);
-			}
-			grabSupportedInterfaceNames(interfaces, ((ClassSymbol) type).getSuperclass().tsym);
-		}
-	}
-
-	public static void grabMethodsToBeImplemented(List<MethodSymbol> methods, TypeSymbol type) {
-		if (type == null) {
-			return;
-		}
-		if (Util.isInterface(type)) {
-			for (Symbol s : type.getEnclosedElements()) {
-				if (s instanceof MethodSymbol) {
-					methods.add((MethodSymbol) s);
-				}
-			}
-		}
-		if (type instanceof ClassSymbol) {
-			for (Type t : ((ClassSymbol) type).getInterfaces()) {
-				grabMethodsToBeImplemented(methods, t.tsym);
-			}
-			grabMethodsToBeImplemented(methods, ((ClassSymbol) type).getSuperclass().tsym);
-		}
-	}
-
-	/**
 	 * Looks up a class in the given class hierarchy and returns true if found.
 	 */
 	public static boolean isParent(ClassSymbol clazz, ClassSymbol toFind) {
@@ -1260,63 +960,6 @@ public class Util {
 	}
 
 	/**
-	 * Returns true if this new class expression defines an anonymous class.
-	 */
-	public static boolean isAnonymousClass(JCNewClass newClass) {
-		if (newClass.clazz != null && newClass.def != null) {
-			if (Util.hasAnnotationType(newClass.clazz.type.tsym, JSweetConfig.ANNOTATION_OBJECT_TYPE)
-					|| Util.hasAnnotationType(newClass.clazz.type.tsym, JSweetConfig.ANNOTATION_INTERFACE)) {
-				return false;
-			}
-			if (newClass.def.defs.size() > 2) {
-				// a map has a constructor (implicit) and an initializer
-				return true;
-			}
-			for (JCTree def : newClass.def.defs) {
-				if (def instanceof JCVariableDecl) {
-					// no variables in maps
-					return true;
-				}
-				if (def instanceof JCMethodDecl && !((JCMethodDecl) def).sym.isConstructor()) {
-					// no regular methods in maps
-					return true;
-				}
-				if (def instanceof JCBlock) {
-					for (JCStatement s : ((JCBlock) def).stats) {
-						if (!isAllowedStatementInMap(s)) {
-							return true;
-						}
-					}
-				}
-			}
-		}
-		return false;
-	}
-
-	private static boolean isAllowedStatementInMap(JCStatement statement) {
-		if (statement instanceof JCExpressionStatement) {
-			JCExpressionStatement exprStat = (JCExpressionStatement) statement;
-			if (exprStat.getExpression() instanceof JCAssign) {
-				return true;
-			}
-			if (exprStat.getExpression() instanceof JCMethodInvocation) {
-				JCMethodInvocation inv = (JCMethodInvocation) exprStat.getExpression();
-				String methodName;
-				if (inv.meth instanceof JCFieldAccess) {
-					methodName = ((JCFieldAccess) inv.meth).name.toString();
-				} else {
-					methodName = inv.meth.toString();
-				}
-				if (JSweetConfig.INDEXED_GET_FUCTION_NAME.equals(methodName)
-						|| JSweetConfig.INDEXED_SET_FUCTION_NAME.equals(methodName)) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
-	/**
 	 * Tells if that tree is the null literal.
 	 */
 	public static boolean isNullLiteral(JCTree tree) {
@@ -1351,69 +994,6 @@ public class Util {
 	}
 
 	/**
-	 * Returns the number of arguments declared by a function interface.
-	 */
-	public static int getFunctionalTypeParameterCount(Type type) {
-		String name = type.tsym.getSimpleName().toString();
-		String fullName = type.toString();
-		if (Runnable.class.getName().equals(fullName)) {
-			return 0;
-		} else if (type.toString().startsWith(JSweetConfig.FUNCTION_CLASSES_PACKAGE + ".")) {
-			if (name.equals("TriFunction")) {
-				return 3;
-			} else if (name.equals("TriConsumer")) {
-				return 3;
-			} else if (name.equals("Consumer")) {
-				return 1;
-			} else if (name.startsWith("Function") || name.startsWith("Consumer")) {
-				return Integer.parseInt(name.substring(8));
-			} else {
-				return -1;
-			}
-		} else if (type.toString().startsWith("java.util.function.")) {
-			if (name.endsWith("Consumer")) {
-				if (name.startsWith("Bi")) {
-					return 2;
-				} else {
-					return 1;
-				}
-			} else if (name.endsWith("Function")) {
-				if (name.startsWith("Bi")) {
-					return 2;
-				} else {
-					return 1;
-				}
-			} else if (name.endsWith("UnaryOperator")) {
-				return 1;
-			} else if (name.endsWith("BinaryOperator")) {
-				return 2;
-			} else if (name.endsWith("Supplier")) {
-				return 0;
-			} else if (name.endsWith("Predicate")) {
-				if (name.startsWith("Bi")) {
-					return 2;
-				} else {
-					return 1;
-				}
-			} else {
-				return -1;
-			}
-		} else {
-			if (hasAnnotationType(type.tsym, JSweetConfig.ANNOTATION_FUNCTIONAL_INTERFACE)) {
-				for (Element e : type.tsym.getEnclosedElements()) {
-					if (e instanceof MethodSymbol) {
-						return ((MethodSymbol) e).getParameters().size();
-					}
-				}
-				return -1;
-			} else {
-				return -1;
-			}
-		}
-
-	}
-
-	/**
 	 * Gets the symbol on an access if exists/possible, or return null.
 	 */
 	public static Symbol getSymbol(JCTree tree) {
@@ -1423,33 +1003,6 @@ public class Util {
 			return ((JCIdent) tree).sym;
 		}
 		return null;
-	}
-
-	/**
-	 * Returns true if the given type symbol corresponds to a functional type
-	 * (in the TypeScript way).
-	 */
-	public static boolean isFunctionalType(TypeSymbol type) {
-		String name = type.getQualifiedName().toString();
-		return name.startsWith("java.util.function.") //
-				|| name.equals(Runnable.class.getName()) //
-				|| (type.isInterface() && (hasAnnotationType(type, FunctionalInterface.class.getName())
-						|| hasAnonymousFunction(type)));
-	}
-
-	/**
-	 * Tells if the given type has a anonymous function (instances can be used
-	 * as lambdas).
-	 */
-	public static boolean hasAnonymousFunction(TypeSymbol type) {
-		for (Symbol s : type.getEnclosedElements()) {
-			if (s instanceof MethodSymbol) {
-				if (JSweetConfig.ANONYMOUS_FUNCTION_NAME.equals(s.getSimpleName().toString())) {
-					return true;
-				}
-			}
-		}
-		return false;
 	}
 
 }
