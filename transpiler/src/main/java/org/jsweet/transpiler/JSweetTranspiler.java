@@ -178,6 +178,8 @@ public class JSweetTranspiler implements JSweetOptions {
 	private boolean generateDefinitions = false;
 	private ArrayList<File> jsLibFiles = new ArrayList<>();
 	private File sourceRoot = null;
+	// TODO: merge with jdkAllowed??
+	private boolean useJavaApis = true;
 
 	@Override
 	public String toString() {
@@ -1750,4 +1752,13 @@ public class JSweetTranspiler implements JSweetOptions {
 		return configuration;
 	}
 
+	@Override
+	public boolean isUseJavaApis() {
+		return useJavaApis;
+	}
+
+	public void setUseJavaApis(boolean useJavaApis) {
+		this.useJavaApis = useJavaApis;
+	}
+	
 }

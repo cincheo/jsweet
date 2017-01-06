@@ -34,6 +34,22 @@ public interface JSweetOptions {
 	boolean isPreserveSourceLineNumbers();
 
 	/**
+	 * Tells the transpiler to expect an implementation of the Java APIs at
+	 * runtime.
+	 * 
+	 * <p>
+	 * When true, the transpiler will generate lists, maps and other Java
+	 * elements as is. It will rely on the J4TS runtime and assume a default
+	 * implementation at runtime.
+	 * 
+	 * <p>
+	 * When false, the transpiler will try to translate Java APIs to native
+	 * JavaScript APIs. It will report transpilation errors when a Java element
+	 * cannot be translated to a JavaScript element.
+	 */
+	boolean isUseJavaApis();
+
+	/**
 	 * Gets the source root for the source map files. Use this option if the
 	 * Java source is located in a different place at runtime.
 	 */

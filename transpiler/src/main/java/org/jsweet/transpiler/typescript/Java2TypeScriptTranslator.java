@@ -2944,7 +2944,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	}
 
-	private void printAnyTypeArguments(int count) {
+	public void printAnyTypeArguments(int count) {
 		print("<");
 		for (int i = 0; i < count; i++) {
 			print("any, ");
