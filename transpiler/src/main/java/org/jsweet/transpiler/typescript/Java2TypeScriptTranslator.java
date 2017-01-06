@@ -811,16 +811,25 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 
 			if (classdecl.implementing != null && !classdecl.implementing.isEmpty()) {
-				List<JCExpression> implementing = classdecl.implementing;
+				List<JCExpression> implementing = new ArrayList<>(classdecl.implementing);
+				
 				if (context.hasAnnotationType(classdecl.sym, JSweetConfig.ANNOTATION_SYNTACTIC_ITERABLE)) {
-					implementing = new ArrayList<>(classdecl.implementing);
-
 					for (JCExpression itf : classdecl.implementing) {
 						if (itf.type.tsym.getQualifiedName().toString().equals(Iterable.class.getName())) {
 							implementing.remove(itf);
 						}
 					}
 				}
+				// erase Java interfaces
+				for (JCExpression itf : classdecl.implementing) {
+					if (!context.options.isUseJavaApis()) {
+						if (itf.type.tsym.getQualifiedName().toString().startsWith("java.")
+								&& !Util.isSourceType((ClassSymbol) itf.type.tsym)) {
+							implementing.remove(itf);
+						}
+					}
+				}
+
 				if (!implementing.isEmpty()) {
 					if (!extendsInterface) {
 						if (getScope().interfaceScope) {
