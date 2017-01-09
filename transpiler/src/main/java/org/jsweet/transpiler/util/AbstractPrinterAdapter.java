@@ -338,5 +338,5 @@ public abstract class AbstractPrinterAdapter {
 	public boolean substituteAssignedExpression(Type assignedType, JCExpression expression) {
 		return false;
 	}
-
+	
 }

@@ -195,22 +195,22 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		typesMapping.put(LANG_PACKAGE_ALT + ".String", "string");
 		typesMapping.put(LANG_PACKAGE_ALT + ".Number", "number");
 
-		langTypesMapping.put("java.lang.Object", "Object");
-		langTypesMapping.put("java.lang.String", "String");
-		langTypesMapping.put("java.lang.Boolean", "Boolean");
-		langTypesMapping.put("java.lang.Number", "Number");
-		langTypesMapping.put("java.lang.Integer", "Number");
-		langTypesMapping.put("java.lang.Long", "Number");
-		langTypesMapping.put("java.lang.Short", "Number");
-		langTypesMapping.put("java.lang.Float", "Number");
-		langTypesMapping.put("java.lang.Double", "Number");
-		langTypesMapping.put("java.lang.Byte", "Number");
-		langTypesMapping.put("java.lang.Character", "String");
-		langTypesMapping.put("java.lang.Math", "Math");
-		langTypesMapping.put("java.lang.Exception", "Error");
-		langTypesMapping.put("java.lang.RuntimeException", "Error");
-		langTypesMapping.put("java.lang.Throwable", "Error");
-		langTypesMapping.put("java.lang.Error", "Error");
+		langTypesMapping.put(Object.class.getName(), "Object");
+		langTypesMapping.put(String.class.getName(), "String");
+		langTypesMapping.put(Boolean.class.getName(), "Boolean");
+		langTypesMapping.put(Number.class.getName(), "Number");
+		langTypesMapping.put(Integer.class.getName(), "Number");
+		langTypesMapping.put(Long.class.getName(), "Number");
+		langTypesMapping.put(Short.class.getName(), "Number");
+		langTypesMapping.put(Float.class.getName(), "Number");
+		langTypesMapping.put(Double.class.getName(), "Number");
+		langTypesMapping.put(Byte.class.getName(), "Number");
+		langTypesMapping.put(Character.class.getName(), "String");
+		langTypesMapping.put(Math.class.getName(), "Math");
+		langTypesMapping.put(Exception.class.getName(), "Error");
+		langTypesMapping.put(RuntimeException.class.getName(), "Error");
+		langTypesMapping.put(Throwable.class.getName(), "Error");
+		langTypesMapping.put(Error.class.getName(), "Error");
 		// langTypesMapping.put("java.util.Date", "Date");
 
 		for (String s : langTypesMapping.keySet()) {
@@ -233,6 +233,10 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			typesMapping.put(HashMap.class.getName(), "Map");
 			typesMapping.put(Hashtable.class.getName(), "Map");
 			typesMapping.put(Comparator.class.getName(), "any");
+			typesMapping.put(Exception.class.getName(), "Error");
+			typesMapping.put(RuntimeException.class.getName(), "Error");
+			typesMapping.put(Throwable.class.getName(), "Error");
+			typesMapping.put(Error.class.getName(), "Error");
 		}
 
 	}
@@ -1118,6 +1122,10 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 						printMacroName(targetMethodName);
 						getPrinter().print("(").print(fieldAccess.getExpression()).print(".length = 0)");
 						return true;
+					case "isEmpty":
+						printMacroName(targetMethodName);
+						getPrinter().print("(").print(fieldAccess.getExpression()).print(".length == 0)");
+						return true;
 					case "contains":
 						printMacroName(targetMethodName);
 						getPrinter().print("(").print(fieldAccess.getExpression()).print(".indexOf(")
@@ -1170,8 +1178,15 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 						return true;
 					case "sort":
 						printMacroName(targetMethodName);
-						getPrinter().print(invocation.args.head).print(".sort(").printArgList(invocation.args.tail)
-								.print(")");
+						if (invocation.args.length() > 2) {
+							getPrinter()
+									.print("((arr, start, end, f?) => ((arr1, arr2) => arr1.splice.apply(arr1, (<any[]>[start, arr2.length]).concat(arr2)))(")
+									.print(invocation.args.head).print(", ").print(invocation.args.head)
+									.print(".slice(start, end).sort(f)))(").printArgList(invocation.args).print(")");
+						} else {
+							getPrinter().print(invocation.args.head).print(".sort(").printArgList(invocation.args.tail)
+									.print(")");
+						}
 						return true;
 					}
 				}
@@ -1437,6 +1452,23 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			// }
 			// return true;
 			// }
+			if (fullType.startsWith("java.")) {
+				if (context.types.isSubtype(newClass.clazz.type, context.symtab.throwableType)) {
+					getPrinter().print("Object.defineProperty(");
+					getPrinter().print("new Error(");
+					if (newClass.args.size() > 0) {
+						if (String.class.getName().equals(newClass.args.head.type.toString())) {
+							getPrinter().print(newClass.args.head);
+						} else if (context.types.isSubtype(newClass.args.head.type, context.symtab.throwableType)) {
+							getPrinter().print(newClass.args.head).print(".message");
+						}
+					}
+					getPrinter().print(")");
+					getPrinter().print(", '" + Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR
+							+ "', { configurable: true, value: '").print(fullType).print("'").print(" })");
+					return true;
+				}
+			}
 		}
 
 		if (typesMapping.containsKey(fullType)) {
@@ -1618,6 +1650,12 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					}
 					return getPrinter();
 				}
+				if (!context.options.isUseJavaApis() && typeFullName.startsWith("java.")
+						&& context.types.isSubtype(typeTree.type, context.symtab.throwableType)) {
+					getPrinter().print("Error");
+					return getPrinter();
+				}
+
 			}
 		}
 		return super.substituteAndPrintType(typeTree, arrayComponent, inTypeParameters, completeRawTypes,
@@ -1672,6 +1710,8 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		String qualifiedName = super.getQualifiedTypeName(type, globals);
 		if (langTypesMapping.containsKey(type.getQualifiedName().toString())) {
 			qualifiedName = langTypesMapping.get(type.getQualifiedName().toString());
+		} else if (typesMapping.containsKey(type.getQualifiedName().toString())) {
+			qualifiedName = typesMapping.get(type.getQualifiedName().toString());
 		} else {
 			if (context.useModules) {
 				String[] namePath = qualifiedName.split("\\.");

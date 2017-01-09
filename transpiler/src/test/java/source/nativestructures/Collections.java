@@ -102,7 +102,7 @@ public class Collections implements Cloneable, Serializable {
 		}
 
 		trace.push("" + v.toArray()[1]);
-		
+
 		String[] a = Arrays.copyOf(l.toArray(new String[0]), 1);
 
 		trace.push("" + a.length);
@@ -114,10 +114,16 @@ public class Collections implements Cloneable, Serializable {
 			}
 		};
 
-		String[] newArray = (String[])v.toArray();
-		
+		String[] newArray = (String[]) v.toArray();
+
 		Arrays.sort(newArray, reverse);
-		
+
+		trace.push(newArray[0]);
+		trace.push(newArray[1]);
+		trace.push(newArray[2]);
+
+		Arrays.sort(newArray, 0, 2);
+
 		trace.push(newArray[0]);
 		trace.push(newArray[1]);
 		trace.push(newArray[2]);
@@ -125,9 +131,19 @@ public class Collections implements Cloneable, Serializable {
 		l = new Vector<>(5);
 
 		trace.push("" + l.size());
-		
+
+		trace.push("" + l.isEmpty());
+
+		trace.push("" + (l instanceof Vector));
+
 		int i = Integer.MIN_VALUE;
 		i = Integer.MAX_VALUE;
+
+		l.add("it");
+
+		for (String s : l) {
+			trace.push(s);
+		}
 		
 		$export("trace", trace.join(","));
 
@@ -136,11 +152,10 @@ public class Collections implements Cloneable, Serializable {
 }
 
 class TestClone {
-	
+
 	@Override
 	protected Object clone() throws CloneNotSupportedException {
 		return super.clone();
 	}
-	
-}
 
+}

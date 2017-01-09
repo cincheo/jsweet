@@ -142,6 +142,7 @@ public class JSweetCommandLineLauncher {
 				transpiler.setSupportSaticLazyInitialization(!jsapArgs.getBoolean("disableJavaAddons"));
 				transpiler.setGenerateDefinitions(!jsapArgs.getBoolean("ignoreDefinitions"));
 				transpiler.setDeclarationsOutputDir(dtsOutputDir);
+				transpiler.setUseJavaApis(!jsapArgs.getBoolean("removeJavaDependencies"));
 
 				transpiler.transpile(transpilationHandler, SourceFile.toSourceFiles(files));
 			} catch (NoClassDefFoundError error) {
@@ -254,7 +255,14 @@ public class JSweetCommandLineLauncher {
 		switchArg = new Switch("disableJavaAddons");
 		switchArg.setLongFlag("disableJavaAddons");
 		switchArg.setHelp(
-				"Tells the transpiler disable runtime addons (instanceof, overloading, class name access, static initialization [...] will not be fully supported).");
+				"Tells the transpiler to disable runtime addons (instanceof, overloading, class name access, static initialization [...] will not be fully supported).");
+		jsap.registerParameter(switchArg);
+
+		// Remove dependencies to Java APIs
+		switchArg = new Switch("removeJavaDependencies");
+		switchArg.setLongFlag("removeJavaDependencies");
+		switchArg.setHelp(
+				"Tells the transpiler to substitute uses of Java APIs with JavaScript APIs (for example, java.util.List will be translated to JavaScript arrays). This is best effort only. For better Java support, one should use a Java emulation runtime (J4TS).");
 		jsap.registerParameter(switchArg);
 
 		// Do not generate d.ts files that correspond to def.* packages
