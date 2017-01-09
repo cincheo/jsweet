@@ -41,9 +41,12 @@ import static org.jsweet.JSweetConfig.isJSweetPath;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -224,9 +227,12 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			typesMapping.put(ArrayList.class.getName(), "Array");
 			typesMapping.put(Collection.class.getName(), "Array");
 			typesMapping.put(Vector.class.getName(), "Array");
+			typesMapping.put(Enumeration.class.getName(), "any");
+			typesMapping.put(Iterator.class.getName(), "any");
 			typesMapping.put(Map.class.getName(), "Array");
 			typesMapping.put(HashMap.class.getName(), "Map");
 			typesMapping.put(Hashtable.class.getName(), "Map");
+			typesMapping.put(Comparator.class.getName(), "any");
 		}
 
 	}
@@ -1103,6 +1109,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 						getPrinter().print(fieldAccess.getExpression()).print(".length");
 						return true;
 					case "get":
+					case "elementAt":
 						printMacroName(targetMethodName);
 						getPrinter().print(fieldAccess.getExpression()).print("[").printArgList(invocation.args)
 								.print("]");
@@ -1115,6 +1122,22 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 						printMacroName(targetMethodName);
 						getPrinter().print("(").print(fieldAccess.getExpression()).print(".indexOf(")
 								.print(invocation.args.head).print(") >= 0)");
+						return true;
+					case "toArray":
+						printMacroName(targetMethodName);
+						getPrinter().print(fieldAccess.getExpression());
+						return true;
+					case "elements":
+						printMacroName(targetMethodName);
+						getPrinter()
+								.print("((a) => { var i = 0; return { nextElement: function() { return i<a.length?a[i++]:null; }, hasMoreElements: function() { return i<a.length; }}})(")
+								.print(fieldAccess.getExpression()).print(")");
+						return true;
+					case "iterator":
+						printMacroName(targetMethodName);
+						getPrinter()
+								.print("((a) => { var i = 0; return { next: function() { return i<a.length?a[i++]:null; }, hasNext: function() { return i<a.length; }}})(")
+								.print(fieldAccess.getExpression()).print(")");
 						return true;
 					}
 				}
@@ -1140,6 +1163,16 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 						printMacroName(targetMethodName);
 						getPrinter().printArgList(invocation.args).print(".slice(0)");
 						return true;
+					case "copyOf":
+						printMacroName(targetMethodName);
+						getPrinter().print(invocation.args.head).print(".slice(0,").print(invocation.args.tail.head)
+								.print(")");
+						return true;
+					case "sort":
+						printMacroName(targetMethodName);
+						getPrinter().print(invocation.args.head).print(".sort(").printArgList(invocation.args.tail)
+								.print(")");
+						return true;
 					}
 				}
 				break;
@@ -1162,18 +1195,27 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				} else {
 					switch (targetMethodName) {
 					case "equals":
+						printMacroName(targetMethodName);
 						getPrinter().print("(");
 						printTarget(fieldAccess.getExpression()).print(" === ").printArgList(invocation.args)
 								.print(")");
 						return true;
 					case "hashCode":
+						printMacroName(targetMethodName);
 						getPrinter().print("(<any>");
 						printTarget(fieldAccess.getExpression()).print(".toString())");
 						return true;
 					case "clone":
-						// clone is not supported unless the emul layer is
-						// available
-						delegateToEmulLayerStatic(targetClassName, targetMethodName, fieldAccess.getExpression());
+						printMacroName(targetMethodName);
+						if (context.options.isUseJavaApis()) {
+							delegateToEmulLayerStatic(targetClassName, targetMethodName, fieldAccess.getExpression());
+						} else {
+							// TODO: this is very slow (but at least it is
+							// compact and simple)...
+							getPrinter().print("JSON.parse(JSON.stringify(");
+							printTarget(fieldAccess.getExpression());
+							getPrinter().print("))");
+						}
 						return true;
 					}
 				}
@@ -1287,6 +1329,23 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		String accessedType = targetType.getQualifiedName().toString();
 		if (fieldAccess.sym.isStatic() && typesMapping.containsKey(accessedType)
 				&& accessedType.startsWith("java.lang.") && !"class".equals(fieldAccess.name.toString())) {
+
+			if (!context.options.isUseJavaApis()) {
+				switch (accessedType) {
+				case "java.lang.Float":
+				case "java.lang.Double":
+				case "java.lang.Integer":
+				case "java.lang.Byte":
+				case "java.lang.Long":
+				case "java.lang.Short":
+					switch (fieldAccess.name.toString()) {
+					case "MIN_VALUE":
+					case "MAX_VALUE":
+						getPrinter().print("Number." + fieldAccess.name.toString());
+						return true;
+					}
+				}
+			}
 			delegateToEmulLayer(accessedType, fieldAccess);
 			return true;
 		}
@@ -1552,7 +1611,12 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					return getPrinter().print("any");
 				}
 				if (typesMapping.containsKey(typeFullName)) {
-					return getPrinter().print(typesMapping.get(typeFullName));
+					getPrinter().print(typesMapping.get(typeFullName));
+					if (completeRawTypes && !typeTree.type.tsym.getTypeParameters().isEmpty()
+							&& !typesMapping.get(typeFullName).equals("any")) {
+						getPrinter().printAnyTypeArguments(typeTree.type.tsym.getTypeParameters().size());
+					}
+					return getPrinter();
 				}
 			}
 		}

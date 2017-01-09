@@ -154,7 +154,8 @@ public abstract class AbstractPrinterAdapter {
 	/**
 	 * Returns true if the candidate method matches the target method.
 	 */
-	public boolean matchesMethod(String targetClassName, String targetMethodName, String candidateClassName, String candidateMethodName) {
+	public boolean matchesMethod(String targetClassName, String targetMethodName, String candidateClassName,
+			String candidateMethodName) {
 		if (targetClassName != null) {
 			return (candidateClassName == null || targetClassName.equals(candidateClassName))
 					&& (candidateMethodName == null || targetMethodName.equals(candidateMethodName));
@@ -165,7 +166,8 @@ public abstract class AbstractPrinterAdapter {
 
 	public boolean matchesWithResultType(JCMethodInvocation invocation, Class<?> resultClass, String methodName) {
 		String[] select = invocation.getMethodSelect().toString().split("\\.");
-		if (methodName.equals(select[select.length - 1]) && resultClass.getName().equals(((MethodType) invocation.getMethodSelect().type).restype.toString())) {
+		if (methodName.equals(select[select.length - 1])
+				&& resultClass.getName().equals(((MethodType) invocation.getMethodSelect().type).restype.toString())) {
 			return true;
 		} else {
 			return false;
@@ -173,7 +175,8 @@ public abstract class AbstractPrinterAdapter {
 	}
 
 	public boolean matchesField(JCFieldAccess fieldAccess, Class<?> targetClass, String fieldName) {
-		return (fieldName.equals(fieldAccess.name.toString()) && targetClass.getName().equals(fieldAccess.selected.type.getModelType().toString()));
+		return (fieldName.equals(fieldAccess.name.toString())
+				&& targetClass.getName().equals(fieldAccess.selected.type.getModelType().toString()));
 	}
 
 	public JCFieldAccess matchesField(JCAssign assignment, Class<?> targetClass, String fieldName) {
@@ -216,12 +219,12 @@ public abstract class AbstractPrinterAdapter {
 		return substituteAndPrintType(typeTree, false, inTypeParameters, true, disableTypeSubstitution);
 	}
 
-	public AbstractTreePrinter substituteAndPrintType(JCTree typeTree, boolean arrayComponent, boolean inTypeParameters, boolean completeRawTypes,
-			boolean disableSubstitution) {
+	public AbstractTreePrinter substituteAndPrintType(JCTree typeTree, boolean arrayComponent, boolean inTypeParameters,
+			boolean completeRawTypes, boolean disableSubstitution) {
 		if (typeTree instanceof JCTypeApply) {
 			JCTypeApply typeApply = ((JCTypeApply) typeTree);
 			substituteAndPrintType(typeApply.clazz, arrayComponent, inTypeParameters, false, disableSubstitution);
-			if (!typeApply.arguments.isEmpty()) {
+			if (!typeApply.arguments.isEmpty() && !"any".equals(getPrinter().getLastPrintedString(3))) {
 				getPrinter().print("<");
 				for (JCExpression argument : typeApply.arguments) {
 					substituteAndPrintType(argument, arrayComponent, false, completeRawTypes, false).print(", ");
@@ -241,16 +244,19 @@ public abstract class AbstractPrinterAdapter {
 				getPrinter().print(name);
 				if (inTypeParameters) {
 					getPrinter().print(" extends ");
-					return substituteAndPrintType(wildcard.getBound(), arrayComponent, false, completeRawTypes, disableSubstitution);
+					return substituteAndPrintType(wildcard.getBound(), arrayComponent, false, completeRawTypes,
+							disableSubstitution);
 				} else {
 					return getPrinter();
 				}
 			}
 		} else {
 			if (typeTree instanceof JCArrayTypeTree) {
-				return substituteAndPrintType(((JCArrayTypeTree) typeTree).elemtype, true, inTypeParameters, completeRawTypes, disableSubstitution).print("[]");
+				return substituteAndPrintType(((JCArrayTypeTree) typeTree).elemtype, true, inTypeParameters,
+						completeRawTypes, disableSubstitution).print("[]");
 			}
-			if (completeRawTypes && typeTree.type.tsym.getTypeParameters() != null && !typeTree.type.tsym.getTypeParameters().isEmpty()) {
+			if (completeRawTypes && typeTree.type.tsym.getTypeParameters() != null
+					&& !typeTree.type.tsym.getTypeParameters().isEmpty()) {
 				// raw type case (Java warning)
 				getPrinter().print(typeTree);
 				getPrinter().print("<");

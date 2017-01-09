@@ -93,8 +93,8 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	 * @param fillSourceMap
 	 *            tells if printer fills the source map
 	 */
-	public AbstractTreePrinter(TranspilationHandler logHandler, JSweetContext context, JCCompilationUnit compilationUnit, AbstractPrinterAdapter adapter,
-			boolean fillSourceMap) {
+	public AbstractTreePrinter(TranspilationHandler logHandler, JSweetContext context,
+			JCCompilationUnit compilationUnit, AbstractPrinterAdapter adapter, boolean fillSourceMap) {
 		super(logHandler, context, compilationUnit);
 		this.typeChecker = new TypeChecker(this);
 		this.adapter = adapter;
@@ -151,9 +151,11 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 		JCTree tree = stack.peek();
 		if (compilationUnit != null && tree instanceof JCBlock) {
 			int endPos = tree.getEndPosition(diagnosticSource.getEndPosTable());
-			sourceMap.addEntry(new Position(endPos, //
-					compilationUnit.lineMap.getLineNumber(endPos), //
-					compilationUnit.lineMap.getColumnNumber(endPos)), new Position(getCurrentPosition(), currentLine, currentColumn));
+			sourceMap.addEntry(
+					new Position(endPos, //
+							compilationUnit.lineMap.getLineNumber(endPos), //
+							compilationUnit.lineMap.getColumnNumber(endPos)),
+					new Position(getCurrentPosition(), currentLine, currentColumn));
 		}
 		super.exit();
 		positionStack.pop();
@@ -171,6 +173,13 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	 */
 	public char getLastPrintedChar() {
 		return out.charAt(out.length() - 1);
+	}
+
+	/**
+	 * Gets the last printed string for the given length.
+	 */
+	public String getLastPrintedString(int length) {
+		return out.substring(out.length() - length);
 	}
 
 	/**
@@ -395,12 +404,15 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	}
 
 	public String getRootRelativeName(Symbol symbol) {
-		return context.getRootRelativeName(context.useModules ? context.getImportedElements(compilationUnit.getSourceFile().getName()) : null, symbol);
+		return context.getRootRelativeName(
+				context.useModules ? context.getImportedElements(compilationUnit.getSourceFile().getName()) : null,
+				symbol);
 	}
 
 	public String getRootRelativeName(Symbol symbol, boolean useJavaNames) {
-		return context.getRootRelativeName(context.useModules ? context.getImportedElements(compilationUnit.getSourceFile().getName()) : null, symbol,
-				useJavaNames);
+		return context.getRootRelativeName(
+				context.useModules ? context.getImportedElements(compilationUnit.getSourceFile().getName()) : null,
+				symbol, useJavaNames);
 	}
 
 	public int getIndent() {
