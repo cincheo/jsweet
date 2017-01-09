@@ -263,12 +263,12 @@ public final class DoubleHelper extends NumberHelper implements Comparable<Doubl
 		return String.valueOf(b);
 	}
 
-	public static DoubleHelper valueOf(double d) {
-		return new DoubleHelper(d);
+	public static Double valueOf(double d) {
+		return new Double(d);
 	}
 
-	public static DoubleHelper valueOf(String s) throws NumberFormatException {
-		return new DoubleHelper(s);
+	public static Double valueOf(String s) throws NumberFormatException {
+		return new Double(s);
 	}
 
 	public DoubleHelper(double value) {

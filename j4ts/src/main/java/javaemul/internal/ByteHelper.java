@@ -34,14 +34,14 @@ public final class ByteHelper extends NumberHelper implements Comparable<ByteHel
 	 */
 	private static class BoxedValues {
 		// Box all values according to JLS
-		private static ByteHelper[] boxedValues = new ByteHelper[256];
+		private static Byte[] boxedValues = new Byte[256];
 	}
 
 	public static int compare(byte x, byte y) {
 		return x - y;
 	}
 
-	public static ByteHelper decode(String s) throws NumberFormatException {
+	public static Byte decode(String s) throws NumberFormatException {
 		return ByteHelper.valueOf((byte) __decodeAndValidateInt(s, MIN_VALUE, MAX_VALUE));
 	}
 
@@ -66,21 +66,21 @@ public final class ByteHelper extends NumberHelper implements Comparable<ByteHel
 		return String.valueOf(b);
 	}
 
-	public static ByteHelper valueOf(byte b) {
+	public static Byte valueOf(byte b) {
 		int rebase = b + 128;
-		ByteHelper result = BoxedValues.boxedValues[rebase];
+		Byte result = BoxedValues.boxedValues[rebase];
 		if (result == null) {
-			result = BoxedValues.boxedValues[rebase] = new ByteHelper(b);
+			result = BoxedValues.boxedValues[rebase] = new Byte(b);
 		}
 		return result;
 	}
 
-	public static ByteHelper valueOf(String s) throws NumberFormatException {
+	public static Byte valueOf(String s) throws NumberFormatException {
 		return valueOf(s, 10);
 	}
 
-	public static ByteHelper valueOf(String s, int radix) throws NumberFormatException {
-		return ByteHelper.valueOf(ByteHelper.parseByte(s, radix));
+	public static Byte valueOf(String s, int radix) throws NumberFormatException {
+		return Byte.valueOf(ByteHelper.parseByte(s, radix));
 	}
 
 	private final transient byte value;

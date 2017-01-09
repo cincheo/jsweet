@@ -156,12 +156,12 @@ public final class FloatHelper extends NumberHelper implements Comparable<FloatH
 		return String.valueOf(b);
 	}
 
-	public static FloatHelper valueOf(float f) {
-		return new FloatHelper(f);
+	public static Float valueOf(float f) {
+		return new Float(f);
 	}
 
-	public static FloatHelper valueOf(String s) throws NumberFormatException {
-		return new FloatHelper(s);
+	public static Float valueOf(String s) throws NumberFormatException {
+		return new Float(s);
 	}
 
 	private final transient float value;

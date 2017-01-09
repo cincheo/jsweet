@@ -3,7 +3,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 var java;
 (function (java) {
     var beans;
@@ -27,8 +27,7 @@ var java;
         Beans["__class"] = "java.beans.Beans";
     })(beans = java.beans || (java.beans = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var io;
     (function (io) {
@@ -262,19 +261,18 @@ var java;
                 ;
                 return skipped;
             };
-            /**
-             * Size of the temporary buffer used when skipping bytes with {@link skip(long)}.
-             */
-            InputStream.MAX_SKIP_BUFFER_SIZE = 4096;
             return InputStream;
         }());
+        /**
+         * Size of the temporary buffer used when skipping bytes with {@link skip(long)}.
+         */
+        InputStream.MAX_SKIP_BUFFER_SIZE = 4096;
         io.InputStream = InputStream;
         InputStream["__class"] = "java.io.InputStream";
         InputStream["__interfaces"] = ["java.io.Closeable", "java.lang.AutoCloseable"];
     })(io = java.io || (java.io = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var io;
     (function (io) {
@@ -347,8 +345,7 @@ var java;
         IOUtils["__class"] = "java.io.IOUtils";
     })(io = java.io || (java.io = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var io;
     (function (io) {
@@ -469,8 +466,7 @@ var java;
         OutputStream["__interfaces"] = ["java.io.Closeable", "java.lang.AutoCloseable", "java.io.Flushable"];
     })(io = java.io || (java.io = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var io;
     (function (io) {
@@ -556,19 +552,18 @@ var java;
             Reader.prototype.reset = function () {
                 throw new java.io.IOException("reset() not supported");
             };
-            /**
-             * Maximum skip-buffer size
-             */
-            Reader.maxSkipBufferSize = 8192;
             return Reader;
         }());
+        /**
+         * Maximum skip-buffer size
+         */
+        Reader.maxSkipBufferSize = 8192;
         io.Reader = Reader;
         Reader["__class"] = "java.io.Reader";
         Reader["__interfaces"] = ["java.io.Closeable", "java.lang.AutoCloseable"];
     })(io = java.io || (java.io = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var io;
     (function (io) {
@@ -619,7 +614,7 @@ var java;
                     var __args = Array.prototype.slice.call(arguments);
                     return (function () {
                         {
-                            var cbuf = void 0;
+                            var cbuf;
                             if (len <= Writer.WRITE_BUFFER_SIZE) {
                                 if (_this.writeBuffer == null) {
                                     _this.writeBuffer = new Array(Writer.WRITE_BUFFER_SIZE);
@@ -680,16 +675,15 @@ var java;
                 this.write((c).charCodeAt(0));
                 return this;
             };
-            Writer.WRITE_BUFFER_SIZE = 1024;
             return Writer;
         }());
+        Writer.WRITE_BUFFER_SIZE = 1024;
         io.Writer = Writer;
         Writer["__class"] = "java.io.Writer";
         Writer["__interfaces"] = ["java.lang.Appendable", "java.io.Closeable", "java.lang.AutoCloseable", "java.io.Flushable"];
     })(io = java.io || (java.io = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var lang;
     (function (lang) {
@@ -835,8 +829,7 @@ var java;
         AbstractStringBuilder["__class"] = "java.lang.AbstractStringBuilder";
     })(lang = java.lang || (java.lang = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var lang;
     (function (lang) {
@@ -851,7 +844,7 @@ var java;
             var AnnotationFormatError = (function (_super) {
                 __extends(AnnotationFormatError, _super);
                 function AnnotationFormatError() {
-                    _super.call(this);
+                    return _super.call(this) || this;
                 }
                 return AnnotationFormatError;
             }(Error));
@@ -861,8 +854,7 @@ var java;
         })(annotation = lang.annotation || (lang.annotation = {}));
     })(lang = java.lang || (java.lang = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var lang;
     (function (lang) {
@@ -873,6 +865,7 @@ var java;
              * href="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/annotation/ElementType.html">[Sun
              * docs]</a>.
              */
+            var ElementType;
             (function (ElementType) {
                 ElementType[ElementType["ANNOTATION_TYPE"] = 0] = "ANNOTATION_TYPE";
                 ElementType[ElementType["CONSTRUCTOR"] = 1] = "CONSTRUCTOR";
@@ -882,13 +875,11 @@ var java;
                 ElementType[ElementType["PACKAGE"] = 5] = "PACKAGE";
                 ElementType[ElementType["PARAMETER"] = 6] = "PARAMETER";
                 ElementType[ElementType["TYPE"] = 7] = "TYPE";
-            })(annotation.ElementType || (annotation.ElementType = {}));
-            var ElementType = annotation.ElementType;
+            })(ElementType = annotation.ElementType || (annotation.ElementType = {}));
         })(annotation = lang.annotation || (lang.annotation = {}));
     })(lang = java.lang || (java.lang = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var lang;
     (function (lang) {
@@ -899,17 +890,16 @@ var java;
              * href="http://java.sun.com/j2se/1.5.0/docs/api/java/lang/annotation/RetentionPolicy.html">[Sun
              * docs]</a>.
              */
+            var RetentionPolicy;
             (function (RetentionPolicy) {
                 RetentionPolicy[RetentionPolicy["CLASS"] = 0] = "CLASS";
                 RetentionPolicy[RetentionPolicy["RUNTIME"] = 1] = "RUNTIME";
                 RetentionPolicy[RetentionPolicy["SOURCE"] = 2] = "SOURCE";
-            })(annotation.RetentionPolicy || (annotation.RetentionPolicy = {}));
-            var RetentionPolicy = annotation.RetentionPolicy;
+            })(RetentionPolicy = annotation.RetentionPolicy || (annotation.RetentionPolicy = {}));
         })(annotation = lang.annotation || (lang.annotation = {}));
     })(lang = java.lang || (java.lang = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var lang;
     (function (lang) {
@@ -919,23 +909,24 @@ var java;
         var AssertionError = (function (_super) {
             __extends(AssertionError, _super);
             function AssertionError(message, cause) {
+                var _this;
                 if (((typeof message === 'string') || message === null) && ((cause != null && cause instanceof Error) || cause === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, message);
-                    this.message = message;
+                    _this = _super.call(this, message) || this;
+                    _this.message = message;
                 }
                 else if (((typeof message === 'string') || message === null) && cause === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, message);
-                    this.message = message;
+                    _this = _super.call(this, message) || this;
+                    _this.message = message;
                 }
                 else if (((typeof message === 'boolean') || message === null) && cause === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
                     {
                         var __args_1 = Array.prototype.slice.call(arguments);
                         var message_1 = new String(__args_1[0]).toString();
-                        _super.call(this, /* valueOf */ new String(message_1).toString());
-                        this.message = new String(message_1).toString();
+                        _this = _super.call(this, /* valueOf */ new String(message_1).toString()) || this;
+                        _this.message = new String(message_1).toString();
                     }
                 }
                 else if (((typeof message === 'string') || message === null) && cause === undefined) {
@@ -943,8 +934,8 @@ var java;
                     {
                         var __args_2 = Array.prototype.slice.call(arguments);
                         var message_2 = new String(__args_2[0]).toString();
-                        _super.call(this, /* valueOf */ new String(message_2).toString());
-                        this.message = new String(message_2).toString();
+                        _this = _super.call(this, /* valueOf */ new String(message_2).toString()) || this;
+                        _this.message = new String(message_2).toString();
                     }
                 }
                 else if (((typeof message === 'number') || message === null) && cause === undefined) {
@@ -952,8 +943,8 @@ var java;
                     {
                         var __args_3 = Array.prototype.slice.call(arguments);
                         var message_3 = new String(__args_3[0]).toString();
-                        _super.call(this, /* valueOf */ new String(message_3).toString());
-                        this.message = new String(message_3).toString();
+                        _this = _super.call(this, /* valueOf */ new String(message_3).toString()) || this;
+                        _this.message = new String(message_3).toString();
                     }
                 }
                 else if (((typeof message === 'number') || message === null) && cause === undefined) {
@@ -961,8 +952,8 @@ var java;
                     {
                         var __args_4 = Array.prototype.slice.call(arguments);
                         var message_4 = new String(__args_4[0]).toString();
-                        _super.call(this, /* valueOf */ new String(message_4).toString());
-                        this.message = new String(message_4).toString();
+                        _this = _super.call(this, /* valueOf */ new String(message_4).toString()) || this;
+                        _this.message = new String(message_4).toString();
                     }
                 }
                 else if (((typeof message === 'number') || message === null) && cause === undefined) {
@@ -970,8 +961,8 @@ var java;
                     {
                         var __args_5 = Array.prototype.slice.call(arguments);
                         var message_5 = new String(__args_5[0]).toString();
-                        _super.call(this, /* valueOf */ new String(message_5).toString());
-                        this.message = new String(message_5).toString();
+                        _this = _super.call(this, /* valueOf */ new String(message_5).toString()) || this;
+                        _this.message = new String(message_5).toString();
                     }
                 }
                 else if (((typeof message === 'number') || message === null) && cause === undefined) {
@@ -979,21 +970,22 @@ var java;
                     {
                         var __args_6 = Array.prototype.slice.call(arguments);
                         var message_6 = new String(__args_6[0]).toString();
-                        _super.call(this, /* valueOf */ new String(message_6).toString());
-                        this.message = new String(message_6).toString();
+                        _this = _super.call(this, /* valueOf */ new String(message_6).toString()) || this;
+                        _this.message = new String(message_6).toString();
                     }
                 }
                 else if (((message != null) || message === null) && cause === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, /* valueOf */ new String(message).toString());
-                    this.message = new String(message).toString();
+                    _this = _super.call(this, /* valueOf */ new String(message).toString()) || this;
+                    _this.message = new String(message).toString();
                 }
                 else if (message === undefined && cause === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             return AssertionError;
         }(Error));
@@ -1002,8 +994,7 @@ var java;
         AssertionError["__interfaces"] = ["java.io.Serializable"];
     })(lang = java.lang || (java.lang = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var lang;
     (function (lang) {
@@ -1149,13 +1140,13 @@ var java;
                         clazz.typeName = "[" + componentType.typeId;
                     }
                     else if (!componentType.isArray()) {
-                        clazz.typeName = "[L" + (function (c) { return c["__class"] ? c["__class"] : c.name; })(componentType) + ";";
+                        clazz.typeName = "[L" + (function (c) { return c["__class"] ? c["__class"] : c["name"]; })(componentType) + ";";
                     }
                     else {
-                        clazz.typeName = "[" + (function (c) { return c["__class"] ? c["__class"] : c.name; })(componentType);
+                        clazz.typeName = "[" + (function (c) { return c["__class"] ? c["__class"] : c["name"]; })(componentType);
                     }
                     clazz.canonicalName = componentType.getCanonicalName() + "[]";
-                    clazz.simpleName = (function (c) { return c["__class"] ? c["__class"].substring(c["__class"].lastIndexOf('.') + 1) : c.name.substring(c.name.lastIndexOf('.') + 1); })(componentType) + "[]";
+                    clazz.simpleName = (function (c) { return c["__class"] ? c["__class"].substring(c["__class"].lastIndexOf('.') + 1) : c["name"].substring(c["name"].lastIndexOf('.') + 1); })(componentType) + "[]";
                     return;
                 }
                 var packageName = clazz.packageName;
@@ -1226,20 +1217,19 @@ var java;
             Class.prototype.getEnumSuperclass = function () {
                 return this.enumSuperclass;
             };
-            Class.PRIMITIVE = 1;
-            Class.INTERFACE = 2;
-            Class.ARRAY = 4;
-            Class.ENUM = 8;
-            Class.nextSequentialId = 1;
             return Class;
         }());
+        Class.PRIMITIVE = 1;
+        Class.INTERFACE = 2;
+        Class.ARRAY = 4;
+        Class.ENUM = 8;
+        Class.nextSequentialId = 1;
         lang.Class = Class;
         Class["__class"] = "java.lang.Class";
         Class["__interfaces"] = ["java.lang.reflect.Type"];
     })(lang = java.lang || (java.lang = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var lang;
     (function (lang) {
@@ -1325,8 +1315,7 @@ var java;
         Enum["__interfaces"] = ["java.lang.Comparable", "java.io.Serializable"];
     })(lang = java.lang || (java.lang = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var lang;
     (function (lang) {
@@ -1338,33 +1327,35 @@ var java;
         var Exception = (function (_super) {
             __extends(Exception, _super);
             function Exception(message, cause, enableSuppression, writableStackTrace) {
+                var _this;
                 if (((typeof message === 'string') || message === null) && ((cause != null && cause instanceof Error) || cause === null) && ((typeof enableSuppression === 'boolean') || enableSuppression === null) && ((typeof writableStackTrace === 'boolean') || writableStackTrace === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, message);
-                    this.message = message;
+                    _this = _super.call(this, message) || this;
+                    _this.message = message;
                 }
                 else if (((typeof message === 'string') || message === null) && ((cause != null && cause instanceof Error) || cause === null) && enableSuppression === undefined && writableStackTrace === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, message);
-                    this.message = message;
+                    _this = _super.call(this, message) || this;
+                    _this.message = message;
                 }
                 else if (((typeof message === 'string') || message === null) && cause === undefined && enableSuppression === undefined && writableStackTrace === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, message);
-                    this.message = message;
+                    _this = _super.call(this, message) || this;
+                    _this.message = message;
                 }
                 else if (((message != null && message instanceof Error) || message === null) && cause === undefined && enableSuppression === undefined && writableStackTrace === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
                     var cause_1 = __args[0];
-                    _super.call(this, cause_1);
-                    this.message = cause_1;
+                    _this = _super.call(this, cause_1) || this;
+                    _this.message = cause_1;
                 }
                 else if (message === undefined && cause === undefined && enableSuppression === undefined && writableStackTrace === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             return Exception;
         }(Error));
@@ -1373,8 +1364,7 @@ var java;
         Exception["__interfaces"] = ["java.io.Serializable"];
     })(lang = java.lang || (java.lang = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var lang;
     (function (lang) {
@@ -1402,8 +1392,7 @@ var java;
         })(ref = lang.ref || (lang.ref = {}));
     })(lang = java.lang || (java.lang = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var lang;
     (function (lang) {
@@ -1464,8 +1453,7 @@ var java;
         StackTraceElement["__interfaces"] = ["java.io.Serializable"];
     })(lang = java.lang || (java.lang = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var lang;
     (function (lang) {
@@ -1494,39 +1482,40 @@ var java;
              * @since  1.8
              */
             function VirtualMachineError(message, cause) {
+                var _this;
                 if (((typeof message === 'string') || message === null) && ((cause != null && cause instanceof Error) || cause === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, message);
-                    this.message = message;
+                    _this = _super.call(this, message) || this;
+                    _this.message = message;
                 }
                 else if (((typeof message === 'string') || message === null) && cause === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, message);
-                    this.message = message;
+                    _this = _super.call(this, message) || this;
+                    _this.message = message;
                 }
                 else if (((message != null && message instanceof Error) || message === null) && cause === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
                     var cause_2 = __args[0];
-                    _super.call(this, cause_2);
-                    this.message = cause_2;
+                    _this = _super.call(this, cause_2) || this;
+                    _this.message = cause_2;
                 }
                 else if (message === undefined && cause === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
-            VirtualMachineError.serialVersionUID = 4161983926571568670;
             return VirtualMachineError;
         }(Error));
+        VirtualMachineError.serialVersionUID = 4161983926571568670;
         lang.VirtualMachineError = VirtualMachineError;
         VirtualMachineError["__class"] = "java.lang.VirtualMachineError";
         VirtualMachineError["__interfaces"] = ["java.io.Serializable"];
     })(lang = java.lang || (java.lang = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var lang;
     (function (lang) {
@@ -1545,8 +1534,7 @@ var java;
         Void["__class"] = "java.lang.Void";
     })(lang = java.lang || (java.lang = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var nio;
     (function (nio) {
@@ -1626,7 +1614,6 @@ var java;
             charset.Charset = Charset;
             Charset["__class"] = "java.nio.charset.Charset";
             Charset["__interfaces"] = ["java.lang.Comparable"];
-            var Charset;
             (function (Charset) {
                 var AvailableCharsets = (function () {
                     function AvailableCharsets() {
@@ -1639,8 +1626,7 @@ var java;
         })(charset = nio.charset || (nio.charset = {}));
     })(nio = java.nio || (java.nio = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var security;
     (function (security) {
@@ -1695,8 +1681,7 @@ var java;
         MessageDigestSpi["__class"] = "java.security.MessageDigestSpi";
     })(security = java.security || (java.security = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -1863,8 +1848,7 @@ var java;
         AbstractCollection["__interfaces"] = ["java.util.Collection", "java.lang.Iterable"];
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -1898,8 +1882,7 @@ var java;
         AbstractMapEntry["__interfaces"] = ["java.util.Map.Entry"];
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -2108,8 +2091,7 @@ var java;
         BitSet["__interfaces"] = ["java.lang.Cloneable", "java.io.Serializable"];
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -2135,7 +2117,6 @@ var java;
         }());
         util.Comparators = Comparators;
         Comparators["__class"] = "java.util.Comparators";
-        var Comparators;
         (function (Comparators) {
             var NaturalComparator = (function () {
                 function NaturalComparator() {
@@ -2153,8 +2134,7 @@ var java;
         })(Comparators = util.Comparators || (util.Comparators = {}));
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -2410,7 +2390,6 @@ var java;
         util.Date = Date;
         Date["__class"] = "java.util.Date";
         Date["__interfaces"] = ["java.lang.Cloneable", "java.lang.Comparable", "java.io.Serializable"];
-        var Date;
         (function (Date) {
             /**
              * Encapsulates static data to avoid Date itself having a static
@@ -2432,8 +2411,7 @@ var java;
         })(Date = util.Date || (util.Date = {}));
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -2451,8 +2429,7 @@ var java;
         EventListenerProxy["__interfaces"] = ["java.util.EventListener"];
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -2472,8 +2449,7 @@ var java;
         EventObject["__class"] = "java.util.EventObject";
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -2527,7 +2503,7 @@ var java;
                     if (this.host._equals(key, entry.getKey())) {
                         if (chain.length === 1) {
                             javaemul.internal.ArrayHelper.setLength(chain, 0);
-                            this.backingMap.delete(hashCode);
+                            this.backingMap["delete"](hashCode);
                         }
                         else {
                             javaemul.internal.ArrayHelper.removeFrom(chain, i, 1);
@@ -2581,7 +2557,6 @@ var java;
         util.InternalHashCodeMap = InternalHashCodeMap;
         InternalHashCodeMap["__class"] = "java.util.InternalHashCodeMap";
         InternalHashCodeMap["__interfaces"] = ["java.lang.Iterable"];
-        var InternalHashCodeMap;
         (function (InternalHashCodeMap) {
             var InternalHashCodeMap$0 = (function () {
                 function InternalHashCodeMap$0(__parent) {
@@ -2626,8 +2601,7 @@ var java;
         })(InternalHashCodeMap = util.InternalHashCodeMap || (util.InternalHashCodeMap = {}));
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -2665,14 +2639,14 @@ var java;
                     throw new Error('invalid overload');
             };
             InternalJsMap.prototype.delete$int = function (key) {
-                InternalJsMap.JsHelper.delete(this, key);
+                InternalJsMap.JsHelper["delete"](this, key);
             };
-            InternalJsMap.prototype.delete = function (key) {
+            InternalJsMap.prototype["delete"] = function (key) {
                 var _this = this;
                 if (((typeof key === 'string') || key === null)) {
                     var __args = Array.prototype.slice.call(arguments);
                     return (function () {
-                        InternalJsMap.JsHelper.delete(_this, key);
+                        InternalJsMap.JsHelper["delete"](_this, key);
                     })();
                 }
                 else if (((typeof key === 'number') || key === null)) {
@@ -2688,7 +2662,6 @@ var java;
         }());
         util.InternalJsMap = InternalJsMap;
         InternalJsMap["__class"] = "java.util.InternalJsMap";
-        var InternalJsMap;
         (function (InternalJsMap) {
             var Iterator = (function () {
                 function Iterator() {
@@ -2714,7 +2687,7 @@ var java;
                 JsHelper.delete$java_util_InternalJsMap$int = function (obj, key) {
                     obj["delete"](key);
                 };
-                JsHelper.delete = function (obj, key) {
+                JsHelper["delete"] = function (obj, key) {
                     if (((obj != null && obj instanceof java.util.InternalJsMap) || obj === null) && ((typeof key === 'string') || key === null)) {
                         var __args = Array.prototype.slice.call(arguments);
                         return (function () {
@@ -2734,8 +2707,7 @@ var java;
         })(InternalJsMap = util.InternalJsMap || (util.InternalJsMap = {}));
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -2760,8 +2732,7 @@ var java;
         InternalJsMapFactory["__class"] = "java.util.InternalJsMapFactory";
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -2798,12 +2769,11 @@ var java;
         }());
         util.Locale = Locale;
         Locale["__class"] = "java.util.Locale";
-        var Locale;
         (function (Locale) {
             var RootLocale = (function (_super) {
                 __extends(RootLocale, _super);
                 function RootLocale() {
-                    _super.apply(this, arguments);
+                    return _super.apply(this, arguments) || this;
                 }
                 RootLocale.prototype.toString = function () {
                     return "";
@@ -2815,7 +2785,7 @@ var java;
             var EnglishLocale = (function (_super) {
                 __extends(EnglishLocale, _super);
                 function EnglishLocale() {
-                    _super.apply(this, arguments);
+                    return _super.apply(this, arguments) || this;
                 }
                 EnglishLocale.prototype.toString = function () {
                     return "en";
@@ -2827,7 +2797,7 @@ var java;
             var USLocale = (function (_super) {
                 __extends(USLocale, _super);
                 function USLocale() {
-                    _super.apply(this, arguments);
+                    return _super.apply(this, arguments) || this;
                 }
                 USLocale.prototype.toString = function () {
                     return "en_US";
@@ -2839,7 +2809,7 @@ var java;
             var DefaultLocale = (function (_super) {
                 __extends(DefaultLocale, _super);
                 function DefaultLocale() {
-                    _super.apply(this, arguments);
+                    return _super.apply(this, arguments) || this;
                 }
                 DefaultLocale.prototype.toString = function () {
                     return "unknown";
@@ -2851,8 +2821,7 @@ var java;
         })(Locale = util.Locale || (util.Locale = {}));
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -2876,8 +2845,7 @@ var java;
         })(logging = util.logging || (util.logging = {}));
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -2916,8 +2884,7 @@ var java;
         })(logging = util.logging || (util.logging = {}));
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -3002,12 +2969,11 @@ var java;
             logging.Level = Level;
             Level["__class"] = "java.util.logging.Level";
             Level["__interfaces"] = ["java.io.Serializable"];
-            var Level;
             (function (Level) {
                 var LevelAll = (function (_super) {
                     __extends(LevelAll, _super);
                     function LevelAll() {
-                        _super.call(this);
+                        return _super.call(this) || this;
                     }
                     LevelAll.prototype.getName = function () {
                         return "ALL";
@@ -3023,7 +2989,7 @@ var java;
                 var LevelConfig = (function (_super) {
                     __extends(LevelConfig, _super);
                     function LevelConfig() {
-                        _super.call(this);
+                        return _super.call(this) || this;
                     }
                     LevelConfig.prototype.getName = function () {
                         return "CONFIG";
@@ -3039,7 +3005,7 @@ var java;
                 var LevelFine = (function (_super) {
                     __extends(LevelFine, _super);
                     function LevelFine() {
-                        _super.call(this);
+                        return _super.call(this) || this;
                     }
                     LevelFine.prototype.getName = function () {
                         return "FINE";
@@ -3055,7 +3021,7 @@ var java;
                 var LevelFiner = (function (_super) {
                     __extends(LevelFiner, _super);
                     function LevelFiner() {
-                        _super.call(this);
+                        return _super.call(this) || this;
                     }
                     LevelFiner.prototype.getName = function () {
                         return "FINER";
@@ -3071,7 +3037,7 @@ var java;
                 var LevelFinest = (function (_super) {
                     __extends(LevelFinest, _super);
                     function LevelFinest() {
-                        _super.call(this);
+                        return _super.call(this) || this;
                     }
                     LevelFinest.prototype.getName = function () {
                         return "FINEST";
@@ -3087,7 +3053,7 @@ var java;
                 var LevelInfo = (function (_super) {
                     __extends(LevelInfo, _super);
                     function LevelInfo() {
-                        _super.call(this);
+                        return _super.call(this) || this;
                     }
                     LevelInfo.prototype.getName = function () {
                         return "INFO";
@@ -3103,7 +3069,7 @@ var java;
                 var LevelOff = (function (_super) {
                     __extends(LevelOff, _super);
                     function LevelOff() {
-                        _super.call(this);
+                        return _super.call(this) || this;
                     }
                     LevelOff.prototype.getName = function () {
                         return "OFF";
@@ -3119,7 +3085,7 @@ var java;
                 var LevelSevere = (function (_super) {
                     __extends(LevelSevere, _super);
                     function LevelSevere() {
-                        _super.call(this);
+                        return _super.call(this) || this;
                     }
                     LevelSevere.prototype.getName = function () {
                         return "SEVERE";
@@ -3135,7 +3101,7 @@ var java;
                 var LevelWarning = (function (_super) {
                     __extends(LevelWarning, _super);
                     function LevelWarning() {
-                        _super.call(this);
+                        return _super.call(this) || this;
                     }
                     LevelWarning.prototype.getName = function () {
                         return "WARNING";
@@ -3152,8 +3118,7 @@ var java;
         })(logging = util.logging || (util.logging = {}));
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -3233,8 +3198,7 @@ var java;
         })(logging = util.logging || (util.logging = {}));
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -3308,8 +3272,7 @@ var java;
         })(logging = util.logging || (util.logging = {}));
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -3377,7 +3340,7 @@ var java;
             Objects.hash = function () {
                 var values = [];
                 for (var _i = 0; _i < arguments.length; _i++) {
-                    values[_i - 0] = arguments[_i];
+                    values[_i] = arguments[_i];
                 }
                 return java.util.Arrays.hashCode(values);
             };
@@ -3440,8 +3403,7 @@ var java;
         Objects["__class"] = "java.util.Objects";
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -3561,8 +3523,7 @@ var java;
         Observable["__class"] = "java.util.Observable";
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -3669,8 +3630,7 @@ var java;
         Optional["__class"] = "java.util.Optional";
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -3757,8 +3717,7 @@ var java;
         OptionalDouble["__class"] = "java.util.OptionalDouble";
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -3845,8 +3804,7 @@ var java;
         OptionalInt["__class"] = "java.util.OptionalInt";
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -3933,8 +3891,7 @@ var java;
         OptionalLong["__class"] = "java.util.OptionalLong";
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -4219,29 +4176,28 @@ var java;
                 else
                     throw new Error('invalid overload');
             };
-            Random.__static_initialized = false;
-            Random.multiplierHi = 1502;
-            Random.multiplierLo = 15525485;
-            Random.twoToThe24 = 1.6777216E7;
-            Random.twoToThe31 = 2.147483648E9;
-            Random.twoToThe32 = 4.294967296E9;
-            Random.twoToTheMinus24 = 5.9604644775390625E-8;
-            Random.twoToTheMinus26 = 1.4901161193847656E-8;
-            Random.twoToTheMinus31 = 4.6566128730773926E-10;
-            Random.twoToTheMinus53 = 1.1102230246251565E-16;
-            /**
-             * A value used to avoid two random number generators produced at the same
-             * time having the same seed.
-             */
-            Random.uniqueSeed = 0;
             return Random;
         }());
+        Random.__static_initialized = false;
+        Random.multiplierHi = 1502;
+        Random.multiplierLo = 15525485;
+        Random.twoToThe24 = 1.6777216E7;
+        Random.twoToThe31 = 2.147483648E9;
+        Random.twoToThe32 = 4.294967296E9;
+        Random.twoToTheMinus24 = 5.9604644775390625E-8;
+        Random.twoToTheMinus26 = 1.4901161193847656E-8;
+        Random.twoToTheMinus31 = 4.6566128730773926E-10;
+        Random.twoToTheMinus53 = 1.1102230246251565E-16;
+        /**
+         * A value used to avoid two random number generators produced at the same
+         * time having the same seed.
+         */
+        Random.uniqueSeed = 0;
         util.Random = Random;
         Random["__class"] = "java.util.Random";
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -4310,7 +4266,7 @@ var java;
         StringJoiner["__class"] = "java.util.StringJoiner";
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 var javaemul;
 (function (javaemul) {
     var internal;
@@ -4382,15 +4338,14 @@ var javaemul;
             ArrayHelper.applySplice = function (arrayObject, index, deleteCount, arrayToAdd) {
                 Array.prototype.splice.apply(arrayObject, [index, deleteCount].concat(arrayToAdd));
             };
-            ArrayHelper.ARRAY_PROCESS_BATCH_SIZE = 10000;
             return ArrayHelper;
         }());
+        ArrayHelper.ARRAY_PROCESS_BATCH_SIZE = 10000;
         internal.ArrayHelper = ArrayHelper;
         ArrayHelper["__class"] = "javaemul.internal.ArrayHelper";
     })(internal = javaemul.internal || (javaemul.internal = {}));
 })(javaemul || (javaemul = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var javaemul;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (javaemul) {
     var internal;
     (function (internal) {
@@ -4410,8 +4365,7 @@ var javaemul;
         ArrayStamper["__class"] = "javaemul.internal.ArrayStamper";
     })(internal = javaemul.internal || (javaemul.internal = {}));
 })(javaemul || (javaemul = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var javaemul;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (javaemul) {
     var internal;
     (function (internal) {
@@ -4487,17 +4441,16 @@ var javaemul;
             BooleanHelper.prototype.toString = function () {
                 return BooleanHelper.toString(this.booleanValue());
             };
-            BooleanHelper.FALSE = false;
-            BooleanHelper.TRUE = true;
             return BooleanHelper;
         }());
+        BooleanHelper.FALSE = false;
+        BooleanHelper.TRUE = true;
         internal.BooleanHelper = BooleanHelper;
         BooleanHelper["__class"] = "javaemul.internal.BooleanHelper";
         BooleanHelper["__interfaces"] = ["java.lang.Comparable", "java.io.Serializable"];
     })(internal = javaemul.internal || (javaemul.internal = {}));
 })(javaemul || (javaemul = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var javaemul;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (javaemul) {
     var internal;
     (function (internal) {
@@ -4864,11 +4817,11 @@ var javaemul;
                 if ((c).charCodeAt(0) < 128) {
                     var result = CharacterHelper.BoxedValues.boxedValues_$LI$()[c];
                     if (result == null) {
-                        result = CharacterHelper.BoxedValues.boxedValues_$LI$()[c] = new CharacterHelper(c);
+                        result = CharacterHelper.BoxedValues.boxedValues_$LI$()[c] = new String(c);
                     }
                     return result;
                 }
-                return new CharacterHelper(c);
+                return new String(c);
             };
             CharacterHelper.codePointAt$java_lang_CharSequence$int$int = function (cs, index, limit) {
                 var hiSurrogate = cs.charAt(index++);
@@ -4942,26 +4895,25 @@ var javaemul;
             CharacterHelper.prototype.toString = function () {
                 return new String(this.value).toString();
             };
-            CharacterHelper.MIN_RADIX = 2;
-            CharacterHelper.MAX_RADIX = 36;
-            CharacterHelper.MIN_VALUE = '\u0000';
-            CharacterHelper.MAX_VALUE = '\uffff';
-            CharacterHelper.MIN_SURROGATE = '\ud800';
-            CharacterHelper.MAX_SURROGATE = '\udfff';
-            CharacterHelper.MIN_LOW_SURROGATE = '\udc00';
-            CharacterHelper.MAX_LOW_SURROGATE = '\udfff';
-            CharacterHelper.MIN_HIGH_SURROGATE = '\ud800';
-            CharacterHelper.MAX_HIGH_SURROGATE = '\udbff';
-            CharacterHelper.MIN_SUPPLEMENTARY_CODE_POINT = 65536;
-            CharacterHelper.MIN_CODE_POINT = 0;
-            CharacterHelper.MAX_CODE_POINT = 1114111;
-            CharacterHelper.SIZE = 16;
             return CharacterHelper;
         }());
+        CharacterHelper.MIN_RADIX = 2;
+        CharacterHelper.MAX_RADIX = 36;
+        CharacterHelper.MIN_VALUE = '\u0000';
+        CharacterHelper.MAX_VALUE = '\uffff';
+        CharacterHelper.MIN_SURROGATE = '\ud800';
+        CharacterHelper.MAX_SURROGATE = '\udfff';
+        CharacterHelper.MIN_LOW_SURROGATE = '\udc00';
+        CharacterHelper.MAX_LOW_SURROGATE = '\udfff';
+        CharacterHelper.MIN_HIGH_SURROGATE = '\ud800';
+        CharacterHelper.MAX_HIGH_SURROGATE = '\udbff';
+        CharacterHelper.MIN_SUPPLEMENTARY_CODE_POINT = 65536;
+        CharacterHelper.MIN_CODE_POINT = 0;
+        CharacterHelper.MAX_CODE_POINT = 1114111;
+        CharacterHelper.SIZE = 16;
         internal.CharacterHelper = CharacterHelper;
         CharacterHelper["__class"] = "javaemul.internal.CharacterHelper";
         CharacterHelper["__interfaces"] = ["java.lang.Comparable", "java.io.Serializable"];
-        var CharacterHelper;
         (function (CharacterHelper) {
             /**
              * Use nested class to avoid clinit on outer.
@@ -4979,8 +4931,7 @@ var javaemul;
         })(CharacterHelper = internal.CharacterHelper || (internal.CharacterHelper = {}));
     })(internal = javaemul.internal || (javaemul.internal = {}));
 })(javaemul || (javaemul = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var javaemul;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (javaemul) {
     var internal;
     (function (internal) {
@@ -5005,8 +4956,7 @@ var javaemul;
         Coercions["__class"] = "javaemul.internal.Coercions";
     })(internal = javaemul.internal || (javaemul.internal = {}));
 })(javaemul || (javaemul = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var javaemul;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (javaemul) {
     var internal;
     (function (internal) {
@@ -5036,8 +4986,7 @@ var javaemul;
         DateUtil["__class"] = "javaemul.internal.DateUtil";
     })(internal = javaemul.internal || (javaemul.internal = {}));
 })(javaemul || (javaemul = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var javaemul;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (javaemul) {
     var internal;
     (function (internal) {
@@ -5073,16 +5022,15 @@ var javaemul;
             HashCodes.getNextHashId = function () {
                 return ++HashCodes.sNextHashId;
             };
-            HashCodes.sNextHashId = 0;
-            HashCodes.HASH_CODE_PROPERTY = "$H";
             return HashCodes;
         }());
+        HashCodes.sNextHashId = 0;
+        HashCodes.HASH_CODE_PROPERTY = "$H";
         internal.HashCodes = HashCodes;
         HashCodes["__class"] = "javaemul.internal.HashCodes";
     })(internal = javaemul.internal || (javaemul.internal = {}));
 })(javaemul || (javaemul = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var javaemul;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (javaemul) {
     var internal;
     (function (internal) {
@@ -5098,8 +5046,7 @@ var javaemul;
         JreHelper["__class"] = "javaemul.internal.JreHelper";
     })(internal = javaemul.internal || (javaemul.internal = {}));
 })(javaemul || (javaemul = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var javaemul;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (javaemul) {
     var internal;
     (function (internal) {
@@ -5141,8 +5088,7 @@ var javaemul;
         JsUtils["__class"] = "javaemul.internal.JsUtils";
     })(internal = javaemul.internal || (javaemul.internal = {}));
 })(javaemul || (javaemul = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var javaemul;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (javaemul) {
     var internal;
     (function (internal) {
@@ -5161,8 +5107,7 @@ var javaemul;
         LongCompareHolder["__class"] = "javaemul.internal.LongCompareHolder";
     })(internal = javaemul.internal || (javaemul.internal = {}));
 })(javaemul || (javaemul = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var javaemul;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (javaemul) {
     var internal;
     (function (internal) {
@@ -5539,16 +5484,15 @@ var javaemul;
                     } })(f1) * (r - f2);
                 }
             };
-            MathHelper.E = 2.718281828459045;
-            MathHelper.PI = 3.141592653589793;
             return MathHelper;
         }());
+        MathHelper.E = 2.718281828459045;
+        MathHelper.PI = 3.141592653589793;
         internal.MathHelper = MathHelper;
         MathHelper["__class"] = "javaemul.internal.MathHelper";
     })(internal = javaemul.internal || (javaemul.internal = {}));
 })(javaemul || (javaemul = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var javaemul;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (javaemul) {
     var internal;
     (function (internal) {
@@ -5767,7 +5711,6 @@ var javaemul;
         internal.NumberHelper = NumberHelper;
         NumberHelper["__class"] = "javaemul.internal.NumberHelper";
         NumberHelper["__interfaces"] = ["java.io.Serializable"];
-        var NumberHelper;
         (function (NumberHelper) {
             var __Decode = (function () {
                 function __Decode(radix, payload) {
@@ -5807,16 +5750,15 @@ var javaemul;
                         __ParseLong.maxValueForRadix_$LI$()[i] = Math.round(9223372036854775807 / __ParseLong.maxDigitsRadixPower_$LI$()[i]);
                     }
                 };
-                __ParseLong.__static_initialized = false;
                 return __ParseLong;
             }());
+            __ParseLong.__static_initialized = false;
             NumberHelper.__ParseLong = __ParseLong;
             __ParseLong["__class"] = "javaemul.internal.NumberHelper.__ParseLong";
         })(NumberHelper = internal.NumberHelper || (internal.NumberHelper = {}));
     })(internal = javaemul.internal || (javaemul.internal = {}));
 })(javaemul || (javaemul = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var javaemul;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (javaemul) {
     var internal;
     (function (internal) {
@@ -5859,8 +5801,7 @@ var javaemul;
         ObjectHelper["__class"] = "javaemul.internal.ObjectHelper";
     })(internal = javaemul.internal || (javaemul.internal = {}));
 })(javaemul || (javaemul = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var javaemul;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (javaemul) {
     var internal;
     (function (internal) {
@@ -5923,21 +5864,21 @@ var javaemul;
             StringHashCache.unsafeCastToInt = function (o) {
                 return o;
             };
-            /**
-             * Tracks the number of entries in front.
-             */
-            StringHashCache.count = 0;
-            /**
-             * Pulled this number out of thin air.
-             */
-            StringHashCache.MAX_CACHE = 256;
             return StringHashCache;
         }());
+        /**
+         * Tracks the number of entries in front.
+         */
+        StringHashCache.count = 0;
+        /**
+         * Pulled this number out of thin air.
+         */
+        StringHashCache.MAX_CACHE = 256;
         internal.StringHashCache = StringHashCache;
         StringHashCache["__class"] = "javaemul.internal.StringHashCache";
     })(internal = javaemul.internal || (javaemul.internal = {}));
 })(javaemul || (javaemul = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 var test;
 (function (test) {
     var Test = (function () {
@@ -6099,8 +6040,7 @@ var test;
     test.Test = Test;
     Test["__class"] = "test.Test";
 })(test || (test = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var io;
     (function (io) {
@@ -6126,17 +6066,18 @@ var java;
             function ByteArrayInputStream(buf, offset, length) {
                 if (offset === void 0) { offset = 0; }
                 if (length === void 0) { length = -1; }
-                _super.call(this);
-                this.pos = 0;
-                this._mark = 0;
-                this.count = 0;
+                var _this = _super.call(this) || this;
+                _this.pos = 0;
+                _this._mark = 0;
+                _this.count = 0;
                 if (length === -1) {
                     length = buf.length;
                 }
-                this.buf = buf;
-                this.pos = offset;
-                this._mark = offset;
-                this.count = offset + length > buf.length ? buf.length : offset + length;
+                _this.buf = buf;
+                _this.pos = offset;
+                _this._mark = offset;
+                _this.count = offset + length > buf.length ? buf.length : offset + length;
+                return _this;
             }
             /**
              * Returns the number of remaining bytes.
@@ -6252,8 +6193,7 @@ var java;
         ByteArrayInputStream["__interfaces"] = ["java.io.Closeable", "java.lang.AutoCloseable"];
     })(io = java.io || (java.io = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var io;
     (function (io) {
@@ -6280,11 +6220,12 @@ var java;
              * @param in the input stream to filter reads on.
              */
             function FilterInputStream(__in) {
-                _super.call(this);
-                this.in = __in;
+                var _this = _super.call(this) || this;
+                _this["in"] = __in;
+                return _this;
             }
             FilterInputStream.prototype.available = function () {
-                return this.in.available();
+                return this["in"].available();
             };
             /**
              * Closes this stream. This implementation closes the filtered stream.
@@ -6293,7 +6234,7 @@ var java;
              * if an error occurs while closing this stream.
              */
             FilterInputStream.prototype.close = function () {
-                this.in.close();
+                this["in"].close();
             };
             /**
              * Sets a mark position in this stream. The parameter {@code readlimit}
@@ -6310,7 +6251,7 @@ var java;
              * @see #reset()
              */
             FilterInputStream.prototype.mark = function (readlimit) {
-                this.in.mark(readlimit);
+                this["in"].mark(readlimit);
             };
             /**
              * Indicates whether this stream supports {@code mark()} and {@code reset()}.
@@ -6324,7 +6265,7 @@ var java;
              * @see #skip(long)
              */
             FilterInputStream.prototype.markSupported = function () {
-                return this.in.markSupported();
+                return this["in"].markSupported();
             };
             /**
              * Reads a single byte from the filtered stream and returns it as an integer
@@ -6337,14 +6278,14 @@ var java;
              * if the stream is closed or another IOException occurs.
              */
             FilterInputStream.prototype.read$ = function () {
-                return this.in.read();
+                return this["in"].read();
             };
             FilterInputStream.prototype.read = function (buffer, byteOffset, byteCount) {
                 var _this = this;
                 if (((buffer != null && buffer instanceof Array) || buffer === null) && ((typeof byteOffset === 'number') || byteOffset === null) && ((typeof byteCount === 'number') || byteCount === null)) {
                     var __args = Array.prototype.slice.call(arguments);
                     return (function () {
-                        return _this.in.read(buffer, byteOffset, byteCount);
+                        return _this["in"].read(buffer, byteOffset, byteCount);
                     })();
                 }
                 else if (((buffer != null && buffer instanceof Array) || buffer === null) && byteOffset === undefined && byteCount === undefined) {
@@ -6368,7 +6309,7 @@ var java;
              * @see #markSupported()
              */
             FilterInputStream.prototype.reset = function () {
-                this.in.reset();
+                this["in"].reset();
             };
             /**
              * Skips {@code byteCount} bytes in this stream. Subsequent
@@ -6383,7 +6324,7 @@ var java;
              * @see #reset()
              */
             FilterInputStream.prototype.skip = function (byteCount) {
-                return this.in.skip(byteCount);
+                return this["in"].skip(byteCount);
             };
             return FilterInputStream;
         }(java.io.InputStream));
@@ -6392,8 +6333,7 @@ var java;
         FilterInputStream["__interfaces"] = ["java.io.Closeable", "java.lang.AutoCloseable"];
     })(io = java.io || (java.io = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var io;
     (function (io) {
@@ -6419,11 +6359,11 @@ var java;
              * if {@code size} < 0.
              */
             function ByteArrayOutputStream(size) {
-                var _this = this;
+                var _this;
                 if (((typeof size === 'number') || size === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
-                    this.count = 0;
+                    _this = _super.call(this) || this;
+                    _this.count = 0;
                     (function () {
                         if (size >= 0) {
                             _this.buf = new Array(size);
@@ -6435,14 +6375,15 @@ var java;
                 }
                 else if (size === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
-                    this.count = 0;
+                    _this = _super.call(this) || this;
+                    _this.count = 0;
                     (function () {
                         _this.buf = new Array(32);
                     })();
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             /**
              * Closes this stream. This releases system resources used for this stream.
@@ -6620,8 +6561,7 @@ var java;
         ByteArrayOutputStream["__interfaces"] = ["java.io.Closeable", "java.lang.AutoCloseable", "java.io.Flushable"];
     })(io = java.io || (java.io = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var io;
     (function (io) {
@@ -6645,8 +6585,9 @@ var java;
              * the target stream that this stream writes to.
              */
             function FilterOutputStream(out) {
-                _super.call(this);
-                this.out = out;
+                var _this = _super.call(this) || this;
+                _this.out = out;
+                return _this;
             }
             /**
              * Closes this stream. This implementation closes the target stream.
@@ -6742,8 +6683,7 @@ var java;
         FilterOutputStream["__interfaces"] = ["java.io.Closeable", "java.lang.AutoCloseable", "java.io.Flushable"];
     })(io = java.io || (java.io = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var io;
     (function (io) {
@@ -6753,16 +6693,16 @@ var java;
         var BufferedReader = (function (_super) {
             __extends(BufferedReader, _super);
             function BufferedReader(__in, sz) {
-                var _this = this;
+                var _this;
                 if (((__in != null && __in instanceof java.io.Reader) || __in === null) && ((typeof sz === 'number') || sz === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, __in);
-                    this.nChars = 0;
-                    this.nextChar = 0;
-                    this.markedChar = 0;
-                    this.readAheadLimit = 0;
-                    this.skipLF = false;
-                    this.markedSkipLF = false;
+                    _this = _super.call(this, __in) || this;
+                    _this.nChars = 0;
+                    _this.nextChar = 0;
+                    _this.markedChar = 0;
+                    _this.readAheadLimit = 0;
+                    _this.skipLF = false;
+                    _this.markedSkipLF = false;
                     (function () {
                         _this.markedChar = BufferedReader.UNMARKED;
                         _this.readAheadLimit = 0;
@@ -6770,7 +6710,7 @@ var java;
                         _this.markedSkipLF = false;
                         if (sz <= 0)
                             throw new java.lang.IllegalArgumentException("Buffer size <= 0");
-                        _this.in = __in;
+                        _this["in"] = __in;
                         _this.cb = new Array(sz);
                         _this.nextChar = _this.nChars = 0;
                     })();
@@ -6780,13 +6720,13 @@ var java;
                     {
                         var __args_10 = Array.prototype.slice.call(arguments);
                         var sz_1 = BufferedReader.defaultCharBufferSize;
-                        _super.call(this, __in);
-                        this.nChars = 0;
-                        this.nextChar = 0;
-                        this.markedChar = 0;
-                        this.readAheadLimit = 0;
-                        this.skipLF = false;
-                        this.markedSkipLF = false;
+                        _this = _super.call(this, __in) || this;
+                        _this.nChars = 0;
+                        _this.nextChar = 0;
+                        _this.markedChar = 0;
+                        _this.readAheadLimit = 0;
+                        _this.skipLF = false;
+                        _this.markedSkipLF = false;
                         (function () {
                             _this.markedChar = BufferedReader.UNMARKED;
                             _this.readAheadLimit = 0;
@@ -6794,7 +6734,7 @@ var java;
                             _this.markedSkipLF = false;
                             if (sz_1 <= 0)
                                 throw new java.lang.IllegalArgumentException("Buffer size <= 0");
-                            _this.in = __in;
+                            _this["in"] = __in;
                             _this.cb = new Array(sz_1);
                             _this.nextChar = _this.nChars = 0;
                         })();
@@ -6802,9 +6742,10 @@ var java;
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             BufferedReader.prototype.ensureOpen = function () {
-                if (this.in == null)
+                if (this["in"] == null)
                     throw new java.io.IOException("Stream closed");
             };
             BufferedReader.prototype.fill = function () {
@@ -6837,7 +6778,7 @@ var java;
                 }
                 var n;
                 do {
-                    n = this.in.read(this.cb, dst, this.cb.length - dst);
+                    n = this["in"].read(this.cb, dst, this.cb.length - dst);
                 } while ((n === 0));
                 if (n > 0) {
                     this.nChars = dst + n;
@@ -6868,7 +6809,7 @@ var java;
             BufferedReader.prototype.read1 = function (cbuf, off, len) {
                 if (this.nextChar >= this.nChars) {
                     if (len >= this.cb.length && this.markedChar <= BufferedReader.UNMARKED && !this.skipLF) {
-                        return this.in.read(cbuf, off, len);
+                        return this["in"].read(cbuf, off, len);
                     }
                     this.fill();
                 }
@@ -6905,7 +6846,7 @@ var java;
                             var n = _this.read1(cbuf, off, len);
                             if (n <= 0)
                                 return n;
-                            while (((n < len) && _this.in.ready())) {
+                            while (((n < len) && _this["in"].ready())) {
                                 var n1 = _this.read1(cbuf, off + n, len - n);
                                 if (n1 <= 0)
                                     break;
@@ -7017,7 +6958,7 @@ var java;
             BufferedReader.prototype.ready = function () {
                 this.ensureOpen();
                 if (this.skipLF) {
-                    if (this.nextChar >= this.nChars && this.in.ready()) {
+                    if (this.nextChar >= this.nChars && this["in"].ready()) {
                         this.fill();
                     }
                     if (this.nextChar < this.nChars) {
@@ -7026,7 +6967,7 @@ var java;
                         this.skipLF = false;
                     }
                 }
-                return (this.nextChar < this.nChars) || this.in.ready();
+                return (this.nextChar < this.nChars) || this["in"].ready();
             };
             BufferedReader.prototype.markSupported = function () {
                 return true;
@@ -7048,30 +6989,29 @@ var java;
                 this.skipLF = this.markedSkipLF;
             };
             BufferedReader.prototype.close = function () {
-                if (this.in == null)
+                if (this["in"] == null)
                     return;
                 try {
-                    this.in.close();
+                    this["in"].close();
                 }
                 finally {
-                    this.in = null;
+                    this["in"] = null;
                     this.cb = null;
                 }
                 ;
             };
-            BufferedReader.INVALIDATED = -2;
-            BufferedReader.UNMARKED = -1;
-            BufferedReader.defaultCharBufferSize = 8192;
-            BufferedReader.defaultExpectedLineLength = 80;
             return BufferedReader;
         }(java.io.Reader));
+        BufferedReader.INVALIDATED = -2;
+        BufferedReader.UNMARKED = -1;
+        BufferedReader.defaultCharBufferSize = 8192;
+        BufferedReader.defaultExpectedLineLength = 80;
         io.BufferedReader = BufferedReader;
         BufferedReader["__class"] = "java.io.BufferedReader";
         BufferedReader["__interfaces"] = ["java.io.Closeable", "java.lang.AutoCloseable"];
     })(io = java.io || (java.io = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var io;
     (function (io) {
@@ -7081,33 +7021,34 @@ var java;
         var InputStreamReader = (function (_super) {
             __extends(InputStreamReader, _super);
             function InputStreamReader(__in, charsetName) {
-                var _this = this;
+                var _this;
                 if (((__in != null && __in instanceof java.io.InputStream) || __in === null) && ((typeof charsetName === 'string') || charsetName === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, __in);
+                    _this = _super.call(this, __in) || this;
                     (function () {
-                        _this.in = __in;
+                        _this["in"] = __in;
                     })();
                 }
                 else if (((__in != null && __in instanceof java.io.InputStream) || __in === null) && ((charsetName != null && charsetName instanceof java.nio.charset.Charset) || charsetName === null)) {
                     var __args = Array.prototype.slice.call(arguments);
                     var cs_1 = __args[1];
-                    _super.call(this, __in);
+                    _this = _super.call(this, __in) || this;
                     (function () {
-                        _this.in = __in;
+                        _this["in"] = __in;
                         if (cs_1 == null)
                             throw new java.lang.NullPointerException("charset");
                     })();
                 }
                 else if (((__in != null && __in instanceof java.io.InputStream) || __in === null) && charsetName === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, __in);
+                    _this = _super.call(this, __in) || this;
                     (function () {
-                        _this.in = __in;
+                        _this["in"] = __in;
                     })();
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             InputStreamReader.prototype.read = function (cbuf, offset, length) {
                 var _this = this;
@@ -7115,7 +7056,7 @@ var java;
                     var __args = Array.prototype.slice.call(arguments);
                     return (function () {
                         var buf = cbuf;
-                        return _this.in.read(buf, offset, length);
+                        return _this["in"].read(buf, offset, length);
                     })();
                 }
                 else if (((cbuf != null && cbuf instanceof Array) || cbuf === null) && offset === undefined && length === undefined) {
@@ -7128,10 +7069,10 @@ var java;
                     throw new Error('invalid overload');
             };
             InputStreamReader.prototype.ready = function () {
-                return this.in.available() > 0;
+                return this["in"].available() > 0;
             };
             InputStreamReader.prototype.close = function () {
-                this.in.close();
+                this["in"].close();
             };
             return InputStreamReader;
         }(java.io.Reader));
@@ -7140,8 +7081,7 @@ var java;
         InputStreamReader["__interfaces"] = ["java.io.Closeable", "java.lang.AutoCloseable"];
     })(io = java.io || (java.io = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var io;
     (function (io) {
@@ -7153,10 +7093,10 @@ var java;
         var OutputStreamWriter = (function (_super) {
             __extends(OutputStreamWriter, _super);
             function OutputStreamWriter(out, charsetName) {
-                var _this = this;
+                var _this;
                 if (((out != null && out instanceof java.io.OutputStream) || out === null) && ((typeof charsetName === 'string') || charsetName === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, out);
+                    _this = _super.call(this, out) || this;
                     (function () {
                         if (charsetName == null)
                             throw new java.lang.NullPointerException("charsetName");
@@ -7166,7 +7106,7 @@ var java;
                 else if (((out != null && out instanceof java.io.OutputStream) || out === null) && ((charsetName != null && charsetName instanceof java.nio.charset.Charset) || charsetName === null)) {
                     var __args = Array.prototype.slice.call(arguments);
                     var cs_2 = __args[1];
-                    _super.call(this, out);
+                    _this = _super.call(this, out) || this;
                     (function () {
                         if (cs_2 == null)
                             throw new java.lang.NullPointerException("charset");
@@ -7175,13 +7115,14 @@ var java;
                 }
                 else if (((out != null && out instanceof java.io.OutputStream) || out === null) && charsetName === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, out);
+                    _this = _super.call(this, out) || this;
                     (function () {
                         _this.out = out;
                     })();
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             OutputStreamWriter.prototype.flushBuffer = function () {
                 this.out.flush();
@@ -7229,8 +7170,7 @@ var java;
         OutputStreamWriter["__interfaces"] = ["java.lang.Appendable", "java.io.Closeable", "java.lang.AutoCloseable", "java.io.Flushable"];
     })(io = java.io || (java.io = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var lang;
     (function (lang) {
@@ -7243,25 +7183,27 @@ var java;
         var StringBuffer = (function (_super) {
             __extends(StringBuffer, _super);
             function StringBuffer(s) {
+                var _this;
                 if (((typeof s === 'string') || s === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, s);
+                    _this = _super.call(this, s) || this;
                 }
                 else if (((s != null && (s["__interfaces"] != null && s["__interfaces"].indexOf("java.lang.CharSequence") >= 0 || s.constructor != null && s.constructor["__interfaces"] != null && s.constructor["__interfaces"].indexOf("java.lang.CharSequence") >= 0 || typeof s === "string")) || s === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, /* valueOf */ new String(s).toString());
+                    _this = _super.call(this, /* valueOf */ new String(s).toString()) || this;
                 }
                 else if (((typeof s === 'number') || s === null)) {
                     var __args = Array.prototype.slice.call(arguments);
                     var ignoredCapacity = __args[0];
-                    _super.call(this, "");
+                    _this = _super.call(this, "") || this;
                 }
                 else if (s === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, "");
+                    _this = _super.call(this, "") || this;
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             StringBuffer.prototype.append$boolean = function (x) {
                 this.string += x;
@@ -7363,7 +7305,7 @@ var java;
                 this.appendCodePoint0(x);
                 return this;
             };
-            StringBuffer.prototype.delete = function (start, end) {
+            StringBuffer.prototype["delete"] = function (start, end) {
                 this.replace0(start, end, "");
                 return this;
             };
@@ -7464,8 +7406,7 @@ var java;
         StringBuffer["__interfaces"] = ["java.lang.CharSequence", "java.lang.Appendable"];
     })(lang = java.lang || (java.lang = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var lang;
     (function (lang) {
@@ -7478,25 +7419,27 @@ var java;
         var StringBuilder = (function (_super) {
             __extends(StringBuilder, _super);
             function StringBuilder(s) {
+                var _this;
                 if (((typeof s === 'string') || s === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, s);
+                    _this = _super.call(this, s) || this;
                 }
                 else if (((s != null && (s["__interfaces"] != null && s["__interfaces"].indexOf("java.lang.CharSequence") >= 0 || s.constructor != null && s.constructor["__interfaces"] != null && s.constructor["__interfaces"].indexOf("java.lang.CharSequence") >= 0 || typeof s === "string")) || s === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, /* valueOf */ new String(s).toString());
+                    _this = _super.call(this, /* valueOf */ new String(s).toString()) || this;
                 }
                 else if (((typeof s === 'number') || s === null)) {
                     var __args = Array.prototype.slice.call(arguments);
                     var ignoredCapacity = __args[0];
-                    _super.call(this, "");
+                    _this = _super.call(this, "") || this;
                 }
                 else if (s === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, "");
+                    _this = _super.call(this, "") || this;
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             StringBuilder.prototype.append$boolean = function (x) {
                 this.string += x;
@@ -7598,7 +7541,7 @@ var java;
                 this.appendCodePoint0(x);
                 return this;
             };
-            StringBuilder.prototype.delete = function (start, end) {
+            StringBuilder.prototype["delete"] = function (start, end) {
                 this.replace0(start, end, "");
                 return this;
             };
@@ -7700,8 +7643,7 @@ var java;
         StringBuilder["__interfaces"] = ["java.lang.CharSequence", "java.lang.Appendable"];
     })(lang = java.lang || (java.lang = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var io;
     (function (io) {
@@ -7713,28 +7655,30 @@ var java;
         var IOException = (function (_super) {
             __extends(IOException, _super);
             function IOException(message, throwable) {
+                var _this;
                 if (((typeof message === 'string') || message === null) && ((throwable != null && throwable instanceof Error) || throwable === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, message);
-                    this.message = message;
+                    _this = _super.call(this, message) || this;
+                    _this.message = message;
                 }
                 else if (((typeof message === 'string') || message === null) && throwable === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, message);
-                    this.message = message;
+                    _this = _super.call(this, message) || this;
+                    _this.message = message;
                 }
                 else if (((message != null && message instanceof Error) || message === null) && throwable === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
                     var throwable_1 = __args[0];
-                    _super.call(this, throwable_1);
-                    this.message = throwable_1;
+                    _this = _super.call(this, throwable_1) || this;
+                    _this.message = throwable_1;
                 }
                 else if (message === undefined && throwable === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             return IOException;
         }(Error));
@@ -7743,8 +7687,7 @@ var java;
         IOException["__interfaces"] = ["java.io.Serializable"];
     })(io = java.io || (java.io = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var lang;
     (function (lang) {
@@ -7756,17 +7699,19 @@ var java;
         var CloneNotSupportedException = (function (_super) {
             __extends(CloneNotSupportedException, _super);
             function CloneNotSupportedException(msg) {
+                var _this;
                 if (((typeof msg === 'string') || msg === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, msg);
-                    this.message = msg;
+                    _this = _super.call(this, msg) || this;
+                    _this.message = msg;
                 }
                 else if (msg === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             return CloneNotSupportedException;
         }(Error));
@@ -7775,8 +7720,7 @@ var java;
         CloneNotSupportedException["__interfaces"] = ["java.io.Serializable"];
     })(lang = java.lang || (java.lang = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var lang;
     (function (lang) {
@@ -7791,17 +7735,19 @@ var java;
         var NoSuchMethodException = (function (_super) {
             __extends(NoSuchMethodException, _super);
             function NoSuchMethodException(message) {
+                var _this;
                 if (((typeof message === 'string') || message === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, message);
-                    this.message = message;
+                    _this = _super.call(this, message) || this;
+                    _this.message = message;
                 }
                 else if (message === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             return NoSuchMethodException;
         }(Error));
@@ -7810,8 +7756,7 @@ var java;
         NoSuchMethodException["__interfaces"] = ["java.io.Serializable"];
     })(lang = java.lang || (java.lang = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var lang;
     (function (lang) {
@@ -7823,33 +7768,35 @@ var java;
         var RuntimeException = (function (_super) {
             __extends(RuntimeException, _super);
             function RuntimeException(message, cause, enableSuppression, writableStackTrace) {
+                var _this;
                 if (((typeof message === 'string') || message === null) && ((cause != null && cause instanceof Error) || cause === null) && ((typeof enableSuppression === 'boolean') || enableSuppression === null) && ((typeof writableStackTrace === 'boolean') || writableStackTrace === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, message);
-                    this.message = message;
+                    _this = _super.call(this, message) || this;
+                    _this.message = message;
                 }
                 else if (((typeof message === 'string') || message === null) && ((cause != null && cause instanceof Error) || cause === null) && enableSuppression === undefined && writableStackTrace === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, message);
-                    this.message = message;
+                    _this = _super.call(this, message) || this;
+                    _this.message = message;
                 }
                 else if (((typeof message === 'string') || message === null) && cause === undefined && enableSuppression === undefined && writableStackTrace === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, message);
-                    this.message = message;
+                    _this = _super.call(this, message) || this;
+                    _this.message = message;
                 }
                 else if (((message != null && message instanceof Error) || message === null) && cause === undefined && enableSuppression === undefined && writableStackTrace === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
                     var cause_3 = __args[0];
-                    _super.call(this, cause_3);
-                    this.message = cause_3;
+                    _this = _super.call(this, cause_3) || this;
+                    _this.message = cause_3;
                 }
                 else if (message === undefined && cause === undefined && enableSuppression === undefined && writableStackTrace === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             return RuntimeException;
         }(Error));
@@ -7858,8 +7805,7 @@ var java;
         RuntimeException["__interfaces"] = ["java.io.Serializable"];
     })(lang = java.lang || (java.lang = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var security;
     (function (security) {
@@ -7871,17 +7817,19 @@ var java;
         var GeneralSecurityException = (function (_super) {
             __extends(GeneralSecurityException, _super);
             function GeneralSecurityException(msg) {
+                var _this;
                 if (((typeof msg === 'string') || msg === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, msg);
-                    this.message = msg;
+                    _this = _super.call(this, msg) || this;
+                    _this.message = msg;
                 }
                 else if (msg === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             return GeneralSecurityException;
         }(Error));
@@ -7890,8 +7838,7 @@ var java;
         GeneralSecurityException["__interfaces"] = ["java.io.Serializable"];
     })(security = java.security || (java.security = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var text;
     (function (text) {
@@ -7901,10 +7848,11 @@ var java;
         var ParseException = (function (_super) {
             __extends(ParseException, _super);
             function ParseException(s, errorOffset) {
-                _super.call(this, s);
-                this.message = s;
-                this.errorOffset = 0;
-                this.errorOffset = errorOffset;
+                var _this = _super.call(this, s) || this;
+                _this.message = s;
+                _this.errorOffset = 0;
+                _this.errorOffset = errorOffset;
+                return _this;
             }
             ParseException.prototype.getErrorOffset = function () {
                 return this.errorOffset;
@@ -7916,8 +7864,7 @@ var java;
         ParseException["__interfaces"] = ["java.io.Serializable"];
     })(text = java.text || (java.text = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -7928,17 +7875,19 @@ var java;
         var TooManyListenersException = (function (_super) {
             __extends(TooManyListenersException, _super);
             function TooManyListenersException(message) {
+                var _this;
                 if (((typeof message === 'string') || message === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, message);
-                    this.message = message;
+                    _this = _super.call(this, message) || this;
+                    _this.message = message;
                 }
                 else if (message === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             return TooManyListenersException;
         }(Error));
@@ -7947,8 +7896,7 @@ var java;
         TooManyListenersException["__interfaces"] = ["java.io.Serializable"];
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var lang;
     (function (lang) {
@@ -7962,7 +7910,7 @@ var java;
             var WeakReference = (function (_super) {
                 __extends(WeakReference, _super);
                 function WeakReference(referent) {
-                    _super.call(this, referent);
+                    return _super.call(this, referent) || this;
                 }
                 return WeakReference;
             }(java.lang.ref.Reference));
@@ -7971,8 +7919,7 @@ var java;
         })(ref = lang.ref || (lang.ref = {}));
     })(lang = java.lang || (java.lang = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var lang;
     (function (lang) {
@@ -8000,36 +7947,37 @@ var java;
              * @since  1.8
              */
             function InternalError(message, cause) {
+                var _this;
                 if (((typeof message === 'string') || message === null) && ((cause != null && cause instanceof Error) || cause === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, message, cause);
+                    _this = _super.call(this, message, cause) || this;
                 }
                 else if (((typeof message === 'string') || message === null) && cause === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, message);
+                    _this = _super.call(this, message) || this;
                 }
                 else if (((message != null && message instanceof Error) || message === null) && cause === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
                     var cause_4 = __args[0];
-                    _super.call(this, cause_4);
+                    _this = _super.call(this, cause_4) || this;
                 }
                 else if (message === undefined && cause === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
-            InternalError.serialVersionUID = -9062593416125562365;
             return InternalError;
         }(java.lang.VirtualMachineError));
+        InternalError.serialVersionUID = -9062593416125562365;
         lang.InternalError = InternalError;
         InternalError["__class"] = "java.lang.InternalError";
         InternalError["__interfaces"] = ["java.io.Serializable"];
     })(lang = java.lang || (java.lang = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var javaemul;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (javaemul) {
     var internal;
     (function (internal) {
@@ -8039,7 +7987,7 @@ var javaemul;
         var EmulatedCharset = (function (_super) {
             __extends(EmulatedCharset, _super);
             function EmulatedCharset(name) {
-                _super.call(this, name, null);
+                return _super.call(this, name, null) || this;
             }
             EmulatedCharset.UTF_8_$LI$ = function () { if (EmulatedCharset.UTF_8 == null)
                 EmulatedCharset.UTF_8 = new EmulatedCharset.UtfCharset("UTF-8"); return EmulatedCharset.UTF_8; };
@@ -8055,12 +8003,11 @@ var javaemul;
         internal.EmulatedCharset = EmulatedCharset;
         EmulatedCharset["__class"] = "javaemul.internal.EmulatedCharset";
         EmulatedCharset["__interfaces"] = ["java.lang.Comparable"];
-        var EmulatedCharset;
         (function (EmulatedCharset) {
             var LatinCharset = (function (_super) {
                 __extends(LatinCharset, _super);
                 function LatinCharset(name) {
-                    _super.call(this, name);
+                    return _super.call(this, name) || this;
                 }
                 LatinCharset.prototype.getBytes = function (str) {
                     var n = str.length;
@@ -8085,7 +8032,7 @@ var javaemul;
             var UtfCharset = (function (_super) {
                 __extends(UtfCharset, _super);
                 function UtfCharset(name) {
-                    _super.call(this, name);
+                    return _super.call(this, name) || this;
                 }
                 UtfCharset.prototype.decodeString = function (bytes, ofs, len) {
                     var charCount = 0;
@@ -8232,8 +8179,7 @@ var javaemul;
         })(EmulatedCharset = internal.EmulatedCharset || (internal.EmulatedCharset = {}));
     })(internal = javaemul.internal || (javaemul.internal = {}));
 })(javaemul || (javaemul = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var security;
     (function (security) {
@@ -8245,8 +8191,9 @@ var java;
         var MessageDigest = (function (_super) {
             __extends(MessageDigest, _super);
             function MessageDigest(algorithm) {
-                _super.call(this);
-                this.algorithm = algorithm;
+                var _this = _super.call(this) || this;
+                _this.algorithm = algorithm;
+                return _this;
             }
             MessageDigest.getInstance = function (algorithm) {
                 if (("MD5" === algorithm)) {
@@ -8326,16 +8273,16 @@ var java;
         }(java.security.MessageDigestSpi));
         security.MessageDigest = MessageDigest;
         MessageDigest["__class"] = "java.security.MessageDigest";
-        var MessageDigest;
         (function (MessageDigest) {
             var Md5Digest = (function (_super) {
                 __extends(Md5Digest, _super);
                 function Md5Digest() {
-                    _super.call(this, "MD5");
-                    this.oneByte = new Array(1);
-                    this.counter = 0;
-                    this.remainder = 0;
-                    this.engineReset();
+                    var _this = _super.call(this, "MD5") || this;
+                    _this.oneByte = new Array(1);
+                    _this.counter = 0;
+                    _this.remainder = 0;
+                    _this.engineReset();
+                    return _this;
                 }
                 Md5Digest.padding_$LI$ = function () { if (Md5Digest.padding == null)
                     Md5Digest.padding = [(128 | 0), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]; return Md5Digest.padding; };
@@ -8570,8 +8517,7 @@ var java;
         })(MessageDigest = security.MessageDigest || (security.MessageDigest = {}));
     })(security = java.security || (java.security = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -8585,8 +8531,9 @@ var java;
         var AbstractList = (function (_super) {
             __extends(AbstractList, _super);
             function AbstractList() {
-                _super.call(this);
-                this.modCount = 0;
+                var _this = _super.call(this) || this;
+                _this.modCount = 0;
+                return _this;
             }
             AbstractList.prototype.forEach = function (action) {
                 javaemul.internal.InternalPreconditions.checkNotNull(action);
@@ -8747,7 +8694,6 @@ var java;
         util.AbstractList = AbstractList;
         AbstractList["__class"] = "java.util.AbstractList";
         AbstractList["__interfaces"] = ["java.util.List", "java.util.Collection", "java.lang.Iterable"];
-        var AbstractList;
         (function (AbstractList) {
             var IteratorImpl = (function () {
                 function IteratorImpl(__parent) {
@@ -8788,11 +8734,11 @@ var java;
             var ListIteratorImpl = (function (_super) {
                 __extends(ListIteratorImpl, _super);
                 function ListIteratorImpl(__parent, start) {
-                    var _this = this;
+                    var _this;
                     if (((typeof start === 'number') || start === null)) {
                         var __args = Array.prototype.slice.call(arguments);
-                        _super.call(this, __parent);
-                        this.__parent = __parent;
+                        _this = _super.call(this, __parent) || this;
+                        _this.__parent = __parent;
                         (function () {
                             javaemul.internal.InternalPreconditions.checkPositionIndex(start, _this.__parent.size());
                             _this.i = start;
@@ -8800,11 +8746,12 @@ var java;
                     }
                     else if (start === undefined) {
                         var __args = Array.prototype.slice.call(arguments);
-                        _super.call(this, __parent);
-                        this.__parent = __parent;
+                        _this = _super.call(this, __parent) || this;
+                        _this.__parent = __parent;
                     }
                     else
                         throw new Error('invalid overload');
+                    return _this;
                 }
                 ListIteratorImpl.prototype.forEachRemaining = function (consumer) {
                     javaemul.internal.InternalPreconditions.checkNotNull(consumer);
@@ -8843,13 +8790,14 @@ var java;
             var SubList = (function (_super) {
                 __extends(SubList, _super);
                 function SubList(wrapped, fromIndex, toIndex) {
-                    _super.call(this);
-                    this.fromIndex = 0;
-                    this.__size = 0;
+                    var _this = _super.call(this) || this;
+                    _this.fromIndex = 0;
+                    _this.__size = 0;
                     javaemul.internal.InternalPreconditions.checkCriticalPositionIndexes(fromIndex, toIndex, wrapped.size());
-                    this.wrapped = wrapped;
-                    this.fromIndex = fromIndex;
-                    this.__size = toIndex - fromIndex;
+                    _this.wrapped = wrapped;
+                    _this.fromIndex = fromIndex;
+                    _this.__size = toIndex - fromIndex;
+                    return _this;
                 }
                 SubList.prototype.add = function (index, element) {
                     var _this = this;
@@ -8903,8 +8851,7 @@ var java;
         })(AbstractList = util.AbstractList || (util.AbstractList = {}));
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -8918,7 +8865,7 @@ var java;
         var AbstractQueue = (function (_super) {
             __extends(AbstractQueue, _super);
             function AbstractQueue() {
-                _super.call(this);
+                return _super.call(this) || this;
             }
             AbstractQueue.prototype.forEach = function (action) {
                 javaemul.internal.InternalPreconditions.checkNotNull(action);
@@ -8984,8 +8931,7 @@ var java;
         AbstractQueue["__interfaces"] = ["java.util.Collection", "java.util.Queue", "java.lang.Iterable"];
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -8999,7 +8945,7 @@ var java;
         var AbstractSet = (function (_super) {
             __extends(AbstractSet, _super);
             function AbstractSet() {
-                _super.call(this);
+                return _super.call(this) || this;
             }
             AbstractSet.prototype.forEach = function (action) {
                 javaemul.internal.InternalPreconditions.checkNotNull(action);
@@ -9054,8 +9000,7 @@ var java;
         AbstractSet["__interfaces"] = ["java.util.Collection", "java.util.Set", "java.lang.Iterable"];
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -9099,7 +9044,7 @@ var java;
             InternalStringMap.prototype.remove = function (key) {
                 var value = this.backingMap.get(key);
                 if (!javaemul.internal.JsUtils.isUndefined(value)) {
-                    this.backingMap.delete(key);
+                    this.backingMap["delete"](key);
                     this.size--;
                     java.util.ConcurrentModificationDetector.structureChanged(this.host);
                 }
@@ -9125,7 +9070,6 @@ var java;
         util.InternalStringMap = InternalStringMap;
         InternalStringMap["__class"] = "java.util.InternalStringMap";
         InternalStringMap["__interfaces"] = ["java.lang.Iterable"];
-        var InternalStringMap;
         (function (InternalStringMap) {
             var InternalStringMap$0 = (function () {
                 function InternalStringMap$0(__parent) {
@@ -9157,10 +9101,11 @@ var java;
             var InternalStringMap$1 = (function (_super) {
                 __extends(InternalStringMap$1, _super);
                 function InternalStringMap$1(__parent, entry, lastValueMod) {
-                    _super.call(this);
-                    this.entry = entry;
-                    this.lastValueMod = lastValueMod;
-                    this.__parent = __parent;
+                    var _this = _super.call(this) || this;
+                    _this.entry = entry;
+                    _this.lastValueMod = lastValueMod;
+                    _this.__parent = __parent;
+                    return _this;
                 }
                 InternalStringMap$1.prototype.getKey = function () {
                     return this.entry.value[0];
@@ -9180,8 +9125,7 @@ var java;
         })(InternalStringMap = util.InternalStringMap || (util.InternalStringMap = {}));
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var javaemul;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (javaemul) {
     var internal;
     (function (internal) {
@@ -9337,7 +9281,6 @@ var javaemul;
         }());
         internal.StringHelper = StringHelper;
         StringHelper["__class"] = "javaemul.internal.StringHelper";
-        var StringHelper;
         (function (StringHelper) {
             var StringHelper$0 = (function () {
                 function StringHelper$0() {
@@ -9351,8 +9294,7 @@ var javaemul;
         })(StringHelper = internal.StringHelper || (internal.StringHelper = {}));
     })(internal = javaemul.internal || (javaemul.internal = {}));
 })(javaemul || (javaemul = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var sql;
     (function (sql) {
@@ -9363,17 +9305,19 @@ var java;
         var Date = (function (_super) {
             __extends(Date, _super);
             function Date(year, month, day) {
+                var _this;
                 if (((typeof year === 'number') || year === null) && ((typeof month === 'number') || month === null) && ((typeof day === 'number') || day === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, year, month, day);
+                    _this = _super.call(this, year, month, day) || this;
                 }
                 else if (((typeof year === 'number') || year === null) && month === undefined && day === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
                     var date = __args[0];
-                    _super.call(this, date);
+                    _this = _super.call(this, date) || this;
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             Date.valueOf = function (s) {
                 var split = s.split("-");
@@ -9416,8 +9360,7 @@ var java;
         Date["__interfaces"] = ["java.lang.Cloneable", "java.lang.Comparable", "java.io.Serializable"];
     })(sql = java.sql || (java.sql = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var sql;
     (function (sql) {
@@ -9428,17 +9371,19 @@ var java;
         var Time = (function (_super) {
             __extends(Time, _super);
             function Time(hour, minute, second) {
+                var _this;
                 if (((typeof hour === 'number') || hour === null) && ((typeof minute === 'number') || minute === null) && ((typeof second === 'number') || second === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, 70, 0, 1, hour, minute, second);
+                    _this = _super.call(this, 70, 0, 1, hour, minute, second) || this;
                 }
                 else if (((typeof hour === 'number') || hour === null) && minute === undefined && second === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
                     var time = __args[0];
-                    _super.call(this, time);
+                    _this = _super.call(this, time) || this;
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             Time.valueOf = function (s) {
                 var split = s.split(":");
@@ -9484,8 +9429,7 @@ var java;
         Time["__interfaces"] = ["java.lang.Cloneable", "java.lang.Comparable", "java.io.Serializable"];
     })(sql = java.sql || (java.sql = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var sql;
     (function (sql) {
@@ -9497,11 +9441,11 @@ var java;
         var Timestamp = (function (_super) {
             __extends(Timestamp, _super);
             function Timestamp(year, month, date, hour, minute, second, nano) {
-                var _this = this;
+                var _this;
                 if (((typeof year === 'number') || year === null) && ((typeof month === 'number') || month === null) && ((typeof date === 'number') || date === null) && ((typeof hour === 'number') || hour === null) && ((typeof minute === 'number') || minute === null) && ((typeof second === 'number') || second === null) && ((typeof nano === 'number') || nano === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, year, month, date, hour, minute, second);
-                    this.nanos = 0;
+                    _this = _super.call(this, year, month, date, hour, minute, second) || this;
+                    _this.nanos = 0;
                     (function () {
                         _this.setNanos(nano);
                     })();
@@ -9509,14 +9453,15 @@ var java;
                 else if (((typeof year === 'number') || year === null) && month === undefined && date === undefined && hour === undefined && minute === undefined && second === undefined && nano === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
                     var time_1 = __args[0];
-                    _super.call(this, time_1);
-                    this.nanos = 0;
+                    _this = _super.call(this, time_1) || this;
+                    _this.nanos = 0;
                     (function () {
                         _this.nanos = ((((time_1 % 1000) | 0)) * 1000000);
                     })();
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             Timestamp.valueOf = function (s) {
                 var components = s.split(" ");
@@ -9654,8 +9599,7 @@ var java;
         Timestamp["__interfaces"] = ["java.lang.Cloneable", "java.lang.Comparable", "java.io.Serializable"];
     })(sql = java.sql || (java.sql = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -9667,7 +9611,7 @@ var java;
             var SimpleConsoleLogHandler = (function (_super) {
                 __extends(SimpleConsoleLogHandler, _super);
                 function SimpleConsoleLogHandler() {
-                    _super.apply(this, arguments);
+                    return _super.apply(this, arguments) || this;
                 }
                 SimpleConsoleLogHandler.prototype.publish = function (record) {
                     if (!this.isLoggable(record)) {
@@ -9705,8 +9649,7 @@ var java;
         })(logging = util.logging || (util.logging = {}));
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var javaemul;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (javaemul) {
     var internal;
     (function (internal) {
@@ -9716,11 +9659,11 @@ var javaemul;
         var ByteHelper = (function (_super) {
             __extends(ByteHelper, _super);
             function ByteHelper(s) {
-                var _this = this;
+                var _this;
                 if (((typeof s === 'string') || s === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
-                    this.value = 0;
+                    _this = _super.call(this) || this;
+                    _this.value = 0;
                     (function () {
                         _this.value = ByteHelper.parseByte(s);
                     })();
@@ -9728,14 +9671,15 @@ var javaemul;
                 else if (((typeof s === 'number') || s === null)) {
                     var __args = Array.prototype.slice.call(arguments);
                     var value_1 = __args[0];
-                    _super.call(this);
-                    this.value = 0;
+                    _this = _super.call(this) || this;
+                    _this.value = 0;
                     (function () {
                         _this.value = value_1;
                     })();
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             ByteHelper.MIN_VALUE_$LI$ = function () { if (ByteHelper.MIN_VALUE == null)
                 ByteHelper.MIN_VALUE = (128 | 0); return ByteHelper.MIN_VALUE; };
@@ -9771,7 +9715,7 @@ var javaemul;
                 var rebase = b + 128;
                 var result = ByteHelper.BoxedValues.boxedValues_$LI$()[rebase];
                 if (result == null) {
-                    result = ByteHelper.BoxedValues.boxedValues_$LI$()[rebase] = new ByteHelper(b);
+                    result = ByteHelper.BoxedValues.boxedValues_$LI$()[rebase] = new Number(b);
                 }
                 return result;
             };
@@ -9782,7 +9726,7 @@ var javaemul;
                 if (((typeof s === 'string') || s === null) && ((typeof radix === 'number') || radix === null)) {
                     var __args = Array.prototype.slice.call(arguments);
                     return (function () {
-                        return ByteHelper.valueOf(ByteHelper.parseByte(s, radix));
+                        return javaemul.internal.ByteHelper.valueOf(ByteHelper.parseByte(s, radix));
                     })();
                 }
                 else if (((typeof s === 'string') || s === null) && radix === undefined) {
@@ -9832,13 +9776,12 @@ var javaemul;
             ByteHelper.prototype.toString = function () {
                 return ByteHelper.toString(this.value);
             };
-            ByteHelper.SIZE = 8;
             return ByteHelper;
         }(javaemul.internal.NumberHelper));
+        ByteHelper.SIZE = 8;
         internal.ByteHelper = ByteHelper;
         ByteHelper["__class"] = "javaemul.internal.ByteHelper";
         ByteHelper["__interfaces"] = ["java.lang.Comparable", "java.io.Serializable"];
-        var ByteHelper;
         (function (ByteHelper) {
             /**
              * Use nested class to avoid clinit on outer.
@@ -9856,8 +9799,7 @@ var javaemul;
         })(ByteHelper = internal.ByteHelper || (internal.ByteHelper = {}));
     })(internal = javaemul.internal || (javaemul.internal = {}));
 })(javaemul || (javaemul = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var javaemul;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (javaemul) {
     var internal;
     (function (internal) {
@@ -9867,17 +9809,19 @@ var javaemul;
         var DoubleHelper = (function (_super) {
             __extends(DoubleHelper, _super);
             function DoubleHelper(s) {
+                var _this;
                 if (((typeof s === 'string') || s === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                 }
                 else if (((typeof s === 'number') || s === null)) {
                     var __args = Array.prototype.slice.call(arguments);
                     var value = __args[0];
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             DoubleHelper.NaN_$LI$ = function () { if (DoubleHelper.NaN == null)
                 DoubleHelper.NaN = 0.0 / 0.0; return DoubleHelper.NaN; };
@@ -10042,13 +9986,13 @@ var javaemul;
                 return new String(b).toString();
             };
             DoubleHelper.valueOf$double = function (d) {
-                return new DoubleHelper(d);
+                return new Number(d);
             };
             DoubleHelper.valueOf = function (s) {
                 if (((typeof s === 'string') || s === null)) {
                     var __args = Array.prototype.slice.call(arguments);
                     return (function () {
-                        return new DoubleHelper(s);
+                        return new Number(s);
                     })();
                 }
                 else if (((typeof s === 'number') || s === null)) {
@@ -10113,44 +10057,43 @@ var javaemul;
             DoubleHelper.prototype.toString = function () {
                 return DoubleHelper.toString(this.doubleValue());
             };
-            DoubleHelper.MAX_VALUE = 1.7976931348623157E308;
-            DoubleHelper.MIN_VALUE = 4.9E-324;
-            DoubleHelper.MIN_NORMAL = 2.2250738585072014E-308;
-            DoubleHelper.MAX_EXPONENT = 1023;
-            DoubleHelper.MIN_EXPONENT = -1022;
-            DoubleHelper.SIZE = 64;
-            DoubleHelper.POWER_512 = 1.3407807929942597E154;
-            DoubleHelper.POWER_MINUS_512 = 7.458340731200207E-155;
-            DoubleHelper.POWER_256 = 1.157920892373162E77;
-            DoubleHelper.POWER_MINUS_256 = 8.636168555094445E-78;
-            DoubleHelper.POWER_128 = 3.4028236692093846E38;
-            DoubleHelper.POWER_MINUS_128 = 2.9387358770557188E-39;
-            DoubleHelper.POWER_64 = 1.8446744073709552E19;
-            DoubleHelper.POWER_MINUS_64 = 5.421010862427522E-20;
-            DoubleHelper.POWER_52 = 4.503599627370496E15;
-            DoubleHelper.POWER_MINUS_52 = 2.220446049250313E-16;
-            DoubleHelper.POWER_32 = 4.294967296E9;
-            DoubleHelper.POWER_MINUS_32 = 2.3283064365386963E-10;
-            DoubleHelper.POWER_31 = 2.147483648E9;
-            DoubleHelper.POWER_20 = 1048576.0;
-            DoubleHelper.POWER_MINUS_20 = 9.5367431640625E-7;
-            DoubleHelper.POWER_16 = 65536.0;
-            DoubleHelper.POWER_MINUS_16 = 1.52587890625E-5;
-            DoubleHelper.POWER_8 = 256.0;
-            DoubleHelper.POWER_MINUS_8 = 0.00390625;
-            DoubleHelper.POWER_4 = 16.0;
-            DoubleHelper.POWER_MINUS_4 = 0.0625;
-            DoubleHelper.POWER_2 = 4.0;
-            DoubleHelper.POWER_MINUS_2 = 0.25;
-            DoubleHelper.POWER_1 = 2.0;
-            DoubleHelper.POWER_MINUS_1 = 0.5;
-            DoubleHelper.POWER_MINUS_1022 = 2.2250738585072014E-308;
             return DoubleHelper;
         }(javaemul.internal.NumberHelper));
+        DoubleHelper.MAX_VALUE = 1.7976931348623157E308;
+        DoubleHelper.MIN_VALUE = 4.9E-324;
+        DoubleHelper.MIN_NORMAL = 2.2250738585072014E-308;
+        DoubleHelper.MAX_EXPONENT = 1023;
+        DoubleHelper.MIN_EXPONENT = -1022;
+        DoubleHelper.SIZE = 64;
+        DoubleHelper.POWER_512 = 1.3407807929942597E154;
+        DoubleHelper.POWER_MINUS_512 = 7.458340731200207E-155;
+        DoubleHelper.POWER_256 = 1.157920892373162E77;
+        DoubleHelper.POWER_MINUS_256 = 8.636168555094445E-78;
+        DoubleHelper.POWER_128 = 3.4028236692093846E38;
+        DoubleHelper.POWER_MINUS_128 = 2.9387358770557188E-39;
+        DoubleHelper.POWER_64 = 1.8446744073709552E19;
+        DoubleHelper.POWER_MINUS_64 = 5.421010862427522E-20;
+        DoubleHelper.POWER_52 = 4.503599627370496E15;
+        DoubleHelper.POWER_MINUS_52 = 2.220446049250313E-16;
+        DoubleHelper.POWER_32 = 4.294967296E9;
+        DoubleHelper.POWER_MINUS_32 = 2.3283064365386963E-10;
+        DoubleHelper.POWER_31 = 2.147483648E9;
+        DoubleHelper.POWER_20 = 1048576.0;
+        DoubleHelper.POWER_MINUS_20 = 9.5367431640625E-7;
+        DoubleHelper.POWER_16 = 65536.0;
+        DoubleHelper.POWER_MINUS_16 = 1.52587890625E-5;
+        DoubleHelper.POWER_8 = 256.0;
+        DoubleHelper.POWER_MINUS_8 = 0.00390625;
+        DoubleHelper.POWER_4 = 16.0;
+        DoubleHelper.POWER_MINUS_4 = 0.0625;
+        DoubleHelper.POWER_2 = 4.0;
+        DoubleHelper.POWER_MINUS_2 = 0.25;
+        DoubleHelper.POWER_1 = 2.0;
+        DoubleHelper.POWER_MINUS_1 = 0.5;
+        DoubleHelper.POWER_MINUS_1022 = 2.2250738585072014E-308;
         internal.DoubleHelper = DoubleHelper;
         DoubleHelper["__class"] = "javaemul.internal.DoubleHelper";
         DoubleHelper["__interfaces"] = ["java.lang.Comparable", "java.io.Serializable"];
-        var DoubleHelper;
         (function (DoubleHelper) {
             var PowersTable = (function () {
                 function PowersTable() {
@@ -10168,8 +10111,7 @@ var javaemul;
         })(DoubleHelper = internal.DoubleHelper || (internal.DoubleHelper = {}));
     })(internal = javaemul.internal || (javaemul.internal = {}));
 })(javaemul || (javaemul = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var javaemul;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (javaemul) {
     var internal;
     (function (internal) {
@@ -10179,11 +10121,11 @@ var javaemul;
         var FloatHelper = (function (_super) {
             __extends(FloatHelper, _super);
             function FloatHelper(s) {
-                var _this = this;
+                var _this;
                 if (((typeof s === 'string') || s === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
-                    this.value = 0;
+                    _this = _super.call(this) || this;
+                    _this.value = 0;
                     (function () {
                         _this.value = FloatHelper.parseFloat(s);
                     })();
@@ -10191,8 +10133,8 @@ var javaemul;
                 else if (((typeof s === 'number') || s === null)) {
                     var __args = Array.prototype.slice.call(arguments);
                     var value_2 = __args[0];
-                    _super.call(this);
-                    this.value = 0;
+                    _this = _super.call(this) || this;
+                    _this.value = 0;
                     (function () {
                         _this.value = value_2;
                     })();
@@ -10200,14 +10142,15 @@ var javaemul;
                 else if (((typeof s === 'number') || s === null)) {
                     var __args = Array.prototype.slice.call(arguments);
                     var value_3 = __args[0];
-                    _super.call(this);
-                    this.value = 0;
+                    _this = _super.call(this) || this;
+                    _this.value = 0;
                     (function () {
                         _this.value = value_3;
                     })();
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             FloatHelper.NaN_$LI$ = function () { if (FloatHelper.NaN == null)
                 FloatHelper.NaN = 0.0 / 0.0; return FloatHelper.NaN; };
@@ -10317,13 +10260,13 @@ var javaemul;
                 return new String(b).toString();
             };
             FloatHelper.valueOf$float = function (f) {
-                return new FloatHelper(f);
+                return new Number(f);
             };
             FloatHelper.valueOf = function (s) {
                 if (((typeof s === 'string') || s === null)) {
                     var __args = Array.prototype.slice.call(arguments);
                     return (function () {
-                        return new FloatHelper(s);
+                        return new Number(s);
                     })();
                 }
                 else if (((typeof s === 'number') || s === null)) {
@@ -10385,22 +10328,21 @@ var javaemul;
             FloatHelper.prototype.toString = function () {
                 return FloatHelper.toString(this.value);
             };
-            FloatHelper.MAX_VALUE = 3.4028235E38;
-            FloatHelper.MIN_VALUE = 1.4E-45;
-            FloatHelper.MAX_EXPONENT = 127;
-            FloatHelper.MIN_EXPONENT = -126;
-            FloatHelper.MIN_NORMAL = 1.17549435E-38;
-            FloatHelper.SIZE = 32;
-            FloatHelper.POWER_31_INT = 2147483648;
             return FloatHelper;
         }(javaemul.internal.NumberHelper));
+        FloatHelper.MAX_VALUE = 3.4028235E38;
+        FloatHelper.MIN_VALUE = 1.4E-45;
+        FloatHelper.MAX_EXPONENT = 127;
+        FloatHelper.MIN_EXPONENT = -126;
+        FloatHelper.MIN_NORMAL = 1.17549435E-38;
+        FloatHelper.SIZE = 32;
+        FloatHelper.POWER_31_INT = 2147483648;
         internal.FloatHelper = FloatHelper;
         FloatHelper["__class"] = "javaemul.internal.FloatHelper";
         FloatHelper["__interfaces"] = ["java.lang.Comparable", "java.io.Serializable"];
     })(internal = javaemul.internal || (javaemul.internal = {}));
 })(javaemul || (javaemul = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var javaemul;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (javaemul) {
     var internal;
     (function (internal) {
@@ -10410,11 +10352,11 @@ var javaemul;
         var IntegerHelper = (function (_super) {
             __extends(IntegerHelper, _super);
             function IntegerHelper(s) {
-                var _this = this;
+                var _this;
                 if (((typeof s === 'string') || s === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
-                    this.value = 0;
+                    _this = _super.call(this) || this;
+                    _this.value = 0;
                     (function () {
                         _this.value = IntegerHelper.parseInt(s);
                     })();
@@ -10422,14 +10364,15 @@ var javaemul;
                 else if (((typeof s === 'number') || s === null)) {
                     var __args = Array.prototype.slice.call(arguments);
                     var value_4 = __args[0];
-                    _super.call(this);
-                    this.value = 0;
+                    _this = _super.call(this) || this;
+                    _this.value = 0;
                     (function () {
                         _this.value = value_4;
                     })();
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             IntegerHelper.bitCount = function (x) {
                 x -= ((x >> 1) & 1431655765);
@@ -10671,15 +10614,14 @@ var javaemul;
             IntegerHelper.getInteger = function (nm) {
                 return IntegerHelper.decode(java.lang.System.getProperty(nm));
             };
-            IntegerHelper.MAX_VALUE = 2147483647;
-            IntegerHelper.MIN_VALUE = -2147483648;
-            IntegerHelper.SIZE = 32;
             return IntegerHelper;
         }(javaemul.internal.NumberHelper));
+        IntegerHelper.MAX_VALUE = 2147483647;
+        IntegerHelper.MIN_VALUE = -2147483648;
+        IntegerHelper.SIZE = 32;
         internal.IntegerHelper = IntegerHelper;
         IntegerHelper["__class"] = "javaemul.internal.IntegerHelper";
         IntegerHelper["__interfaces"] = ["java.lang.Comparable", "java.io.Serializable"];
-        var IntegerHelper;
         (function (IntegerHelper) {
             /**
              * Use nested class to avoid clinit on outer.
@@ -10710,8 +10652,7 @@ var javaemul;
         })(IntegerHelper = internal.IntegerHelper || (internal.IntegerHelper = {}));
     })(internal = javaemul.internal || (javaemul.internal = {}));
 })(javaemul || (javaemul = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var javaemul;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (javaemul) {
     var internal;
     (function (internal) {
@@ -10721,11 +10662,11 @@ var javaemul;
         var LongHelper = (function (_super) {
             __extends(LongHelper, _super);
             function LongHelper(s) {
-                var _this = this;
+                var _this;
                 if (((typeof s === 'string') || s === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
-                    this.value = 0;
+                    _this = _super.call(this) || this;
+                    _this.value = 0;
                     (function () {
                         _this.value = LongHelper.parseLong(s);
                     })();
@@ -10733,14 +10674,15 @@ var javaemul;
                 else if (((typeof s === 'number') || s === null)) {
                     var __args = Array.prototype.slice.call(arguments);
                     var value_5 = __args[0];
-                    _super.call(this);
-                    this.value = 0;
+                    _this = _super.call(this) || this;
+                    _this.value = 0;
                     (function () {
                         _this.value = value_5;
                     })();
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             LongHelper.bitCount = function (i) {
                 var high = ((i >> 32) | 0);
@@ -10897,11 +10839,11 @@ var javaemul;
                     var rebase = (i | 0) + 128;
                     var result = LongHelper.BoxedValues.boxedValues_$LI$()[rebase];
                     if (result == null) {
-                        result = LongHelper.BoxedValues.boxedValues_$LI$()[rebase] = new LongHelper(i);
+                        result = LongHelper.BoxedValues.boxedValues_$LI$()[rebase] = new Number(i);
                     }
                     return result;
                 }
-                return new LongHelper(i);
+                return new Number(i);
             };
             LongHelper.valueOf$java_lang_String = function (s) {
                 return LongHelper.valueOf(s, 10);
@@ -10975,15 +10917,14 @@ var javaemul;
             LongHelper.prototype.toString = function () {
                 return LongHelper.toString(this.value);
             };
-            LongHelper.MAX_VALUE = 9223372036854775807;
-            LongHelper.MIN_VALUE = -9223372036854775808;
-            LongHelper.SIZE = 64;
             return LongHelper;
         }(javaemul.internal.NumberHelper));
+        LongHelper.MAX_VALUE = 9223372036854775807;
+        LongHelper.MIN_VALUE = -9223372036854775808;
+        LongHelper.SIZE = 64;
         internal.LongHelper = LongHelper;
         LongHelper["__class"] = "javaemul.internal.LongHelper";
         LongHelper["__interfaces"] = ["java.lang.Comparable", "java.io.Serializable"];
-        var LongHelper;
         (function (LongHelper) {
             /**
              * Use nested class to avoid clinit on outer.
@@ -11001,8 +10942,7 @@ var javaemul;
         })(LongHelper = internal.LongHelper || (internal.LongHelper = {}));
     })(internal = javaemul.internal || (javaemul.internal = {}));
 })(javaemul || (javaemul = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var javaemul;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (javaemul) {
     var internal;
     (function (internal) {
@@ -11012,11 +10952,11 @@ var javaemul;
         var ShortHelper = (function (_super) {
             __extends(ShortHelper, _super);
             function ShortHelper(s) {
-                var _this = this;
+                var _this;
                 if (((typeof s === 'string') || s === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
-                    this.value = 0;
+                    _this = _super.call(this) || this;
+                    _this.value = 0;
                     (function () {
                         _this.value = ShortHelper.parseShort(s);
                     })();
@@ -11024,14 +10964,15 @@ var javaemul;
                 else if (((typeof s === 'number') || s === null)) {
                     var __args = Array.prototype.slice.call(arguments);
                     var value_6 = __args[0];
-                    _super.call(this);
-                    this.value = 0;
+                    _this = _super.call(this) || this;
+                    _this.value = 0;
                     (function () {
                         _this.value = value_6;
                     })();
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             ShortHelper.MIN_VALUE_$LI$ = function () { if (ShortHelper.MIN_VALUE == null)
                 ShortHelper.MIN_VALUE = (32768 | 0); return ShortHelper.MIN_VALUE; };
@@ -11069,11 +11010,11 @@ var javaemul;
                     var rebase = s + 128;
                     var result = ShortHelper.BoxedValues.boxedValues_$LI$()[rebase];
                     if (result == null) {
-                        result = ShortHelper.BoxedValues.boxedValues_$LI$()[rebase] = new ShortHelper(s);
+                        result = ShortHelper.BoxedValues.boxedValues_$LI$()[rebase] = new Number(s);
                     }
                     return result;
                 }
-                return new ShortHelper(s);
+                return new Number(s);
             };
             ShortHelper.valueOf$java_lang_String = function (s) {
                 return ShortHelper.valueOf(s, 10);
@@ -11132,13 +11073,12 @@ var javaemul;
             ShortHelper.prototype.toString = function () {
                 return ShortHelper.toString(this.value);
             };
-            ShortHelper.SIZE = 16;
             return ShortHelper;
         }(javaemul.internal.NumberHelper));
+        ShortHelper.SIZE = 16;
         internal.ShortHelper = ShortHelper;
         ShortHelper["__class"] = "javaemul.internal.ShortHelper";
         ShortHelper["__interfaces"] = ["java.lang.Comparable", "java.io.Serializable"];
-        var ShortHelper;
         (function (ShortHelper) {
             /**
              * Use nested class to avoid clinit on outer.
@@ -11156,8 +11096,7 @@ var javaemul;
         })(ShortHelper = internal.ShortHelper || (internal.ShortHelper = {}));
     })(internal = javaemul.internal || (javaemul.internal = {}));
 })(javaemul || (javaemul = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var io;
     (function (io) {
@@ -11167,7 +11106,7 @@ var java;
         var PrintStream = (function (_super) {
             __extends(PrintStream, _super);
             function PrintStream(out) {
-                _super.call(this, out);
+                return _super.call(this, out) || this;
             }
             PrintStream.prototype.print$boolean = function (x) {
             };
@@ -11279,8 +11218,7 @@ var java;
         PrintStream["__interfaces"] = ["java.io.Closeable", "java.lang.AutoCloseable", "java.io.Flushable"];
     })(io = java.io || (java.io = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var io;
     (function (io) {
@@ -11292,16 +11230,18 @@ var java;
         var UnsupportedEncodingException = (function (_super) {
             __extends(UnsupportedEncodingException, _super);
             function UnsupportedEncodingException(msg) {
+                var _this;
                 if (((typeof msg === 'string') || msg === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, msg);
+                    _this = _super.call(this, msg) || this;
                 }
                 else if (msg === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             return UnsupportedEncodingException;
         }(java.io.IOException));
@@ -11310,8 +11250,7 @@ var java;
         UnsupportedEncodingException["__interfaces"] = ["java.io.Serializable"];
     })(io = java.io || (java.io = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var io;
     (function (io) {
@@ -11323,19 +11262,21 @@ var java;
         var UncheckedIOException = (function (_super) {
             __extends(UncheckedIOException, _super);
             function UncheckedIOException(message, cause) {
+                var _this;
                 if (((typeof message === 'string') || message === null) && ((cause != null && cause instanceof java.io.IOException) || cause === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, message);
-                    this.message = message;
+                    _this = _super.call(this, message) || this;
+                    _this.message = message;
                 }
                 else if (((message != null && message instanceof java.io.IOException) || message === null) && cause === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
                     var cause_5 = __args[0];
-                    _super.call(this, javaemul.internal.InternalPreconditions.checkNotNull(cause_5));
-                    this.message = javaemul.internal.InternalPreconditions.checkNotNull(cause_5);
+                    _this = _super.call(this, javaemul.internal.InternalPreconditions.checkNotNull(cause_5)) || this;
+                    _this.message = javaemul.internal.InternalPreconditions.checkNotNull(cause_5);
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             UncheckedIOException.prototype.getCause = function () {
                 return null;
@@ -11347,8 +11288,7 @@ var java;
         UncheckedIOException["__interfaces"] = ["java.io.Serializable"];
     })(io = java.io || (java.io = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var lang;
     (function (lang) {
@@ -11363,7 +11303,7 @@ var java;
             var AnnotationTypeMismatchException = (function (_super) {
                 __extends(AnnotationTypeMismatchException, _super);
                 function AnnotationTypeMismatchException() {
-                    _super.call(this);
+                    return _super.call(this) || this;
                 }
                 return AnnotationTypeMismatchException;
             }(Error));
@@ -11373,8 +11313,7 @@ var java;
         })(annotation = lang.annotation || (lang.annotation = {}));
     })(lang = java.lang || (java.lang = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var lang;
     (function (lang) {
@@ -11389,10 +11328,11 @@ var java;
             var IncompleteAnnotationException = (function (_super) {
                 __extends(IncompleteAnnotationException, _super);
                 function IncompleteAnnotationException(annotationType, elementName) {
-                    _super.call(this, "Incomplete annotation: trying to access " + elementName + " on " + annotationType);
-                    this.message = "Incomplete annotation: trying to access " + elementName + " on " + annotationType;
-                    this.__annotationType = annotationType;
-                    this.__elementName = elementName;
+                    var _this = _super.call(this, "Incomplete annotation: trying to access " + elementName + " on " + annotationType) || this;
+                    _this.message = "Incomplete annotation: trying to access " + elementName + " on " + annotationType;
+                    _this.__annotationType = annotationType;
+                    _this.__elementName = elementName;
+                    return _this;
                 }
                 IncompleteAnnotationException.prototype.annotationType = function () {
                     return this.__annotationType;
@@ -11408,8 +11348,7 @@ var java;
         })(annotation = lang.annotation || (lang.annotation = {}));
     })(lang = java.lang || (java.lang = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var lang;
     (function (lang) {
@@ -11424,17 +11363,19 @@ var java;
         var ArithmeticException = (function (_super) {
             __extends(ArithmeticException, _super);
             function ArithmeticException(explanation) {
+                var _this;
                 if (((typeof explanation === 'string') || explanation === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, explanation);
-                    this.message = explanation;
+                    _this = _super.call(this, explanation) || this;
+                    _this.message = explanation;
                 }
                 else if (explanation === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             return ArithmeticException;
         }(Error));
@@ -11443,8 +11384,7 @@ var java;
         ArithmeticException["__interfaces"] = ["java.io.Serializable"];
     })(lang = java.lang || (java.lang = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var lang;
     (function (lang) {
@@ -11456,17 +11396,19 @@ var java;
         var ArrayStoreException = (function (_super) {
             __extends(ArrayStoreException, _super);
             function ArrayStoreException(message) {
+                var _this;
                 if (((typeof message === 'string') || message === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, message);
-                    this.message = message;
+                    _this = _super.call(this, message) || this;
+                    _this.message = message;
                 }
                 else if (message === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             return ArrayStoreException;
         }(Error));
@@ -11475,8 +11417,7 @@ var java;
         ArrayStoreException["__interfaces"] = ["java.io.Serializable"];
     })(lang = java.lang || (java.lang = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var lang;
     (function (lang) {
@@ -11486,17 +11427,19 @@ var java;
         var ClassCastException = (function (_super) {
             __extends(ClassCastException, _super);
             function ClassCastException(message) {
+                var _this;
                 if (((typeof message === 'string') || message === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, message);
-                    this.message = message;
+                    _this = _super.call(this, message) || this;
+                    _this.message = message;
                 }
                 else if (message === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             return ClassCastException;
         }(Error));
@@ -11505,8 +11448,7 @@ var java;
         ClassCastException["__interfaces"] = ["java.io.Serializable"];
     })(lang = java.lang || (java.lang = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var lang;
     (function (lang) {
@@ -11518,28 +11460,30 @@ var java;
         var IllegalArgumentException = (function (_super) {
             __extends(IllegalArgumentException, _super);
             function IllegalArgumentException(message, cause) {
+                var _this;
                 if (((typeof message === 'string') || message === null) && ((cause != null && cause instanceof Error) || cause === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, message);
-                    this.message = message;
+                    _this = _super.call(this, message) || this;
+                    _this.message = message;
                 }
                 else if (((typeof message === 'string') || message === null) && cause === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, message);
-                    this.message = message;
+                    _this = _super.call(this, message) || this;
+                    _this.message = message;
                 }
                 else if (((message != null && message instanceof Error) || message === null) && cause === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
                     var cause_6 = __args[0];
-                    _super.call(this, cause_6);
-                    this.message = cause_6;
+                    _this = _super.call(this, cause_6) || this;
+                    _this.message = cause_6;
                 }
                 else if (message === undefined && cause === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             return IllegalArgumentException;
         }(Error));
@@ -11548,8 +11492,7 @@ var java;
         IllegalArgumentException["__interfaces"] = ["java.io.Serializable"];
     })(lang = java.lang || (java.lang = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var lang;
     (function (lang) {
@@ -11560,29 +11503,31 @@ var java;
         var IllegalStateException = (function (_super) {
             __extends(IllegalStateException, _super);
             function IllegalStateException(message, cause) {
+                var _this;
                 if (((typeof message === 'string') || message === null) && ((cause != null && cause instanceof Error) || cause === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, message);
-                    this.message = message;
+                    _this = _super.call(this, message) || this;
+                    _this.message = message;
                 }
                 else if (((typeof message === 'string') || message === null) && cause === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
                     var s = __args[0];
-                    _super.call(this, s);
-                    this.message = s;
+                    _this = _super.call(this, s) || this;
+                    _this.message = s;
                 }
                 else if (((message != null && message instanceof Error) || message === null) && cause === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
                     var cause_7 = __args[0];
-                    _super.call(this, cause_7);
-                    this.message = cause_7;
+                    _this = _super.call(this, cause_7) || this;
+                    _this.message = cause_7;
                 }
                 else if (message === undefined && cause === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             return IllegalStateException;
         }(Error));
@@ -11591,8 +11536,7 @@ var java;
         IllegalStateException["__interfaces"] = ["java.io.Serializable"];
     })(lang = java.lang || (java.lang = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var lang;
     (function (lang) {
@@ -11604,17 +11548,19 @@ var java;
         var IndexOutOfBoundsException = (function (_super) {
             __extends(IndexOutOfBoundsException, _super);
             function IndexOutOfBoundsException(message) {
+                var _this;
                 if (((typeof message === 'string') || message === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, message);
-                    this.message = message;
+                    _this = _super.call(this, message) || this;
+                    _this.message = message;
                 }
                 else if (message === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             return IndexOutOfBoundsException;
         }(Error));
@@ -11623,8 +11569,7 @@ var java;
         IndexOutOfBoundsException["__interfaces"] = ["java.io.Serializable"];
     })(lang = java.lang || (java.lang = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var lang;
     (function (lang) {
@@ -11636,17 +11581,19 @@ var java;
         var NegativeArraySizeException = (function (_super) {
             __extends(NegativeArraySizeException, _super);
             function NegativeArraySizeException(message) {
+                var _this;
                 if (((typeof message === 'string') || message === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, message);
-                    this.message = message;
+                    _this = _super.call(this, message) || this;
+                    _this.message = message;
                 }
                 else if (message === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             return NegativeArraySizeException;
         }(Error));
@@ -11655,8 +11602,7 @@ var java;
         NegativeArraySizeException["__interfaces"] = ["java.io.Serializable"];
     })(lang = java.lang || (java.lang = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var lang;
     (function (lang) {
@@ -11668,17 +11614,19 @@ var java;
         var NullPointerException = (function (_super) {
             __extends(NullPointerException, _super);
             function NullPointerException(message) {
+                var _this;
                 if (((typeof message === 'string') || message === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, message);
-                    this.message = message;
+                    _this = _super.call(this, message) || this;
+                    _this.message = message;
                 }
                 else if (message === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             NullPointerException.prototype.createError = function (msg) {
                 return new TypeError(msg);
@@ -11690,8 +11638,7 @@ var java;
         NullPointerException["__interfaces"] = ["java.io.Serializable"];
     })(lang = java.lang || (java.lang = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var lang;
     (function (lang) {
@@ -11703,28 +11650,30 @@ var java;
         var UnsupportedOperationException = (function (_super) {
             __extends(UnsupportedOperationException, _super);
             function UnsupportedOperationException(message, cause) {
+                var _this;
                 if (((typeof message === 'string') || message === null) && ((cause != null && cause instanceof Error) || cause === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, message);
-                    this.message = message;
+                    _this = _super.call(this, message) || this;
+                    _this.message = message;
                 }
                 else if (((typeof message === 'string') || message === null) && cause === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, message);
-                    this.message = message;
+                    _this = _super.call(this, message) || this;
+                    _this.message = message;
                 }
                 else if (((message != null && message instanceof Error) || message === null) && cause === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
                     var cause_8 = __args[0];
-                    _super.call(this, cause_8);
-                    this.message = cause_8;
+                    _this = _super.call(this, cause_8) || this;
+                    _this.message = cause_8;
                 }
                 else if (message === undefined && cause === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             return UnsupportedOperationException;
         }(Error));
@@ -11733,8 +11682,7 @@ var java;
         UnsupportedOperationException["__interfaces"] = ["java.io.Serializable"];
     })(lang = java.lang || (java.lang = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -11746,17 +11694,19 @@ var java;
         var ConcurrentModificationException = (function (_super) {
             __extends(ConcurrentModificationException, _super);
             function ConcurrentModificationException(message) {
+                var _this;
                 if (((typeof message === 'string') || message === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, message);
-                    this.message = message;
+                    _this = _super.call(this, message) || this;
+                    _this.message = message;
                 }
                 else if (message === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             return ConcurrentModificationException;
         }(Error));
@@ -11765,8 +11715,7 @@ var java;
         ConcurrentModificationException["__interfaces"] = ["java.io.Serializable"];
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -11778,7 +11727,7 @@ var java;
         var EmptyStackException = (function (_super) {
             __extends(EmptyStackException, _super);
             function EmptyStackException() {
-                _super.call(this);
+                return _super.call(this) || this;
             }
             return EmptyStackException;
         }(Error));
@@ -11787,8 +11736,7 @@ var java;
         EmptyStackException["__interfaces"] = ["java.io.Serializable"];
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -11800,10 +11748,11 @@ var java;
         var MissingResourceException = (function (_super) {
             __extends(MissingResourceException, _super);
             function MissingResourceException(s, className, key) {
-                _super.call(this, s);
-                this.message = s;
-                this.key = key;
-                this.className = className;
+                var _this = _super.call(this, s) || this;
+                _this.message = s;
+                _this.key = key;
+                _this.className = className;
+                return _this;
             }
             MissingResourceException.prototype.getClassName = function () {
                 return this.className;
@@ -11818,8 +11767,7 @@ var java;
         MissingResourceException["__interfaces"] = ["java.io.Serializable"];
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -11831,17 +11779,19 @@ var java;
         var NoSuchElementException = (function (_super) {
             __extends(NoSuchElementException, _super);
             function NoSuchElementException(s) {
+                var _this;
                 if (((typeof s === 'string') || s === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, s);
-                    this.message = s;
+                    _this = _super.call(this, s) || this;
+                    _this.message = s;
                 }
                 else if (s === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             return NoSuchElementException;
         }(Error));
@@ -11850,8 +11800,7 @@ var java;
         NoSuchElementException["__interfaces"] = ["java.io.Serializable"];
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var security;
     (function (security) {
@@ -11863,16 +11812,18 @@ var java;
         var DigestException = (function (_super) {
             __extends(DigestException, _super);
             function DigestException(msg) {
+                var _this;
                 if (((typeof msg === 'string') || msg === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, msg);
+                    _this = _super.call(this, msg) || this;
                 }
                 else if (msg === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             return DigestException;
         }(java.security.GeneralSecurityException));
@@ -11881,8 +11832,7 @@ var java;
         DigestException["__interfaces"] = ["java.io.Serializable"];
     })(security = java.security || (java.security = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var security;
     (function (security) {
@@ -11894,16 +11844,18 @@ var java;
         var NoSuchAlgorithmException = (function (_super) {
             __extends(NoSuchAlgorithmException, _super);
             function NoSuchAlgorithmException(msg) {
+                var _this;
                 if (((typeof msg === 'string') || msg === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, msg);
+                    _this = _super.call(this, msg) || this;
                 }
                 else if (msg === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             return NoSuchAlgorithmException;
         }(java.security.GeneralSecurityException));
@@ -11912,8 +11864,7 @@ var java;
         NoSuchAlgorithmException["__interfaces"] = ["java.io.Serializable"];
     })(security = java.security || (java.security = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var nio;
     (function (nio) {
@@ -11938,8 +11889,7 @@ var java;
         })(charset = nio.charset || (nio.charset = {}));
     })(nio = java.nio || (java.nio = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -11953,7 +11903,7 @@ var java;
         var AbstractSequentialList = (function (_super) {
             __extends(AbstractSequentialList, _super);
             function AbstractSequentialList() {
-                _super.call(this);
+                return _super.call(this) || this;
             }
             AbstractSequentialList.prototype.add = function (index, element) {
                 var _this = this;
@@ -12060,8 +12010,7 @@ var java;
         AbstractSequentialList["__interfaces"] = ["java.util.List", "java.util.Collection", "java.lang.Iterable"];
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -12086,10 +12035,10 @@ var java;
         var ArrayList = (function (_super) {
             __extends(ArrayList, _super);
             function ArrayList(c) {
-                var _this = this;
+                var _this;
                 if (((c != null && (c["__interfaces"] != null && c["__interfaces"].indexOf("java.util.Collection") >= 0 || c.constructor != null && c.constructor["__interfaces"] != null && c.constructor["__interfaces"].indexOf("java.util.Collection") >= 0)) || c === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                     (function () {
                         _this.array = new Array(0);
                         javaemul.internal.ArrayHelper.insertTo(_this.array, 0, c.toArray());
@@ -12098,7 +12047,7 @@ var java;
                 else if (((typeof c === 'number') || c === null)) {
                     var __args = Array.prototype.slice.call(arguments);
                     var initialCapacity_1 = __args[0];
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                     (function () {
                         javaemul.internal.InternalPreconditions.checkArgument(initialCapacity_1 >= 0, "Initial capacity must not be negative");
                         _this.array = new Array(0);
@@ -12106,13 +12055,14 @@ var java;
                 }
                 else if (c === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                     (function () {
                         _this.array = new Array(0);
                     })();
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             ArrayList.prototype.forEach = function (action) {
                 javaemul.internal.InternalPreconditions.checkNotNull(action);
@@ -12317,7 +12267,6 @@ var java;
         util.ArrayList = ArrayList;
         ArrayList["__class"] = "java.util.ArrayList";
         ArrayList["__interfaces"] = ["java.util.RandomAccess", "java.util.List", "java.lang.Cloneable", "java.util.Collection", "java.lang.Iterable", "java.io.Serializable"];
-        var ArrayList;
         (function (ArrayList) {
             var ArrayList$0 = (function () {
                 function ArrayList$0(__parent) {
@@ -12351,8 +12300,7 @@ var java;
         })(ArrayList = util.ArrayList || (util.ArrayList = {}));
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -12367,7 +12315,7 @@ var java;
             Arrays.asList = function () {
                 var array = [];
                 for (var _i = 0; _i < arguments.length; _i++) {
-                    array[_i - 0] = arguments[_i];
+                    array[_i] = arguments[_i];
                 }
                 return (new Arrays.ArrayList(array));
             };
@@ -13852,13 +13800,13 @@ var java;
         }());
         util.Arrays = Arrays;
         Arrays["__class"] = "java.util.Arrays";
-        var Arrays;
         (function (Arrays) {
             var ArrayList = (function (_super) {
                 __extends(ArrayList, _super);
                 function ArrayList(array) {
-                    _super.call(this);
-                    this.array = array;
+                    var _this = _super.call(this) || this;
+                    _this.array = array;
+                    return _this;
                 }
                 ArrayList.prototype.contains = function (o) {
                     return (this.indexOf(o) !== -1);
@@ -13910,8 +13858,7 @@ var java;
         })(Arrays = util.Arrays || (util.Arrays = {}));
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -13929,12 +13876,12 @@ var java;
              * Capacity increment is ignored.
              */
             function Vector(initialCapacity, ignoredCapacityIncrement) {
-                var _this = this;
+                var _this;
                 if (((typeof initialCapacity === 'number') || initialCapacity === null) && ((typeof ignoredCapacityIncrement === 'number') || ignoredCapacityIncrement === null)) {
                     var __args = Array.prototype.slice.call(arguments);
                     {
                         var __args_11 = Array.prototype.slice.call(arguments);
-                        _super.call(this);
+                        _this = _super.call(this) || this;
                         (function () {
                             _this.arrayList = (new java.util.ArrayList(initialCapacity));
                         })();
@@ -13943,7 +13890,7 @@ var java;
                 else if (((initialCapacity != null && (initialCapacity["__interfaces"] != null && initialCapacity["__interfaces"].indexOf("java.util.Collection") >= 0 || initialCapacity.constructor != null && initialCapacity.constructor["__interfaces"] != null && initialCapacity.constructor["__interfaces"].indexOf("java.util.Collection") >= 0)) || initialCapacity === null) && ignoredCapacityIncrement === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
                     var c_1 = __args[0];
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                     (function () {
                         _this.arrayList = (new java.util.ArrayList());
                         _this.addAll(c_1);
@@ -13951,20 +13898,21 @@ var java;
                 }
                 else if (((typeof initialCapacity === 'number') || initialCapacity === null) && ignoredCapacityIncrement === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                     (function () {
                         _this.arrayList = (new java.util.ArrayList(initialCapacity));
                     })();
                 }
                 else if (initialCapacity === undefined && ignoredCapacityIncrement === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                     (function () {
                         _this.arrayList = (new java.util.ArrayList());
                     })();
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             Vector.prototype.forEach = function (action) {
                 javaemul.internal.InternalPreconditions.checkNotNull(action);
@@ -14189,8 +14137,7 @@ var java;
         Vector["__interfaces"] = ["java.util.RandomAccess", "java.util.List", "java.lang.Cloneable", "java.util.Collection", "java.lang.Iterable", "java.io.Serializable"];
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -14204,10 +14151,10 @@ var java;
         var PriorityQueue = (function (_super) {
             __extends(PriorityQueue, _super);
             function PriorityQueue(initialCapacity, cmp) {
-                var _this = this;
+                var _this;
                 if (((typeof initialCapacity === 'number') || initialCapacity === null) && ((cmp != null && (cmp["__interfaces"] != null && cmp["__interfaces"].indexOf("java.util.Comparator") >= 0 || cmp.constructor != null && cmp.constructor["__interfaces"] != null && cmp.constructor["__interfaces"].indexOf("java.util.Comparator") >= 0)) || cmp === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                     (function () {
                         _this.heap = (new java.util.ArrayList(initialCapacity));
                         if (cmp == null) {
@@ -14223,7 +14170,7 @@ var java;
                         var __args_12 = Array.prototype.slice.call(arguments);
                         var initialCapacity_2 = c_2.size();
                         var cmp_1 = c_2.comparator();
-                        _super.call(this);
+                        _this = _super.call(this) || this;
                         (function () {
                             _this.heap = (new java.util.ArrayList(initialCapacity_2));
                             if (cmp_1 == null) {
@@ -14243,7 +14190,7 @@ var java;
                         var __args_13 = Array.prototype.slice.call(arguments);
                         var initialCapacity_3 = c_3.size();
                         var cmp_2 = c_3.comparator();
-                        _super.call(this);
+                        _this = _super.call(this) || this;
                         (function () {
                             _this.heap = (new java.util.ArrayList(initialCapacity_3));
                             if (cmp_2 == null) {
@@ -14265,7 +14212,7 @@ var java;
                         {
                             var __args_15 = Array.prototype.slice.call(arguments);
                             var cmp_3 = null;
-                            _super.call(this);
+                            _this = _super.call(this) || this;
                             (function () {
                                 _this.heap = (new java.util.ArrayList(initialCapacity_4));
                                 if (cmp_3 == null) {
@@ -14284,7 +14231,7 @@ var java;
                     {
                         var __args_16 = Array.prototype.slice.call(arguments);
                         var cmp_4 = null;
-                        _super.call(this);
+                        _this = _super.call(this) || this;
                         (function () {
                             _this.heap = (new java.util.ArrayList(initialCapacity));
                             if (cmp_4 == null) {
@@ -14302,7 +14249,7 @@ var java;
                         {
                             var __args_18 = Array.prototype.slice.call(arguments);
                             var cmp_5 = null;
-                            _super.call(this);
+                            _this = _super.call(this) || this;
                             (function () {
                                 _this.heap = (new java.util.ArrayList(initialCapacity_5));
                                 if (cmp_5 == null) {
@@ -14315,6 +14262,7 @@ var java;
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             PriorityQueue.getLeftChild = function (node) {
                 return 2 * node + 1;
@@ -14509,8 +14457,7 @@ var java;
         PriorityQueue["__interfaces"] = ["java.util.Collection", "java.util.Queue", "java.lang.Iterable"];
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -14673,7 +14620,6 @@ var java;
         util.AbstractMap = AbstractMap;
         AbstractMap["__class"] = "java.util.AbstractMap";
         AbstractMap["__interfaces"] = ["java.util.Map"];
-        var AbstractMap;
         (function (AbstractMap) {
             /**
              * Basic {@link Map.Entry} implementation used by {@link SimpleEntry} and
@@ -14723,17 +14669,19 @@ var java;
             var SimpleEntry = (function (_super) {
                 __extends(SimpleEntry, _super);
                 function SimpleEntry(key, value) {
+                    var _this;
                     if (((key != null) || key === null) && ((value != null) || value === null)) {
                         var __args = Array.prototype.slice.call(arguments);
-                        _super.call(this, key, value);
+                        _this = _super.call(this, key, value) || this;
                     }
                     else if (((key != null && (key["__interfaces"] != null && key["__interfaces"].indexOf("java.util.Map.Entry") >= 0 || key.constructor != null && key.constructor["__interfaces"] != null && key.constructor["__interfaces"].indexOf("java.util.Map.Entry") >= 0)) || key === null) && value === undefined) {
                         var __args = Array.prototype.slice.call(arguments);
                         var entry = __args[0];
-                        _super.call(this, entry.getKey(), entry.getValue());
+                        _this = _super.call(this, entry.getKey(), entry.getValue()) || this;
                     }
                     else
                         throw new Error('invalid overload');
+                    return _this;
                 }
                 return SimpleEntry;
             }(AbstractMap.AbstractEntry));
@@ -14747,17 +14695,19 @@ var java;
             var SimpleImmutableEntry = (function (_super) {
                 __extends(SimpleImmutableEntry, _super);
                 function SimpleImmutableEntry(key, value) {
+                    var _this;
                     if (((key != null) || key === null) && ((value != null) || value === null)) {
                         var __args = Array.prototype.slice.call(arguments);
-                        _super.call(this, key, value);
+                        _this = _super.call(this, key, value) || this;
                     }
                     else if (((key != null && (key["__interfaces"] != null && key["__interfaces"].indexOf("java.util.Map.Entry") >= 0 || key.constructor != null && key.constructor["__interfaces"] != null && key.constructor["__interfaces"].indexOf("java.util.Map.Entry") >= 0)) || key === null) && value === undefined) {
                         var __args = Array.prototype.slice.call(arguments);
                         var entry = __args[0];
-                        _super.call(this, entry.getKey(), entry.getValue());
+                        _this = _super.call(this, entry.getKey(), entry.getValue()) || this;
                     }
                     else
                         throw new Error('invalid overload');
+                    return _this;
                 }
                 SimpleImmutableEntry.prototype.setValue = function (value) {
                     throw new java.lang.UnsupportedOperationException();
@@ -14770,8 +14720,9 @@ var java;
             var AbstractMap$0 = (function (_super) {
                 __extends(AbstractMap$0, _super);
                 function AbstractMap$0(__parent) {
-                    _super.call(this);
-                    this.__parent = __parent;
+                    var _this = _super.call(this) || this;
+                    _this.__parent = __parent;
+                    return _this;
                 }
                 AbstractMap$0.prototype.clear = function () {
                     this.__parent.clear();
@@ -14796,7 +14747,6 @@ var java;
                 return AbstractMap$0;
             }(java.util.AbstractSet));
             AbstractMap.AbstractMap$0 = AbstractMap$0;
-            var AbstractMap$0;
             (function (AbstractMap$0) {
                 var AbstractMap$0$0 = (function () {
                     function AbstractMap$0$0(__parent, outerIter) {
@@ -14827,8 +14777,9 @@ var java;
             var AbstractMap$1 = (function (_super) {
                 __extends(AbstractMap$1, _super);
                 function AbstractMap$1(__parent) {
-                    _super.call(this);
-                    this.__parent = __parent;
+                    var _this = _super.call(this) || this;
+                    _this.__parent = __parent;
+                    return _this;
                 }
                 AbstractMap$1.prototype.clear = function () {
                     this.__parent.clear();
@@ -14846,7 +14797,6 @@ var java;
                 return AbstractMap$1;
             }(java.util.AbstractCollection));
             AbstractMap.AbstractMap$1 = AbstractMap$1;
-            var AbstractMap$1;
             (function (AbstractMap$1) {
                 var AbstractMap$1$0 = (function () {
                     function AbstractMap$1$0(__parent, outerIter) {
@@ -14877,8 +14827,7 @@ var java;
         })(AbstractMap = util.AbstractMap || (util.AbstractMap = {}));
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -14895,7 +14844,7 @@ var java;
              * Single implementation only.
              */
             function EnumSet() {
-                _super.call(this);
+                return _super.call(this) || this;
             }
             EnumSet.allOf = function (elementType) {
                 var all = elementType.getEnumConstants();
@@ -14986,7 +14935,6 @@ var java;
         util.EnumSet = EnumSet;
         EnumSet["__class"] = "java.util.EnumSet";
         EnumSet["__interfaces"] = ["java.util.Collection", "java.util.Set", "java.lang.Iterable"];
-        var EnumSet;
         (function (EnumSet) {
             /**
              * Implemented via sparse array since the set size is finite. Iteration takes
@@ -15005,11 +14953,12 @@ var java;
                  * accurately reflect the number of non-null items in set.
                  */
                 function EnumSetImpl(all, set, size) {
-                    _super.call(this);
-                    this.__size = 0;
-                    this.all = all;
-                    this.set = set;
-                    this.__size = size;
+                    var _this = _super.call(this) || this;
+                    _this.__size = 0;
+                    _this.all = all;
+                    _this.set = set;
+                    _this.__size = size;
+                    return _this;
                 }
                 EnumSetImpl.prototype.add = function (index, element) {
                     if (((index != null) || index === null) && element === undefined) {
@@ -15073,7 +15022,6 @@ var java;
             EnumSet.EnumSetImpl = EnumSetImpl;
             EnumSetImpl["__class"] = "java.util.EnumSet.EnumSetImpl";
             EnumSetImpl["__interfaces"] = ["java.util.Collection", "java.util.Set", "java.lang.Iterable"];
-            var EnumSetImpl;
             (function (EnumSetImpl) {
                 var IteratorImpl = (function () {
                     function IteratorImpl(__parent) {
@@ -15121,8 +15069,7 @@ var java;
         })(EnumSet = util.EnumSet || (util.EnumSet = {}));
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -15136,10 +15083,10 @@ var java;
         var HashSet = (function (_super) {
             __extends(HashSet, _super);
             function HashSet(initialCapacity, loadFactor) {
-                var _this = this;
+                var _this;
                 if (((typeof initialCapacity === 'number') || initialCapacity === null) && ((typeof loadFactor === 'number') || loadFactor === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                     (function () {
                         _this.map = (new java.util.HashMap(initialCapacity, loadFactor));
                     })();
@@ -15147,7 +15094,7 @@ var java;
                 else if (((initialCapacity != null && (initialCapacity["__interfaces"] != null && initialCapacity["__interfaces"].indexOf("java.util.Collection") >= 0 || initialCapacity.constructor != null && initialCapacity.constructor["__interfaces"] != null && initialCapacity.constructor["__interfaces"].indexOf("java.util.Collection") >= 0)) || initialCapacity === null) && loadFactor === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
                     var c_5 = __args[0];
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                     (function () {
                         _this.map = (new java.util.HashMap(c_5.size()));
                         _this.addAll(c_5);
@@ -15156,27 +15103,28 @@ var java;
                 else if (((initialCapacity != null && initialCapacity instanceof java.util.HashMap) || initialCapacity === null) && loadFactor === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
                     var map_1 = __args[0];
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                     (function () {
                         _this.map = map_1;
                     })();
                 }
                 else if (((typeof initialCapacity === 'number') || initialCapacity === null) && loadFactor === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                     (function () {
                         _this.map = (new java.util.HashMap(initialCapacity));
                     })();
                 }
                 else if (initialCapacity === undefined && loadFactor === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                     (function () {
                         _this.map = (new java.util.HashMap());
                     })();
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             HashSet.prototype.forEach = function (action) {
                 javaemul.internal.InternalPreconditions.checkNotNull(action);
@@ -15236,8 +15184,7 @@ var java;
         HashSet["__interfaces"] = ["java.lang.Cloneable", "java.util.Collection", "java.util.Set", "java.lang.Iterable", "java.io.Serializable"];
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -15251,12 +15198,12 @@ var java;
         var TreeSet = (function (_super) {
             __extends(TreeSet, _super);
             function TreeSet(c) {
-                var _this = this;
+                var _this;
                 if (((c != null && (c["__interfaces"] != null && c["__interfaces"].indexOf("java.util.Collection") >= 0 || c.constructor != null && c.constructor["__interfaces"] != null && c.constructor["__interfaces"].indexOf("java.util.Collection") >= 0)) || c === null)) {
                     var __args = Array.prototype.slice.call(arguments);
                     {
                         var __args_19 = Array.prototype.slice.call(arguments);
-                        _super.call(this);
+                        _this = _super.call(this) || this;
                         (function () {
                             _this.map = (new java.util.TreeMap());
                         })();
@@ -15267,7 +15214,7 @@ var java;
                 }
                 else if (((c != null && (c["__interfaces"] != null && c["__interfaces"].indexOf("java.util.Comparator") >= 0 || c.constructor != null && c.constructor["__interfaces"] != null && c.constructor["__interfaces"].indexOf("java.util.Comparator") >= 0)) || c === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                     (function () {
                         _this.map = (new java.util.TreeMap(c));
                     })();
@@ -15278,7 +15225,7 @@ var java;
                     {
                         var __args_20 = Array.prototype.slice.call(arguments);
                         var c_6 = javaemul.internal.InternalPreconditions.checkNotNull(s_1).comparator();
-                        _super.call(this);
+                        _this = _super.call(this) || this;
                         (function () {
                             _this.map = (new java.util.TreeMap(c_6));
                         })();
@@ -15290,20 +15237,21 @@ var java;
                 else if (((c != null && (c["__interfaces"] != null && c["__interfaces"].indexOf("java.util.NavigableMap") >= 0 || c.constructor != null && c.constructor["__interfaces"] != null && c.constructor["__interfaces"].indexOf("java.util.NavigableMap") >= 0)) || c === null)) {
                     var __args = Array.prototype.slice.call(arguments);
                     var map_2 = __args[0];
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                     (function () {
                         _this.map = map_2;
                     })();
                 }
                 else if (c === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                     (function () {
                         _this.map = (new java.util.TreeMap());
                     })();
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             TreeSet.prototype.forEach = function (action) {
                 javaemul.internal.InternalPreconditions.checkNotNull(action);
@@ -15437,8 +15385,7 @@ var java;
         TreeSet["__interfaces"] = ["java.util.SortedSet", "java.util.Collection", "java.util.Set", "java.util.NavigableSet", "java.lang.Iterable", "java.io.Serializable"];
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var lang;
     (function (lang) {
@@ -15543,8 +15490,7 @@ var java;
         System["__class"] = "java.lang.System";
     })(lang = java.lang || (java.lang = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var lang;
     (function (lang) {
@@ -15556,16 +15502,18 @@ var java;
         var NumberFormatException = (function (_super) {
             __extends(NumberFormatException, _super);
             function NumberFormatException(message) {
+                var _this;
                 if (((typeof message === 'string') || message === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, message);
+                    _this = _super.call(this, message) || this;
                 }
                 else if (message === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             NumberFormatException.forInputString = function (s) {
                 return new java.lang.NumberFormatException("For input string: \"" + s + "\"");
@@ -15583,8 +15531,7 @@ var java;
         NumberFormatException["__interfaces"] = ["java.io.Serializable"];
     })(lang = java.lang || (java.lang = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var nio;
     (function (nio) {
@@ -15596,8 +15543,9 @@ var java;
             var IllegalCharsetNameException = (function (_super) {
                 __extends(IllegalCharsetNameException, _super);
                 function IllegalCharsetNameException(charsetName) {
-                    _super.call(this, /* valueOf */ new String(charsetName).toString());
-                    this.charsetName = charsetName;
+                    var _this = _super.call(this, /* valueOf */ new String(charsetName).toString()) || this;
+                    _this.charsetName = charsetName;
+                    return _this;
                 }
                 IllegalCharsetNameException.prototype.getCharsetName = function () {
                     return this.charsetName;
@@ -15610,8 +15558,7 @@ var java;
         })(charset = nio.charset || (nio.charset = {}));
     })(nio = java.nio || (java.nio = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var nio;
     (function (nio) {
@@ -15623,8 +15570,9 @@ var java;
             var UnsupportedCharsetException = (function (_super) {
                 __extends(UnsupportedCharsetException, _super);
                 function UnsupportedCharsetException(charsetName) {
-                    _super.call(this, /* valueOf */ new String(charsetName).toString());
-                    this.charsetName = charsetName;
+                    var _this = _super.call(this, /* valueOf */ new String(charsetName).toString()) || this;
+                    _this.charsetName = charsetName;
+                    return _this;
                 }
                 UnsupportedCharsetException.prototype.getCharsetName = function () {
                     return this.charsetName;
@@ -15637,8 +15585,7 @@ var java;
         })(charset = nio.charset || (nio.charset = {}));
     })(nio = java.nio || (java.nio = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var lang;
     (function (lang) {
@@ -15653,21 +15600,23 @@ var java;
         var ArrayIndexOutOfBoundsException = (function (_super) {
             __extends(ArrayIndexOutOfBoundsException, _super);
             function ArrayIndexOutOfBoundsException(msg) {
+                var _this;
                 if (((typeof msg === 'string') || msg === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, msg);
+                    _this = _super.call(this, msg) || this;
                 }
                 else if (((typeof msg === 'number') || msg === null)) {
                     var __args = Array.prototype.slice.call(arguments);
                     var index = __args[0];
-                    _super.call(this, "Array index " + index + " out of range");
+                    _this = _super.call(this, "Array index " + index + " out of range") || this;
                 }
                 else if (msg === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             return ArrayIndexOutOfBoundsException;
         }(java.lang.IndexOutOfBoundsException));
@@ -15676,8 +15625,7 @@ var java;
         ArrayIndexOutOfBoundsException["__interfaces"] = ["java.io.Serializable"];
     })(lang = java.lang || (java.lang = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var lang;
     (function (lang) {
@@ -15689,21 +15637,23 @@ var java;
         var StringIndexOutOfBoundsException = (function (_super) {
             __extends(StringIndexOutOfBoundsException, _super);
             function StringIndexOutOfBoundsException(message) {
+                var _this;
                 if (((typeof message === 'string') || message === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, message);
+                    _this = _super.call(this, message) || this;
                 }
                 else if (((typeof message === 'number') || message === null)) {
                     var __args = Array.prototype.slice.call(arguments);
                     var index = __args[0];
-                    _super.call(this, "String index out of range: " + index);
+                    _this = _super.call(this, "String index out of range: " + index) || this;
                 }
                 else if (message === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             return StringIndexOutOfBoundsException;
         }(java.lang.IndexOutOfBoundsException));
@@ -15712,8 +15662,7 @@ var java;
         StringIndexOutOfBoundsException["__interfaces"] = ["java.io.Serializable"];
     })(lang = java.lang || (java.lang = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -15728,11 +15677,11 @@ var java;
         var LinkedList = (function (_super) {
             __extends(LinkedList, _super);
             function LinkedList(c) {
-                var _this = this;
+                var _this;
                 if (((c != null && (c["__interfaces"] != null && c["__interfaces"].indexOf("java.util.Collection") >= 0 || c.constructor != null && c.constructor["__interfaces"] != null && c.constructor["__interfaces"].indexOf("java.util.Collection") >= 0)) || c === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
-                    this.__size = 0;
+                    _this = _super.call(this) || this;
+                    _this.__size = 0;
                     (function () {
                         _this.header = (new LinkedList.Node());
                         _this.tail = (new LinkedList.Node());
@@ -15742,8 +15691,8 @@ var java;
                 }
                 else if (c === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
-                    this.__size = 0;
+                    _this = _super.call(this) || this;
+                    _this.__size = 0;
                     (function () {
                         _this.header = (new LinkedList.Node());
                         _this.tail = (new LinkedList.Node());
@@ -15752,6 +15701,7 @@ var java;
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             LinkedList.prototype.forEach = function (action) {
                 javaemul.internal.InternalPreconditions.checkNotNull(action);
@@ -15909,7 +15859,6 @@ var java;
         util.LinkedList = LinkedList;
         LinkedList["__class"] = "java.util.LinkedList";
         LinkedList["__interfaces"] = ["java.lang.Cloneable", "java.util.List", "java.util.Collection", "java.util.Queue", "java.util.Deque", "java.lang.Iterable", "java.io.Serializable"];
-        var LinkedList;
         (function (LinkedList) {
             var DescendingIteratorImpl = (function () {
                 function DescendingIteratorImpl(__parent) {
@@ -16028,8 +15977,7 @@ var java;
         })(LinkedList = util.LinkedList || (util.LinkedList = {}));
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -16043,7 +15991,7 @@ var java;
         var Stack = (function (_super) {
             __extends(Stack, _super);
             function Stack() {
-                _super.call(this);
+                return _super.call(this) || this;
             }
             Stack.prototype.clone = function () {
                 var s = (new Stack());
@@ -16089,8 +16037,7 @@ var java;
         Stack["__interfaces"] = ["java.util.RandomAccess", "java.util.List", "java.lang.Cloneable", "java.util.Collection", "java.lang.Iterable", "java.io.Serializable"];
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -16105,10 +16052,10 @@ var java;
         var AbstractHashMap = (function (_super) {
             __extends(AbstractHashMap, _super);
             function AbstractHashMap(ignored, alsoIgnored) {
-                var _this = this;
+                var _this;
                 if (((typeof ignored === 'number') || ignored === null) && ((typeof alsoIgnored === 'number') || alsoIgnored === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                     (function () {
                         javaemul.internal.InternalPreconditions.checkArgument(ignored >= 0, "Negative initial capacity");
                         javaemul.internal.InternalPreconditions.checkArgument(alsoIgnored >= 0, "Non-positive load factor");
@@ -16118,7 +16065,7 @@ var java;
                 else if (((ignored != null && (ignored["__interfaces"] != null && ignored["__interfaces"].indexOf("java.util.Map") >= 0 || ignored.constructor != null && ignored.constructor["__interfaces"] != null && ignored.constructor["__interfaces"].indexOf("java.util.Map") >= 0)) || ignored === null) && alsoIgnored === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
                     var toBeCopied_1 = __args[0];
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                     (function () {
                         _this.reset();
                         _this.putAll(toBeCopied_1);
@@ -16129,7 +16076,7 @@ var java;
                     {
                         var __args_21 = Array.prototype.slice.call(arguments);
                         var alsoIgnored_1 = 0;
-                        _super.call(this);
+                        _this = _super.call(this) || this;
                         (function () {
                             javaemul.internal.InternalPreconditions.checkArgument(ignored >= 0, "Negative initial capacity");
                             javaemul.internal.InternalPreconditions.checkArgument(alsoIgnored_1 >= 0, "Non-positive load factor");
@@ -16139,13 +16086,14 @@ var java;
                 }
                 else if (ignored === undefined && alsoIgnored === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                     (function () {
                         _this.reset();
                     })();
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             AbstractHashMap.prototype.clear = function () {
                 this.reset();
@@ -16255,13 +16203,13 @@ var java;
         util.AbstractHashMap = AbstractHashMap;
         AbstractHashMap["__class"] = "java.util.AbstractHashMap";
         AbstractHashMap["__interfaces"] = ["java.util.Map"];
-        var AbstractHashMap;
         (function (AbstractHashMap) {
             var EntrySet = (function (_super) {
                 __extends(EntrySet, _super);
                 function EntrySet(__parent) {
-                    _super.call(this);
-                    this.__parent = __parent;
+                    var _this = _super.call(this) || this;
+                    _this.__parent = __parent;
+                    return _this;
                 }
                 EntrySet.prototype.clear = function () {
                     this.__parent.clear();
@@ -16354,8 +16302,7 @@ var java;
         })(AbstractHashMap = util.AbstractHashMap || (util.AbstractHashMap = {}));
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -16365,7 +16312,7 @@ var java;
         var AbstractNavigableMap = (function (_super) {
             __extends(AbstractNavigableMap, _super);
             function AbstractNavigableMap() {
-                _super.call(this);
+                return _super.call(this) || this;
             }
             AbstractNavigableMap.copyOf = function (entry) {
                 return entry == null ? null : new util.AbstractMap.SimpleImmutableEntry(entry);
@@ -16487,13 +16434,13 @@ var java;
         util.AbstractNavigableMap = AbstractNavigableMap;
         AbstractNavigableMap["__class"] = "java.util.AbstractNavigableMap";
         AbstractNavigableMap["__interfaces"] = ["java.util.Map", "java.util.NavigableMap", "java.util.SortedMap"];
-        var AbstractNavigableMap;
         (function (AbstractNavigableMap) {
             var DescendingMap = (function (_super) {
                 __extends(DescendingMap, _super);
                 function DescendingMap(__parent) {
-                    _super.call(this);
-                    this.__parent = __parent;
+                    var _this = _super.call(this) || this;
+                    _this.__parent = __parent;
+                    return _this;
                 }
                 DescendingMap.prototype.clear = function () {
                     this.ascendingMap().clear();
@@ -16596,8 +16543,9 @@ var java;
             var EntrySet = (function (_super) {
                 __extends(EntrySet, _super);
                 function EntrySet(__parent) {
-                    _super.call(this);
-                    this.__parent = __parent;
+                    var _this = _super.call(this) || this;
+                    _this.__parent = __parent;
+                    return _this;
                 }
                 EntrySet.prototype.contains = function (o) {
                     return (o != null && (o["__interfaces"] != null && o["__interfaces"].indexOf("java.util.Map.Entry") >= 0 || o.constructor != null && o.constructor["__interfaces"] != null && o.constructor["__interfaces"].indexOf("java.util.Map.Entry") >= 0)) && this.__parent.containsEntry(o);
@@ -16630,8 +16578,9 @@ var java;
             var NavigableKeySet = (function (_super) {
                 __extends(NavigableKeySet, _super);
                 function NavigableKeySet(map) {
-                    _super.call(this);
-                    this.map = map;
+                    var _this = _super.call(this) || this;
+                    _this.map = map;
+                    return _this;
                 }
                 NavigableKeySet.prototype.forEach = function (action) {
                     javaemul.internal.InternalPreconditions.checkNotNull(action);
@@ -16758,7 +16707,6 @@ var java;
             AbstractNavigableMap.NavigableKeySet = NavigableKeySet;
             NavigableKeySet["__class"] = "java.util.AbstractNavigableMap.NavigableKeySet";
             NavigableKeySet["__interfaces"] = ["java.util.SortedSet", "java.util.Collection", "java.util.Set", "java.util.NavigableSet", "java.lang.Iterable"];
-            var NavigableKeySet;
             (function (NavigableKeySet) {
                 var NavigableKeySet$0 = (function () {
                     function NavigableKeySet$0(__parent, entryIterator) {
@@ -16789,8 +16737,7 @@ var java;
         })(AbstractNavigableMap = util.AbstractNavigableMap || (util.AbstractNavigableMap = {}));
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -17211,13 +17158,13 @@ var java;
         }());
         util.Collections = Collections;
         Collections["__class"] = "java.util.Collections";
-        var Collections;
         (function (Collections) {
             var LifoQueue = (function (_super) {
                 __extends(LifoQueue, _super);
                 function LifoQueue(deque) {
-                    _super.call(this);
-                    this.deque = deque;
+                    var _this = _super.call(this) || this;
+                    _this.deque = deque;
+                    return _this;
                 }
                 LifoQueue.prototype.iterator = function () {
                     return this.deque.iterator();
@@ -17242,7 +17189,7 @@ var java;
             var EmptyList = (function (_super) {
                 __extends(EmptyList, _super);
                 function EmptyList() {
-                    _super.call(this);
+                    return _super.call(this) || this;
                 }
                 EmptyList.prototype.contains = function (object) {
                     return false;
@@ -17313,7 +17260,7 @@ var java;
             var EmptySet = (function (_super) {
                 __extends(EmptySet, _super);
                 function EmptySet() {
-                    _super.call(this);
+                    return _super.call(this) || this;
                 }
                 EmptySet.prototype.contains = function (object) {
                     return false;
@@ -17332,7 +17279,7 @@ var java;
             var EmptyMap = (function (_super) {
                 __extends(EmptyMap, _super);
                 function EmptyMap() {
-                    _super.call(this);
+                    return _super.call(this) || this;
                 }
                 EmptyMap.prototype.containsKey = function (key) {
                     return false;
@@ -17384,8 +17331,9 @@ var java;
             var SetFromMap = (function (_super) {
                 __extends(SetFromMap, _super);
                 function SetFromMap(map) {
-                    _super.call(this);
-                    this.backingMap = map;
+                    var _this = _super.call(this) || this;
+                    _this.backingMap = map;
+                    return _this;
                 }
                 SetFromMap.prototype.add = function (index, element) {
                     if (((index != null) || index === null) && element === undefined) {
@@ -17445,8 +17393,9 @@ var java;
             var SingletonList = (function (_super) {
                 __extends(SingletonList, _super);
                 function SingletonList(element) {
-                    _super.call(this);
-                    this.element = element;
+                    var _this = _super.call(this) || this;
+                    _this.element = element;
+                    return _this;
                 }
                 SingletonList.prototype.contains = function (item) {
                     return java.util.Objects.equals(this.element, item);
@@ -17558,8 +17507,9 @@ var java;
             var UnmodifiableList = (function (_super) {
                 __extends(UnmodifiableList, _super);
                 function UnmodifiableList(list) {
-                    _super.call(this, list);
-                    this.list = list;
+                    var _this = _super.call(this, list) || this;
+                    _this.list = list;
+                    return _this;
                 }
                 UnmodifiableList.prototype.forEach = function (action) {
                     javaemul.internal.InternalPreconditions.checkNotNull(action);
@@ -17672,7 +17622,7 @@ var java;
             var UnmodifiableRandomAccessList = (function (_super) {
                 __extends(UnmodifiableRandomAccessList, _super);
                 function UnmodifiableRandomAccessList(list) {
-                    _super.call(this, list);
+                    return _super.call(this, list) || this;
                 }
                 return UnmodifiableRandomAccessList;
             }(Collections.UnmodifiableList));
@@ -17682,7 +17632,7 @@ var java;
             var UnmodifiableSet = (function (_super) {
                 __extends(UnmodifiableSet, _super);
                 function UnmodifiableSet(set) {
-                    _super.call(this, set);
+                    return _super.call(this, set) || this;
                 }
                 UnmodifiableSet.prototype.forEach = function (action) {
                     javaemul.internal.InternalPreconditions.checkNotNull(action);
@@ -17767,12 +17717,11 @@ var java;
             Collections.UnmodifiableMap = UnmodifiableMap;
             UnmodifiableMap["__class"] = "java.util.Collections.UnmodifiableMap";
             UnmodifiableMap["__interfaces"] = ["java.util.Map"];
-            var UnmodifiableMap;
             (function (UnmodifiableMap) {
                 var UnmodifiableEntrySet = (function (_super) {
                     __extends(UnmodifiableEntrySet, _super);
                     function UnmodifiableEntrySet(s) {
-                        _super.call(this, s);
+                        return _super.call(this, s) || this;
                     }
                     UnmodifiableEntrySet.prototype.contains = function (o) {
                         return this.coll.contains(o);
@@ -17821,7 +17770,6 @@ var java;
                 UnmodifiableMap.UnmodifiableEntrySet = UnmodifiableEntrySet;
                 UnmodifiableEntrySet["__class"] = "java.util.Collections.UnmodifiableMap.UnmodifiableEntrySet";
                 UnmodifiableEntrySet["__interfaces"] = ["java.util.Collection", "java.util.Set", "java.lang.Iterable"];
-                var UnmodifiableEntrySet;
                 (function (UnmodifiableEntrySet) {
                     var UnmodifiableEntry = (function () {
                         function UnmodifiableEntry(entry) {
@@ -17879,8 +17827,9 @@ var java;
             var UnmodifiableSortedMap = (function (_super) {
                 __extends(UnmodifiableSortedMap, _super);
                 function UnmodifiableSortedMap(sortedMap) {
-                    _super.call(this, sortedMap);
-                    this.sortedMap = sortedMap;
+                    var _this = _super.call(this, sortedMap) || this;
+                    _this.sortedMap = sortedMap;
+                    return _this;
                 }
                 UnmodifiableSortedMap.prototype.comparator = function () {
                     return this.sortedMap.comparator();
@@ -17935,8 +17884,9 @@ var java;
             var UnmodifiableSortedSet = (function (_super) {
                 __extends(UnmodifiableSortedSet, _super);
                 function UnmodifiableSortedSet(sortedSet) {
-                    _super.call(this, sortedSet);
-                    this.sortedSet = sortedSet;
+                    var _this = _super.call(this, sortedSet) || this;
+                    _this.sortedSet = sortedSet;
+                    return _this;
                 }
                 UnmodifiableSortedSet.prototype.forEach = function (action) {
                     javaemul.internal.InternalPreconditions.checkNotNull(action);
@@ -18025,8 +17975,9 @@ var java;
             var UnmodifiableListIterator = (function (_super) {
                 __extends(UnmodifiableListIterator, _super);
                 function UnmodifiableListIterator(lit) {
-                    _super.call(this, lit);
-                    this.lit = lit;
+                    var _this = _super.call(this, lit) || this;
+                    _this.lit = lit;
+                    return _this;
                 }
                 UnmodifiableListIterator.prototype.forEachRemaining = function (consumer) {
                     javaemul.internal.InternalPreconditions.checkNotNull(consumer);
@@ -18094,8 +18045,7 @@ var java;
         })(Collections = util.Collections || (util.Collections = {}));
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -18110,10 +18060,10 @@ var java;
         var EnumMap = (function (_super) {
             __extends(EnumMap, _super);
             function EnumMap(type) {
-                var _this = this;
+                var _this;
                 if (((type != null && type instanceof java.lang.Class) || type === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                     (function () {
                         _this.init(type);
                     })();
@@ -18121,7 +18071,7 @@ var java;
                 else if (((type != null && type instanceof java.util.EnumMap) || type === null)) {
                     var __args = Array.prototype.slice.call(arguments);
                     var m_1 = __args[0];
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                     (function () {
                         _this.init(m_1);
                     })();
@@ -18129,7 +18079,7 @@ var java;
                 else if (((type != null && (type["__interfaces"] != null && type["__interfaces"].indexOf("java.util.Map") >= 0 || type.constructor != null && type.constructor["__interfaces"] != null && type.constructor["__interfaces"].indexOf("java.util.Map") >= 0)) || type === null)) {
                     var __args = Array.prototype.slice.call(arguments);
                     var m_2 = __args[0];
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                     (function () {
                         if (m_2 != null && m_2 instanceof java.util.EnumMap) {
                             _this.init(m_2);
@@ -18143,6 +18093,7 @@ var java;
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             EnumMap.prototype.clear = function () {
                 this.__keySet.clear();
@@ -18232,13 +18183,13 @@ var java;
         util.EnumMap = EnumMap;
         EnumMap["__class"] = "java.util.EnumMap";
         EnumMap["__interfaces"] = ["java.util.Map"];
-        var EnumMap;
         (function (EnumMap) {
             var EntrySet = (function (_super) {
                 __extends(EntrySet, _super);
                 function EntrySet(__parent) {
-                    _super.call(this);
-                    this.__parent = __parent;
+                    var _this = _super.call(this) || this;
+                    _this.__parent = __parent;
+                    return _this;
                 }
                 EntrySet.prototype.clear = function () {
                     this.__parent.clear();
@@ -18307,9 +18258,10 @@ var java;
             var MapEntry = (function (_super) {
                 __extends(MapEntry, _super);
                 function MapEntry(__parent, key) {
-                    _super.call(this);
-                    this.__parent = __parent;
-                    this.key = key;
+                    var _this = _super.call(this) || this;
+                    _this.__parent = __parent;
+                    _this.key = key;
+                    return _this;
                 }
                 MapEntry.prototype.getKey = function () {
                     return this.key;
@@ -18328,8 +18280,7 @@ var java;
         })(EnumMap = util.EnumMap || (util.EnumMap = {}));
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -18344,29 +18295,30 @@ var java;
         var LinkedHashSet = (function (_super) {
             __extends(LinkedHashSet, _super);
             function LinkedHashSet(ignored, alsoIgnored) {
-                var _this = this;
+                var _this;
                 if (((typeof ignored === 'number') || ignored === null) && ((typeof alsoIgnored === 'number') || alsoIgnored === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, (new java.util.LinkedHashMap(ignored, alsoIgnored)));
+                    _this = _super.call(this, (new java.util.LinkedHashMap(ignored, alsoIgnored))) || this;
                 }
                 else if (((ignored != null && (ignored["__interfaces"] != null && ignored["__interfaces"].indexOf("java.util.Collection") >= 0 || ignored.constructor != null && ignored.constructor["__interfaces"] != null && ignored.constructor["__interfaces"].indexOf("java.util.Collection") >= 0)) || ignored === null) && alsoIgnored === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
                     var c_7 = __args[0];
-                    _super.call(this, (new java.util.LinkedHashMap()));
+                    _this = _super.call(this, (new java.util.LinkedHashMap())) || this;
                     (function () {
                         _this.addAll(c_7);
                     })();
                 }
                 else if (((typeof ignored === 'number') || ignored === null) && alsoIgnored === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, (new java.util.LinkedHashMap(ignored)));
+                    _this = _super.call(this, (new java.util.LinkedHashMap(ignored))) || this;
                 }
                 else if (ignored === undefined && alsoIgnored === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, (new java.util.LinkedHashMap()));
+                    _this = _super.call(this, (new java.util.LinkedHashMap())) || this;
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             LinkedHashSet.prototype.forEach = function (action) {
                 javaemul.internal.InternalPreconditions.checkNotNull(action);
@@ -18387,8 +18339,7 @@ var java;
         LinkedHashSet["__interfaces"] = ["java.lang.Cloneable", "java.util.Collection", "java.util.Set", "java.lang.Iterable", "java.io.Serializable"];
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -18424,15 +18375,14 @@ var java;
                     throw new java.util.ConcurrentModificationException();
                 }
             };
-            ConcurrentModificationDetector.MOD_COUNT_PROPERTY = "_gwt_modCount";
             return ConcurrentModificationDetector;
         }());
+        ConcurrentModificationDetector.MOD_COUNT_PROPERTY = "_gwt_modCount";
         util.ConcurrentModificationDetector = ConcurrentModificationDetector;
         ConcurrentModificationDetector["__class"] = "java.util.ConcurrentModificationDetector";
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -18697,17 +18647,16 @@ var java;
                         ;
                     }
                 };
-                Logger.__static_initialized = false;
-                Logger.GLOBAL_LOGGER_NAME = "global";
                 return Logger;
             }());
+            Logger.__static_initialized = false;
+            Logger.GLOBAL_LOGGER_NAME = "global";
             logging.Logger = Logger;
             Logger["__class"] = "java.util.logging.Logger";
         })(logging = util.logging || (util.logging = {}));
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var javaemul;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (javaemul) {
     var internal;
     (function (internal) {
@@ -19307,8 +19256,7 @@ var javaemul;
         InternalPreconditions["__class"] = "javaemul.internal.InternalPreconditions";
     })(internal = javaemul.internal || (javaemul.internal = {}));
 })(javaemul || (javaemul = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -19323,25 +19271,27 @@ var java;
         var HashMap = (function (_super) {
             __extends(HashMap, _super);
             function HashMap(ignored, alsoIgnored) {
+                var _this;
                 if (((typeof ignored === 'number') || ignored === null) && ((typeof alsoIgnored === 'number') || alsoIgnored === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, ignored, alsoIgnored);
+                    _this = _super.call(this, ignored, alsoIgnored) || this;
                 }
                 else if (((ignored != null && (ignored["__interfaces"] != null && ignored["__interfaces"].indexOf("java.util.Map") >= 0 || ignored.constructor != null && ignored.constructor["__interfaces"] != null && ignored.constructor["__interfaces"].indexOf("java.util.Map") >= 0)) || ignored === null) && alsoIgnored === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
                     var toBeCopied = __args[0];
-                    _super.call(this, toBeCopied);
+                    _this = _super.call(this, toBeCopied) || this;
                 }
                 else if (((typeof ignored === 'number') || ignored === null) && alsoIgnored === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, ignored);
+                    _this = _super.call(this, ignored) || this;
                 }
                 else if (ignored === undefined && alsoIgnored === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             HashMap.prototype.clone = function () {
                 return (new HashMap(this));
@@ -19360,8 +19310,7 @@ var java;
         HashMap["__interfaces"] = ["java.lang.Cloneable", "java.util.Map", "java.io.Serializable"];
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -19376,21 +19325,23 @@ var java;
         var IdentityHashMap = (function (_super) {
             __extends(IdentityHashMap, _super);
             function IdentityHashMap(toBeCopied) {
+                var _this;
                 if (((toBeCopied != null && (toBeCopied["__interfaces"] != null && toBeCopied["__interfaces"].indexOf("java.util.Map") >= 0 || toBeCopied.constructor != null && toBeCopied.constructor["__interfaces"] != null && toBeCopied.constructor["__interfaces"].indexOf("java.util.Map") >= 0)) || toBeCopied === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, toBeCopied);
+                    _this = _super.call(this, toBeCopied) || this;
                 }
                 else if (((typeof toBeCopied === 'number') || toBeCopied === null)) {
                     var __args = Array.prototype.slice.call(arguments);
                     var ignored = __args[0];
-                    _super.call(this, ignored);
+                    _this = _super.call(this, ignored) || this;
                 }
                 else if (toBeCopied === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             IdentityHashMap.prototype.clone = function () {
                 return (new IdentityHashMap(this));
@@ -19445,8 +19396,7 @@ var java;
         IdentityHashMap["__interfaces"] = ["java.lang.Cloneable", "java.util.Map", "java.io.Serializable"];
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -19462,11 +19412,11 @@ var java;
         var TreeMap = (function (_super) {
             __extends(TreeMap, _super);
             function TreeMap(c) {
-                var _this = this;
+                var _this;
                 if (((c != null && (c["__interfaces"] != null && c["__interfaces"].indexOf("java.util.Comparator") >= 0 || c.constructor != null && c.constructor["__interfaces"] != null && c.constructor["__interfaces"].indexOf("java.util.Comparator") >= 0)) || c === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
-                    this.__size = 0;
+                    _this = _super.call(this) || this;
+                    _this.__size = 0;
                     (function () {
                         _this.root = null;
                         if (c == null) {
@@ -19481,8 +19431,8 @@ var java;
                     {
                         var __args_22 = Array.prototype.slice.call(arguments);
                         var c_8 = javaemul.internal.InternalPreconditions.checkNotNull(map_3).comparator();
-                        _super.call(this);
-                        this.__size = 0;
+                        _this = _super.call(this) || this;
+                        _this.__size = 0;
                         (function () {
                             _this.root = null;
                             if (c_8 == null) {
@@ -19503,8 +19453,8 @@ var java;
                         {
                             var __args_24 = Array.prototype.slice.call(arguments);
                             var c_9 = null;
-                            _super.call(this);
-                            this.__size = 0;
+                            _this = _super.call(this) || this;
+                            _this.__size = 0;
                             (function () {
                                 _this.root = null;
                                 if (c_9 == null) {
@@ -19523,8 +19473,8 @@ var java;
                     {
                         var __args_25 = Array.prototype.slice.call(arguments);
                         var c_10 = null;
-                        _super.call(this);
-                        this.__size = 0;
+                        _this = _super.call(this) || this;
+                        _this.__size = 0;
                         (function () {
                             _this.root = null;
                             if (c_10 == null) {
@@ -19536,6 +19486,7 @@ var java;
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             TreeMap.SubMapType_All_$LI$ = function () { if (TreeMap.SubMapType_All == null)
                 TreeMap.SubMapType_All = new TreeMap.SubMapType(); return TreeMap.SubMapType_All; };
@@ -20039,14 +19990,13 @@ var java;
                 save.isRed = false;
                 return save;
             };
-            TreeMap.LEFT = 0;
-            TreeMap.RIGHT = 1;
             return TreeMap;
         }(java.util.AbstractNavigableMap));
+        TreeMap.LEFT = 0;
+        TreeMap.RIGHT = 1;
         util.TreeMap = TreeMap;
         TreeMap["__class"] = "java.util.TreeMap";
         TreeMap["__interfaces"] = ["java.util.Map", "java.util.NavigableMap", "java.util.SortedMap", "java.io.Serializable"];
-        var TreeMap;
         (function (TreeMap) {
             /**
              * Iterator for <code>descendingMap().entrySet()</code>.
@@ -20139,8 +20089,9 @@ var java;
             var EntrySet = (function (_super) {
                 __extends(EntrySet, _super);
                 function EntrySet(__parent) {
-                    _super.call(this, __parent);
-                    this.__parent = __parent;
+                    var _this = _super.call(this, __parent) || this;
+                    _this.__parent = __parent;
+                    return _this;
                 }
                 EntrySet.prototype.clear = function () {
                     this.__parent.clear();
@@ -20167,10 +20118,11 @@ var java;
                  */
                 function Node(key, value, isRed) {
                     if (isRed === void 0) { isRed = true; }
-                    _super.call(this, key, value);
-                    this.child = new Array(2);
-                    this.isRed = false;
-                    this.isRed = isRed;
+                    var _this = _super.call(this, key, value) || this;
+                    _this.child = new Array(2);
+                    _this.isRed = false;
+                    _this.isRed = isRed;
+                    return _this;
                 }
                 return Node;
             }(util.AbstractMap.SimpleEntry));
@@ -20204,28 +20156,29 @@ var java;
             var SubMap = (function (_super) {
                 __extends(SubMap, _super);
                 function SubMap(__parent, type, fromKey, fromInclusive, toKey, toInclusive) {
-                    _super.call(this);
-                    this.__parent = __parent;
-                    this.fromInclusive = false;
-                    this.toInclusive = false;
+                    var _this = _super.call(this) || this;
+                    _this.__parent = __parent;
+                    _this.fromInclusive = false;
+                    _this.toInclusive = false;
                     if (type === java.util.TreeMap.SubMapType_Range_$LI$()) {
-                        if (this.__parent.cmp.compare(toKey, fromKey) < 0) {
+                        if (_this.__parent.cmp.compare(toKey, fromKey) < 0) {
                             throw new java.lang.IllegalArgumentException("subMap: " + toKey + " less than " + fromKey);
                         }
                     }
                     if (type === java.util.TreeMap.SubMapType_Head_$LI$()) {
-                        this.__parent.cmp.compare(toKey, toKey);
+                        _this.__parent.cmp.compare(toKey, toKey);
                     }
                     if (type === java.util.TreeMap.SubMapType_Tail_$LI$()) {
-                        this.__parent.cmp.compare(fromKey, fromKey);
+                        _this.__parent.cmp.compare(fromKey, fromKey);
                     }
                     if (type === java.util.TreeMap.SubMapType_All_$LI$()) {
                     }
-                    this.type = type;
-                    this.fromKey = fromKey;
-                    this.fromInclusive = fromInclusive;
-                    this.toKey = toKey;
-                    this.toInclusive = toInclusive;
+                    _this.type = type;
+                    _this.fromKey = fromKey;
+                    _this.fromInclusive = fromInclusive;
+                    _this.toKey = toKey;
+                    _this.toInclusive = toInclusive;
+                    return _this;
                 }
                 SubMap.prototype.comparator = function () {
                     return this.__parent.comparator();
@@ -20392,13 +20345,13 @@ var java;
             TreeMap.SubMap = SubMap;
             SubMap["__class"] = "java.util.TreeMap.SubMap";
             SubMap["__interfaces"] = ["java.util.Map", "java.util.NavigableMap", "java.util.SortedMap"];
-            var SubMap;
             (function (SubMap) {
                 var SubMap$0 = (function (_super) {
                     __extends(SubMap$0, _super);
                     function SubMap$0(__parent) {
-                        _super.call(this, __parent);
-                        this.__parent = __parent;
+                        var _this = _super.call(this, __parent) || this;
+                        _this.__parent = __parent;
+                        return _this;
                     }
                     SubMap$0.prototype.isEmpty = function () {
                         return this.__parent.isEmpty();
@@ -20429,7 +20382,7 @@ var java;
             var SubMapTypeHead = (function (_super) {
                 __extends(SubMapTypeHead, _super);
                 function SubMapTypeHead() {
-                    _super.apply(this, arguments);
+                    return _super.apply(this, arguments) || this;
                 }
                 SubMapTypeHead.prototype.toKeyValid = function () {
                     return true;
@@ -20441,7 +20394,7 @@ var java;
             var SubMapTypeRange = (function (_super) {
                 __extends(SubMapTypeRange, _super);
                 function SubMapTypeRange() {
-                    _super.apply(this, arguments);
+                    return _super.apply(this, arguments) || this;
                 }
                 SubMapTypeRange.prototype.fromKeyValid = function () {
                     return true;
@@ -20456,7 +20409,7 @@ var java;
             var SubMapTypeTail = (function (_super) {
                 __extends(SubMapTypeTail, _super);
                 function SubMapTypeTail() {
-                    _super.apply(this, arguments);
+                    return _super.apply(this, arguments) || this;
                 }
                 SubMapTypeTail.prototype.fromKeyValid = function () {
                     return true;
@@ -20468,33 +20421,34 @@ var java;
         })(TreeMap = util.TreeMap || (util.TreeMap = {}));
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
         var Hashtable = (function (_super) {
             __extends(Hashtable, _super);
             function Hashtable(ignored, alsoIgnored) {
+                var _this;
                 if (((typeof ignored === 'number') || ignored === null) && ((typeof alsoIgnored === 'number') || alsoIgnored === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, ignored, alsoIgnored);
+                    _this = _super.call(this, ignored, alsoIgnored) || this;
                 }
                 else if (((ignored != null && (ignored["__interfaces"] != null && ignored["__interfaces"].indexOf("java.util.Map") >= 0 || ignored.constructor != null && ignored.constructor["__interfaces"] != null && ignored.constructor["__interfaces"].indexOf("java.util.Map") >= 0)) || ignored === null) && alsoIgnored === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
                     var toBeCopied = __args[0];
-                    _super.call(this, toBeCopied);
+                    _this = _super.call(this, toBeCopied) || this;
                 }
                 else if (((typeof ignored === 'number') || ignored === null) && alsoIgnored === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, ignored);
+                    _this = _super.call(this, ignored) || this;
                 }
                 else if (ignored === undefined && alsoIgnored === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
+                    _this = _super.call(this) || this;
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             Hashtable.prototype.keys = function () {
                 var it = this.keySet().iterator();
@@ -20504,13 +20458,12 @@ var java;
                 var it = this.values().iterator();
                 return new Hashtable.Hashtable$1(this, it);
             };
-            Hashtable.serialVersionUID = 1;
             return Hashtable;
         }(java.util.HashMap));
+        Hashtable.serialVersionUID = 1;
         util.Hashtable = Hashtable;
         Hashtable["__class"] = "java.util.Hashtable";
         Hashtable["__interfaces"] = ["java.lang.Cloneable", "java.util.Map", "java.util.Dictionary", "java.io.Serializable"];
-        var Hashtable;
         (function (Hashtable) {
             var Hashtable$0 = (function () {
                 function Hashtable$0(__parent, it) {
@@ -20543,8 +20496,7 @@ var java;
         })(Hashtable = util.Hashtable || (util.Hashtable = {}));
     })(util = java.util || (java.util = {}));
 })(java || (java = {}));
-/* Generated from Java with JSweet 1.2.0-SNAPSHOT - http://www.jsweet.org */
-var java;
+/* Generated from Java with JSweet 2.0.0-SNAPSHOT - http://www.jsweet.org */
 (function (java) {
     var util;
     (function (util) {
@@ -20562,11 +20514,11 @@ var java;
         var LinkedHashMap = (function (_super) {
             __extends(LinkedHashMap, _super);
             function LinkedHashMap(ignored, alsoIgnored, accessOrder) {
-                var _this = this;
+                var _this;
                 if (((typeof ignored === 'number') || ignored === null) && ((typeof alsoIgnored === 'number') || alsoIgnored === null) && ((typeof accessOrder === 'boolean') || accessOrder === null)) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, ignored, alsoIgnored);
-                    this.accessOrder = false;
+                    _this = _super.call(this, ignored, alsoIgnored) || this;
+                    _this.accessOrder = false;
                     (function () {
                         _this.head = new LinkedHashMap.ChainEntry(_this);
                         _this.map = (new java.util.HashMap());
@@ -20576,8 +20528,8 @@ var java;
                 }
                 else if (((typeof ignored === 'number') || ignored === null) && ((typeof alsoIgnored === 'number') || alsoIgnored === null) && accessOrder === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this, ignored, alsoIgnored);
-                    this.accessOrder = false;
+                    _this = _super.call(this, ignored, alsoIgnored) || this;
+                    _this.accessOrder = false;
                     (function () {
                         _this.head = new LinkedHashMap.ChainEntry(_this);
                         _this.map = (new java.util.HashMap());
@@ -20587,8 +20539,8 @@ var java;
                 else if (((ignored != null && (ignored["__interfaces"] != null && ignored["__interfaces"].indexOf("java.util.Map") >= 0 || ignored.constructor != null && ignored.constructor["__interfaces"] != null && ignored.constructor["__interfaces"].indexOf("java.util.Map") >= 0)) || ignored === null) && alsoIgnored === undefined && accessOrder === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
                     var toBeCopied_2 = __args[0];
-                    _super.call(this);
-                    this.accessOrder = false;
+                    _this = _super.call(this) || this;
+                    _this.accessOrder = false;
                     (function () {
                         _this.head = new LinkedHashMap.ChainEntry(_this);
                         _this.map = (new java.util.HashMap());
@@ -20601,8 +20553,8 @@ var java;
                     {
                         var __args_26 = Array.prototype.slice.call(arguments);
                         var alsoIgnored_2 = 0;
-                        _super.call(this, ignored, alsoIgnored_2);
-                        this.accessOrder = false;
+                        _this = _super.call(this, ignored, alsoIgnored_2) || this;
+                        _this.accessOrder = false;
                         (function () {
                             _this.head = new LinkedHashMap.ChainEntry(_this);
                             _this.map = (new java.util.HashMap());
@@ -20612,8 +20564,8 @@ var java;
                 }
                 else if (ignored === undefined && alsoIgnored === undefined && accessOrder === undefined) {
                     var __args = Array.prototype.slice.call(arguments);
-                    _super.call(this);
-                    this.accessOrder = false;
+                    _this = _super.call(this) || this;
+                    _this.accessOrder = false;
                     (function () {
                         _this.head = new LinkedHashMap.ChainEntry(_this);
                         _this.map = (new java.util.HashMap());
@@ -20622,6 +20574,7 @@ var java;
                 }
                 else
                     throw new Error('invalid overload');
+                return _this;
             }
             LinkedHashMap.prototype.clear = function () {
                 this.map.clear();
@@ -20710,7 +20663,6 @@ var java;
         util.LinkedHashMap = LinkedHashMap;
         LinkedHashMap["__class"] = "java.util.LinkedHashMap";
         LinkedHashMap["__interfaces"] = ["java.lang.Cloneable", "java.util.Map", "java.io.Serializable"];
-        var LinkedHashMap;
         (function (LinkedHashMap) {
             /**
              * The entry we use includes next/prev pointers for a doubly-linked circular
@@ -20729,8 +20681,9 @@ var java;
                 function ChainEntry(__parent, key, value) {
                     if (key === void 0) { key = null; }
                     if (value === void 0) { value = null; }
-                    _super.call(this, key, value);
-                    this.__parent = __parent;
+                    var _this = _super.call(this, key, value) || this;
+                    _this.__parent = __parent;
+                    return _this;
                 }
                 /**
                  * Add this node to the end of the chain.
@@ -20757,8 +20710,9 @@ var java;
             var EntrySet = (function (_super) {
                 __extends(EntrySet, _super);
                 function EntrySet(__parent) {
-                    _super.call(this);
-                    this.__parent = __parent;
+                    var _this = _super.call(this) || this;
+                    _this.__parent = __parent;
+                    return _this;
                 }
                 EntrySet.prototype.clear = function () {
                     this.__parent.clear();
@@ -20795,7 +20749,6 @@ var java;
             LinkedHashMap.EntrySet = EntrySet;
             EntrySet["__class"] = "java.util.LinkedHashMap.EntrySet";
             EntrySet["__interfaces"] = ["java.util.Collection", "java.util.Set", "java.lang.Iterable"];
-            var EntrySet;
             (function (EntrySet) {
                 var EntryIterator = (function () {
                     function EntryIterator(__parent) {

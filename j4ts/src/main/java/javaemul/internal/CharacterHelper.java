@@ -78,7 +78,7 @@ public final class CharacterHelper implements Comparable<CharacterHelper>, Seria
 	 */
 	private static class BoxedValues {
 		// Box values according to JLS - from \u0000 to \u007f
-		private static CharacterHelper[] boxedValues = new CharacterHelper[128];
+		private static Character[] boxedValues = new Character[128];
 	}
 
 	public static final Class<Character> TYPE = Character.class;
@@ -387,15 +387,15 @@ public final class CharacterHelper implements Comparable<CharacterHelper>, Seria
 		return String.valueOf((char) c).toUpperCase().charAt(0);
 	}
 
-	public static CharacterHelper valueOf(char c) {
+	public static Character valueOf(char c) {
 		if (c < 128) {
-			CharacterHelper result = BoxedValues.boxedValues[c];
+			Character result = BoxedValues.boxedValues[c];
 			if (result == null) {
-				result = BoxedValues.boxedValues[c] = new CharacterHelper(c);
+				result = BoxedValues.boxedValues[c] = new Character(c);
 			}
 			return result;
 		}
-		return new CharacterHelper(c);
+		return new Character(c);
 	}
 
 	static int codePointAt(CharSequence cs, int index, int limit) {

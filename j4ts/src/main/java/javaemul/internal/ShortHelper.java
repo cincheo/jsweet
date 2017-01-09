@@ -35,14 +35,14 @@ public final class ShortHelper extends NumberHelper implements Comparable<ShortH
 	 */
 	private static class BoxedValues {
 		// Box values according to JLS - between -128 and 127
-		private static ShortHelper[] boxedValues = new ShortHelper[256];
+		private static Short[] boxedValues = new Short[256];
 	}
 
 	public static int compare(short x, short y) {
 		return x - y;
 	}
 
-	public static ShortHelper decode(String s) throws NumberFormatException {
+	public static Short decode(String s) throws NumberFormatException {
 		return ShortHelper.valueOf((short) __decodeAndValidateInt(s, MIN_VALUE, MAX_VALUE));
 	}
 
@@ -69,23 +69,23 @@ public final class ShortHelper extends NumberHelper implements Comparable<ShortH
 		return String.valueOf(b);
 	}
 
-	public static ShortHelper valueOf(short s) {
+	public static Short valueOf(short s) {
 		if (s > -129 && s < 128) {
 			int rebase = s + 128;
-			ShortHelper result = BoxedValues.boxedValues[rebase];
+			Short result = BoxedValues.boxedValues[rebase];
 			if (result == null) {
-				result = BoxedValues.boxedValues[rebase] = new ShortHelper(s);
+				result = BoxedValues.boxedValues[rebase] = new Short(s);
 			}
 			return result;
 		}
-		return new ShortHelper(s);
+		return new Short(s);
 	}
 
-	public static ShortHelper valueOf(String s) throws NumberFormatException {
+	public static Short valueOf(String s) throws NumberFormatException {
 		return valueOf(s, 10);
 	}
 
-	public static ShortHelper valueOf(String s, int radix) throws NumberFormatException {
+	public static Short valueOf(String s, int radix) throws NumberFormatException {
 		return ShortHelper.valueOf(ShortHelper.parseShort(s, radix));
 	}
 

@@ -2397,7 +2397,7 @@ declare namespace javaemul.internal {
         static toString(x: string): string;
         static toUpperCase(c?: any): any;
         static toUpperCase$int(c: number): string;
-        static valueOf(c: string): CharacterHelper;
+        static valueOf(c: string): string;
         static codePointAt$java_lang_CharSequence$int$int(cs: string, index: number, limit: number): number;
         static codePointBefore$java_lang_CharSequence$int$int(cs: string, index: number, start: number): number;
         /**
@@ -2439,8 +2439,8 @@ declare namespace javaemul.internal {
          * Use nested class to avoid clinit on outer.
          */
         class BoxedValues {
-            static boxedValues: javaemul.internal.CharacterHelper[];
-            static boxedValues_$LI$(): javaemul.internal.CharacterHelper[];
+            static boxedValues: string[];
+            static boxedValues_$LI$(): string[];
         }
     }
 }
@@ -3792,7 +3792,7 @@ declare namespace javaemul.internal {
         static TYPE: any;
         static TYPE_$LI$(): any;
         static compare(x: number, y: number): number;
-        static decode(s: string): ByteHelper;
+        static decode(s: string): number;
         /**
          * @skip
          *
@@ -3801,8 +3801,8 @@ declare namespace javaemul.internal {
         static hashCode(b: number): number;
         static parseByte(s: string, radix?: number): number;
         static toString(b: number): string;
-        static valueOf$byte(b: number): ByteHelper;
-        static valueOf$java_lang_String(s: string): ByteHelper;
+        static valueOf$byte(b: number): number;
+        static valueOf$java_lang_String(s: string): number;
         static valueOf(s?: any, radix?: any): any;
         private value;
         constructor(s?: any);
@@ -3822,8 +3822,8 @@ declare namespace javaemul.internal {
          * Use nested class to avoid clinit on outer.
          */
         class BoxedValues {
-            static boxedValues: javaemul.internal.ByteHelper[];
-            static boxedValues_$LI$(): javaemul.internal.ByteHelper[];
+            static boxedValues: number[];
+            static boxedValues_$LI$(): number[];
         }
     }
 }
@@ -3881,7 +3881,7 @@ declare namespace javaemul.internal {
         static longBitsToDouble(bits: number): number;
         static parseDouble(s: string): number;
         static toString(b: number): string;
-        static valueOf$double(d: number): DoubleHelper;
+        static valueOf$double(d: number): number;
         static valueOf(s?: any): any;
         constructor(s?: any);
         byteValue(): number;
@@ -3947,7 +3947,7 @@ declare namespace javaemul.internal {
         static isNaN(x: number): boolean;
         static parseFloat(s: string): number;
         static toString(b: number): string;
-        static valueOf$float(f: number): FloatHelper;
+        static valueOf$float(f: number): number;
         static valueOf(s?: any): any;
         private value;
         constructor(s?: any);
@@ -4056,7 +4056,7 @@ declare namespace javaemul.internal {
         static SIZE: number;
         static bitCount(i: number): number;
         static compare(x: number, y: number): number;
-        static decode(s: string): LongHelper;
+        static decode(s: string): number;
         /**
          * @skip Here for shared implementation with Arrays.hashCode
          */
@@ -4076,8 +4076,8 @@ declare namespace javaemul.internal {
         static toOctalString(value: number): string;
         static toString$long(value: number): string;
         static toString(value?: any, intRadix?: any): any;
-        static valueOf$long(i: number): LongHelper;
-        static valueOf$java_lang_String(s: string): LongHelper;
+        static valueOf$long(i: number): number;
+        static valueOf$java_lang_String(s: string): number;
         static valueOf(s?: any, radix?: any): any;
         static toPowerOfTwoUnsignedString(value: number, shift: number): string;
         private value;
@@ -4098,8 +4098,8 @@ declare namespace javaemul.internal {
          * Use nested class to avoid clinit on outer.
          */
         class BoxedValues {
-            static boxedValues: javaemul.internal.LongHelper[];
-            static boxedValues_$LI$(): javaemul.internal.LongHelper[];
+            static boxedValues: number[];
+            static boxedValues_$LI$(): number[];
         }
     }
 }
@@ -4116,7 +4116,7 @@ declare namespace javaemul.internal {
         static TYPE: any;
         static TYPE_$LI$(): any;
         static compare(x: number, y: number): number;
-        static decode(s: string): ShortHelper;
+        static decode(s: string): number;
         /**
          * @skip Here for shared implementation with Arrays.hashCode
          */
@@ -4124,8 +4124,8 @@ declare namespace javaemul.internal {
         static parseShort(s: string, radix?: number): number;
         static reverseBytes(s: number): number;
         static toString(b: number): string;
-        static valueOf$short(s: number): ShortHelper;
-        static valueOf$java_lang_String(s: string): ShortHelper;
+        static valueOf$short(s: number): number;
+        static valueOf$java_lang_String(s: string): number;
         static valueOf(s?: any, radix?: any): any;
         private value;
         constructor(s?: any);
@@ -4145,8 +4145,8 @@ declare namespace javaemul.internal {
          * Use nested class to avoid clinit on outer.
          */
         class BoxedValues {
-            static boxedValues: javaemul.internal.ShortHelper[];
-            static boxedValues_$LI$(): javaemul.internal.ShortHelper[];
+            static boxedValues: number[];
+            static boxedValues_$LI$(): number[];
         }
     }
 }

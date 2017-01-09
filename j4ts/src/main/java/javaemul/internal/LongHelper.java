@@ -30,7 +30,7 @@ public final class LongHelper extends NumberHelper implements Comparable<LongHel
 	 */
 	static class BoxedValues {
 		// Box values according to JLS - between -128 and 127
-		static LongHelper[] boxedValues = new LongHelper[256];
+		static Long[] boxedValues = new Long[256];
 	}
 
 	public static final long MAX_VALUE = 0x7fffffffffffffffL;
@@ -53,7 +53,7 @@ public final class LongHelper extends NumberHelper implements Comparable<LongHel
 		}
 	}
 
-	public static LongHelper decode(String s) throws NumberFormatException {
+	public static Long decode(String s) throws NumberFormatException {
 		__Decode decode = __decodeNumberString(s);
 		return valueOf(decode.payload, decode.radix);
 	}
@@ -206,23 +206,23 @@ public final class LongHelper extends NumberHelper implements Comparable<LongHel
 		return String.valueOf(buf, cursor, bufLen - cursor);
 	}
 
-	public static LongHelper valueOf(long i) {
+	public static Long valueOf(long i) {
 		if (i > -129 && i < 128) {
 			int rebase = (int) i + 128;
-			LongHelper result = BoxedValues.boxedValues[rebase];
+			Long result = BoxedValues.boxedValues[rebase];
 			if (result == null) {
-				result = BoxedValues.boxedValues[rebase] = new LongHelper(i);
+				result = BoxedValues.boxedValues[rebase] = new Long(i);
 			}
 			return result;
 		}
-		return new LongHelper(i);
+		return new Long(i);
 	}
 
-	public static LongHelper valueOf(String s) throws NumberFormatException {
+	public static Long valueOf(String s) throws NumberFormatException {
 		return valueOf(s, 10);
 	}
 
-	public static LongHelper valueOf(String s, int radix) throws NumberFormatException {
+	public static Long valueOf(String s, int radix) throws NumberFormatException {
 		return valueOf(parseLong(s, radix));
 	}
 
