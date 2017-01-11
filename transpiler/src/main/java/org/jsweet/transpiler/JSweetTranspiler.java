@@ -1000,8 +1000,7 @@ public class JSweetTranspiler implements JSweetOptions {
 					out.print("declare module \"" + exportedElements.getKey() + "\"");
 					boolean exported = false;
 					for (Symbol element : exportedElements.getValue()) {
-						if (element instanceof PackageSymbol
-								&& !context.hasAnnotationType(element, JSweetConfig.ANNOTATION_ROOT)) {
+						if (element instanceof PackageSymbol && !context.isRootPackage(element)) {
 							out.print(" {");
 							out.println();
 							out.print("    export = " + context.getActualName(element) + ";");
