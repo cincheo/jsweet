@@ -744,6 +744,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				getScope().interfaceScope = true;
 			} else {
 				if (classdecl.getKind() == Kind.ENUM) {
+					if (getScope().declareClassScope && !(getIndent() != 0 && isDefinitionScope)) {
+						print("declare ");
+					}
 					if (scope.size() > 1 && getScope(1).isComplexEnum) {
 						print("class ");
 						getScope().enumWrapperClassScope = true;
