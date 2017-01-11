@@ -791,10 +791,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 								.equals(Iterable.class.getName())) {
 					removeIterable = true;
 				}
+
 				if (!removeIterable && !JSweetConfig.isJDKReplacementMode()
 						&& !(JSweetConfig.OBJECT_CLASSNAME.equals(classdecl.extending.type.toString())
 								|| Object.class.getName().equals(classdecl.extending.type.toString()))
-						&& !(mixin != null && mixin.equals(classdecl.extending.type.toString()))) {
+						&& !(mixin != null && mixin.equals(classdecl.extending.type.toString()))
+						&& !(!context.options.isUseJavaApis()
+								&& classdecl.extending.type.tsym.getQualifiedName().toString().startsWith("java.")
+								&& !Util.isSourceType((ClassSymbol) classdecl.extending.type.tsym))) {
 					if (!getScope().interfaceScope && context.isInterface(classdecl.extending.type.tsym)) {
 						extendsInterface = true;
 						print(" implements ");
