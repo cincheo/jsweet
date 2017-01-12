@@ -1970,7 +1970,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (varDecl.mods.getFlags().contains(Modifier.PRIVATE)) {
 					if (!getScope().interfaceScope) {
 						if (!getScope().innerClass && !varDecl.mods.getFlags().contains(Modifier.STATIC)) {
-							print("private ");
+							// cannot keep private fields because they may be accessed in an inner class
+							print("/*private*/ ");
 						}
 					} else {
 						report(varDecl, varDecl.name, JSweetProblem.INVALID_PRIVATE_IN_INTERFACE, varDecl.name,
