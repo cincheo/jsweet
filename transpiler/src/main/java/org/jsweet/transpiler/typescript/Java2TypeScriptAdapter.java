@@ -1213,6 +1213,20 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					}
 				}
 				break;
+			case "java.lang.System":
+				if (!context.options.isUseJavaApis()) {
+					switch (targetMethodName) {
+					case "arraycopy":
+						printMacroName(targetMethodName);
+						getPrinter()
+								.print("((srcPts, srcOff, dstPts, dstOff, size) => { if(srcPts !== dstPts || dstOff >= srcOff + size) { while (--size >= 0) dstPts[dstOff++] = srcPts[srcOff++];"
+										+ "} else { let tmp = srcPts.slice(srcOff, srcOff + size); for (let i = 0; i < size; i++) dstPts[dstOff++] = tmp[i]; }})(")
+								.printArgList(invocation.args).print(")");
+						return true;
+					}
+				}
+				break;
+
 			// case "java.util.Date":
 			// switch (targetMethodName) {
 			// case "setFullYear":
