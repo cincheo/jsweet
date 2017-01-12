@@ -50,6 +50,7 @@ import com.sun.tools.javac.util.Name;
  */
 public class TypeChecker {
 
+	public static boolean jdkAllowed = true;
 	static final Set<String> AUTHORIZED_ACCESSED_TYPES = new HashSet<String>();
 	static final Set<String> AUTHORIZED_DECLARED_TYPES = new HashSet<String>();
 	/**
@@ -133,19 +134,22 @@ public class TypeChecker {
 	 * Checks that the given invocation conforms to JSweet contraints.
 	 */
 	public boolean checkApply(JCMethodInvocation invocation, MethodSymbol methSym) {
-//		if (Util.hasAnnotationType(methSym, JSweetConfig.ANNOTATION_ERASED)) {
-//			translator.report(invocation, JSweetProblem.ERASED_METHOD, methSym);
-//		}
-		if (!JSweetConfig.isJDKReplacementMode() && !translator.getContext().options.isJDKAllowed()) {
+		// if (Util.hasAnnotationType(methSym, JSweetConfig.ANNOTATION_ERASED))
+		// {
+		// translator.report(invocation, JSweetProblem.ERASED_METHOD, methSym);
+		// }
+		if (!JSweetConfig.isJDKReplacementMode() && !jdkAllowed) {
 			if (methSym.owner.toString().startsWith("java.")) {
-				if (invocation.meth instanceof JCFieldAccess && "super".equals(((JCFieldAccess) invocation.meth).selected.toString())) {
+				if (invocation.meth instanceof JCFieldAccess
+						&& "super".equals(((JCFieldAccess) invocation.meth).selected.toString())) {
 					translator.report(invocation, JSweetProblem.JDK_METHOD, methSym);
 					return false;
 				}
 				if (translator.getContext().strictMode || AUTHORIZED_OBJECT_METHODS.contains(methSym.name.toString())) {
 					return true;
 				}
-				if (methSym.owner.toString().equals(String.class.getName()) && AUTHORIZED_STRING_METHODS.contains(methSym.toString())) {
+				if (methSym.owner.toString().equals(String.class.getName())
+						&& AUTHORIZED_STRING_METHODS.contains(methSym.toString())) {
 					return true;
 				}
 				translator.report(invocation, JSweetProblem.JDK_METHOD, methSym);
@@ -164,8 +168,9 @@ public class TypeChecker {
 				return checkType(declaringElement, declaringElementName, ((JCArrayTypeTree) typeExpression).elemtype);
 			}
 			String type = typeExpression.type.tsym.toString();
-			if (!translator.getContext().options.isJDKAllowed() && !translator.getContext().strictMode && type.startsWith("java.")) {
-				if (!(AUTHORIZED_DECLARED_TYPES.contains(type) || NUMBER_TYPES.contains(type) || type.startsWith("java.util.function"))) {
+			if (!jdkAllowed && !translator.getContext().strictMode && type.startsWith("java.")) {
+				if (!(AUTHORIZED_DECLARED_TYPES.contains(type) || NUMBER_TYPES.contains(type)
+						|| type.startsWith("java.util.function"))) {
 					translator.report(declaringElement, declaringElementName, JSweetProblem.JDK_TYPE, type);
 					return false;
 				}
@@ -182,7 +187,7 @@ public class TypeChecker {
 			if (select.selected.type instanceof ClassType) {
 				String type = select.selected.type.tsym.toString();
 				if (type.startsWith("java.")) {
-					if (!translator.getContext().options.isJDKAllowed()
+					if (!jdkAllowed
 							&& !(AUTHORIZED_ACCESSED_TYPES.contains(type) || type.startsWith("java.util.function"))) {
 						translator.report(select, JSweetProblem.JDK_TYPE, type);
 						return false;
@@ -200,7 +205,7 @@ public class TypeChecker {
 				return false;
 			}
 		} else {
-			if((JSweetConfig.LANG_PACKAGE_ALT+".Function").equals(union.args.head.type.toString())) {
+			if ((JSweetConfig.LANG_PACKAGE_ALT + ".Function").equals(union.args.head.type.toString())) {
 				// type checking is ignored here!
 				// TODO: test betters (see Backbone test)
 				return true;

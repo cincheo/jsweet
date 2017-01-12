@@ -229,9 +229,9 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			typesMapping.put(Vector.class.getName(), "Array");
 			typesMapping.put(Enumeration.class.getName(), "any");
 			typesMapping.put(Iterator.class.getName(), "any");
-			typesMapping.put(Map.class.getName(), "Array");
-			typesMapping.put(HashMap.class.getName(), "Map");
-			typesMapping.put(Hashtable.class.getName(), "Map");
+			typesMapping.put(Map.class.getName(), "Object");
+			typesMapping.put(HashMap.class.getName(), "Object");
+			typesMapping.put(Hashtable.class.getName(), "Object");
 			typesMapping.put(Comparator.class.getName(), "any");
 			typesMapping.put(Exception.class.getName(), "Error");
 			typesMapping.put(RuntimeException.class.getName(), "Error");
@@ -245,7 +245,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 	public String needsImport(JCImport importDecl, String qualifiedName) {
 		if (isJSweetPath(qualifiedName) || typesMapping.containsKey(qualifiedName)
 				|| langTypesMapping.containsKey(qualifiedName) || qualifiedName.startsWith("java.util.function.")
-				|| (isJDKPath(qualifiedName) && !context.options.isJDKAllowed())
+				|| (isJDKPath(qualifiedName) && !context.options.isUseJavaApis())
 				|| qualifiedName.endsWith(GLOBALS_PACKAGE_NAME + "." + GLOBALS_CLASS_NAME)) {
 			return null;
 		}
@@ -732,7 +732,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		}
 		if (fieldAccess != null && targetClassName != null && (targetClassName.startsWith(UTIL_PACKAGE + ".function.")
 				|| targetClassName.startsWith(Function.class.getPackage().getName()))) {
-			if (!context.options.isJDKAllowed() && targetClassName.startsWith(Function.class.getPackage().getName())
+			if (!TypeChecker.jdkAllowed && targetClassName.startsWith(Function.class.getPackage().getName())
 					&& TypeChecker.FORBIDDEN_JDK_FUNCTIONAL_METHODS.contains(targetMethodName)) {
 				getPrinter().report(invocation, JSweetProblem.JDK_METHOD, targetMethodName);
 			}
@@ -1150,6 +1150,28 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 					}
 				}
 				break;
+			case "java.util.Map":
+			case "java.util.HashMap":
+			case "java.util.Hashtable":
+				if (!context.options.isUseJavaApis()) {
+					switch (targetMethodName) {
+					case "put":
+						printMacroName(targetMethodName);
+						getPrinter().print("(").print(fieldAccess.getExpression()).print("[")
+								.print(invocation.args.head).print("] = ").print(invocation.args.tail.head).print(")");
+						return true;
+					case "get":
+						printMacroName(targetMethodName);
+						getPrinter().print(fieldAccess.getExpression()).print("[").print(invocation.args.head)
+								.print("]");
+						return true;
+					case "size":
+						printMacroName(targetMethodName);
+						getPrinter().print("Object.keys(").print(fieldAccess.getExpression()).print(").length");
+						return true;
+					}
+				}
+				break;
 			case "java.util.Collections":
 				if (!context.options.isUseJavaApis()) {
 					switch (targetMethodName) {
@@ -1425,8 +1447,8 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				return true;
 			case "java.util.HashMap":
 			case "java.util.Hashtable":
-				// TODO
-				break;
+				getPrinter().print("{}");
+				return true;
 			}
 
 			// if (apiTypesMapping.containsKey(className)) {

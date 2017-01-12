@@ -7,6 +7,7 @@ import org.junit.Test;
 
 import source.nativestructures.Collections;
 import source.nativestructures.Exceptions;
+import source.nativestructures.Maps;
 
 public class NativeStructuresTests extends AbstractTest {
 
@@ -27,6 +28,16 @@ public class NativeStructuresTests extends AbstractTest {
 			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
 			assertEquals("test,test,finally,test2,test3", result.<String> get("trace"));
 		}, getSourceFile(Exceptions.class));
+		transpiler.setUseJavaApis(true);
+	}
+
+	@Test
+	public void testMaps() {
+		transpiler.setUseJavaApis(false);
+		eval((logHandler, result) -> {
+			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+			assertEquals("2,a", result.<String> get("trace"));
+		}, getSourceFile(Maps.class));
 		transpiler.setUseJavaApis(true);
 	}
 	

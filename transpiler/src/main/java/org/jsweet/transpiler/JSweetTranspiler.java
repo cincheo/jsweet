@@ -171,7 +171,6 @@ public class JSweetTranspiler implements JSweetOptions {
 	private boolean ignoreJavaFileNameError = false;
 	private boolean generateDeclarations = false;
 	private File declarationsOutputDir;
-	private boolean jdkAllowed = true;
 	private boolean interfaceTracking = true;
 	private boolean supportGetClass = true;
 	private boolean supportSaticLazyInitialization = true;
@@ -190,9 +189,9 @@ public class JSweetTranspiler implements JSweetOptions {
 				+ bundlesDirectory + "\nencoding=" + encoding + "\nnoRootDirectories=" + noRootDirectories
 				+ "\nignoreAssertions=" + ignoreAssertions + "\nignoreJavaFileNameError=" + ignoreJavaFileNameError
 				+ "\ngenerateDeclarations=" + generateDeclarations + "\ndeclarationsOutputDir=" + declarationsOutputDir
-				+ "\njdkAllowed=" + jdkAllowed + "\ninterfaceTracking=" + interfaceTracking + "\nsupportGetClass="
-				+ supportGetClass + "\nsupportSaticLazyInitialization=" + supportSaticLazyInitialization
-				+ "\ngenerateDefinitions=" + generateDefinitions + "\njsLibFiles=" + jsLibFiles;
+				+ "\ninterfaceTracking=" + interfaceTracking + "\nsupportGetClass=" + supportGetClass
+				+ "\nsupportSaticLazyInitialization=" + supportSaticLazyInitialization + "\ngenerateDefinitions="
+				+ generateDefinitions + "\njsLibFiles=" + jsLibFiles;
 	}
 
 	/**
@@ -1655,11 +1654,6 @@ public class JSweetTranspiler implements JSweetOptions {
 	@Override
 	public File getExtractedCandyJavascriptDir() {
 		return extractedCandyJavascriptDir;
-	}
-
-	@Override
-	public boolean isJDKAllowed() {
-		return jdkAllowed;
 	}
 
 	/**

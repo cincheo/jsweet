@@ -224,7 +224,8 @@ public abstract class AbstractPrinterAdapter {
 		if (typeTree instanceof JCTypeApply) {
 			JCTypeApply typeApply = ((JCTypeApply) typeTree);
 			substituteAndPrintType(typeApply.clazz, arrayComponent, inTypeParameters, false, disableSubstitution);
-			if (!typeApply.arguments.isEmpty() && !"any".equals(getPrinter().getLastPrintedString(3))) {
+			if (!typeApply.arguments.isEmpty() && !"any".equals(getPrinter().getLastPrintedString(3))
+					&& !"Object".equals(getPrinter().getLastPrintedString(6))) {
 				getPrinter().print("<");
 				for (JCExpression argument : typeApply.arguments) {
 					substituteAndPrintType(argument, arrayComponent, false, completeRawTypes, false).print(", ");
@@ -338,5 +339,5 @@ public abstract class AbstractPrinterAdapter {
 	public boolean substituteAssignedExpression(Type assignedType, JCExpression expression) {
 		return false;
 	}
-	
+
 }
