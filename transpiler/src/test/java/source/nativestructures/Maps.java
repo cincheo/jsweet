@@ -16,16 +16,26 @@ public class Maps {
 
 	public static void main(String[] args) {
 		Map<String, String> m = new HashMap<>();
-		
+
 		m.put("1", "a");
 		m.put("2", "b");
 
 		trace.push("" + m.size());
 		trace.push(m.get("1"));
 
+		trace.push("" + m.containsKey("2"));
+
+		trace.push("[" + m.keySet() + "]");
+
+		trace.push("[" + m.values() + "]");
+
+		m.remove("1");
+
+		trace.push("" + m.size());
+		trace.push("" + (m.get("1") == null));
+
 		$export("trace", trace.join(","));
 
 	}
 
 }
-

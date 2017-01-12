@@ -1165,9 +1165,28 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 						getPrinter().print(fieldAccess.getExpression()).print("[").print(invocation.args.head)
 								.print("]");
 						return true;
+					case "containsKey":
+						printMacroName(targetMethodName);
+						getPrinter().print(fieldAccess.getExpression()).print(".hasOwnProperty(")
+								.print(invocation.args.head).print(")");
+						return true;
+					case "keySet":
+						printMacroName(targetMethodName);
+						getPrinter().print("Object.keys(").print(fieldAccess.getExpression()).print(")");
+						return true;
+					case "values":
+						printMacroName(targetMethodName);
+						getPrinter().print("(obj => Object.keys(obj).map(key => obj[key]))(")
+								.print(fieldAccess.getExpression()).print(")");
+						return true;
 					case "size":
 						printMacroName(targetMethodName);
 						getPrinter().print("Object.keys(").print(fieldAccess.getExpression()).print(").length");
+						return true;
+					case "remove":
+						printMacroName(targetMethodName);
+						getPrinter().print("delete ").print(fieldAccess.getExpression()).print("[")
+								.print(invocation.args.head).print("]");
 						return true;
 					}
 				}
