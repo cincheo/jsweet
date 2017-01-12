@@ -1198,6 +1198,12 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 						getPrinter().print(invocation.args.head).print(".slice(0,").print(invocation.args.tail.head)
 								.print(")");
 						return true;
+					case "equals":
+						printMacroName(targetMethodName);
+						getPrinter()
+								.print("((a1, a2) => { if(a1.length != a2.length) return false; for(let i = 0; i < a1.length; i++) { if(<any>a1[i] != <any>a2[i]) return false; } return true; })(")
+								.printArgList(invocation.args).print(")");
+						return true;
 					case "sort":
 						printMacroName(targetMethodName);
 						if (invocation.args.length() > 2) {
@@ -1272,6 +1278,18 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				}
 			}
 
+		}
+
+		if (!context.options.isUseJavaApis()) {
+			switch (targetMethodName) {
+			case "clone":
+				printMacroName(targetMethodName);
+				if (fieldAccess != null && fieldAccess.getExpression().type instanceof Type.ArrayType) {
+					getPrinter().print(fieldAccess.getExpression()).print(".slice(0)");
+					return true;
+				}
+				break;
+			}
 		}
 
 		if ("getClass".equals(targetMethodName)) {

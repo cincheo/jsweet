@@ -48,7 +48,7 @@ public class NativeStructuresTests extends AbstractTest {
 		transpiler.setUseJavaApis(false);
 		eval((logHandler, result) -> {
 			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-			assertEquals("3,a,b,c", result.<String> get("trace"));
+			assertEquals("3,a,b,c,true,false,false,false,true", result.<String> get("trace"));
 		}, getSourceFile(NativeArrays.class));
 		transpiler.setUseJavaApis(true);
 	}

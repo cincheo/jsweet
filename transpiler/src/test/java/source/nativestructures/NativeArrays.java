@@ -2,6 +2,8 @@ package source.nativestructures;
 
 import static jsweet.util.Globals.$export;
 
+import java.util.Arrays;
+
 import def.js.Array;
 
 public class NativeArrays {
@@ -21,6 +23,14 @@ public class NativeArrays {
 		trace.push(a2[1]);
 		trace.push(a2[2]);
 
+		trace.push("" + Arrays.equals(a1, a2));
+		trace.push("" + Arrays.equals(a1, new String[] { "a", "b", "d" }));
+		trace.push("" + Arrays.equals(a1, new String[] { "a", "b" }));
+		trace.push("" + Arrays.equals(a1, new Integer[] { 1, 2, 3 }));
+
+		trace.push("" + Arrays.equals(a1, a2.clone()));
+		
+		
 		$export("trace", trace.join(","));
 
 	}
