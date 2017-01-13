@@ -50,6 +50,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.Vector;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleBinaryOperator;
@@ -226,6 +227,9 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			typesMapping.put(List.class.getName(), "Array");
 			typesMapping.put(ArrayList.class.getName(), "Array");
 			typesMapping.put(Collection.class.getName(), "Array");
+			typesMapping.put(Set.class.getName(), "Array");
+			typesMapping.put(HashSet.class.getName(), "Array");
+			typesMapping.put(TreeSet.class.getName(), "Array");
 			typesMapping.put(Vector.class.getName(), "Array");
 			typesMapping.put(Enumeration.class.getName(), "any");
 			typesMapping.put(Iterator.class.getName(), "any");
@@ -1080,17 +1084,28 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			case "java.util.Vector":
 			case "java.util.Set":
 			case "java.util.HashSet":
+			case "java.util.TreeSet":
 				if (!context.options.isUseJavaApis()) {
 					switch (targetMethodName) {
 					case "add":
 						printMacroName(targetMethodName);
-						if (invocation.args.size() == 2) {
-							getPrinter().print(fieldAccess.getExpression()).print(".splice(")
-									.print(invocation.args.head).print(", 0, ").print(invocation.args.tail.head)
+						switch (targetClassName) {
+						case "java.util.Set":
+						case "java.util.HashSet":
+						case "java.util.TreeSet":
+							getPrinter().print("((s, e) => { if(s.indexOf(e)==-1) s.push(e); })(")
+									.print(fieldAccess.getExpression()).print(", ").print(invocation.args.head)
 									.print(")");
-						} else {
-							getPrinter().print(fieldAccess.getExpression()).print(".push(")
-									.printArgList(invocation.args).print(")");
+							break;
+						default:
+							if (invocation.args.size() == 2) {
+								getPrinter().print(fieldAccess.getExpression()).print(".splice(")
+										.print(invocation.args.head).print(", 0, ").print(invocation.args.tail.head)
+										.print(")");
+							} else {
+								getPrinter().print(fieldAccess.getExpression()).print(".push(")
+										.printArgList(invocation.args).print(")");
+							}
 						}
 						return true;
 					case "addAll":
@@ -1198,9 +1213,30 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 						printMacroName(targetMethodName);
 						getPrinter().print("[]");
 						return true;
+					case "emptySet":
+						printMacroName(targetMethodName);
+						getPrinter().print("[]");
+						return true;
+					case "emptyMap":
+						printMacroName(targetMethodName);
+						getPrinter().print("{}");
+						return true;
 					case "unmodifiableList":
 						printMacroName(targetMethodName);
 						getPrinter().printArgList(invocation.args).print(".slice(0)");
+						return true;
+					case "singleton":
+						printMacroName(targetMethodName);
+						getPrinter().print("[").print(invocation.args.head).print("]");
+						return true;
+					case "singletonList":
+						printMacroName(targetMethodName);
+						getPrinter().print("[").print(invocation.args.head).print("]");
+						return true;
+					case "singletonMap":
+						printMacroName(targetMethodName);
+						getPrinter().print("{ ").print(invocation.args.head).print(": ")
+								.print(invocation.args.tail.head).print(" }");
 						return true;
 					}
 				}

@@ -17,7 +17,7 @@ public class NativeStructuresTests extends AbstractTest {
 		transpiler.setUseJavaApis(false);
 		eval((logHandler, result) -> {
 			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-			assertEquals("1,a,1,b,3,4,d,a,d,0,0,0,a,a,2,a,true,false,3,c,c,a,b,c,a,b,c,b,1,c,b,a,b,c,a,0,true,true,it",
+			assertEquals("1,a,1,b,3,4,d,a,d,0,0,0,a,a,2,a,true,false,3,c,c,a,b,c,a,b,c,b,1,c,b,a,b,c,a,0,true,true,it,true,1",
 					result.<String> get("trace"));
 		}, getSourceFile(Collections.class));
 		transpiler.setUseJavaApis(true);
@@ -38,7 +38,7 @@ public class NativeStructuresTests extends AbstractTest {
 		transpiler.setUseJavaApis(false);
 		eval((logHandler, result) -> {
 			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-			assertEquals("2,a,true,[1,2],[a,b],1,true", result.<String> get("trace"));
+			assertEquals("2,a,true,[1,2],[a,b],1,true,1", result.<String> get("trace"));
 		}, getSourceFile(Maps.class));
 		transpiler.setUseJavaApis(true);
 	}

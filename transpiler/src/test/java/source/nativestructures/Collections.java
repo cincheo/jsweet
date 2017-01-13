@@ -9,6 +9,7 @@ import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.Vector;
 
 import def.js.Array;
@@ -127,7 +128,7 @@ public class Collections implements Cloneable, Serializable {
 		trace.push(newArray[0]);
 		trace.push(newArray[1]);
 		trace.push(newArray[2]);
-		
+
 		l = new Vector<>(5);
 
 		trace.push("" + l.size());
@@ -144,7 +145,15 @@ public class Collections implements Cloneable, Serializable {
 		for (String s : l) {
 			trace.push(s);
 		}
-		
+
+		Set<String> s = java.util.Collections.emptySet();
+		trace.push("" + s.isEmpty());
+
+		s.add("test");
+		s.add("test");
+
+		trace.push("" + s.size());
+
 		$export("trace", trace.join(","));
 
 	}

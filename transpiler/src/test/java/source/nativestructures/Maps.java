@@ -2,6 +2,7 @@ package source.nativestructures;
 
 import static jsweet.util.Globals.$export;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,6 +35,8 @@ public class Maps {
 		trace.push("" + m.size());
 		trace.push("" + (m.get("1") == null));
 
+		trace.push(Collections.singletonMap("a", "1").get("a"));
+		
 		$export("trace", trace.join(","));
 
 	}
