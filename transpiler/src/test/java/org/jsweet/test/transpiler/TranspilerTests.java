@@ -28,6 +28,8 @@ import java.util.LinkedList;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jsweet.JSweetCommandLineLauncher;
+import org.jsweet.transpiler.JSweetContext;
+import org.jsweet.transpiler.JSweetFactory;
 import org.jsweet.transpiler.JSweetTranspiler;
 import org.jsweet.transpiler.ModuleKind;
 import org.jsweet.transpiler.SourceFile;
@@ -65,7 +67,7 @@ public class TranspilerTests extends AbstractTest {
 		try {
 			File overload = getSourceFile(Overload.class).getJavaFile();
 			File abstractClass = getSourceFile(AbstractClass.class).getJavaFile();
-			JSweetTranspiler transpiler = new JSweetTranspiler();
+			JSweetTranspiler<JSweetContext> transpiler = new JSweetTranspiler<>(new JSweetFactory<>());
 			transpiler.setTscWatchMode(true);
 			transpiler.setPreserveSourceLineNumbers(true);
 			long t = System.currentTimeMillis();
@@ -185,7 +187,7 @@ public class TranspilerTests extends AbstractTest {
 				assertEqualPositions(sourceFiles, sourceFiles[0], "aTestParam2");
 
 				assertEqualPositions(sourceFiles, sourceFiles[0], "aTestString");
-				
+
 			}, Arrays.copyOf(sourceFiles, sourceFiles.length));
 		} finally {
 			transpiler.setPreserveSourceLineNumbers(sourceMaps);
@@ -197,10 +199,12 @@ public class TranspilerTests extends AbstractTest {
 		boolean sourceMaps = transpiler.isPreserveSourceLineNumbers();
 		try {
 			transpiler.setPreserveSourceLineNumbers(true);
-			SourceFile[] sourceFiles = { getSourceFile(Point.class), getSourceFile(Vector.class), getSourceFile(AnimatedElement.class),
-					getSourceFile(Line.class), getSourceFile(MobileElement.class), getSourceFile(Rectangle.class), getSourceFile(Direction.class),
-					getSourceFile(Collisions.class), getSourceFile(Ball.class), getSourceFile(Globals.class), getSourceFile(BlockElement.class),
-					getSourceFile(Factory.class), getSourceFile(GameArea.class), getSourceFile(GameManager.class), getSourceFile(Player.class) };
+			SourceFile[] sourceFiles = { getSourceFile(Point.class), getSourceFile(Vector.class),
+					getSourceFile(AnimatedElement.class), getSourceFile(Line.class), getSourceFile(MobileElement.class),
+					getSourceFile(Rectangle.class), getSourceFile(Direction.class), getSourceFile(Collisions.class),
+					getSourceFile(Ball.class), getSourceFile(Globals.class), getSourceFile(BlockElement.class),
+					getSourceFile(Factory.class), getSourceFile(GameArea.class), getSourceFile(GameManager.class),
+					getSourceFile(Player.class) };
 			transpile(logHandler -> {
 
 				logger.info("transpilation finished: " + transpiler.getModuleKind());
@@ -224,12 +228,14 @@ public class TranspilerTests extends AbstractTest {
 		assertEqualPositions(sourceFiles, sourceFile, codeSnippet, codeSnippet);
 	}
 
-	private void assertEqualPositions(SourceFile[] sourceFiles, SourceFile sourceFile, String javaCodeSnippet, String tsCodeSnippet) {
+	private void assertEqualPositions(SourceFile[] sourceFiles, SourceFile sourceFile, String javaCodeSnippet,
+			String tsCodeSnippet) {
 		logger.info("assert equal positions for '" + javaCodeSnippet + "' -> '" + tsCodeSnippet + "'");
 		SourcePosition tsPosition = getPosition(sourceFile.getTsFile(), tsCodeSnippet);
 		SourcePosition javaPosition = SourceFile.findOriginPosition(tsPosition, Arrays.asList(sourceFiles));
 		logger.info("org: " + javaPosition + " --> " + tsPosition);
-		assertEquals(getPosition(sourceFile.getJavaFile(), javaCodeSnippet).getStartLine(), javaPosition.getStartLine());
+		assertEquals(getPosition(sourceFile.getJavaFile(), javaCodeSnippet).getStartLine(),
+				javaPosition.getStartLine());
 	}
 
 	private SourcePosition getPosition(File f, String codeSnippet) {
@@ -241,7 +247,8 @@ public class TranspilerTests extends AbstractTest {
 				System.out.println(s1);
 			}
 			String s = s1.substring(0, index);
-			return new SourcePosition(f, null, StringUtils.countMatches(s, "\n") + 1, s.length() - s.lastIndexOf("\n") - 1);
+			return new SourcePosition(f, null, StringUtils.countMatches(s, "\n") + 1,
+					s.length() - s.lastIndexOf("\n") - 1);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}

@@ -28,6 +28,9 @@ import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.jsweet.transpiler.JSweetContext;
+import org.jsweet.transpiler.JSweetFactory;
 import org.jsweet.transpiler.JSweetTranspiler;
 import org.jsweet.transpiler.util.ConsoleTranspilationHandler;
 import org.jsweet.transpiler.util.ErrorCountTranspilationHandler;
@@ -42,7 +45,8 @@ public class MigrationTest extends AbstractTest {
 		File dir = Files.createTempDirectory("jsweet").toFile();
 		System.out.println("Transpile directory: " + dir);
 		ErrorCountTranspilationHandler handler = new ErrorCountTranspilationHandler(new ConsoleTranspilationHandler());
-		JSweetTranspiler transpiler = new JSweetTranspiler(new File(dir, "wd"), new File(dir, "ts"), new File(dir, "js"), new File(dir, "cjs"), null);
+		JSweetTranspiler<JSweetContext> transpiler = new JSweetTranspiler<>(new JSweetFactory<>(), new File(dir, "wd"),
+				new File(dir, "ts"), new File(dir, "js"), new File(dir, "cjs"), null);
 		File input = new File(TEST_DIRECTORY_NAME + "/" + QuickStart.class.getName().replace(".", "/") + ".java");
 		transpiler.initNode(handler);
 		List<JCTree.JCCompilationUnit> units = transpiler.setupCompiler(Arrays.asList(input), handler);
@@ -57,7 +61,8 @@ public class MigrationTest extends AbstractTest {
 				if ("<init>".equals(method.getName().toString()) || "<clinit>".equals(method.getName().toString())) {
 					super.visitMethodDef(method);
 				} else {
-					ErrorCountTranspilationHandler handler = new ErrorCountTranspilationHandler(new ConsoleTranspilationHandler());
+					ErrorCountTranspilationHandler handler = new ErrorCountTranspilationHandler(
+							new ConsoleTranspilationHandler());
 					String jsCode;
 					try {
 						jsCode = transpiler.transpile(handler, method, "part");
@@ -67,8 +72,9 @@ public class MigrationTest extends AbstractTest {
 					if (handler.getErrorCount() == 0) {
 						try {
 							print("\n/*\n");
-							print(Arrays.stream(String.format("java code:\n%s\njs code:\n%s\n", method, jsCode).split("\n")).map(s -> " * " + s)
-									.collect(Collectors.joining("\n")));
+							print(Arrays
+									.stream(String.format("java code:\n%s\njs code:\n%s\n", method, jsCode).split("\n"))
+									.map(s -> " * " + s).collect(Collectors.joining("\n")));
 							print("*/\n");
 							print(method);
 						} catch (IOException ex) {

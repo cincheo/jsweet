@@ -26,6 +26,8 @@ import java.util.LinkedList;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.jsweet.transpiler.JSweetContext;
+import org.jsweet.transpiler.JSweetFactory;
 import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.JSweetTranspiler;
 import org.jsweet.transpiler.ModuleKind;
@@ -116,8 +118,30 @@ public class JSweetCommandLineLauncher {
 				LinkedList<File> files = new LinkedList<File>();
 				Util.addFiles(".java", inputDir, files);
 
-				JSweetTranspiler transpiler = new JSweetTranspiler(tsOutputDir, jsOutputDir, candiesJsOutputDir,
-						classPath);
+				JSweetFactory<?> factory = null;
+				String factoryClassName = jsapArgs.getString("factoryClassName");
+
+				if (factoryClassName != null) {
+					try {
+						factory = (JSweetFactory<?>) Thread.currentThread().getContextClassLoader()
+								.loadClass(factoryClassName).newInstance();
+					} catch (Exception e) {
+						try {
+							// try forName just in case
+							factory = (JSweetFactory<?>) Class.forName(factoryClassName).newInstance();
+						} catch (Exception e2) {
+							logger.info("cannot find or instantiate factory class: " + factoryClassName + " - "
+									+ e.getMessage() + ", " + e2.getMessage());
+						}
+					}
+				}
+
+				if (factory == null) {
+					factory = new JSweetFactory<>();
+				}
+
+				JSweetTranspiler<JSweetContext> transpiler = new JSweetTranspiler<>(new JSweetFactory<>(), tsOutputDir,
+						jsOutputDir, candiesJsOutputDir, classPath);
 
 				transpiler.setBundle(jsapArgs.getBoolean("bundle"));
 				transpiler.setNoRootDirectories(jsapArgs.getBoolean("noRootDirectories"));
@@ -142,7 +166,6 @@ public class JSweetCommandLineLauncher {
 				transpiler.setSupportSaticLazyInitialization(!jsapArgs.getBoolean("disableJavaAddons"));
 				transpiler.setGenerateDefinitions(!jsapArgs.getBoolean("ignoreDefinitions"));
 				transpiler.setDeclarationsOutputDir(dtsOutputDir);
-				transpiler.setUseJavaApis(!jsapArgs.getBoolean("removeJavaDependencies"));
 
 				transpiler.transpile(transpilationHandler, SourceFile.toSourceFiles(files));
 			} catch (NoClassDefFoundError error) {
@@ -338,6 +361,15 @@ public class JSweetCommandLineLauncher {
 		optionArg = new FlaggedOption("bundlesDirectory");
 		optionArg.setLongFlag("bundlesDirectory");
 		optionArg.setHelp("Generate all the bundles (see option --bundle) within the given directory.");
+		optionArg.setStringParser(FileStringParser.getParser());
+		optionArg.setRequired(false);
+		jsap.registerParameter(optionArg);
+
+		// Factory class name
+		optionArg = new FlaggedOption("factoryClassName");
+		optionArg.setLongFlag("factoryClassName");
+		optionArg.setShortFlag('f');
+		optionArg.setHelp("Use the given factory to tune the default transpiler behavior.");
 		optionArg.setStringParser(FileStringParser.getParser());
 		optionArg.setRequired(false);
 		jsap.registerParameter(optionArg);

@@ -29,9 +29,11 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.jsweet.transpiler.EcmaScriptComplianceLevel;
+import org.jsweet.transpiler.JSweetFactory;
 import org.jsweet.transpiler.JSweetTranspiler;
 import org.jsweet.transpiler.ModuleKind;
 import org.jsweet.transpiler.SourceFile;
+import org.jsweet.transpiler.extensions.RemoveJavaDependenciesFactory;
 import org.jsweet.transpiler.util.EvaluationResult;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -54,7 +56,8 @@ public class AbstractTest {
 	public final TestName testNameRule = new TestName();
 
 	protected File getTestFile(String name) {
-		return new File(TEST_DIRECTORY_NAME + "/" + getClass().getPackage().getName().replace('.', '/'), name + ".d.ts");
+		return new File(TEST_DIRECTORY_NAME + "/" + getClass().getPackage().getName().replace('.', '/'),
+				name + ".d.ts");
 	}
 
 	protected final String getCurrentTestName() {
@@ -87,30 +90,32 @@ public class AbstractTest {
 		return -1;
 	}
 
-	protected static JSweetTranspiler transpiler;
+	protected static JSweetTranspiler<?> transpiler;
 	protected static final String TMPOUT_DIR = "tempOut";
+
+	protected static void createTranspiler(JSweetFactory<?> factory) {
+		transpiler = new JSweetTranspiler<>(factory, new File(TMPOUT_DIR), null,
+				new File(JSweetTranspiler.TMP_WORKING_DIR_NAME + "/candies/js"), System.getProperty("java.class.path"));
+		transpiler.setEcmaTargetVersion(EcmaScriptComplianceLevel.ES5);
+		// transpiler.setPreserveSourceLineNumbers(true);
+	}
 
 	@BeforeClass
 	public static void globalSetUp() throws Exception {
-		File outDir = new File(TMPOUT_DIR);
 		if (!testSuiteInitialized) {
 			staticLogger.info("*** test suite initialization ***");
-			FileUtils.deleteQuietly(outDir);
+			FileUtils.deleteQuietly(new File(TMPOUT_DIR));
 			staticLogger.info("*** create transpiler ***");
-			transpiler = new JSweetTranspiler(outDir, null, new File(JSweetTranspiler.TMP_WORKING_DIR_NAME + "/candies/js"),
-					System.getProperty("java.class.path"));
-			transpiler.setModuleKind(ModuleKind.none);
-			//transpiler.setPreserveSourceLineNumbers(true);
+			createTranspiler(new JSweetFactory<>());
 			FileUtils.deleteQuietly(transpiler.getWorkingDirectory());
 			transpiler.getCandiesProcessor().touch();
-			transpiler.setEcmaTargetVersion(EcmaScriptComplianceLevel.ES5);
 			testSuiteInitialized = true;
 		}
 	}
 
 	private void initOutputDir() {
-		transpiler.setTsOutputDir(
-				new File(new File(TMPOUT_DIR), getCurrentTestName() + "/" + transpiler.getModuleKind() + (transpiler.isBundle() ? "_bundle" : "")));
+		transpiler.setTsOutputDir(new File(new File(TMPOUT_DIR),
+				getCurrentTestName() + "/" + transpiler.getModuleKind() + (transpiler.isBundle() ? "_bundle" : "")));
 	}
 
 	@Before
@@ -135,13 +140,15 @@ public class AbstractTest {
 		transpile(new ModuleKind[] { ModuleKind.none, ModuleKind.commonjs }, assertions, files);
 	}
 
-	protected void transpile(ModuleKind[] moduleKinds, Consumer<TestTranspilationHandler> assertions, SourceFile... files) {
+	protected void transpile(ModuleKind[] moduleKinds, Consumer<TestTranspilationHandler> assertions,
+			SourceFile... files) {
 		for (ModuleKind moduleKind : moduleKinds) {
 			transpile(moduleKind, assertions, files);
 		}
 	}
 
-	protected void transpile(ModuleKind moduleKind, Consumer<TestTranspilationHandler> assertions, SourceFile... files) {
+	protected void transpile(ModuleKind moduleKind, Consumer<TestTranspilationHandler> assertions,
+			SourceFile... files) {
 		ModuleKind initialModuleKind = transpiler.getModuleKind();
 		File initialOutputDir = transpiler.getTsOutputDir();
 		try {
@@ -176,17 +183,20 @@ public class AbstractTest {
 		eval(new ModuleKind[] { ModuleKind.none, ModuleKind.commonjs }, assertions, files);
 	}
 
-	protected void eval(ModuleKind[] moduleKinds, BiConsumer<TestTranspilationHandler, EvaluationResult> assertions, SourceFile... files) {
+	protected void eval(ModuleKind[] moduleKinds, BiConsumer<TestTranspilationHandler, EvaluationResult> assertions,
+			SourceFile... files) {
 		for (ModuleKind moduleKind : moduleKinds) {
 			eval(moduleKind, assertions, files);
 		}
 	}
 
-	protected void eval(ModuleKind moduleKind, BiConsumer<TestTranspilationHandler, EvaluationResult> assertions, SourceFile... files) {
+	protected void eval(ModuleKind moduleKind, BiConsumer<TestTranspilationHandler, EvaluationResult> assertions,
+			SourceFile... files) {
 		eval(moduleKind, true, assertions, files);
 	}
 
-	protected void eval(ModuleKind moduleKind, boolean testBundle, BiConsumer<TestTranspilationHandler, EvaluationResult> assertions, SourceFile... files) {
+	protected void eval(ModuleKind moduleKind, boolean testBundle,
+			BiConsumer<TestTranspilationHandler, EvaluationResult> assertions, SourceFile... files) {
 		ModuleKind initialModuleKind = transpiler.getModuleKind();
 		File initialOutputDir = transpiler.getTsOutputDir();
 		try {

@@ -103,7 +103,7 @@ import com.sun.tools.javac.util.Options;
  * 
  * @author Renaud Pawlak
  */
-public class JSweetTranspiler implements JSweetOptions {
+public class JSweetTranspiler<C extends JSweetContext> implements JSweetOptions {
 
 	/**
 	 * The TypeScript version to be installed/used with this version of JSweet
@@ -145,9 +145,10 @@ public class JSweetTranspiler implements JSweetOptions {
 	 */
 	public final static String TSCROOTFILE = ".tsc-rootfile.ts";
 
+	private JSweetFactory<C> factory;
 	private long transpilationStartTimestamp;
 	private ArrayList<File> auxiliaryTsModuleFiles = new ArrayList<>();
-	private JSweetContext context;
+	private C context;
 	private Options options;
 	private JavaFileManager fileManager;
 	private JavaCompiler compiler;
@@ -177,8 +178,6 @@ public class JSweetTranspiler implements JSweetOptions {
 	private boolean generateDefinitions = false;
 	private ArrayList<File> jsLibFiles = new ArrayList<>();
 	private File sourceRoot = null;
-	// TODO: merge with jdkAllowed??
-	private boolean useJavaApis = true;
 
 	@Override
 	public String toString() {
@@ -201,14 +200,20 @@ public class JSweetTranspiler implements JSweetOptions {
 	 * TypeScript and JavaScript output directories are set to
 	 * <code>System.getProperty("java.io.tmpdir")</code>. The classpath is set
 	 * to <code>System.getProperty("java.class.path")</code>.
+	 * 
+	 * @param factory
+	 *            the factory used to create the transpiler objects
 	 */
-	public JSweetTranspiler() {
-		this(new File(System.getProperty("java.io.tmpdir")), null, null, System.getProperty("java.class.path"));
+	public JSweetTranspiler(JSweetFactory<C> factory) {
+		this(factory, new File(System.getProperty("java.io.tmpdir")), null, null,
+				System.getProperty("java.class.path"));
 	}
 
 	/**
 	 * Creates a JSweet transpiler.
 	 * 
+	 * @param factory
+	 *            the factory used to create the transpiler objects
 	 * @param tsOutputDir
 	 *            the directory where TypeScript files are written
 	 * @param jsOutputDir
@@ -219,8 +224,10 @@ public class JSweetTranspiler implements JSweetOptions {
 	 *            the classpath as a string (check out system-specific
 	 *            requirements for Java classpathes)
 	 */
-	public JSweetTranspiler(File tsOutputDir, File jsOutputDir, File extractedCandiesJavascriptDir, String classPath) {
-		this(new File(TMP_WORKING_DIR_NAME), tsOutputDir, jsOutputDir, extractedCandiesJavascriptDir, classPath);
+	public JSweetTranspiler(JSweetFactory<C> factory, File tsOutputDir, File jsOutputDir,
+			File extractedCandiesJavascriptDir, String classPath) {
+		this(factory, new File(TMP_WORKING_DIR_NAME), tsOutputDir, jsOutputDir, extractedCandiesJavascriptDir,
+				classPath);
 	}
 
 	private Map<String, Map<String, Object>> configuration;
@@ -246,6 +253,8 @@ public class JSweetTranspiler implements JSweetOptions {
 	/**
 	 * Creates a JSweet transpiler.
 	 * 
+	 * @param factory
+	 *            the factory used to create the transpiler objects
 	 * @param workingDir
 	 *            the working directory
 	 * @param tsOutputDir
@@ -258,8 +267,9 @@ public class JSweetTranspiler implements JSweetOptions {
 	 *            the classpath as a string (check out system-specific
 	 *            requirements for Java classpaths)
 	 */
-	public JSweetTranspiler(File workingDir, File tsOutputDir, File jsOutputDir, File extractedCandiesJavascriptDir,
-			String classPath) {
+	public JSweetTranspiler(JSweetFactory<C> factory, File workingDir, File tsOutputDir, File jsOutputDir,
+			File extractedCandiesJavascriptDir, String classPath) {
+		this.factory = factory;
 		readConfiguration();
 		this.workingDir = workingDir.getAbsoluteFile();
 		this.extractedCandyJavascriptDir = extractedCandiesJavascriptDir;
@@ -358,7 +368,7 @@ public class JSweetTranspiler implements JSweetOptions {
 	}
 
 	private void initJavac(final TranspilationHandler transpilationHandler) {
-		context = new JSweetContext(this);
+		context = factory.createContext(this);
 		options = Options.instance(context);
 		if (classPath != null) {
 			options.put(Option.CLASSPATH, classPath);
@@ -774,7 +784,7 @@ public class JSweetTranspiler implements JSweetOptions {
 			return;
 		}
 		context.sourceFiles = files;
-		new GlobalBeforeTranslationScanner(transpilationHandler, context).process(compilationUnits);
+		factory.createBeforeTranslationScanner(transpilationHandler, context).process(compilationUnits);
 
 		if (context.useModules) {
 			generateTsFiles(transpilationHandler, files, compilationUnits);
@@ -802,7 +812,7 @@ public class JSweetTranspiler implements JSweetOptions {
 	private void generateTsFiles(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files,
 			List<JCCompilationUnit> compilationUnits) throws IOException {
 		// regular file-to-file generation
-		new OverloadScanner(transpilationHandler, context).process(compilationUnits);
+		new OverloadScanner<C>(transpilationHandler, context).process(compilationUnits);
 		for (int i = 0; i < compilationUnits.length(); i++) {
 			JCCompilationUnit cu = compilationUnits.get(i);
 			if (isModuleDefsFile(cu)) {
@@ -812,8 +822,8 @@ public class JSweetTranspiler implements JSweetOptions {
 				continue;
 			}
 			logger.info("scanning " + cu.sourcefile.getName() + "...");
-			AbstractTreePrinter printer = new Java2TypeScriptTranslator(transpilationHandler, context, cu,
-					generateSourceMap);
+			AbstractTreePrinter<C> printer = factory.createTranslator(factory.createAdapter(context),
+					transpilationHandler, context, cu, generateSourceMap);
 			printer.print(cu);
 			if (StringUtils.isWhitespace(printer.getResult())) {
 				continue;
@@ -908,7 +918,7 @@ public class JSweetTranspiler implements JSweetOptions {
 			return;
 		}
 
-		new OverloadScanner(transpilationHandler, context).process(orderedCompilationUnits);
+		new OverloadScanner<C>(transpilationHandler, context).process(orderedCompilationUnits);
 
 		logger.debug("ordered compilation units: " + orderedCompilationUnits.stream().map(cu -> {
 			return cu.sourcefile.getName();
@@ -962,8 +972,8 @@ public class JSweetTranspiler implements JSweetOptions {
 				}
 			}
 			logger.info("scanning " + cu.sourcefile.getName() + "...");
-			AbstractTreePrinter printer = new Java2TypeScriptTranslator(transpilationHandler, context, cu,
-					generateSourceMap);
+			AbstractTreePrinter<C> printer = factory.createTranslator(factory.createAdapter(context),
+					transpilationHandler, context, cu, generateSourceMap);
 			printer.print(cu);
 			printer.sourceMap.shiftOutputPositions(lineCount);
 			files[permutation[i]].setSourceMap(printer.sourceMap);
@@ -1688,7 +1698,8 @@ public class JSweetTranspiler implements JSweetOptions {
 	 */
 	public String transpile(ErrorCountTranspilationHandler handler, JCTree tree, String targetFileName)
 			throws IOException {
-		Java2TypeScriptTranslator translator = new Java2TypeScriptTranslator(handler, context, null, false);
+		Java2TypeScriptTranslator<C> translator = factory.createTranslator(factory.createAdapter(context), handler,
+				context, null, false);
 		translator.enterScope();
 		translator.scan(tree);
 		translator.exitScope();
@@ -1744,15 +1755,6 @@ public class JSweetTranspiler implements JSweetOptions {
 	@Override
 	public Map<String, Map<String, Object>> getConfiguration() {
 		return configuration;
-	}
-
-	@Override
-	public boolean isUseJavaApis() {
-		return useJavaApis;
-	}
-
-	public void setUseJavaApis(boolean useJavaApis) {
-		this.useJavaApis = useJavaApis;
 	}
 
 }

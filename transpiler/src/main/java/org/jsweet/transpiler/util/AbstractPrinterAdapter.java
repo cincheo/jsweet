@@ -19,11 +19,15 @@
 package org.jsweet.transpiler.util;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.Stack;
 
+import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetProblem;
 
 import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Symbol.TypeVariableSymbol;
 import com.sun.tools.javac.code.Type;
@@ -32,6 +36,9 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCArrayAccess;
 import com.sun.tools.javac.tree.JCTree.JCArrayTypeTree;
 import com.sun.tools.javac.tree.JCTree.JCAssign;
+import com.sun.tools.javac.tree.JCTree.JCClassDecl;
+import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
+import com.sun.tools.javac.tree.JCTree.JCEnhancedForLoop;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
@@ -51,9 +58,9 @@ import com.sun.tools.javac.util.Name;
  * 
  * @author Renaud Pawlak
  */
-public abstract class AbstractPrinterAdapter {
+public abstract class AbstractPrinterAdapter<C extends JSweetContext> {
 
-	private AbstractTreePrinter printer;
+	private AbstractTreePrinter<C> printer;
 
 	/**
 	 * A flags that indicates that this adapter is printing type parameters.
@@ -69,6 +76,95 @@ public abstract class AbstractPrinterAdapter {
 	 * A list of type variables to be erased (mapped to any).
 	 */
 	public Set<TypeVariableSymbol> typeVariablesToErase = new HashSet<>();
+
+	/**
+	 * Prints a tree by delegating to the printer.
+	 */
+	protected AbstractTreePrinter<C> print(JCTree tree) {
+		return printer.print(tree);
+	}
+
+	/**
+	 * Prints a string by delegating to the printer.
+	 */
+	protected AbstractTreePrinter<C> print(String string) {
+		return printer.print(string);
+	}
+
+	/**
+	 * Prints an argument list by delegating to the printer.
+	 */
+	protected AbstractTreePrinter<C> printArgList(List<? extends JCTree> args) {
+		return printer.printArgList(args);
+	}
+
+	/**
+	 * Print either a string, or a tree if the string is null.
+	 */
+	protected void print(String exprStr, JCTree expr) {
+		if (exprStr == null) {
+			print(expr);
+		} else {
+			print(exprStr);
+		}
+	}
+
+	/**
+	 * Prints an indentation for the current indentation value.
+	 */
+	public AbstractTreePrinter<C> printIndent() {
+		return printer.printIndent();
+	}
+
+	/**
+	 * Increments the current indentation value.
+	 */
+	public AbstractTreePrinter<C> startIndent() {
+		return printer.startIndent();
+	}
+
+	/**
+	 * Decrements the current indentation value.
+	 */
+	public AbstractTreePrinter<C> endIndent() {
+		return printer.endIndent();
+	}
+
+	/**
+	 * Gets the printer's stack.
+	 */
+	public Stack<JCTree> getStack() {
+		return printer.getStack();
+	}
+
+	/**
+	 * Gets the parent element in the printer's scanning stack.
+	 */
+	public JCTree getParent() {
+		return printer.getParent();
+	}
+
+	/**
+	 * Gets the parent element in the printer's scanning stack.
+	 */
+	public <T extends JCTree> T getParent(Class<T> type) {
+		return printer.getParent(type);
+	}
+
+	/**
+	 * Gets the printer's current compilation unit.
+	 */
+	public JCCompilationUnit getCompilationUnit() {
+		return printer.getCompilationUnit();
+	}
+
+	public String getRootRelativeName(Symbol symbol) {
+		return printer.getRootRelativeName(symbol);
+	}
+
+	public String getRootRelativeName(Symbol symbol, boolean useJavaNames) {
+		return printer.getRootRelativeName(symbol, useJavaNames);
+	}
 
 	/**
 	 * Reports a problem during the printing phase.
@@ -215,12 +311,12 @@ public abstract class AbstractPrinterAdapter {
 		return true;
 	}
 
-	public AbstractTreePrinter substituteAndPrintType(JCTree typeTree) {
+	public AbstractTreePrinter<C> substituteAndPrintType(JCTree typeTree) {
 		return substituteAndPrintType(typeTree, false, inTypeParameters, true, disableTypeSubstitution);
 	}
 
-	public AbstractTreePrinter substituteAndPrintType(JCTree typeTree, boolean arrayComponent, boolean inTypeParameters,
-			boolean completeRawTypes, boolean disableSubstitution) {
+	public AbstractTreePrinter<C> substituteAndPrintType(JCTree typeTree, boolean arrayComponent,
+			boolean inTypeParameters, boolean completeRawTypes, boolean disableSubstitution) {
 		if (typeTree instanceof JCTypeApply) {
 			JCTypeApply typeApply = ((JCTypeApply) typeTree);
 			substituteAndPrintType(typeApply.clazz, arrayComponent, inTypeParameters, false, disableSubstitution);
@@ -305,14 +401,14 @@ public abstract class AbstractPrinterAdapter {
 	/**
 	 * Gets the printer attached to this adapter.
 	 */
-	public AbstractTreePrinter getPrinter() {
+	public AbstractTreePrinter<C> getPrinter() {
 		return printer;
 	}
 
 	/**
 	 * Sets the printer attached to this adapter.
 	 */
-	public void setPrinter(AbstractTreePrinter printer) {
+	public void setPrinter(AbstractTreePrinter<C> printer) {
 		this.printer = printer;
 	}
 
@@ -340,4 +436,55 @@ public abstract class AbstractPrinterAdapter {
 		return false;
 	}
 
+	/**
+	 * Substitutes if necessary the given foreach loop.
+	 * 
+	 * @param the
+	 *            foreach loop to print
+	 * @param targetHasLength
+	 *            true if the iterable defines a public length field
+	 * @param indexVarName
+	 *            a possible (fresh) variable name that can used to iterate
+	 */
+	public boolean substituteForEachLoop(JCEnhancedForLoop foreachLoop, boolean targetHasLength, String indexVarName) {
+		return false;
+	}
+
+	/**
+	 * Tells if a super class has to be erased in the generated source.
+	 */
+	public boolean eraseSuperClass(JCClassDecl classdecl, ClassSymbol superClass) {
+		return false;
+	}
+
+	/**
+	 * Tells if a super interface has to be erased in the generated source.
+	 */
+	public boolean eraseSuperInterface(JCClassDecl classdecl, ClassSymbol superInterface) {
+		return false;
+	}
+
+	/**
+	 * Tells if this adapter substitutes types in extends or implements clauses.
+	 */
+	public boolean isSubstituteSuperTypes() {
+		return false;
+	}
+
+	/**
+	 * Substitutes if necessary an instanceof expression.
+	 * 
+	 * @param exprStr
+	 *            the expression being tested as a string (null if provided as a
+	 *            tree)
+	 * @param expr
+	 *            the expression being tested as a tree (null if provided as a
+	 *            string)
+	 * @param type
+	 *            the type of the instanceof expression
+	 * @return true if substituted
+	 */
+	public boolean substituteInstanceof(String exprStr, JCTree expr, Type type) {
+		return false;
+	}
 }

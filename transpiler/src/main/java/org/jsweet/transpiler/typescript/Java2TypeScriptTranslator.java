@@ -123,7 +123,7 @@ import com.sun.tools.javac.util.Name;
  * 
  * @author Renaud Pawlak
  */
-public class Java2TypeScriptTranslator extends AbstractTreePrinter {
+public class Java2TypeScriptTranslator<C extends JSweetContext> extends AbstractTreePrinter<C> {
 
 	public static final String PARENT_CLASS_FIELD_NAME = "__parent";
 	public static final String INTERFACES_FIELD_NAME = "__interfaces";
@@ -211,6 +211,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	/**
 	 * Creates a new TypeScript translator.
 	 * 
+	 * @param adapter
+	 *            an object that can tune various aspects of the TypeScript code
+	 *            generation
 	 * @param logHandler
 	 *            the handler for logging and error reporting
 	 * @param context
@@ -221,9 +224,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 *            if true, the printer generates the source maps, for debugging
 	 *            purpose
 	 */
-	public Java2TypeScriptTranslator(TranspilationHandler logHandler, JSweetContext context,
+	public Java2TypeScriptTranslator(Java2TypeScriptAdapter<C> adapter, TranspilationHandler logHandler, C context,
 			JCCompilationUnit compilationUnit, boolean fillSourceMap) {
-		super(logHandler, context, compilationUnit, new Java2TypeScriptAdapter(context), fillSourceMap);
+		super(logHandler, context, compilationUnit, adapter, fillSourceMap);
 	}
 
 	private static java.util.List<Class<?>> statementsWithNoSemis = Arrays
@@ -796,9 +799,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						&& !(JSweetConfig.OBJECT_CLASSNAME.equals(classdecl.extending.type.toString())
 								|| Object.class.getName().equals(classdecl.extending.type.toString()))
 						&& !(mixin != null && mixin.equals(classdecl.extending.type.toString()))
-						&& !(!context.options.isUseJavaApis()
-								&& classdecl.extending.type.tsym.getQualifiedName().toString().startsWith("java.")
-								&& !Util.isSourceType((ClassSymbol) classdecl.extending.type.tsym))) {
+						&& !(getAdapter().eraseSuperClass(classdecl, (ClassSymbol) classdecl.extending.type.tsym))) {
 					if (!getScope().interfaceScope && context.isInterface(classdecl.extending.type.tsym)) {
 						extendsInterface = true;
 						print(" implements ");
@@ -806,7 +807,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					} else {
 						print(" extends ");
 					}
-					getAdapter().disableTypeSubstitution = context.options.isUseJavaApis();
+					getAdapter().disableTypeSubstitution = !getAdapter().isSubstituteSuperTypes();
 					getAdapter().substituteAndPrintType(classdecl.extending);
 					getAdapter().disableTypeSubstitution = false;
 					if (context.classesWithWrongConstructorOverload.contains(classdecl.sym)) {
@@ -829,11 +830,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 				// erase Java interfaces
 				for (JCExpression itf : classdecl.implementing) {
-					if (!context.options.isUseJavaApis()) {
-						if (itf.type.tsym.getQualifiedName().toString().startsWith("java.")
-								&& !Util.isSourceType((ClassSymbol) itf.type.tsym)) {
-							implementing.remove(itf);
-						}
+					if (getAdapter().eraseSuperInterface(classdecl, (ClassSymbol) itf.type.tsym)) {
+						implementing.remove(itf);
 					}
 				}
 
@@ -848,7 +846,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						print(", ");
 					}
 					for (JCExpression itf : implementing) {
-						getAdapter().disableTypeSubstitution = context.options.isUseJavaApis();
+						getAdapter().disableTypeSubstitution = !getAdapter().isSubstituteSuperTypes();
 						getAdapter().substituteAndPrintType(itf);
 						getAdapter().disableTypeSubstitution = false;
 						implementedInterfaces.add(itf.type);
@@ -1970,7 +1968,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (varDecl.mods.getFlags().contains(Modifier.PRIVATE)) {
 					if (!getScope().interfaceScope) {
 						if (!getScope().innerClass && !varDecl.mods.getFlags().contains(Modifier.STATIC)) {
-							// cannot keep private fields because they may be accessed in an inner class
+							// cannot keep private fields because they may be
+							// accessed in an inner class
 							print("/*private*/ ");
 						}
 					} else {
@@ -2974,7 +2973,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	}
 
 	@Override
-	public AbstractTreePrinter printConstructorArgList(JCNewClass newClass) {
+	public AbstractTreePrinter<C> printConstructorArgList(JCNewClass newClass) {
 		boolean printed = false;
 		if ((getScope().anonymousClasses.contains(newClass.def)
 				&& !newClass.def.getModifiers().getFlags().contains(Modifier.STATIC))) {
@@ -3039,7 +3038,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	@Override
 	public void visitForeachLoop(JCEnhancedForLoop foreachLoop) {
 		String indexVarName = "index" + Util.getId();
-		boolean noVariable = foreachLoop.expr instanceof JCIdent || foreachLoop.expr instanceof JCFieldAccess;
 		boolean[] hasLength = { false };
 		TypeSymbol targetType = foreachLoop.expr.type.tsym;
 		Util.scanMemberDeclarationsInType(targetType, getAdapter().getErasedTypes(), element -> {
@@ -3051,12 +3049,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 			return true;
 		});
-		if (!hasLength[0] && context.options.isUseJavaApis()) {
-			print("for(" + VAR_DECL_KEYWORD + " " + indexVarName + "=").print(foreachLoop.expr)
-					.print(".iterator();" + indexVarName + ".hasNext();) {").println().startIndent().printIndent();
-			print(VAR_DECL_KEYWORD + " " + foreachLoop.var.name.toString() + " = ").print(indexVarName + ".next();")
-					.println();
-		} else {
+		if (!getAdapter().substituteForEachLoop(foreachLoop, hasLength[0], indexVarName)) {
+			boolean noVariable = foreachLoop.expr instanceof JCIdent || foreachLoop.expr instanceof JCFieldAccess;
 			if (noVariable) {
 				print("for(" + VAR_DECL_KEYWORD + " " + indexVarName + "=0; " + indexVarName + " < ")
 						.print(foreachLoop.expr).print("." + "length" + "; " + indexVarName + "++) {").println()
@@ -3073,11 +3067,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				print(VAR_DECL_KEYWORD + " " + foreachLoop.var.name.toString() + " = " + arrayVarName + "["
 						+ indexVarName + "];").println();
 			}
-		}
-		printIndent().print(foreachLoop.body);
-		endIndent().println().printIndent().print("}");
-		if (!noVariable && (hasLength[0] || !context.options.isUseJavaApis())) {
+			printIndent().print(foreachLoop.body);
 			endIndent().println().printIndent().print("}");
+			if (!noVariable) {
+				endIndent().println().printIndent().print("}");
+			}
 		}
 	}
 
@@ -3456,11 +3450,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				println().printIndent().print("if");
 				printInstanceOf("__e", null, catcher.param.type);
 				print(" {").startIndent().println().printIndent();
-				if (!context.options.isUseJavaApis() && catcher.param.type.toString().startsWith("java.")) {
-					print(catcher.param).print(" = ").print("__e;").println();
-				} else {
-					print(catcher.param).print(" = <").print(catcher.param.getType()).print(">__e;").println();
-				}
+				// if (!context.options.isUseJavaApis() &&
+				// catcher.param.type.toString().startsWith("java.")) {
+				// print(catcher.param).print(" = ").print("__e;").println();
+				// } else {
+				print(catcher.param).print(" = <");
+				getAdapter().substituteAndPrintType(catcher.param.getType());
+				print(">__e;").println();
+				// }
 				printBlockStatements(catcher.body.getStatements());
 				endIndent().println().printIndent().print("}");
 			}
@@ -3615,71 +3612,65 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (!(getParent() instanceof JCParens)) {
 			print("(");
 		}
-		if (TYPE_MAPPING.containsKey(type.toString())) {
-			print("typeof ");
-			print(exprStr, expr);
-			print(" === ").print("'" + TYPE_MAPPING.get(type.toString()).toLowerCase() + "'");
-		} else if (type.tsym.isEnum()) {
-			print("typeof ");
-			print(exprStr, expr);
-			print(" === 'number'");
-		} else if (type.toString().startsWith(JSweetConfig.FUNCTION_CLASSES_PACKAGE + ".")
-				|| type.toString().startsWith("java.util.function.") || Runnable.class.getName().equals(type.toString())
-				|| context.hasAnnotationType(type.tsym, JSweetConfig.ANNOTATION_FUNCTIONAL_INTERFACE)) {
-			print("typeof ");
-			print(exprStr, expr);
-			print(" === 'function'");
-			int parameterCount = context.getFunctionalTypeParameterCount(type);
-			if (parameterCount != -1) {
-				print(" && (<any>");
+		if (!getAdapter().substituteInstanceof(exprStr, expr, type)) {
+			if (TYPE_MAPPING.containsKey(type.toString())) {
+				print("typeof ");
 				print(exprStr, expr);
-				print(").length == " + context.getFunctionalTypeParameterCount(type));
-			}
-		} else if (!context.options.isUseJavaApis() && type.tsym.getQualifiedName().toString().startsWith("java.")
-				&& context.types.isSubtype(type, context.symtab.throwableType)) {
-			print(exprStr, expr);
-			print(" != null && ");
-			print("(");
-			print(exprStr, expr);
-			print("[\"" + CLASS_NAME_IN_CONSTRUCTOR + "\"]").print(" == ")
-					.print("\"" + type.tsym.getQualifiedName().toString() + "\"");
-			print(")");
-		} else {
-			print(exprStr, expr);
-			if (context.isInterface(type.tsym)) {
-				print(" != null && ");
-				print("(");
+				print(" === ").print("'" + TYPE_MAPPING.get(type.toString()).toLowerCase() + "'");
+			} else if (type.tsym.isEnum()) {
+				print("typeof ");
 				print(exprStr, expr);
-				print("[\"" + INTERFACES_FIELD_NAME + "\"]").print(" != null && ");
+				print(" === 'number'");
+			} else if (type.toString().startsWith(JSweetConfig.FUNCTION_CLASSES_PACKAGE + ".")
+					|| type.toString().startsWith("java.util.function.")
+					|| Runnable.class.getName().equals(type.toString())
+					|| context.hasAnnotationType(type.tsym, JSweetConfig.ANNOTATION_FUNCTIONAL_INTERFACE)) {
+				print("typeof ");
 				print(exprStr, expr);
-				print("[\"" + INTERFACES_FIELD_NAME + "\"].indexOf(\"").print(type.tsym.getQualifiedName().toString())
-						.print("\") >= 0");
-				print(" || ");
-				print(exprStr, expr);
-				print(".constructor != null && ");
-				print(exprStr, expr);
-				print(".constructor[\"" + INTERFACES_FIELD_NAME + "\"]").print(" != null && ");
-				print(exprStr, expr);
-				print(".constructor[\"" + INTERFACES_FIELD_NAME + "\"].indexOf(\"")
-						.print(type.tsym.getQualifiedName().toString()).print("\") >= 0");
-				if (CharSequence.class.getName().equals(type.tsym.getQualifiedName().toString())) {
-					print(" || typeof ");
+				print(" === 'function'");
+				int parameterCount = context.getFunctionalTypeParameterCount(type);
+				if (parameterCount != -1) {
+					print(" && (<any>");
 					print(exprStr, expr);
-					print(" === \"string\"");
+					print(").length == " + context.getFunctionalTypeParameterCount(type));
 				}
-				print(")");
 			} else {
-				if (type.tsym instanceof TypeVariableSymbol
-						|| Object.class.getName().equals(type.tsym.getQualifiedName().toString())) {
-					print(" != null");
-				} else {
+				print(exprStr, expr);
+				if (context.isInterface(type.tsym)) {
 					print(" != null && ");
+					print("(");
 					print(exprStr, expr);
-					String qualifiedName = getQualifiedTypeName(type.tsym, false);
-					if (qualifiedName.startsWith(JSweetConfig.LIBS_PACKAGE + ".")) {
-						print(" instanceof ").print(qualifiedName);
+					print("[\"" + INTERFACES_FIELD_NAME + "\"]").print(" != null && ");
+					print(exprStr, expr);
+					print("[\"" + INTERFACES_FIELD_NAME + "\"].indexOf(\"")
+							.print(type.tsym.getQualifiedName().toString()).print("\") >= 0");
+					print(" || ");
+					print(exprStr, expr);
+					print(".constructor != null && ");
+					print(exprStr, expr);
+					print(".constructor[\"" + INTERFACES_FIELD_NAME + "\"]").print(" != null && ");
+					print(exprStr, expr);
+					print(".constructor[\"" + INTERFACES_FIELD_NAME + "\"].indexOf(\"")
+							.print(type.tsym.getQualifiedName().toString()).print("\") >= 0");
+					if (CharSequence.class.getName().equals(type.tsym.getQualifiedName().toString())) {
+						print(" || typeof ");
+						print(exprStr, expr);
+						print(" === \"string\"");
+					}
+					print(")");
+				} else {
+					if (type.tsym instanceof TypeVariableSymbol
+							|| Object.class.getName().equals(type.tsym.getQualifiedName().toString())) {
+						print(" != null");
 					} else {
-						print(" instanceof <any>").print(qualifiedName);
+						print(" != null && ");
+						print(exprStr, expr);
+						String qualifiedName = getQualifiedTypeName(type.tsym, false);
+						if (qualifiedName.startsWith(JSweetConfig.LIBS_PACKAGE + ".")) {
+							print(" instanceof ").print(qualifiedName);
+						} else {
+							print(" instanceof <any>").print(qualifiedName);
+						}
 					}
 				}
 			}

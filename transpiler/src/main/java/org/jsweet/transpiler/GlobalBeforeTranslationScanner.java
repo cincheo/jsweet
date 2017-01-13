@@ -45,14 +45,14 @@ import com.sun.tools.javac.tree.JCTree.JCWildcard;
  * 
  * @author Renaud Pawlak
  */
-public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {
+public class GlobalBeforeTranslationScanner<C extends JSweetContext> extends AbstractTreeScanner<C> {
 
 	Set<JCVariableDecl> lazyInitializedStaticCandidates = new HashSet<>();
 
 	/**
 	 * Creates a new global scanner.
 	 */
-	public GlobalBeforeTranslationScanner(TranspilationHandler logHandler, JSweetContext context) {
+	public GlobalBeforeTranslationScanner(TranspilationHandler logHandler, C context) {
 		super(logHandler, context, null);
 	}
 

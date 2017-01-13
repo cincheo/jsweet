@@ -44,10 +44,11 @@ import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Names;
 
 /**
+ * A Java AST scanner for JSweet.
  * 
  * @author Renaud Pawlak
  */
-public abstract class AbstractTreeScanner extends TreeScanner {
+public abstract class AbstractTreeScanner<C extends JSweetContext> extends TreeScanner {
 
 	private TranspilationHandler logHandler;
 
@@ -92,9 +93,9 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 		return compilationUnit;
 	}
 
-	protected JSweetContext context;
+	protected C context;
 
-	public JSweetContext getContext() {
+	public C getContext() {
 		return context;
 	}
 
@@ -116,7 +117,7 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 		}
 	}
 
-	public AbstractTreeScanner(TranspilationHandler logHandler, JSweetContext context, JCCompilationUnit compilationUnit) {
+	public AbstractTreeScanner(TranspilationHandler logHandler, C context, JCCompilationUnit compilationUnit) {
 		this.logHandler = logHandler;
 		this.context = context;
 		this.context.symtab = Symtab.instance(context);
