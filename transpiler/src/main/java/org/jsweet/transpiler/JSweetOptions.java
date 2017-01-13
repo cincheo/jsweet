@@ -64,12 +64,6 @@ public interface JSweetOptions {
 	ModuleKind getModuleKind();
 
 	/**
-	 * Gets the directory where JavaScript bundles are generated when the bundle
-	 * option is activated.
-	 */
-	File getBundlesDirectory();
-
-	/**
 	 * Tells if this transpiler generates JavaScript bundles for running in a
 	 * Web browser.
 	 */

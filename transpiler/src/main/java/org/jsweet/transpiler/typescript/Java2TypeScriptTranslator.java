@@ -3704,7 +3704,7 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 		if (!context.hasAnnotationType(annotation.type.tsym, JSweetConfig.ANNOTATION_DECORATOR)) {
 			return;
 		}
-		printIndent().print("@").print(annotation.getAnnotationType()).print("(");
+		print("@").print(annotation.getAnnotationType()).print("(");
 		if (annotation.getArguments() != null && !annotation.getArguments().isEmpty()) {
 			isAnnotationScope = true;
 			print(" { ");
@@ -3716,7 +3716,7 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 			print(" } ");
 			isAnnotationScope = false;
 		}
-		print(")").println();
+		print(")").println().printIndent();
 	}
 
 }

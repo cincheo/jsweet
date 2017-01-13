@@ -145,20 +145,13 @@ public class JSweetCommandLineLauncher {
 
 				transpiler.setBundle(jsapArgs.getBoolean("bundle"));
 				transpiler.setNoRootDirectories(jsapArgs.getBoolean("noRootDirectories"));
-				File bundlesDirectory = null;
-				if (jsapArgs.getFile("bundlesDirectory") != null) {
-					bundlesDirectory = jsapArgs.getFile("bundlesDirectory");
-					bundlesDirectory.getParentFile().mkdirs();
-				}
-				logger.info("bundles directory: " + bundlesDirectory);
-				transpiler.setBundlesDirectory(bundlesDirectory);
 				transpiler.setPreserveSourceLineNumbers(jsapArgs.getBoolean("sourceMap"));
 				if (sourceRootDir != null) {
 					transpiler.setSourceRoot(sourceRootDir);
 				}
 				transpiler.setModuleKind(ModuleKind.valueOf(jsapArgs.getString("module")));
 				transpiler.setEncoding(jsapArgs.getString("encoding"));
-				transpiler.setIgnoreAssertions(jsapArgs.getBoolean("ignoreAssertions"));
+				transpiler.setIgnoreAssertions(!jsapArgs.getBoolean("enableAssertions"));
 				transpiler.setGenerateDeclarations(jsapArgs.getBoolean("declaration"));
 				transpiler.setGenerateJsFiles(!jsapArgs.getBoolean("tsOnly"));
 				transpiler.setInterfaceTracking(!jsapArgs.getBoolean("disableJavaAddons"));
@@ -271,35 +264,28 @@ public class JSweetCommandLineLauncher {
 		switchArg = new Switch("tsOnly");
 		switchArg.setLongFlag("tsOnly");
 		switchArg.setHelp(
-				"Tells the transpiler to not compile the TypeScript output (let an external TypeScript compiler do so).");
+				"Do not compile the TypeScript output (let an external TypeScript compiler do so).");
 		jsap.registerParameter(switchArg);
 
 		// Do not generate code for extended Java compatibility
 		switchArg = new Switch("disableJavaAddons");
 		switchArg.setLongFlag("disableJavaAddons");
 		switchArg.setHelp(
-				"Tells the transpiler to disable runtime addons (instanceof, overloading, class name access, static initialization [...] will not be fully supported).");
-		jsap.registerParameter(switchArg);
-
-		// Remove dependencies to Java APIs
-		switchArg = new Switch("removeJavaDependencies");
-		switchArg.setLongFlag("removeJavaDependencies");
-		switchArg.setHelp(
-				"Tells the transpiler to substitute uses of Java APIs with JavaScript APIs (for example, java.util.List will be translated to JavaScript arrays). This is best effort only. For better Java support, one should use a Java emulation runtime (J4TS).");
+				"Disable runtime addons (instanceof, overloading, class name access, static initialization [...] will not be fully supported).");
 		jsap.registerParameter(switchArg);
 
 		// Do not generate d.ts files that correspond to def.* packages
 		switchArg = new Switch("ignoreDefinitions");
 		switchArg.setLongFlag("ignoreDefinitions");
 		switchArg.setHelp(
-				"Tells the transpiler to ignore definitions from def.* packages, so that they are not generated in d.ts definition files. If this option is not set, the transpiler generates d.ts definition files in the directory given by the tsout option.");
+				"Ignore definitions from def.* packages, so that they are not generated in d.ts definition files. If this option is not set, the transpiler generates d.ts definition files in the directory given by the tsout option.");
 		jsap.registerParameter(switchArg);
 
 		// Generates declarations
 		switchArg = new Switch("declaration");
 		switchArg.setLongFlag("declaration");
 		switchArg.setHelp(
-				"Tells the transpiler to generate the d.ts files along with the js files, so that other programs can use them to compile.");
+				"Generate the d.ts files along with the js files, so that other programs can use them to compile.");
 		jsap.registerParameter(switchArg);
 
 		// Declarations output directory
@@ -324,7 +310,7 @@ public class JSweetCommandLineLauncher {
 		optionArg = new FlaggedOption("sourceRoot");
 		optionArg.setLongFlag("sourceRoot");
 		optionArg.setHelp(
-				"Specifies the location where debugger should locate Java files instead of source locations. Use this flag if the sources will be located at run-time in a different location than that at design-time. The location specified will be embedded in the sourceMap to direct the debugger where the source files will be located.");
+				"Specify the location where debugger should locate Java files instead of source locations. Use this flag if the sources will be located at run-time in a different location than that at design-time. The location specified will be embedded in the sourceMap to direct the debugger where the source files will be located.");
 		optionArg.setStringParser(FileStringParser.getParser());
 		optionArg.setRequired(false);
 		jsap.registerParameter(optionArg);
@@ -353,17 +339,9 @@ public class JSweetCommandLineLauncher {
 		switchArg.setLongFlag("bundle");
 		switchArg.setShortFlag('b');
 		switchArg.setHelp(
-				"Bundle up the generated files and used modules to bundle files, which can be used in the browser. Bundles contain all the dependencies and are thus standalone. There is one bundle generated per entry (a Java 'main' method) in the program. By default, bundles are generated in the entry directory, but the output directory can be set by using the --bundlesDirectory option. NOTE: bundles will be generated only when choosing the commonjs module kind.");
+				"Bundle up all the generated code in a single file, which can be used in the browser. The bundle files are called 'bundle.ts', 'bundle.d.ts', or 'bundle.js' depending on the kind of generated code. NOTE: bundles are not compatible with any module kind other than 'none'.");
 		switchArg.setDefault("false");
 		jsap.registerParameter(switchArg);
-
-		// Bundles directory
-		optionArg = new FlaggedOption("bundlesDirectory");
-		optionArg.setLongFlag("bundlesDirectory");
-		optionArg.setHelp("Generate all the bundles (see option --bundle) within the given directory.");
-		optionArg.setStringParser(FileStringParser.getParser());
-		optionArg.setRequired(false);
-		jsap.registerParameter(optionArg);
 
 		// Factory class name
 		optionArg = new FlaggedOption("factoryClassName");
@@ -378,15 +356,15 @@ public class JSweetCommandLineLauncher {
 		switchArg = new Switch("sourceMap");
 		switchArg.setLongFlag("sourceMap");
 		switchArg.setHelp(
-				"Set the transpiler to generate source map files for the Java files, so that it is possible to debug them in the browser. This feature is not available yet when using the --module option. Currently, when this option is on, the generated TypeScript file is not pretty printed in a programmer-friendly way (disable it in order to generate readable TypeScript code).");
+				"Generate source map files for the Java files, so that it is possible to debug Java files directly with a debugger that supports source maps (most JavaScript debuggers).");
 		switchArg.setDefault("false");
 		jsap.registerParameter(switchArg);
 
-		// Ignore assertions
-		switchArg = new Switch("ignoreAssertions");
-		switchArg.setLongFlag("ignoreAssertions");
+		// Enable assertions
+		switchArg = new Switch("enableAssertions");
+		switchArg.setLongFlag("enableAssertions");
 		switchArg
-				.setHelp("Set the transpiler to ignore 'assert' statements, i.e. no code is generated for assertions.");
+				.setHelp("Java 'assert' statements are transpiled as runtime JavaScript checks.");
 		switchArg.setDefault("false");
 		jsap.registerParameter(switchArg);
 

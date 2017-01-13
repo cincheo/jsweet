@@ -165,7 +165,6 @@ public class JSweetTranspiler<C extends JSweetContext> implements JSweetOptions 
 	private ModuleKind moduleKind = ModuleKind.none;
 	private EcmaScriptComplianceLevel ecmaTargetVersion = EcmaScriptComplianceLevel.ES3;
 	private boolean bundle = false;
-	private File bundlesDirectory;
 	private String encoding = null;
 	private boolean noRootDirectories = false;
 	private boolean ignoreAssertions = false;
@@ -184,13 +183,13 @@ public class JSweetTranspiler<C extends JSweetContext> implements JSweetOptions 
 		return "workingDir=" + workingDir + "\ntsOutputDir=" + tsOutputDir + "\njsOutputDir=" + jsOutputDir
 				+ "\nclassPath=" + classPath + "\ngenerateJsFiles=" + generateJsFiles + "\ntscWatchMode=" + tscWatchMode
 				+ "\ntsDefDirs=" + (tsDefDirs == null ? null : Arrays.asList(tsDefDirs)) + "\nmoduleKind=" + moduleKind
-				+ "\necmaTargertVersion=" + ecmaTargetVersion + "\nbundle=" + bundle + "\nbundleDirectory="
-				+ bundlesDirectory + "\nencoding=" + encoding + "\nnoRootDirectories=" + noRootDirectories
-				+ "\nignoreAssertions=" + ignoreAssertions + "\nignoreJavaFileNameError=" + ignoreJavaFileNameError
-				+ "\ngenerateDeclarations=" + generateDeclarations + "\ndeclarationsOutputDir=" + declarationsOutputDir
-				+ "\ninterfaceTracking=" + interfaceTracking + "\nsupportGetClass=" + supportGetClass
-				+ "\nsupportSaticLazyInitialization=" + supportSaticLazyInitialization + "\ngenerateDefinitions="
-				+ generateDefinitions + "\njsLibFiles=" + jsLibFiles;
+				+ "\necmaTargertVersion=" + ecmaTargetVersion + "\nbundle=" + bundle + "\nencoding=" + encoding
+				+ "\nnoRootDirectories=" + noRootDirectories + "\nignoreAssertions=" + ignoreAssertions
+				+ "\nignoreJavaFileNameError=" + ignoreJavaFileNameError + "\ngenerateDeclarations="
+				+ generateDeclarations + "\ndeclarationsOutputDir=" + declarationsOutputDir + "\ninterfaceTracking="
+				+ interfaceTracking + "\nsupportGetClass=" + supportGetClass + "\nsupportSaticLazyInitialization="
+				+ supportSaticLazyInitialization + "\ngenerateDefinitions=" + generateDefinitions + "\njsLibFiles="
+				+ jsLibFiles;
 	}
 
 	/**
@@ -1536,24 +1535,6 @@ public class JSweetTranspiler<C extends JSweetContext> implements JSweetOptions 
 	 */
 	public boolean isUsingModules() {
 		return moduleKind != null && moduleKind != ModuleKind.none;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.jsweet.transpiler.JSweetOptions#getBundlesDirectory()
-	 */
-	@Override
-	public File getBundlesDirectory() {
-		return bundlesDirectory;
-	}
-
-	/**
-	 * Sets the directory where JavaScript bundles are generated when the bundle
-	 * option is activated.
-	 */
-	public void setBundlesDirectory(File bundlesDirectory) {
-		this.bundlesDirectory = bundlesDirectory;
 	}
 
 	/*
