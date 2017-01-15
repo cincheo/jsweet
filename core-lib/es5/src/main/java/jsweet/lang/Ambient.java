@@ -16,6 +16,7 @@
  */
 package jsweet.lang;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -59,6 +60,7 @@ import def.js.String;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE, ElementType.FIELD, ElementType.METHOD })
+@Documented
 public @interface Ambient {
 
 }
