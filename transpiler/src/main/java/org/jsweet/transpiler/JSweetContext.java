@@ -22,6 +22,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.io.File;
 import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -116,6 +117,10 @@ public class JSweetContext extends Context {
 		return descrs;
 	}
 
+	private boolean hasAnnotationFilters() {
+		return !annotationFilters.isEmpty();
+	}
+
 	/**
 	 * Creates a new JSweet transpilation context.
 	 * 
@@ -126,70 +131,121 @@ public class JSweetContext extends Context {
 		this.options = options;
 		if (options.getConfiguration() != null) {
 			for (Entry<String, Map<String, Object>> entry : options.getConfiguration().entrySet()) {
-				if (entry.getKey().startsWith("@")) {
-					String annotationType = null;
-					Matcher m = annotationWithParameterPattern.matcher(entry.getKey());
-					String parameter = null;
-					if (m.matches()) {
-						annotationType = JSweetConfig.LANG_PACKAGE + "." + m.group(1);
-						parameter = m.group(2);
-					} else {
-						annotationType = JSweetConfig.LANG_PACKAGE + "." + entry.getKey().substring(1);
-					}
-					Object include = entry.getValue().get("include");
-					Collection<AnnotationFilterDescriptor> filterDescriptors = getAnnotationFilterDescriptors(
-							annotationType);
-					Collection<Pattern> inclusionPatterns = null;
-					Collection<Pattern> exclusionPatterns = null;
-					if (include != null) {
-						inclusionPatterns = new ArrayList<>();
-						if (include instanceof Collection) {
-							for (Object o : (Collection<?>) include) {
-								try {
-									inclusionPatterns.add(Pattern.compile(toRegexp(o.toString())));
-								} catch (Exception e) {
-									logger.warn("invalid pattern '" + o + "' for " + entry.getKey() + ".include");
-								}
-							}
-						} else {
-							try {
-								inclusionPatterns.add(Pattern.compile(toRegexp(include.toString())));
-							} catch (Exception e) {
-								logger.warn("invalid pattern '" + include + "' for " + entry.getKey() + ".include");
-							}
-						}
-					} else {
-						logger.warn(
-								"annotation entry " + entry.getKey() + " does not have a mandatory 'include' entry");
-					}
-					Object exclude = entry.getValue().get("exclude");
-					if (exclude != null) {
-						exclusionPatterns = new ArrayList<>();
-						if (exclude instanceof Collection) {
-							for (Object o : (Collection<?>) exclude) {
-								try {
-									exclusionPatterns.add(Pattern.compile(toRegexp(o.toString())));
-								} catch (Exception e) {
-									logger.warn("invalid pattern '" + o + "' for " + entry.getKey() + ".exclude");
-								}
-							}
-						} else {
-							try {
-								exclusionPatterns.add(Pattern.compile(toRegexp(exclude.toString())));
-							} catch (Exception e) {
-								logger.warn("invalid pattern '" + exclude + "' for " + entry.getKey() + ".exclude");
-							}
-						}
-					}
-					filterDescriptors
-							.add(new AnnotationFilterDescriptor(inclusionPatterns, exclusionPatterns, parameter));
-
-				}
+				addConfigurationEntry(entry);
 			}
 		}
 		for (Entry<String, Collection<AnnotationFilterDescriptor>> e : annotationFilters.entrySet()) {
 			logger.info("annotation filter descriptor: " + e);
 		}
+	}
+
+	/**
+	 * Adds an annotation on the AST through global filters.
+	 * 
+	 * <p>
+	 * Example:
+	 * 
+	 * <pre>
+	 * context.addAnnotation("@Erased", "*.writeObject(*)");
+	 * </pre>
+	 * 
+	 * <p>
+	 * Filters are simplified regular expressions matching on the Java AST.
+	 * Special characters are the following:
+	 * 
+	 * <ul>
+	 * <li>*: matches any character in the signature of the AST element</li>
+	 * <li>!: negates the filter (first character only)</li>
+	 * </ul>
+	 * 
+	 * @param annotation
+	 *            the annotation name, preceded with a @ (fully qualified name
+	 *            is not necessary for JSweet annotations)
+	 * @param filters
+	 *            the annotation is activated if one of the filters match and no
+	 *            negative filter matches
+	 */
+	public void addAnnotation(String annotation, String... filters) {
+		if (!annotation.startsWith("@")) {
+			throw new RuntimeException("annotation must start with '@'");
+		}
+		Map<String, Object> map = new HashMap<>();
+		Entry<String, Map<String, Object>> entry = new SimpleEntry<>(annotation, map);
+		for (String filter : filters) {
+			String listKind = filter.startsWith("!") ? "exclude" : "include";
+			@SuppressWarnings("unchecked")
+			List<String> list = (List<String>) map.get(listKind);
+			if (list == null) {
+				list = new ArrayList<>();
+				map.put(listKind, list);
+			}
+			list.add(listKind.equals("exclude") ? filter.substring(1).trim() : filter.trim());
+		}
+		addConfigurationEntry(entry);
+	}
+
+	private void addConfigurationEntry(Entry<String, Map<String, Object>> entry) {
+		if (entry.getKey().startsWith("@")) {
+			String annotationType = null;
+			Matcher m = annotationWithParameterPattern.matcher(entry.getKey());
+			String parameter = null;
+			if (m.matches()) {
+				if (m.group(1).contains(".")) {
+					annotationType = m.group(1);
+				} else {
+					annotationType = JSweetConfig.LANG_PACKAGE + "." + m.group(1);
+				}
+				parameter = m.group(2);
+			} else {
+				annotationType = JSweetConfig.LANG_PACKAGE + "." + entry.getKey().substring(1);
+			}
+			Object include = entry.getValue().get("include");
+			Collection<AnnotationFilterDescriptor> filterDescriptors = getAnnotationFilterDescriptors(annotationType);
+			Collection<Pattern> inclusionPatterns = null;
+			Collection<Pattern> exclusionPatterns = null;
+			if (include != null) {
+				inclusionPatterns = new ArrayList<>();
+				if (include instanceof Collection) {
+					for (Object o : (Collection<?>) include) {
+						try {
+							inclusionPatterns.add(Pattern.compile(toRegexp(o.toString())));
+						} catch (Exception e) {
+							logger.warn("invalid pattern '" + o + "' for " + entry.getKey() + ".include");
+						}
+					}
+				} else {
+					try {
+						inclusionPatterns.add(Pattern.compile(toRegexp(include.toString())));
+					} catch (Exception e) {
+						logger.warn("invalid pattern '" + include + "' for " + entry.getKey() + ".include");
+					}
+				}
+			} else {
+				logger.warn("annotation entry " + entry.getKey() + " does not have a mandatory 'include' entry");
+			}
+			Object exclude = entry.getValue().get("exclude");
+			if (exclude != null) {
+				exclusionPatterns = new ArrayList<>();
+				if (exclude instanceof Collection) {
+					for (Object o : (Collection<?>) exclude) {
+						try {
+							exclusionPatterns.add(Pattern.compile(toRegexp(o.toString())));
+						} catch (Exception e) {
+							logger.warn("invalid pattern '" + o + "' for " + entry.getKey() + ".exclude");
+						}
+					}
+				} else {
+					try {
+						exclusionPatterns.add(Pattern.compile(toRegexp(exclude.toString())));
+					} catch (Exception e) {
+						logger.warn("invalid pattern '" + exclude + "' for " + entry.getKey() + ".exclude");
+					}
+				}
+			}
+			filterDescriptors.add(new AnnotationFilterDescriptor(inclusionPatterns, exclusionPatterns, parameter));
+
+		}
+
 	}
 
 	/**
@@ -674,7 +730,7 @@ public class JSweetContext extends Context {
 	 * types.
 	 */
 	public boolean hasAnnotationType(Symbol symbol, String... annotationTypes) {
-		if (options.getConfiguration() != null) {
+		if (hasAnnotationFilters()) {
 			String signature = symbol.toString();
 			if (symbol.getEnclosingElement() != null) {
 				signature = symbol.getEnclosingElement().getQualifiedName().toString() + "." + signature;
@@ -860,7 +916,7 @@ public class JSweetContext extends Context {
 	 * type if found on the given symbol.
 	 */
 	public String getAnnotationValue(Symbol symbol, String annotationType, String defaultValue) {
-		if (options.getConfiguration() != null) {
+		if (hasAnnotationFilters()) {
 			String signature = symbol.toString();
 			if (symbol.getEnclosingElement() != null) {
 				signature = symbol.getEnclosingElement().getQualifiedName().toString() + "." + signature;
