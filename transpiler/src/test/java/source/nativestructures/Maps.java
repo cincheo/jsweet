@@ -15,10 +15,18 @@ public class Maps {
 
 	static Array<String> trace = new Array<>();
 
+	static String key1() {
+		return "1";
+	}
+
+	static String key2() {
+		return "a";
+	}
+
 	public static void main(String[] args) {
 		Map<String, String> m = new HashMap<>();
 
-		m.put("1", "a");
+		m.put(key1(), "a");
 		m.put("2", "b");
 
 		trace.push("" + m.size());
@@ -35,8 +43,9 @@ public class Maps {
 		trace.push("" + m.size());
 		trace.push("" + (m.get("1") == null));
 
-		trace.push(Collections.singletonMap("a", "1").get("a"));
-		
+		trace.push(Collections.singletonMap(key2(), "1").get("a"));
+		trace.push(Collections.singletonMap("b", "2").get("b"));
+
 		$export("trace", trace.join(","));
 
 	}

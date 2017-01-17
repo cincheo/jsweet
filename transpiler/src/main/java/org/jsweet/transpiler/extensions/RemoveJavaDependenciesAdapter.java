@@ -217,7 +217,13 @@ public class RemoveJavaDependenciesAdapter<C extends JSweetContext> extends Java
 					return true;
 				case "singletonMap":
 					printMacroName(targetMethodName);
-					print("{ ").print(invocation.args.head).print(": ").print(invocation.args.tail.head).print(" }");
+					if (invocation.args.head instanceof JCLiteral) {
+						print("{ ").print(invocation.args.head).print(": ").print(invocation.args.tail.head)
+								.print(" }");
+					} else {
+						print("(k => { let o = {}; o[k] = ").print(invocation.args.tail.head).print("; return o; })(")
+								.print(invocation.args.head).print(")");
+					}
 					return true;
 				}
 				break;
