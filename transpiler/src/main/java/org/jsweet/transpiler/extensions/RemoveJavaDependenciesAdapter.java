@@ -54,6 +54,8 @@ public class RemoveJavaDependenciesAdapter<C extends JSweetContext> extends Java
 		typesMapping.put(RuntimeException.class.getName(), "Error");
 		typesMapping.put(Throwable.class.getName(), "Error");
 		typesMapping.put(Error.class.getName(), "Error");
+		typesMapping.put(StringBuffer.class.getName(), "{ str: string }");
+		typesMapping.put(StringBuilder.class.getName(), "{ str: string }");
 		complexTypesMapping.put(
 				(type, name) -> name.startsWith("java.") && context.types.isSubtype(type, context.symtab.throwableType),
 				"Error");
@@ -267,6 +269,20 @@ public class RemoveJavaDependenciesAdapter<C extends JSweetContext> extends Java
 					return true;
 				}
 				break;
+			case "java.lang.StringBuffer":
+			case "java.lang.StringBuilder":
+				switch (targetMethodName) {
+				case "append":
+					printMacroName(targetMethodName);
+					getPrinter().print("(sb => sb.str = sb.str.concat(").printArgList(invocation.args).print("))(")
+							.print(fieldAccess.getExpression()).print(")");
+					return true;
+				case "toString":
+					printMacroName(targetMethodName);
+					getPrinter().print(fieldAccess.getExpression()).print(".str");
+					return true;
+				}
+				break;
 			}
 
 			switch (targetMethodName) {
@@ -335,6 +351,14 @@ public class RemoveJavaDependenciesAdapter<C extends JSweetContext> extends Java
 		case "java.util.HashMap":
 		case "java.util.Hashtable":
 			print("{}");
+			return true;
+		case "java.lang.StringBuffer":
+		case "java.lang.StringBuilder":
+			if (newClass.args.isEmpty() || Util.isNumber(newClass.args.head.type)) {
+				getPrinter().print("{ str: \"\", toString: function() { return this.str; } }");
+			} else {
+				getPrinter().print("{ str: ").print(newClass.args.head).print(", toString: function() { return this.str; } } }");
+			}
 			return true;
 		}
 
