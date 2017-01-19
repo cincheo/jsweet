@@ -200,14 +200,21 @@ public class TypeChecker {
 
 	private boolean checkUnionTypeAssignment(Types types, JCTree parent, Type assigned, JCMethodInvocation union) {
 		if (union.args.head.type.tsym.getQualifiedName().toString().startsWith(JSweetConfig.UNION_CLASS_NAME)) {
+			// union type -> simple type
 			if (!Util.containsAssignableType(types, union.args.head.type.getTypeArguments(), assigned)) {
 				translator.report(parent, JSweetProblem.UNION_TYPE_MISMATCH);
 				return false;
 			}
 		} else {
-			if ((JSweetConfig.LANG_PACKAGE_ALT + ".Function").equals(union.args.head.type.toString())) {
-				// type checking is ignored here!
-				// TODO: test betters (see Backbone test)
+			// simple type -> union type
+			String typeName = union.args.head.type.toString();
+			if ((JSweetConfig.LANG_PACKAGE_ALT + ".Function").equals(typeName)
+					|| (JSweetConfig.LANG_PACKAGE + ".Function").equals(typeName)) {
+				// HACK: type checking is ignored here!
+				// TODO: test better (see Backbone test)
+				// comparator = union(function((Todo todo) -> {
+				// return (Integer) todo.get("order");
+				// }));
 				return true;
 			}
 			if (!Util.containsAssignableType(types, assigned.getTypeArguments(), union.args.head.type)) {
