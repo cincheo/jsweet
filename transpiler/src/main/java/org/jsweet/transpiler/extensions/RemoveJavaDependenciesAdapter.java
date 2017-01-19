@@ -24,6 +24,7 @@ import java.lang.ref.WeakReference;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -145,7 +146,14 @@ public class RemoveJavaDependenciesAdapter<C extends JSweetContext> extends Java
 					return true;
 				case "remove":
 					printMacroName(targetMethodName);
-					print(fieldAccess.getExpression()).print(".splice(").printArgList(invocation.args).print(", 1)");
+					if (Util.isNumber(invocation.args.head.type)) {
+						print(fieldAccess.getExpression()).print(".splice(").printArgList(invocation.args)
+								.print(", 1)");
+					} else {
+						print("(a => a.splice(a.indexOf(").print(invocation.args.head).print(")")
+								.print(invocation.args.tail.isEmpty() ? "" : ", ").printArgList(invocation.args.tail)
+								.print(", 1))(").print(fieldAccess.getExpression()).print(")");
+					}
 					return true;
 				case "subList":
 					printMacroName(targetMethodName);
@@ -244,6 +252,9 @@ public class RemoveJavaDependenciesAdapter<C extends JSweetContext> extends Java
 					print("{}");
 					return true;
 				case "unmodifiableList":
+				case "unmodifiableCollection":
+				case "unmodifiableSet":
+				case "unmodifiableSortedSet":
 					printMacroName(targetMethodName);
 					printArgList(invocation.args).print(".slice(0)");
 					return true;
@@ -264,6 +275,10 @@ public class RemoveJavaDependenciesAdapter<C extends JSweetContext> extends Java
 						print("(k => { let o = {}; o[k] = ").print(invocation.args.tail.head).print("; return o; })(")
 								.print(invocation.args.head).print(")");
 					}
+					return true;
+				case "binarySearch":
+					printMacroName(targetMethodName);
+					print(invocation.args.head).print(".indexOf(").printArgList(invocation.args.tail).print(")");
 					return true;
 				}
 				break;
@@ -304,6 +319,10 @@ public class RemoveJavaDependenciesAdapter<C extends JSweetContext> extends Java
 							.print("((srcPts, srcOff, dstPts, dstOff, size) => { if(srcPts !== dstPts || dstOff >= srcOff + size) { while (--size >= 0) dstPts[dstOff++] = srcPts[srcOff++];"
 									+ "} else { let tmp = srcPts.slice(srcOff, srcOff + size); for (let i = 0; i < size; i++) dstPts[dstOff++] = tmp[i]; }})(")
 							.printArgList(invocation.args).print(")");
+					return true;
+				case "currentTimeMillis":
+					printMacroName(targetMethodName);
+					getPrinter().print("Date.now()");
 					return true;
 				}
 				break;

@@ -162,6 +162,12 @@ public class Collections implements Cloneable, Serializable {
 
 		trace.push("[" + a3 + "]");
 
+		trace.push("" + java.util.Collections.binarySearch(l, "it"));
+
+		l.remove("it");
+
+		trace.push("" + (java.util.Collections.binarySearch(l, "it") >= 0));
+
 		$export("trace", trace.join(","));
 
 	}
