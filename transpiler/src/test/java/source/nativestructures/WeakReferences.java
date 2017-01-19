@@ -3,6 +3,8 @@ package source.nativestructures;
 import static jsweet.util.Globals.$export;
 
 import java.lang.ref.WeakReference;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 import def.js.Array;
 
@@ -18,6 +20,12 @@ public class WeakReferences {
 		WeakReference<String> ref = new WeakReference<String>("test");
 
 		trace.push(ref.get());
+
+		Map<String, String> map = new WeakHashMap<>();
+
+		map.put("a", "1");
+
+		trace.push(map.get("a"));
 
 		$export("trace", trace.join(","));
 

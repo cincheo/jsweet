@@ -54,7 +54,7 @@ public class NativeStructuresTests extends AbstractTest {
 		eval((logHandler, result) -> {
 			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
 			assertEquals(
-					"test",
+					"test,1",
 					result.<String> get("trace"));
 		}, getSourceFile(WeakReferences.class));
 	}

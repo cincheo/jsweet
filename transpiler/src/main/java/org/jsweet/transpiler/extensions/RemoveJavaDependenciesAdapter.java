@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
+import java.util.WeakHashMap;
 
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.typescript.Java2TypeScriptAdapter;
@@ -75,6 +76,7 @@ public class RemoveJavaDependenciesAdapter<C extends JSweetContext> extends Java
 		typesMapping.put(Iterator.class.getName(), "any");
 		typesMapping.put(Map.class.getName(), "Object");
 		typesMapping.put(HashMap.class.getName(), "Object");
+		typesMapping.put(WeakHashMap.class.getName(), "Object");
 		typesMapping.put(Hashtable.class.getName(), "Object");
 		typesMapping.put(Comparator.class.getName(), "any");
 		typesMapping.put(Exception.class.getName(), "Error");
@@ -192,6 +194,7 @@ public class RemoveJavaDependenciesAdapter<C extends JSweetContext> extends Java
 			case "java.util.Map":
 			case "java.util.HashMap":
 			case "java.util.Hashtable":
+			case "java.util.WeakHashMap":
 				switch (targetMethodName) {
 				case "put":
 					printMacroName(targetMethodName);
@@ -397,6 +400,7 @@ public class RemoveJavaDependenciesAdapter<C extends JSweetContext> extends Java
 			return true;
 		case "java.util.HashMap":
 		case "java.util.Hashtable":
+		case "java.util.WeakHashMap":
 			print("{}");
 			return true;
 		case "java.lang.StringBuffer":
