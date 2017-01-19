@@ -3,6 +3,7 @@ package source.nativestructures;
 import static jsweet.util.Globals.$export;
 
 import java.io.Serializable;
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -153,6 +154,13 @@ public class Collections implements Cloneable, Serializable {
 		s.add("test");
 
 		trace.push("" + s.size());
+
+		Collator c = Collator.getInstance();
+
+		String[] a3 = new String[] { "c", "b", "a" };
+		Arrays.sort(a3, c);
+
+		trace.push("[" + a3 + "]");
 
 		$export("trace", trace.join(","));
 

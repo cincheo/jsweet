@@ -1,8 +1,27 @@
+/* 
+ * JSweet transpiler - http://www.jsweet.org
+ * Copyright (C) 2015 CINCHEO SAS <renaud.pawlak@cincheo.fr>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
 package org.jsweet.transpiler.extensions;
 
 import static org.jsweet.JSweetConfig.isJDKPath;
 
 import java.lang.ref.WeakReference;
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -35,6 +54,12 @@ import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.JCTree.JCTypeApply;
 
+/**
+ * An adapter that removes many uses of Java APIs and replace them with
+ * JavaScript equivalent when possible.
+ * 
+ * @author Renaud Pawlak
+ */
 public class RemoveJavaDependenciesAdapter<C extends JSweetContext> extends Java2TypeScriptAdapter<C> {
 
 	public RemoveJavaDependenciesAdapter(C context) {
@@ -58,6 +83,7 @@ public class RemoveJavaDependenciesAdapter<C extends JSweetContext> extends Java
 		typesMapping.put(Error.class.getName(), "Error");
 		typesMapping.put(StringBuffer.class.getName(), "{ str: string }");
 		typesMapping.put(StringBuilder.class.getName(), "{ str: string }");
+		typesMapping.put(Collator.class.getName(), "any");
 		complexTypesMapping
 				.add((typeTree,
 						name) -> name.startsWith("java.")
@@ -296,6 +322,12 @@ public class RemoveJavaDependenciesAdapter<C extends JSweetContext> extends Java
 				switch (targetMethodName) {
 				case "get":
 					getPrinter().print(fieldAccess.getExpression());
+					return true;
+				}
+			case "java.text.Collator":
+				switch (targetMethodName) {
+				case "getInstance":
+					getPrinter().print("((o1, o2) => o1.toString().localeCompare(o2.toString()))");
 					return true;
 				}
 			}
