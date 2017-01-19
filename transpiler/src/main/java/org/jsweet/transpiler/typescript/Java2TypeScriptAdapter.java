@@ -38,13 +38,13 @@ import static org.jsweet.JSweetConfig.UTIL_CLASSNAME;
 import static org.jsweet.JSweetConfig.UTIL_PACKAGE;
 import static org.jsweet.JSweetConfig.isJSweetPath;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
-import java.util.function.BiPredicate;
+import java.util.function.BiFunction;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleBinaryOperator;
 import java.util.function.DoubleConsumer;
@@ -120,7 +120,7 @@ public class Java2TypeScriptAdapter<C extends JSweetContext> extends AbstractPri
 	private final static String VAR_DECL_KEYWORD = Java2TypeScriptTranslator.VAR_DECL_KEYWORD;
 
 	protected Map<String, String> typesMapping = new HashMap<String, String>();
-	protected Map<BiPredicate<Type, String>, String> complexTypesMapping = new HashMap<BiPredicate<Type, String>, String>();
+	protected List<BiFunction<JCTree, String, Object>> complexTypesMapping = new ArrayList<>();
 	protected Map<String, String> langTypesMapping = new HashMap<String, String>();
 	protected Set<String> langTypesSimpleNames = new HashSet<String>();
 	protected Set<String> baseThrowables = new HashSet<String>();
@@ -1417,11 +1417,15 @@ public class Java2TypeScriptAdapter<C extends JSweetContext> extends AbstractPri
 					}
 					return getPrinter();
 				}
-				for (Entry<BiPredicate<Type, String>, String> mapping : complexTypesMapping.entrySet()) {
-					if (mapping.getKey().test(typeTree.type, typeFullName)) {
-						getPrinter().print(mapping.getValue());
-						return getPrinter();
-					}
+			}
+			for (BiFunction<JCTree, String, Object> mapping : complexTypesMapping) {
+				Object mapped = mapping.apply(typeTree, typeFullName);
+				if (mapped instanceof String) {
+					getPrinter().print((String) mapped);
+					return getPrinter();
+				} else if (mapped instanceof JCTree) {
+					substituteAndPrintType((JCTree) mapped);
+					return getPrinter();
 				}
 			}
 		}

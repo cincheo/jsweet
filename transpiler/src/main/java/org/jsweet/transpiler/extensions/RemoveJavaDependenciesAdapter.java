@@ -2,6 +2,7 @@ package org.jsweet.transpiler.extensions;
 
 import static org.jsweet.JSweetConfig.isJDKPath;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -32,6 +33,7 @@ import com.sun.tools.javac.tree.JCTree.JCImport;
 import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
+import com.sun.tools.javac.tree.JCTree.JCTypeApply;
 
 public class RemoveJavaDependenciesAdapter<C extends JSweetContext> extends Java2TypeScriptAdapter<C> {
 
@@ -56,9 +58,16 @@ public class RemoveJavaDependenciesAdapter<C extends JSweetContext> extends Java
 		typesMapping.put(Error.class.getName(), "Error");
 		typesMapping.put(StringBuffer.class.getName(), "{ str: string }");
 		typesMapping.put(StringBuilder.class.getName(), "{ str: string }");
-		complexTypesMapping.put(
-				(type, name) -> name.startsWith("java.") && context.types.isSubtype(type, context.symtab.throwableType),
-				"Error");
+		complexTypesMapping
+				.add((typeTree,
+						name) -> name.startsWith("java.")
+								&& context.types.isSubtype(typeTree.type, context.symtab.throwableType) ? "Error"
+										: null);
+		complexTypesMapping
+				.add((typeTree,
+						name) -> typeTree instanceof JCTypeApply && WeakReference.class.getName()
+								.equals(typeTree.type.tsym.getQualifiedName().toString())
+										? ((JCTypeApply) typeTree).arguments.head : null);
 	}
 
 	@Override
@@ -283,6 +292,12 @@ public class RemoveJavaDependenciesAdapter<C extends JSweetContext> extends Java
 					return true;
 				}
 				break;
+			case "java.lang.ref.WeakReference":
+				switch (targetMethodName) {
+				case "get":
+					getPrinter().print(fieldAccess.getExpression());
+					return true;
+				}
 			}
 
 			switch (targetMethodName) {
@@ -357,8 +372,12 @@ public class RemoveJavaDependenciesAdapter<C extends JSweetContext> extends Java
 			if (newClass.args.isEmpty() || Util.isNumber(newClass.args.head.type)) {
 				getPrinter().print("{ str: \"\", toString: function() { return this.str; } }");
 			} else {
-				getPrinter().print("{ str: ").print(newClass.args.head).print(", toString: function() { return this.str; } } }");
+				getPrinter().print("{ str: ").print(newClass.args.head)
+						.print(", toString: function() { return this.str; } } }");
 			}
+			return true;
+		case "java.lang.ref.WeakReference":
+			getPrinter().print(newClass.args.head);
 			return true;
 		}
 

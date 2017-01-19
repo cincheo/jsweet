@@ -14,6 +14,7 @@ import source.nativestructures.Exceptions;
 import source.nativestructures.Maps;
 import source.nativestructures.NativeArrays;
 import source.nativestructures.NativeStringBuilder;
+import source.nativestructures.WeakReferences;
 
 public class NativeStructuresTests extends AbstractTest {
 
@@ -48,6 +49,16 @@ public class NativeStructuresTests extends AbstractTest {
 		}, getSourceFile(NativeStringBuilder.class));
 	}
 
+	@Test
+	public void testWeakReferences() {
+		eval((logHandler, result) -> {
+			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+			assertEquals(
+					"test",
+					result.<String> get("trace"));
+		}, getSourceFile(WeakReferences.class));
+	}
+	
 	@Test
 	public void testExceptions() {
 		eval((logHandler, result) -> {
