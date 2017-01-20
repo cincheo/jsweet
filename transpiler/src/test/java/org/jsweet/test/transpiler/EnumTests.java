@@ -25,7 +25,6 @@ import source.enums.ComplexEnumWithAbstractMethods;
 import source.enums.ComplexEnums;
 import source.enums.EnumInSamePackage;
 import source.enums.Enums;
-import source.enums.LengthUnit;
 import source.enums.other.EnumInOtherPackage;
 
 public class EnumTests extends AbstractTest {
