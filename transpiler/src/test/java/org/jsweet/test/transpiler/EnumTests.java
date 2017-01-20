@@ -21,9 +21,11 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Assert;
 import org.junit.Test;
 
+import source.enums.ComplexEnumWithAbstractMethods;
 import source.enums.ComplexEnums;
 import source.enums.EnumInSamePackage;
 import source.enums.Enums;
+import source.enums.LengthUnit;
 import source.enums.other.EnumInOtherPackage;
 
 public class EnumTests extends AbstractTest {
@@ -48,6 +50,14 @@ public class EnumTests extends AbstractTest {
 			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
 			Assert.assertEquals(">static,2,--2--,ratio_2_1_5,true,true,true,true", r.get("trace"));
 		}, getSourceFile(ComplexEnums.class));
+	}
+
+	@Test
+	public void testComplexEnumWithAbstractMethods() {
+		eval((logHandler, r) -> {
+			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+			Assert.assertEquals(">ok1,ok2", r.get("trace"));
+		}, getSourceFile(ComplexEnumWithAbstractMethods.class));
 	}
 
 }

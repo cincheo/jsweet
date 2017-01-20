@@ -45,6 +45,7 @@ import source.structural.InstanceOf;
 import source.structural.InstanceofForInterfaces;
 import source.structural.InterfaceInheritance;
 import source.structural.JSNI;
+import source.structural.LocalClasses;
 import source.structural.Name;
 import source.structural.NameClashesWithMethodInvocations;
 import source.structural.NoNameClashesWithFields;
@@ -349,6 +350,13 @@ public class StructuralTests extends AbstractTest {
 			assertEquals("String", r.get("string"));
 			assertEquals("Number", r.get("number"));
 		}, getSourceFile(GetClass.class));
+	}
+
+	@Test
+	public void testLocalClasses() {
+		transpile(logHandler -> {
+			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+		}, getSourceFile(LocalClasses.class));
 	}
 
 }

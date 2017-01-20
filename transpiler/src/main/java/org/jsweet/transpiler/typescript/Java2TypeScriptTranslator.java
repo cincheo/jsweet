@@ -149,8 +149,6 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 
 		private boolean enumWrapperClassScope = false;
 
-		private List<String> javaEnumKeys;
-
 		private boolean removedSuperclass = false;
 
 		private boolean declareClassScope;
@@ -181,10 +179,16 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 
 		private List<String> inlinedConstructorArgs = null;
 
-	}
+		private List<JCClassDecl> localClasses = new ArrayList<>();
 
-	private boolean isAnonymousClass = false;
-	private boolean isInnerClass = false;
+		// to be accessed in the parent scope
+		private boolean isAnonymousClass = false;
+		// to be accessed in the parent scope
+		private boolean isInnerClass = false;
+		// to be accessed in the parent scope
+		private boolean isLocalClass = false;
+
+	}
 
 	private Stack<ClassScope> scope = new Stack<>();
 
@@ -692,6 +696,18 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 		return false;
 	}
 
+	private boolean isAnonymousClass() {
+		return scope.size() > 1 && getScope(1).isAnonymousClass;
+	}
+
+	private boolean isInnerClass() {
+		return scope.size() > 1 && getScope(1).isInnerClass;
+	}
+
+	private boolean isLocalClass() {
+		return scope.size() > 1 && getScope(1).isLocalClass;
+	}
+
 	@Override
 	public void visitClassDef(JCClassDecl classdecl) {
 		if (isIgnored(classdecl)) {
@@ -701,6 +717,15 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 		if (!scope.isEmpty() && getScope().anonymousClasses.contains(classdecl)) {
 			name = getScope().name + ANONYMOUS_PREFIX + getScope().anonymousClasses.indexOf(classdecl);
 		}
+
+		JCTree testParent = getFirstParent(JCClassDecl.class, JCMethodDecl.class);
+		if (testParent != null && testParent instanceof JCMethodDecl) {
+			if (!isLocalClass()) {
+				getScope().localClasses.add(classdecl);
+				return;
+			}
+		}
+
 		enterScope();
 		getScope().name = name;
 
@@ -739,7 +764,7 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 			}
 			printDocComment(classdecl, false);
 			print(classdecl.mods);
-			if (!globalModule || context.useModules || isAnonymousClass || isInnerClass) {
+			if (!globalModule || context.useModules || isAnonymousClass() || isInnerClass()) {
 				print("export ");
 			}
 			if (context.isInterface(classdecl.sym)) {
@@ -751,9 +776,11 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 						print("declare ");
 					}
 					if (scope.size() > 1 && getScope(1).isComplexEnum) {
+						if (Util.hasAbstractMethod(classdecl.sym)) {
+							print("abstract ");
+						}
 						print("class ");
 						getScope().enumWrapperClassScope = true;
-						getScope().javaEnumKeys = new ArrayList<>();
 					} else {
 						print("enum ");
 						getScope().enumScope = true;
@@ -775,7 +802,7 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 
 			if (classdecl.typarams != null && classdecl.typarams.size() > 0) {
 				print("<").printArgList(classdecl.typarams).print(">");
-			} else if (isAnonymousClass && classdecl.getModifiers().getFlags().contains(Modifier.STATIC)) {
+			} else if (isAnonymousClass() && classdecl.getModifiers().getFlags().contains(Modifier.STATIC)) {
 				JCNewClass newClass = getScope(1).anonymousClassesConstructors
 						.get(getScope(1).anonymousClasses.indexOf(classdecl));
 				printAnonymousClassTypeArgs(newClass);
@@ -807,9 +834,13 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 					} else {
 						print(" extends ");
 					}
-					getAdapter().disableTypeSubstitution = !getAdapter().isSubstituteSuperTypes();
-					getAdapter().substituteAndPrintType(classdecl.extending);
-					getAdapter().disableTypeSubstitution = false;
+					if (getScope().enumWrapperClassScope && getScope(1).anonymousClasses.contains(classdecl)) {
+						print(classdecl.extending.toString() + ENUM_WRAPPER_CLASS_SUFFIX);
+					} else {
+						getAdapter().disableTypeSubstitution = !getAdapter().isSubstituteSuperTypes();
+						getAdapter().substituteAndPrintType(classdecl.extending);
+						getAdapter().disableTypeSubstitution = false;
+					}
 					if (context.classesWithWrongConstructorOverload.contains(classdecl.sym)) {
 						getScope().hasConstructorOverloadWithSuperClass = true;
 					}
@@ -1065,7 +1096,7 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 
 		removeLastChar();
 
-		if (getScope().enumWrapperClassScope) {
+		if (getScope().enumWrapperClassScope && !getScope(1).anonymousClasses.contains(classdecl)) {
 			printIndent().print("public name() : string { return this." + ENUM_WRAPPER_CLASS_NAME + "; }").println();
 			printIndent().print("public ordinal() : number { return this." + ENUM_WRAPPER_CLASS_ORDINAL + "; }")
 					.println();
@@ -1099,15 +1130,6 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 					println();
 				}
 			}
-			if (getScope().enumWrapperClassScope) {
-				println().printIndent().print(classdecl.sym.getSimpleName().toString())
-						.print("[\"" + ENUM_WRAPPER_CLASS_WRAPPERS + "\"] = [");
-				for (String k : getScope().javaEnumKeys) {
-					print(k).print(", ");
-				}
-				removeLastChars(2);
-				print("];").println();
-			}
 		}
 
 		// enum class for complex enum
@@ -1116,7 +1138,8 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 			visitClassDef(classdecl);
 		}
 
-		// inner and anonymous classes in a namespace ======================
+		// inner, anonymous and local classes in a namespace
+		// ======================
 		// print valid inner classes
 		boolean nameSpace = false;
 		for (JCTree def : classdecl.defs) {
@@ -1137,9 +1160,9 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 					}
 					print("namespace ").print(name).print(" {").startIndent();
 				}
-				isInnerClass = true;
+				getScope().isInnerClass = true;
 				println().println().printIndent().print(cdef);
-				isInnerClass = false;
+				getScope().isInnerClass = false;
 			}
 		}
 		// print anonymous classes
@@ -1152,14 +1175,66 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 				}
 				print("namespace ").print(name).print(" {").startIndent();
 			}
-			isAnonymousClass = true;
+			getScope().isAnonymousClass = true;
 			println().println().printIndent().print(cdef);
-			isAnonymousClass = false;
+			getScope().isAnonymousClass = false;
+		}
+		// print local classes
+		for (JCClassDecl cdef : getScope().localClasses) {
+			if (!nameSpace) {
+				nameSpace = true;
+				println().println().printIndent();
+				if (!globalModule || context.useModules) {
+					print("export ");
+				}
+				print("namespace ").print(name).print(" {").startIndent();
+			}
+			getScope().isLocalClass = true;
+			println().println().printIndent().print(cdef);
+			getScope().isLocalClass = false;
 		}
 		if (nameSpace) {
 			println().endIndent().printIndent().print("}").println();
 		}
 		// end of namespace =================================================
+
+		if (getScope().enumScope && getScope().isComplexEnum && !getScope().anonymousClasses.contains(classdecl)) {
+			println().printIndent().print(classdecl.sym.getSimpleName().toString())
+					.print("[\"" + ENUM_WRAPPER_CLASS_WRAPPERS + "\"] = [");
+			int index = 0;
+			for (JCTree tree : classdecl.defs) {
+				if (tree instanceof JCVariableDecl && ((JCVariableDecl) tree).type.equals(classdecl.type)) {
+					JCVariableDecl varDecl = (JCVariableDecl) tree;
+					// enum fields are not part of the enum auxiliary class but
+					// will initialize the enum values
+					JCNewClass newClass = (JCNewClass) varDecl.init;
+					JCClassDecl clazz = classdecl;
+					try {
+						int anonymousClassIndex = getScope().anonymousClasses.indexOf(newClass.def);
+						if (anonymousClassIndex >= 0) {
+							print("new ")
+									.print(clazz.getSimpleName().toString() + "." + clazz.getSimpleName().toString()
+											+ ANONYMOUS_PREFIX + anonymousClassIndex + ENUM_WRAPPER_CLASS_SUFFIX)
+									.print("(");
+						} else {
+							print("new ").print(clazz.getSimpleName().toString() + ENUM_WRAPPER_CLASS_SUFFIX)
+									.print("(");
+						}
+						print("" + (index++) + ", ");
+						print("\"" + varDecl.sym.name.toString() + "\"");
+						if (!newClass.args.isEmpty()) {
+							print(", ");
+						}
+						printArgList(newClass.args).print(")");
+						print(", ");
+					} catch (Exception e) {
+						System.out.println("");
+					}
+				}
+			}
+			removeLastChars(2);
+			print("];").println();
+		}
 
 		if (getScope().interfaceScope) {
 			// print static members of interfaces
@@ -1246,7 +1321,7 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 		}
 		JCClassDecl parent = (JCClassDecl) getParent();
 
-		if (parent != null && methodDecl.pos == parent.pos) {
+		if (parent != null && methodDecl.pos == parent.pos && !getScope().enumWrapperClassScope) {
 			return;
 		}
 
@@ -1364,9 +1439,6 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 				mainMethod = methodDecl;
 			}
 		}
-		if (parent != null && methodDecl.pos == parent.pos) {
-			return;
-		}
 
 		boolean globals = parent == null ? false : JSweetConfig.GLOBALS_CLASS_NAME.equals(parent.name.toString());
 		globals = globals || (getScope().interfaceScope && methodDecl.mods.getFlags().contains(Modifier.STATIC));
@@ -1476,8 +1548,8 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 			paramPrinted = true;
 		}
 		if (constructor && getScope().enumWrapperClassScope) {
-			print("private " + ENUM_WRAPPER_CLASS_ORDINAL + " : number, ");
-			print("private " + ENUM_WRAPPER_CLASS_NAME + " : string");
+			print((isAnonymousClass() ? "" : "protected ") + ENUM_WRAPPER_CLASS_ORDINAL + " : number, ");
+			print((isAnonymousClass() ? "" : "protected ") + ENUM_WRAPPER_CLASS_NAME + " : string");
 			if (!methodDecl.getParameters().isEmpty()) {
 				print(", ");
 			}
@@ -1893,25 +1965,26 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 
 		if (getScope().enumScope) {
 			print(varDecl.name.toString());
+			if (varDecl.init instanceof JCNewClass) {
+				JCNewClass newClass = (JCNewClass) varDecl.init;
+				if (newClass.def != null) {
+					initAnonymousClass(newClass);
+					// print("new ").print(getScope().name + "." +
+					// getScope().name + ANONYMOUS_PREFIX +
+					// anonymousClassIndex);
+					// if
+					// (newClass.def.getModifiers().getFlags().contains(Modifier.STATIC))
+					// {
+					// printAnonymousClassTypeArgs(newClass);
+					// }
+					// print("(").printConstructorArgList(newClass).print(")");
+					// return;
+				}
+			}
 		} else {
 			JCTree parent = getParent();
 
-			if (getScope().enumWrapperClassScope && varDecl.sym.isEnum()) {
-				// enum fields are not part of the enum auxiliary class but will
-				// initialize the enum values
-				JCNewClass newClass = (JCNewClass) varDecl.init;
-				JCClassDecl clazz = (JCClassDecl) parent;
-				int pos = getCurrentPosition();
-				print("new ").print(clazz.getSimpleName().toString() + ENUM_WRAPPER_CLASS_SUFFIX).print("(");
-				print("" + getScope().javaEnumKeys.size() + ", ");
-				print("\"" + varDecl.sym.name.toString() + "\"");
-				if (!newClass.args.isEmpty()) {
-					print(", ");
-				}
-				printArgList(newClass.args).print(")");
-				String expr = getOutput().substring(pos);
-				removeLastChars(getCurrentPosition() - pos);
-				getScope().javaEnumKeys.add(expr);
+			if (getScope().enumWrapperClassScope && varDecl.type.equals(parent.type)) {
 				return;
 			}
 
@@ -2532,6 +2605,13 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 				}
 			}
 
+			if (getScope().enumWrapperClassScope && isAnonymousClass() && "super".equals(methName)) {
+				print(ENUM_WRAPPER_CLASS_ORDINAL + ", " + ENUM_WRAPPER_CLASS_NAME);
+				if (argsLength > 0) {
+					print(", ");
+				}
+			}
+
 			for (int i = 0; i < argsLength; i++) {
 				JCExpression arg = inv.args.get(i);
 				if (inv.meth.type != null) {
@@ -2632,7 +2712,7 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 							}
 						}
 					} else {
-						if (varSym.owner instanceof MethodSymbol && isAnonymousClass
+						if (varSym.owner instanceof MethodSymbol && isAnonymousClass()
 								&& getScope(1).finalVariables
 										.get(getScope(1).anonymousClasses.indexOf(getParent(JCClassDecl.class)))
 										.contains(varSym)) {
@@ -2729,6 +2809,11 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 			report(newClass, JSweetProblem.GLOBAL_CANNOT_BE_INSTANTIATED);
 			return;
 		}
+		if (getScope().localClasses.stream().map(c -> c.type).anyMatch(t -> t.equals(newClass.type))) {
+			print("new ").print(getScope().name + ".").print(newClass.clazz);
+			print("(").printConstructorArgList(newClass, true).print(")");
+			return;
+		}
 		boolean isInterface = context.isInterface(clazz);
 		if (newClass.def != null || isInterface) {
 			if (context.isAnonymousClass(newClass)) {
@@ -2737,7 +2822,7 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 				if (newClass.def.getModifiers().getFlags().contains(Modifier.STATIC)) {
 					printAnonymousClassTypeArgs(newClass);
 				}
-				print("(").printConstructorArgList(newClass).print(")");
+				print("(").printConstructorArgList(newClass, false).print(")");
 				return;
 			}
 
@@ -2947,9 +3032,9 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 									printAnyTypeArguments(
 											((ClassSymbol) newClass.clazz.type.tsym).getTypeParameters().length());
 								}
-								print("(").printConstructorArgList(newClass).print(")");
+								print("(").printConstructorArgList(newClass, false).print(")");
 							} else {
-								print("new ").print(newClass.clazz).print("(").printConstructorArgList(newClass)
+								print("new ").print(newClass.clazz).print("(").printConstructorArgList(newClass, false)
 										.print(")");
 							}
 						}
@@ -2973,9 +3058,9 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 	}
 
 	@Override
-	public AbstractTreePrinter<C> printConstructorArgList(JCNewClass newClass) {
+	public AbstractTreePrinter<C> printConstructorArgList(JCNewClass newClass, boolean localClass) {
 		boolean printed = false;
-		if ((getScope().anonymousClasses.contains(newClass.def)
+		if (localClass || (getScope().anonymousClasses.contains(newClass.def)
 				&& !newClass.def.getModifiers().getFlags().contains(Modifier.STATIC))) {
 			print("this");
 			if (!newClass.args.isEmpty()) {

@@ -1005,4 +1005,16 @@ public class Util {
 		return null;
 	}
 
+	/**
+	 * Returns true if the given class declares an abstract method.
+	 */
+	public static boolean hasAbstractMethod(ClassSymbol classSymbol) {
+		for (Element member : classSymbol.getEnclosedElements()) {
+			if (member instanceof MethodSymbol && ((MethodSymbol) member).getModifiers().contains(Modifier.ABSTRACT)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 }

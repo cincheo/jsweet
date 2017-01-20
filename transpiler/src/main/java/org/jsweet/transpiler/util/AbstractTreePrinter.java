@@ -344,7 +344,7 @@ public abstract class AbstractTreePrinter<C extends JSweetContext> extends Abstr
 		return printArgList(args, null);
 	}
 
-	public abstract AbstractTreePrinter<C> printConstructorArgList(JCNewClass newClass);
+	public abstract AbstractTreePrinter<C> printConstructorArgList(JCNewClass newClass, boolean localClass);
 
 	/**
 	 * Prints a comma-separated list of variable names (no types).
