@@ -23,10 +23,11 @@ import static org.jsweet.JSweetConfig.isJDKPath;
 import java.lang.ref.WeakReference;
 import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -34,6 +35,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.TreeSet;
 import java.util.Vector;
 import java.util.WeakHashMap;
@@ -87,6 +89,9 @@ public class RemoveJavaDependenciesAdapter<C extends JSweetContext> extends Java
 		typesMapping.put(StringBuffer.class.getName(), "{ str: string }");
 		typesMapping.put(StringBuilder.class.getName(), "{ str: string }");
 		typesMapping.put(Collator.class.getName(), "any");
+		typesMapping.put(Calendar.class.getName(), "Date");
+		typesMapping.put(GregorianCalendar.class.getName(), "Date");
+		typesMapping.put(TimeZone.class.getName(), "string");
 		complexTypesMapping
 				.add((typeTree,
 						name) -> name.startsWith("java.")
@@ -343,13 +348,147 @@ public class RemoveJavaDependenciesAdapter<C extends JSweetContext> extends Java
 			case "java.lang.ref.WeakReference":
 				switch (targetMethodName) {
 				case "get":
+					printMacroName(targetMethodName);
 					getPrinter().print(fieldAccess.getExpression());
 					return true;
 				}
 			case "java.text.Collator":
 				switch (targetMethodName) {
 				case "getInstance":
+					printMacroName(targetMethodName);
 					getPrinter().print("((o1, o2) => o1.toString().localeCompare(o2.toString()))");
+					return true;
+				}
+			case "java.util.TimeZone":
+				switch (targetMethodName) {
+				case "getTimeZone":
+					if (invocation.args.size() == 1) {
+						printMacroName(targetMethodName);
+						getPrinter().print(invocation.args.head);
+						return true;
+					}
+					break;
+				}
+			case "java.util.Calendar":
+			case "java.util.GregorianCalendar":
+				switch (targetMethodName) {
+				case "set":
+					if (invocation.args.size() == 2) {
+						String first = invocation.args.head.toString();
+						if (first.endsWith("YEAR")) {
+							printMacroName(targetMethodName);
+							getPrinter().print("((d, p) => d[\"UTC\"]?d.setUTCFullYear(p):d.setFullYear(p))(")
+									.print(fieldAccess.getExpression()).print(", ").print(invocation.args.tail.head)
+									.print(")");
+							return true;
+						} else if (first.endsWith("DAY_OF_MONTH")) {
+							printMacroName(targetMethodName);
+							getPrinter().print("((d, p) => d[\"UTC\"]?d.setUTCDate(p):d.setDate(p))(")
+									.print(fieldAccess.getExpression()).print(", ").print(invocation.args.tail.head)
+									.print(")");
+							return true;
+						} else if (first.endsWith("DAY_OF_WEEK")) {
+							printMacroName(targetMethodName);
+							getPrinter().print("((d, p) => d[\"UTC\"]?d.setUTCDay(p):d.setDay(p))(")
+									.print(fieldAccess.getExpression()).print(", ").print(invocation.args.tail.head)
+									.print(")");
+							return true;
+						} else if (first.endsWith("MONTH")) {
+							printMacroName(targetMethodName);
+							getPrinter().print("((d, p) => d[\"UTC\"]?d.setUTCMonth(p):d.setMonth(p))(")
+									.print(fieldAccess.getExpression()).print(", ").print(invocation.args.tail.head)
+									.print(")");
+							return true;
+						} else if (first.endsWith("HOUR_OF_DAY")) {
+							printMacroName(targetMethodName);
+							getPrinter().print("((d, p) => d[\"UTC\"]?d.setUTCHours(p):d.setHours(p))(")
+									.print(fieldAccess.getExpression()).print(", ").print(invocation.args.tail.head)
+									.print(")");
+							return true;
+						} else if (first.endsWith("MINUTE")) {
+							printMacroName(targetMethodName);
+							getPrinter().print("((d, p) => d[\"UTC\"]?d.setUTCMinutes(p):d.setMinutes(p))(")
+									.print(fieldAccess.getExpression()).print(", ").print(invocation.args.tail.head)
+									.print(")");
+							return true;
+						} else if (first.endsWith("MILLISECOND")) {
+							printMacroName(targetMethodName);
+							getPrinter().print("((d, p) => d[\"UTC\"]?d.setUTCMilliseconds(p):d.setMilliseconds(p))(")
+									.print(fieldAccess.getExpression()).print(", ").print(invocation.args.tail.head)
+									.print(")");
+							return true;
+						} else if (first.endsWith("SECOND")) {
+							printMacroName(targetMethodName);
+							getPrinter().print("((d, p) => d[\"UTC\"]?d.setUTCSeconds(p):d.setSeconds(p))(")
+									.print(fieldAccess.getExpression()).print(", ").print(invocation.args.tail.head)
+									.print(")");
+							return true;
+						}
+					}
+					break;
+				case "get":
+					if (invocation.args.size() == 1) {
+						String first = invocation.args.head.toString();
+						if (first.endsWith("YEAR")) {
+							printMacroName(targetMethodName);
+							getPrinter().print("(d => d[\"UTC\"]?d.getUTCFullYear():d.getFullYear())(")
+									.print(fieldAccess.getExpression()).print(")");
+							return true;
+						} else if (first.endsWith("DAY_OF_MONTH")) {
+							printMacroName(targetMethodName);
+							getPrinter().print("(d => d[\"UTC\"]?d.getUTCDate():d.getDate())(")
+									.print(fieldAccess.getExpression()).print(")");
+							return true;
+						} else if (first.endsWith("DAY_OF_WEEK")) {
+							printMacroName(targetMethodName);
+							getPrinter().print("(d => d[\"UTC\"]?d.getUTCDay():d.getDay())(")
+									.print(fieldAccess.getExpression()).print(")");
+							return true;
+						} else if (first.endsWith("MONTH")) {
+							printMacroName(targetMethodName);
+							getPrinter().print("(d => d[\"UTC\"]?d.getUTCMonth():d.getMonth())(")
+									.print(fieldAccess.getExpression()).print(")");
+							return true;
+						} else if (first.endsWith("HOUR_OF_DAY")) {
+							printMacroName(targetMethodName);
+							getPrinter().print("(d => d[\"UTC\"]?d.getUTCHours():d.getHours())(")
+									.print(fieldAccess.getExpression()).print(")");
+							return true;
+						} else if (first.endsWith("MINUTE")) {
+							printMacroName(targetMethodName);
+							getPrinter().print("(d => d[\"UTC\"]?d.getUTCMinutes():d.getMinutes())(")
+									.print(fieldAccess.getExpression()).print(")");
+							return true;
+						} else if (first.endsWith("MILLISECOND")) {
+							printMacroName(targetMethodName);
+							getPrinter().print("(d => d[\"UTC\"]?d.getUTCMilliseconds():d.getMilliseconds())(")
+									.print(fieldAccess.getExpression()).print(")");
+							return true;
+						} else if (first.endsWith("SECOND")) {
+							printMacroName(targetMethodName);
+							getPrinter().print("(d => d[\"UTC\"]?d.getUTCSeconds():d.getSeconds())(")
+									.print(fieldAccess.getExpression()).print(")");
+							return true;
+						}
+					}
+					break;
+				case "setTimeInMillis":
+					printMacroName(targetMethodName);
+					getPrinter().print(fieldAccess.getExpression()).print(".setTime(").print(invocation.args.head)
+							.print(")");
+					return true;
+				case "getTimeInMillis":
+					printMacroName(targetMethodName);
+					getPrinter().print(fieldAccess.getExpression()).print(".getTime()");
+					return true;
+				case "setTime":
+					printMacroName(targetMethodName);
+					getPrinter().print(fieldAccess.getExpression()).print(".setTime(").print(invocation.args.head)
+							.print(".getTime())");
+					return true;
+				case "getTime":
+					printMacroName(targetMethodName);
+					getPrinter().print("(new Date(").print(fieldAccess.getExpression()).print(".getTime()))");
 					return true;
 				}
 			}
@@ -434,6 +573,22 @@ public class RemoveJavaDependenciesAdapter<C extends JSweetContext> extends Java
 		case "java.lang.ref.WeakReference":
 			getPrinter().print(newClass.args.head);
 			return true;
+		case "java.util.GregorianCalendar":
+			if (newClass.args.isEmpty()) {
+				getPrinter().print("new Date()");
+				return true;
+			} else if (newClass.args.size() == 1
+					&& TimeZone.class.getName().equals(newClass.args.head.type.tsym.getQualifiedName().toString())) {
+				if (newClass.args.head instanceof JCMethodInvocation) {
+					JCMethodInvocation inv = (JCMethodInvocation) newClass.args.head;
+					if (inv.meth.toString().endsWith("getTimeZone") && inv.args.head instanceof JCLiteral
+							&& ((JCLiteral) inv.args.head).getValue().equals("UTC")) {
+						getPrinter().print("(d => { d[\"UTC\"]=true; return d; })(new Date())");
+						return true;
+					}
+				}
+			}
+			break;
 		}
 
 		if (className.startsWith("java.")) {

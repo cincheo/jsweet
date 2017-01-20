@@ -10,6 +10,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import source.nativestructures.Collections;
+import source.nativestructures.Dates;
 import source.nativestructures.Exceptions;
 import source.nativestructures.Maps;
 import source.nativestructures.NativeArrays;
@@ -87,4 +88,12 @@ public class NativeStructuresTests extends AbstractTest {
 		}, getSourceFile(NativeSystem.class));
 	}
 
+	@Test
+	public void testDates() {
+		eval((logHandler, result) -> {
+			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+			assertEquals("114937200000,1973,7,23,7,0,0", result.get("trace"));
+		}, getSourceFile(Dates.class));
+	}
+	
 }
