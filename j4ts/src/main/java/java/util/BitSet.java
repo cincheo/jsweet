@@ -28,6 +28,7 @@ public class BitSet implements Cloneable, java.io.Serializable {
 	public BitSet(int nbits) {
 		while (nbits > 0) {
 			array(bits).push(false);
+			nbits--;
 		}
 	}
 
