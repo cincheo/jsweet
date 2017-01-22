@@ -69,6 +69,8 @@ public class CalculusTests extends AbstractTest {
 		eval(ModuleKind.none, (logHandler, r) -> {
 			logHandler.assertReportedProblems();
 			Assert.assertEquals(r.get("t1").toString(), r.get("t2").toString());
+			Assert.assertEquals(0, (int) r.get("l"));
+			Assert.assertTrue((int) r.get("c") < 0);
 		}, getSourceFile(Longs.class));
 	}
 

@@ -3176,7 +3176,7 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 	public void visitBinary(JCBinary binary) {
 		if (Util.isIntegral(binary.type) && binary.getKind() == Kind.DIVIDE) {
 			if (binary.type.getKind() == TypeKind.LONG) {
-				print("Math.round(");
+				print("Math.floor(");
 			} else {
 				print("(");
 			}
@@ -3473,7 +3473,7 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 		}
 		if (Util.isIntegral(cast.type)) {
 			if (cast.type.getKind() == TypeKind.LONG) {
-				print("Math.round(");
+				print("Math.floor(");
 			} else {
 				print("(");
 			}

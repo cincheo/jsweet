@@ -168,6 +168,12 @@ public class Collections implements Cloneable, Serializable {
 
 		trace.push("" + (java.util.Collections.binarySearch(l, "it") >= 0));
 
+		double[][] points1 = new double[][] { new double[] { 1, 2 }, new double[] { 3, 4 }, new double[] { 5, 6 } };
+
+		double[][] points2 = new double[][] { new double[] { 1, 2 }, new double[] { 3, 4 }, new double[] { 5, 6 } };
+
+		trace.push("" + (java.util.Arrays.deepEquals(points1, points2)));
+
 		$export("trace", trace.join(","));
 
 	}

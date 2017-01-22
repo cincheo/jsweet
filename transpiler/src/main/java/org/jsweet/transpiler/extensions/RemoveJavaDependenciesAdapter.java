@@ -303,6 +303,11 @@ public class RemoveJavaDependenciesAdapter<C extends JSweetContext> extends Java
 							.print("((a1, a2) => { if(a1.length != a2.length) return false; for(let i = 0; i < a1.length; i++) { if(<any>a1[i] != <any>a2[i]) return false; } return true; })(")
 							.printArgList(invocation.args).print(")");
 					return true;
+				case "deepEquals":
+					printMacroName(targetMethodName);
+					getPrinter().print("JSON.stringify(").print(invocation.args.head).print(") === JSON.stringify(")
+							.print(invocation.args.tail.head).print(")");
+					return true;
 				case "sort":
 					printMacroName(targetMethodName);
 					if (invocation.args.length() > 2) {
@@ -368,6 +373,14 @@ public class RemoveJavaDependenciesAdapter<C extends JSweetContext> extends Java
 						return true;
 					}
 					break;
+				case "getDefault":
+					printMacroName(targetMethodName);
+					getPrinter().print("\"UTC\"");
+					return true;
+				case "getID":
+					printMacroName(targetMethodName);
+					getPrinter().print(fieldAccess.getExpression());
+					return true;
 				}
 			case "java.util.Calendar":
 			case "java.util.GregorianCalendar":

@@ -17,7 +17,9 @@ public class Dates {
 
 	public static void main(String[] args) {
 
-		TimeZone tz = TimeZone.getTimeZone("UTC");
+		TimeZone tz1 = TimeZone.getTimeZone("UTC");
+		TimeZone tz2 = TimeZone.getDefault();
+		trace.push(""+tz1.getID().equals(tz2.getID()));
 		Calendar utcCalendar = new java.util.GregorianCalendar(TimeZone.getTimeZone("UTC"));
 		utcCalendar.setTime(new Date());
 		utcCalendar.setTimeInMillis(114937200000L);

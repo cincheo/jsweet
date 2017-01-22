@@ -897,6 +897,33 @@ public class Java2TypeScriptAdapter<C extends JSweetContext> extends AbstractPri
 					printMacroName(targetMethodName);
 					print("(").print(fieldAccess.getExpression()).print("|0").print(")");
 					return true;
+				case "shortValue":
+					printMacroName(targetMethodName);
+					print("(").print(fieldAccess.getExpression()).print("|0").print(")");
+					return true;
+				case "byteValue":
+					printMacroName(targetMethodName);
+					print("(").print(fieldAccess.getExpression()).print("|0").print(")");
+					return true;
+				case "floatValue":
+					printMacroName(targetMethodName);
+					print(fieldAccess.getExpression());
+					return true;
+				case "doubleValue":
+					printMacroName(targetMethodName);
+					print(fieldAccess.getExpression());
+					return true;
+				case "longValue":
+					printMacroName(targetMethodName);
+					print(fieldAccess.getExpression());
+					return true;
+				case "compare":
+					if (invocation.args.size() == 2) {
+						printMacroName(targetMethodName);
+						print("(").print(invocation.args.head).print(" - ").print(invocation.args.tail.head).print(")");
+						return true;
+					}
+					break;
 				case "toString":
 					if (!invocation.args.isEmpty()) {
 						printMacroName(targetMethodName);

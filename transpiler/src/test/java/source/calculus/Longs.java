@@ -14,6 +14,11 @@ public class Longs {
 		$export("t1", t1);
 		$export("t2", t2);
 
+		long l = 1L;
+		$export("l", l / 2);
+
+		$export("c", Long.compare(1, 2));
+
 	}
 
 }
