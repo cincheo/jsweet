@@ -305,8 +305,8 @@ public class RemoveJavaDependenciesAdapter<C extends JSweetContext> extends Java
 					return true;
 				case "deepEquals":
 					printMacroName(targetMethodName);
-					getPrinter().print("JSON.stringify(").print(invocation.args.head).print(") === JSON.stringify(")
-							.print(invocation.args.tail.head).print(")");
+					getPrinter().print("(JSON.stringify(").print(invocation.args.head).print(") === JSON.stringify(")
+							.print(invocation.args.tail.head).print("))");
 					return true;
 				case "sort":
 					printMacroName(targetMethodName);
