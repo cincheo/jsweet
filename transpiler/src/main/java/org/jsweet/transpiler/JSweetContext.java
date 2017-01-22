@@ -38,6 +38,7 @@ import java.util.regex.Pattern;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -732,7 +733,7 @@ public class JSweetContext extends Context {
 	public boolean hasAnnotationType(Symbol symbol, String... annotationTypes) {
 		if (hasAnnotationFilters()) {
 			String signature = symbol.toString();
-			if (symbol.getEnclosingElement() != null) {
+			if (!(symbol instanceof TypeSymbol) && symbol.getEnclosingElement() != null) {
 				signature = symbol.getEnclosingElement().getQualifiedName().toString() + "." + signature;
 			}
 			for (String annotationType : annotationTypes) {
@@ -1219,6 +1220,26 @@ public class JSweetContext extends Context {
 					return true;
 				}
 			}
+		}
+		return false;
+	}
+
+	/**
+	 * Returns true if this class declaration is not to be output by the
+	 * transpiler.
+	 */
+	public boolean isIgnored(JCClassDecl classdecl) {
+		if (hasAnnotationType(classdecl.type.tsym, JSweetConfig.ANNOTATION_OBJECT_TYPE)) {
+			// object types are ignored
+			return true;
+		}
+		if (hasAnnotationType(classdecl.type.tsym, JSweetConfig.ANNOTATION_ERASED)) {
+			// erased types are ignored
+			return true;
+		}
+		if (classdecl.type.tsym.getKind() == ElementKind.ANNOTATION_TYPE) {
+			// annotation types are ignored
+			return true;
 		}
 		return false;
 	}

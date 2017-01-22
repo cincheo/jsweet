@@ -29,6 +29,7 @@ import source.enums.ComplexEnumWithAbstractMethods;
 import source.enums.ComplexEnums;
 import source.enums.EnumInSamePackage;
 import source.enums.Enums;
+import source.enums.ErasedEnum;
 import source.enums.other.EnumInOtherPackage;
 
 public class EnumTests extends AbstractTest {
@@ -39,6 +40,17 @@ public class EnumTests extends AbstractTest {
 			return new Java2TypeScriptAdapter<JSweetContext>(context) {
 				{
 					context.addAnnotation("@Root", "source.enums");
+				}
+			};
+		}
+	}
+
+	class EraseEnumFactory extends JSweetFactory<JSweetContext> {
+		@Override
+		public Java2TypeScriptAdapter<JSweetContext> createAdapter(JSweetContext context) {
+			return new Java2TypeScriptAdapter<JSweetContext>(context) {
+				{
+					context.addAnnotation("@Erased", "source.enums.ErasedEnum");
 				}
 			};
 		}
@@ -89,6 +101,15 @@ public class EnumTests extends AbstractTest {
 			Assert.assertEquals(">ok1,ok2", r.get("trace"));
 		}, getSourceFile(ComplexEnumWithAbstractMethods.class));
 		transpiler.setBundle(false);
+		createTranspiler(new JSweetFactory<>());
+	}
+
+	@Test
+	public void testErasedEnum() {
+		createTranspiler(new EraseEnumFactory());
+		transpile(logHandler -> {
+			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+		}, getSourceFile(ErasedEnum.class));
 		createTranspiler(new JSweetFactory<>());
 	}
 

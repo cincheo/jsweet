@@ -38,7 +38,6 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Collectors;
 
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
 
@@ -318,6 +317,19 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 
 	@Override
 	public void visitTopLevel(JCCompilationUnit topLevel) {
+
+		boolean noDefs = true;
+		for (JCTree def : topLevel.defs) {
+			if (def instanceof JCClassDecl) {
+				if (!context.isIgnored(((JCClassDecl) def))) {
+					noDefs = false;
+				}
+			}
+		}
+		// do not print the compilation unit at all if no defs are to be printed
+		if (noDefs) {
+			return;
+		}
 
 		isDefinitionScope = topLevel.packge.getQualifiedName().toString().startsWith(JSweetConfig.LIBS_PACKAGE + ".");
 
@@ -680,22 +692,6 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 		}
 	}
 
-	private boolean isIgnored(JCClassDecl classdecl) {
-		if (context.hasAnnotationType(classdecl.type.tsym, JSweetConfig.ANNOTATION_OBJECT_TYPE)) {
-			// object types are ignored
-			return true;
-		}
-		if (context.hasAnnotationType(classdecl.type.tsym, JSweetConfig.ANNOTATION_ERASED)) {
-			// erased types are ignored
-			return true;
-		}
-		if (classdecl.type.tsym.getKind() == ElementKind.ANNOTATION_TYPE) {
-			// annotation types are ignored
-			return true;
-		}
-		return false;
-	}
-
 	private boolean isAnonymousClass() {
 		return scope.size() > 1 && getScope(1).isAnonymousClass;
 	}
@@ -710,7 +706,7 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 
 	@Override
 	public void visitClassDef(JCClassDecl classdecl) {
-		if (isIgnored(classdecl)) {
+		if (context.isIgnored(classdecl)) {
 			return;
 		}
 		String name = classdecl.getSimpleName().toString();
@@ -1145,7 +1141,7 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 		for (JCTree def : classdecl.defs) {
 			if (def instanceof JCClassDecl) {
 				JCClassDecl cdef = (JCClassDecl) def;
-				if (isIgnored(cdef)) {
+				if (context.isIgnored(cdef)) {
 					continue;
 				}
 				if (!nameSpace) {
