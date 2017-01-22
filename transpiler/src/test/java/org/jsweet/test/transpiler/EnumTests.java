@@ -18,6 +18,10 @@ package org.jsweet.test.transpiler;
 
 import static org.junit.Assert.assertEquals;
 
+import org.jsweet.transpiler.JSweetContext;
+import org.jsweet.transpiler.JSweetFactory;
+import org.jsweet.transpiler.ModuleKind;
+import org.jsweet.transpiler.typescript.Java2TypeScriptAdapter;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -28,6 +32,17 @@ import source.enums.Enums;
 import source.enums.other.EnumInOtherPackage;
 
 public class EnumTests extends AbstractTest {
+
+	class AddRootFactory extends JSweetFactory<JSweetContext> {
+		@Override
+		public Java2TypeScriptAdapter<JSweetContext> createAdapter(JSweetContext context) {
+			return new Java2TypeScriptAdapter<JSweetContext>(context) {
+				{
+					context.addAnnotation("@Root", "source.enums");
+				}
+			};
+		}
+	}
 
 	@Test
 	public void testEnums() {
@@ -57,6 +72,24 @@ public class EnumTests extends AbstractTest {
 			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
 			Assert.assertEquals(">ok1,ok2", r.get("trace"));
 		}, getSourceFile(ComplexEnumWithAbstractMethods.class));
+		transpiler.setBundle(true);
+		eval(ModuleKind.none, (logHandler, r) -> {
+			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+			Assert.assertEquals(">ok1,ok2", r.get("trace"));
+		}, getSourceFile(ComplexEnumWithAbstractMethods.class));
+		transpiler.setBundle(false);
+		createTranspiler(new AddRootFactory());
+		eval((logHandler, r) -> {
+			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+			Assert.assertEquals(">ok1,ok2", r.get("trace"));
+		}, getSourceFile(ComplexEnumWithAbstractMethods.class));
+		transpiler.setBundle(true);
+		eval(ModuleKind.none, (logHandler, r) -> {
+			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+			Assert.assertEquals(">ok1,ok2", r.get("trace"));
+		}, getSourceFile(ComplexEnumWithAbstractMethods.class));
+		transpiler.setBundle(false);
+		createTranspiler(new JSweetFactory<>());
 	}
 
 }

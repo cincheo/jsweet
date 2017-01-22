@@ -764,7 +764,7 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 			}
 			printDocComment(classdecl, false);
 			print(classdecl.mods);
-			if (!globalModule || context.useModules || isAnonymousClass() || isInnerClass()) {
+			if (!globalModule || context.useModules || isAnonymousClass() || isInnerClass() || isLocalClass()) {
 				print("export ");
 			}
 			if (context.isInterface(classdecl.sym)) {
@@ -2810,7 +2810,7 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 			return;
 		}
 		if (getScope().localClasses.stream().map(c -> c.type).anyMatch(t -> t.equals(newClass.type))) {
-			print("new ").print(getScope().name + ".").print(newClass.clazz);
+			print("new ").print(getScope().name + ".").print(newClass.clazz.toString());
 			print("(").printConstructorArgList(newClass, true).print(")");
 			return;
 		}
