@@ -195,6 +195,10 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 
 	private boolean isDefinitionScope = false;
 
+	private boolean isTopLevelScope() {
+		return getIndent() == 0;
+	}
+
 	private ClassScope getScope() {
 		return scope.peek();
 	}
@@ -261,8 +265,6 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 
 	private JCMethodDecl mainMethod;
 
-	private boolean globalModule = false;
-
 	private PackageSymbol topLevelPackage;
 
 	private void useModule(boolean require, PackageSymbol targetPackage, JCTree sourceTree, String targetName,
@@ -318,6 +320,9 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 	@Override
 	public void visitTopLevel(JCCompilationUnit topLevel) {
 
+		if (context.isPackageErased(topLevel.packge)) {
+			return;
+		}
 		boolean noDefs = true;
 		for (JCTree def : topLevel.defs) {
 			if (def instanceof JCClassDecl) {
@@ -369,7 +374,7 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 
 		String packge = topLevel.packge.toString();
 
-		globalModule = JSweetConfig.GLOBALS_PACKAGE_NAME.equals(packge)
+		boolean globalModule = JSweetConfig.GLOBALS_PACKAGE_NAME.equals(packge)
 				|| packge.endsWith("." + JSweetConfig.GLOBALS_PACKAGE_NAME);
 		String rootRelativePackageName = "";
 		if (!globalModule) {
@@ -760,7 +765,7 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 			}
 			printDocComment(classdecl, false);
 			print(classdecl.mods);
-			if (!globalModule || context.useModules || isAnonymousClass() || isInnerClass() || isLocalClass()) {
+			if (!isTopLevelScope() || context.useModules || isAnonymousClass() || isInnerClass() || isLocalClass()) {
 				print("export ");
 			}
 			if (context.isInterface(classdecl.sym)) {
@@ -1147,7 +1152,7 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 				if (!nameSpace) {
 					nameSpace = true;
 					println().println().printIndent();
-					if (!globalModule || context.useModules) {
+					if (!isTopLevelScope() || context.useModules) {
 						print("export ");
 					} else {
 						if (isDefinitionScope) {
@@ -1166,7 +1171,7 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 			if (!nameSpace) {
 				nameSpace = true;
 				println().println().printIndent();
-				if (!globalModule || context.useModules) {
+				if (!isTopLevelScope() || context.useModules) {
 					print("export ");
 				}
 				print("namespace ").print(name).print(" {").startIndent();
@@ -1180,7 +1185,7 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 			if (!nameSpace) {
 				nameSpace = true;
 				println().println().printIndent();
-				if (!globalModule || context.useModules) {
+				if (!isTopLevelScope() || context.useModules) {
 					print("export ");
 				}
 				print("namespace ").print(name).print(" {").startIndent();
@@ -1466,7 +1471,7 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 					print("export ");
 				}
 			} else {
-				if (!globalModule) {
+				if (!isTopLevelScope()) {
 					print("export ");
 				}
 			}
@@ -1965,16 +1970,6 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 				JCNewClass newClass = (JCNewClass) varDecl.init;
 				if (newClass.def != null) {
 					initAnonymousClass(newClass);
-					// print("new ").print(getScope().name + "." +
-					// getScope().name + ANONYMOUS_PREFIX +
-					// anonymousClassIndex);
-					// if
-					// (newClass.def.getModifiers().getFlags().contains(Modifier.STATIC))
-					// {
-					// printAnonymousClassTypeArgs(newClass);
-					// }
-					// print("(").printConstructorArgList(newClass).print(")");
-					// return;
 				}
 			}
 		} else {
@@ -2073,11 +2068,11 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 							print("export ");
 						}
 					} else {
-						if (!globalModule) {
+						if (!isTopLevelScope()) {
 							print("export ");
 						}
 					}
-					if (ambient || (getIndent() == 0 && isDefinitionScope)) {
+					if (ambient || (isTopLevelScope() && isDefinitionScope)) {
 						print("declare ");
 					}
 				}
@@ -2137,7 +2132,7 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 				}
 				print("; ");
 				if (globals) {
-					if (!globalModule) {
+					if (!isTopLevelScope()) {
 						print("export ");
 					}
 					print("function ");

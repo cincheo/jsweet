@@ -1244,4 +1244,19 @@ public class JSweetContext extends Context {
 		return false;
 	}
 
+	/**
+	 * Returns true if the given package is erased (it could be erased because a
+	 * parent package is erased).
+	 */
+	public boolean isPackageErased(PackageSymbol pkg) {
+		if (pkg == null) {
+			return false;
+		}
+		if (hasAnnotationType(pkg, JSweetConfig.ANNOTATION_ERASED)) {
+			return true;
+		} else {
+			return isPackageErased((PackageSymbol) pkg.getEnclosingElement());
+		}
+	}
+
 }
