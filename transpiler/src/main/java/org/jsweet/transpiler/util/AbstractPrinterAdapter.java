@@ -36,6 +36,7 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCArrayAccess;
 import com.sun.tools.javac.tree.JCTree.JCArrayTypeTree;
 import com.sun.tools.javac.tree.JCTree.JCAssign;
+import com.sun.tools.javac.tree.JCTree.JCCase;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCEnhancedForLoop;
@@ -487,4 +488,12 @@ public abstract class AbstractPrinterAdapter<C extends JSweetContext> {
 	public boolean substituteInstanceof(String exprStr, JCTree expr, Type type) {
 		return false;
 	}
+
+	/**
+	 * Substitutes if necessary the pattern of a case statement.
+	 */
+	public boolean substituteCaseStatementPattern(JCCase caseStatement, JCExpression pattern) {
+		return false;
+	}
+
 }

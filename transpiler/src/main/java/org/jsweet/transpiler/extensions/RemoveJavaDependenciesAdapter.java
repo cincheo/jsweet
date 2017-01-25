@@ -285,6 +285,10 @@ public class RemoveJavaDependenciesAdapter<C extends JSweetContext> extends Java
 					printMacroName(targetMethodName);
 					print(invocation.args.head).print(".indexOf(").printArgList(invocation.args.tail).print(")");
 					return true;
+				case "sort":
+					printMacroName(targetMethodName);
+					print(invocation.args.head).print(".sort(").printArgList(invocation.args.tail).print(")");
+					return true;
 				}
 				break;
 			case "java.util.Arrays":

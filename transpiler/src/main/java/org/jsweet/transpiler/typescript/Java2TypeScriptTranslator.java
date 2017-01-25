@@ -1690,28 +1690,52 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 					endIndent().println().printIndent().print("}");
 				} else {
 					print(" ").print("{").println().startIndent();
-					enter(methodDecl.getBody());
-					if (!methodDecl.getBody().stats.isEmpty()
-							&& methodDecl.getBody().stats.head.toString().startsWith("super(")) {
-						printBlockStatement(methodDecl.getBody().stats.head);
-						if (parent != null) {
-							printInstanceInitialization(parent, methodDecl.sym);
-						}
-						printBlockStatements(methodDecl.getBody().stats.tail);
+
+					if (context.hasAnnotationType(methodDecl.sym, JSweetConfig.ANNOTATION_TYPE_SCRIPT_BODY)) {
+						String replacedBody = (String) context.getAnnotationValue(methodDecl.sym,
+								JSweetConfig.ANNOTATION_TYPE_SCRIPT_BODY, null);
+						printIndent().print(replacedBody).println();
 					} else {
-						if (parent != null) {
-							printInstanceInitialization(parent, methodDecl.sym);
+						enter(methodDecl.getBody());
+						if (!methodDecl.getBody().stats.isEmpty()
+								&& methodDecl.getBody().stats.head.toString().startsWith("super(")) {
+							printBlockStatement(methodDecl.getBody().stats.head);
+							if (parent != null) {
+								printInstanceInitialization(parent, methodDecl.sym);
+							}
+							printBlockStatements(methodDecl.getBody().stats.tail);
+						} else {
+							if (parent != null) {
+								printInstanceInitialization(parent, methodDecl.sym);
+							}
+							printBlockStatements(methodDecl.getBody().stats);
 						}
-						printBlockStatements(methodDecl.getBody().stats);
+						exit();
 					}
 					endIndent().printIndent().print("}");
-					exit();
 				}
 			}
 		}
 	}
 
-	private void printInstanceInitialization(JCClassDecl clazz, MethodSymbol method) {
+	protected void printVariableInitialization(JCClassDecl clazz, JCVariableDecl var) {
+		if (getScope().innerClassNotStatic && !Util.isConstantOrNullField(var)) {
+			String name = var.getName().toString();
+			if (context.getFieldNameMapping(var.sym) != null) {
+				name = context.getFieldNameMapping(var.sym);
+			}
+			printIndent().print("this.").print(name).print(" = ").print(var.init).print(";").println();
+		} else if (var.init == null && Util.isCoreType(var.type)) {
+			String name = var.getName().toString();
+			if (context.getFieldNameMapping(var.sym) != null) {
+				name = context.getFieldNameMapping(var.sym);
+			}
+			printIndent().print("this.").print(name).print(" = ").print(Util.getTypeInitialValue(var.type)).print(";")
+					.println();
+		}
+	}
+
+	protected void printInstanceInitialization(JCClassDecl clazz, MethodSymbol method) {
 		if (getContext().options.isInterfaceTracking() && method == null || method.isConstructor()) {
 			getScope().hasDeclaredConstructor = true;
 			if (getScope().innerClassNotStatic) {
@@ -1721,20 +1745,7 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 			for (JCTree member : clazz.defs) {
 				if (member instanceof JCVariableDecl) {
 					JCVariableDecl var = (JCVariableDecl) member;
-					if (getScope().innerClassNotStatic && !Util.isConstantOrNullField(var)) {
-						String name = var.getName().toString();
-						if (context.getFieldNameMapping(var.sym) != null) {
-							name = context.getFieldNameMapping(var.sym);
-						}
-						printIndent().print("this.").print(name).print(" = ").print(var.init).print(";").println();
-					} else if (var.init == null && Util.isCoreType(var.type)) {
-						String name = var.getName().toString();
-						if (context.getFieldNameMapping(var.sym) != null) {
-							name = context.getFieldNameMapping(var.sym);
-						}
-						printIndent().print("this.").print(name).print(" = ").print(Util.getTypeInitialValue(var.type))
-								.print(";").println();
-					}
+					printVariableInitialization(clazz, var);
 				} else if (member instanceof JCBlock) {
 					JCBlock block = (JCBlock) member;
 					if (!block.isStatic()) {
@@ -1798,37 +1809,43 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 				}
 
 			}
-			enter(method.getBody());
-			com.sun.tools.javac.util.List<JCStatement> stats = skipFirst ? method.getBody().stats.tail
-					: method.getBody().stats;
-			if (!stats.isEmpty() && stats.head.toString().startsWith("super(")) {
-				printBlockStatement(stats.head);
-				printFieldInitializations();
-				if (!initialized) {
-					printInstanceInitialization(getParent(JCClassDecl.class), method.sym);
-				}
-				if (!stats.tail.isEmpty()) {
-					printIndent().print("((").print(") => {").startIndent().println();
-					printBlockStatements(stats.tail);
-					endIndent().printIndent().print("})(").print(");").println();
-				}
+			if (context.hasAnnotationType(method.sym, JSweetConfig.ANNOTATION_TYPE_SCRIPT_BODY)) {
+				String replacedBody = (String) context.getAnnotationValue(method.sym,
+						JSweetConfig.ANNOTATION_TYPE_SCRIPT_BODY, null);
+				printIndent().print(replacedBody).println();
 			} else {
-				if (!initialized) {
-					printInstanceInitialization(getParent(JCClassDecl.class), method.sym);
+				enter(method.getBody());
+				com.sun.tools.javac.util.List<JCStatement> stats = skipFirst ? method.getBody().stats.tail
+						: method.getBody().stats;
+				if (!stats.isEmpty() && stats.head.toString().startsWith("super(")) {
+					printBlockStatement(stats.head);
+					printFieldInitializations();
+					if (!initialized) {
+						printInstanceInitialization(getParent(JCClassDecl.class), method.sym);
+					}
+					if (!stats.tail.isEmpty()) {
+						printIndent().print("((").print(") => {").startIndent().println();
+						printBlockStatements(stats.tail);
+						endIndent().printIndent().print("})(").print(");").println();
+					}
+				} else {
+					if (!initialized) {
+						printInstanceInitialization(getParent(JCClassDecl.class), method.sym);
+					}
+					if (!stats.isEmpty() || !method.sym.isConstructor()) {
+						printIndent();
+					}
+					if (!method.sym.isConstructor()) {
+						print("return <any>");
+					}
+					if (!stats.isEmpty() || !method.sym.isConstructor()) {
+						print("((").print(") => {").startIndent().println();
+						printBlockStatements(stats);
+						endIndent().printIndent().print("})(").print(");").println();
+					}
 				}
-				if (!stats.isEmpty() || !method.sym.isConstructor()) {
-					printIndent();
-				}
-				if (!method.sym.isConstructor()) {
-					print("return <any>");
-				}
-				if (!stats.isEmpty() || !method.sym.isConstructor()) {
-					print("((").print(") => {").startIndent().println();
-					printBlockStatements(stats);
-					endIndent().printIndent().print("})(").print(");").println();
-				}
+				exit();
 			}
-			exit();
 		} else {
 			String returnValue = Util.getTypeInitialValue(method.sym.getReturnType());
 			if (returnValue != null) {
@@ -3431,18 +3448,23 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 		printIndent().print("}");
 	}
 
+	protected void printCaseStatementPattern(JCExpression pattern) {
+	}
+
 	@Override
 	public void visitCase(JCCase caseStatement) {
 		if (caseStatement.pat != null) {
 			print("case ");
-			if (caseStatement.pat.type.isPrimitive()
-					|| String.class.getName().equals(caseStatement.pat.type.toString())) {
-				print(caseStatement.pat);
-			} else {
-				if (context.useModules) {
-					print(caseStatement.pat.type.tsym.getSimpleName() + "." + caseStatement.pat);
+			if (!getAdapter().substituteCaseStatementPattern(caseStatement, caseStatement.pat)) {
+				if (caseStatement.pat.type.isPrimitive()
+						|| String.class.getName().equals(caseStatement.pat.type.toString())) {
+					print(caseStatement.pat);
 				} else {
-					print(getRootRelativeName(caseStatement.pat.type.tsym) + "." + caseStatement.pat);
+					if (context.useModules) {
+						print(caseStatement.pat.type.tsym.getSimpleName() + "." + caseStatement.pat);
+					} else {
+						print(getRootRelativeName(caseStatement.pat.type.tsym) + "." + caseStatement.pat);
+					}
 				}
 			}
 		} else {

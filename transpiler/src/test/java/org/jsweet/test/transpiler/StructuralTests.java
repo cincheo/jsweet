@@ -21,8 +21,11 @@ import static org.jsweet.transpiler.JSweetProblem.GLOBAL_INDEXER_GET;
 import static org.jsweet.transpiler.JSweetProblem.GLOBAL_INDEXER_SET;
 import static org.junit.Assert.assertEquals;
 
+import org.jsweet.transpiler.JSweetContext;
+import org.jsweet.transpiler.JSweetFactory;
 import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.ModuleKind;
+import org.jsweet.transpiler.typescript.Java2TypeScriptAdapter;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -53,6 +56,7 @@ import source.structural.NoWildcardsInImports;
 import source.structural.ObjectTypes;
 import source.structural.StaticMembersInInterfaces;
 import source.structural.TwoClassesInSameFile;
+import source.structural.TypeScriptBodyAnnotation;
 import source.structural.WrongConstructsInInterfaces;
 import source.structural.WrongThisAccessOnStatic;
 import source.structural.globalclasses.Globals;
@@ -81,7 +85,8 @@ public class StructuralTests extends AbstractTest {
 	@Test
 	public void testVariableMethodNameClashes() {
 		transpile(logHandler -> {
-			logHandler.assertReportedProblems(JSweetProblem.HIDDEN_INVOCATION, JSweetProblem.HIDDEN_INVOCATION, JSweetProblem.HIDDEN_INVOCATION);
+			logHandler.assertReportedProblems(JSweetProblem.HIDDEN_INVOCATION, JSweetProblem.HIDDEN_INVOCATION,
+					JSweetProblem.HIDDEN_INVOCATION);
 		}, getSourceFile(NameClashesWithMethodInvocations.class));
 	}
 
@@ -188,7 +193,7 @@ public class StructuralTests extends AbstractTest {
 			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
 		}, getSourceFile(InterfaceInheritance.class));
 	}
-	
+
 	@Test
 	public void testInstanceofForInterfaces() {
 		eval((logHandler, r) -> {
@@ -232,7 +237,8 @@ public class StructuralTests extends AbstractTest {
 			// Assert.assertEquals("invoked1_2", r.get("Static"));
 			Assert.assertEquals("invoked1_2", r.get("Ok"));
 			Assert.assertEquals("invoked1_2", r.get("test2"));
-		}, getSourceFile(Globals.class), getSourceFile(source.structural.globalclasses.e.Globals.class), getSourceFile(GlobalFunctionAccessFromMain.class));
+		}, getSourceFile(Globals.class), getSourceFile(source.structural.globalclasses.e.Globals.class),
+				getSourceFile(GlobalFunctionAccessFromMain.class));
 	}
 
 	@Test
@@ -257,7 +263,8 @@ public class StructuralTests extends AbstractTest {
 			Assert.assertEquals("A method was not executed as expected", true, r.get("m2"));
 			Assert.assertEquals("A method was not executed as expected", true, r.get("sm1"));
 			Assert.assertEquals("A method was not executed as expected", true, r.get("sm2"));
-		}, getSourceFile(AutoImportClassesInSamePackageUsed.class), getSourceFile(AutoImportClassesInSamePackage.class));
+		}, getSourceFile(AutoImportClassesInSamePackageUsed.class),
+				getSourceFile(AutoImportClassesInSamePackage.class));
 	}
 
 	@Test
@@ -271,8 +278,9 @@ public class StructuralTests extends AbstractTest {
 	@Test
 	public void testWrongGlobals() {
 		transpile(logHandler -> {
-			logHandler.assertReportedProblems(JSweetProblem.GLOBALS_CLASS_CANNOT_HAVE_SUPERCLASS, JSweetProblem.GLOBAL_CONSTRUCTOR_DEF,
-					JSweetProblem.GLOBALS_CAN_ONLY_HAVE_STATIC_MEMBERS, JSweetProblem.GLOBALS_CAN_ONLY_HAVE_STATIC_MEMBERS);
+			logHandler.assertReportedProblems(JSweetProblem.GLOBALS_CLASS_CANNOT_HAVE_SUPERCLASS,
+					JSweetProblem.GLOBAL_CONSTRUCTOR_DEF, JSweetProblem.GLOBALS_CAN_ONLY_HAVE_STATIC_MEMBERS,
+					JSweetProblem.GLOBALS_CAN_ONLY_HAVE_STATIC_MEMBERS);
 		}, getSourceFile(source.structural.wrongglobals.Globals.class));
 	}
 
@@ -286,7 +294,8 @@ public class StructuralTests extends AbstractTest {
 	@Test
 	public void testWrongThisAccessOnStatic() {
 		transpile(ModuleKind.none, logHandler -> {
-			logHandler.assertReportedProblems(JSweetProblem.CANNOT_ACCESS_STATIC_MEMBER_ON_THIS, JSweetProblem.CANNOT_ACCESS_STATIC_MEMBER_ON_THIS);
+			logHandler.assertReportedProblems(JSweetProblem.CANNOT_ACCESS_STATIC_MEMBER_ON_THIS,
+					JSweetProblem.CANNOT_ACCESS_STATIC_MEMBER_ON_THIS);
 		}, getSourceFile(WrongThisAccessOnStatic.class));
 	}
 
@@ -305,12 +314,35 @@ public class StructuralTests extends AbstractTest {
 	}
 
 	@Test
+	public void testTypeScriptBody() {
+		createTranspiler(new JSweetFactory<JSweetContext>() {
+			@Override
+			public Java2TypeScriptAdapter<JSweetContext> createAdapter(JSweetContext context) {
+				return new Java2TypeScriptAdapter<JSweetContext>(context) {
+					{
+						context.addAnnotation("@TypeScriptBody('return (this.i + 2)')",
+								"source.structural.TypeScriptBodyAnnotation.m2()");
+					}
+				};
+			}
+		});
+		eval(ModuleKind.none, (logHandler, r) -> {
+			logHandler.assertReportedProblems();
+			assertEquals(2, (int) r.get("test1"));
+			assertEquals(3, (int) r.get("test2"));
+			assertEquals(1, (int) r.get("test3"));
+		}, getSourceFile(TypeScriptBodyAnnotation.class));
+		createTranspiler(new JSweetFactory<JSweetContext>());
+	}
+
+	@Test
 	public void testDefaultMethods() {
 		// TODO: make it work with modules
 		eval(ModuleKind.none, (logHandler, r) -> {
 			logHandler.assertReportedProblems();
 			assertEquals("m,m1,m2-overriden", r.get("trace"));
-		}, getSourceFile(ClassWithStaticMethod.class), getSourceFile(DefaultMethods.class), getSourceFile(DefaultMethodsConsumer.class));
+		}, getSourceFile(ClassWithStaticMethod.class), getSourceFile(DefaultMethods.class),
+				getSourceFile(DefaultMethodsConsumer.class));
 	}
 
 	@Test
