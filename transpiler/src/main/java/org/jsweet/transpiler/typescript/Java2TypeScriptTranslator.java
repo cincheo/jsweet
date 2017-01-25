@@ -3496,7 +3496,13 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 			}
 		}
 		if (getAdapter().needsTypeCast(cast)) {
-			print("<").getAdapter().substituteAndPrintType(cast.clazz).print(">");
+			// Java is more permissive than TypeScript when casting type
+			// variables
+			if (cast.expr.type.getKind() == TypeKind.TYPEVAR) {
+				print("<any>");
+			} else {
+				print("<").getAdapter().substituteAndPrintType(cast.clazz).print(">");
+			}
 		}
 		print(cast.expr);
 		if (Util.isIntegral(cast.type)) {

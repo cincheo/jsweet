@@ -23,7 +23,6 @@ import static org.junit.Assert.fail;
 
 import org.apache.commons.io.FileUtils;
 import org.jsweet.transpiler.JSweetProblem;
-import org.jsweet.transpiler.ModuleKind;
 import org.jsweet.transpiler.SourceFile;
 import org.jsweet.transpiler.util.EvaluationResult;
 import org.junit.Assert;
@@ -31,6 +30,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import source.syntax.AnnotationQualifiedNames;
+import source.syntax.Casts;
 import source.syntax.DocComments;
 import source.syntax.FinalVariables;
 import source.syntax.FinalVariablesRuntime;
@@ -209,5 +209,13 @@ public class SyntaxTests extends AbstractTest {
 			assertEquals("ok1,ok2,ok3,ok4", r.get("trace"));
 		}, getSourceFile(LambdasWithInterfaces.class));
 	}
+	
+	@Test
+	public void testCasts() {
+		transpile((logHandler) -> {
+			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+		}, getSourceFile(Casts.class));
+	}
+	
 
 }
