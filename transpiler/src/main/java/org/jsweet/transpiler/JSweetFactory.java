@@ -65,4 +65,16 @@ public class JSweetFactory<C extends JSweetContext> {
 		return new GlobalBeforeTranslationScanner<C>(transpilationHandler, context);
 	}
 
+	/**
+	 * Creates a diagnostic handler (responsible for reporting Java
+	 * errors/warnings).
+	 * 
+	 * <p>
+	 * One can override with a subclass to tune how JSweet reports Java
+	 * messages.
+	 */
+	public JSweetDiagnosticHandler<C> createDiagnosticHandler(TranspilationHandler transpilationHandler, C context) {
+		return new JSweetDiagnosticHandler<C>(transpilationHandler, context);
+	}
+
 }

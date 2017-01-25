@@ -40,14 +40,12 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 
@@ -88,9 +86,6 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.TreeScanner;
-import com.sun.tools.javac.util.BasicDiagnosticFormatter;
-import com.sun.tools.javac.util.JCDiagnostic;
-import com.sun.tools.javac.util.JavacMessages;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.Options;
@@ -400,40 +395,7 @@ public class JSweetTranspiler<C extends JSweetContext> implements JSweetOptions 
 			public void write(String str) {
 			}
 		}));
-		log.setDiagnosticFormatter(new BasicDiagnosticFormatter(JavacMessages.instance(context)) {
-			@Override
-			public String format(JCDiagnostic diagnostic, Locale locale) {
-				if (diagnostic.getKind() == Kind.ERROR) {
-					if (!(ignoreJavaFileNameError
-							&& "compiler.err.class.public.should.be.in.file".equals(diagnostic.getCode()))) {
-						transpilationHandler.report(JSweetProblem.INTERNAL_JAVA_ERROR,
-								new SourcePosition(new File(diagnostic.getSource().getName()), null,
-										(int) diagnostic.getLineNumber(), (int) diagnostic.getColumnNumber()),
-								diagnostic.getMessage(locale));
-					}
-				}
-				switch (diagnostic.getKind()) {
-				case ERROR:
-					logger.error(diagnostic);
-					break;
-				case WARNING:
-				case MANDATORY_WARNING:
-					logger.debug(diagnostic);
-					break;
-				case NOTE:
-				case OTHER:
-				default:
-					logger.trace(diagnostic);
-					break;
-				}
-				if (diagnostic.getSource() != null) {
-					return diagnostic.getMessage(locale) + " at " + diagnostic.getSource().getName() + "("
-							+ diagnostic.getLineNumber() + ")";
-				} else {
-					return diagnostic.getMessage(locale);
-				}
-			}
-		});
+		log.setDiagnosticFormatter(factory.createDiagnosticHandler(transpilationHandler, context));
 	}
 
 	private boolean areAllTranspiled(SourceFile... sourceFiles) {
