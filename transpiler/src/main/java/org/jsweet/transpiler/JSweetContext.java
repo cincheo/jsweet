@@ -106,7 +106,7 @@ public class JSweetContext extends Context {
 		return pattern.replace("(", "\\(").replace(")", "\\)").replace(".", "\\.").replace("*", ".*");
 	}
 
-	private Pattern annotationWithParameterPattern = Pattern.compile("@([^(]*)\\(([^)]*)\\)");
+	private Pattern annotationWithParameterPattern = Pattern.compile("@([^(]*)\\((.*)\\)");
 	private Map<String, Collection<AnnotationFilterDescriptor>> annotationFilters = new HashMap<>();
 
 	private Collection<AnnotationFilterDescriptor> getAnnotationFilterDescriptors(String annotationType) {
