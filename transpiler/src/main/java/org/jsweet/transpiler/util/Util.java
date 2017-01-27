@@ -399,6 +399,18 @@ public class Util {
 	}
 
 	/**
+	 * Finds and returns the parameter matching the given name if any.
+	 */
+	public static JCVariableDecl findParameter(JCMethodDecl method, String name) {
+		for (JCVariableDecl parameter : method.getParameters()) {
+			if (name.equals(parameter.name.toString())) {
+				return parameter;
+			}
+		}
+		return null;
+	}
+
+	/**
 	 * Tells if a method can be invoked with some given parameter types.
 	 * 
 	 * @param types

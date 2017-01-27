@@ -45,6 +45,7 @@ import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCImport;
 import com.sun.tools.javac.tree.JCTree.JCLiteral;
+import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.JCTree.JCTypeApply;
@@ -496,4 +497,16 @@ public abstract class AbstractPrinterAdapter<C extends JSweetContext> {
 		return false;
 	}
 
+	/**
+	 * Adapts the JavaDoc comment for a given element.
+	 * 
+	 * @param element
+	 *            the documented element ({@link JCClassDecl},
+	 *            {@link JCMethodDecl}, or {@link JCVariableDecl})
+	 * @param commentLines
+	 *            the comment lines, to be modified by the function if necessary
+	 *            (clearing the list will remove the JavaDoc comment)
+	 */
+	public void adaptDocComment(JCTree element, List<String> commentLines) {
+	}
 }

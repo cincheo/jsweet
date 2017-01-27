@@ -68,6 +68,8 @@ import java.util.function.LongSupplier;
 import java.util.function.LongToDoubleFunction;
 import java.util.function.LongToIntFunction;
 import java.util.function.LongUnaryOperator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.lang.model.element.ElementKind;
 
@@ -91,6 +93,7 @@ import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Symbol.TypeVariableSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.Type.TypeVar;
 import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCArrayTypeTree;
@@ -106,6 +109,7 @@ import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.JCTree.JCTypeApply;
 import com.sun.tools.javac.tree.JCTree.JCTypeCast;
+import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.JCTree.Tag;
 import com.sun.tools.javac.util.Log;
 
@@ -1611,6 +1615,111 @@ public class Java2TypeScriptAdapter<C extends JSweetContext> extends AbstractPri
 			return true;
 		}
 		return super.substituteForEachLoop(foreachLoop, targetHasLength, indexVarName);
+	}
+
+	protected final Pattern paramPattern = Pattern.compile("(\\s*@param\\s+)(\\w+)(.*)");
+	protected final Pattern returnPattern = Pattern.compile("(\\s*@return\\s+)(.*)");
+
+	protected String getMappedDocType(JCTree typeTree, Type type) {
+		String qualifiedName = type.toString();
+		if (typeTree instanceof JCTypeApply) {
+			return getMappedDocType(((JCTypeApply) typeTree).clazz, ((JCTypeApply) typeTree).clazz.type);
+		}
+		if (type instanceof TypeVar) {
+			TypeVar typeVar = (TypeVar) typeTree.type;
+			if (typeVar.getUpperBound() == null) {
+				return "Object";
+			} else {
+				return getMappedDocType(null, typeVar.getUpperBound());
+			}
+		}
+		boolean isMapped = false;
+		if (typeTree != null) {
+			for (BiFunction<JCTree, String, Object> mapping : complexTypesMapping) {
+				Object mapped = mapping.apply(typeTree, qualifiedName);
+				if (mapped instanceof String) {
+					isMapped = true;
+					qualifiedName = (String) mapped;
+				} else if (mapped instanceof JCTree) {
+					isMapped = true;
+					qualifiedName = getMappedDocType((JCTree) mapped, ((JCTree) mapped).type);
+				}
+			}
+		}
+		if (typesMapping.containsKey(qualifiedName)) {
+			isMapped = true;
+			qualifiedName = typesMapping.get(qualifiedName);
+		}
+		if (!isMapped && !type.isPrimitiveOrVoid()) {
+			qualifiedName = context.getRootRelativeName(null, type.tsym);
+		}
+		return qualifiedName;
+	}
+
+	/**
+	 * Adapts the JavaDoc comment for a given element to conform to JSDoc.
+	 * 
+	 * <p>
+	 * By default, this implementation does not auto-generate comments. This
+	 * behavior can be overridden by adding a line in the comment before calling
+	 * this method. For example:
+	 * 
+	 * <pre>
+	 * public void adaptDocComment(JCTree element, List&lt;String&gt; commentLines) {
+	 * 	if (commentLines.isEmpty()) {
+	 * 		commentLines.add("My default comment");
+	 * 	}
+	 * 	super(element, commentLines);
+	 * }
+	 * </pre>
+	 * 
+	 * @param element
+	 *            the documented element ({@link JCClassDecl},
+	 *            {@link JCMethodDecl}, or {@link JCVariableDecl})
+	 * @param commentLines
+	 *            the comment lines, to be modified by the function if necessary
+	 *            (clearing the list will remove the JavaDoc comment)
+	 */
+
+	@Override
+	public void adaptDocComment(JCTree element, List<String> commentLines) {
+		if (commentLines.isEmpty()) {
+			return;
+		}
+		if (element instanceof JCMethodDecl) {
+			JCMethodDecl method = (JCMethodDecl) element;
+			Set<String> params = new HashSet<>();
+			boolean hasReturn = false;
+			for (int i = 0; i < commentLines.size(); i++) {
+				Matcher m = paramPattern.matcher(commentLines.get(i));
+				if (m.matches()) {
+					String name = m.group(2);
+					params.add(name);
+					JCVariableDecl parameter = Util.findParameter(method, name);
+					if (parameter != null) {
+						commentLines.set(i,
+								m.group(1) + "{" + getMappedDocType(parameter.vartype, parameter.vartype.type) + "} "
+										+ m.group(2) + m.group(3));
+					}
+				} else if ((m = returnPattern.matcher(commentLines.get(i))).matches()) {
+					hasReturn = true;
+					commentLines.set(i, m.group(1) + "{" + getMappedDocType(method.restype, method.restype.type) + "} "
+							+ m.group(2));
+				}
+			}
+			for (JCVariableDecl parameter : method.getParameters()) {
+				String name = parameter.name.toString();
+				if (!params.contains(name)) {
+					commentLines.add(
+							" @param {" + getMappedDocType(parameter.vartype, parameter.vartype.type) + "} " + name);
+				}
+			}
+			if (!hasReturn && !(method.restype == null || context.symtab.voidType.equals(method.restype.type))
+					&& !method.sym.isConstructor()) {
+				commentLines.add(" @return {" + getMappedDocType(method.restype, method.restype.type) + "}");
+			}
+		}
+		super.adaptDocComment(element, commentLines);
 	}
 
 }

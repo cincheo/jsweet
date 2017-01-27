@@ -656,21 +656,26 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 	}
 
 	private void printDocComment(JCTree element, boolean indent) {
-		if (compilationUnit != null && compilationUnit.docComments != null
-				&& compilationUnit.docComments.hasComment(element)) {
+		if (compilationUnit != null && compilationUnit.docComments != null) {
 			Comment comment = compilationUnit.docComments.getComment(element);
-			String[] lines = comment.getText().split("\n");
-			if (indent) {
-				printIndent();
+			List<String> lines = new ArrayList<>();
+			if (comment != null) {
+				lines.addAll(Arrays.asList(comment.getText().split("\n")));
 			}
-			print("/**").println();
-			for (String line : lines) {
-				printIndent().print(" * ").print(line.trim()).println();
-			}
-			removeLastChar();
-			println().printIndent().print(" ").print("*/").println();
-			if (!indent) {
-				printIndent();
+			getAdapter().adaptDocComment(element, lines);
+			if (!lines.isEmpty()) {
+				if (indent) {
+					printIndent();
+				}
+				print("/**").println();
+				for (String line : lines) {
+					printIndent().print(" * ").print(line.trim()).println();
+				}
+				removeLastChar();
+				println().printIndent().print(" ").print("*/").println();
+				if (!indent) {
+					printIndent();
+				}
 			}
 		}
 	}
@@ -2039,7 +2044,9 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 			globals = globals || (parent instanceof JCClassDecl && (((JCClassDecl) parent).sym.isInterface()
 					|| getScope().interfaceScope && varDecl.sym.isStatic()));
 
-			printDocComment(varDecl, false);
+			if (parent instanceof JCClassDecl) {
+				printDocComment(varDecl, false);
+			}
 			if (!globals && parent instanceof JCClassDecl) {
 				if (varDecl.mods.getFlags().contains(Modifier.PUBLIC)) {
 					if (!getScope().interfaceScope) {
