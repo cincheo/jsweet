@@ -6,7 +6,7 @@ public abstract class AbstractClassAndOverride<E extends AbstractClassAndOverrid
 
 	@Override
 	public void myFunction(E t) {
-		
+
 	}
 
 	public Date testDoc(String s, int i) {
@@ -14,8 +14,11 @@ public abstract class AbstractClassAndOverride<E extends AbstractClassAndOverrid
 	}
 
 	/**
-	 * This is a function.
-	 * @param s a string param
+	 * This is a function that takes a {@link java.lang.String Java string
+	 * class}.
+	 * 
+	 * @param s
+	 *            a string param
 	 * @param i
 	 */
 	public void testDoc2(String s, int i) {
@@ -23,7 +26,9 @@ public abstract class AbstractClassAndOverride<E extends AbstractClassAndOverrid
 
 	/**
 	 * This is a function.
-	 * @param s a string param
+	 * 
+	 * @param s
+	 *            a string param
 	 * @param i
 	 * @return a fake value
 	 */
@@ -31,10 +36,26 @@ public abstract class AbstractClassAndOverride<E extends AbstractClassAndOverrid
 		return true;
 	}
 
+	/**
+	 * A private method doc test.
+	 */
+	private void m() {
+		
+	}
+	
 }
 
 interface MyInterface2<T> {
-	
+
 	void myFunction(T t);
+
+}
+
+
+/**
+ * A doc test.
+ * @author renaudpawlak
+ */
+enum MyEnum {
 	
 }

@@ -503,10 +503,12 @@ public abstract class AbstractPrinterAdapter<C extends JSweetContext> {
 	 * @param element
 	 *            the documented element ({@link JCClassDecl},
 	 *            {@link JCMethodDecl}, or {@link JCVariableDecl})
-	 * @param commentLines
-	 *            the comment lines, to be modified by the function if necessary
-	 *            (clearing the list will remove the JavaDoc comment)
+	 * @param commentText
+	 *            the comment text if any (null when no comment)
+	 * @return the adapted comment (null will remove the JavaDoc
+	 *         comment)
 	 */
-	public void adaptDocComment(JCTree element, List<String> commentLines) {
+	public String adaptDocComment(JCTree element, String commentText) {
+		return commentText;
 	}
 }

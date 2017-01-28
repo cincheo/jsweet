@@ -39,6 +39,7 @@ import static org.jsweet.JSweetConfig.UTIL_PACKAGE;
 import static org.jsweet.JSweetConfig.isJSweetPath;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -1619,6 +1620,7 @@ public class Java2TypeScriptAdapter<C extends JSweetContext> extends AbstractPri
 
 	protected final Pattern paramPattern = Pattern.compile("(\\s*@param\\s+)(\\w+)(.*)");
 	protected final Pattern returnPattern = Pattern.compile("(\\s*@return\\s+)(.*)");
+	protected final Pattern linkPattern = Pattern.compile("(\\{@link\\s+)([\\w\\.#,]+)\\s+[^}]*(\\})");
 
 	protected String getMappedDocType(JCTree typeTree, Type type) {
 		String qualifiedName = type.toString();
@@ -1656,6 +1658,27 @@ public class Java2TypeScriptAdapter<C extends JSweetContext> extends AbstractPri
 		return qualifiedName;
 	}
 
+	private String replaceLinks(String text) {
+		Matcher linkMatcher = linkPattern.matcher(text);
+		boolean result = linkMatcher.find();
+		int lastMatch = 0;
+		if (result) {
+			StringBuffer sb = new StringBuffer();
+			do {
+				sb.append(text.substring(lastMatch, linkMatcher.start()));
+				sb.append(linkMatcher.group(1));
+				TypeSymbol type = Util.getTypeByName(context, linkMatcher.group(2));
+				sb.append(type == null ? linkMatcher.group(2) : getMappedDocType(null, type.type));
+				sb.append(linkMatcher.group(3));
+				lastMatch = linkMatcher.end();
+				result = linkMatcher.find();
+			} while (result);
+			sb.append(text.substring(lastMatch));
+			return sb.toString();
+		}
+		return text;
+	}
+
 	/**
 	 * Adapts the JavaDoc comment for a given element to conform to JSDoc.
 	 * 
@@ -1665,27 +1688,28 @@ public class Java2TypeScriptAdapter<C extends JSweetContext> extends AbstractPri
 	 * this method. For example:
 	 * 
 	 * <pre>
-	 * public void adaptDocComment(JCTree element, List&lt;String&gt; commentLines) {
-	 * 	if (commentLines.isEmpty()) {
-	 * 		commentLines.add("My default comment");
+	 * public String adaptDocComment(JCTree element, String commentText) {
+	 * 	if (commentText == null) {
+	 * 		return "My default comment";
 	 * 	}
-	 * 	super(element, commentLines);
+	 * 	super(element, commentText);
 	 * }
 	 * </pre>
 	 * 
 	 * @param element
 	 *            the documented element ({@link JCClassDecl},
 	 *            {@link JCMethodDecl}, or {@link JCVariableDecl})
-	 * @param commentLines
-	 *            the comment lines, to be modified by the function if necessary
-	 *            (clearing the list will remove the JavaDoc comment)
+	 * @param commentText
+	 *            the comment text if any (null when no comment)
+	 * @return the adapted comment (null will remove the JavaDoc comment)
 	 */
-
 	@Override
-	public void adaptDocComment(JCTree element, List<String> commentLines) {
-		if (commentLines.isEmpty()) {
-			return;
+	public String adaptDocComment(JCTree element, String commentText) {
+		if (commentText == null) {
+			return null;
 		}
+		commentText = replaceLinks(commentText);
+		List<String> commentLines = new ArrayList<>(Arrays.asList(commentText.split("\n")));
 		if (element instanceof JCMethodDecl) {
 			JCMethodDecl method = (JCMethodDecl) element;
 			Set<String> params = new HashSet<>();
@@ -1718,8 +1742,23 @@ public class Java2TypeScriptAdapter<C extends JSweetContext> extends AbstractPri
 					&& !method.sym.isConstructor()) {
 				commentLines.add(" @return {" + getMappedDocType(method.restype, method.restype.type) + "}");
 			}
+			if (method.sym.isPrivate()) {
+				commentLines.add(" @private");
+			}
+			if (method.sym.isConstructor()) {
+				commentLines.add(" @constructor");
+			}
+		} else if (element instanceof JCClassDecl) {
+			JCClassDecl clazz = (JCClassDecl) element;
+			if (clazz.sym.isEnum()) {
+				commentLines.add(" @enum");
+			}
+			if (clazz.extending != null) {
+				commentLines.add(" @extends " + getMappedDocType(clazz.extending, clazz.extending.type));
+			}
 		}
-		super.adaptDocComment(element, commentLines);
+
+		return super.adaptDocComment(element, String.join("\n", commentLines));
 	}
 
 }

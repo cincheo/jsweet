@@ -658,11 +658,12 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 	private void printDocComment(JCTree element, boolean indent) {
 		if (compilationUnit != null && compilationUnit.docComments != null) {
 			Comment comment = compilationUnit.docComments.getComment(element);
+			String commentText = getAdapter().adaptDocComment(element, comment == null ? null : comment.getText());
+
 			List<String> lines = new ArrayList<>();
 			if (comment != null) {
-				lines.addAll(Arrays.asList(comment.getText().split("\n")));
+				lines.addAll(Arrays.asList(commentText.split("\n")));
 			}
-			getAdapter().adaptDocComment(element, lines);
 			if (!lines.isEmpty()) {
 				if (indent) {
 					printIndent();

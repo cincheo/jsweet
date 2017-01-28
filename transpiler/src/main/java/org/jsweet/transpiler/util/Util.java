@@ -880,6 +880,15 @@ public class Util {
 	}
 
 	/**
+	 * Looks up a type element from its qualified name.
+	 * 
+	 * @return null if not found
+	 */
+	public static ClassSymbol getTypeByName(JSweetContext context, String qualifiedName) {
+		return context.symtab.classes.get(context.names.fromString(qualifiedName));
+	}
+
+	/**
 	 * Tells if the given method has varargs.
 	 */
 	public static boolean hasVarargs(MethodSymbol methodSymbol) {
