@@ -1,0 +1,287 @@
+package def.dom;
+
+import def.js.StringTypes;
+import def.js.StringTypes.*;
+
+public class HTMLFrameSetElement extends HTMLElement {
+    public java.lang.String border;
+    /**
+      * Sets or retrieves the border color of the object.
+      */
+    public java.lang.Object borderColor;
+    /**
+      * Sets or retrieves the frame widths of the object.
+      */
+    public java.lang.String cols;
+    /**
+      * Sets or retrieves whether to display a border for the frame.
+      */
+    public java.lang.String frameBorder;
+    /**
+      * Sets or retrieves the amount of additional space between the frames.
+      */
+    public java.lang.Object frameSpacing;
+    public java.lang.String name;
+    public java.util.function.Function<Event,java.lang.Object> onafterprint;
+    public java.util.function.Function<Event,java.lang.Object> onbeforeprint;
+    public java.util.function.Function<BeforeUnloadEvent,java.lang.Object> onbeforeunload;
+    /**
+      * Fires when the object loses the input focus.
+      */
+    public java.util.function.Function<FocusEvent,java.lang.Object> onblur;
+    public java.util.function.Function<Event,java.lang.Object> onerror;
+    /**
+      * Fires when the object receives focus.
+      */
+    public java.util.function.Function<FocusEvent,java.lang.Object> onfocus;
+    public java.util.function.Function<HashChangeEvent,java.lang.Object> onhashchange;
+    public java.util.function.Function<Event,java.lang.Object> onload;
+    public java.util.function.Function<MessageEvent,java.lang.Object> onmessage;
+    public java.util.function.Function<Event,java.lang.Object> onoffline;
+    public java.util.function.Function<Event,java.lang.Object> ononline;
+    public java.util.function.Function<Event,java.lang.Object> onorientationchange;
+    public java.util.function.Function<PageTransitionEvent,java.lang.Object> onpagehide;
+    public java.util.function.Function<PageTransitionEvent,java.lang.Object> onpageshow;
+    public java.util.function.Function<UIEvent,java.lang.Object> onresize;
+    public java.util.function.Function<StorageEvent,java.lang.Object> onstorage;
+    public java.util.function.Function<Event,java.lang.Object> onunload;
+    /**
+      * Sets or retrieves the frame heights of the object.
+      */
+    public java.lang.String rows;
+    native public void addEventListener(def.js.StringTypes.MSContentZoom type, java.util.function.Function<UIEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.MSGestureChange type, java.util.function.Function<MSGestureEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.MSGestureDoubleTap type, java.util.function.Function<MSGestureEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.MSGestureEnd type, java.util.function.Function<MSGestureEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.MSGestureHold type, java.util.function.Function<MSGestureEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.MSGestureStart type, java.util.function.Function<MSGestureEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.MSGestureTap type, java.util.function.Function<MSGestureEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.MSGotPointerCapture type, java.util.function.Function<MSPointerEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.MSInertiaStart type, java.util.function.Function<MSGestureEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.MSLostPointerCapture type, java.util.function.Function<MSPointerEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.MSManipulationStateChanged type, java.util.function.Function<MSManipulationEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.MSPointerCancel type, java.util.function.Function<MSPointerEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.MSPointerDown type, java.util.function.Function<MSPointerEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.MSPointerEnter type, java.util.function.Function<MSPointerEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.MSPointerLeave type, java.util.function.Function<MSPointerEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.MSPointerMove type, java.util.function.Function<MSPointerEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.MSPointerOut type, java.util.function.Function<MSPointerEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.MSPointerOver type, java.util.function.Function<MSPointerEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.MSPointerUp type, java.util.function.Function<MSPointerEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.abort type, java.util.function.Function<UIEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.activate type, java.util.function.Function<UIEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.ariarequest type, java.util.function.Function<AriaRequestEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.beforeactivate type, java.util.function.Function<UIEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.beforecopy type, java.util.function.Function<DragEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.beforecut type, java.util.function.Function<DragEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.beforedeactivate type, java.util.function.Function<UIEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.beforepaste type, java.util.function.Function<DragEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.beforeprint type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.beforeunload type, java.util.function.Function<BeforeUnloadEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.blur type, java.util.function.Function<FocusEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.canplay type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.canplaythrough type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.change type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.click type, java.util.function.Function<MouseEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.command type, java.util.function.Function<CommandEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.contextmenu type, java.util.function.Function<PointerEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.copy type, java.util.function.Function<DragEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.cuechange type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.cut type, java.util.function.Function<DragEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.dblclick type, java.util.function.Function<MouseEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.deactivate type, java.util.function.Function<UIEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.drag type, java.util.function.Function<DragEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.dragend type, java.util.function.Function<DragEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.dragenter type, java.util.function.Function<DragEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.dragleave type, java.util.function.Function<DragEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.dragover type, java.util.function.Function<DragEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.dragstart type, java.util.function.Function<DragEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.drop type, java.util.function.Function<DragEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.durationchange type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.emptied type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.ended type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.error type, java.util.function.Function<ErrorEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.focus type, java.util.function.Function<FocusEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.gotpointercapture type, java.util.function.Function<PointerEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.hashchange type, java.util.function.Function<HashChangeEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.input type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.keydown type, java.util.function.Function<KeyboardEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.keypress type, java.util.function.Function<KeyboardEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.keyup type, java.util.function.Function<KeyboardEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.load type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.loadeddata type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.loadedmetadata type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.loadstart type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.lostpointercapture type, java.util.function.Function<PointerEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.message type, java.util.function.Function<MessageEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.mousedown type, java.util.function.Function<MouseEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.mouseenter type, java.util.function.Function<MouseEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.mouseleave type, java.util.function.Function<MouseEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.mousemove type, java.util.function.Function<MouseEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.mouseout type, java.util.function.Function<MouseEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.mouseover type, java.util.function.Function<MouseEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.mouseup type, java.util.function.Function<MouseEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.mousewheel type, java.util.function.Function<MouseWheelEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.offline type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.online type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.orientationchange type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.pagehide type, java.util.function.Function<PageTransitionEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.pageshow type, java.util.function.Function<PageTransitionEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.paste type, java.util.function.Function<DragEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.pause type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.play type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.playing type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.pointercancel type, java.util.function.Function<PointerEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.pointerdown type, java.util.function.Function<PointerEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.pointerenter type, java.util.function.Function<PointerEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.pointerleave type, java.util.function.Function<PointerEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.pointermove type, java.util.function.Function<PointerEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.pointerout type, java.util.function.Function<PointerEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.pointerover type, java.util.function.Function<PointerEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.pointerup type, java.util.function.Function<PointerEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.progress type, java.util.function.Function<ProgressEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.ratechange type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.reset type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.resize type, java.util.function.Function<UIEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.scroll type, java.util.function.Function<UIEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.seeked type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.seeking type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.select type, java.util.function.Function<UIEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.selectstart type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.stalled type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.storage type, java.util.function.Function<StorageEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.submit type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.suspend type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.timeupdate type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.touchcancel type, java.util.function.Function<TouchEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.touchend type, java.util.function.Function<TouchEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.touchmove type, java.util.function.Function<TouchEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.touchstart type, java.util.function.Function<TouchEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.unload type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.volumechange type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.waiting type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.webkitfullscreenchange type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.webkitfullscreenerror type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(def.js.StringTypes.wheel type, java.util.function.Function<WheelEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(java.lang.String type, EventListener listener, java.lang.Boolean useCapture);
+    public static HTMLFrameSetElement prototype;
+    public HTMLFrameSetElement(){}
+    native public void addEventListener(def.js.StringTypes.MSContentZoom type, java.util.function.Function<UIEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.MSGestureChange type, java.util.function.Function<MSGestureEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.MSGestureDoubleTap type, java.util.function.Function<MSGestureEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.MSGestureEnd type, java.util.function.Function<MSGestureEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.MSGestureHold type, java.util.function.Function<MSGestureEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.MSGestureStart type, java.util.function.Function<MSGestureEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.MSGestureTap type, java.util.function.Function<MSGestureEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.MSGotPointerCapture type, java.util.function.Function<MSPointerEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.MSInertiaStart type, java.util.function.Function<MSGestureEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.MSLostPointerCapture type, java.util.function.Function<MSPointerEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.MSManipulationStateChanged type, java.util.function.Function<MSManipulationEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.MSPointerCancel type, java.util.function.Function<MSPointerEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.MSPointerDown type, java.util.function.Function<MSPointerEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.MSPointerEnter type, java.util.function.Function<MSPointerEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.MSPointerLeave type, java.util.function.Function<MSPointerEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.MSPointerMove type, java.util.function.Function<MSPointerEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.MSPointerOut type, java.util.function.Function<MSPointerEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.MSPointerOver type, java.util.function.Function<MSPointerEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.MSPointerUp type, java.util.function.Function<MSPointerEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.abort type, java.util.function.Function<UIEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.activate type, java.util.function.Function<UIEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.ariarequest type, java.util.function.Function<AriaRequestEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.beforeactivate type, java.util.function.Function<UIEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.beforecopy type, java.util.function.Function<DragEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.beforecut type, java.util.function.Function<DragEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.beforedeactivate type, java.util.function.Function<UIEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.beforepaste type, java.util.function.Function<DragEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.beforeprint type, java.util.function.Function<Event,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.beforeunload type, java.util.function.Function<BeforeUnloadEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.blur type, java.util.function.Function<FocusEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.canplay type, java.util.function.Function<Event,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.canplaythrough type, java.util.function.Function<Event,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.change type, java.util.function.Function<Event,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.click type, java.util.function.Function<MouseEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.command type, java.util.function.Function<CommandEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.contextmenu type, java.util.function.Function<PointerEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.copy type, java.util.function.Function<DragEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.cuechange type, java.util.function.Function<Event,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.cut type, java.util.function.Function<DragEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.dblclick type, java.util.function.Function<MouseEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.deactivate type, java.util.function.Function<UIEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.drag type, java.util.function.Function<DragEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.dragend type, java.util.function.Function<DragEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.dragenter type, java.util.function.Function<DragEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.dragleave type, java.util.function.Function<DragEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.dragover type, java.util.function.Function<DragEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.dragstart type, java.util.function.Function<DragEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.drop type, java.util.function.Function<DragEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.durationchange type, java.util.function.Function<Event,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.emptied type, java.util.function.Function<Event,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.ended type, java.util.function.Function<Event,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.error type, java.util.function.Function<ErrorEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.focus type, java.util.function.Function<FocusEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.gotpointercapture type, java.util.function.Function<PointerEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.hashchange type, java.util.function.Function<HashChangeEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.input type, java.util.function.Function<Event,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.keydown type, java.util.function.Function<KeyboardEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.keypress type, java.util.function.Function<KeyboardEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.keyup type, java.util.function.Function<KeyboardEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.load type, java.util.function.Function<Event,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.loadeddata type, java.util.function.Function<Event,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.loadedmetadata type, java.util.function.Function<Event,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.loadstart type, java.util.function.Function<Event,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.lostpointercapture type, java.util.function.Function<PointerEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.message type, java.util.function.Function<MessageEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.mousedown type, java.util.function.Function<MouseEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.mouseenter type, java.util.function.Function<MouseEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.mouseleave type, java.util.function.Function<MouseEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.mousemove type, java.util.function.Function<MouseEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.mouseout type, java.util.function.Function<MouseEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.mouseover type, java.util.function.Function<MouseEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.mouseup type, java.util.function.Function<MouseEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.mousewheel type, java.util.function.Function<MouseWheelEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.offline type, java.util.function.Function<Event,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.online type, java.util.function.Function<Event,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.orientationchange type, java.util.function.Function<Event,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.pagehide type, java.util.function.Function<PageTransitionEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.pageshow type, java.util.function.Function<PageTransitionEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.paste type, java.util.function.Function<DragEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.pause type, java.util.function.Function<Event,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.play type, java.util.function.Function<Event,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.playing type, java.util.function.Function<Event,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.pointercancel type, java.util.function.Function<PointerEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.pointerdown type, java.util.function.Function<PointerEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.pointerenter type, java.util.function.Function<PointerEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.pointerleave type, java.util.function.Function<PointerEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.pointermove type, java.util.function.Function<PointerEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.pointerout type, java.util.function.Function<PointerEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.pointerover type, java.util.function.Function<PointerEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.pointerup type, java.util.function.Function<PointerEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.progress type, java.util.function.Function<ProgressEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.ratechange type, java.util.function.Function<Event,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.reset type, java.util.function.Function<Event,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.resize type, java.util.function.Function<UIEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.scroll type, java.util.function.Function<UIEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.seeked type, java.util.function.Function<Event,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.seeking type, java.util.function.Function<Event,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.select type, java.util.function.Function<UIEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.selectstart type, java.util.function.Function<Event,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.stalled type, java.util.function.Function<Event,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.storage type, java.util.function.Function<StorageEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.submit type, java.util.function.Function<Event,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.suspend type, java.util.function.Function<Event,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.timeupdate type, java.util.function.Function<Event,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.touchcancel type, java.util.function.Function<TouchEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.touchend type, java.util.function.Function<TouchEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.touchmove type, java.util.function.Function<TouchEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.touchstart type, java.util.function.Function<TouchEvent,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.unload type, java.util.function.Function<Event,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.volumechange type, java.util.function.Function<Event,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.waiting type, java.util.function.Function<Event,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.webkitfullscreenchange type, java.util.function.Function<Event,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.webkitfullscreenerror type, java.util.function.Function<Event,java.lang.Object> listener);
+    native public void addEventListener(def.js.StringTypes.wheel type, java.util.function.Function<WheelEvent,java.lang.Object> listener);
+    native public void addEventListener(java.lang.String type, EventListener listener);
+    native public void addEventListener(java.lang.String type, EventListenerObject listener, java.lang.Boolean useCapture);
+    native public void addEventListener(java.lang.String type, EventListenerObject listener);
+}
+
