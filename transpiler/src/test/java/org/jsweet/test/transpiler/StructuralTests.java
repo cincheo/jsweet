@@ -23,6 +23,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetFactory;
+import org.jsweet.transpiler.JSweetOptions;
 import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.ModuleKind;
 import org.jsweet.transpiler.typescript.Java2TypeScriptAdapter;
@@ -354,6 +355,24 @@ public class StructuralTests extends AbstractTest {
 			assertEquals("test3", r.get("value3"));
 			assertEquals("test4", r.get("value4"));
 		}, getSourceFile(StaticMembersInInterfaces.class));
+		createTranspiler(new JSweetFactory<JSweetContext>() {
+			@Override
+			public JSweetContext createContext(JSweetOptions options) {
+				return new JSweetContext(options) {
+					{
+						addAnnotation("@Root", "source.structural");
+					}
+				};
+			}
+		});
+		eval((logHandler, r) -> {
+			logHandler.assertReportedProblems();
+			assertEquals("test1", r.get("value1"));
+			assertEquals("test2", r.get("value2"));
+			assertEquals("test3", r.get("value3"));
+			assertEquals("test4", r.get("value4"));
+		}, getSourceFile(StaticMembersInInterfaces.class));
+		createTranspiler(new JSweetFactory<>());
 	}
 
 	@Test

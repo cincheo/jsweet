@@ -1258,10 +1258,17 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 					}
 					if (!nameSpace) {
 						nameSpace = true;
-						println().println().printIndent()
-								.print(getIndent() == 0 && isDefinitionScope ? "declare " : "export ")
-								.print("namespace ").print(classdecl.getSimpleName().toString()).print(" {")
-								.startIndent();
+						println().println().printIndent();
+
+						if (getIndent() != 0 || context.useModules) {
+							print("export ");
+						} else {
+							if (isDefinitionScope) {
+								print("declare ");
+							}
+						}
+
+						print("namespace ").print(classdecl.getSimpleName().toString()).print(" {").startIndent();
 					}
 					println().println().printIndent().print(def);
 					if (def instanceof JCVariableDecl) {
