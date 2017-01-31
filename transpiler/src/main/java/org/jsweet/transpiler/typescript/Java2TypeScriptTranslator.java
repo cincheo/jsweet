@@ -3731,17 +3731,25 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 	}
 
 	private void printInstanceOf(String exprStr, JCTree expr, Type type) {
+		printInstanceOf(exprStr, expr, type, false);
+	}
+
+	private void printInstanceOf(String exprStr, JCTree expr, Type type, boolean checkFirstArrayElement) {
 		if (!(getParent() instanceof JCParens)) {
 			print("(");
 		}
-		if (!getAdapter().substituteInstanceof(exprStr, expr, type)) {
+		if (checkFirstArrayElement || !getAdapter().substituteInstanceof(exprStr, expr, type)) {
 			if (TYPE_MAPPING.containsKey(type.toString())) {
 				print("typeof ");
 				print(exprStr, expr);
+				if (checkFirstArrayElement)
+					print("[0]");
 				print(" === ").print("'" + TYPE_MAPPING.get(type.toString()).toLowerCase() + "'");
 			} else if (type.tsym.isEnum()) {
 				print("typeof ");
 				print(exprStr, expr);
+				if (checkFirstArrayElement)
+					print("[0]");
 				print(" === 'number'");
 			} else if (type.toString().startsWith(JSweetConfig.FUNCTION_CLASSES_PACKAGE + ".")
 					|| type.toString().startsWith("java.util.function.")
@@ -3749,34 +3757,52 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 					|| context.hasAnnotationType(type.tsym, JSweetConfig.ANNOTATION_FUNCTIONAL_INTERFACE)) {
 				print("typeof ");
 				print(exprStr, expr);
+				if (checkFirstArrayElement)
+					print("[0]");
 				print(" === 'function'");
 				int parameterCount = context.getFunctionalTypeParameterCount(type);
 				if (parameterCount != -1) {
 					print(" && (<any>");
 					print(exprStr, expr);
+					if (checkFirstArrayElement)
+						print("[0]");
 					print(").length == " + context.getFunctionalTypeParameterCount(type));
 				}
 			} else {
 				print(exprStr, expr);
+				if (checkFirstArrayElement)
+					print("[0]");
 				if (context.isInterface(type.tsym)) {
 					print(" != null && ");
 					print("(");
 					print(exprStr, expr);
+					if (checkFirstArrayElement)
+						print("[0]");
 					print("[\"" + INTERFACES_FIELD_NAME + "\"]").print(" != null && ");
 					print(exprStr, expr);
+					if (checkFirstArrayElement)
+						print("[0]");
 					print("[\"" + INTERFACES_FIELD_NAME + "\"].indexOf(\"")
 							.print(type.tsym.getQualifiedName().toString()).print("\") >= 0");
 					print(" || ");
 					print(exprStr, expr);
+					if (checkFirstArrayElement)
+						print("[0]");
 					print(".constructor != null && ");
 					print(exprStr, expr);
+					if (checkFirstArrayElement)
+						print("[0]");
 					print(".constructor[\"" + INTERFACES_FIELD_NAME + "\"]").print(" != null && ");
 					print(exprStr, expr);
+					if (checkFirstArrayElement)
+						print("[0]");
 					print(".constructor[\"" + INTERFACES_FIELD_NAME + "\"].indexOf(\"")
 							.print(type.tsym.getQualifiedName().toString()).print("\") >= 0");
 					if (CharSequence.class.getName().equals(type.tsym.getQualifiedName().toString())) {
 						print(" || typeof ");
 						print(exprStr, expr);
+						if (checkFirstArrayElement)
+							print("[0]");
 						print(" === \"string\"");
 					}
 					print(")");
@@ -3787,11 +3813,25 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 					} else {
 						print(" != null && ");
 						print(exprStr, expr);
+						if (checkFirstArrayElement)
+							print("[0]");
 						String qualifiedName = getQualifiedTypeName(type.tsym, false);
 						if (qualifiedName.startsWith(JSweetConfig.LIBS_PACKAGE + ".")) {
 							print(" instanceof ").print(qualifiedName);
 						} else {
 							print(" instanceof <any>").print(qualifiedName);
+						}
+						if (type instanceof ArrayType) {
+							ArrayType t = (ArrayType) type;
+							print(" && (");
+							print(exprStr, expr);
+							if (checkFirstArrayElement)
+								print("[0]");
+							print(".length==0 || ");
+							print(exprStr, expr);
+							print("[0] == null ||");
+							printInstanceOf(exprStr, expr, t.elemtype, true);
+							print(")");
 						}
 					}
 				}

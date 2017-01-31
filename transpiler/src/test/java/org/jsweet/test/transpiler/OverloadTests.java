@@ -17,16 +17,17 @@
 package org.jsweet.test.transpiler;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.jsweet.transpiler.ModuleKind;
 import org.junit.Test;
 
 import source.overload.BasicOverride;
+import source.overload.ConstructorOverLoadWithArray;
 import source.overload.ConstructorOverloadWithFieldInitializer;
 import source.overload.InterfaceInheritance;
 import source.overload.LocalVariablesNameCollision;
 import source.overload.NonPublicRootMethod;
-import source.overload.ConstructorOverLoadWithArray;
 import source.overload.Overload;
 import source.overload.OverloadInInnerClass;
 import source.overload.OverloadWithEnums;
@@ -161,7 +162,8 @@ public class OverloadTests extends AbstractTest {
 	public void testBasicOverride() {
 		eval(ModuleKind.none, (logHandler, r) -> {
 			logHandler.assertReportedProblems();
-			assertEquals("1-1-X,1-1-0,1-2-X,1-2-0,1-3-X,1-3-0,2-1-X,2-1-0,2-2-X,2-2-0,2-3-X,2-3-0,0-3-X", r.get("trace"));
+			assertEquals("1-1-X,1-1-0,1-2-X,1-2-0,1-3-X,1-3-0,2-1-X,2-1-0,2-2-X,2-2-0,2-3-X,2-3-0,0-3-X",
+					r.get("trace"));
 		}, getSourceFile(BasicOverride.class));
 	}
 
@@ -201,10 +203,10 @@ public class OverloadTests extends AbstractTest {
 	public void testConstructorOverloadWithArray() {
 		eval(ModuleKind.none, (logHandler, r) -> {
 			logHandler.assertReportedProblems();
-			assertEquals("1,2", r.get("trace"));
+			assertTrue("1,2,3,4,3".equals(r.get("trace")) || "1,2,3,4,4".equals(r.get("trace")));
 		}, getSourceFile(ConstructorOverLoadWithArray.class));
 	}
-	
+
 	@Test
 	public void testLocalVariablesNameCollision() {
 		eval(ModuleKind.none, (logHandler, r) -> {
@@ -227,5 +229,5 @@ public class OverloadTests extends AbstractTest {
 			assertEquals("1,2,3,3", r.get("trace"));
 		}, getSourceFile(OverloadWithInterfaces.class));
 	}
-	
+
 }
