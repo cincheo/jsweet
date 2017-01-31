@@ -55,15 +55,25 @@ public class RootTests extends AbstractTest {
 	@Test
 	public void testNoClassesInRootParent() {
 		transpile((logHandler) -> {
+			logHandler.assertReportedProblems();
+		}, getSourceFile(InvalidClassLocation.class), getSourceFile(NoClassesInRootParent.class));
+		transpiler.setNoRootDirectories(true);
+		transpile((logHandler) -> {
 			logHandler.assertReportedProblems(JSweetProblem.CLASS_OUT_OF_ROOT_PACKAGE_SCOPE);
 		}, getSourceFile(InvalidClassLocation.class), getSourceFile(NoClassesInRootParent.class));
+		transpiler.setNoRootDirectories(false);
 	}
 
 	@Test
 	public void testNoRootInRoot() {
 		transpile((logHandler) -> {
+			logHandler.assertReportedProblems();
+		}, getSourceFile(NoRootInRoot.class));
+		transpiler.setNoRootDirectories(true);
+		transpile((logHandler) -> {
 			logHandler.assertReportedProblems(JSweetProblem.ENCLOSED_ROOT_PACKAGES);
 		}, getSourceFile(NoRootInRoot.class));
+		transpiler.setNoRootDirectories(false);
 	}
 
 	@Test

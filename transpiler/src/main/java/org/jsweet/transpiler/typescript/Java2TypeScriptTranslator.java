@@ -300,6 +300,9 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 		if (parentPackage == null) {
 			return true;
 		}
+		if (!context.options.isNoRootDirectories() || context.options.isBundle()) {
+			return true;
+		}
 		if (context.isRootPackage(parentPackage)) {
 			report(topLevel.getPackageName(), JSweetProblem.ENCLOSED_ROOT_PACKAGES,
 					rootPackage.getQualifiedName().toString(), parentPackage.getQualifiedName().toString());
