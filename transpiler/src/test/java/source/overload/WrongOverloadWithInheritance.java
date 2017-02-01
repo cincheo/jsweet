@@ -18,6 +18,8 @@ public class WrongOverloadWithInheritance {
 		o.overloaded(new Date());
 		o.overloaded2();
 		o.overloaded2(6);
+		new Test2().o1(null);
+		new Test2().o2(null);
 		$export("trace", trace.join(","));
 	}
 
@@ -29,9 +31,9 @@ interface MyInterface<T> {
 	void overloaded(boolean arg);
 
 	void m1();
-	
+
 	void a();
-	
+
 	void a(int i);
 }
 
@@ -42,17 +44,17 @@ interface MyInterface2<T> extends MyInterface<T> {
 }
 
 abstract class MyAbstractClass<T> implements MyInterface<T> {
-	
+
 	public MyAbstractClass() {
-		
+
 	}
-	
+
 	public abstract void overloaded2();
 
 	public void overloaded2(int i) {
 		WrongOverloadWithInheritance.trace.push("5-" + i);
 	};
-	
+
 	public void overloaded(T arg) {
 		WrongOverloadWithInheritance.trace.push("1-" + arg);
 	};
@@ -71,7 +73,7 @@ abstract class MyAbstractClass<T> implements MyInterface<T> {
 	public void a() {
 		a(0);
 	}
-	
+
 	@Override
 	public void a(int i) {
 		WrongOverloadWithInheritance.trace.push("a");
@@ -79,9 +81,9 @@ abstract class MyAbstractClass<T> implements MyInterface<T> {
 }
 
 abstract class MyAbstractClass2<T> implements MyInterface2<T> {
-	
+
 	public MyAbstractClass2() {
-		
+
 	}
 
 	@Override
@@ -93,21 +95,21 @@ abstract class MyAbstractClass2<T> implements MyInterface2<T> {
 	public void overloaded(Date arg) {
 		overloaded(2, null);
 	}
-	
+
 	@Override
 	public void overloaded(int i, T arg) {
 	}
-	
+
 	@Override
 	public void a() {
 		a(0);
 	}
-	
+
 	@Override
 	public void a(int i) {
 		WrongOverloadWithInheritance.trace.push("a");
 	}
-	
+
 }
 
 class MyFinalClass<T> extends MyAbstractClass<T> implements MyInterface2<T> {
@@ -119,11 +121,11 @@ class MyFinalClass<T> extends MyAbstractClass<T> implements MyInterface2<T> {
 	public MyFinalClass(int i) {
 		WrongOverloadWithInheritance.trace.push("0-" + i);
 	}
-	
+
 	public void overloaded2() {
 		overloaded2(5);
 	}
-	
+
 	@Override
 	public void overloaded(int i, T arg) {
 		m2();
@@ -146,6 +148,44 @@ class SubClass3 extends MyFinalClass<String> {
 	@Override
 	public void overloaded(int i, String arg) {
 		m2();
+	}
+
+}
+
+class Test1 {
+
+	public void o1(Date date, double d) {
+		WrongOverloadWithInheritance.trace.push("test1");
+	}
+
+	public void o2(Date date) {
+		WrongOverloadWithInheritance.trace.push("test1");
+	}
+	
+}
+
+class Test2 extends Test1 {
+
+	public void o1(Date date) {
+		WrongOverloadWithInheritance.trace.push("test2");
+	}
+
+	public void o2(Date date, double d) {
+		WrongOverloadWithInheritance.trace.push("test2");
+	}
+	
+}
+
+interface IRoot {
+	
+	void mRoot(int i, int j);
+	
+}
+
+abstract class AbstractRoot implements IRoot {
+	
+	public void mRoot(int i) {
+		WrongOverloadWithInheritance.trace.push("m");
 	}
 	
 }

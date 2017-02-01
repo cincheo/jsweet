@@ -1330,6 +1330,8 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 		}
 	}
 
+	private boolean printCoreMethodDelegate = false;
+
 	@Override
 	public void visitMethodDef(JCMethodDecl methodDecl) {
 		if (context.hasAnnotationType(methodDecl.sym, JSweetConfig.ANNOTATION_ERASED)) {
@@ -1369,22 +1371,32 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 			inOverload = overload != null && overload.methods.size() > 1;
 			if (inOverload) {
 				if (!overload.isValid) {
-					if (overload.coreMethod.equals(methodDecl)) {
-						inCoreWrongOverload = true;
-					} else {
-						if (methodDecl.sym.isConstructor()) {
-							return;
-						}
-						if (!overload.printed && overload.coreMethod.sym.getEnclosingElement() != parent.sym && !Util
-								.isParent(parent.sym, (ClassSymbol) overload.coreMethod.sym.getEnclosingElement())) {
-							visitMethodDef(overload.coreMethod);
-							overload.printed = true;
-							if (!context.isInterface(parent.sym)) {
+					if (!printCoreMethodDelegate) {
+						if (overload.coreMethod.equals(methodDecl)) {
+							inCoreWrongOverload = true;
+							if (!context.isInterface(parent.sym) && !methodDecl.sym.isConstructor()
+									&& parent.sym.equals(overload.coreMethod.sym.getEnclosingElement())) {
+								printCoreMethodDelegate = true;
+								visitMethodDef(overload.coreMethod);
 								println().println().printIndent();
+								printCoreMethodDelegate = false;
 							}
-						}
-						if (context.isInterface(parent.sym)) {
-							return;
+						} else {
+							if (methodDecl.sym.isConstructor()) {
+								return;
+							}
+							if (!overload.printed && overload.coreMethod.sym.getEnclosingElement() != parent.sym
+									&& !overload.coreMethod.sym.getModifiers().contains(
+											Modifier.ABSTRACT)) {
+								visitMethodDef(overload.coreMethod);
+								overload.printed = true;
+								if (!context.isInterface(parent.sym)) {
+									println().println().printIndent();
+								}
+							}
+							if (context.isInterface(parent.sym)) {
+								return;
+							}
 						}
 					}
 				} else {
@@ -1666,11 +1678,6 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 						if (!Util.isParent(parent.sym, (ClassSymbol) method.sym.getEnclosingElement())) {
 							continue;
 						}
-						if (parent.sym != method.sym.getEnclosingElement()
-								&& context.getOverload((ClassSymbol) method.sym.getEnclosingElement(),
-										method.sym).coreMethod == method) {
-							continue;
-						}
 						if (wasPrinted) {
 							print(" else ");
 						}
@@ -1678,28 +1685,45 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 						print("if(");
 						printMethodParamsTest(overload, method);
 						print(") ");
-						if (i == 0 || method.sym.isConstructor()) {
+						if (method.sym.isConstructor()) {
 							printInlinedMethod(overload, method, methodDecl.getParameters());
 						} else {
-							print("{").println().startIndent().printIndent();
-							// temporary cast to any because of Java generics
-							// bug
-							print("return <any>");
-							if (method.sym.isStatic()) {
-								print(getQualifiedTypeName(parent.sym, false).toString());
+							if (parent.sym != method.sym.getEnclosingElement()
+									&& context.getOverload((ClassSymbol) method.sym.getEnclosingElement(),
+											method.sym).coreMethod == method) {
+								print("{").println().startIndent().printIndent()
+										.print("super." + getTSMethodName(methodDecl) + "(");
+								for (int j = 0; j < method.getParameters().size(); j++) {
+									print(avoidJSKeyword(overload.coreMethod.getParameters().get(j).name.toString()))
+											.print(", ");
+								}
+								if (!method.getParameters().isEmpty()) {
+									removeLastChars(2);
+								}
+								print(");");
+								println().endIndent().printIndent().print("}");
 							} else {
-								print("this");
+								print("{").println().startIndent().printIndent();
+								// temporary cast to any because of Java
+								// generics
+								// bug
+								print("return <any>");
+								if (method.sym.isStatic()) {
+									print(getQualifiedTypeName(parent.sym, false).toString());
+								} else {
+									print("this");
+								}
+								print(".").print(getOverloadMethodName(method)).print("(");
+								for (int j = 0; j < method.getParameters().size(); j++) {
+									print(avoidJSKeyword(overload.coreMethod.getParameters().get(j).name.toString()))
+											.print(", ");
+								}
+								if (!method.getParameters().isEmpty()) {
+									removeLastChars(2);
+								}
+								print(");");
+								println().endIndent().printIndent().print("}");
 							}
-							print(".").print(getOverloadMethodName(method)).print("(");
-							for (int j = 0; j < method.getParameters().size(); j++) {
-								print(avoidJSKeyword(overload.coreMethod.getParameters().get(j).name.toString()))
-										.print(", ");
-							}
-							if (!method.getParameters().isEmpty()) {
-								removeLastChars(2);
-							}
-							print(");");
-							println().endIndent().printIndent().print("}");
 						}
 					}
 					print(" else throw new Error('invalid overload');");
