@@ -188,8 +188,14 @@ public class RemoveJavaDependenciesAdapter<C extends JSweetContext> extends Java
 					return true;
 				case "toArray":
 					printMacroName(targetMethodName);
-					print(fieldAccess.getExpression());
-					return true;
+					if (invocation.args.length() == 1) {
+						print("((a1, a2) => { if(a1.length >= a2.length) { a1.length=0; a1.push.apply(a1, a2); return a1; } else { return a2.slice(0); } })(")
+								.print(invocation.args.head).print(", ").print(fieldAccess.getExpression()).print(")");
+						return true;
+					} else {
+						print(fieldAccess.getExpression()).print(".slice(0)");
+						return true;
+					}
 				case "elements":
 					printMacroName(targetMethodName);
 					getPrinter()

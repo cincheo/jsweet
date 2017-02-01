@@ -175,11 +175,17 @@ public class Collections implements Cloneable, Serializable {
 		trace.push("" + (java.util.Arrays.deepEquals(points1, points2)));
 
 		List<String> l3 = Arrays.asList(a3);
-		
+
 		java.util.Collections.sort(l3);
 
 		java.util.Collections.sort(l3, c);
-		
+
+		String[] array1 = new String[l3.size()];
+
+		l3.toArray(array1);
+
+		trace.push("[" + array1 + "]");
+
 		$export("trace", trace.join(","));
 
 	}
