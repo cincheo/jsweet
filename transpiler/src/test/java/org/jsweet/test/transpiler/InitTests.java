@@ -181,7 +181,7 @@ public class InitTests extends AbstractTest {
 	public void testArrayNew() {
 		eval(ModuleKind.none, (logHandler, result) -> {
 			logHandler.assertReportedProblems();
-			assertEquals("..........", result.get("result"));
+			assertEquals("0,0,0,0,0,0,0,0,0,0,", result.get("result"));
 		}, getSourceFile(ArrayNew.class));
 	}
 

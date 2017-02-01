@@ -1386,8 +1386,7 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 								return;
 							}
 							if (!overload.printed && overload.coreMethod.sym.getEnclosingElement() != parent.sym
-									&& !overload.coreMethod.sym.getModifiers().contains(
-											Modifier.ABSTRACT)) {
+									&& !overload.coreMethod.sym.getModifiers().contains(Modifier.ABSTRACT)) {
 								visitMethodDef(overload.coreMethod);
 								overload.printed = true;
 								if (!context.isInterface(parent.sym)) {
@@ -3406,11 +3405,27 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 		}
 		if (newArray.dims != null && !newArray.dims.isEmpty()) {
 			if (newArray.dims.size() == 1) {
-				print("new Array(").print(newArray.dims.head).print(")");
+				if (Util.isNumber(newArray.elemtype.type)) {
+					if (newArray.dims.head instanceof JCLiteral
+							&& ((int) ((JCLiteral) newArray.dims.head).value) <= 10) {
+						print("[");
+						for (int i = 0; i < (int) ((JCLiteral) newArray.dims.head).value; i++) {
+							print("0, ");
+						}
+						removeLastChars(2);
+						print("]");
+					} else {
+						print("(s => { let a=[]; while(s-->0) a.push(0); return a; })(").print(newArray.dims.head)
+								.print(")");
+					}
+				} else {
+					print("new Array(").print(newArray.dims.head).print(")");
+				}
 			} else {
 				print("<any> (function(dims) { " + VAR_DECL_KEYWORD
-						+ " allocate = function(dims) { if(dims.length==0) { return undefined; } else { "
-						+ VAR_DECL_KEYWORD + " array = []; for(" + VAR_DECL_KEYWORD
+						+ " allocate = function(dims) { if(dims.length==0) { return "
+						+ (Util.isNumber(newArray.elemtype.type) ? "0" : "undefined") + "; } else { " + VAR_DECL_KEYWORD
+						+ " array = []; for(" + VAR_DECL_KEYWORD
 						+ " i = 0; i < dims[0]; i++) { array.push(allocate(dims.slice(1))); } return array; }}; return allocate(dims);})");
 				print("([");
 				printArgList(newArray.dims);
