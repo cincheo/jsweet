@@ -27,11 +27,17 @@ public interface WrongOverloadsWithNonCoreMethod {
 	public static void main(String[] args) {
 		WrongOverloadsWithNonCoreMethod i = new SubClass2();
 		i.draw();
+		i.m(new double[0]);
+		i.m(new float[0]);
 		$export("trace", trace.join(","));
 	}
 
 	void draw();
+	
+	void m(double[] a);
 
+	void m(float[] a);
+	
 }
 
 class SubClass2 implements WrongOverloadsWithNonCoreMethod {
@@ -45,6 +51,16 @@ class SubClass2 implements WrongOverloadsWithNonCoreMethod {
 		trace.push(s);
 	}
 
+	@Override
+	public void m(double[] a) {
+		trace.push("double1");
+	}
+
+	@Override
+	public void m(float[] a) {
+		trace.push("float1");
+	}
+	
 }
 
 class AbstractClass1 implements WrongOverloadsWithNonCoreMethod {
@@ -53,6 +69,16 @@ class AbstractClass1 implements WrongOverloadsWithNonCoreMethod {
 		trace.push("draw0");
 	}
 
+	@Override
+	public void m(double[] a) {
+		trace.push("double2");
+	}
+
+	@Override
+	public void m(float[] a) {
+		trace.push("float2");
+	}
+	
 }
 
 class SubClass4 extends AbstractClass1 {

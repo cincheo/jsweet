@@ -186,10 +186,19 @@ public class Collections implements Cloneable, Serializable {
 
 		trace.push("[" + array1 + "]");
 
+		Arrays.sort(array1, MyComparator);
+		
+		trace.push("[" + array1 + "]");
+
 		$export("trace", trace.join(","));
 
 	}
 
+	private static Comparator MyComparator = new Comparator() {
+		public int compare(Object o1, Object o2) {
+			return o2.toString().compareTo(o1.toString());
+		}
+	};	
 }
 
 class TestClone {
@@ -200,3 +209,5 @@ class TestClone {
 	}
 
 }
+
+

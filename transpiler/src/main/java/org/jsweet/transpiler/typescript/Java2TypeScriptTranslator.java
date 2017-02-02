@@ -945,6 +945,7 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 							}
 						}
 					}
+
 					if (printDefaultImplementation) {
 						Overload o = context.getOverload(classdecl.sym, meth);
 						if (o != null && o.methods.size() > 1 && !o.isValid) {
@@ -1238,7 +1239,7 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 						printArgList(newClass.args).print(")");
 						print(", ");
 					} catch (Exception e) {
-						System.out.println("");
+						logger.error(e.getMessage(), e);
 					}
 				}
 			}
@@ -1545,7 +1546,7 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 		}
 		if (parent == null || !context.hasAnnotationType(parent.sym, FunctionalInterface.class.getName())) {
 			if (inOverload && !overload.isValid && !inCoreWrongOverload) {
-				print(getOverloadMethodName(methodDecl));
+				print(getOverloadMethodName(methodDecl.sym));
 			} else {
 				print(getTSMethodName(methodDecl));
 			}
@@ -1712,7 +1713,7 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 								} else {
 									print("this");
 								}
-								print(".").print(getOverloadMethodName(method)).print("(");
+								print(".").print(getOverloadMethodName(method.sym)).print("(");
 								for (int j = 0; j < method.getParameters().size(); j++) {
 									print(avoidJSKeyword(overload.coreMethod.getParameters().get(j).name.toString()))
 											.print(", ");
@@ -1930,13 +1931,13 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 		println();
 	}
 
-	private String getOverloadMethodName(JCMethodDecl method) {
-		if (method.sym.isConstructor()) {
+	private String getOverloadMethodName(MethodSymbol method) {
+		if (method.isConstructor()) {
 			return "constructor";
 		}
-		StringBuilder sb = new StringBuilder(method.getName().toString());
+		StringBuilder sb = new StringBuilder(method.getSimpleName().toString());
 		sb.append("$");
-		for (JCVariableDecl p : method.getParameters()) {
+		for (VarSymbol p : method.getParameters()) {
 			sb.append(context.types.erasure(p.type).toString().replace('.', '_').replace("[]", "_A"));
 			sb.append("$");
 		}
@@ -2213,7 +2214,9 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 						print("new ").print(clazz.getSimpleName().toString()).print("(").printArgList(newClass.args)
 								.print(")");
 					} else {
-						print(varDecl.init);
+						if (!getAdapter().substituteAssignedExpression(varDecl.type, varDecl.init)) {
+							print(varDecl.init);
+						}
 					}
 					print("; ");
 				}
@@ -2591,7 +2594,19 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 							print(selected).print(".");
 						}
 						if (methSym != null) {
-							print(context.getActualName(methSym));
+							if (context.isInvalidOverload(methSym) && !methSym.getParameters().isEmpty()
+									&& !Util.hasTypeParameters(methSym) && !Util.hasVarargs(methSym)) {
+								if (methSym.getEnclosingElement().isInterface()) {
+									if (getLastPrintedChar() == '.') {
+										removeLastChar();
+									}
+									print("['" + getOverloadMethodName(methSym) + "']");
+								} else {
+									print(getOverloadMethodName(methSym));
+								}
+							} else {
+								print(context.getActualName(methSym));
+							}
 						} else {
 							print(inv.meth);
 						}
@@ -3408,11 +3423,15 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 				if (Util.isNumber(newArray.elemtype.type)) {
 					if (newArray.dims.head instanceof JCLiteral
 							&& ((int) ((JCLiteral) newArray.dims.head).value) <= 10) {
+						boolean hasElements = false;
 						print("[");
 						for (int i = 0; i < (int) ((JCLiteral) newArray.dims.head).value; i++) {
 							print("0, ");
+							hasElements = true;
 						}
-						removeLastChars(2);
+						if (hasElements) {
+							removeLastChars(2);
+						}
 						print("]");
 					} else {
 						print("(s => { let a=[]; while(s-->0) a.push(0); return a; })(").print(newArray.dims.head)
@@ -3869,7 +3888,12 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 							print(".length==0 || ");
 							print(exprStr, expr);
 							print("[0] == null ||");
-							printInstanceOf(exprStr, expr, t.elemtype, true);
+							if(t.elemtype instanceof ArrayType) {
+								print(exprStr, expr);
+								print("[0] instanceof Array");
+							} else {
+								printInstanceOf(exprStr, expr, t.elemtype, true);
+							}
 							print(")");
 						}
 					}

@@ -25,7 +25,7 @@ public class WrongOverloadWithSpecialParameters {
 		return 2;
 	}
 	
-	// TODO: this overload is hidden by the string overlead, so we should raise a warning!
+	// TODO: this overload is hidden by the string overload, so we should raise a warning!
 	public void m(char c) {
 		trace.push("m");
 		m(String.valueOf(c));

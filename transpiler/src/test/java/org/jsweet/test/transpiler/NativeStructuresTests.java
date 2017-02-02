@@ -16,6 +16,7 @@ import source.nativestructures.Maps;
 import source.nativestructures.NativeArrays;
 import source.nativestructures.NativeStringBuilder;
 import source.nativestructures.NativeSystem;
+import source.nativestructures.OverloadWithNative;
 import source.nativestructures.WeakReferences;
 
 public class NativeStructuresTests extends AbstractTest {
@@ -35,7 +36,7 @@ public class NativeStructuresTests extends AbstractTest {
 		eval((logHandler, result) -> {
 			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
 			assertEquals(
-					"1,a,1,b,3,4,d,a,d,0,0,0,a,a,2,a,true,false,3,c,c,a,b,c,a,b,c,b,1,c,b,a,b,c,a,0,true,true,it,true,1,[a,b,c],0,false,true,[a,b,c]",
+					"1,a,1,b,3,4,d,a,d,0,0,0,a,a,2,a,true,false,3,c,c,a,b,c,a,b,c,b,1,c,b,a,b,c,a,0,true,true,it,true,1,[a,b,c],0,false,true,[a,b,c],[c,b,a]",
 					result.get("trace"));
 		}, getSourceFile(Collections.class));
 	}
@@ -56,6 +57,14 @@ public class NativeStructuresTests extends AbstractTest {
 		}, getSourceFile(WeakReferences.class));
 	}
 
+	@Test
+	public void testOverloadWithNative() {
+		eval((logHandler, result) -> {
+			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+			assertEquals("1,2", result.get("trace"));
+		}, getSourceFile(OverloadWithNative.class));
+	}
+	
 	@Test
 	public void testExceptions() {
 		eval((logHandler, result) -> {

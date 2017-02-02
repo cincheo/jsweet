@@ -161,7 +161,7 @@ class Test1 {
 	public void o2(Date date) {
 		WrongOverloadWithInheritance.trace.push("test1");
 	}
-	
+
 }
 
 class Test2 extends Test1 {
@@ -173,19 +173,33 @@ class Test2 extends Test1 {
 	public void o2(Date date, double d) {
 		WrongOverloadWithInheritance.trace.push("test2");
 	}
-	
+
+}
+
+class Point {
+	public int x;
+	public int y;
 }
 
 interface IRoot {
-	
+
 	void mRoot(int i, int j);
-	
+
+	void contains(Point p);
+
+	void contains(int x, int y);
+
 }
 
 abstract class AbstractRoot implements IRoot {
-	
+
 	public void mRoot(int i) {
 		WrongOverloadWithInheritance.trace.push("m");
 	}
-	
+
+	@Override
+	public void contains(Point p) {
+		contains(p.x, p.y);
+	}
+
 }

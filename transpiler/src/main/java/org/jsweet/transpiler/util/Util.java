@@ -56,6 +56,7 @@ import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.MethodType;
+import com.sun.tools.javac.code.Type.TypeVar;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.file.JavacFileManager;
 import com.sun.tools.javac.tree.JCTree;
@@ -827,11 +828,12 @@ public class Util {
 	/**
 	 * Looks up a class in the given class hierarchy and returns true if found.
 	 */
-	public static boolean isParent(ClassSymbol clazz, ClassSymbol toFind) {
-		if (clazz == null) {
+	public static boolean isParent(TypeSymbol type, TypeSymbol toFind) {
+		if (!(type instanceof ClassSymbol)) {
 			return false;
 		}
-		if (clazz == toFind) {
+		ClassSymbol clazz = (ClassSymbol) type;
+		if (clazz.equals(toFind)) {
 			return true;
 		}
 		if (isParent((ClassSymbol) clazz.getSuperclass().tsym, toFind)) {
@@ -894,6 +896,20 @@ public class Util {
 	public static boolean hasVarargs(MethodSymbol methodSymbol) {
 		return methodSymbol != null && methodSymbol.getParameters().length() > 0
 				&& (methodSymbol.flags() & Flags.VARARGS) != 0;
+	}
+
+	/**
+	 * Tells if the method uses a type parameter.
+	 */
+	public static boolean hasTypeParameters(MethodSymbol methodSymbol) {
+		if (methodSymbol != null && methodSymbol.getParameters().length() > 0) {
+			for (VarSymbol p : methodSymbol.getParameters()) {
+				if (p.type instanceof TypeVar) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	/**

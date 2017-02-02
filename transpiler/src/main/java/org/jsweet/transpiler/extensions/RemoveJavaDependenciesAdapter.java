@@ -48,6 +48,7 @@ import org.jsweet.transpiler.util.Util;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCEnhancedForLoop;
@@ -66,32 +67,35 @@ import com.sun.tools.javac.tree.JCTree.JCTypeApply;
  */
 public class RemoveJavaDependenciesAdapter<C extends JSweetContext> extends Java2TypeScriptAdapter<C> {
 
+	protected Map<String, String> extTypesMapping = new HashMap<>();
+
 	public RemoveJavaDependenciesAdapter(C context) {
 		super(context);
-		typesMapping.put(List.class.getName(), "Array");
-		typesMapping.put(ArrayList.class.getName(), "Array");
-		typesMapping.put(Collection.class.getName(), "Array");
-		typesMapping.put(Set.class.getName(), "Array");
-		typesMapping.put(HashSet.class.getName(), "Array");
-		typesMapping.put(TreeSet.class.getName(), "Array");
-		typesMapping.put(Vector.class.getName(), "Array");
-		typesMapping.put(Enumeration.class.getName(), "any");
-		typesMapping.put(Iterator.class.getName(), "any");
-		typesMapping.put(Map.class.getName(), "Object");
-		typesMapping.put(HashMap.class.getName(), "Object");
-		typesMapping.put(WeakHashMap.class.getName(), "Object");
-		typesMapping.put(Hashtable.class.getName(), "Object");
-		typesMapping.put(Comparator.class.getName(), "any");
-		typesMapping.put(Exception.class.getName(), "Error");
-		typesMapping.put(RuntimeException.class.getName(), "Error");
-		typesMapping.put(Throwable.class.getName(), "Error");
-		typesMapping.put(Error.class.getName(), "Error");
-		typesMapping.put(StringBuffer.class.getName(), "{ str: string }");
-		typesMapping.put(StringBuilder.class.getName(), "{ str: string }");
-		typesMapping.put(Collator.class.getName(), "any");
-		typesMapping.put(Calendar.class.getName(), "Date");
-		typesMapping.put(GregorianCalendar.class.getName(), "Date");
-		typesMapping.put(TimeZone.class.getName(), "string");
+		extTypesMapping.put(List.class.getName(), "Array");
+		extTypesMapping.put(ArrayList.class.getName(), "Array");
+		extTypesMapping.put(Collection.class.getName(), "Array");
+		extTypesMapping.put(Set.class.getName(), "Array");
+		extTypesMapping.put(HashSet.class.getName(), "Array");
+		extTypesMapping.put(TreeSet.class.getName(), "Array");
+		extTypesMapping.put(Vector.class.getName(), "Array");
+		extTypesMapping.put(Enumeration.class.getName(), "any");
+		extTypesMapping.put(Iterator.class.getName(), "any");
+		extTypesMapping.put(Map.class.getName(), "Object");
+		extTypesMapping.put(HashMap.class.getName(), "Object");
+		extTypesMapping.put(WeakHashMap.class.getName(), "Object");
+		extTypesMapping.put(Hashtable.class.getName(), "Object");
+		extTypesMapping.put(Comparator.class.getName(), "any");
+		extTypesMapping.put(Exception.class.getName(), "Error");
+		extTypesMapping.put(RuntimeException.class.getName(), "Error");
+		extTypesMapping.put(Throwable.class.getName(), "Error");
+		extTypesMapping.put(Error.class.getName(), "Error");
+		extTypesMapping.put(StringBuffer.class.getName(), "{ str: string }");
+		extTypesMapping.put(StringBuilder.class.getName(), "{ str: string }");
+		extTypesMapping.put(Collator.class.getName(), "any");
+		extTypesMapping.put(Calendar.class.getName(), "Date");
+		extTypesMapping.put(GregorianCalendar.class.getName(), "Date");
+		extTypesMapping.put(TimeZone.class.getName(), "string");
+		typesMapping.putAll(extTypesMapping);
 		complexTypesMapping
 				.add((typeTree,
 						name) -> name.startsWith("java.")
@@ -301,7 +305,11 @@ public class RemoveJavaDependenciesAdapter<C extends JSweetContext> extends Java
 				switch (targetMethodName) {
 				case "asList":
 					printMacroName(targetMethodName);
-					printArgList(invocation.args).print(".slice(0)");
+					if (invocation.args.size() == 1 && invocation.args.head.type instanceof ArrayType) {
+						printArgList(invocation.args).print(".slice(0)");
+					} else {
+						print("[").printArgList(invocation.args).print("]");
+					}
 					return true;
 				case "copyOf":
 					printMacroName(targetMethodName);
@@ -310,7 +318,7 @@ public class RemoveJavaDependenciesAdapter<C extends JSweetContext> extends Java
 				case "equals":
 					printMacroName(targetMethodName);
 					getPrinter()
-							.print("((a1, a2) => { if(a1.length != a2.length) return false; for(let i = 0; i < a1.length; i++) { if(<any>a1[i] != <any>a2[i]) return false; } return true; })(")
+							.print("((a1, a2) => { if(a1==null && a2==null) return true; if(a1==null || a2==null) return false; if(a1.length != a2.length) return false; for(let i = 0; i < a1.length; i++) { if(<any>a1[i] != <any>a2[i]) return false; } return true; })(")
 							.printArgList(invocation.args).print(")");
 					return true;
 				case "deepEquals":
@@ -662,8 +670,8 @@ public class RemoveJavaDependenciesAdapter<C extends JSweetContext> extends Java
 
 	@Override
 	public boolean substituteInstanceof(String exprStr, JCTree expr, Type type) {
-		if (type.tsym.getQualifiedName().toString().startsWith("java.")
-				&& context.types.isSubtype(type, context.symtab.throwableType)) {
+		String typeName = type.tsym.getQualifiedName().toString();
+		if (typeName.startsWith("java.") && context.types.isSubtype(type, context.symtab.throwableType)) {
 			print(exprStr, expr);
 			print(" != null && ");
 			print("(");
@@ -672,6 +680,29 @@ public class RemoveJavaDependenciesAdapter<C extends JSweetContext> extends Java
 					.print("\"" + type.tsym.getQualifiedName().toString() + "\"");
 			print(")");
 			return true;
+		}
+		String mappedType = extTypesMapping.get(typeName);
+		if ("string".equals(mappedType)) {
+			mappedType = "String";
+		}
+		if ("any".equals(mappedType)) {
+			mappedType = "Object";
+		}
+		if (mappedType != null) {
+			if ("String".equals(mappedType)) {
+				print("typeof ");
+				print(exprStr, expr);
+				print(" === ").print("'string'");
+				return true;
+			} else {
+				print(exprStr, expr);
+				print(" != null && ");
+				print("(");
+				print(exprStr, expr);
+				print(" instanceof " + mappedType);
+				print(")");
+				return true;
+			}
 		}
 
 		return super.substituteInstanceof(exprStr, expr, type);

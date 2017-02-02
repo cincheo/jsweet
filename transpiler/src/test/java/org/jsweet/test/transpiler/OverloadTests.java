@@ -86,7 +86,7 @@ public class OverloadTests extends AbstractTest {
 	public void testWrongOverloadsWithNonCoreMethod() {
 		eval((logHandler, r) -> {
 			logHandler.assertReportedProblems();
-			assertEquals("draw0,draw1", r.get("trace"));
+			assertEquals("draw0,draw1,double1,float1", r.get("trace"));
 		}, getSourceFile(WrongOverloadsWithNonCoreMethod.class));
 	}
 
@@ -171,7 +171,7 @@ public class OverloadTests extends AbstractTest {
 	public void testWrongOverloadWithSpecialParameters() {
 		eval(ModuleKind.none, (logHandler, r) -> {
 			logHandler.assertReportedProblems();
-			assertEquals("m,m,read1,read2", r.get("trace"));
+			assertEquals("m,m,m,read1,read2", r.get("trace"));
 		}, getSourceFile(WrongOverloadWithSpecialParameters.class));
 	}
 
