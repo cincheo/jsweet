@@ -206,7 +206,7 @@ public class SyntaxTests extends AbstractTest {
 	public void testLambdasWithInterfaces() {
 		eval((logHandler, r) -> {
 			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-			assertEquals("ok1,ok2,ok3,ok4", r.get("trace"));
+			assertEquals("ok1,ok2,ok3,ok4,ok5", r.get("trace"));
 		}, getSourceFile(LambdasWithInterfaces.class));
 	}
 

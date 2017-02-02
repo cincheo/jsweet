@@ -8,6 +8,8 @@ public class LambdasWithInterfaces {
 
 	static Array<String> trace = new Array<String>();
 
+    private final String result = "ok5";
+
 	public static void main(String[] args) {
 		new LambdasWithInterfaces().handler(new ANonFunctionalInterface2() {
 
@@ -25,6 +27,7 @@ public class LambdasWithInterfaces {
 		new LambdasWithInterfaces().handler4(() -> {
 			trace.push("ok4");
 		});
+        new LambdasWithInterfaces().test5();
 		$export("trace", trace.join(","));
 	}
 
@@ -37,6 +40,11 @@ public class LambdasWithInterfaces {
 	}
 
 	public void handler4(AFunctionalInterface4 i) {
+		i.m();
+	}
+
+	public void test5() {
+        ClosureOverFieldInterface5 i = () -> trace.push(result);
 		i.m();
 	}
 
@@ -53,4 +61,8 @@ interface AFunctionalInterface3 {
 @FunctionalInterface
 interface AFunctionalInterface4 {
 	void m();
+}
+
+interface ClosureOverFieldInterface5 {
+    void m();
 }
