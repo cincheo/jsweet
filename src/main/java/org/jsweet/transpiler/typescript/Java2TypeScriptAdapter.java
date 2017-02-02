@@ -1427,8 +1427,10 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 				if (assignedType.tsym.isInterface() && !Util.isFunctionalType(assignedType.tsym)) {
 					JCLambda lambda = (JCLambda) expression;
 					MethodSymbol method = (MethodSymbol) assignedType.tsym.getEnclosedElements().get(0);
-					getPrinter().print("(() => { " + VAR_DECL_KEYWORD + " f = function() { this." + method.getSimpleName() + " = ").print(lambda);
-					getPrinter().print("}; return new f(); })()");
+					getPrinter().print("(() => { ");
+					getPrinter().print(VAR_DECL_KEYWORD + " v = ").print(lambda).print(";");
+					getPrinter().print(VAR_DECL_KEYWORD + " f = function() { this." + method.getSimpleName() + " = v; };");
+					getPrinter().print("return new f(); })()");
 					return true;
 				}
 			} else if (expression instanceof JCNewClass) {
