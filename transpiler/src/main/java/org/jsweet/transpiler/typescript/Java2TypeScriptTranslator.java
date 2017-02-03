@@ -2684,6 +2684,9 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 					if (!getAdapter().substituteAssignedExpression(paramType, arg)) {
 						print(arg);
 					}
+				} else {
+					// this should never happen but we fall back just in case
+					print(arg);
 				}
 				if (i < argsLength - 1) {
 					print(", ");
@@ -3253,7 +3256,7 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 				|| Util.isComparisonOperator(binary.getKind());
 		if (charWrapping && binary.lhs.type.isPrimitive() && context.symtab.charType.tsym == binary.lhs.type.tsym
 				&& !(binary.rhs.type.tsym == context.symtab.stringType.tsym)) {
-			print("(").print(binary.lhs).print(").charCodeAt(0)");
+			print("(c => c.charCodeAt==null?c:c.charCodeAt(0))(").print(binary.lhs).print(")");
 		} else {
 			print(binary.lhs);
 		}
@@ -3268,14 +3271,14 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 			}
 		}
 		if ("==".equals(op) && !(Util.isNullLiteral(binary.lhs) || Util.isNullLiteral(binary.rhs))) {
-			op = "===";
+			op = charWrapping ? "==" : "===";
 		} else if ("!=".equals(op) && !(Util.isNullLiteral(binary.lhs) || Util.isNullLiteral(binary.rhs))) {
-			op = "!==";
+			op = charWrapping ? "!=" : "!==";
 		}
 		space().print(op).space();
 		if (charWrapping && binary.rhs.type.isPrimitive() && context.symtab.charType.tsym == binary.rhs.type.tsym
 				&& !(binary.lhs.type.tsym == context.symtab.stringType.tsym)) {
-			print("(").print(binary.rhs).print(").charCodeAt(0)");
+			print("(c => c.charCodeAt==null?c:c.charCodeAt(0))(").print(binary.rhs).print(")");
 		} else {
 			print(binary.rhs);
 		}
@@ -3888,7 +3891,7 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 							print(".length==0 || ");
 							print(exprStr, expr);
 							print("[0] == null ||");
-							if(t.elemtype instanceof ArrayType) {
+							if (t.elemtype instanceof ArrayType) {
 								print(exprStr, expr);
 								print("[0] instanceof Array");
 							} else {

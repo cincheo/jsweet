@@ -819,6 +819,8 @@ public class Util {
 		case GREATER_THAN_EQUAL:
 		case LESS_THAN:
 		case LESS_THAN_EQUAL:
+		case EQUAL_TO:
+		case NOT_EQUAL_TO:
 			return true;
 		default:
 			return false;
