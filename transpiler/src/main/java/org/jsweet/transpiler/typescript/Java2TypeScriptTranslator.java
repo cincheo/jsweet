@@ -357,14 +357,16 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 		}
 		context.importedTopPackages.clear();
 		context.rootPackages.add(rootPackage);
-		if (context.useModules && context.rootPackages.size() > 1) {
-			if (!context.reportedMultipleRootPackages) {
-				report(topLevel.getPackageName(), JSweetProblem.MULTIPLE_ROOT_PACKAGES_NOT_ALLOWED_WITH_MODULES,
-						context.rootPackages.toString());
-				context.reportedMultipleRootPackages = true;
-			}
-			return;
-		}
+		// TODO: check relaxing @Root
+		// if (context.useModules && context.rootPackages.size() > 1) {
+		// if (!context.reportedMultipleRootPackages) {
+		// report(topLevel.getPackageName(),
+		// JSweetProblem.MULTIPLE_ROOT_PACKAGES_NOT_ALLOWED_WITH_MODULES,
+		// context.rootPackages.toString());
+		// context.reportedMultipleRootPackages = true;
+		// }
+		// return;
+		// }
 
 		topLevelPackage = context.getTopLevelPackage(topLevel.packge);
 		if (topLevelPackage != null) {
@@ -2595,7 +2597,9 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 						}
 						if (methSym != null) {
 							if (context.isInvalidOverload(methSym) && !methSym.getParameters().isEmpty()
-									&& !Util.hasTypeParameters(methSym) && !Util.hasVarargs(methSym)) {
+									&& !Util.hasTypeParameters(methSym) && !Util.hasVarargs(methSym)
+									&& getParent(JCMethodDecl.class) != null
+									&& !getParent(JCMethodDecl.class).sym.isDefault()) {
 								if (methSym.getEnclosingElement().isInterface()) {
 									if (getLastPrintedChar() == '.') {
 										removeLastChar();
@@ -3254,9 +3258,15 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 		}
 		boolean charWrapping = Util.isArithmeticOperator(binary.getKind())
 				|| Util.isComparisonOperator(binary.getKind());
+		boolean actualCharWrapping = false;
 		if (charWrapping && binary.lhs.type.isPrimitive() && context.symtab.charType.tsym == binary.lhs.type.tsym
 				&& !(binary.rhs.type.tsym == context.symtab.stringType.tsym)) {
-			print("(c => c.charCodeAt==null?c:c.charCodeAt(0))(").print(binary.lhs).print(")");
+			actualCharWrapping = true;
+			if (binary.lhs instanceof JCLiteral) {
+				print(binary.lhs).print(".charCodeAt(0)");
+			} else {
+				print("(c => c.charCodeAt==null?<any>c:c.charCodeAt(0))(").print(binary.lhs).print(")");
+			}
 		} else {
 			print(binary.lhs);
 		}
@@ -3270,15 +3280,26 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 				op = "!==";
 			}
 		}
+		if ("==".equals(op) || "!=".equals(op)) {
+			if (charWrapping && binary.rhs.type.isPrimitive() && context.symtab.charType.tsym == binary.rhs.type.tsym
+					&& !(binary.lhs.type.tsym == context.symtab.stringType.tsym)) {
+				actualCharWrapping = true;
+			}
+		}
+
 		if ("==".equals(op) && !(Util.isNullLiteral(binary.lhs) || Util.isNullLiteral(binary.rhs))) {
-			op = charWrapping ? "==" : "===";
+			op = actualCharWrapping ? "==" : "===";
 		} else if ("!=".equals(op) && !(Util.isNullLiteral(binary.lhs) || Util.isNullLiteral(binary.rhs))) {
-			op = charWrapping ? "!=" : "!==";
+			op = actualCharWrapping ? "!=" : "!==";
 		}
 		space().print(op).space();
 		if (charWrapping && binary.rhs.type.isPrimitive() && context.symtab.charType.tsym == binary.rhs.type.tsym
 				&& !(binary.lhs.type.tsym == context.symtab.stringType.tsym)) {
-			print("(c => c.charCodeAt==null?c:c.charCodeAt(0))(").print(binary.rhs).print(")");
+			if (binary.rhs instanceof JCLiteral) {
+				print(binary.rhs).print(".charCodeAt(0)");
+			} else {
+				print("(c => c.charCodeAt==null?<any>c:c.charCodeAt(0))(").print(binary.rhs).print(")");
+			}
 		} else {
 			print(binary.rhs);
 		}

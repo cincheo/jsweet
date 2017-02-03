@@ -17,7 +17,6 @@
 package source.syntax;
 
 import static jsweet.util.Globals.$export;
-import static jsweet.util.Globals.string;
 
 import def.js.Array;
 
