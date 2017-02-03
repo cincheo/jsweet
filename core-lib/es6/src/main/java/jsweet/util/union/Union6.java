@@ -17,7 +17,7 @@
 package jsweet.util.union;
 
 /**
- * A helper interface for 3-element union types.
+ * A helper interface for 6-element union types.
  */
-public interface Union3<T1, T2, T3> extends Union<T1, T2> {
+public interface Union6<T1, T2, T3, T4, T5, T6> extends Union5<T1, T2, T3, T4, T5> {
 }

@@ -14,10 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jsweet.util.union;
+package jsweet.lang;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * A helper interface for 3-element union types.
+ * This annotation type is used on types that implement the
+ * <code>java.lang.Iterable</code> on syntactic purpose (i.e. to support the
+ * foreach loop). When annotated with this annotation, the
+ * <code>java.lang.Iterable</code> will be erased.
+ * 
+ * @author Renaud Pawlak
  */
-public interface Union3<T1, T2, T3> extends Union<T1, T2> {
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ ElementType.TYPE })
+@Documented
+public @interface SyntacticIterable {
 }

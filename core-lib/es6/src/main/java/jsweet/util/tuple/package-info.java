@@ -14,10 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jsweet.util.union;
-
 /**
- * A helper interface for 3-element union types.
+ * This package defines auxiliary types for <em>tuple types</em>.
+ * 
+ * <p>
+ * A tuple type is an array of which each element has a given type. See <em>tuple
+ * types</em> in TypeScript for more details.
+ * 
+ * @see java.lang.FunctionalInterface
  */
-public interface Union3<T1, T2, T3> extends Union<T1, T2> {
-}
+@jsweet.lang.Root
+package jsweet.util.tuple;

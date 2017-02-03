@@ -14,10 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jsweet.util.union;
+package jsweet.lang;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * A helper interface for 3-element union types.
+ * This annotation type is used on main methods that should not be called at
+ * initialization and are not actual entry points to the program.
  */
-public interface Union3<T1, T2, T3> extends Union<T1, T2> {
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ ElementType.METHOD })
+@Documented
+public @interface Disabled {
 }

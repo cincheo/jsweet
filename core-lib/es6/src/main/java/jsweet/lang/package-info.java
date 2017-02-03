@@ -14,10 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package jsweet.util.union;
-
 /**
- * A helper interface for 3-element union types.
+ * This package contains JSweet language elements (annotations) for extending
+ * the Java language for JavaScript support.
  */
-public interface Union3<T1, T2, T3> extends Union<T1, T2> {
-}
+package jsweet.lang;
