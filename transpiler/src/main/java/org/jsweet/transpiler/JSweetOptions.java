@@ -146,4 +146,10 @@ public interface JSweetOptions {
 	 */
 	boolean isGenerateDefinitions();
 
+	/**
+	 * If true, JSweet will ignore any message reported by TypeScript (including
+	 * error) and the compilation will be successful if no Java error is raised.
+	 */
+	boolean isIgnoreTypeScriptErrors();
+
 }

@@ -172,6 +172,7 @@ public class JSweetTranspiler<C extends JSweetContext> implements JSweetOptions 
 	private boolean generateDefinitions = false;
 	private ArrayList<File> jsLibFiles = new ArrayList<>();
 	private File sourceRoot = null;
+	private boolean ignoreTypeScriptErrors = false;
 
 	@Override
 	public String toString() {
@@ -1186,6 +1187,9 @@ public class JSweetTranspiler<C extends JSweetContext> implements JSweetOptions 
 			logger.info(line);
 			TscOutput output = parseTscOutput(line);
 			if (output.position != null) {
+				if (isIgnoreTypeScriptErrors()) {
+					return;
+				}
 				SourcePosition position = SourceFile.findOriginPosition(output.position, Arrays.asList(files));
 				if (position == null) {
 					transpilationHandler.report(JSweetProblem.INTERNAL_TSC_ERROR, output.position, output.message);
@@ -1209,7 +1213,7 @@ public class JSweetTranspiler<C extends JSweetContext> implements JSweetOptions 
 			onTsTranspilationCompleted(fullPass[0], transpilationHandler, files);
 			fullPass[0] = false;
 		}, () -> {
-			if (transpilationHandler.getProblemCount() == 0) {
+			if (!ignoreTypeScriptErrors && transpilationHandler.getProblemCount() == 0) {
 				transpilationHandler.report(JSweetProblem.INTERNAL_TSC_ERROR, null, "Unknown tsc error");
 			}
 		}, args);
@@ -1698,6 +1702,15 @@ public class JSweetTranspiler<C extends JSweetContext> implements JSweetOptions 
 	@Override
 	public Map<String, Map<String, Object>> getConfiguration() {
 		return configuration;
+	}
+
+	@Override
+	public boolean isIgnoreTypeScriptErrors() {
+		return ignoreTypeScriptErrors;
+	}
+
+	public void setIgnoreTypeScriptErrors(boolean ignoreTypeScriptErrors) {
+		this.ignoreTypeScriptErrors = ignoreTypeScriptErrors;
 	}
 
 }
