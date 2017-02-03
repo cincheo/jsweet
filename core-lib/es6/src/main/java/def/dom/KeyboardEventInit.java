@@ -1,0 +1,12 @@
+package def.dom;
+
+@jsweet.lang.Interface
+public abstract class KeyboardEventInit extends SharedKeyboardAndMouseEventInit {
+    @jsweet.lang.Optional
+    public java.lang.String key;
+    @jsweet.lang.Optional
+    public double location;
+    @jsweet.lang.Optional
+    public java.lang.Boolean repeat;
+}
+
