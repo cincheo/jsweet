@@ -7,7 +7,7 @@
 	</condition>
 
 	<target name="install-toolsjar">
-		<property name="lib.path" value="C:/Program Files/Java/jdk1.8.0_60/lib/tools.jar">
+		<property name="lib.path" value="${env.JAVA_HOME}/lib/tools.jar">
 		</property>
 		<echo>installing local tools.jar in local maven: ${lib.path}</echo>
 		<echo>Java home: ${env.JAVA_HOME}</echo>

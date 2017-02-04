@@ -1559,9 +1559,10 @@ public class Java2TypeScriptAdapter<C extends JSweetContext> extends AbstractPri
 				if (assignedType.tsym.isInterface() && !context.isFunctionalType(assignedType.tsym)) {
 					JCLambda lambda = (JCLambda) expression;
 					MethodSymbol method = (MethodSymbol) assignedType.tsym.getEnclosedElements().get(0);
-					print("(() => { " + VAR_DECL_KEYWORD + " f = function() { this." + method.getSimpleName() + " = ")
-							.print(lambda);
-					print("}; return new f(); })()");
+					print("(() => { ");
+					print(VAR_DECL_KEYWORD + " v = ").print(lambda).print(";");
+					print(VAR_DECL_KEYWORD + " f = function() { this." + method.getSimpleName() + " = v; };");
+					print("return new f(); })()");
 					return true;
 				}
 			} else if (expression instanceof JCNewClass) {
