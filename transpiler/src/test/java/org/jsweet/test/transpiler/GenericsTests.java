@@ -44,56 +44,56 @@ public class GenericsTests extends AbstractTest {
 	@Test
 	public void testWildcards() {
 		transpile(logHandler -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 		} , getSourceFile(Wildcards.class));
 	}
 
 	@Test
 	public void testGenericObjectStructure() {
 		transpile(logHandler -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 		} , getSourceFile(GenericObjectStructure.class));
 	}
 
 	@Test
 	public void testAddThisOnGenericMethods() {
 		transpile(logHandler -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 		} , getSourceFile(AddThisOnGenericMethods.class));
 	}
 
 	@Test
 	public void testInnerClassNotStatic() {
 		transpile(logHandler -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 		} , getSourceFile(InnerClassNotStatic.class));
 	}
 
 	@Test
 	public void testRawTypes() {
 		transpile(logHandler -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 		} , getSourceFile(RawTypes.class));
 	}
 
 	@Test
 	public void testAbstractClassAndOverride() {
 		transpile(logHandler -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 		} , getSourceFile(AbstractClassAndOverride.class));
 	}
 
 	@Test
 	public void testStaticAnonymousClass() {
 		transpile(logHandler -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 		} , getSourceFile(StaticAnonymousClass.class));
 	}
 
 	@Test
 	public void testInferenceWithClassParameter() {
 		transpile(logHandler -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 		} , getSourceFile(InferenceWithClassParameter.class));
 	}
 	

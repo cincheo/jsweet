@@ -26,7 +26,7 @@ public class DefinitionsTest extends AbstractTest {
 	public void testObjectType() {
 		transpiler.setGenerateDefinitions(true);
 		transpile(h -> {
-			h.assertReportedProblems();
+			h.assertNoProblems();
 		}, getSourceFile(ClassWithObjectType.class));
 		transpiler.setGenerateDefinitions(false);
 	}

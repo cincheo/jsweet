@@ -85,7 +85,7 @@ public class InitTests extends AbstractTest {
 	@Test
 	public void testOptionalField() {
 		transpile(logHandler -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 		}, getSourceFile(OptionalField.class));
 	}
 
@@ -107,7 +107,7 @@ public class InitTests extends AbstractTest {
 	@Test
 	public void testConstructors() {
 		eval(ModuleKind.none, (handler, result) -> {
-			handler.assertReportedProblems();
+			handler.assertNoProblems();
 			assertEquals("abc", result.get("v1"));
 			assertEquals("default", result.get("v2"));
 			assertEquals("test", result.get("v3"));
@@ -155,7 +155,7 @@ public class InitTests extends AbstractTest {
 	@Test
 	public void testClassWithInitializer() {
 		eval(ModuleKind.none, (handler, result) -> {
-			handler.assertReportedProblems();
+			handler.assertNoProblems();
 		}, getSourceFile(ClassWithInitializer.class));
 	}
 
@@ -180,7 +180,7 @@ public class InitTests extends AbstractTest {
 	@Test
 	public void testArrayNew() {
 		eval(ModuleKind.none, (logHandler, result) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 			assertEquals("0,0,0,0,0,0,0,0,0,0,", result.get("result"));
 		}, getSourceFile(ArrayNew.class));
 	}
@@ -188,7 +188,7 @@ public class InitTests extends AbstractTest {
 	@Test
 	public void testUntypedObject() {
 		eval(ModuleKind.none, (logHandler, result) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 
 			assertEquals(1, result.<Number> get("a").intValue());
 			assertEquals(true, result.<Boolean> get("b"));
@@ -209,7 +209,7 @@ public class InitTests extends AbstractTest {
 	@Test
 	public void testStaticFieldWithInnerClass() {
 		eval((h, r) -> {
-			h.assertReportedProblems();
+			h.assertNoProblems();
 		}, getSourceFile(StaticFieldWithInnerClass.class));
 	}
 

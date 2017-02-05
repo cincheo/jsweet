@@ -26,7 +26,7 @@ public class DecoratorTests extends AbstractTest {
 	@Test
 	public void testSimpleDecorator() {
 		transpile(ModuleKind.none, logHandler -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 		}, getSourceFile(SimpleDecorator.class));
 	}
 

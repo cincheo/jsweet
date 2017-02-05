@@ -73,7 +73,7 @@ public class ApiTests extends AbstractTest {
 	@Test
 	public void testJ4TSInvocations() {
 		transpile(ModuleKind.none, logHandler -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 		} , getSourceFile(J4TSInvocations.class));
 	}
 
@@ -132,14 +132,14 @@ public class ApiTests extends AbstractTest {
 	@Test
 	public void testErasingJava() {
 		transpile(logHandler -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 		} , getSourceFile(ErasingJava.class));
 	}
 
 	@Test
 	public void testStrings() {
 		eval(ModuleKind.none, (logHandler, r) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 			Assert.assertEquals("b,bc,c,bc,3,true,ab,32,b,0,false,true,source.api.Strings,Strings,abc,cdcdcd,true,false,true,false,true,true,false,a,aa", r.get("trace"));
 		} , getSourceFile(Strings.class));
 	}
@@ -147,14 +147,14 @@ public class ApiTests extends AbstractTest {
 	@Test
 	public void testNumbers() {
 		eval(ModuleKind.none, (logHandler, r) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 		} , getSourceFile(Numbers.class));
 	}
 
 	@Test
 	public void testArrayBuffers() {
 		eval(ModuleKind.none, (logHandler, r) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 			Assert.assertEquals("0,0,1", r.get("trace"));
 		} , getSourceFile(ArrayBuffers.class));
 	}
@@ -164,7 +164,7 @@ public class ApiTests extends AbstractTest {
 		transpiler.addJsLibFiles(new File(JSweetTranspiler.TMP_WORKING_DIR_NAME + "/candies/js/j4ts-0.4.0/bundle.js"));
 		try {
 			eval(ModuleKind.none, (logHandler, r) -> {
-				logHandler.assertReportedProblems();
+				logHandler.assertNoProblems();
 				Assert.assertEquals(30, (int) r.get("result"));
 				Assert.assertEquals(30, (int) r.get("result2"));
 			} , getSourceFile(ExpressionBuilderTest.class), getSourceFile(ExpressionBuilderTest2.class));

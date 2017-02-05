@@ -140,7 +140,7 @@ public class TranspilerTests extends AbstractTest {
 		assertFalse(ProcessUtil.isInstalledWithNpm("tsc"));
 		globalSetUp();
 		// transpiler.cleanWorkingDirectory();
-		transpile(ModuleKind.none, h -> h.assertReportedProblems(), getSourceFile(Overload.class));
+		transpile(ModuleKind.none, h -> h.assertNoProblems(), getSourceFile(Overload.class));
 	}
 
 	@Test
@@ -176,7 +176,7 @@ public class TranspilerTests extends AbstractTest {
 			transpile(ModuleKind.none, logHandler -> {
 
 				logger.info("transpilation finished: " + transpiler.getModuleKind());
-				logHandler.assertReportedProblems();
+				logHandler.assertNoProblems();
 				logger.info(sourceFiles[0].getSourceMap().toString());
 
 				assertEqualPositions(sourceFiles, sourceFiles[0], "angle += 0.05");
@@ -208,7 +208,7 @@ public class TranspilerTests extends AbstractTest {
 			transpile(logHandler -> {
 
 				logger.info("transpilation finished: " + transpiler.getModuleKind());
-				logHandler.assertReportedProblems();
+				logHandler.assertNoProblems();
 				logger.info(sourceFiles[11].getSourceMap().toString());
 
 				assertEqualPositions(sourceFiles, sourceFiles[0], " distance(");

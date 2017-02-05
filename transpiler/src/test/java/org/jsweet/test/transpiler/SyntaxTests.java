@@ -109,7 +109,7 @@ public class SyntaxTests extends AbstractTest {
 	@Test
 	public void testLabels() {
 		transpile((logHandler) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 		}, getSourceFile(Labels.class));
 	}
 
@@ -163,7 +163,7 @@ public class SyntaxTests extends AbstractTest {
 	@Test
 	public void testGlobalCastMethod() {
 		transpile((logHandler) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 		}, getSourceFile(GlobalsCastMethod.class));
 	}
 
@@ -187,7 +187,7 @@ public class SyntaxTests extends AbstractTest {
 	@Test
 	public void testLiterals() {
 		eval((logHandler, r) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 			Assert.assertEquals(1, r.<Number> get("l"));
 			Assert.assertEquals(1, r.<Number> get("f"));
 			Assert.assertEquals("c'est l'été!", r.<String> get("s"));
@@ -198,7 +198,7 @@ public class SyntaxTests extends AbstractTest {
 	@Test
 	public void testLooping() {
 		transpile((logHandler) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 		}, getSourceFile(Looping.class));
 	}
 

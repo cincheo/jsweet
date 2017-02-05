@@ -65,7 +65,7 @@ public class ThrowableTests extends AbstractTest {
 	@Test
 	public void testThrowables() {
 		eval((handler, result) -> {
-			handler.assertReportedProblems();
+			handler.assertNoProblems();
 			Assert.assertEquals(true, result.get("catch1"));
 			Assert.assertEquals(true, result.get("catch2"));
 			// the message is not passed to the error superclass...

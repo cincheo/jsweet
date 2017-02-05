@@ -51,7 +51,7 @@ public class OverloadTests extends AbstractTest {
 	@Test
 	public void testOverload() {
 		eval((logHandler, result) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 			assertEquals("default1", result.<String> get("res1"));
 			assertEquals("s11", result.<String> get("res2"));
 			assertEquals("s22", result.<String> get("res3"));
@@ -61,7 +61,7 @@ public class OverloadTests extends AbstractTest {
 	@Test
 	public void testWrongOverload() {
 		eval((logHandler, r) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 			assertEquals("1,2,3,4,5,6,7", r.get("trace"));
 		}, getSourceFile(WrongOverload.class));
 	}
@@ -69,7 +69,7 @@ public class OverloadTests extends AbstractTest {
 	@Test
 	public void testWrongOverloads() {
 		eval((logHandler, r) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 			assertEquals("1,5,2,3,2,4,test5,tutu,2,4,1,tutu,6", r.get("trace"));
 		}, getSourceFile(WrongOverloads.class));
 	}
@@ -77,7 +77,7 @@ public class OverloadTests extends AbstractTest {
 	@Test
 	public void testWrongOverloadsWithDefaultMethods() {
 		eval((logHandler, r) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 			assertEquals("draw0,draw1", r.get("trace"));
 		}, getSourceFile(WrongOverloadsWithDefaultMethods.class));
 	}
@@ -85,7 +85,7 @@ public class OverloadTests extends AbstractTest {
 	@Test
 	public void testWrongOverloadsWithNonCoreMethod() {
 		eval((logHandler, r) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 			assertEquals("draw0,draw1,double1,float1", r.get("trace"));
 		}, getSourceFile(WrongOverloadsWithNonCoreMethod.class));
 	}
@@ -93,28 +93,28 @@ public class OverloadTests extends AbstractTest {
 	@Test
 	public void testOverloadInInnerClass() {
 		transpile(ModuleKind.none, (logHandler) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 		}, getSourceFile(OverloadInInnerClass.class));
 	}
 
 	@Test
 	public void testWrongOverloadInInnerClass() {
 		transpile(ModuleKind.none, (logHandler) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 		}, getSourceFile(WrongOverloadInInnerClass.class));
 	}
 
 	@Test
 	public void testWrongOverloadWithArraysAndObjects() {
 		eval((logHandler, r) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 		}, getSourceFile(WrongOverloadWithArraysAndObjects.class));
 	}
 
 	@Test
 	public void testWrongOverloadWithGenerics() {
 		eval((logHandler, r) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 			assertEquals("1,2,3,4", r.get("trace"));
 		}, getSourceFile(WrongOverloadWithGenerics.class));
 	}
@@ -122,7 +122,7 @@ public class OverloadTests extends AbstractTest {
 	@Test
 	public void testWrongOverloadWithInheritance() {
 		eval((logHandler, r) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 			assertEquals("0-88,0-99,1-s1,m2,2-99-s2,3-true,m1,4,5-5,5-6,test2,test1", r.get("trace"));
 		}, getSourceFile(WrongOverloadWithInheritance.class));
 	}
@@ -130,7 +130,7 @@ public class OverloadTests extends AbstractTest {
 	@Test
 	public void testOverloadWithStaticAndInstanceMethods() {
 		eval((logHandler, r) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 			assertEquals(true, r.get("static"));
 			assertEquals(true, r.get("instance"));
 		}, getSourceFile(OverloadWithStaticAndInstanceMethods.class));
@@ -139,7 +139,7 @@ public class OverloadTests extends AbstractTest {
 	@Test
 	public void testWrongOverloadFrom2Interfaces() {
 		eval(ModuleKind.none, (logHandler, r) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 			assertEquals("remove1: abc,remove2: 1", r.get("trace"));
 		}, getSourceFile(WrongOverloadFrom2Interfaces.class));
 	}
@@ -147,21 +147,21 @@ public class OverloadTests extends AbstractTest {
 	@Test
 	public void testInterfaceInheritance() {
 		transpile(ModuleKind.none, (logHandler) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 		}, getSourceFile(InterfaceInheritance.class));
 	}
 
 	@Test
 	public void testNonPublicRootMethod() {
 		transpile(ModuleKind.none, (logHandler) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 		}, getSourceFile(NonPublicRootMethod.class));
 	}
 
 	@Test
 	public void testBasicOverride() {
 		eval(ModuleKind.none, (logHandler, r) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 			assertEquals("1-1-X,1-1-0,1-2-X,1-2-0,1-3-X,1-3-0,2-1-X,2-1-0,2-2-X,2-2-0,2-3-X,2-3-0,0-3-X",
 					r.get("trace"));
 		}, getSourceFile(BasicOverride.class));
@@ -170,7 +170,7 @@ public class OverloadTests extends AbstractTest {
 	@Test
 	public void testWrongOverloadWithSpecialParameters() {
 		eval(ModuleKind.none, (logHandler, r) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 			assertEquals("m,m,m,read1,read2", r.get("trace"));
 		}, getSourceFile(WrongOverloadWithSpecialParameters.class));
 	}
@@ -178,7 +178,7 @@ public class OverloadTests extends AbstractTest {
 	@Test
 	public void testWrongOverloadConstructorWithVarargs() {
 		eval(ModuleKind.none, (logHandler, r) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 			assertEquals("c11,t12,c13,t14", r.get("trace"));
 		}, getSourceFile(WrongOverloadConstructorWithVarargs.class));
 	}
@@ -186,7 +186,7 @@ public class OverloadTests extends AbstractTest {
 	@Test
 	public void testWrongOverloadConstructorWithParamNameCollision() {
 		eval(ModuleKind.none, (logHandler, r) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 			assertEquals("1,2,3,4,5,6,7", r.get("trace"));
 		}, getSourceFile(WrongOverloadConstructorWithParamNameCollision.class));
 	}
@@ -194,7 +194,7 @@ public class OverloadTests extends AbstractTest {
 	@Test
 	public void testConstructorOverloadWithFieldInitializer() {
 		eval(ModuleKind.none, (logHandler, r) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 			assertEquals("test,1", r.get("trace"));
 		}, getSourceFile(ConstructorOverloadWithFieldInitializer.class));
 	}
@@ -202,7 +202,7 @@ public class OverloadTests extends AbstractTest {
 	@Test
 	public void testConstructorOverloadWithArray() {
 		eval(ModuleKind.none, (logHandler, r) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 			assertTrue("1,2,3,4,3".equals(r.get("trace")) || "1,2,3,4,4".equals(r.get("trace")));
 		}, getSourceFile(ConstructorOverLoadWithArray.class));
 	}
@@ -210,14 +210,14 @@ public class OverloadTests extends AbstractTest {
 	@Test
 	public void testLocalVariablesNameCollision() {
 		eval(ModuleKind.none, (logHandler, r) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 		}, getSourceFile(LocalVariablesNameCollision.class));
 	}
 
 	@Test
 	public void testOverloadWithEnums() {
 		eval((logHandler, r) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 			assertEquals("1,2,3,4", r.get("trace"));
 		}, getSourceFile(OverloadWithEnums.class));
 	}
@@ -225,7 +225,7 @@ public class OverloadTests extends AbstractTest {
 	@Test
 	public void testOverloadWithInterfaces() {
 		eval((logHandler, r) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 			assertEquals("1,2,3,3", r.get("trace"));
 		}, getSourceFile(OverloadWithInterfaces.class));
 	}

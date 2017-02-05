@@ -71,7 +71,7 @@ public class RequireTests extends AbstractTest {
 	@Test
 	public void testClassImport() {
 		eval((logHandler, r) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 			assertTrue(r.get("mainInvoked"));
 			assertTrue(r.get("mInvoked"));
 		}, getSourceFile(A.class), getSourceFile(ClassImport.class));
@@ -80,7 +80,7 @@ public class RequireTests extends AbstractTest {
 	@Test
 	public void testBlocksgame() {
 		transpile(logHandler -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 		}, getSourceFile(Point.class), getSourceFile(Vector.class), getSourceFile(AnimatedElement.class), getSourceFile(Line.class),
 				getSourceFile(MobileElement.class), getSourceFile(Rectangle.class), getSourceFile(Direction.class), getSourceFile(Collisions.class),
 				getSourceFile(Ball.class), getSourceFile(Globals.class), getSourceFile(BlockElement.class), getSourceFile(Factory.class),
@@ -90,14 +90,14 @@ public class RequireTests extends AbstractTest {
 	@Test
 	public void testGlobalsImport() {
 		transpile(logHandler -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 		}, getSourceFile(source.require.globals.Globals.class), getSourceFile(GlobalsImport.class));
 	}
 
 	@Test
 	public void testImportsFromTopTevels() {
 		eval((logHandler, result) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 			assertTrue(result.get("mInvoked"));
 		}, getSourceFile(A.class), getSourceFile(TopLevel1.class), getSourceFile(TopLevel2.class));
 	}
@@ -105,7 +105,7 @@ public class RequireTests extends AbstractTest {
 	@Test
 	public void testImportsFromNonTopTevels() {
 		eval((logHandler, result) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 			assertTrue(result.get("mInvokedOnB1"));
 		}, getSourceFile(B1.class), getSourceFile(Use1.class), getSourceFile(Use2.class));
 	}
@@ -113,7 +113,7 @@ public class RequireTests extends AbstractTest {
 	@Test
 	public void testInnerClassAccess() {
 		eval(/*ModuleKind.commonjs, */(logHandler, result) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 		}, getSourceFile(Outer.class), getSourceFile(InnerClassAccess.class));
 	}
 

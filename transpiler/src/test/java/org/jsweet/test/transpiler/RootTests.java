@@ -55,7 +55,7 @@ public class RootTests extends AbstractTest {
 	@Test
 	public void testNoClassesInRootParent() {
 		transpile((logHandler) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 		}, getSourceFile(InvalidClassLocation.class), getSourceFile(NoClassesInRootParent.class));
 		transpiler.setNoRootDirectories(true);
 		transpile((logHandler) -> {
@@ -69,7 +69,7 @@ public class RootTests extends AbstractTest {
 	@Test
 	public void testNoRootInRoot() {
 		transpile((logHandler) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 		}, getSourceFile(NoRootInRoot.class));
 		transpiler.setNoRootDirectories(true);
 		transpile((logHandler) -> {
@@ -81,7 +81,7 @@ public class RootTests extends AbstractTest {
 	@Test
 	public void testAccessFromClassInRoot() {
 		transpile(ModuleKind.none, (logHandler) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 		}, getSourceFile(AccessFromClassInRoot.class), getSourceFile(A.class), getSourceFile(B.class));
 		transpile(ModuleKind.commonjs, (logHandler) -> {
 			logHandler.assertReportedProblems(/*JSweetProblem.MULTIPLE_ROOT_PACKAGES_NOT_ALLOWED_WITH_MODULES*/);

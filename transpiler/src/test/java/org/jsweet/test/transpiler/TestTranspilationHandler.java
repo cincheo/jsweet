@@ -45,6 +45,11 @@ public class TestTranspilationHandler extends ConsoleTranspilationHandler {
 		reportedSourcePositions.add(sourcePosition);
 	}
 
+	public void assertNoProblems() {
+		// assert 0 problems = empty problem list
+		assertReportedProblems();
+	}
+	
 	public void assertReportedProblems(JSweetProblem... expectedProblems) {
 		List<JSweetProblem> expectedProblemsList = Arrays.asList(expectedProblems);
 		assertEquals(expectedProblemsList, reportedProblems);

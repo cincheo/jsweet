@@ -98,7 +98,7 @@ public class TsComparisonTest extends AbstractTest {
 	@Test
 	public void otherThisExampleTest() {
 		eval(ModuleKind.none, (logHandler, r) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 			System.out.println("" + r.get("results"));
 			Assert.assertEquals("3,4,5", "" + r.get("results"));
 		}, getSourceFile(Globals.class), getSourceFile(OtherThisExample.class));

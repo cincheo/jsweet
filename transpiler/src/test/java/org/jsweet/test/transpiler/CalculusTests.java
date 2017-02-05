@@ -38,7 +38,7 @@ public class CalculusTests extends AbstractTest {
 		try {
 			TestTranspilationHandler logHandler = new TestTranspilationHandler();
 			EvaluationResult r = transpiler.eval("Java", logHandler, getSourceFile(Integers.class));
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 			Assert.assertEquals("3", r.get("i").toString());
 			Assert.assertEquals((Integer) 1, r.get("i1"));
 			Assert.assertEquals((Integer) 1, r.get("i2"));
@@ -52,7 +52,7 @@ public class CalculusTests extends AbstractTest {
 			fail("Exception occured while running test");
 		}
 		eval(ModuleKind.none, (logHandler, r) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 			Assert.assertEquals("3", r.get("i").toString());
 			Assert.assertEquals((Integer) 1, r.get("i1"));
 			Assert.assertEquals((Integer) 1, r.get("i2"));
@@ -67,7 +67,7 @@ public class CalculusTests extends AbstractTest {
 	@Test
 	public void testLongs() {
 		eval(ModuleKind.none, (logHandler, r) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 			Assert.assertEquals(r.get("t1").toString(), r.get("t2").toString());
 			Assert.assertEquals(0, (int) r.get("l"));
 			Assert.assertTrue((int) r.get("c") < 0);
@@ -77,7 +77,7 @@ public class CalculusTests extends AbstractTest {
 	@Test
 	public void testMathApi() {
 		eval(ModuleKind.none, (logHandler, r) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 
 			Assert.assertEquals(Math.E, (double) r.get("E"), 0.00001);
 			Assert.assertEquals(Math.PI, (double) r.get("PI"), 0.00001);
@@ -97,14 +97,14 @@ public class CalculusTests extends AbstractTest {
 	@Test
 	public void testOperators() {
 		transpile(ModuleKind.none, (logHandler) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 		}, getSourceFile(Operators.class));
 	}
 
 	@Test
 	public void testChars() {
 		eval(ModuleKind.none, (logHandler, r) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 			Assert.assertEquals("" + (char) (0x0030 + ((int) (5 * 10))), r.get("result"));
 		}, getSourceFile(Chars.class));
 	}
@@ -112,14 +112,14 @@ public class CalculusTests extends AbstractTest {
 	@Test
 	public void testNull() {
 		eval(ModuleKind.none, (logHandler, r) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 		}, getSourceFile(Null.class));
 	}
 
 	@Test
 	public void testNumbers() {
 		eval(ModuleKind.none, (logHandler, r) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 			Assert.assertTrue(r.get("NaN_test"));
 		}, getSourceFile(Numbers.class));
 	}

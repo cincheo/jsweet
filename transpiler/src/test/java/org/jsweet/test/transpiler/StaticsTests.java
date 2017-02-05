@@ -34,14 +34,14 @@ public class StaticsTests extends AbstractTest {
 	@Test
 	public void testInnerClasses() {
 		eval((h, r) -> {
-			h.assertReportedProblems();
+			h.assertNoProblems();
 		} , getSourceFile(InnerClasses.class));
 	}
 
 	@Test
 	public void testAnonymousClasses() {
 		eval((h, r) -> {
-			h.assertReportedProblems();
+			h.assertNoProblems();
 			Assert.assertTrue(r.get("m"));
 		} , getSourceFile(AnonymousClasses.class));
 	}
@@ -49,7 +49,7 @@ public class StaticsTests extends AbstractTest {
 	@Test
 	public void testClasses() {
 		eval((h, r) -> {
-			h.assertReportedProblems();
+			h.assertNoProblems();
 			Assert.assertEquals("name", r.get("name1"));
 			Assert.assertEquals("name", r.get("name2"));
 		} , getSourceFile(Classes.class));
@@ -58,7 +58,7 @@ public class StaticsTests extends AbstractTest {
 	@Test
 	public void testStaticInitializer() {
 		eval((h, r) -> {
-			h.assertReportedProblems();
+			h.assertNoProblems();
 			Assert.assertEquals(4, (int) r.get("result"));
 		} , getSourceFile(StaticInitializer.class));
 	}
@@ -66,7 +66,7 @@ public class StaticsTests extends AbstractTest {
 	@Test
 	public void testStaticInitializerWithNoFields() {
 		eval((h, r) -> {
-			h.assertReportedProblems();
+			h.assertNoProblems();
 			Assert.assertTrue(r.get("ok"));
 		} , getSourceFile(StaticInitializerWithNoFields.class));
 	}
@@ -74,7 +74,7 @@ public class StaticsTests extends AbstractTest {
 	@Test
 	public void testStaticsInInterfaces() {
 		eval((h, r) -> {
-			h.assertReportedProblems();
+			h.assertNoProblems();
 			Assert.assertEquals(1, (int)r.get("c1"));
 			Assert.assertEquals(2, (int)r.get("c2"));
 		} , getSourceFile(StaticsInInterfaces.class));

@@ -74,7 +74,7 @@ public class StructuralTests extends AbstractTest {
 	@Test
 	public void testNoNameClashesWithFields() {
 		eval((logHandler, r) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 			assertEquals(2, (int) r.get("v1"));
 			assertEquals(2, (int) r.get("v2"));
 			assertEquals(3, (int) r.get("v3"));
@@ -108,7 +108,7 @@ public class StructuralTests extends AbstractTest {
 	@Test
 	public void testInnerClass() {
 		eval((logHandler, r) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 			assertEquals("test1", r.get("value1"));
 			assertEquals("test2", r.get("value2"));
 			assertEquals("test3", r.get("value3"));
@@ -118,14 +118,14 @@ public class StructuralTests extends AbstractTest {
 	@Test
 	public void testInnerClassUse() {
 		transpile(logHandler -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 		}, getSourceFile(InnerClass.class), getSourceFile(Wrapping.class), getSourceFile(InnerClassUse.class));
 	}
 
 	@Test
 	public void testInnerClassNotStatic() {
 		eval((logHandler, r) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 			assertEquals("22abc,22a,22ABC,22a,22b,22c,22ABC,test22a,staticMethod", r.get("trace"));
 		}, getSourceFile(InnerClassNotStatic.class));
 	}
@@ -133,7 +133,7 @@ public class StructuralTests extends AbstractTest {
 	@Test
 	public void testAnonymousClasses() {
 		eval((logHandler, r) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 			assertEquals("test,22abcfinal", r.get("trace"));
 		}, getSourceFile(AnonymousClass.class));
 	}
@@ -141,7 +141,7 @@ public class StructuralTests extends AbstractTest {
 	@Test
 	public void testAnonymousClassForLambda() {
 		eval((logHandler, r) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 		}, getSourceFile(AnonymousClassForLambda.class));
 	}
 
@@ -198,7 +198,7 @@ public class StructuralTests extends AbstractTest {
 	@Test
 	public void testInstanceofForInterfaces() {
 		eval((logHandler, r) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 			Assert.assertEquals("1,2,1,3,4,5,6", r.get("trace"));
 		}, getSourceFile(InstanceofForInterfaces.class));
 	}
@@ -217,7 +217,7 @@ public class StructuralTests extends AbstractTest {
 	@Test
 	public void testNoGetSetInGlobalFunction() {
 		transpile(logHandler -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 		}, getSourceFile(GlobalFunctionGetSetDelete.class));
 	}
 
@@ -252,7 +252,7 @@ public class StructuralTests extends AbstractTest {
 	@Test
 	public void testName() {
 		transpile((logHandler) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 		}, getSourceFile(Name.class));
 	}
 
@@ -288,7 +288,7 @@ public class StructuralTests extends AbstractTest {
 	@Test
 	public void testObjectTypes() {
 		transpile(logHandler -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 		}, getSourceFile(ObjectTypes.class));
 	}
 
@@ -303,14 +303,14 @@ public class StructuralTests extends AbstractTest {
 	@Test
 	public void testInstanceOf() {
 		eval((logHandler, r) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 		}, getSourceFile(InstanceOf.class));
 	}
 
 	@Test
 	public void testJSNI() {
 		transpile(ModuleKind.none, logHandler -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 		}, getSourceFile(JSNI.class));
 	}
 
@@ -328,7 +328,7 @@ public class StructuralTests extends AbstractTest {
 			}
 		});
 		eval(ModuleKind.none, (logHandler, r) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 			assertEquals(2, (int) r.get("test1"));
 			assertEquals(3, (int) r.get("test2"));
 			assertEquals(1, (int) r.get("test3"));
@@ -340,7 +340,7 @@ public class StructuralTests extends AbstractTest {
 	public void testDefaultMethods() {
 		// TODO: make it work with modules
 		eval(ModuleKind.none, (logHandler, r) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 			assertEquals("m,m1,m2-overriden", r.get("trace"));
 		}, getSourceFile(ClassWithStaticMethod.class), getSourceFile(DefaultMethods.class),
 				getSourceFile(DefaultMethodsConsumer.class));
@@ -349,7 +349,7 @@ public class StructuralTests extends AbstractTest {
 	@Test
 	public void testStaticMembersInInterfaces() {
 		eval((logHandler, r) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 			assertEquals("test1", r.get("value1"));
 			assertEquals("test2", r.get("value2"));
 			assertEquals("test3", r.get("value3"));
@@ -366,7 +366,7 @@ public class StructuralTests extends AbstractTest {
 			}
 		});
 		eval((logHandler, r) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 			assertEquals("test1", r.get("value1"));
 			assertEquals("test2", r.get("value2"));
 			assertEquals("test3", r.get("value3"));
@@ -379,7 +379,7 @@ public class StructuralTests extends AbstractTest {
 	public void testStaticImport() {
 		// TODO: support with modules
 		eval(ModuleKind.none, (logHandler, r) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 			assertEquals(true, r.get("m"));
 		}, getSourceFile(ClassWithStaticMethod.class), getSourceFile(ClassUsingStaticMethod.class));
 	}
@@ -387,7 +387,7 @@ public class StructuralTests extends AbstractTest {
 	@Test
 	public void testGetClass() {
 		eval((logHandler, r) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 			assertEquals("source.structural.AClass1", r.get("name1"));
 			assertEquals("source.structural.AClass1", r.get("name2"));
 			assertEquals("source.structural.AClass1", r.get("name3"));

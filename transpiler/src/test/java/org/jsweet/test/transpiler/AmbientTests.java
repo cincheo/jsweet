@@ -99,7 +99,7 @@ public class AmbientTests extends AbstractTest {
 	@Test
 	public void testGlobalsAccess() {
 		transpile(logHandler -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 		}, getSourceFile(GlobalsAccess.class), getSourceFile(Globals.class));
 	}
 

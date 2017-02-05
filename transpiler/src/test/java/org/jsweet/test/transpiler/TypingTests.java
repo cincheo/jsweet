@@ -93,7 +93,7 @@ public class TypingTests extends AbstractTest {
 	@Test
 	public void testCustomStringTypes() {
 		transpile(ModuleKind.none, logHandler -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 		}, getSourceFile(CustomStringTypes.class));
 	}
 
@@ -138,7 +138,7 @@ public class TypingTests extends AbstractTest {
 	@Test
 	public void testCustomLambdas() {
 		eval((logHandler, r) -> {
-			logHandler.assertReportedProblems();
+			logHandler.assertNoProblems();
 			Assert.assertEquals("test1", r.get("lambda"));
 		}, getSourceFile(CustomLambdas.class));
 	}
