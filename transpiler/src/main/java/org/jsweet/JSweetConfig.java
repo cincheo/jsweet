@@ -26,6 +26,7 @@ import java.net.URLClassLoader;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -35,6 +36,7 @@ import org.apache.log4j.Logger;
  * 
  * @author Renaud Pawlak
  */
+@SuppressWarnings("serial")
 public abstract class JSweetConfig {
 
 	private static Logger logger = Logger.getLogger(JSweetConfig.class);
@@ -244,25 +246,125 @@ public abstract class JSweetConfig {
 	 * This map contains the Java keywords that are taken into account in the
 	 * generation for avoiding keyword clashes.
 	 */
-	public static final Set<String> JAVA_KEYWORDS = new HashSet<String>();
+	public static final Set<String> JAVA_KEYWORDS = new HashSet<String>() {
+		{
+			// note TS keywords are removed from that list
+			add("abstract");
+			add("assert");
+			// add("boolean");
+			add("break");
+			add("byte");
+			add("case");
+			add("catch");
+			add("char");
+			// add("class");
+			add("const");
+			add("continue");
+			add("default");
+			add("do");
+			add("double");
+			add("else");
+			// add("enum");
+			add("extends");
+			add("final");
+			add("finally");
+			add("float");
+			add("for");
+			add("goto");
+			add("if");
+			// add("implements");
+			add("import");
+			add("instanceof");
+			add("int");
+			// add("interface");
+			add("long");
+			add("native");
+			add("new");
+			add("package");
+			add("private");
+			add("protected");
+			add("public");
+			add("return");
+			add("short");
+			add("static");
+			add("strictfp");
+			add("super");
+			add("switch");
+			add("synchronized");
+			add("this");
+			add("throw");
+			add("throws");
+			add("transient");
+			add("try");
+			// add("void");
+			add("volatile");
+			add("while");
+		}
+	};
 
 	/**
 	 * This map contains the JS keywords that are taken into account in the
 	 * generation for avoiding keyword clashes.
 	 */
-	public static final Set<String> JS_KEYWORDS = new HashSet<String>();
+	public static final Set<String> JS_KEYWORDS = new HashSet<String>() {
+		{
+			add("function");
+			add("var");
+			add("typeof");
+			add("in");
+			add("arguments");
+		}
+	};
 
 	/**
 	 * This map contains the TS keywords that are taken into account in strict
 	 * mode (within classes).
 	 */
-	public static final Set<String> TS_STRICT_MODE_KEYWORDS = new HashSet<String>();
+	public static final Set<String> TS_STRICT_MODE_KEYWORDS = new HashSet<String>() {
+		{
+			add("as");
+			add("implements");
+			add("interface");
+			add("let");
+			add("package");
+			add("private");
+			add("protected");
+			add("public");
+			add("static");
+			add("yield");
+			add("symbol");
+			add("type");
+			add("from");
+			add("of");
+		}
+	};
 
 	/**
 	 * This map contains the TS keywords that are taken into account at top
 	 * level.
 	 */
-	public static final Set<String> TS_TOP_LEVEL_KEYWORDS = new HashSet<String>();
+	public static final Set<String> TS_TOP_LEVEL_KEYWORDS = new HashSet<String>() {
+		{
+			add("require");
+		}
+	};
+
+	/**
+	 * This collection contains the forbidden characters in TS identifiers
+	 */
+	public static final Set<Character> TS_IDENTIFIER_FORBIDDEN_CHARS = new HashSet<Character>() {
+		{
+			add('-');
+			add('+');
+			add('~');
+			add('&');
+			add('#');
+			add('%');
+			add('|');
+			add('°');
+			add('@');
+		}
+	};
 
 	/**
 	 * The prefix to add to variables that clash with JS keywords.
@@ -278,83 +380,6 @@ public abstract class JSweetConfig {
 	 * The configuration file name.
 	 */
 	public static final String CONFIGURATION_FILE_NAME = "jsweetconfig.json";
-	
-	static {
-		// note TS keywords are removed from that list
-		JAVA_KEYWORDS.add("abstract");
-		JAVA_KEYWORDS.add("assert");
-		// JAVA_KEYWORDS.add("boolean");
-		JAVA_KEYWORDS.add("break");
-		JAVA_KEYWORDS.add("byte");
-		JAVA_KEYWORDS.add("case");
-		JAVA_KEYWORDS.add("catch");
-		JAVA_KEYWORDS.add("char");
-		// JAVA_KEYWORDS.add("class");
-		JAVA_KEYWORDS.add("const");
-		JAVA_KEYWORDS.add("continue");
-		JAVA_KEYWORDS.add("default");
-		JAVA_KEYWORDS.add("do");
-		JAVA_KEYWORDS.add("double");
-		JAVA_KEYWORDS.add("else");
-		// JAVA_KEYWORDS.add("enum");
-		JAVA_KEYWORDS.add("extends");
-		JAVA_KEYWORDS.add("final");
-		JAVA_KEYWORDS.add("finally");
-		JAVA_KEYWORDS.add("float");
-		JAVA_KEYWORDS.add("for");
-		JAVA_KEYWORDS.add("goto");
-		JAVA_KEYWORDS.add("if");
-		// JAVA_KEYWORDS.add("implements");
-		JAVA_KEYWORDS.add("import");
-		JAVA_KEYWORDS.add("instanceof");
-		JAVA_KEYWORDS.add("int");
-		// JAVA_KEYWORDS.add("interface");
-		JAVA_KEYWORDS.add("long");
-		JAVA_KEYWORDS.add("native");
-		JAVA_KEYWORDS.add("new");
-		JAVA_KEYWORDS.add("package");
-		JAVA_KEYWORDS.add("private");
-		JAVA_KEYWORDS.add("protected");
-		JAVA_KEYWORDS.add("public");
-		JAVA_KEYWORDS.add("return");
-		JAVA_KEYWORDS.add("short");
-		JAVA_KEYWORDS.add("static");
-		JAVA_KEYWORDS.add("strictfp");
-		JAVA_KEYWORDS.add("super");
-		JAVA_KEYWORDS.add("switch");
-		JAVA_KEYWORDS.add("synchronized");
-		JAVA_KEYWORDS.add("this");
-		JAVA_KEYWORDS.add("throw");
-		JAVA_KEYWORDS.add("throws");
-		JAVA_KEYWORDS.add("transient");
-		JAVA_KEYWORDS.add("try");
-		// JAVA_KEYWORDS.add("void");
-		JAVA_KEYWORDS.add("volatile");
-		JAVA_KEYWORDS.add("while");
-
-		JS_KEYWORDS.add("function");
-		JS_KEYWORDS.add("var");
-		JS_KEYWORDS.add("typeof");
-		JS_KEYWORDS.add("in");
-		JS_KEYWORDS.add("arguments");
-
-		TS_STRICT_MODE_KEYWORDS.add("as");
-		TS_STRICT_MODE_KEYWORDS.add("implements");
-		TS_STRICT_MODE_KEYWORDS.add("interface");
-		TS_STRICT_MODE_KEYWORDS.add("let");
-		TS_STRICT_MODE_KEYWORDS.add("package");
-		TS_STRICT_MODE_KEYWORDS.add("private");
-		TS_STRICT_MODE_KEYWORDS.add("protected");
-		TS_STRICT_MODE_KEYWORDS.add("public");
-		TS_STRICT_MODE_KEYWORDS.add("static");
-		TS_STRICT_MODE_KEYWORDS.add("yield");
-		TS_STRICT_MODE_KEYWORDS.add("symbol");
-		TS_STRICT_MODE_KEYWORDS.add("type");
-		TS_STRICT_MODE_KEYWORDS.add("from");
-		TS_STRICT_MODE_KEYWORDS.add("of");
-
-		TS_TOP_LEVEL_KEYWORDS.add("require");
-	}
 
 	public static boolean isJDKReplacementMode() {
 		return "java.lang".equals(LANG_PACKAGE);

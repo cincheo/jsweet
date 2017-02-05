@@ -20,11 +20,18 @@ import def.js.Array;
 
 public class Name {
 
+	@jsweet.lang.Name("name-with-dash")
+	String name_with_dash;
+
+	@jsweet.lang.Name("static-name-with-dash")
+	static String static_name_with_dash;
+
 	static Array<String> array;
-	
+
 	public static void main(String[] args) {
-		array.reduceCallbackfnFunction4((s1 , s2, d, s3) -> { return null; }, null); 
+		array.reduceCallbackfnFunction4((s1, s2, d, s3) -> {
+			return null;
+		}, null);
 	}
 
 }
-

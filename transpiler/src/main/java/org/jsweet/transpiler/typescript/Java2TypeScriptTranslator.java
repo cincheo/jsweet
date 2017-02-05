@@ -22,6 +22,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.jsweet.JSweetConfig.ANNOTATION_STRING_TYPE;
 import static org.jsweet.JSweetConfig.GLOBALS_CLASS_NAME;
 import static org.jsweet.JSweetConfig.GLOBALS_PACKAGE_NAME;
+import static org.jsweet.JSweetConfig.TS_IDENTIFIER_FORBIDDEN_CHARS;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -2154,7 +2155,12 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 				print("...");
 			}
 
-			print(name);
+			if (doesFieldNameRequireQuotes(name)) {
+				print("'" + name + "'");
+			} else {
+				print(name);
+			}
+
 			if (!Util.isVarargs(varDecl) && (getScope().eraseVariableTypes || (getScope().interfaceScope
 					&& context.hasAnnotationType(varDecl.sym, JSweetConfig.ANNOTATION_OPTIONAL)))) {
 				print("?");
@@ -2248,6 +2254,15 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 				}
 			}
 		}
+	}
+
+	private boolean doesFieldNameRequireQuotes(String name) {
+		for (char c : name.toCharArray()) {
+			if (TS_IDENTIFIER_FORBIDDEN_CHARS.contains(c)) {
+				return true;
+			}
+		}
+		return false; 
 	}
 
 	@Override
