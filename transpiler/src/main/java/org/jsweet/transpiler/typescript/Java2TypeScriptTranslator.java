@@ -2235,7 +2235,7 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 							+ STATIC_INITIALIZATION_SUFFIX + "();");
 				}
 			} else {
-				if (varDecl.init != null) {
+				if (varDecl.init != null && !isDefinitionScope) {
 					if (!(parent instanceof JCClassDecl && getScope().innerClassNotStatic
 							&& !Util.isConstantOrNullField(varDecl))) {
 						if (!globals && parent instanceof JCClassDecl && getScope().interfaceScope) {
