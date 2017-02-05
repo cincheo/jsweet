@@ -482,6 +482,7 @@ public class JSweetContext extends Context {
 	}
 
 	private Map<String, List<Symbol>> exportedElements = new HashMap<>();
+	private Map<Symbol, String> exportedRootRelativeNames = new HashMap<>();
 
 	/**
 	 * Gets the exported elements for all the modules defined in the program.
@@ -489,16 +490,22 @@ public class JSweetContext extends Context {
 	public Map<String, List<Symbol>> getExportedElements() {
 		return exportedElements;
 	}
+	
+	public String getExportedElementRootRelativeName(Symbol exportedElement) {
+		return exportedRootRelativeNames.get(exportedElement);
+	}
 
 	/**
 	 * Adds an exported element for a module.
 	 */
-	public void addExportedElement(String moduleName, Symbol exportedElement) {
+	public void addExportedElement(String moduleName, Symbol exportedElement, JCCompilationUnit compilationUnit) {
 		List<Symbol> exportedNamesForModule = exportedElements.get(moduleName);
 		if (exportedNamesForModule == null) {
 			exportedNamesForModule = new ArrayList<Symbol>();
 			exportedElements.put(moduleName, exportedNamesForModule);
 		}
+		
+		exportedRootRelativeNames.put(exportedElement, getRootRelativeName(useModules ? getImportedElements(compilationUnit.getSourceFile().getName()) : null, exportedElement));
 		exportedNamesForModule.add(exportedElement);
 	}
 

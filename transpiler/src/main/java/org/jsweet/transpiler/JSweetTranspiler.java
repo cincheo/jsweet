@@ -374,9 +374,11 @@ public class JSweetTranspiler<C extends JSweetContext> implements JSweetOptions 
 				}
 			}
 		}
+		
 		if (encoding != null) {
 			options.put(Option.ENCODING, encoding);
 		}
+		logger.debug("encoding: " + options.get(Option.ENCODING));
 		logger.debug("classpath: " + options.get(Option.CLASSPATH));
 		logger.debug("bootclasspath: " + options.get(Option.BOOTCLASSPATH));
 		logger.debug("strict mode: " + context.strictMode);
@@ -487,6 +489,10 @@ public class JSweetTranspiler<C extends JSweetContext> implements JSweetOptions 
 				options.put(Option.CLASSPATH, classPath);
 			}
 			options.put(Option.XLINT, "path");
+			if (encoding != null) {
+				options.put(Option.ENCODING, encoding);
+			}
+
 			JavacFileManager.preRegister(context);
 			JavaFileManager fileManager = context.get(JavaFileManager.class);
 
@@ -497,8 +503,13 @@ public class JSweetTranspiler<C extends JSweetContext> implements JSweetOptions 
 			compiler.attrParseOnly = true;
 			compiler.verbose = true;
 			compiler.genEndPos = false;
-
-			logger.info("parsing: " + fileObjects);
+			compiler.encoding = encoding;
+			
+			log = Log.instance(context);
+			log.dumpOnError = false;
+			log.emitWarnings = false;
+			
+			logger.info("parsingPOUET: " + fileObjects);
 			List<JCCompilationUnit> compilationUnits = compiler.enterTrees(compiler.parseFiles(fileObjects));
 			MainMethodFinder mainMethodFinder = new MainMethodFinder();
 			try {
@@ -658,6 +669,7 @@ public class JSweetTranspiler<C extends JSweetContext> implements JSweetOptions 
 		logger.info("parsing: " + fileObjects);
 		List<JCCompilationUnit> compilationUnits = compiler.enterTrees(compiler.parseFiles(fileObjects));
 		if (transpilationHandler.getErrorCount() > 0) {
+			logger.warn("errors during parse tree");
 			return null;
 		}
 		logger.info("attribution phase");
@@ -974,7 +986,7 @@ public class JSweetTranspiler<C extends JSweetContext> implements JSweetOptions 
 						if (element instanceof PackageSymbol && !context.isRootPackage(element)) {
 							out.print(" {");
 							out.println();
-							out.print("    export = " + context.getActualName(element) + ";");
+							out.print("    export = " + context.getExportedElementRootRelativeName(element) + ";");
 							out.println();
 							out.print("}");
 							exported = true;

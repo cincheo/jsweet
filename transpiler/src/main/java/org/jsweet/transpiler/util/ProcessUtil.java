@@ -199,7 +199,7 @@ public class ProcessUtil {
 				@Override
 				public void run() {
 					try {
-						try (BufferedReader in = new BufferedReader(new InputStreamReader(process[0].getInputStream()))) {
+						try (BufferedReader in = new BufferedReader(new InputStreamReader(process[0].getInputStream(), "UTF-8"))) {
 							String line;
 							while ((line = in.readLine()) != null) {
 								if (stdoutConsumer != null) {

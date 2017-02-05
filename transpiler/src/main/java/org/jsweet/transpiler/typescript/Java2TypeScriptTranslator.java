@@ -344,7 +344,7 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 
 		if (context.hasAnnotationType(topLevel.packge, JSweetConfig.ANNOTATION_MODULE)) {
 			context.addExportedElement(
-					context.getAnnotationValue(topLevel.packge, JSweetConfig.ANNOTATION_MODULE, null), topLevel.packge);
+					context.getAnnotationValue(topLevel.packge, JSweetConfig.ANNOTATION_MODULE, null), topLevel.packge, getCompilationUnit());
 		}
 
 		printIndent().print(
@@ -1494,7 +1494,7 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 			if (context.hasAnnotationType(methodDecl.sym, JSweetConfig.ANNOTATION_MODULE)) {
 				getContext().addExportedElement(
 						context.getAnnotationValue(methodDecl.sym, JSweetConfig.ANNOTATION_MODULE, null),
-						methodDecl.sym);
+						methodDecl.sym, getCompilationUnit());
 			}
 
 			if (context.useModules) {
@@ -2123,7 +2123,7 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 					if (context.hasAnnotationType(varDecl.sym, JSweetConfig.ANNOTATION_MODULE)) {
 						getContext().addExportedElement(
 								context.getAnnotationValue(varDecl.sym, JSweetConfig.ANNOTATION_MODULE, null),
-								varDecl.sym);
+								varDecl.sym, getCompilationUnit());
 					}
 					if (context.useModules) {
 						if (!varDecl.mods.getFlags().contains(Modifier.PRIVATE)) {
@@ -2215,7 +2215,7 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 						print(prefix + "__static_initialize(); ");
 					}
 				}
-				if (varDecl.init != null) {
+				if (varDecl.init != null && !isDefinitionScope) {
 					print("if(" + prefix).print(name).print(" == null) ").print(prefix).print(name).print(" = ");
 					if (getScope().enumWrapperClassScope) {
 						JCNewClass newClass = (JCNewClass) varDecl.init;
