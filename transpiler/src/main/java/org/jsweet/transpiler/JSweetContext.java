@@ -21,6 +21,7 @@ package org.jsweet.transpiler;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.io.File;
+import java.lang.annotation.Annotation;
 import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
@@ -147,7 +148,7 @@ public class JSweetContext extends Context {
 	 * Example:
 	 * 
 	 * <pre>
-	 * context.addAnnotation("@Erased", "*.writeObject(*)");
+	 * context.addAnnotation(FunctionalInterface.class, "*.MyInterface");
 	 * </pre>
 	 * 
 	 * <p>
@@ -159,19 +160,63 @@ public class JSweetContext extends Context {
 	 * <li>!: negates the filter (first character only)</li>
 	 * </ul>
 	 * 
-	 * @param annotation
-	 *            the annotation name, preceded with a @ (fully qualified name
-	 *            is not necessary for JSweet annotations)
+	 * @param annotationType
+	 *            the annotation type
 	 * @param filters
 	 *            the annotation is activated if one of the filters match and no
 	 *            negative filter matches
 	 */
-	public void addAnnotation(String annotation, String... filters) {
-		if (!annotation.startsWith("@")) {
-			throw new RuntimeException("annotation must start with '@'");
+	public void addAnnotation(Class<? extends Annotation> annotationType, String... filters) {
+		addAnnotation(annotationType.getName(), filters);
+	}
+
+	/**
+	 * Adds an annotation on the AST through global filters.
+	 * 
+	 * The annotation to be added is described by its type and by a value, which
+	 * is passed as is to the annotation's value. If the annotation type does
+	 * not accept a value parameter, no annotations will be added.
+	 * 
+	 * @see #addAnnotation(String, String...)
+	 */
+	public void addAnnotationWithValue(Class<? extends Annotation> annotationType, Object value, String... filters) {
+		addAnnotation(annotationType.getName() + "('" + value.toString() + "')", filters);
+	}
+
+	/**
+	 * Adds an annotation on the AST through global filters.
+	 * 
+	 * <p>
+	 * Example:
+	 * 
+	 * <pre>
+	 * context.addAnnotation("@Erased", "*.writeObject(*)");
+	 * context.addAnnotation("@Name('newName')", "*.MyDeclarationToBeRenamed");
+	 * </pre>
+	 * 
+	 * <p>
+	 * Filters are simplified regular expressions matching on the Java AST.
+	 * Special characters are the following:
+	 * 
+	 * <ul>
+	 * <li>*: matches any character in the signature of the AST element</li>
+	 * <li>!: negates the filter (first character only)</li>
+	 * </ul>
+	 * 
+	 * @param annotationDescriptor
+	 *            the annotation type name, optionally preceded with a @, and
+	 *            optionally defining a value (fully qualified name is not
+	 *            necessary for JSweet annotations)
+	 * @param filters
+	 *            the annotation is activated if one of the filters match and no
+	 *            negative filter matches
+	 */
+	public void addAnnotation(String annotationDescriptor, String... filters) {
+		if (!annotationDescriptor.startsWith("@")) {
+			annotationDescriptor = "@" + annotationDescriptor;
 		}
 		Map<String, Object> map = new HashMap<>();
-		Entry<String, Map<String, Object>> entry = new SimpleEntry<>(annotation, map);
+		Entry<String, Map<String, Object>> entry = new SimpleEntry<>(annotationDescriptor, map);
 		for (String filter : filters) {
 			String listKind = filter.startsWith("!") ? "exclude" : "include";
 			@SuppressWarnings("unchecked")
@@ -198,7 +243,11 @@ public class JSweetContext extends Context {
 				}
 				parameter = m.group(2);
 			} else {
-				annotationType = JSweetConfig.LANG_PACKAGE + "." + entry.getKey().substring(1);
+				if (entry.getKey().contains(".")) {
+					annotationType = entry.getKey().substring(1);
+				} else {
+					annotationType = JSweetConfig.LANG_PACKAGE + "." + entry.getKey().substring(1);
+				}
 			}
 			Object include = entry.getValue().get("include");
 			Collection<AnnotationFilterDescriptor> filterDescriptors = getAnnotationFilterDescriptors(annotationType);
@@ -490,7 +539,7 @@ public class JSweetContext extends Context {
 	public Map<String, List<Symbol>> getExportedElements() {
 		return exportedElements;
 	}
-	
+
 	public String getExportedElementRootRelativeName(Symbol exportedElement) {
 		return exportedRootRelativeNames.get(exportedElement);
 	}
@@ -504,8 +553,9 @@ public class JSweetContext extends Context {
 			exportedNamesForModule = new ArrayList<Symbol>();
 			exportedElements.put(moduleName, exportedNamesForModule);
 		}
-		
-		exportedRootRelativeNames.put(exportedElement, getRootRelativeName(useModules ? getImportedElements(compilationUnit.getSourceFile().getName()) : null, exportedElement));
+
+		exportedRootRelativeNames.put(exportedElement, getRootRelativeName(
+				useModules ? getImportedElements(compilationUnit.getSourceFile().getName()) : null, exportedElement));
 		exportedNamesForModule.add(exportedElement);
 	}
 
