@@ -1091,22 +1091,14 @@ public class Java2TypeScriptAdapter<C extends JSweetContext> extends AbstractPri
 						printTarget(fieldAccess.getExpression()).print(" === ").printArgList(invocation.args)
 								.print(")");
 						return true;
-					case "hashCode":
-						printMacroName(targetMethodName);
-						print("(<any>");
-						printTarget(fieldAccess.getExpression()).print(".toString())");
-						return true;
-					case "clone":
-						printMacroName(targetMethodName);
-						delegateToEmulLayerStatic(targetClassName, targetMethodName, fieldAccess.getExpression());
-						return true;
 					}
 				}
 			}
 
 		}
 
-		if ("getClass".equals(targetMethodName)) {
+		switch (targetMethodName) {
+		case "getClass":
 			print("(<any>");
 			if (fieldAccess != null) {
 				printTarget(fieldAccess.getExpression());
@@ -1115,6 +1107,35 @@ public class Java2TypeScriptAdapter<C extends JSweetContext> extends AbstractPri
 			}
 			print(".constructor)");
 			return true;
+		case "hashCode":
+			printMacroName(targetMethodName);
+			print("(<any>(o => { if(o.hashCode) { return o.hashCode(); } else { return o.toString(); } })(");
+			if (fieldAccess != null) {
+				printTarget(fieldAccess.getExpression());
+			} else {
+				print("this");
+			}
+			print("))");
+			return true;
+		case "clone":
+			if (Util.getSymbol(invocation.meth) != null && !Util.getSymbol(invocation.meth).isStatic()
+					&& invocation.getArguments().isEmpty()) {
+				printMacroName(targetMethodName);
+				if ("super".equals(fieldAccess.getExpression().toString())) {
+					JCClassDecl parent = getParent(JCClassDecl.class);
+					if (parent.sym.getSuperclass() != null
+							&& !context.symtab.objectType.equals(parent.sym.getSuperclass())) {
+						print("((o) => { if(super.clone) { return super.clone(); } else { let clone = Object.create(o); for(let p in o) { if (o.hasOwnProperty(p)) clone[p] = o[p]; } return clone; } })(this)");
+					} else {
+						print("((o) => { let clone = Object.create(o); for(let p in o) { if (o.hasOwnProperty(p)) clone[p] = o[p]; } return clone; })(this)");
+					}
+				} else {
+					print("((o) => { if(o.clone) { return (<any>o).clone(); } else { let clone = Object.create(o); for(let p in o) { if (o.hasOwnProperty(p)) clone[p] = o[p]; } return clone; } })(");
+					print(fieldAccess.getExpression());
+					print(")");
+				}
+				return true;
+			}
 		}
 
 		if (!JSweetConfig.isJDKReplacementMode())

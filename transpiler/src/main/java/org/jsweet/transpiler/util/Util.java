@@ -774,7 +774,7 @@ public class Util {
 		if (type == null) {
 			return false;
 		}
-		if ("java.lang.toString".equals(type.toString())) {
+		if (String.class.getName().equals(type.toString())) {
 			return true;
 		}
 		switch (type.getKind()) {

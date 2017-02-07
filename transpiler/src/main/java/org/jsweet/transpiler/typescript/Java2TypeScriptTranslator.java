@@ -344,7 +344,8 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 
 		if (context.hasAnnotationType(topLevel.packge, JSweetConfig.ANNOTATION_MODULE)) {
 			context.addExportedElement(
-					context.getAnnotationValue(topLevel.packge, JSweetConfig.ANNOTATION_MODULE, null), topLevel.packge, getCompilationUnit());
+					context.getAnnotationValue(topLevel.packge, JSweetConfig.ANNOTATION_MODULE, null), topLevel.packge,
+					getCompilationUnit());
 		}
 
 		printIndent().print(
@@ -1768,7 +1769,7 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 				name = context.getFieldNameMapping(var.sym);
 			}
 			printIndent().print("this.").print(name).print(" = ").print(var.init).print(";").println();
-		} else if (var.init == null && Util.isCoreType(var.type)) {
+		} else if (var.init == null) {
 			String name = var.getName().toString();
 			if (context.getFieldNameMapping(var.sym) != null) {
 				name = context.getFieldNameMapping(var.sym);
@@ -1788,7 +1789,9 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 			for (JCTree member : clazz.defs) {
 				if (member instanceof JCVariableDecl) {
 					JCVariableDecl var = (JCVariableDecl) member;
-					printVariableInitialization(clazz, var);
+					if (!var.sym.isStatic()) {
+						printVariableInitialization(clazz, var);
+					}
 				} else if (member instanceof JCBlock) {
 					JCBlock block = (JCBlock) member;
 					if (!block.isStatic()) {
@@ -1899,6 +1902,20 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 	}
 
 	private void printFieldInitializations() {
+		JCClassDecl clazz = getParent(JCClassDecl.class);
+		for (JCTree t : clazz.getMembers()) {
+			if (t instanceof JCVariableDecl && !getScope().fieldsWithInitializers.contains(t)) {
+				JCVariableDecl field = (JCVariableDecl) t;
+				if (!field.sym.isStatic()) {
+					String name = getAdapter().getIdentifier(field.sym);
+					if (context.getFieldNameMapping(field.sym) != null) {
+						name = context.getFieldNameMapping(field.sym);
+					}
+					printIndent().print("this.").print(name).print(" = ").print(Util.getTypeInitialValue(field.type))
+							.print(";").println();
+				}
+			}
+		}
 		for (JCVariableDecl field : getScope().fieldsWithInitializers) {
 			String name = getAdapter().getIdentifier(field.sym);
 			if (context.getFieldNameMapping(field.sym) != null) {
@@ -2262,7 +2279,7 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 				return true;
 			}
 		}
-		return false; 
+		return false;
 	}
 
 	@Override

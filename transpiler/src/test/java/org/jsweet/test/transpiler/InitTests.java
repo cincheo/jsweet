@@ -27,11 +27,13 @@ import org.junit.Test;
 
 import source.init.ArrayNew;
 import source.init.ClassWithInitializer;
+import source.init.Cloning;
 import source.init.Constructor;
 import source.init.ConstructorField;
 import source.init.ConstructorFieldInInterface;
 import source.init.ConstructorMethod;
 import source.init.ConstructorMethodInInterface;
+import source.init.FieldDefaultValues;
 import source.init.Initializer;
 import source.init.InitializerStatementConditionError;
 import source.init.InitializerStatementError;
@@ -70,7 +72,8 @@ public class InitTests extends AbstractTest {
 	public void testInitializerStatementError() {
 		transpile(logHandler -> {
 			assertEquals("There should be 1 problem", 1, logHandler.reportedProblems.size());
-			assertTrue("Missing expected error on wrong initializer", logHandler.reportedProblems.contains(JSweetProblem.INVALID_INITIALIZER_STATEMENT));
+			assertTrue("Missing expected error on wrong initializer",
+					logHandler.reportedProblems.contains(JSweetProblem.INVALID_INITIALIZER_STATEMENT));
 		}, getSourceFile(InitializerStatementError.class));
 	}
 
@@ -78,7 +81,8 @@ public class InitTests extends AbstractTest {
 	public void testInitializerStatementWithConditionError() {
 		transpile(logHandler -> {
 			assertEquals("Missing expected error on non-optional field", 1, logHandler.reportedProblems.size());
-			assertEquals("Missing expected error on wrong initializer", JSweetProblem.INVALID_INITIALIZER_STATEMENT, logHandler.reportedProblems.get(0));
+			assertEquals("Missing expected error on wrong initializer", JSweetProblem.INVALID_INITIALIZER_STATEMENT,
+					logHandler.reportedProblems.get(0));
 		}, getSourceFile(InitializerStatementConditionError.class));
 	}
 
@@ -100,7 +104,8 @@ public class InitTests extends AbstractTest {
 	public void testNoOptionalFieldsInClass() {
 		transpile(logHandler -> {
 			assertEquals("Missing expected warning on non-optional field", 1, logHandler.reportedProblems.size());
-			assertTrue("Missing expected warning on non-optional field", logHandler.reportedProblems.contains(JSweetProblem.USELESS_OPTIONAL_ANNOTATION));
+			assertTrue("Missing expected warning on non-optional field",
+					logHandler.reportedProblems.contains(JSweetProblem.USELESS_OPTIONAL_ANNOTATION));
 		}, getSourceFile(NoOptionalFieldsInClass.class));
 	}
 
@@ -118,7 +123,8 @@ public class InitTests extends AbstractTest {
 	public void testConstructorMethod() {
 		transpile(logHandler -> {
 			Assert.assertEquals("Missing constructor keyword error", 1, logHandler.reportedProblems.size());
-			Assert.assertEquals("Missing constructor keyword error", JSweetProblem.CONSTRUCTOR_MEMBER, logHandler.reportedProblems.get(0));
+			Assert.assertEquals("Missing constructor keyword error", JSweetProblem.CONSTRUCTOR_MEMBER,
+					logHandler.reportedProblems.get(0));
 		}, getSourceFile(ConstructorMethod.class));
 	}
 
@@ -126,7 +132,8 @@ public class InitTests extends AbstractTest {
 	public void testConstructorField() {
 		transpile(logHandler -> {
 			Assert.assertEquals("Missing constructor keyword error", 1, logHandler.reportedProblems.size());
-			Assert.assertEquals("Missing constructor keyword error", JSweetProblem.CONSTRUCTOR_MEMBER, logHandler.reportedProblems.get(0));
+			Assert.assertEquals("Missing constructor keyword error", JSweetProblem.CONSTRUCTOR_MEMBER,
+					logHandler.reportedProblems.get(0));
 		}, getSourceFile(ConstructorField.class));
 	}
 
@@ -141,7 +148,8 @@ public class InitTests extends AbstractTest {
 	public void testConstructorMethodInInterface() {
 		transpile(logHandler -> {
 			Assert.assertEquals("Missing expected error on constructor method", 1, logHandler.reportedProblems.size());
-			Assert.assertEquals("Missing expected error on constructor method", JSweetProblem.CONSTRUCTOR_MEMBER, logHandler.reportedProblems.get(0));
+			Assert.assertEquals("Missing expected error on constructor method", JSweetProblem.CONSTRUCTOR_MEMBER,
+					logHandler.reportedProblems.get(0));
 		}, getSourceFile(ConstructorMethodInInterface.class));
 	}
 
@@ -222,4 +230,28 @@ public class InitTests extends AbstractTest {
 		}, getSourceFile(ParentInstanceAccess.class));
 	}
 
+	@Test
+	public void testFieldDefaultValues() {
+		eval((logHandler, result) -> {
+			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+			assertEquals("value:null", result.get("s1"));
+			assertEquals("value:1", result.get("i1"));
+			assertEquals("value:0", result.get("j1"));
+			assertEquals("value:null", result.get("s2"));
+			assertEquals("value:1", result.get("i2"));
+			assertEquals("value:0", result.get("j2"));
+			assertEquals("value:null", result.get("s3"));
+			assertEquals("value:1", result.get("i3"));
+			assertEquals("value:0", result.get("j3"));
+		}, getSourceFile(FieldDefaultValues.class));
+	}
+
+	@Test
+	public void testCloning() {
+		eval(ModuleKind.none, (logHandler, result) -> {
+			logHandler.assertNoProblems();
+			assertEquals("1,2,2,2,1,5,2,6", result.get("result"));
+		}, getSourceFile(Cloning.class));
+	}
+	
 }

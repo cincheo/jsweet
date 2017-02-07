@@ -534,16 +534,6 @@ public class RemoveJavaDependenciesAdapter<C extends JSweetContext> extends Java
 				break;
 			}
 
-			if (typesMapping.containsKey(targetClassName) && targetClassName.startsWith("java.lang.")) {
-				if ("clone".equals(targetMethodName)) {
-					// TODO: this is very slow (but at least it is
-					// compact and simple)...
-					print("JSON.parse(JSON.stringify(");
-					printTarget(fieldAccess.getExpression());
-					print("))");
-					return true;
-				}
-			}
 		}
 
 		return super.substituteMethodInvocation(invocation, fieldAccess, targetType, targetClassName, targetMethodName);
