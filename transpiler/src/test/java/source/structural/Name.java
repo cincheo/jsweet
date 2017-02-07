@@ -32,6 +32,9 @@ public class Name {
 		array.reduceCallbackfnFunction4((s1, s2, d, s3) -> {
 			return null;
 		}, null);
+		String s = static_name_with_dash;
+		s = Name.static_name_with_dash;
+		
 	}
 
 }

@@ -1763,19 +1763,26 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 	}
 
 	protected void printVariableInitialization(JCClassDecl clazz, JCVariableDecl var) {
+		String name = var.getName().toString();
+		if (context.getFieldNameMapping(var.sym) != null) {
+			name = context.getFieldNameMapping(var.sym);
+		} else {
+			name = getAdapter().getIdentifier(var.sym);
+		}
 		if (getScope().innerClassNotStatic && !Util.isConstantOrNullField(var)) {
-			String name = var.getName().toString();
-			if (context.getFieldNameMapping(var.sym) != null) {
-				name = context.getFieldNameMapping(var.sym);
+			if (doesFieldNameRequireQuotes(name)) {
+				printIndent().print("this['").print(name).print("'] = ").print(var.init).print(";").println();
+			} else {
+				printIndent().print("this.").print(name).print(" = ").print(var.init).print(";").println();
 			}
-			printIndent().print("this.").print(name).print(" = ").print(var.init).print(";").println();
 		} else if (var.init == null) {
-			String name = var.getName().toString();
-			if (context.getFieldNameMapping(var.sym) != null) {
-				name = context.getFieldNameMapping(var.sym);
+			if (doesFieldNameRequireQuotes(name)) {
+				printIndent().print("this['").print(name).print("'] = ").print(Util.getTypeInitialValue(var.type))
+						.print(";").println();
+			} else {
+				printIndent().print("this.").print(name).print(" = ").print(Util.getTypeInitialValue(var.type))
+						.print(";").println();
 			}
-			printIndent().print("this.").print(name).print(" = ").print(Util.getTypeInitialValue(var.type)).print(";")
-					.println();
 		}
 	}
 
@@ -2386,10 +2393,21 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 					}
 				}
 
+				String fieldName = null;
 				if (fieldAccess.sym instanceof VarSymbol && context.getFieldNameMapping(fieldAccess.sym) != null) {
-					print(context.getFieldNameMapping(fieldAccess.sym));
+					fieldName = context.getFieldNameMapping(fieldAccess.sym);
 				} else {
-					printIdentifier(fieldAccess.sym);
+					fieldName = getAdapter().getIdentifier(fieldAccess.sym);
+				}
+				if (doesFieldNameRequireQuotes(fieldName)) {
+					if (getLastPrintedChar() == '.') {
+						removeLastChar();
+						print("['").print(fieldName).print("']");
+					} else {
+						print("this['").print(fieldName).print("']");
+					}
+				} else {
+					print(fieldName);
 				}
 				if (fieldAccess.sym instanceof VarSymbol && !fieldAccess.sym.owner.isEnum()
 						&& context.lazyInitializedStatics.contains(fieldAccess.sym)) {
@@ -2770,6 +2788,8 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 					if (varSym.owner instanceof ClassSymbol) {
 						if (context.getFieldNameMapping(varSym) != null) {
 							name = context.getFieldNameMapping(varSym);
+						} else {
+							name = getAdapter().getIdentifier(varSym);
 						}
 						if (!varSym.getModifiers().contains(Modifier.STATIC)) {
 							print("this.");
@@ -2866,7 +2886,16 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 					print(name);
 				}
 			} else {
-				print(name);
+				if (doesFieldNameRequireQuotes(name)) {
+					if (getLastPrintedChar() == '.') {
+						removeLastChar();
+						print("['").print(name).print("']");
+					} else {
+						print("this['").print(name).print("']");
+					}
+				} else {
+					print(name);
+				}
 				if (lazyInitializedStatic) {
 					if (!staticInitializedAssignment) {
 						print(STATIC_INITIALIZATION_SUFFIX + "()");
