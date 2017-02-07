@@ -986,7 +986,7 @@ public class JSweetTranspiler<C extends JSweetContext> implements JSweetOptions 
 						if (element instanceof PackageSymbol && !context.isRootPackage(element)) {
 							out.print(" {");
 							out.println();
-							out.print("    export = " + context.getExportedElementRootRelativeName(element) + ";");
+							out.print("    export = " + context.getExportedElementName(element) + ";");
 							out.println();
 							out.print("}");
 							exported = true;

@@ -42,4 +42,9 @@ public @interface Module {
 	 * The name of the module to be required.
 	 */
 	java.lang.String value();
+	
+	/**
+	 * The name of the exported element (module 'foo' { export = [exportedElement]; });
+	 */
+	java.lang.String exportedElement() default "";
 }
