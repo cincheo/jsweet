@@ -39,6 +39,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -482,7 +483,7 @@ public class JSweetContext extends Context {
 	}
 
 	private Map<String, List<Symbol>> exportedElements = new HashMap<>();
-	private Map<Symbol, String> exportedRootRelativeNames = new HashMap<>();
+	private Map<Symbol, String> exportedNames = new HashMap<>();
 
 	/**
 	 * Gets the exported elements for all the modules defined in the program.
@@ -490,9 +491,20 @@ public class JSweetContext extends Context {
 	public Map<String, List<Symbol>> getExportedElements() {
 		return exportedElements;
 	}
-	
-	public String getExportedElementRootRelativeName(Symbol exportedElement) {
-		return exportedRootRelativeNames.get(exportedElement);
+
+	/**
+	 * Returns the idenfier of the given exported symbol, including Module
+	 * annotation's name if specified
+	 */
+	public String getExportedElementName(Symbol exportedElement) {
+		String name = exportedNames.get(exportedElement);
+		String forcedName = getAnnotationValue(exportedElement, JSweetConfig.ANNOTATION_MODULE, "exportedElement",
+				null);
+		if (StringUtils.isNotBlank(forcedName)) {
+			name = forcedName;
+		}
+
+		return name;
 	}
 
 	/**
@@ -504,8 +516,9 @@ public class JSweetContext extends Context {
 			exportedNamesForModule = new ArrayList<Symbol>();
 			exportedElements.put(moduleName, exportedNamesForModule);
 		}
-		
-		exportedRootRelativeNames.put(exportedElement, getRootRelativeName(useModules ? getImportedElements(compilationUnit.getSourceFile().getName()) : null, exportedElement));
+
+		exportedNames.put(exportedElement, getRootRelativeName(
+				useModules ? getImportedElements(compilationUnit.getSourceFile().getName()) : null, exportedElement));
 		exportedNamesForModule.add(exportedElement);
 	}
 
@@ -924,6 +937,10 @@ public class JSweetContext extends Context {
 	 * type if found on the given symbol.
 	 */
 	public String getAnnotationValue(Symbol symbol, String annotationType, String defaultValue) {
+		return getAnnotationValue(symbol, annotationType, null, defaultValue);
+	}
+
+	public String getAnnotationValue(Symbol symbol, String annotationType, String propertyName, String defaultValue) {
 		if (hasAnnotationFilters()) {
 			String signature = symbol.toString();
 			if (symbol.getEnclosingElement() != null) {
@@ -966,7 +983,10 @@ public class JSweetContext extends Context {
 		AnnotationMirror anno = getAnnotation(symbol, annotationType);
 		String val = defaultValue;
 		if (anno != null) {
-			val = "" + getFirstAnnotationValue(anno, defaultValue);
+			Object firstVal = getFirstAnnotationValue(anno, propertyName, null);
+			if (firstVal != null) {
+				val = "" + firstVal;
+			}
 		}
 		return val;
 	}
@@ -974,9 +994,13 @@ public class JSweetContext extends Context {
 	/**
 	 * Gets the first value of the 'value' property.
 	 */
-	private static Object getFirstAnnotationValue(AnnotationMirror annotation, Object defaultValue) {
-		for (AnnotationValue value : annotation.getElementValues().values()) {
-			return value.getValue();
+	private static Object getFirstAnnotationValue(AnnotationMirror annotation, String propertyName,
+			Object defaultValue) {
+		for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> valueEntry : annotation
+				.getElementValues().entrySet()) {
+			if (propertyName == null || propertyName.equals(valueEntry.getKey().getSimpleName().toString())) {
+				return valueEntry.getValue().getValue();
+			}
 		}
 		return defaultValue;
 	}
