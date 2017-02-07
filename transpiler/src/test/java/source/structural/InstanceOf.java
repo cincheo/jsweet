@@ -50,10 +50,16 @@ public class InstanceOf {
 
 		assert object instanceof InstanceOf;
 
+		assert c instanceof C1;
+
 	}
 
 }
 
-class C2 {
+class C1 {
+	
+}
+
+class C2 extends C1 {
 
 }
