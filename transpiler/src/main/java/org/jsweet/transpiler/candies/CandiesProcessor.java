@@ -164,6 +164,23 @@ public class CandiesProcessor {
 		}
 	}
 
+	/**
+	 * Return true if the candy store contains the J4TS candy.
+	 */
+	public boolean isUsingJavaRuntime() {
+		if (candiesStore == null) {
+			return false;
+		} else {
+			for (CandyDescriptor c : candiesStore.getCandies()) {
+				if (c.name != null && c.name.contains("j4ts")) {
+					logger.info("found j4ts Java runtime in classpath");
+					return true;
+				}
+			}
+			return false;
+		}
+	}
+
 	private LinkedHashMap<File, CandyDescriptor> getCandiesDescriptorsFromClassPath(
 			TranspilationHandler transpilationHandler) throws IOException {
 		LinkedHashMap<File, CandyDescriptor> jarFilesCollector = new LinkedHashMap<>();

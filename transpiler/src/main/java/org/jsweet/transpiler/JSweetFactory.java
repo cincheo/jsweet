@@ -1,5 +1,6 @@
 package org.jsweet.transpiler;
 
+import org.jsweet.transpiler.extensions.RemoveJavaDependenciesAdapter;
 import org.jsweet.transpiler.typescript.Java2TypeScriptAdapter;
 import org.jsweet.transpiler.typescript.Java2TypeScriptTranslator;
 
@@ -39,7 +40,11 @@ public class JSweetFactory<C extends JSweetContext> {
 	 * the programmer should override this method and return a subclass.
 	 */
 	public Java2TypeScriptAdapter<C> createAdapter(C context) {
-		return new Java2TypeScriptAdapter<C>(context);
+		if (context.isUsingJavaRuntime()) {
+			return new Java2TypeScriptAdapter<C>(context);
+		} else {
+			return new RemoveJavaDependenciesAdapter<C>(context);
+		}
 	}
 
 	/**

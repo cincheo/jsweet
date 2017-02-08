@@ -31,10 +31,8 @@ import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Symbol.TypeVariableSymbol;
 import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.code.Type.MethodType;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCArrayAccess;
-import com.sun.tools.javac.tree.JCTree.JCArrayTypeTree;
 import com.sun.tools.javac.tree.JCTree.JCAssign;
 import com.sun.tools.javac.tree.JCTree.JCCase;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
@@ -48,10 +46,8 @@ import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
-import com.sun.tools.javac.tree.JCTree.JCTypeApply;
 import com.sun.tools.javac.tree.JCTree.JCTypeCast;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
-import com.sun.tools.javac.tree.JCTree.JCWildcard;
 import com.sun.tools.javac.util.Name;
 
 /**
@@ -62,7 +58,30 @@ import com.sun.tools.javac.util.Name;
  */
 public abstract class AbstractPrinterAdapter<C extends JSweetContext> {
 
+	private AbstractPrinterAdapter<C> parentAdapter;
+
 	private AbstractTreePrinter<C> printer;
+
+	protected C context;
+
+	public AbstractPrinterAdapter(AbstractPrinterAdapter<C> parentAdapter) {
+		super();
+		this.parentAdapter = parentAdapter;
+	}
+
+	/**
+	 * Gets the transpiler's context.
+	 */
+	public C getContext() {
+		if (context != null) {
+			return context;
+		} else {
+			if (getParentAdapter() != null) {
+				context = getParentAdapter().getContext();
+			}
+		}
+		return context;
+	}
 
 	/**
 	 * A flags that indicates that this adapter is printing type parameters.
@@ -213,7 +232,7 @@ public abstract class AbstractPrinterAdapter<C extends JSweetContext> {
 	 * @return true if substituted
 	 */
 	public boolean substituteArrayAccess(JCArrayAccess arrayAccess) {
-		return false;
+		return parentAdapter == null ? false : parentAdapter.substituteArrayAccess(arrayAccess);
 	}
 
 	/**
@@ -224,7 +243,7 @@ public abstract class AbstractPrinterAdapter<C extends JSweetContext> {
 	 * @return true if substituted
 	 */
 	public boolean substituteIdentifier(JCIdent identifier) {
-		return false;
+		return parentAdapter == null ? false : parentAdapter.substituteIdentifier(identifier);
 	}
 
 	/**
@@ -235,7 +254,7 @@ public abstract class AbstractPrinterAdapter<C extends JSweetContext> {
 	 * @return true if substituted
 	 */
 	public boolean substituteNewClass(JCNewClass newClass) {
-		return false;
+		return parentAdapter == null ? false : parentAdapter.substituteNewClass(newClass);
 	}
 
 	/**
@@ -246,45 +265,7 @@ public abstract class AbstractPrinterAdapter<C extends JSweetContext> {
 	 * @return true if substituted
 	 */
 	public boolean substituteFieldAccess(JCFieldAccess fieldAccess) {
-		return false;
-	}
-
-	/**
-	 * Returns true if the candidate method matches the target method.
-	 */
-	public boolean matchesMethod(String targetClassName, String targetMethodName, String candidateClassName,
-			String candidateMethodName) {
-		if (targetClassName != null) {
-			return (candidateClassName == null || targetClassName.equals(candidateClassName))
-					&& (candidateMethodName == null || targetMethodName.equals(candidateMethodName));
-		} else {
-			return targetMethodName.equals(candidateMethodName);
-		}
-	}
-
-	public boolean matchesWithResultType(JCMethodInvocation invocation, Class<?> resultClass, String methodName) {
-		String[] select = invocation.getMethodSelect().toString().split("\\.");
-		if (methodName.equals(select[select.length - 1])
-				&& resultClass.getName().equals(((MethodType) invocation.getMethodSelect().type).restype.toString())) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	public boolean matchesField(JCFieldAccess fieldAccess, Class<?> targetClass, String fieldName) {
-		return (fieldName.equals(fieldAccess.name.toString())
-				&& targetClass.getName().equals(fieldAccess.selected.type.getModelType().toString()));
-	}
-
-	public JCFieldAccess matchesField(JCAssign assignment, Class<?> targetClass, String fieldName) {
-		if (assignment.lhs instanceof JCFieldAccess) {
-			JCFieldAccess fa = (JCFieldAccess) assignment.lhs;
-			if (matchesField(fa, targetClass, fieldName)) {
-				return fa;
-			}
-		}
-		return null;
+		return parentAdapter == null ? false : parentAdapter.substituteFieldAccess(fieldAccess);
 	}
 
 	/**
@@ -310,72 +291,21 @@ public abstract class AbstractPrinterAdapter<C extends JSweetContext> {
 	 * Tells if this cast is required to be printed or not.
 	 */
 	public boolean needsTypeCast(JCTypeCast cast) {
-		return true;
+		return parentAdapter == null ? true : parentAdapter.needsTypeCast(cast);
 	}
 
 	public AbstractTreePrinter<C> substituteAndPrintType(JCTree typeTree) {
 		return substituteAndPrintType(typeTree, false, inTypeParameters, true, disableTypeSubstitution);
 	}
 
-	public AbstractTreePrinter<C> substituteAndPrintType(JCTree typeTree, boolean arrayComponent,
-			boolean inTypeParameters, boolean completeRawTypes, boolean disableSubstitution) {
-		if (typeTree instanceof JCTypeApply) {
-			JCTypeApply typeApply = ((JCTypeApply) typeTree);
-			substituteAndPrintType(typeApply.clazz, arrayComponent, inTypeParameters, false, disableSubstitution);
-			if (!typeApply.arguments.isEmpty() && !"any".equals(getPrinter().getLastPrintedString(3))
-					&& !"Object".equals(getPrinter().getLastPrintedString(6))) {
-				getPrinter().print("<");
-				for (JCExpression argument : typeApply.arguments) {
-					substituteAndPrintType(argument, arrayComponent, false, completeRawTypes, false).print(", ");
-				}
-				if (typeApply.arguments.length() > 0) {
-					getPrinter().removeLastChars(2);
-				}
-				getPrinter().print(">");
-			}
-			return getPrinter();
-		} else if (typeTree instanceof JCWildcard) {
-			JCWildcard wildcard = ((JCWildcard) typeTree);
-			String name = getPrinter().getContext().getWildcardName(wildcard);
-			if (name == null) {
-				return getPrinter().print("any");
-			} else {
-				getPrinter().print(name);
-				if (inTypeParameters) {
-					getPrinter().print(" extends ");
-					return substituteAndPrintType(wildcard.getBound(), arrayComponent, false, completeRawTypes,
-							disableSubstitution);
-				} else {
-					return getPrinter();
-				}
-			}
-		} else {
-			if (typeTree instanceof JCArrayTypeTree) {
-				return substituteAndPrintType(((JCArrayTypeTree) typeTree).elemtype, true, inTypeParameters,
-						completeRawTypes, disableSubstitution).print("[]");
-			}
-			if (completeRawTypes && typeTree.type.tsym.getTypeParameters() != null
-					&& !typeTree.type.tsym.getTypeParameters().isEmpty()) {
-				// raw type case (Java warning)
-				getPrinter().print(typeTree);
-				getPrinter().print("<");
-				for (int i = 0; i < typeTree.type.tsym.getTypeParameters().length(); i++) {
-					getPrinter().print("any, ");
-				}
-				getPrinter().removeLastChars(2);
-				getPrinter().print(">");
-				return getPrinter();
-			} else {
-				return getPrinter().print(typeTree);
-			}
-		}
-	}
+	protected abstract AbstractTreePrinter<C> substituteAndPrintType(JCTree typeTree, boolean arrayComponent,
+			boolean inTypeParameters, boolean completeRawTypes, boolean disableSubstitution);
 
 	/**
 	 * Tells if the printer needs to print the given variable declaration.
 	 */
 	public boolean needsVariableDecl(JCVariableDecl variableDecl, VariableKind kind) {
-		return true;
+		return parentAdapter == null ? true : parentAdapter.needsVariableDecl(variableDecl, kind);
 	}
 
 	/**
@@ -386,7 +316,7 @@ public abstract class AbstractPrinterAdapter<C extends JSweetContext> {
 	 * @return true if substituted
 	 */
 	public boolean substituteMethodInvocation(JCMethodInvocation invocation) {
-		return false;
+		return parentAdapter == null ? false : parentAdapter.substituteMethodInvocation(invocation);
 	}
 
 	/**
@@ -397,7 +327,7 @@ public abstract class AbstractPrinterAdapter<C extends JSweetContext> {
 	 * @return true if substituted
 	 */
 	public boolean substituteAssignment(JCAssign assign) {
-		return false;
+		return parentAdapter == null ? false : parentAdapter.substituteAssignment(assign);
 	}
 
 	/**
@@ -418,14 +348,15 @@ public abstract class AbstractPrinterAdapter<C extends JSweetContext> {
 	 * Gets the adapted identifier string.
 	 */
 	public String getIdentifier(Symbol symbol) {
-		return symbol.name.toString();
+		return parentAdapter == null ? symbol.name.toString() : parentAdapter.getIdentifier(symbol);
 	}
 
 	/**
 	 * Returns the qualified type name.
 	 */
 	public String getQualifiedTypeName(TypeSymbol type, boolean globals) {
-		return getPrinter().getRootRelativeName(type);
+		return parentAdapter == null ? getPrinter().getRootRelativeName(type)
+				: parentAdapter.getQualifiedTypeName(type, globals);
 	}
 
 	public abstract Set<String> getErasedTypes();
@@ -435,7 +366,7 @@ public abstract class AbstractPrinterAdapter<C extends JSweetContext> {
 	 * type.
 	 */
 	public boolean substituteAssignedExpression(Type assignedType, JCExpression expression) {
-		return false;
+		return parentAdapter == null ? false : parentAdapter.substituteAssignedExpression(assignedType, expression);
 	}
 
 	/**
@@ -449,28 +380,29 @@ public abstract class AbstractPrinterAdapter<C extends JSweetContext> {
 	 *            a possible (fresh) variable name that can used to iterate
 	 */
 	public boolean substituteForEachLoop(JCEnhancedForLoop foreachLoop, boolean targetHasLength, String indexVarName) {
-		return false;
+		return parentAdapter == null ? false
+				: parentAdapter.substituteForEachLoop(foreachLoop, targetHasLength, indexVarName);
 	}
 
 	/**
 	 * Tells if a super class has to be erased in the generated source.
 	 */
 	public boolean eraseSuperClass(JCClassDecl classdecl, ClassSymbol superClass) {
-		return false;
+		return parentAdapter == null ? false : parentAdapter.eraseSuperClass(classdecl, superClass);
 	}
 
 	/**
 	 * Tells if a super interface has to be erased in the generated source.
 	 */
 	public boolean eraseSuperInterface(JCClassDecl classdecl, ClassSymbol superInterface) {
-		return false;
+		return parentAdapter == null ? false : parentAdapter.eraseSuperInterface(classdecl, superInterface);
 	}
 
 	/**
 	 * Tells if this adapter substitutes types in extends or implements clauses.
 	 */
 	public boolean isSubstituteSuperTypes() {
-		return false;
+		return parentAdapter == null ? false : parentAdapter.isSubstituteSuperTypes();
 	}
 
 	/**
@@ -487,14 +419,14 @@ public abstract class AbstractPrinterAdapter<C extends JSweetContext> {
 	 * @return true if substituted
 	 */
 	public boolean substituteInstanceof(String exprStr, JCTree expr, Type type) {
-		return false;
+		return parentAdapter == null ? false : parentAdapter.substituteInstanceof(exprStr, expr, type);
 	}
 
 	/**
 	 * Substitutes if necessary the pattern of a case statement.
 	 */
 	public boolean substituteCaseStatementPattern(JCCase caseStatement, JCExpression pattern) {
-		return false;
+		return parentAdapter == null ? false : parentAdapter.substituteCaseStatementPattern(caseStatement, pattern);
 	}
 
 	/**
@@ -505,10 +437,25 @@ public abstract class AbstractPrinterAdapter<C extends JSweetContext> {
 	 *            {@link JCMethodDecl}, or {@link JCVariableDecl})
 	 * @param commentText
 	 *            the comment text if any (null when no comment)
-	 * @return the adapted comment (null will remove the JavaDoc
-	 *         comment)
+	 * @return the adapted comment (null will remove the JavaDoc comment)
 	 */
 	public String adaptDocComment(JCTree element, String commentText) {
 		return commentText;
+	}
+
+	/**
+	 * Gets the parent adapter. By default, an adapter delegates to the parent
+	 * adapter when the behavior is not overridden.
+	 */
+	public AbstractPrinterAdapter<C> getParentAdapter() {
+		return parentAdapter;
+	}
+
+	/**
+	 * Sets the parent adapter. By default, an adapter delegates to the parent
+	 * adapter when the behavior is not overridden.
+	 */
+	public void setParentAdapter(AbstractPrinterAdapter<C> parentAdapter) {
+		this.parentAdapter = parentAdapter;
 	}
 }

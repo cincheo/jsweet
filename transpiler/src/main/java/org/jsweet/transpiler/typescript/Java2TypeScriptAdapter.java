@@ -111,6 +111,7 @@ import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.JCTree.JCTypeApply;
 import com.sun.tools.javac.tree.JCTree.JCTypeCast;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
+import com.sun.tools.javac.tree.JCTree.JCWildcard;
 import com.sun.tools.javac.tree.JCTree.Tag;
 import com.sun.tools.javac.util.Log;
 
@@ -129,14 +130,19 @@ public class Java2TypeScriptAdapter<C extends JSweetContext> extends AbstractPri
 	protected Map<String, String> langTypesMapping = new HashMap<String, String>();
 	protected Set<String> langTypesSimpleNames = new HashSet<String>();
 	protected Set<String> baseThrowables = new HashSet<String>();
-	protected C context;
 
 	public Java2TypeScriptTranslator<C> getPrinter() {
 		return (Java2TypeScriptTranslator<C>) super.getPrinter();
 	}
 
 	public Java2TypeScriptAdapter(C context) {
+		this((AbstractPrinterAdapter<C>) null);
 		this.context = context;
+	}
+
+	public Java2TypeScriptAdapter(AbstractPrinterAdapter<C> parentAdapter) {
+		super(parentAdapter);
+		this.context = getContext();
 		typesMapping.put(Object.class.getName(), "any");
 		typesMapping.put(Runnable.class.getName(), "() => void");
 
@@ -414,260 +420,240 @@ public class Java2TypeScriptAdapter<C extends JSweetContext> extends AbstractPri
 			return true;
 		}
 
-		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "$export")) {
-			if (invocation.args.head.getKind() != Kind.STRING_LITERAL) {
-				report(invocation.args.head, JSweetProblem.STRING_LITERAL_EXPECTED);
-			}
-			String varName = "_exportedVar_" + StringUtils.strip(invocation.args.head.toString(), "\"");
-			getPrinter().footer.append(VAR_DECL_KEYWORD + " " + varName + ";\n");
-			if (invocation.args.size() == 1) {
-				print(varName);
-			} else {
-				print(varName + " = ").print(invocation.args.tail.head).print("; ");
-				getPrinter()
-						.print("console.log('" + JSweetTranspiler.EXPORTED_VAR_BEGIN
-								+ StringUtils.strip(invocation.args.head.toString(), "\"") + "='+")
-						.print(varName).print("+'" + JSweetTranspiler.EXPORTED_VAR_END + "')");
-			}
-			return true;
-		}
-		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "array")) {
-			printCastMethodInvocation(invocation);
-			return true;
-		}
-		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "function")) {
-			printCastMethodInvocation(invocation);
-			return true;
-		}
-		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "string")) {
-			printCastMethodInvocation(invocation);
-			return true;
-		}
-		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "bool")) {
-			printCastMethodInvocation(invocation);
-			return true;
-		}
-		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "number")) {
-			printCastMethodInvocation(invocation);
-			return true;
-		}
-		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "integer")) {
-			printCastMethodInvocation(invocation);
-			return true;
-		}
-		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "any")) {
-			print("(<any>");
-			printCastMethodInvocation(invocation);
-			print(")");
-			return true;
-		}
-		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "object")) {
-			printCastMethodInvocation(invocation);
-			return true;
-		}
-		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "union")) {
-			getPrinter().typeChecker.checkUnionTypeAssignment(context.types, getParent(), invocation);
-			print("(<any>");
-			printCastMethodInvocation(invocation);
-			print(")");
-			return true;
-		}
-		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "typeof")) {
-			print("typeof ").print(invocation.getArguments().head);
-			return true;
-		}
-		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "equalsStrict")) {
-			print("(").print(invocation.getArguments().head).print(" === ").print(invocation.getArguments().tail.head)
-					.print(")");
-			return true;
-		}
-		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "notEqualsStrict")) {
-			print("(").print(invocation.getArguments().head).print(" !== ").print(invocation.getArguments().tail.head)
-					.print(")");
-			return true;
-		}
-		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "equalsLoose")) {
-			print("(").print(invocation.getArguments().head).print(" == ").print(invocation.getArguments().tail.head)
-					.print(")");
-			return true;
-		}
-		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "notEqualsLoose")) {
-			print("(").print(invocation.getArguments().head).print(" != ").print(invocation.getArguments().tail.head)
-					.print(")");
-			return true;
-		}
-		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "$map")) {
-			if (invocation.args.size() % 2 != 0) {
-				report(invocation, JSweetProblem.UNTYPED_OBJECT_ODD_PARAMETER_COUNT);
-			}
-			print("{");
-			com.sun.tools.javac.util.List<JCExpression> args = invocation.args;
-			while (args != null && args.head != null) {
-				String key = args.head.toString();
-				if (args.head.getTag() == Tag.LITERAL && key.startsWith("\"")) {
-					key = key.substring(1, key.length() - 1);
-					if (JJavaName.isJavaIdentifier(key)) {
-						print(key);
-					} else {
-						print("\"" + key + "\"");
+		if (targetClassName != null && targetMethodName != null) {
+			switch (targetClassName) {
+			case UTIL_CLASSNAME:
+				switch (targetMethodName) {
+				case "$export":
+					if (invocation.args.head.getKind() != Kind.STRING_LITERAL) {
+						report(invocation.args.head, JSweetProblem.STRING_LITERAL_EXPECTED);
 					}
-				} else {
-					report(args.head, JSweetProblem.UNTYPED_OBJECT_WRONG_KEY, args.head.toString());
-				}
-				print(": ");
-				print(args.tail.head);
-				args = args.tail.tail;
-				if (args != null && args.head != null) {
-					print(",");
+					String varName = "_exportedVar_" + StringUtils.strip(invocation.args.head.toString(), "\"");
+					getPrinter().footer.append(VAR_DECL_KEYWORD + " " + varName + ";\n");
+					if (invocation.args.size() == 1) {
+						print(varName);
+					} else {
+						print(varName + " = ").print(invocation.args.tail.head).print("; ");
+						getPrinter()
+								.print("console.log('" + JSweetTranspiler.EXPORTED_VAR_BEGIN
+										+ StringUtils.strip(invocation.args.head.toString(), "\"") + "='+")
+								.print(varName).print("+'" + JSweetTranspiler.EXPORTED_VAR_END + "')");
+					}
+					return true;
+				case "array":
+				case "function":
+				case "string":
+				case "bool":
+				case "number":
+				case "integer":
+				case "object":
+					printCastMethodInvocation(invocation);
+					return true;
+				case "any":
+					print("(<any>");
+					printCastMethodInvocation(invocation);
+					print(")");
+					return true;
+				case "union":
+					getPrinter().typeChecker.checkUnionTypeAssignment(context.types, getParent(), invocation);
+					print("(<any>");
+					printCastMethodInvocation(invocation);
+					print(")");
+					return true;
+				case "typeof":
+					print("typeof ").print(invocation.getArguments().head);
+					return true;
+				case "equalsStrict":
+					print("(").print(invocation.getArguments().head).print(" === ")
+							.print(invocation.getArguments().tail.head).print(")");
+					return true;
+				case "notEqualsStrict":
+					print("(").print(invocation.getArguments().head).print(" !== ")
+							.print(invocation.getArguments().tail.head).print(")");
+					return true;
+				case "equalsLoose":
+					print("(").print(invocation.getArguments().head).print(" == ")
+							.print(invocation.getArguments().tail.head).print(")");
+					return true;
+				case "notEqualsLoose":
+					print("(").print(invocation.getArguments().head).print(" != ")
+							.print(invocation.getArguments().tail.head).print(")");
+					return true;
+
+				case "$map":
+					if (invocation.args.size() % 2 != 0) {
+						report(invocation, JSweetProblem.UNTYPED_OBJECT_ODD_PARAMETER_COUNT);
+					}
+					print("{");
+					com.sun.tools.javac.util.List<JCExpression> args = invocation.args;
+					while (args != null && args.head != null) {
+						String key = args.head.toString();
+						if (args.head.getTag() == Tag.LITERAL && key.startsWith("\"")) {
+							key = key.substring(1, key.length() - 1);
+							if (JJavaName.isJavaIdentifier(key)) {
+								print(key);
+							} else {
+								print("\"" + key + "\"");
+							}
+						} else {
+							report(args.head, JSweetProblem.UNTYPED_OBJECT_WRONG_KEY, args.head.toString());
+						}
+						print(": ");
+						print(args.tail.head);
+						args = args.tail.tail;
+						if (args != null && args.head != null) {
+							print(",");
+						}
+					}
+					print("}");
+					return true;
+
+				case "$apply":
+					print("(<any>").print(invocation.args.head).print(")(").printArgList(invocation.args.tail)
+							.print(")");
+					return true;
+				case "$new":
+					print("new (<any>").print(invocation.args.head).print(")(").printArgList(invocation.args.tail)
+							.print(")");
+					return true;
 				}
 			}
-			print("}");
-			return true;
 		}
 
-		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "$apply")) {
-			print("(<any>").print(invocation.args.head).print(")(").printArgList(invocation.args.tail).print(")");
-			return true;
-		}
-
-		if (matchesMethod(targetClassName, targetMethodName, UTIL_CLASSNAME, "$new")) {
-			print("new (<any>").print(invocation.args.head).print(")(").printArgList(invocation.args.tail).print(")");
-			return true;
-		}
-
-		if (matchesMethod(targetClassName, targetMethodName, null, INDEXED_GET_FUCTION_NAME)) {
-			if (isWithinGlobals(targetClassName)) {
-				if (invocation.getArguments().size() == 1) {
-					report(invocation, JSweetProblem.GLOBAL_INDEXER_GET);
-					return true;
-				} else {
-					if (invocation.args.head.toString().endsWith(GLOBALS_CLASS_NAME + ".class")) {
+		if (targetMethodName != null) {
+			switch (targetMethodName) {
+			case INDEXED_GET_FUCTION_NAME:
+				if (isWithinGlobals(targetClassName)) {
+					if (invocation.getArguments().size() == 1) {
 						report(invocation, JSweetProblem.GLOBAL_INDEXER_GET);
 						return true;
-					}
-				}
-			}
-
-			if (fieldAccess != null && !UTIL_CLASSNAME.equals(targetClassName)) {
-				print(fieldAccess.selected).print("[").print(invocation.args.head).print("]");
-			} else {
-				if (invocation.args.length() == 1) {
-					print("this[").print(invocation.args.head).print("]");
-				} else {
-					print(invocation.args.head).print("[").print(invocation.args.tail.head).print("]");
-				}
-			}
-			return true;
-		}
-		if (matchesMethod(targetClassName, targetMethodName, null, INDEXED_GET_STATIC_FUCTION_NAME)) {
-			if (invocation.getArguments().size() == 1 && isWithinGlobals(targetClassName)) {
-				report(invocation, JSweetProblem.GLOBAL_INDEXER_GET);
-				return true;
-			}
-
-			print(fieldAccess.selected).print("[").print(invocation.args.head).print("]");
-			return true;
-		}
-
-		if (matchesMethod(targetClassName, targetMethodName, null, INDEXED_SET_FUCTION_NAME)) {
-
-			if (isWithinGlobals(targetClassName)) {
-				if (invocation.getArguments().size() == 2) {
-					report(invocation, JSweetProblem.GLOBAL_INDEXER_SET);
-					return true;
-				} else {
-					if (invocation.args.head.toString().endsWith(GLOBALS_CLASS_NAME + ".class")) {
-						report(invocation, JSweetProblem.GLOBAL_INDEXER_SET);
-						return true;
-					}
-				}
-			}
-
-			if (fieldAccess != null && !UTIL_CLASSNAME.equals(targetClassName)) {
-				// check the type through the getter
-				for (Symbol e : fieldAccess.selected.type.tsym.getEnclosedElements()) {
-					if (e instanceof MethodSymbol && INDEXED_GET_FUCTION_NAME.equals(e.getSimpleName().toString())) {
-						MethodSymbol getMethod = (MethodSymbol) e;
-						TypeSymbol getterType = getMethod.getReturnType().tsym;
-						TypeSymbol getterIndexType = getMethod.getParameters().get(0).type.tsym;
-
-						TypeSymbol invokedIndexType = invocation.args.head.type.tsym;
-						TypeSymbol invokedValueType = invocation.args.tail.head.type.tsym;
-
-						boolean sameIndexType = getterIndexType.equals(invokedIndexType);
-
-						if (sameIndexType && !Util.isAssignable(context.types, getterType, invokedValueType)) {
-							report(invocation.args.tail.head, JSweetProblem.INDEXED_SET_TYPE_MISMATCH, getterType);
+					} else {
+						if (invocation.args.head.toString().endsWith(GLOBALS_CLASS_NAME + ".class")) {
+							report(invocation, JSweetProblem.GLOBAL_INDEXER_GET);
+							return true;
 						}
 					}
 				}
 
-				print(fieldAccess.selected).print("[").print(invocation.args.head).print("] = ")
-						.print(invocation.args.tail.head);
-			} else {
-				if (invocation.args.length() == 2) {
-					print("this[").print(invocation.args.head).print("] = <any>").print(invocation.args.tail.head);
+				if (fieldAccess != null && !UTIL_CLASSNAME.equals(targetClassName)) {
+					print(fieldAccess.selected).print("[").print(invocation.args.head).print("]");
 				} else {
-					print(invocation.args.head).print("[").print(invocation.args.tail.head).print("] = <any>")
-							.print(invocation.args.tail.tail.head);
-				}
-			}
-			return true;
-		}
-
-		if (matchesMethod(targetClassName, targetMethodName, null, INDEXED_SET_STATIC_FUCTION_NAME)) {
-
-			if (invocation.getArguments().size() == 2 && isWithinGlobals(targetClassName)) {
-				report(invocation, JSweetProblem.GLOBAL_INDEXER_SET);
-				return true;
-			}
-
-			print(fieldAccess.selected).print("[").print(invocation.args.head).print("] = ")
-					.print(invocation.args.tail.head);
-			return true;
-		}
-
-		if (matchesMethod(targetClassName, targetMethodName, null, INDEXED_DELETE_FUCTION_NAME)) {
-			if (isWithinGlobals(targetClassName)) {
-				if (invocation.getArguments().size() == 1) {
-					report(invocation, JSweetProblem.GLOBAL_DELETE);
-					return true;
-				} else {
-					if (invocation.args.head.toString().endsWith(GLOBALS_CLASS_NAME + ".class")) {
-						report(invocation, JSweetProblem.GLOBAL_DELETE);
-						return true;
+					if (invocation.args.length() == 1) {
+						print("this[").print(invocation.args.head).print("]");
+					} else {
+						print(invocation.args.head).print("[").print(invocation.args.tail.head).print("]");
 					}
 				}
-			}
-
-			if (fieldAccess != null && !UTIL_CLASSNAME.equals(targetClassName)) {
-				print("delete ").print(fieldAccess.selected).print("[").print(invocation.args.head).print("]");
-			} else {
-				if (invocation.args.length() == 1) {
-					print("delete this[").print(invocation.args.head).print("]");
-				} else {
-					print("delete ").print(invocation.args.head).print("[").print(invocation.args.tail.head).print("]");
+				return true;
+			case INDEXED_GET_STATIC_FUCTION_NAME:
+				if (invocation.getArguments().size() == 1 && isWithinGlobals(targetClassName)) {
+					report(invocation, JSweetProblem.GLOBAL_INDEXER_GET);
+					return true;
 				}
-			}
-			return true;
-		}
 
-		if (matchesMethod(targetClassName, targetMethodName, null, INDEXED_DELETE_STATIC_FUCTION_NAME)) {
-			if (invocation.getArguments().size() == 1 && isWithinGlobals(targetClassName)) {
-				report(invocation, JSweetProblem.GLOBAL_DELETE);
+				print(fieldAccess.selected).print("[").print(invocation.args.head).print("]");
+				return true;
+
+			case INDEXED_SET_FUCTION_NAME:
+				if (isWithinGlobals(targetClassName)) {
+					if (invocation.getArguments().size() == 2) {
+						report(invocation, JSweetProblem.GLOBAL_INDEXER_SET);
+						return true;
+					} else {
+						if (invocation.args.head.toString().endsWith(GLOBALS_CLASS_NAME + ".class")) {
+							report(invocation, JSweetProblem.GLOBAL_INDEXER_SET);
+							return true;
+						}
+					}
+				}
+
+				if (fieldAccess != null && !UTIL_CLASSNAME.equals(targetClassName)) {
+					// check the type through the getter
+					for (Symbol e : fieldAccess.selected.type.tsym.getEnclosedElements()) {
+						if (e instanceof MethodSymbol
+								&& INDEXED_GET_FUCTION_NAME.equals(e.getSimpleName().toString())) {
+							MethodSymbol getMethod = (MethodSymbol) e;
+							TypeSymbol getterType = getMethod.getReturnType().tsym;
+							TypeSymbol getterIndexType = getMethod.getParameters().get(0).type.tsym;
+
+							TypeSymbol invokedIndexType = invocation.args.head.type.tsym;
+							TypeSymbol invokedValueType = invocation.args.tail.head.type.tsym;
+
+							boolean sameIndexType = getterIndexType.equals(invokedIndexType);
+
+							if (sameIndexType && !Util.isAssignable(context.types, getterType, invokedValueType)) {
+								report(invocation.args.tail.head, JSweetProblem.INDEXED_SET_TYPE_MISMATCH, getterType);
+							}
+						}
+					}
+
+					print(fieldAccess.selected).print("[").print(invocation.args.head).print("] = ")
+							.print(invocation.args.tail.head);
+				} else {
+					if (invocation.args.length() == 2) {
+						print("this[").print(invocation.args.head).print("] = <any>").print(invocation.args.tail.head);
+					} else {
+						print(invocation.args.head).print("[").print(invocation.args.tail.head).print("] = <any>")
+								.print(invocation.args.tail.tail.head);
+					}
+				}
+				return true;
+
+			case INDEXED_SET_STATIC_FUCTION_NAME:
+
+				if (invocation.getArguments().size() == 2 && isWithinGlobals(targetClassName)) {
+					report(invocation, JSweetProblem.GLOBAL_INDEXER_SET);
+					return true;
+				}
+
+				print(fieldAccess.selected).print("[").print(invocation.args.head).print("] = ")
+						.print(invocation.args.tail.head);
+				return true;
+
+			case INDEXED_DELETE_FUCTION_NAME:
+				if (isWithinGlobals(targetClassName)) {
+					if (invocation.getArguments().size() == 1) {
+						report(invocation, JSweetProblem.GLOBAL_DELETE);
+						return true;
+					} else {
+						if (invocation.args.head.toString().endsWith(GLOBALS_CLASS_NAME + ".class")) {
+							report(invocation, JSweetProblem.GLOBAL_DELETE);
+							return true;
+						}
+					}
+				}
+
+				if (fieldAccess != null && !UTIL_CLASSNAME.equals(targetClassName)) {
+					print("delete ").print(fieldAccess.selected).print("[").print(invocation.args.head).print("]");
+				} else {
+					if (invocation.args.length() == 1) {
+						print("delete this[").print(invocation.args.head).print("]");
+					} else {
+						print("delete ").print(invocation.args.head).print("[").print(invocation.args.tail.head)
+								.print("]");
+					}
+				}
+				return true;
+
+			case INDEXED_DELETE_STATIC_FUCTION_NAME:
+				if (invocation.getArguments().size() == 1 && isWithinGlobals(targetClassName)) {
+					report(invocation, JSweetProblem.GLOBAL_DELETE);
+					return true;
+				}
+
+				if (fieldAccess != null && !UTIL_CLASSNAME.equals(targetClassName)) {
+					print("delete ").print(fieldAccess.selected).print("[").print(invocation.args.head).print("]");
+				} else {
+					if (invocation.args.length() == 1) {
+						print("delete ").print("this[").print(invocation.args.head).print("]");
+					} else {
+						print("delete ").print(invocation.args.head).print("[").print(invocation.args.tail.head)
+								.print("]");
+					}
+				}
 				return true;
 			}
 
-			if (fieldAccess != null && !UTIL_CLASSNAME.equals(targetClassName)) {
-				print("delete ").print(fieldAccess.selected).print("[").print(invocation.args.head).print("]");
-			} else {
-				if (invocation.args.length() == 1) {
-					print("delete ").print("this[").print(invocation.args.head).print("]");
-				} else {
-					print("delete ").print(invocation.args.head).print("[").print(invocation.args.tail.head).print("]");
-				}
-			}
-			return true;
 		}
 
 		if (targetClassName != null && targetClassName.endsWith(GLOBALS_CLASS_NAME)
@@ -698,7 +684,7 @@ public class Java2TypeScriptAdapter<C extends JSweetContext> extends AbstractPri
 			}
 			return true;
 		}
-		if (fieldAccess == null && matchesMethod(targetClassName, targetMethodName, null, "$super")) {
+		if (fieldAccess == null && "$super".equals(targetClassName)) {
 			print("super(").printArgList(invocation.args).print(")");
 			return true;
 		}
@@ -1311,7 +1297,7 @@ public class Java2TypeScriptAdapter<C extends JSweetContext> extends AbstractPri
 	}
 
 	@Override
-	public AbstractTreePrinter<C> substituteAndPrintType(JCTree typeTree, boolean arrayComponent,
+	protected final AbstractTreePrinter<C> substituteAndPrintType(JCTree typeTree, boolean arrayComponent,
 			boolean inTypeParameters, boolean completeRawTypes, boolean disableSubstitution) {
 		if (typeTree.type.tsym instanceof TypeVariableSymbol) {
 			if (typeVariablesToErase.contains(typeTree.type.tsym)) {
@@ -1482,8 +1468,58 @@ public class Java2TypeScriptAdapter<C extends JSweetContext> extends AbstractPri
 				}
 			}
 		}
-		return super.substituteAndPrintType(typeTree, arrayComponent, inTypeParameters, completeRawTypes,
-				disableSubstitution);
+
+		if (typeTree instanceof JCTypeApply) {
+			JCTypeApply typeApply = ((JCTypeApply) typeTree);
+			substituteAndPrintType(typeApply.clazz, arrayComponent, inTypeParameters, false, disableSubstitution);
+			if (!typeApply.arguments.isEmpty() && !"any".equals(getPrinter().getLastPrintedString(3))
+					&& !"Object".equals(getPrinter().getLastPrintedString(6))) {
+				getPrinter().print("<");
+				for (JCExpression argument : typeApply.arguments) {
+					substituteAndPrintType(argument, arrayComponent, false, completeRawTypes, false).print(", ");
+				}
+				if (typeApply.arguments.length() > 0) {
+					getPrinter().removeLastChars(2);
+				}
+				getPrinter().print(">");
+			}
+			return getPrinter();
+		} else if (typeTree instanceof JCWildcard) {
+			JCWildcard wildcard = ((JCWildcard) typeTree);
+			String name = getPrinter().getContext().getWildcardName(wildcard);
+			if (name == null) {
+				return getPrinter().print("any");
+			} else {
+				getPrinter().print(name);
+				if (inTypeParameters) {
+					getPrinter().print(" extends ");
+					return substituteAndPrintType(wildcard.getBound(), arrayComponent, false, completeRawTypes,
+							disableSubstitution);
+				} else {
+					return getPrinter();
+				}
+			}
+		} else {
+			if (typeTree instanceof JCArrayTypeTree) {
+				return substituteAndPrintType(((JCArrayTypeTree) typeTree).elemtype, true, inTypeParameters,
+						completeRawTypes, disableSubstitution).print("[]");
+			}
+			if (completeRawTypes && typeTree.type.tsym.getTypeParameters() != null
+					&& !typeTree.type.tsym.getTypeParameters().isEmpty()) {
+				// raw type case (Java warning)
+				getPrinter().print(typeTree);
+				getPrinter().print("<");
+				for (int i = 0; i < typeTree.type.tsym.getTypeParameters().length(); i++) {
+					getPrinter().print("any, ");
+				}
+				getPrinter().removeLastChars(2);
+				getPrinter().print(">");
+				return getPrinter();
+			} else {
+				return getPrinter().print(typeTree);
+			}
+		}
+
 	}
 
 	@Override

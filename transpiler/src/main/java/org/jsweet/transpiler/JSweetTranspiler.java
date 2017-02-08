@@ -173,6 +173,21 @@ public class JSweetTranspiler<C extends JSweetContext> implements JSweetOptions 
 	private ArrayList<File> jsLibFiles = new ArrayList<>();
 	private File sourceRoot = null;
 	private boolean ignoreTypeScriptErrors = false;
+	private boolean forceJavaRuntime = false;
+	private boolean isUsingJavaRuntime = false;
+
+	/**
+	 * Manually sets the transpiler to use (or not use) a Java runtime.
+	 * 
+	 * <p>
+	 * Calling this method is usually not needed since JSweet auto-detects the
+	 * J4TS candy. Use only to manually force the transpiler in a mode or
+	 * another.
+	 */
+	public void setUsingJavaRuntime(boolean usingJavaRuntime) {
+		forceJavaRuntime = true;
+		isUsingJavaRuntime = usingJavaRuntime;
+	}
 
 	@Override
 	public String toString() {
@@ -374,7 +389,7 @@ public class JSweetTranspiler<C extends JSweetContext> implements JSweetOptions 
 				}
 			}
 		}
-		
+
 		if (encoding != null) {
 			options.put(Option.ENCODING, encoding);
 		}
@@ -504,11 +519,11 @@ public class JSweetTranspiler<C extends JSweetContext> implements JSweetOptions 
 			compiler.verbose = true;
 			compiler.genEndPos = false;
 			compiler.encoding = encoding;
-			
+
 			log = Log.instance(context);
 			log.dumpOnError = false;
 			log.emitWarnings = false;
-			
+
 			logger.info("parsingPOUET: " + fileObjects);
 			List<JCCompilationUnit> compilationUnits = compiler.enterTrees(compiler.parseFiles(fileObjects));
 			MainMethodFinder mainMethodFinder = new MainMethodFinder();
@@ -723,6 +738,7 @@ public class JSweetTranspiler<C extends JSweetContext> implements JSweetOptions 
 	synchronized public void transpile(TranspilationHandler transpilationHandler, SourceFile... files)
 			throws IOException {
 		transpilationStartTimestamp = System.currentTimeMillis();
+
 		try {
 			initNode(transpilationHandler);
 		} catch (Exception e) {
@@ -757,6 +773,9 @@ public class JSweetTranspiler<C extends JSweetContext> implements JSweetOptions 
 		if (compilationUnits == null) {
 			return;
 		}
+		context.setUsingJavaRuntime(forceJavaRuntime ? isUsingJavaRuntime
+				: (candiesProcessor == null ? false : candiesProcessor.isUsingJavaRuntime()));
+
 		context.sourceFiles = files;
 		factory.createBeforeTranslationScanner(transpilationHandler, context).process(compilationUnits);
 

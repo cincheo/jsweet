@@ -27,7 +27,7 @@ import java.util.List;
  * @author Louis Grignon
  */
 class CandiesStore {
-	List<CandyDescriptor> candies = new LinkedList<>();
+	private List<CandyDescriptor> candies = new LinkedList<>();
 
 	public CandiesStore() {
 		this(new LinkedList<CandyDescriptor>());
@@ -55,5 +55,9 @@ class CandiesStore {
 	@Override
 	public String toString() {
 		return getClass().getSimpleName() + "=" + candies;
+	}
+
+	public List<CandyDescriptor> getCandies() {
+		return candies;
 	}
 }

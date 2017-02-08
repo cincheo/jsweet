@@ -299,6 +299,8 @@ public class JSweetContext extends Context {
 
 	}
 
+	private boolean usingJavaRuntime = false;
+
 	/**
 	 * JSweet transpilation options.
 	 */
@@ -1337,6 +1339,22 @@ public class JSweetContext extends Context {
 		} else {
 			return isPackageErased((PackageSymbol) pkg.getEnclosingElement());
 		}
+	}
+
+	/**
+	 * Tells if the transpiler is using J4TS Java runtime. If yes, it will use
+	 * the adapter that tries to delegate to the Java emulation layer for the
+	 * Java API.
+	 */
+	public boolean isUsingJavaRuntime() {
+		return usingJavaRuntime;
+	}
+
+	/**
+	 * Sets the transpiler to use the J4TS Java runtime.
+	 */
+	public void setUsingJavaRuntime(boolean usingJavaRuntime) {
+		this.usingJavaRuntime = usingJavaRuntime;
 	}
 
 }
