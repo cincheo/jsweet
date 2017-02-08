@@ -127,6 +127,7 @@
 					<javadocVersion>1.8</javadocVersion>
 					<sourcepath>src/main/java</sourcepath>
 					<encoding>${project.build.sourceEncoding}</encoding>
+					<skip>${skipJavadoc}</skip>
 					<fixTags>all</fixTags>
 					<failOnError>false</failOnError>
 					<reportOutputDirectory>/var/www/apidocs/org/jsweet</reportOutputDirectory>

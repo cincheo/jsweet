@@ -1552,7 +1552,12 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 			if (inOverload && !overload.isValid && !inCoreWrongOverload) {
 				print(getOverloadMethodName(methodDecl.sym));
 			} else {
-				print(getTSMethodName(methodDecl));
+				String tsMethodName = getTSMethodName(methodDecl);
+				if (doesMemberNameRequireQuotes(tsMethodName)) {
+					print("'" + tsMethodName + "'");
+				} else {
+					print(tsMethodName);
+				}
 			}
 		}
 		if ((methodDecl.typarams != null && !methodDecl.typarams.isEmpty())
@@ -1695,8 +1700,15 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 							if (parent.sym != method.sym.getEnclosingElement()
 									&& context.getOverload((ClassSymbol) method.sym.getEnclosingElement(),
 											method.sym).coreMethod == method) {
-								print("{").println().startIndent().printIndent()
-										.print("super." + getTSMethodName(methodDecl) + "(");
+								print("{").println().startIndent().printIndent();
+
+								String tsMethodName = getTSMethodName(methodDecl);
+								if (doesMemberNameRequireQuotes(tsMethodName)) {
+									print("super['" + tsMethodName + "']");
+								} else {
+									print("super." + tsMethodName + "");
+								}
+								print("(");
 								for (int j = 0; j < method.getParameters().size(); j++) {
 									print(avoidJSKeyword(overload.coreMethod.getParameters().get(j).name.toString()))
 											.print(", ");
@@ -1770,13 +1782,13 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 			name = getAdapter().getIdentifier(var.sym);
 		}
 		if (getScope().innerClassNotStatic && !Util.isConstantOrNullField(var)) {
-			if (doesFieldNameRequireQuotes(name)) {
+			if (doesMemberNameRequireQuotes(name)) {
 				printIndent().print("this['").print(name).print("'] = ").print(var.init).print(";").println();
 			} else {
 				printIndent().print("this.").print(name).print(" = ").print(var.init).print(";").println();
 			}
 		} else if (var.init == null) {
-			if (doesFieldNameRequireQuotes(name)) {
+			if (doesMemberNameRequireQuotes(name)) {
 				printIndent().print("this['").print(name).print("'] = ").print(Util.getTypeInitialValue(var.type))
 						.print(";").println();
 			} else {
@@ -2179,7 +2191,7 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 				print("...");
 			}
 
-			if (doesFieldNameRequireQuotes(name)) {
+			if (doesMemberNameRequireQuotes(name)) {
 				print("'" + name + "'");
 			} else {
 				print(name);
@@ -2280,7 +2292,7 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 		}
 	}
 
-	private boolean doesFieldNameRequireQuotes(String name) {
+	private boolean doesMemberNameRequireQuotes(String name) {
 		for (char c : name.toCharArray()) {
 			if (TS_IDENTIFIER_FORBIDDEN_CHARS.contains(c)) {
 				return true;
@@ -2399,7 +2411,7 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 				} else {
 					fieldName = getAdapter().getIdentifier(fieldAccess.sym);
 				}
-				if (doesFieldNameRequireQuotes(fieldName)) {
+				if (doesMemberNameRequireQuotes(fieldName)) {
 					if (getLastPrintedChar() == '.') {
 						removeLastChar();
 						print("['").print(fieldName).print("']");
@@ -2886,7 +2898,7 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 					print(name);
 				}
 			} else {
-				if (doesFieldNameRequireQuotes(name)) {
+				if (doesMemberNameRequireQuotes(name)) {
 					if (getLastPrintedChar() == '.') {
 						removeLastChar();
 						print("['").print(name).print("']");

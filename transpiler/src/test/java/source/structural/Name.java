@@ -28,6 +28,10 @@ public class Name {
 
 	static Array<String> array;
 
+
+	@jsweet.lang.Name("method-name-with-dash")
+	void method_name_with_dash() {}
+	
 	public static void main(String[] args) {
 		array.reduceCallbackfnFunction4((s1, s2, d, s3) -> {
 			return null;
