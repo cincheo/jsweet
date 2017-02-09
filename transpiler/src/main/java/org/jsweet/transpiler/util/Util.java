@@ -97,12 +97,21 @@ public class Util {
 	}
 
 	/**
-	 * Tells if the given type is within the Java sources being compiled.
+	 * Tells if the given element is within the Java sources being compiled.
 	 */
-	public static boolean isSourceType(ClassSymbol clazz) {
-		// hack to know if it is a source file or a class file
-		return (clazz.sourcefile != null
-				&& clazz.sourcefile.getClass().getName().equals("com.sun.tools.javac.file.RegularFileObject"));
+	public static boolean isSourceElement(Symbol element) {
+		if (element == null || element instanceof PackageSymbol) {
+			return false;
+		}
+		if (element instanceof ClassSymbol) {
+			ClassSymbol clazz = (ClassSymbol) element;
+			// hack to know if it is a source file or a class file
+			if (clazz.sourcefile != null
+					&& clazz.sourcefile.getClass().getName().equals("com.sun.tools.javac.file.RegularFileObject")) {
+				return true;
+			}
+		}
+		return isSourceElement(element.getEnclosingElement());
 	}
 
 	/**

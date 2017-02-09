@@ -311,7 +311,7 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 		}
 		for (Symbol s : parentPackage.getEnclosedElements()) {
 			if (s instanceof ClassSymbol) {
-				if (Util.isSourceType((ClassSymbol) s)) {
+				if (Util.isSourceElement(s)) {
 					report(topLevel.getPackageName(), JSweetProblem.CLASS_OUT_OF_ROOT_PACKAGE_SCOPE,
 							s.getQualifiedName().toString(), rootPackage.getQualifiedName().toString());
 					return false;
@@ -460,7 +460,7 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 				}
 				if (qualified.sym instanceof ClassSymbol) {
 					ClassSymbol importedClass = (ClassSymbol) qualified.sym;
-					if (Util.isSourceType(importedClass) && !importedClass.getQualifiedName().toString()
+					if (Util.isSourceElement(importedClass) && !importedClass.getQualifiedName().toString()
 							.startsWith(JSweetConfig.LIBS_PACKAGE + ".")) {
 						String importedModule = importedClass.sourcefile.getName();
 						if (importedModule.equals(compilationUnit.sourcefile.getName())) {
@@ -557,7 +557,7 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 							break;
 						} else {
 							JCFieldAccess fa = (JCFieldAccess) tree;
-							if ((fa.sym instanceof ClassSymbol) && Util.isSourceType((ClassSymbol) fa.sym)) {
+							if ((fa.sym instanceof ClassSymbol) && Util.isSourceElement(fa.sym)) {
 								isSourceType = true;
 								break;
 							}

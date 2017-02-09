@@ -645,12 +645,13 @@ public class RemoveJavaDependenciesAdapter<C extends JSweetContext> extends Java
 						|| superClass.type.equals(context.symtab.exceptionType)
 						|| superClass.type.equals(context.symtab.runtimeExceptionType)
 						|| superClass.type.equals(context.symtab.errorType))
-				&& !Util.isSourceType(superClass);
+				&& !Util.isSourceElement(superClass);
 	}
 
 	@Override
 	public boolean eraseSuperInterface(JCClassDecl classdecl, ClassSymbol superInterface) {
-		return superInterface.getQualifiedName().toString().startsWith("java.") && !Util.isSourceType(superInterface);
+		return superInterface.getQualifiedName().toString().startsWith("java.")
+				&& !Util.isSourceElement(superInterface);
 	}
 
 	@Override
