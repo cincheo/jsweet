@@ -46,6 +46,7 @@ import source.syntax.QualifiedNames;
 import source.syntax.References;
 import source.syntax.SpecialFunctions;
 import source.syntax.StatementsWithNoBlocks;
+import source.syntax.SuperInvocation;
 import source.syntax.ValidIndexedAccesses;
 
 public class SyntaxTests extends AbstractTest {
@@ -88,7 +89,8 @@ public class SyntaxTests extends AbstractTest {
 	public void testAnnotationQualifiedNames() {
 		transpile((logHandler) -> {
 			Assert.assertEquals("Missing expected error", 1, logHandler.reportedProblems.size());
-			Assert.assertEquals("Wrong type of expected error", JSweetProblem.INVALID_METHOD_BODY_IN_INTERFACE, logHandler.reportedProblems.get(0));
+			Assert.assertEquals("Wrong type of expected error", JSweetProblem.INVALID_METHOD_BODY_IN_INTERFACE,
+					logHandler.reportedProblems.get(0));
 		}, getSourceFile(AnnotationQualifiedNames.class));
 	}
 
@@ -209,13 +211,17 @@ public class SyntaxTests extends AbstractTest {
 			assertEquals("ok1,ok2,ok3,ok4,ok5", r.get("trace"));
 		}, getSourceFile(LambdasWithInterfaces.class));
 	}
-	
+
 	@Test
 	public void testCasts() {
 		transpile((logHandler) -> {
 			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
 		}, getSourceFile(Casts.class));
 	}
-	
+
+	@Test
+	public void testSuperInvocation() {
+		transpile(logHandler -> logHandler.assertNoProblems(), getSourceFile(SuperInvocation.class));
+	}
 
 }

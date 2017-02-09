@@ -684,7 +684,7 @@ public class Java2TypeScriptAdapter<C extends JSweetContext> extends AbstractPri
 			}
 			return true;
 		}
-		if (fieldAccess == null && "$super".equals(targetClassName)) {
+		if (fieldAccess == null && "$super".equals(targetMethodName)) {
 			print("super(").printArgList(invocation.args).print(")");
 			return true;
 		}
