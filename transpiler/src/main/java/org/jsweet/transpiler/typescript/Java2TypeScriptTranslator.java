@@ -1702,12 +1702,8 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 											method.sym).coreMethod == method) {
 								print("{").println().startIndent().printIndent();
 
-								String tsMethodName = getTSMethodName(methodDecl);
-								if (doesMemberNameRequireQuotes(tsMethodName)) {
-									print("super['" + tsMethodName + "']");
-								} else {
-									print("super." + tsMethodName + "");
-								}
+								String tsMethodAccess = getTSMemberAccess(getTSMethodName(methodDecl), true);
+								print("super" + tsMethodAccess);
 								print("(");
 								for (int j = 0; j < method.getParameters().size(); j++) {
 									print(avoidJSKeyword(overload.coreMethod.getParameters().get(j).name.toString()))
@@ -2292,6 +2288,17 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 		}
 	}
 
+	private String getTSMemberAccess(String memberName, boolean hasSelector) {
+		if (doesMemberNameRequireQuotes(memberName)) {
+			// TODO : hasSelector should not be false by now for member with
+			// special chars for now but we should handle node case (window
+			// isn't something) => replace with global context
+			return (hasSelector ? "" : "window") + "['" + memberName + "']";
+		} else {
+			return (hasSelector ? "." : "") + memberName;
+		}
+	}
+
 	private boolean doesMemberNameRequireQuotes(String name) {
 		for (char c : name.toCharArray()) {
 			if (TS_IDENTIFIER_FORBIDDEN_CHARS.contains(c)) {
@@ -2625,26 +2632,30 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 					print(selected);
 				}
 			} else {
+				// method with name
 				if (inv.meth instanceof JCFieldAccess && applyVarargs && !targetIsThisOrStaticImported && !isStatic) {
 					targetVarName = "this['__jswref_" + (applyTargetRefCounter++) + "']";
 					print("(");
 					print(targetVarName + " = ");
 					print(((JCFieldAccess) inv.meth).selected);
-					print(").");
+					print(")");
+
+					String accessedMemberName;
 					if (keywordHandled) {
-						print(((JCFieldAccess) inv.meth).name.toString());
+						accessedMemberName = ((JCFieldAccess) inv.meth).name.toString();
 					} else {
 						if (methSym == null) {
 							methSym = (MethodSymbol) ((JCFieldAccess) inv.meth).sym;
 						}
 						if (methSym != null) {
-							print(context.getActualName(methSym));
+							accessedMemberName = context.getActualName(methSym);
 						} else {
-							print(((JCFieldAccess) inv.meth).name.toString());
+							accessedMemberName = ((JCFieldAccess) inv.meth).name.toString();
 						}
 					}
+					print(getTSMemberAccess(accessedMemberName, true));
 				} else if (methodName != null) {
-					print(methodName);
+					print(getTSMemberAccess(methodName, removeLastChar('.')));
 				} else {
 					if (keywordHandled) {
 						print(inv.meth);
@@ -2663,15 +2674,13 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 									&& getParent(JCMethodDecl.class) != null
 									&& !getParent(JCMethodDecl.class).sym.isDefault()) {
 								if (methSym.getEnclosingElement().isInterface()) {
-									if (getLastPrintedChar() == '.') {
-										removeLastChar();
-									}
+									removeLastChar('.');
 									print("['" + getOverloadMethodName(methSym) + "']");
 								} else {
 									print(getOverloadMethodName(methSym));
 								}
 							} else {
-								print(context.getActualName(methSym));
+								print(getTSMemberAccess(context.getActualName(methSym), removeLastChar('.')));
 							}
 						} else {
 							print(inv.meth);

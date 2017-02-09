@@ -117,9 +117,8 @@ public class StructuralTests extends AbstractTest {
 
 	@Test
 	public void testInnerClassUse() {
-		transpile(logHandler -> {
-			logHandler.assertNoProblems();
-		}, getSourceFile(InnerClass.class), getSourceFile(Wrapping.class), getSourceFile(InnerClassUse.class));
+		transpile(TestTranspilationHandler::assertNoProblems, getSourceFile(InnerClass.class),
+				getSourceFile(Wrapping.class), getSourceFile(InnerClassUse.class));
 	}
 
 	@Test
@@ -149,13 +148,13 @@ public class StructuralTests extends AbstractTest {
 	public void testInheritance() {
 		eval((logHandler, r) -> {
 			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-			assertEquals(true, r.<Boolean> get("X"));
-			assertEquals(true, r.<Boolean> get("Y"));
-			assertEquals("s1", r.<Boolean> get("s1b"));
-			assertEquals("s2", r.<Boolean> get("s2b"));
-			assertEquals(false, r.<Boolean> get("itfo"));
-			assertEquals("s1", r.<Boolean> get("s1o"));
-			assertEquals("s2", r.<Boolean> get("s2o"));
+			assertEquals(true, r.<Boolean>get("X"));
+			assertEquals(true, r.<Boolean>get("Y"));
+			assertEquals("s1", r.<Boolean>get("s1b"));
+			assertEquals("s2", r.<Boolean>get("s2b"));
+			assertEquals(false, r.<Boolean>get("itfo"));
+			assertEquals("s1", r.<Boolean>get("s1o"));
+			assertEquals("s2", r.<Boolean>get("s2o"));
 		}, getSourceFile(Inheritance.class));
 	}
 
@@ -216,9 +215,7 @@ public class StructuralTests extends AbstractTest {
 
 	@Test
 	public void testNoGetSetInGlobalFunction() {
-		transpile(logHandler -> {
-			logHandler.assertNoProblems();
-		}, getSourceFile(GlobalFunctionGetSetDelete.class));
+		transpile(TestTranspilationHandler::assertNoProblems, getSourceFile(GlobalFunctionGetSetDelete.class));
 	}
 
 	@Test
@@ -251,9 +248,7 @@ public class StructuralTests extends AbstractTest {
 
 	@Test
 	public void testName() {
-		transpile((logHandler) -> {
-			logHandler.assertNoProblems();
-		}, getSourceFile(Name.class));
+		transpile(TestTranspilationHandler::assertNoProblems, getSourceFile(Name.class));
 	}
 
 	@Test

@@ -31,6 +31,9 @@ public class Name {
 
 	@jsweet.lang.Name("method-name-with-dash")
 	void method_name_with_dash() {}
+
+	@jsweet.lang.Name("static-method-name-with-dash")
+	static void static_method_name_with_dash() {}
 	
 	public static void main(String[] args) {
 		array.reduceCallbackfnFunction4((s1, s2, d, s3) -> {
@@ -39,6 +42,20 @@ public class Name {
 		String s = static_name_with_dash;
 		s = Name.static_name_with_dash;
 		
+		static_method_name_with_dash();
+		Name.static_method_name_with_dash();
+		
+		Name n = new Name();
+		n.method_name_with_dash();
+		n.test();
+		n.method_name_with_dash();
 	}
+
+	private void test() {
+		method_name_with_dash();
+		this.method_name_with_dash();
+	}
+	
+	
 
 }

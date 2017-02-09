@@ -54,78 +54,58 @@ public class CandiesTests extends AbstractTest {
 		// JSweetProblem.INTERNAL_TSC_ERROR, JSweetProblem.INTERNAL_TSC_ERROR);
 		// } , getSourceFile(GlobalsImport.class));
 		transpile(ModuleKind.commonjs, logHandler -> {
-			assertEquals(0, logHandler.getReportedProblems().size());
+			logHandler.assertNoProblems();
 		}, getSourceFile(GlobalsImport.class));
 	}
 
 	@Test
 	public void testQualifiedNames() {
-		transpile(ModuleKind.commonjs, logHandler -> {
-			assertEquals(0, logHandler.getReportedProblems().size());
-		}, getSourceFile(QualifiedNames.class));
+		transpile(ModuleKind.commonjs, TestTranspilationHandler::assertNoProblems, getSourceFile(QualifiedNames.class));
 	}
 
 	@Test
 	public void testAngular() {
-		transpile(logHandler -> {
-			assertEquals(0, logHandler.getReportedProblems().size());
-		}, getSourceFile(Angular.class));
+		transpile(TestTranspilationHandler::assertNoProblems, getSourceFile(Angular.class));
 	}
 
 	@Test
 	public void testJQuery() {
-		transpile(logHandler -> {
-			assertEquals(0, logHandler.getReportedProblems().size());
-		}, getSourceFile(JQuery.class));
+		transpile(TestTranspilationHandler::assertNoProblems, getSourceFile(JQuery.class));
 	}
 
 	@Test
 	public void testBackbone() {
-		transpile(logHandler -> {
-			assertEquals(0, logHandler.getReportedProblems().size());
-		}, getSourceFile(BackboneCandy.class));
+		transpile(TestTranspilationHandler::assertNoProblems, getSourceFile(BackboneCandy.class));
 	}
 
 	@Test
 	public void testExpressLib() {
-		transpile(ModuleKind.commonjs, logHandler -> {
-			assertEquals(0, logHandler.getReportedProblems().size());
-		}, getSourceFile(ExpressLib.class));
+		transpile(ModuleKind.commonjs, TestTranspilationHandler::assertNoProblems, getSourceFile(ExpressLib.class));
 	}
 
 	@Test
 	public void testThreejs() {
-		transpile(logHandler -> {
-			assertEquals(0, logHandler.getReportedProblems().size());
-		}, getSourceFile(Threejs.class));
+		transpile(TestTranspilationHandler::assertNoProblems, getSourceFile(Threejs.class));
 	}
 
 	@Test
 	public void testReactLib() {
-		transpile(ModuleKind.none, logHandler -> {
-			assertEquals(0, logHandler.getReportedProblems().size());
-		}, getSourceFile(ReactLib.class));
+		transpile(ModuleKind.none, TestTranspilationHandler::assertNoProblems, getSourceFile(ReactLib.class));
 	}
 
 	@Test
 	public void testSocketIOLib() {
-		transpile(ModuleKind.commonjs, logHandler -> {
-			assertEquals(0, logHandler.getReportedProblems().size());
-		}, getSourceFile(SocketIOLib.class));
+		transpile(ModuleKind.commonjs, TestTranspilationHandler::assertNoProblems, getSourceFile(SocketIOLib.class));
 	}
 
 	@Test
 	public void testBabylonjs() {
-		transpile(logHandler -> {
-			assertEquals(0, logHandler.getReportedProblems().size());
-		}, getSourceFile(Babylonjs.class), new SourceFile(new File(TEST_DIRECTORY_NAME + "/source/candies/module_defs.java")));
+		transpile(TestTranspilationHandler::assertNoProblems, getSourceFile(Babylonjs.class), new SourceFile(new File(TEST_DIRECTORY_NAME + "/source/candies/module_defs.java")));
 	}
 
 	@Test
 	public void testMixins() {
-		transpile(logHandler -> {
-			assertEquals(0, logHandler.getReportedProblems().size());
-		}, getSourceFile(Mixins.class));
+		transpile(TestTranspilationHandler::assertNoProblems, getSourceFile(Mixins.class));
 	}
 
 }

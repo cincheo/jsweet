@@ -93,8 +93,8 @@ public abstract class AbstractTreePrinter<C extends JSweetContext> extends Abstr
 	 * @param fillSourceMap
 	 *            tells if printer fills the source map
 	 */
-	public AbstractTreePrinter(TranspilationHandler logHandler, C context,
-			JCCompilationUnit compilationUnit, AbstractPrinterAdapter<C> adapter, boolean fillSourceMap) {
+	public AbstractTreePrinter(TranspilationHandler logHandler, C context, JCCompilationUnit compilationUnit,
+			AbstractPrinterAdapter<C> adapter, boolean fillSourceMap) {
 		super(logHandler, context, compilationUnit);
 		this.typeChecker = new TypeChecker(this);
 		this.adapter = adapter;
@@ -230,6 +230,17 @@ public abstract class AbstractTreePrinter<C extends JSweetContext> extends Abstr
 	 */
 	public AbstractTreePrinter<C> space() {
 		return print(" ");
+	}
+
+	/**
+	 * removes last character if expectedChar
+	 */
+	public boolean removeLastChar(char expectedChar) {
+		if (getLastPrintedChar() == expectedChar) {
+			removeLastChar();
+			return true;
+		}
+		return false;
 	}
 
 	/**
