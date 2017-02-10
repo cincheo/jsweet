@@ -37,7 +37,7 @@
 		<dependency>
 			<groupId>org.jsweet</groupId>
 			<artifactId>jsweet-core</artifactId>
-			<version>5-SNAPSHOT</version>
+			<version>6-SNAPSHOT</version>
 		</dependency>
 ${{DEPENDENCIES}}
 	</dependencies>
@@ -67,11 +67,9 @@ ${{DEPENDENCIES}}
 				<configuration>
 					<verbose>true</verbose>
 					<bundle>true</bundle>
-					<tsOut>src/main/resources/META-INF/resources/typings/${project.artifactId}/${project.version}</tsOut>
-					<targetVersion>ES5</targetVersion>
-					<excludes>
-						<exclude>**jsweet/util/function/**</exclude>
-					</excludes>
+					<outDir>src/main/resources/META-INF/resources/typings/${project.artifactId}/${project.version}/sources</outDir>
+					<tsOut>src/main/resources/META-INF/resources/typings/${project.artifactId}/${project.version}/sources</tsOut>
+					<targetVersion>ES6</targetVersion>
 				</configuration>
 				<executions>
 					<execution>
