@@ -2324,7 +2324,8 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 		}
 		String adaptedQualId = getAdapter().needsImport(importDecl, qualId);
 		if (adaptedQualId != null && adaptedQualId.contains(".")) {
-			if (importDecl.isStatic() && !qualId.contains("." + JSweetConfig.GLOBALS_CLASS_NAME + ".")) {
+			if (importDecl.isStatic() && !qualId.contains("." + JSweetConfig.GLOBALS_CLASS_NAME + ".")
+					 && !qualId.contains("." + JSweetConfig.STRING_TYPES_INTERFACE_NAME + ".")) {
 				if (!context.bundleMode) {
 					print(VAR_DECL_KEYWORD + " ").print(qualId.substring(qualId.lastIndexOf('.') + 1)).print(": any = ")
 							.print(qualId).print(";");

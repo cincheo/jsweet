@@ -553,7 +553,7 @@ public final class Globals {
 	 *            the object typed after one of the types of the union type
 	 * @return the same object, but typed after a union type
 	 */
-	native public static <U extends Union3<?, ?, ?>, T> U union3(T object);
+	native public static <T> Union3<?, ?, ?> union3(T object);
 
 	/**
 	 * This helper casts an object to an union type.
@@ -566,7 +566,7 @@ public final class Globals {
 	 *            the object typed after one of the types of the union type
 	 * @return the same object, but typed after a union type
 	 */
-	native public static <U extends Union4<?, ?, ?, ?>, T> U union4(T object);
+	native public static <T> Union4<?, ?, ?, ?> union4(T object);
 
 	/**
 	 * This utility function allows using the <code>typeof</code> JavaScript
