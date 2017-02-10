@@ -125,8 +125,8 @@ public class Java2TypeScriptAdapter<C extends JSweetContext> extends AbstractPri
 
 	private final static String VAR_DECL_KEYWORD = Java2TypeScriptTranslator.VAR_DECL_KEYWORD;
 
-	protected Map<String, String> typesMapping = new HashMap<String, String>();
-	protected List<BiFunction<JCTree, String, Object>> complexTypesMapping = new ArrayList<>();
+	private Map<String, String> typesMapping = new HashMap<String, String>();
+	private List<BiFunction<JCTree, String, Object>> complexTypesMapping = new ArrayList<>();
 	protected Map<String, String> langTypesMapping = new HashMap<String, String>();
 	protected Set<String> langTypesSimpleNames = new HashSet<String>();
 	protected Set<String> baseThrowables = new HashSet<String>();
@@ -228,6 +228,51 @@ public class Java2TypeScriptAdapter<C extends JSweetContext> extends AbstractPri
 		baseThrowables.add(Error.class.getName());
 		baseThrowables.add(Exception.class.getName());
 
+	}
+
+	/**
+	 * Adds a type mapping so that this adapter substitutes the source type with
+	 * the target type during the transpilation process.
+	 * 
+	 * @param sourceTypeName
+	 *            the fully qualified name of the type to be substituted
+	 * @param targetTypeName
+	 *            the fully Qualified name of the type the source type is mapped
+	 *            to
+	 */
+	public void addTypeMapping(String sourceTypeName, String targetTypeName) {
+		typesMapping.put(sourceTypeName, targetTypeName);
+	}
+
+	/**
+	 * Adds a set of name-based type mappings. This method is equivalent to
+	 * calling {@link #addTypeMapping(String, String)} for each entry of the
+	 * given map.
+	 */
+	public void addTypeMappings(Map<String, String> nameMappings) {
+		typesMapping.putAll(nameMappings);
+	}
+
+	/**
+	 * Returns true if the given type name is mapped through the
+	 * {@link #addTypeMapping(String, String)} or
+	 * {@link #addTypeMapping(String, String)} function.
+	 */
+	public boolean isMappedType(String sourceTypeName) {
+		return typesMapping.containsKey(sourceTypeName);
+	}
+
+	/**
+	 * Adds a type mapping so that this adapter substitutes the source type tree
+	 * with a target type during the transpilation process.
+	 * 
+	 * @param mappingFunction
+	 *            a function that takes the type tree, the type name, and
+	 *            returns a substitution (either under the form of a string, or
+	 *            of a string, or of another type tree).
+	 */
+	public void addTypeMapping(BiFunction<JCTree, String, Object> mappingFunction) {
+		complexTypesMapping.add(mappingFunction);
 	}
 
 	@Override

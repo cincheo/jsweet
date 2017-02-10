@@ -95,14 +95,14 @@ public class RemoveJavaDependenciesAdapter<C extends JSweetContext> extends Java
 		extTypesMapping.put(Calendar.class.getName(), "Date");
 		extTypesMapping.put(GregorianCalendar.class.getName(), "Date");
 		extTypesMapping.put(TimeZone.class.getName(), "string");
-		typesMapping.putAll(extTypesMapping);
-		complexTypesMapping
-				.add((typeTree,
+		addTypeMappings(extTypesMapping);
+		addTypeMapping(
+				(typeTree,
 						name) -> name.startsWith("java.")
 								&& context.types.isSubtype(typeTree.type, context.symtab.throwableType) ? "Error"
 										: null);
-		complexTypesMapping
-				.add((typeTree,
+		addTypeMapping(
+				(typeTree,
 						name) -> typeTree instanceof JCTypeApply && WeakReference.class.getName()
 								.equals(typeTree.type.tsym.getQualifiedName().toString())
 										? ((JCTypeApply) typeTree).arguments.head : null);
@@ -541,8 +541,8 @@ public class RemoveJavaDependenciesAdapter<C extends JSweetContext> extends Java
 
 	@Override
 	protected boolean substituteFieldAccess(JCFieldAccess fieldAccess, TypeSymbol targetType, String accessedType) {
-		if (fieldAccess.sym.isStatic() && typesMapping.containsKey(accessedType)
-				&& accessedType.startsWith("java.lang.") && !"class".equals(fieldAccess.name.toString())) {
+		if (fieldAccess.sym.isStatic() && isMappedType(accessedType) && accessedType.startsWith("java.lang.")
+				&& !"class".equals(fieldAccess.name.toString())) {
 
 			switch (accessedType) {
 			case "java.lang.Float":
