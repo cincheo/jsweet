@@ -32,6 +32,8 @@ import jsweet.util.function.Function6;
 import jsweet.util.function.TriConsumer;
 import jsweet.util.function.TriFunction;
 import jsweet.util.union.Union;
+import jsweet.util.union.Union3;
+import jsweet.util.union.Union4;
 
 /**
  * A set of helper methods for manipulating JavaScript core lang features and
@@ -64,7 +66,7 @@ public final class Globals {
 	public static final class module {
 		public final static String id = null;
 	}
-	
+
 	/**
 	 * Casts a JavaScript array object to a native Java array.
 	 * 
@@ -539,6 +541,32 @@ public final class Globals {
 	 * @return the same object, but typed after a union type
 	 */
 	native public static <U extends Union<?, ?>, T> U union(T object);
+
+	/**
+	 * This helper casts an object to an union type.
+	 * 
+	 * <p>
+	 * The JSweet transpiler will ensure that T is one of actual type elements
+	 * of U. If not, it will raise an error.
+	 * 
+	 * @param union
+	 *            the object typed after one of the types of the union type
+	 * @return the same object, but typed after a union type
+	 */
+	native public static <U extends Union3<?, ?, ?>, T> U union3(T object);
+
+	/**
+	 * This helper casts an object to an union type.
+	 * 
+	 * <p>
+	 * The JSweet transpiler will ensure that T is one of actual type elements
+	 * of U. If not, it will raise an error.
+	 * 
+	 * @param union
+	 *            the object typed after one of the types of the union type
+	 * @return the same object, but typed after a union type
+	 */
+	native public static <U extends Union4<?, ?, ?, ?>, T> U union4(T object);
 
 	/**
 	 * This utility function allows using the <code>typeof</code> JavaScript
