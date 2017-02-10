@@ -987,10 +987,14 @@ public class JSweetContext extends Context {
 	 * Gets the first value of the 'value' property for the given annotation
 	 * type if found on the given symbol.
 	 */
-	public String getAnnotationValue(Symbol symbol, String annotationType, String defaultValue) {
+	public final String getAnnotationValue(Symbol symbol, String annotationType, String defaultValue) {
 		return getAnnotationValue(symbol, annotationType, null, defaultValue);
 	}
 
+	/**
+	 * Gets the first value of the given property for the given annotation type
+	 * if found on the given symbol.
+	 */
 	public String getAnnotationValue(Symbol symbol, String annotationType, String propertyName, String defaultValue) {
 		if (hasAnnotationFilters()) {
 			String signature = symbol.toString();

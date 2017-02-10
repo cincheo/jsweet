@@ -440,7 +440,7 @@ public abstract class AbstractPrinterAdapter<C extends JSweetContext> {
 	 * @return the adapted comment (null will remove the JavaDoc comment)
 	 */
 	public String adaptDocComment(JCTree element, String commentText) {
-		return commentText;
+		return parentAdapter == null ? commentText : parentAdapter.adaptDocComment(element, commentText);
 	}
 
 	/**
