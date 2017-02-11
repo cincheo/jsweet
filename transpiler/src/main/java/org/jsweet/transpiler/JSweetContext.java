@@ -401,6 +401,14 @@ public class JSweetContext extends Context {
 	 * A flag to tell if the transpiler is in module mode or not.
 	 */
 	public boolean useModules = false;
+	
+	/**
+	 * A flag to tell if the transpiler should transpiler modules to old fashioned require instructions rather than the ES2015 flavored syntax.
+	 * import foo = require("foo");
+	 * instead of
+	 * import * as foo from 'foo';   
+	 */
+	public boolean useRequireForModules = true;
 
 	/**
 	 * The source files that are being transpiled.

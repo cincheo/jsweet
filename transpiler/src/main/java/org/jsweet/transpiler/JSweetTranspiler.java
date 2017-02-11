@@ -320,7 +320,16 @@ public class JSweetTranspiler<C extends JSweetContext> implements JSweetOptions 
 		File initFile = new File(workingDir, ".node-init");
 		boolean initialized = initFile.exists();
 		if (!initialized) {
-			ProcessUtil.runCommand(ProcessUtil.NODE_COMMAND, null, () -> {
+			ProcessUtil.runCommand(ProcessUtil.NODE_COMMAND, line -> {
+				logger.info("node version: " + line);
+				
+				if (line.compareTo(ProcessUtil.NODE_MINIMUM_VERSION) < 0) {
+					transpilationHandler.report(JSweetProblem.NODE_OBSOLETE_VERSION, null,
+							JSweetProblem.NODE_OBSOLETE_VERSION.getMessage(line, ProcessUtil.NODE_MINIMUM_VERSION));
+					throw new RuntimeException("node.js version is obsolete, minimum version: " + ProcessUtil.NODE_MINIMUM_VERSION);					
+				}
+				
+			}, () -> {
 				transpilationHandler.report(JSweetProblem.NODE_CANNOT_START, null,
 						JSweetProblem.NODE_CANNOT_START.getMessage());
 				throw new RuntimeException("cannot find node.js");
@@ -524,7 +533,7 @@ public class JSweetTranspiler<C extends JSweetContext> implements JSweetOptions 
 			log.dumpOnError = false;
 			log.emitWarnings = false;
 
-			logger.info("parsingPOUET: " + fileObjects);
+			logger.info("parsing: " + fileObjects);
 			List<JCCompilationUnit> compilationUnits = compiler.enterTrees(compiler.parseFiles(fileObjects));
 			MainMethodFinder mainMethodFinder = new MainMethodFinder();
 			try {
@@ -694,7 +703,8 @@ public class JSweetTranspiler<C extends JSweetContext> implements JSweetOptions 
 			return null;
 		}
 		context.useModules = isUsingModules();
-
+		context.useRequireForModules = moduleKind != ModuleKind.es2015;
+		
 		if (context.useModules && bundle) {
 			transpilationHandler.report(JSweetProblem.BUNDLE_WITH_MODULE, null,
 					JSweetProblem.BUNDLE_WITH_MODULE.getMessage());
@@ -1143,7 +1153,7 @@ public class JSweetTranspiler<C extends JSweetContext> implements JSweetOptions 
 		}
 
 		if (isUsingModules()) {
-			if (ecmaTargetVersion.higherThan(EcmaScriptComplianceLevel.ES5)) {
+			if (ecmaTargetVersion.higherThan(EcmaScriptComplianceLevel.ES5) && moduleKind != ModuleKind.es2015) {
 				logger.warn("cannot use old fashionned modules with ES>5 target");
 			} else {
 				args.add("--module");

@@ -33,7 +33,6 @@ import org.jsweet.transpiler.JSweetFactory;
 import org.jsweet.transpiler.JSweetTranspiler;
 import org.jsweet.transpiler.ModuleKind;
 import org.jsweet.transpiler.SourceFile;
-import org.jsweet.transpiler.extensions.RemoveJavaDependenciesFactory;
 import org.jsweet.transpiler.util.EvaluationResult;
 import org.junit.Before;
 import org.junit.BeforeClass;

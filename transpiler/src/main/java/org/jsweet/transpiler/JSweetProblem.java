@@ -60,6 +60,10 @@ public enum JSweetProblem {
 	 */
 	NODE_CANNOT_START(Severity.ERROR),
 	/**
+	 * Raised when Node version is obsolete and should be updated
+	 */
+	NODE_OBSOLETE_VERSION(Severity.ERROR),
+	/**
 	 * Raised when the program tries to access a forbidden Java type.
 	 * 
 	 * <p>
@@ -327,6 +331,8 @@ public enum JSweetProblem {
 			return String.format("%s", params);
 		case NODE_CANNOT_START:
 			return String.format("cannot find Node.js: install first and make sure that the 'node' command is in your execution path", params);
+		case NODE_OBSOLETE_VERSION:
+			return String.format("Node.js is obsolete: %s < %s (minimum)", params);
 		case TSC_CANNOT_START:
 			return String.format("cannot find TypeScript compiler: install first and make sure that the 'tsc' command is in your execution path", params);
 		case JDK_TYPE:

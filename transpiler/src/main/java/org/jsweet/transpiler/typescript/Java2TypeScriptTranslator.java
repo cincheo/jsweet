@@ -286,8 +286,14 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 				// import, which can be named after something like
 				// qualName.replace(".", "_")... this would work in the general
 				// case...
-				if (require || GLOBALS_CLASS_NAME.equals(targetName)) {
-					print("import " + targetName + " = require(\"" + moduleName + "\"); ").println();
+
+				boolean fullImport = require || GLOBALS_CLASS_NAME.equals(targetName);
+				if (fullImport) {
+					if (context.useRequireForModules) {
+						print("import " + targetName + " = require(\"" + moduleName + "\"); ").println();
+					} else {
+						print("import * as " + targetName + " from '" + moduleName + "'; ").println();
+					}
 				} else {
 					print("import { " + targetName + " } from '" + moduleName + "'; ").println();
 				}
@@ -2325,7 +2331,7 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 		String adaptedQualId = getAdapter().needsImport(importDecl, qualId);
 		if (adaptedQualId != null && adaptedQualId.contains(".")) {
 			if (importDecl.isStatic() && !qualId.contains("." + JSweetConfig.GLOBALS_CLASS_NAME + ".")
-					 && !qualId.contains("." + JSweetConfig.STRING_TYPES_INTERFACE_NAME + ".")) {
+					&& !qualId.contains("." + JSweetConfig.STRING_TYPES_INTERFACE_NAME + ".")) {
 				if (!context.bundleMode) {
 					print(VAR_DECL_KEYWORD + " ").print(qualId.substring(qualId.lastIndexOf('.') + 1)).print(": any = ")
 							.print(qualId).print(";");

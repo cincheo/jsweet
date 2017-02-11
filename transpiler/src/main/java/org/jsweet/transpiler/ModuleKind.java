@@ -49,5 +49,10 @@ public enum ModuleKind {
 	 * The generated code uses the <code>umd</code> (EcmaScript 6 Universal
 	 * Module Definition) module kind.
 	 */
-	umd
+	umd,
+	
+	/**
+	 * The generated code uses the <code>ES6</code> module import flavour.
+	 */
+	es2015;
 }

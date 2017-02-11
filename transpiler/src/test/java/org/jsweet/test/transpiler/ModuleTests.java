@@ -51,7 +51,7 @@ import source.require.b.ClassImport;
 import source.require.b.ClassImportImplicitRequire;
 import source.require.b.GlobalsImport;
 
-public class RequireTests extends AbstractTest {
+public class ModuleTests extends AbstractTest {
 
 	// TODO: reactivate when candies are back
 	@Ignore
