@@ -30,6 +30,12 @@ public class Chars {
 		"abc".indexOf('a');
 		// would need latest j4ts
 		//Character.toUpperCase(i3);
+		
+		char c = 'a';
+		if (c == 60) {
+			System.out.println("success");
+		}
+		
 	}
 
 	public static final int MIN_RADIX = 2;
