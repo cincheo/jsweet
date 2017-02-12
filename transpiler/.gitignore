@@ -1,7 +1,7 @@
 /target/
-/.classpath
-/.project
-/.settings/
+.classpath
+.project
+.settings/
 /tempOut/
 /js/
 /.jsweet/
