@@ -30,6 +30,7 @@ import source.overload.LocalVariablesNameCollision;
 import source.overload.NonPublicRootMethod;
 import source.overload.Overload;
 import source.overload.OverloadInInnerClass;
+import source.overload.OverloadWithAbstractClass;
 import source.overload.OverloadWithEnums;
 import source.overload.OverloadWithInterfaces;
 import source.overload.OverloadWithStaticAndInstanceMethods;
@@ -165,6 +166,13 @@ public class OverloadTests extends AbstractTest {
 			assertEquals("1-1-X,1-1-0,1-2-X,1-2-0,1-3-X,1-3-0,2-1-X,2-1-0,2-2-X,2-2-0,2-3-X,2-3-0,0-3-X",
 					r.get("trace"));
 		}, getSourceFile(BasicOverride.class));
+	}
+
+	@Test
+	public void testOverloadWithAbstractClass() {
+		eval(ModuleKind.none, (logHandler, r) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(OverloadWithAbstractClass.class));
 	}
 
 	@Test

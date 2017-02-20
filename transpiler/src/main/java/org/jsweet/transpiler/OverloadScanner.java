@@ -124,10 +124,12 @@ public class OverloadScanner<C extends JSweetContext> extends AbstractTreeScanne
 				if (i == 0) {
 					isValid = false;
 					for (int j = 0; j < m1.getParameters().size(); j++) {
-						if (types.isAssignable(types.erasure(m1.getParameters().get(j).type), types.erasure(m2.getParameters().get(j).type))) {
+						if (types.isAssignable(types.erasure(m1.getParameters().get(j).type),
+								types.erasure(m2.getParameters().get(j).type))) {
 							i--;
 						}
-						if (types.isAssignable(types.erasure(m2.getParameters().get(j).type), types.erasure(m1.getParameters().get(j).type))) {
+						if (types.isAssignable(types.erasure(m2.getParameters().get(j).type),
+								types.erasure(m1.getParameters().get(j).type))) {
 							i++;
 						}
 
@@ -150,9 +152,11 @@ public class OverloadScanner<C extends JSweetContext> extends AbstractTreeScanne
 
 						if (i == 0) {
 							boolean abstract1 = m1.getModifiers().getFlags().contains(Modifier.ABSTRACT)
-									|| (m1.sym.getEnclosingElement().isInterface() && !m1.getModifiers().getFlags().contains(Modifier.DEFAULT));
+									|| (m1.sym.getEnclosingElement().isInterface()
+											&& !m1.getModifiers().getFlags().contains(Modifier.DEFAULT));
 							boolean abstract2 = m2.getModifiers().getFlags().contains(Modifier.ABSTRACT)
-									|| (m2.sym.getEnclosingElement().isInterface() && !m2.getModifiers().getFlags().contains(Modifier.DEFAULT));
+									|| (m2.sym.getEnclosingElement().isInterface()
+											&& !m2.getModifiers().getFlags().contains(Modifier.DEFAULT));
 							if (abstract1 && !abstract2) {
 								i++;
 							}
@@ -188,8 +192,8 @@ public class OverloadScanner<C extends JSweetContext> extends AbstractTreeScanne
 
 			if (methods.size() > 1 && isValid) {
 				for (JCMethodDecl methodDecl : methods) {
-					if (!methodDecl.equals(coreMethod)) {
-						if (methodDecl.body != null && methodDecl.body.stats.size() == 1) {
+					if (methodDecl.body != null && methodDecl.body.stats.size() == 1) {
+						if (!methodDecl.equals(coreMethod)) {
 							JCMethodInvocation invocation = null;
 							JCStatement stat = methodDecl.body.stats.get(0);
 							if (stat instanceof JCReturn) {
@@ -204,7 +208,8 @@ public class OverloadScanner<C extends JSweetContext> extends AbstractTreeScanne
 							if (invocation == null) {
 								isValid = false;
 							} else {
-								MethodSymbol method = Util.findMethodDeclarationInType(types, (TypeSymbol) methodDecl.sym.getEnclosingElement(), invocation);
+								MethodSymbol method = Util.findMethodDeclarationInType(types,
+										(TypeSymbol) methodDecl.sym.getEnclosingElement(), invocation);
 								if (method != null && method.getSimpleName().toString().equals(methodName)) {
 									String inv = invocation.meth.toString();
 									if (!(inv.equals(methodName) || inv.equals("this." + methodName)
@@ -218,7 +223,8 @@ public class OverloadScanner<C extends JSweetContext> extends AbstractTreeScanne
 												defaultValues.put(i, expr);
 											} else {
 												if (!(expr instanceof JCIdent && i < methodDecl.params.length()
-														&& methodDecl.params.get(i).name.equals(((JCIdent) expr).name))) {
+														&& methodDecl.params.get(i).name
+																.equals(((JCIdent) expr).name))) {
 													isValid = false;
 													break;
 												}
@@ -229,9 +235,9 @@ public class OverloadScanner<C extends JSweetContext> extends AbstractTreeScanne
 									isValid = false;
 								}
 							}
-						} else {
-							isValid = false;
 						}
+					} else {
+						isValid = false;
 					}
 				}
 			}
@@ -265,7 +271,8 @@ public class OverloadScanner<C extends JSweetContext> extends AbstractTreeScanne
 						if (subm.getParameters().size() == m.getParameters().size()) {
 							overriden = true;
 							for (int i = 0; i < subm.getParameters().size(); i++) {
-								if (!types.isAssignable(m.getParameters().get(i).type, subm.getParameters().get(i).type)) {
+								if (!types.isAssignable(m.getParameters().get(i).type,
+										subm.getParameters().get(i).type)) {
 									overriden = false;
 								}
 							}
