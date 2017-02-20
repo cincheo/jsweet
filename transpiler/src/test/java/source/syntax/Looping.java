@@ -15,7 +15,7 @@ interface Iterator<T> {
 }
 
 interface Comparable<T> {
-	
+
 }
 
 class Comparators {
@@ -32,16 +32,29 @@ public class Looping {
 		for (int i = 0, j = 0; i < 100; i++, j++) {
 			System.out.println(i + j);
 		}
+		int i = 10;
+		do {
+			System.out.println(i);
+		} while (i-- > 0);
+		do
+			System.out.println(i);
+		while (i-- > 0);
+		while (i-- > 0) {
+			System.out.println(i);
+		}
+		while (i-- > 0)
+			System.out.println(i);
 
 	}
 
 	public static <T extends Object & Comparable<? super T>> T max(Collection<? extends T> coll) {
 		Collection<String> c = null;
-		// TODO: Java accepts this assignment without casting but TypeScript does not
-		// RP: I think that Java is wrong and TypeScript is right... 
+		// TODO: Java accepts this assignment without casting but TypeScript
+		// does not
+		// RP: I think that Java is wrong and TypeScript is right...
 		@SuppressWarnings("unused")
-		String s = (String)Looping.max(c, null);
-		return (T)Looping.max(coll, null);
+		String s = (String) Looping.max(c, null);
+		return (T) Looping.max(coll, null);
 	}
 
 	public static <T> T max(Collection<? extends T> coll, Comparator<? super T> comp) {

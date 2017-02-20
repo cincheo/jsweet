@@ -3706,13 +3706,17 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 	@Override
 	public void visitDoLoop(JCDoWhileLoop doWhileLoop) {
 		print("do ");
-		print(doWhileLoop.body);
+		if (doWhileLoop.body instanceof JCBlock) {
+			print(doWhileLoop.body);
+		} else {
+			print(doWhileLoop.body).print(";");
+		}
 		print(" while(").print(doWhileLoop.cond).print(")");
 	}
 
 	@Override
 	public void visitWhileLoop(JCWhileLoop whileLoop) {
-		print("while(").print(whileLoop.cond).print(")");
+		print("while(").print(whileLoop.cond).print(") ");
 		print(whileLoop.body);
 	}
 
