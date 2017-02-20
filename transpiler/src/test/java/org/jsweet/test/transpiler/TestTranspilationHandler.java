@@ -35,9 +35,10 @@ public class TestTranspilationHandler extends ConsoleTranspilationHandler {
 	public void report(JSweetProblem problem, SourcePosition sourcePosition, String message) {
 		super.report(problem, sourcePosition, message);
 
-		// TODO : this should be cleaner. Warnings should be added to a side
-		// list so we could assert that problems size == 0 even with warnings
 		if (problem == JSweetProblem.CANDY_VERSION_DISCREPANCY) {
+			return;
+		}
+		if (problem == JSweetProblem.NODE_OBSOLETE_VERSION) {
 			return;
 		}
 
@@ -49,7 +50,7 @@ public class TestTranspilationHandler extends ConsoleTranspilationHandler {
 		// assert 0 problems = empty problem list
 		assertReportedProblems();
 	}
-	
+
 	public void assertReportedProblems(JSweetProblem... expectedProblems) {
 		List<JSweetProblem> expectedProblemsList = Arrays.asList(expectedProblems);
 		assertEquals(expectedProblemsList, reportedProblems);

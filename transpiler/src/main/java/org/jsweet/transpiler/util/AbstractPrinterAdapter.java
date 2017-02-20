@@ -52,7 +52,7 @@ import com.sun.tools.javac.util.Name;
 
 /**
  * A printer adapter, which can be overridden to change the default printer
- * behavior.
+ * behavior. Adapters are composable/chainable objects (decorator pattern).
  * 
  * @author Renaud Pawlak
  */
@@ -64,9 +64,20 @@ public abstract class AbstractPrinterAdapter<C extends JSweetContext> {
 
 	protected C context;
 
+	/**
+	 * Creates a new adapter that will try delegate to the given parent adapter
+	 * when not implementing its own behavior.
+	 * 
+	 * @param parentAdapter
+	 *            can be null, in that case the adapter implements a default
+	 *            empty behavior
+	 */
 	public AbstractPrinterAdapter(AbstractPrinterAdapter<C> parentAdapter) {
 		super();
 		this.parentAdapter = parentAdapter;
+		if (parentAdapter != null) {
+			this.context = parentAdapter.getContext();
+		}
 	}
 
 	/**
@@ -342,6 +353,9 @@ public abstract class AbstractPrinterAdapter<C extends JSweetContext> {
 	 */
 	public void setPrinter(AbstractTreePrinter<C> printer) {
 		this.printer = printer;
+		if (parentAdapter != null) {
+			parentAdapter.setPrinter(printer);
+		}
 	}
 
 	/**
@@ -458,4 +472,5 @@ public abstract class AbstractPrinterAdapter<C extends JSweetContext> {
 	public void setParentAdapter(AbstractPrinterAdapter<C> parentAdapter) {
 		this.parentAdapter = parentAdapter;
 	}
+
 }

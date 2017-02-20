@@ -42,9 +42,11 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.jsweet.JSweetConfig;
+import org.jsweet.transpiler.AnnotationAdapter.AnnotationState;
 import org.jsweet.transpiler.OverloadScanner.Overload;
 import org.jsweet.transpiler.typescript.Java2TypeScriptTranslator;
 import org.jsweet.transpiler.util.DirectedGraph;
@@ -102,6 +104,16 @@ public class JSweetContext extends Context {
 			return "FILTER" + (parameter == null ? "" : "('" + parameter + "')") + ": INCLUDES=" + inclusionPatterns
 					+ ", EXCLUDES=" + exclusionPatterns;
 		}
+	}
+
+	List<AnnotationAdapter> annotationAdapters = new ArrayList<>();
+
+	/**
+	 * Adds an annotation adapter that will tune (add or remove) annotations on
+	 * the AST. Lastly added adapters have precedence over firstly added ones.
+	 */
+	public void addAnnotationAdapter(AnnotationAdapter annotationAdapter) {
+		annotationAdapters.add(annotationAdapter);
 	}
 
 	private String toRegexp(String pattern) {
@@ -401,12 +413,11 @@ public class JSweetContext extends Context {
 	 * A flag to tell if the transpiler is in module mode or not.
 	 */
 	public boolean useModules = false;
-	
+
 	/**
-	 * A flag to tell if the transpiler should transpiler modules to old fashioned require instructions rather than the ES2015 flavored syntax.
-	 * import foo = require("foo");
-	 * instead of
-	 * import * as foo from 'foo';   
+	 * A flag to tell if the transpiler should transpiler modules to old
+	 * fashioned require instructions rather than the ES2015 flavored syntax.
+	 * import foo = require("foo"); instead of import * as foo from 'foo';
 	 */
 	public boolean useRequireForModules = true;
 
@@ -810,6 +821,18 @@ public class JSweetContext extends Context {
 	 * types.
 	 */
 	public boolean hasAnnotationType(Symbol symbol, String... annotationTypes) {
+		String[] types = annotationTypes;
+		for (AnnotationAdapter annotationIntrospector : annotationAdapters) {
+			for (String annotationType : types) {
+				AnnotationState state = annotationIntrospector.getAnnotationState(symbol, annotationType);
+				if (state == AnnotationState.ADDED) {
+					return true;
+				} else if (state == AnnotationState.REMOVED) {
+					types = ArrayUtils.removeElement(annotationTypes, annotationType);
+				}
+			}
+		}
+
 		if (hasAnnotationFilters()) {
 			String signature = symbol.toString();
 			if (!(symbol instanceof TypeSymbol) && symbol.getEnclosingElement() != null) {
@@ -1004,6 +1027,13 @@ public class JSweetContext extends Context {
 	 * if found on the given symbol.
 	 */
 	public String getAnnotationValue(Symbol symbol, String annotationType, String propertyName, String defaultValue) {
+		for (AnnotationAdapter annotationIntrospector : annotationAdapters) {
+			String value = annotationIntrospector.getAnnotationValue(symbol, annotationType, propertyName,
+					defaultValue);
+			if (value != null) {
+				return value;
+			}
+		}
 		if (hasAnnotationFilters()) {
 			String signature = symbol.toString();
 			if (symbol.getEnclosingElement() != null) {

@@ -34,6 +34,8 @@ import org.jsweet.transpiler.JSweetTranspiler;
 import org.jsweet.transpiler.ModuleKind;
 import org.jsweet.transpiler.SourceFile;
 import org.jsweet.transpiler.SourcePosition;
+import org.jsweet.transpiler.extensions.AddPrefixToNonPublicMembersAdapter;
+import org.jsweet.transpiler.typescript.Java2TypeScriptAdapter;
 import org.jsweet.transpiler.util.ProcessUtil;
 import org.jsweet.transpiler.util.Util;
 import org.junit.Ignore;
@@ -57,6 +59,7 @@ import source.blocksgame.util.Vector;
 import source.overload.Overload;
 import source.structural.AbstractClass;
 import source.transpiler.CanvasDrawing;
+import source.transpiler.PrefixExtension;
 
 public class TranspilerTests extends AbstractTest {
 
@@ -252,6 +255,20 @@ public class TranspilerTests extends AbstractTest {
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	@Test
+	public void testExtension() {
+		createTranspiler(new JSweetFactory<JSweetContext>() {
+			@Override
+			public Java2TypeScriptAdapter<JSweetContext> createAdapter(JSweetContext context) {
+				return new AddPrefixToNonPublicMembersAdapter<>(super.createAdapter(context));
+			}
+		});
+		eval((logHandler, result) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(PrefixExtension.class));
+		createTranspiler(new JSweetFactory<>());
 	}
 
 }

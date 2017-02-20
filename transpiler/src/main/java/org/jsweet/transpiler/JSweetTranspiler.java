@@ -326,7 +326,7 @@ public class JSweetTranspiler<C extends JSweetContext> implements JSweetOptions 
 				if (line.compareTo(ProcessUtil.NODE_MINIMUM_VERSION) < 0) {
 					transpilationHandler.report(JSweetProblem.NODE_OBSOLETE_VERSION, null,
 							JSweetProblem.NODE_OBSOLETE_VERSION.getMessage(line, ProcessUtil.NODE_MINIMUM_VERSION));
-					throw new RuntimeException("node.js version is obsolete, minimum version: " + ProcessUtil.NODE_MINIMUM_VERSION);					
+					//throw new RuntimeException("node.js version is obsolete, minimum version: " + ProcessUtil.NODE_MINIMUM_VERSION);					
 				}
 				
 			}, () -> {
