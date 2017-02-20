@@ -37,7 +37,7 @@ import org.apache.log4j.Logger;
 public class ProcessUtil {
 	private final static Logger logger = Logger.getLogger(ProcessUtil.class);
 
-	public static final String NODE_MINIMUM_VERSION = "v6.1.0";
+	public static final String NODE_MINIMUM_VERSION = "v4.4.0";
 
 	private static boolean initialized = false;
 
