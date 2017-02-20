@@ -22,7 +22,7 @@ import com.sun.tools.javac.code.Symbol;
 
 /**
  * This interface has to be implemented to adapt the way annotations are
- * introspected on the Java AST. Adapter should be installed on the JSweet
+ * introspected on the Java AST. Adapters should be installed on the JSweet
  * context in order to add or remove annotations.
  * 
  * @see JSweetContext#addAnnotationAdapter(AnnotationAdapter)
