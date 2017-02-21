@@ -43,6 +43,7 @@ import java.util.WeakHashMap;
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.typescript.Java2TypeScriptAdapter;
 import org.jsweet.transpiler.typescript.Java2TypeScriptTranslator;
+import org.jsweet.transpiler.util.AbstractPrinterAdapter;
 import org.jsweet.transpiler.util.Util;
 
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
@@ -70,7 +71,13 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 	protected Map<String, String> extTypesMapping = new HashMap<>();
 
 	public RemoveJavaDependenciesAdapter(JSweetContext context) {
-		super(context);
+		this((AbstractPrinterAdapter) null);
+		this.context = context;
+	}
+
+	public RemoveJavaDependenciesAdapter(AbstractPrinterAdapter parentAdapter) {
+		super(parentAdapter);
+		this.context = getContext();
 		extTypesMapping.put(List.class.getName(), "Array");
 		extTypesMapping.put(ArrayList.class.getName(), "Array");
 		extTypesMapping.put(Collection.class.getName(), "Array");
