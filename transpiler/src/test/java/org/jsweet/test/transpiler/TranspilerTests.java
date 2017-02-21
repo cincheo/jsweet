@@ -152,24 +152,72 @@ public class TranspilerTests extends AbstractTest {
 	@Test
 	public void testCommandLine() throws Throwable {
 		File outDir = new File(new File(TMPOUT_DIR), getCurrentTestName() + "/" + ModuleKind.none);
+		String gameDir = TEST_DIRECTORY_NAME + "/" + Ball.class.getPackage().getName().replace(".", "/");
+		LinkedList<File> files = new LinkedList<>();
+		Process process = null;
 
-		Process process = ProcessUtil.runCommand("java", line -> {
+		process = ProcessUtil.runCommand("java", line -> {
 			System.out.println(line);
 		}, null, "-cp", System.getProperty("java.class.path"), //
 				JSweetCommandLineLauncher.class.getName(), //
 				"--tsout", outDir.getPath(), //
 				"--jsout", outDir.getPath(), //
 				"--sourceMap", //
-				"-i", TEST_DIRECTORY_NAME + "/org/jsweet/test/transpiler/source/blocksgame");
+				"-i", gameDir);
 
 		assertTrue(process.exitValue() == 0);
-		LinkedList<File> files = new LinkedList<>();
+		files.clear();
 		Util.addFiles(".ts", outDir, files);
-		assertTrue(!files.isEmpty());
+		assertTrue(files.size() > 1);
+		assertTrue(files.stream().anyMatch(f -> f.getName().equals("UselessClass.ts")));
+		files.clear();
 		Util.addFiles(".js", outDir, files);
-		assertTrue(!files.isEmpty());
+		assertTrue(files.size() > 1);
+		files.clear();
 		Util.addFiles(".js.map", outDir, files);
-		assertTrue(!files.isEmpty());
+		assertTrue(files.size() > 1);
+
+		FileUtils.deleteQuietly(outDir);
+
+		process = ProcessUtil.runCommand("java", line -> {
+			System.out.println(line);
+		}, null, "-cp", System.getProperty("java.class.path"), //
+				JSweetCommandLineLauncher.class.getName(), //
+				"--tsout", outDir.getPath(), //
+				"--jsout", outDir.getPath(), //
+				"--sourceMap", //
+				"-i", gameDir, //
+				"--excludes", "UselessClass.java:dummy");
+
+		assertTrue(process.exitValue() == 0);
+		files.clear();
+		Util.addFiles(".ts", outDir, files);
+		assertTrue(files.size() > 1);
+		assertFalse(files.stream().anyMatch(f -> f.getName().equals("UselessClass.ts")));
+		files.clear();
+		Util.addFiles(".js", outDir, files);
+		assertTrue(files.size() > 1);
+		files.clear();
+		Util.addFiles(".js.map", outDir, files);
+		assertTrue(files.size() > 1);
+
+		FileUtils.deleteQuietly(outDir);
+
+		process = ProcessUtil.runCommand("java", line -> {
+			System.out.println(line);
+		}, null, "-cp", System.getProperty("java.class.path"), //
+				JSweetCommandLineLauncher.class.getName(), //
+				"--tsout", outDir.getPath(), //
+				"--jsout", outDir.getPath(), //
+				"--sourceMap", //
+				"-i", gameDir, //
+				"--includes", "UselessClass.java:dummy");
+
+		assertTrue(process.exitValue() == 0);
+		files.clear();
+		Util.addFiles(".ts", outDir, files);
+		assertTrue(files.size() == 3);
+		assertTrue(files.stream().anyMatch(f -> f.getName().equals("UselessClass.ts")));
 
 	}
 

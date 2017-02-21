@@ -32,6 +32,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -125,11 +126,26 @@ public class Util {
 	 *            the list to add the files matching the extension
 	 */
 	public static void addFiles(String extension, File file, LinkedList<File> files) {
+		addFiles(f -> f.getName().endsWith(extension), file, files);
+	}
+
+	/**
+	 * Recursively adds files to the given list.
+	 * 
+	 * @param filter
+	 *            the filter predicate to apply (only files matching the
+	 *            predicate will be added)
+	 * @param file
+	 *            the root file/directory to look into recursively
+	 * @param files
+	 *            the list to add the files matching the extension
+	 */
+	public static void addFiles(Predicate<File> filter, File file, LinkedList<File> files) {
 		if (file.isDirectory()) {
 			for (File f : file.listFiles()) {
-				addFiles(extension, f, files);
+				addFiles(filter, f, files);
 			}
-		} else if (file.getName().endsWith(extension)) {
+		} else if (filter.test(file)) {
 			files.add(file);
 		}
 	}
