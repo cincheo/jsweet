@@ -313,7 +313,7 @@ public class TranspilerTests extends AbstractTest {
 		createTranspiler(new JSweetFactory() {
 			@Override
 			public Java2TypeScriptAdapter createAdapter(JSweetContext context) {
-				return new AddPrefixToNonPublicMembersAdapter<>(super.createAdapter(context));
+				return new AddPrefixToNonPublicMembersAdapter(super.createAdapter(context));
 			}
 		});
 		eval(ModuleKind.none, (logHandler, result) -> {

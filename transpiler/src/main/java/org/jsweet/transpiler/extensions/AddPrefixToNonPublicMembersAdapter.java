@@ -3,7 +3,6 @@ package org.jsweet.transpiler.extensions;
 import javax.lang.model.element.Modifier;
 
 import org.jsweet.transpiler.AnnotationAdapter;
-import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.typescript.Java2TypeScriptAdapter;
 import org.jsweet.transpiler.util.AbstractPrinterAdapter;
 import org.jsweet.transpiler.util.Util;
@@ -13,7 +12,7 @@ import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 
-public class AddPrefixToNonPublicMembersAdapter<C extends JSweetContext> extends Java2TypeScriptAdapter {
+public class AddPrefixToNonPublicMembersAdapter extends Java2TypeScriptAdapter {
 
 	public AddPrefixToNonPublicMembersAdapter(AbstractPrinterAdapter parentAdapter) {
 		super(parentAdapter);
