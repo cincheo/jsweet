@@ -400,7 +400,7 @@ public class JSweetCommandLineLauncher {
 		optionArg.setLongFlag("factoryClassName");
 		optionArg.setShortFlag('f');
 		optionArg.setHelp("Use the given factory to tune the default transpiler behavior.");
-		optionArg.setStringParser(FileStringParser.getParser());
+		optionArg.setStringParser(JSAP.STRING_PARSER);
 		optionArg.setRequired(false);
 		jsap.registerParameter(optionArg);
 

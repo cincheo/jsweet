@@ -41,6 +41,8 @@ import org.jsweet.transpiler.util.Util;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.martiansoftware.jsap.JSAP;
+
 import source.blocksgame.Ball;
 import source.blocksgame.BlockElement;
 import source.blocksgame.Factory;
@@ -210,6 +212,7 @@ public class TranspilerTests extends AbstractTest {
 				"--tsout", outDir.getPath(), //
 				"--jsout", outDir.getPath(), //
 				"--sourceMap", //
+				"--factoryClassName", "org.jsweet.transpiler.extensions.RemoveJavaDependenciesFactory", //
 				"-i", gameDir, //
 				"--includes", "UselessClass.java:dummy");
 
