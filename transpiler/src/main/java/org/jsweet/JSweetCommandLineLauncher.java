@@ -167,8 +167,10 @@ public class JSweetCommandLineLauncher {
 							// try forName just in case
 							factory = (JSweetFactory) Class.forName(factoryClassName).newInstance();
 						} catch (Exception e2) {
-							logger.info("cannot find or instantiate factory class: " + factoryClassName + " - "
-									+ e.getMessage() + ", " + e2.getMessage());
+							throw new RuntimeException(
+									"cannot find or instantiate factory class: " + factoryClassName
+											+ " (make sure the class is in the plugin's classpath and that it defines an empty public constructor)",
+									e2);
 						}
 					}
 				}
@@ -177,7 +179,7 @@ public class JSweetCommandLineLauncher {
 					factory = new JSweetFactory();
 				}
 
-				JSweetTranspiler transpiler = new JSweetTranspiler(new JSweetFactory(), tsOutputDir, jsOutputDir,
+				JSweetTranspiler transpiler = new JSweetTranspiler(factory, tsOutputDir, jsOutputDir,
 						candiesJsOutputDir, classPath);
 
 				transpiler.setBundle(jsapArgs.getBoolean("bundle"));
