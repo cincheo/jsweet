@@ -60,7 +60,7 @@ import com.sun.tools.javac.tree.JCTree.JCStatement;
  * 
  * @author Renaud Pawlak
  */
-public class OverloadScanner<C extends JSweetContext> extends AbstractTreeScanner<C> {
+public class OverloadScanner extends AbstractTreeScanner {
 
 	Types types;
 	int pass = 1;
@@ -316,7 +316,7 @@ public class OverloadScanner<C extends JSweetContext> extends AbstractTreeScanne
 	/**
 	 * Creates a new overload scanner.
 	 */
-	public OverloadScanner(TranspilationHandler logHandler, C context) {
+	public OverloadScanner(TranspilationHandler logHandler, JSweetContext context) {
 		super(logHandler, context, null);
 		this.types = Types.instance(context);
 	}

@@ -57,7 +57,7 @@ public class ConsoleTranspilationHandler implements TranspilationHandler {
 	}
 	
 	@Override
-	public void onCompleted(JSweetTranspiler<?> transpiler, boolean fullPass, SourceFile[] files) {
+	public void onCompleted(JSweetTranspiler transpiler, boolean fullPass, SourceFile[] files) {
 	}
 	
 }

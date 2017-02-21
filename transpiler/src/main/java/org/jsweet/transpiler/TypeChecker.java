@@ -121,12 +121,12 @@ public class TypeChecker {
 		FORBIDDEN_JDK_FUNCTIONAL_METHODS.add("andThen");
 	}
 
-	private AbstractTreePrinter<?> translator;
+	private AbstractTreePrinter translator;
 
 	/**
 	 * Creates a new type checker object.
 	 */
-	public TypeChecker(AbstractTreePrinter<?> translator) {
+	public TypeChecker(AbstractTreePrinter translator) {
 		this.translator = translator;
 	}
 

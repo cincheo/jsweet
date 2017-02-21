@@ -11,19 +11,19 @@ import org.junit.Test;
 
 import source.extension.AnnotationTest;
 
-class TestFactory extends JSweetFactory<JSweetContext> {
+class TestFactory extends JSweetFactory {
 
 	public TestFactory() {
 	}
 
 	@Override
-	public Java2TypeScriptAdapter<JSweetContext> createAdapter(JSweetContext context) {
+	public Java2TypeScriptAdapter createAdapter(JSweetContext context) {
 		return new TestAdapter(context);
 	}
 
 }
 
-class TestAdapter extends Java2TypeScriptAdapter<JSweetContext> {
+class TestAdapter extends Java2TypeScriptAdapter {
 
 	public TestAdapter(JSweetContext context) {
 		super(context);
@@ -41,7 +41,7 @@ public class ExtensionTests extends AbstractTest {
 
 	@AfterClass
 	public static void end() {
-		createTranspiler(new JSweetFactory<>());
+		createTranspiler(new JSweetFactory());
 	}
 
 	@Test

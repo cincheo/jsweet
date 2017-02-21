@@ -48,7 +48,7 @@ import com.sun.tools.javac.util.Names;
  * 
  * @author Renaud Pawlak
  */
-public abstract class AbstractTreeScanner<C extends JSweetContext> extends TreeScanner {
+public abstract class AbstractTreeScanner extends TreeScanner {
 
 	private TranspilationHandler logHandler;
 
@@ -72,8 +72,9 @@ public abstract class AbstractTreeScanner<C extends JSweetContext> extends TreeS
 					e += name.length();
 				}
 				logHandler.report(problem,
-						new SourcePosition(new File(compilationUnit.sourcefile.getName()), tree, diagnosticSource.getLineNumber(s),
-								diagnosticSource.getColumnNumber(s, false), diagnosticSource.getLineNumber(e), diagnosticSource.getColumnNumber(e, false)),
+						new SourcePosition(new File(compilationUnit.sourcefile.getName()), tree,
+								diagnosticSource.getLineNumber(s), diagnosticSource.getColumnNumber(s, false),
+								diagnosticSource.getLineNumber(e), diagnosticSource.getColumnNumber(e, false)),
 						problem.getMessage(params));
 			}
 		}
@@ -93,9 +94,9 @@ public abstract class AbstractTreeScanner<C extends JSweetContext> extends TreeS
 		return compilationUnit;
 	}
 
-	protected C context;
+	protected JSweetContext context;
 
-	public C getContext() {
+	public JSweetContext getContext() {
 		return context;
 	}
 
@@ -117,7 +118,8 @@ public abstract class AbstractTreeScanner<C extends JSweetContext> extends TreeS
 		}
 	}
 
-	public AbstractTreeScanner(TranspilationHandler logHandler, C context, JCCompilationUnit compilationUnit) {
+	public AbstractTreeScanner(TranspilationHandler logHandler, JSweetContext context,
+			JCCompilationUnit compilationUnit) {
 		this.logHandler = logHandler;
 		this.context = context;
 		this.context.symtab = Symtab.instance(context);
@@ -182,8 +184,9 @@ public abstract class AbstractTreeScanner<C extends JSweetContext> extends TreeS
 			}
 			str = str.replace('\n', ' ');
 			str = str.substring(0, Math.min(str.length() - 1, 30));
-			System.err.print("   [" + stack.get(i).getClass().getSimpleName() + "] " + str + (str.length() < intialLength ? "..." : "") + " ("
-					+ compilationUnit.getSourceFile().getName() + ":");
+			System.err.print("   [" + stack.get(i).getClass().getSimpleName() + "] " + str
+					+ (str.length() < intialLength ? "..." : "") + " (" + compilationUnit.getSourceFile().getName()
+					+ ":");
 			if (diagnosticSource == null) {
 				System.err.println(tree.pos + ")");
 			} else {

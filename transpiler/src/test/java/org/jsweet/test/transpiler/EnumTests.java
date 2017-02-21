@@ -34,10 +34,10 @@ import source.enums.other.EnumInOtherPackage;
 
 public class EnumTests extends AbstractTest {
 
-	class AddRootFactory extends JSweetFactory<JSweetContext> {
+	class AddRootFactory extends JSweetFactory {
 		@Override
-		public Java2TypeScriptAdapter<JSweetContext> createAdapter(JSweetContext context) {
-			return new Java2TypeScriptAdapter<JSweetContext>(context) {
+		public Java2TypeScriptAdapter createAdapter(JSweetContext context) {
+			return new Java2TypeScriptAdapter(context) {
 				{
 					context.addAnnotation("@Root", "source.enums");
 				}
@@ -45,10 +45,10 @@ public class EnumTests extends AbstractTest {
 		}
 	}
 
-	class EraseEnumFactory extends JSweetFactory<JSweetContext> {
+	class EraseEnumFactory extends JSweetFactory {
 		@Override
-		public Java2TypeScriptAdapter<JSweetContext> createAdapter(JSweetContext context) {
-			return new Java2TypeScriptAdapter<JSweetContext>(context) {
+		public Java2TypeScriptAdapter createAdapter(JSweetContext context) {
+			return new Java2TypeScriptAdapter(context) {
 				{
 					context.addAnnotation("@Erased", "source.enums.ErasedEnum");
 				}
@@ -101,7 +101,7 @@ public class EnumTests extends AbstractTest {
 			Assert.assertEquals(">ok1,ok2", r.get("trace"));
 		}, getSourceFile(ComplexEnumWithAbstractMethods.class));
 		transpiler.setBundle(false);
-		createTranspiler(new JSweetFactory<>());
+		createTranspiler(new JSweetFactory());
 	}
 
 	@Test
@@ -110,7 +110,7 @@ public class EnumTests extends AbstractTest {
 		transpile(logHandler -> {
 			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
 		}, getSourceFile(ErasedEnum.class));
-		createTranspiler(new JSweetFactory<>());
+		createTranspiler(new JSweetFactory());
 	}
 
 }

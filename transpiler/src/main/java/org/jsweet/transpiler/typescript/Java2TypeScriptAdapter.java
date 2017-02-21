@@ -121,7 +121,7 @@ import com.sun.tools.javac.util.Log;
  * 
  * @author Renaud Pawlak
  */
-public class Java2TypeScriptAdapter<C extends JSweetContext> extends AbstractPrinterAdapter<C> {
+public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 
 	private final static String VAR_DECL_KEYWORD = Java2TypeScriptTranslator.VAR_DECL_KEYWORD;
 
@@ -131,16 +131,16 @@ public class Java2TypeScriptAdapter<C extends JSweetContext> extends AbstractPri
 	protected Set<String> langTypesSimpleNames = new HashSet<String>();
 	protected Set<String> baseThrowables = new HashSet<String>();
 
-	public Java2TypeScriptTranslator<C> getPrinter() {
-		return (Java2TypeScriptTranslator<C>) super.getPrinter();
+	public Java2TypeScriptTranslator getPrinter() {
+		return (Java2TypeScriptTranslator) super.getPrinter();
 	}
 
-	public Java2TypeScriptAdapter(C context) {
-		this((AbstractPrinterAdapter<C>) null);
+	public Java2TypeScriptAdapter(JSweetContext context) {
+		this((AbstractPrinterAdapter) null);
 		this.context = context;
 	}
 
-	public Java2TypeScriptAdapter(AbstractPrinterAdapter<C> parentAdapter) {
+	public Java2TypeScriptAdapter(AbstractPrinterAdapter parentAdapter) {
 		super(parentAdapter);
 		this.context = getContext();
 		typesMapping.put(Object.class.getName(), "any");
@@ -1183,7 +1183,7 @@ public class Java2TypeScriptAdapter<C extends JSweetContext> extends AbstractPri
 
 	}
 
-	protected final AbstractTreePrinter<C> printTarget(JCExpression target) {
+	protected final AbstractTreePrinter printTarget(JCExpression target) {
 		if ("super".equals(target.toString())) {
 			return print("this");
 		} else {
@@ -1290,7 +1290,7 @@ public class Java2TypeScriptAdapter<C extends JSweetContext> extends AbstractPri
 		print("javaemul.internal." + targetClassName.substring(10) + "Helper.").print(fieldAccess.name.toString());
 	}
 
-	protected final AbstractTreePrinter<C> printArguments(List<JCExpression> arguments) {
+	protected final AbstractTreePrinter printArguments(List<JCExpression> arguments) {
 		int i = 1;
 		for (JCExpression argument : arguments) {
 			printArgument(argument, i++).print(", ");
@@ -1301,7 +1301,7 @@ public class Java2TypeScriptAdapter<C extends JSweetContext> extends AbstractPri
 		return getPrinter();
 	}
 
-	protected final AbstractTreePrinter<C> printArgument(JCExpression argument, int i) {
+	protected final AbstractTreePrinter printArgument(JCExpression argument, int i) {
 		print("p" + i + ": ");
 		substituteAndPrintType(argument, false, false, true, false);
 		return getPrinter();
@@ -1342,7 +1342,7 @@ public class Java2TypeScriptAdapter<C extends JSweetContext> extends AbstractPri
 	}
 
 	@Override
-	protected final AbstractTreePrinter<C> substituteAndPrintType(JCTree typeTree, boolean arrayComponent,
+	protected final AbstractTreePrinter substituteAndPrintType(JCTree typeTree, boolean arrayComponent,
 			boolean inTypeParameters, boolean completeRawTypes, boolean disableSubstitution) {
 		if (typeTree.type.tsym instanceof TypeVariableSymbol) {
 			if (typeVariablesToErase.contains(typeTree.type.tsym)) {

@@ -45,20 +45,20 @@ import com.sun.tools.javac.tree.JCTree.JCWildcard;
  * 
  * @author Renaud Pawlak
  */
-public class GlobalBeforeTranslationScanner<C extends JSweetContext> extends AbstractTreeScanner<C> {
+public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {
 
 	Set<JCVariableDecl> lazyInitializedStaticCandidates = new HashSet<>();
 
 	/**
 	 * Creates a new global scanner.
 	 */
-	public GlobalBeforeTranslationScanner(TranspilationHandler logHandler, C context) {
+	public GlobalBeforeTranslationScanner(TranspilationHandler logHandler, JSweetContext context) {
 		super(logHandler, context, null);
 	}
 
 	@Override
 	public void visitTopLevel(JCCompilationUnit topLevel) {
-		if(topLevel.packge.getQualifiedName().toString().startsWith(JSweetConfig.LIBS_PACKAGE + ".")) {
+		if (topLevel.packge.getQualifiedName().toString().startsWith(JSweetConfig.LIBS_PACKAGE + ".")) {
 			return;
 		}
 		this.compilationUnit = topLevel;
@@ -70,12 +70,16 @@ public class GlobalBeforeTranslationScanner<C extends JSweetContext> extends Abs
 		for (JCTree def : classdecl.defs) {
 			if (def instanceof JCVariableDecl) {
 				JCVariableDecl var = (JCVariableDecl) def;
-				MethodSymbol m = Util.findMethodDeclarationInType(context.types, classdecl.sym, var.name.toString(), null);
+				MethodSymbol m = Util.findMethodDeclarationInType(context.types, classdecl.sym, var.name.toString(),
+						null);
 				if (m != null) {
-					context.addFieldNameMapping(var.sym, JSweetConfig.FIELD_METHOD_CLASH_RESOLVER_PREFIX + var.name.toString());
+					context.addFieldNameMapping(var.sym,
+							JSweetConfig.FIELD_METHOD_CLASH_RESOLVER_PREFIX + var.name.toString());
 				}
-				if (getContext().options.isSupportSaticLazyInitialization() && var.getModifiers().getFlags().contains(Modifier.STATIC)) {
-					if (!(var.getModifiers().getFlags().contains(Modifier.FINAL) && var.init != null && var.init instanceof JCLiteral)) {
+				if (getContext().options.isSupportSaticLazyInitialization()
+						&& var.getModifiers().getFlags().contains(Modifier.STATIC)) {
+					if (!(var.getModifiers().getFlags().contains(Modifier.FINAL) && var.init != null
+							&& var.init instanceof JCLiteral)) {
 						lazyInitializedStaticCandidates.add(var);
 					}
 				}
@@ -116,7 +120,8 @@ public class GlobalBeforeTranslationScanner<C extends JSweetContext> extends Abs
 			scan(compilationUnit);
 		}
 		for (JCVariableDecl var : lazyInitializedStaticCandidates) {
-			if (context.getStaticInitializerCount(var.sym.enclClass()) == 0 && var.init == null || var.init instanceof JCLiteral) {
+			if (context.getStaticInitializerCount(var.sym.enclClass()) == 0 && var.init == null
+					|| var.init instanceof JCLiteral) {
 				continue;
 			}
 			context.lazyInitializedStatics.add(var.sym);

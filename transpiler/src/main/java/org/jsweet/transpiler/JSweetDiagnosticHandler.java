@@ -34,13 +34,13 @@ import com.sun.tools.javac.util.JavacMessages;
  * 
  * @author Renaud Pawlak
  */
-public class JSweetDiagnosticHandler<C extends JSweetContext> extends BasicDiagnosticFormatter {
+public class JSweetDiagnosticHandler extends BasicDiagnosticFormatter {
 
 	protected TranspilationHandler transpilationHandler;
-	protected C context;
+	protected JSweetContext context;
 	protected final static Logger logger = Logger.getLogger(JSweetTranspiler.class);
 
-	public JSweetDiagnosticHandler(TranspilationHandler transpilationHandler, C context) {
+	public JSweetDiagnosticHandler(TranspilationHandler transpilationHandler, JSweetContext context) {
 		super(JavacMessages.instance(context));
 		this.context = context;
 		this.transpilationHandler = transpilationHandler;

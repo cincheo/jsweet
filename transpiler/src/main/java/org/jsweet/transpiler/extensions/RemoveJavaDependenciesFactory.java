@@ -17,11 +17,12 @@ import org.jsweet.transpiler.typescript.Java2TypeScriptAdapter;
  * APIs to native JavaScript APIs. It will report transpilation errors when a
  * Java element cannot be translated to a JavaScript element.
  */
-public class RemoveJavaDependenciesFactory<C extends JSweetContext> extends JSweetFactory<C> {
+public class RemoveJavaDependenciesFactory extends JSweetFactory {
 
 	@Override
-	public Java2TypeScriptAdapter<C> createAdapter(C context) {
-		return new RemoveJavaDependenciesAdapter<C>(context);
+	public Java2TypeScriptAdapter createAdapter(JSweetContext context) {
+		logger.info("force remove Java dependency adapter...");
+		return new RemoveJavaDependenciesAdapter(context);
 	}
 
 }

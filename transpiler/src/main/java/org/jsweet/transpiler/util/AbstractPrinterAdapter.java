@@ -56,13 +56,13 @@ import com.sun.tools.javac.util.Name;
  * 
  * @author Renaud Pawlak
  */
-public abstract class AbstractPrinterAdapter<C extends JSweetContext> {
+public abstract class AbstractPrinterAdapter {
 
-	private AbstractPrinterAdapter<C> parentAdapter;
+	private AbstractPrinterAdapter parentAdapter;
 
-	private AbstractTreePrinter<C> printer;
+	private AbstractTreePrinter printer;
 
-	protected C context;
+	protected JSweetContext context;
 
 	/**
 	 * Creates a new adapter that will try delegate to the given parent adapter
@@ -72,7 +72,7 @@ public abstract class AbstractPrinterAdapter<C extends JSweetContext> {
 	 *            can be null, in that case the adapter implements a default
 	 *            empty behavior
 	 */
-	public AbstractPrinterAdapter(AbstractPrinterAdapter<C> parentAdapter) {
+	public AbstractPrinterAdapter(AbstractPrinterAdapter parentAdapter) {
 		super();
 		this.parentAdapter = parentAdapter;
 		if (parentAdapter != null) {
@@ -83,7 +83,7 @@ public abstract class AbstractPrinterAdapter<C extends JSweetContext> {
 	/**
 	 * Gets the transpiler's context.
 	 */
-	public C getContext() {
+	public JSweetContext getContext() {
 		if (context != null) {
 			return context;
 		} else {
@@ -112,21 +112,21 @@ public abstract class AbstractPrinterAdapter<C extends JSweetContext> {
 	/**
 	 * Prints a tree by delegating to the printer.
 	 */
-	protected AbstractTreePrinter<C> print(JCTree tree) {
+	protected AbstractTreePrinter print(JCTree tree) {
 		return printer.print(tree);
 	}
 
 	/**
 	 * Prints a string by delegating to the printer.
 	 */
-	protected AbstractTreePrinter<C> print(String string) {
+	protected AbstractTreePrinter print(String string) {
 		return printer.print(string);
 	}
 
 	/**
 	 * Prints an argument list by delegating to the printer.
 	 */
-	protected AbstractTreePrinter<C> printArgList(List<? extends JCTree> args) {
+	protected AbstractTreePrinter printArgList(List<? extends JCTree> args) {
 		return printer.printArgList(args);
 	}
 
@@ -144,21 +144,21 @@ public abstract class AbstractPrinterAdapter<C extends JSweetContext> {
 	/**
 	 * Prints an indentation for the current indentation value.
 	 */
-	public AbstractTreePrinter<C> printIndent() {
+	public AbstractTreePrinter printIndent() {
 		return printer.printIndent();
 	}
 
 	/**
 	 * Increments the current indentation value.
 	 */
-	public AbstractTreePrinter<C> startIndent() {
+	public AbstractTreePrinter startIndent() {
 		return printer.startIndent();
 	}
 
 	/**
 	 * Decrements the current indentation value.
 	 */
-	public AbstractTreePrinter<C> endIndent() {
+	public AbstractTreePrinter endIndent() {
 		return printer.endIndent();
 	}
 
@@ -305,11 +305,11 @@ public abstract class AbstractPrinterAdapter<C extends JSweetContext> {
 		return parentAdapter == null ? true : parentAdapter.needsTypeCast(cast);
 	}
 
-	public AbstractTreePrinter<C> substituteAndPrintType(JCTree typeTree) {
+	public AbstractTreePrinter substituteAndPrintType(JCTree typeTree) {
 		return substituteAndPrintType(typeTree, false, inTypeParameters, true, disableTypeSubstitution);
 	}
 
-	protected abstract AbstractTreePrinter<C> substituteAndPrintType(JCTree typeTree, boolean arrayComponent,
+	protected abstract AbstractTreePrinter substituteAndPrintType(JCTree typeTree, boolean arrayComponent,
 			boolean inTypeParameters, boolean completeRawTypes, boolean disableSubstitution);
 
 	/**
@@ -344,14 +344,14 @@ public abstract class AbstractPrinterAdapter<C extends JSweetContext> {
 	/**
 	 * Gets the printer attached to this adapter.
 	 */
-	public AbstractTreePrinter<C> getPrinter() {
+	public AbstractTreePrinter getPrinter() {
 		return printer;
 	}
 
 	/**
 	 * Sets the printer attached to this adapter.
 	 */
-	public void setPrinter(AbstractTreePrinter<C> printer) {
+	public void setPrinter(AbstractTreePrinter printer) {
 		this.printer = printer;
 		if (parentAdapter != null) {
 			parentAdapter.setPrinter(printer);
@@ -461,7 +461,7 @@ public abstract class AbstractPrinterAdapter<C extends JSweetContext> {
 	 * Gets the parent adapter. By default, an adapter delegates to the parent
 	 * adapter when the behavior is not overridden.
 	 */
-	public AbstractPrinterAdapter<C> getParentAdapter() {
+	public AbstractPrinterAdapter getParentAdapter() {
 		return parentAdapter;
 	}
 
@@ -469,7 +469,7 @@ public abstract class AbstractPrinterAdapter<C extends JSweetContext> {
 	 * Sets the parent adapter. By default, an adapter delegates to the parent
 	 * adapter when the behavior is not overridden.
 	 */
-	public void setParentAdapter(AbstractPrinterAdapter<C> parentAdapter) {
+	public void setParentAdapter(AbstractPrinterAdapter parentAdapter) {
 		this.parentAdapter = parentAdapter;
 	}
 

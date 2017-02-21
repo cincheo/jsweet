@@ -59,7 +59,10 @@ import source.blocksgame.util.Vector;
 import source.overload.Overload;
 import source.structural.AbstractClass;
 import source.transpiler.CanvasDrawing;
+import source.transpiler.Extended;
 import source.transpiler.PrefixExtension;
+import source.transpiler.p.A;
+import source.transpiler.p.B;
 
 public class TranspilerTests extends AbstractTest {
 
@@ -70,7 +73,7 @@ public class TranspilerTests extends AbstractTest {
 		try {
 			File overload = getSourceFile(Overload.class).getJavaFile();
 			File abstractClass = getSourceFile(AbstractClass.class).getJavaFile();
-			JSweetTranspiler<JSweetContext> transpiler = new JSweetTranspiler<>(new JSweetFactory<>());
+			JSweetTranspiler transpiler = new JSweetTranspiler(new JSweetFactory());
 			transpiler.setTscWatchMode(true);
 			transpiler.setPreserveSourceLineNumbers(true);
 			long t = System.currentTimeMillis();
@@ -259,16 +262,36 @@ public class TranspilerTests extends AbstractTest {
 
 	@Test
 	public void testExtension() {
-		createTranspiler(new JSweetFactory<JSweetContext>() {
+		createTranspiler(new JSweetFactory() {
 			@Override
-			public Java2TypeScriptAdapter<JSweetContext> createAdapter(JSweetContext context) {
+			public Java2TypeScriptAdapter createAdapter(JSweetContext context) {
 				return new AddPrefixToNonPublicMembersAdapter<>(super.createAdapter(context));
 			}
 		});
-		eval((logHandler, result) -> {
+		eval(ModuleKind.none, (logHandler, result) -> {
 			logHandler.assertNoProblems();
 		}, getSourceFile(PrefixExtension.class));
-		createTranspiler(new JSweetFactory<>());
+		createTranspiler(new JSweetFactory());
+	}
+
+	@Test
+	public void testExtension2() {
+		createTranspiler(new JSweetFactory() {
+			@Override
+			public Java2TypeScriptAdapter createAdapter(JSweetContext context) {
+				return new Java2TypeScriptAdapter(super.createAdapter(context)) {
+					{
+						context.addAnnotation("@Erased", "*.testMethod(*)", "source.transpiler.AClass",
+								"source.transpiler.p");
+					}
+				};
+			}
+		});
+		transpiler.setBundle(true);
+		eval(ModuleKind.none, true, (logHandler, result) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(A.class), getSourceFile(B.class), getSourceFile(Extended.class));
+		createTranspiler(new JSweetFactory());
 	}
 
 }

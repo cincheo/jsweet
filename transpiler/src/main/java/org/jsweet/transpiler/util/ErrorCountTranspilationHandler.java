@@ -70,7 +70,7 @@ public class ErrorCountTranspilationHandler implements TranspilationHandler {
 	}
 
 	@Override
-	public void onCompleted(JSweetTranspiler<?> transpiler, boolean fullPass, SourceFile[] files) {
+	public void onCompleted(JSweetTranspiler transpiler, boolean fullPass, SourceFile[] files) {
 		delegate.onCompleted(transpiler, fullPass, files);
 	}
 

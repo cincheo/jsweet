@@ -55,6 +55,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.candies.CandiesProcessor;
+import org.jsweet.transpiler.typescript.Java2TypeScriptAdapter;
 import org.jsweet.transpiler.typescript.Java2TypeScriptTranslator;
 import org.jsweet.transpiler.util.AbstractTreePrinter;
 import org.jsweet.transpiler.util.DirectedGraph;
@@ -98,7 +99,7 @@ import com.sun.tools.javac.util.Options;
  * 
  * @author Renaud Pawlak
  */
-public class JSweetTranspiler<C extends JSweetContext> implements JSweetOptions {
+public class JSweetTranspiler implements JSweetOptions {
 
 	/**
 	 * The TypeScript version to be installed/used with this version of JSweet
@@ -140,10 +141,11 @@ public class JSweetTranspiler<C extends JSweetContext> implements JSweetOptions 
 	 */
 	public final static String TSCROOTFILE = ".tsc-rootfile.ts";
 
-	private JSweetFactory<C> factory;
+	private JSweetFactory factory;
+	private Java2TypeScriptAdapter adapter;
 	private long transpilationStartTimestamp;
 	private ArrayList<File> auxiliaryTsModuleFiles = new ArrayList<>();
-	private C context;
+	private JSweetContext context;
 	private Options options;
 	private JavaFileManager fileManager;
 	private JavaCompiler compiler;
@@ -214,7 +216,7 @@ public class JSweetTranspiler<C extends JSweetContext> implements JSweetOptions 
 	 * @param factory
 	 *            the factory used to create the transpiler objects
 	 */
-	public JSweetTranspiler(JSweetFactory<C> factory) {
+	public JSweetTranspiler(JSweetFactory factory) {
 		this(factory, new File(System.getProperty("java.io.tmpdir")), null, null,
 				System.getProperty("java.class.path"));
 	}
@@ -234,7 +236,7 @@ public class JSweetTranspiler<C extends JSweetContext> implements JSweetOptions 
 	 *            the classpath as a string (check out system-specific
 	 *            requirements for Java classpathes)
 	 */
-	public JSweetTranspiler(JSweetFactory<C> factory, File tsOutputDir, File jsOutputDir,
+	public JSweetTranspiler(JSweetFactory factory, File tsOutputDir, File jsOutputDir,
 			File extractedCandiesJavascriptDir, String classPath) {
 		this(factory, new File(TMP_WORKING_DIR_NAME), tsOutputDir, jsOutputDir, extractedCandiesJavascriptDir,
 				classPath);
@@ -277,7 +279,7 @@ public class JSweetTranspiler<C extends JSweetContext> implements JSweetOptions 
 	 *            the classpath as a string (check out system-specific
 	 *            requirements for Java classpaths)
 	 */
-	public JSweetTranspiler(JSweetFactory<C> factory, File workingDir, File tsOutputDir, File jsOutputDir,
+	public JSweetTranspiler(JSweetFactory factory, File workingDir, File tsOutputDir, File jsOutputDir,
 			File extractedCandiesJavascriptDir, String classPath) {
 		this.factory = factory;
 		readConfiguration();
@@ -301,6 +303,7 @@ public class JSweetTranspiler<C extends JSweetContext> implements JSweetOptions 
 		logger.info("tsOut: " + tsOutputDir + (tsOutputDir == null ? "" : " - " + tsOutputDir.getAbsolutePath()));
 		logger.info("jsOut: " + jsOutputDir + (jsOutputDir == null ? "" : " - " + jsOutputDir.getAbsolutePath()));
 		logger.info("candyJsOut: " + extractedCandiesJavascriptDir);
+		logger.info("factory: " + factory);
 		logger.debug("compile classpath: " + classPath);
 		logger.debug("runtime classpath: " + System.getProperty("java.class.path"));
 		this.candiesProcessor = new CandiesProcessor(workingDir, classPath, extractedCandyJavascriptDir);
@@ -322,13 +325,14 @@ public class JSweetTranspiler<C extends JSweetContext> implements JSweetOptions 
 		if (!initialized) {
 			ProcessUtil.runCommand(ProcessUtil.NODE_COMMAND, line -> {
 				logger.info("node version: " + line);
-				
+
 				if (line.compareTo(ProcessUtil.NODE_MINIMUM_VERSION) < 0) {
 					transpilationHandler.report(JSweetProblem.NODE_OBSOLETE_VERSION, null,
 							JSweetProblem.NODE_OBSOLETE_VERSION.getMessage(line, ProcessUtil.NODE_MINIMUM_VERSION));
-					//throw new RuntimeException("node.js version is obsolete, minimum version: " + ProcessUtil.NODE_MINIMUM_VERSION);					
+					// throw new RuntimeException("node.js version is obsolete,
+					// minimum version: " + ProcessUtil.NODE_MINIMUM_VERSION);
 				}
-				
+
 			}, () -> {
 				transpilationHandler.report(JSweetProblem.NODE_CANNOT_START, null,
 						JSweetProblem.NODE_CANNOT_START.getMessage());
@@ -388,6 +392,9 @@ public class JSweetTranspiler<C extends JSweetContext> implements JSweetOptions 
 
 	private void initJavac(final TranspilationHandler transpilationHandler) {
 		context = factory.createContext(this);
+		context.setUsingJavaRuntime(forceJavaRuntime ? isUsingJavaRuntime
+				: (candiesProcessor == null ? false : candiesProcessor.isUsingJavaRuntime()));
+		adapter = factory.createAdapter(context);
 		options = Options.instance(context);
 		if (classPath != null) {
 			options.put(Option.CLASSPATH, classPath);
@@ -704,7 +711,7 @@ public class JSweetTranspiler<C extends JSweetContext> implements JSweetOptions 
 		}
 		context.useModules = isUsingModules();
 		context.useRequireForModules = moduleKind != ModuleKind.es2015;
-		
+
 		if (context.useModules && bundle) {
 			transpilationHandler.report(JSweetProblem.BUNDLE_WITH_MODULE, null,
 					JSweetProblem.BUNDLE_WITH_MODULE.getMessage());
@@ -783,8 +790,6 @@ public class JSweetTranspiler<C extends JSweetContext> implements JSweetOptions 
 		if (compilationUnits == null) {
 			return;
 		}
-		context.setUsingJavaRuntime(forceJavaRuntime ? isUsingJavaRuntime
-				: (candiesProcessor == null ? false : candiesProcessor.isUsingJavaRuntime()));
 
 		context.sourceFiles = files;
 		factory.createBeforeTranslationScanner(transpilationHandler, context).process(compilationUnits);
@@ -815,7 +820,7 @@ public class JSweetTranspiler<C extends JSweetContext> implements JSweetOptions 
 	private void generateTsFiles(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files,
 			List<JCCompilationUnit> compilationUnits) throws IOException {
 		// regular file-to-file generation
-		new OverloadScanner<C>(transpilationHandler, context).process(compilationUnits);
+		new OverloadScanner(transpilationHandler, context).process(compilationUnits);
 		for (int i = 0; i < compilationUnits.length(); i++) {
 			JCCompilationUnit cu = compilationUnits.get(i);
 			if (isModuleDefsFile(cu)) {
@@ -825,8 +830,8 @@ public class JSweetTranspiler<C extends JSweetContext> implements JSweetOptions 
 				continue;
 			}
 			logger.info("scanning " + cu.sourcefile.getName() + "...");
-			AbstractTreePrinter<C> printer = factory.createTranslator(factory.createAdapter(context),
-					transpilationHandler, context, cu, generateSourceMap);
+			AbstractTreePrinter printer = factory.createTranslator(adapter, transpilationHandler, context, cu,
+					generateSourceMap);
 			printer.print(cu);
 			if (StringUtils.isWhitespace(printer.getResult())) {
 				continue;
@@ -921,7 +926,7 @@ public class JSweetTranspiler<C extends JSweetContext> implements JSweetOptions 
 			return;
 		}
 
-		new OverloadScanner<C>(transpilationHandler, context).process(orderedCompilationUnits);
+		new OverloadScanner(transpilationHandler, context).process(orderedCompilationUnits);
 
 		logger.debug("ordered compilation units: " + orderedCompilationUnits.stream().map(cu -> {
 			return cu.sourcefile.getName();
@@ -975,8 +980,8 @@ public class JSweetTranspiler<C extends JSweetContext> implements JSweetOptions 
 				}
 			}
 			logger.info("scanning " + cu.sourcefile.getName() + "...");
-			AbstractTreePrinter<C> printer = factory.createTranslator(factory.createAdapter(context),
-					transpilationHandler, context, cu, generateSourceMap);
+			AbstractTreePrinter printer = factory.createTranslator(adapter, transpilationHandler, context, cu,
+					generateSourceMap);
 			printer.print(cu);
 			printer.sourceMap.shiftOutputPositions(lineCount);
 			files[permutation[i]].setSourceMap(printer.sourceMap);
@@ -1686,8 +1691,7 @@ public class JSweetTranspiler<C extends JSweetContext> implements JSweetOptions 
 	 */
 	public String transpile(ErrorCountTranspilationHandler handler, JCTree tree, String targetFileName)
 			throws IOException {
-		Java2TypeScriptTranslator<C> translator = factory.createTranslator(factory.createAdapter(context), handler,
-				context, null, false);
+		Java2TypeScriptTranslator translator = factory.createTranslator(adapter, handler, context, null, false);
 		translator.enterScope();
 		translator.scan(tree);
 		translator.exitScope();

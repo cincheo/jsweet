@@ -45,7 +45,7 @@ import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
  * 
  * @author Renaud Pawlak
  */
-public abstract class AbstractTreePrinter<C extends JSweetContext> extends AbstractTreeScanner<C> {
+public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 
 	private Stack<Position> positionStack = new Stack<>();
 
@@ -67,7 +67,7 @@ public abstract class AbstractTreePrinter<C extends JSweetContext> extends Abstr
 
 	private int indent = 0;
 
-	private AbstractPrinterAdapter<C> adapter;
+	private AbstractPrinterAdapter adapter;
 
 	public TypeChecker typeChecker;
 
@@ -93,8 +93,8 @@ public abstract class AbstractTreePrinter<C extends JSweetContext> extends Abstr
 	 * @param fillSourceMap
 	 *            tells if printer fills the source map
 	 */
-	public AbstractTreePrinter(TranspilationHandler logHandler, C context, JCCompilationUnit compilationUnit,
-			AbstractPrinterAdapter<C> adapter, boolean fillSourceMap) {
+	public AbstractTreePrinter(TranspilationHandler logHandler, JSweetContext context, JCCompilationUnit compilationUnit,
+			AbstractPrinterAdapter adapter, boolean fillSourceMap) {
 		super(logHandler, context, compilationUnit);
 		this.typeChecker = new TypeChecker(this);
 		this.adapter = adapter;
@@ -112,7 +112,7 @@ public abstract class AbstractTreePrinter<C extends JSweetContext> extends Abstr
 	/**
 	 * Print a given AST.
 	 */
-	public AbstractTreePrinter<C> print(JCTree tree) {
+	public AbstractTreePrinter print(JCTree tree) {
 		scan(tree);
 		return this;
 	}
@@ -185,7 +185,7 @@ public abstract class AbstractTreePrinter<C extends JSweetContext> extends Abstr
 	/**
 	 * Prints an indentation for the current indentation value.
 	 */
-	public AbstractTreePrinter<C> printIndent() {
+	public AbstractTreePrinter printIndent() {
 		for (int i = 0; i < indent; i++) {
 			print(INDENT);
 		}
@@ -195,7 +195,7 @@ public abstract class AbstractTreePrinter<C extends JSweetContext> extends Abstr
 	/**
 	 * Increments the current indentation value.
 	 */
-	public AbstractTreePrinter<C> startIndent() {
+	public AbstractTreePrinter startIndent() {
 		indent++;
 		return this;
 	}
@@ -203,7 +203,7 @@ public abstract class AbstractTreePrinter<C extends JSweetContext> extends Abstr
 	/**
 	 * Decrements the current indentation value.
 	 */
-	public AbstractTreePrinter<C> endIndent() {
+	public AbstractTreePrinter endIndent() {
 		indent--;
 		return this;
 	}
@@ -211,7 +211,7 @@ public abstract class AbstractTreePrinter<C extends JSweetContext> extends Abstr
 	/**
 	 * Outputs a string (new lines are not allowed).
 	 */
-	public AbstractTreePrinter<C> print(String string) {
+	public AbstractTreePrinter print(String string) {
 		out.append(string);
 		currentColumn += string.length();
 		return this;
@@ -220,7 +220,7 @@ public abstract class AbstractTreePrinter<C extends JSweetContext> extends Abstr
 	/**
 	 * Outputs an identifier.
 	 */
-	public AbstractTreePrinter<C> printIdentifier(Symbol symbol) {
+	public AbstractTreePrinter printIdentifier(Symbol symbol) {
 		String adaptedIdentifier = getAdapter().getIdentifier(symbol);
 		return print(adaptedIdentifier);
 	}
@@ -228,7 +228,7 @@ public abstract class AbstractTreePrinter<C extends JSweetContext> extends Abstr
 	/**
 	 * Adds a space to the output.
 	 */
-	public AbstractTreePrinter<C> space() {
+	public AbstractTreePrinter space() {
 		return print(" ");
 	}
 
@@ -246,7 +246,7 @@ public abstract class AbstractTreePrinter<C extends JSweetContext> extends Abstr
 	/**
 	 * Removes the last output character.
 	 */
-	public AbstractTreePrinter<C> removeLastChar() {
+	public AbstractTreePrinter removeLastChar() {
 		if (out.length() == 0) {
 			return this;
 		}
@@ -263,7 +263,7 @@ public abstract class AbstractTreePrinter<C extends JSweetContext> extends Abstr
 	/**
 	 * Removes the last output characters.
 	 */
-	public AbstractTreePrinter<C> removeLastChars(int count) {
+	public AbstractTreePrinter removeLastChars(int count) {
 		for (int i = 0; i < count; i++) {
 			removeLastChar();
 		}
@@ -273,7 +273,7 @@ public abstract class AbstractTreePrinter<C extends JSweetContext> extends Abstr
 	/**
 	 * Removes the last printed indentation.
 	 */
-	public AbstractTreePrinter<C> removeLastIndent() {
+	public AbstractTreePrinter removeLastIndent() {
 		removeLastChars(indent * INDENT.length());
 		return this;
 	}
@@ -281,7 +281,7 @@ public abstract class AbstractTreePrinter<C extends JSweetContext> extends Abstr
 	/**
 	 * Outputs a new line.
 	 */
-	public AbstractTreePrinter<C> println() {
+	public AbstractTreePrinter println() {
 		out.append("\n");
 		currentLine++;
 		currentColumn = 0;
@@ -298,14 +298,14 @@ public abstract class AbstractTreePrinter<C extends JSweetContext> extends Abstr
 	/**
 	 * Gets the adapter attached to this printer.
 	 */
-	public AbstractPrinterAdapter<C> getAdapter() {
+	public AbstractPrinterAdapter getAdapter() {
 		return adapter;
 	}
 
 	/**
 	 * Sets the adapter attached to this printer.
 	 */
-	public void setAdapter(AbstractPrinterAdapter<C> adapter) {
+	public void setAdapter(AbstractPrinterAdapter adapter) {
 		this.adapter = adapter;
 	}
 
@@ -314,7 +314,7 @@ public abstract class AbstractTreePrinter<C extends JSweetContext> extends Abstr
 	/**
 	 * Prints a comma-separated list of subtrees.
 	 */
-	public AbstractTreePrinter<C> printArgList(List<? extends JCTree> args, Consumer<JCTree> printer) {
+	public AbstractTreePrinter printArgList(List<? extends JCTree> args, Consumer<JCTree> printer) {
 		for (JCTree arg : args) {
 			if (printer != null) {
 				printer.accept(arg);
@@ -334,7 +334,7 @@ public abstract class AbstractTreePrinter<C extends JSweetContext> extends Abstr
 	/**
 	 * Prints an invocation argument list, with type assignment.
 	 */
-	public AbstractTreePrinter<C> printArgList(JCMethodInvocation inv) {
+	public AbstractTreePrinter printArgList(JCMethodInvocation inv) {
 		for (int i = 0; i < inv.args.size(); i++) {
 			JCExpression arg = inv.args.get(i);
 			if (inv.meth.type != null) {
@@ -351,16 +351,16 @@ public abstract class AbstractTreePrinter<C extends JSweetContext> extends Abstr
 		return this;
 	}
 
-	public AbstractTreePrinter<C> printArgList(List<? extends JCTree> args) {
+	public AbstractTreePrinter printArgList(List<? extends JCTree> args) {
 		return printArgList(args, null);
 	}
 
-	public abstract AbstractTreePrinter<C> printConstructorArgList(JCNewClass newClass, boolean localClass);
+	public abstract AbstractTreePrinter printConstructorArgList(JCNewClass newClass, boolean localClass);
 
 	/**
 	 * Prints a comma-separated list of variable names (no types).
 	 */
-	public AbstractTreePrinter<C> printVarNameList(List<JCVariableDecl> args) {
+	public AbstractTreePrinter printVarNameList(List<JCVariableDecl> args) {
 		for (JCVariableDecl arg : args) {
 			print(arg.name.toString());
 			print(", ");
@@ -374,7 +374,7 @@ public abstract class AbstractTreePrinter<C extends JSweetContext> extends Abstr
 	/**
 	 * Prints a comma-separated list of type subtrees.
 	 */
-	public AbstractTreePrinter<C> printTypeArgList(List<? extends JCTree> args) {
+	public AbstractTreePrinter printTypeArgList(List<? extends JCTree> args) {
 		for (JCTree arg : args) {
 			getAdapter().substituteAndPrintType(arg);
 			print(", ");

@@ -23,12 +23,12 @@ public class NativeStructuresTests extends AbstractTest {
 
 	@BeforeClass
 	public static void start() {
-		createTranspiler(new RemoveJavaDependenciesFactory<>());
+		createTranspiler(new RemoveJavaDependenciesFactory());
 	}
 
 	@AfterClass
 	public static void end() {
-		createTranspiler(new JSweetFactory<>());
+		createTranspiler(new JSweetFactory());
 	}
 
 	@Test

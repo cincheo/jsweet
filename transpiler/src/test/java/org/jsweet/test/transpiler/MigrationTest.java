@@ -16,8 +16,6 @@
  */
 package org.jsweet.test.transpiler;
 
-import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.Pretty;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -29,13 +27,16 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetFactory;
 import org.jsweet.transpiler.JSweetTranspiler;
 import org.jsweet.transpiler.util.ConsoleTranspilationHandler;
 import org.jsweet.transpiler.util.ErrorCountTranspilationHandler;
 import org.junit.Assert;
 import org.junit.Test;
+
+import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.Pretty;
+
 import source.migration.QuickStart;
 
 public class MigrationTest extends AbstractTest {
@@ -45,7 +46,7 @@ public class MigrationTest extends AbstractTest {
 		File dir = Files.createTempDirectory("jsweet").toFile();
 		System.out.println("Transpile directory: " + dir);
 		ErrorCountTranspilationHandler handler = new ErrorCountTranspilationHandler(new ConsoleTranspilationHandler());
-		JSweetTranspiler<JSweetContext> transpiler = new JSweetTranspiler<>(new JSweetFactory<>(), new File(dir, "wd"),
+		JSweetTranspiler transpiler = new JSweetTranspiler(new JSweetFactory(), new File(dir, "wd"),
 				new File(dir, "ts"), new File(dir, "js"), new File(dir, "cjs"), null);
 		File input = new File(TEST_DIRECTORY_NAME + "/" + QuickStart.class.getName().replace(".", "/") + ".java");
 		transpiler.initNode(handler);

@@ -148,13 +148,13 @@ public class StructuralTests extends AbstractTest {
 	public void testInheritance() {
 		eval((logHandler, r) -> {
 			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-			assertEquals(true, r.<Boolean>get("X"));
-			assertEquals(true, r.<Boolean>get("Y"));
-			assertEquals("s1", r.<Boolean>get("s1b"));
-			assertEquals("s2", r.<Boolean>get("s2b"));
-			assertEquals(false, r.<Boolean>get("itfo"));
-			assertEquals("s1", r.<Boolean>get("s1o"));
-			assertEquals("s2", r.<Boolean>get("s2o"));
+			assertEquals(true, r.<Boolean> get("X"));
+			assertEquals(true, r.<Boolean> get("Y"));
+			assertEquals("s1", r.<Boolean> get("s1b"));
+			assertEquals("s2", r.<Boolean> get("s2b"));
+			assertEquals(false, r.<Boolean> get("itfo"));
+			assertEquals("s1", r.<Boolean> get("s1o"));
+			assertEquals("s2", r.<Boolean> get("s2o"));
 		}, getSourceFile(Inheritance.class));
 	}
 
@@ -311,10 +311,10 @@ public class StructuralTests extends AbstractTest {
 
 	@Test
 	public void testTypeScriptBody() {
-		createTranspiler(new JSweetFactory<JSweetContext>() {
+		createTranspiler(new JSweetFactory() {
 			@Override
-			public Java2TypeScriptAdapter<JSweetContext> createAdapter(JSweetContext context) {
-				return new Java2TypeScriptAdapter<JSweetContext>(context) {
+			public Java2TypeScriptAdapter createAdapter(JSweetContext context) {
+				return new Java2TypeScriptAdapter(context) {
 					{
 						context.addAnnotation("@TypeScriptBody('return (this.i + 2)')",
 								"source.structural.TypeScriptBodyAnnotation.m2()");
@@ -328,7 +328,7 @@ public class StructuralTests extends AbstractTest {
 			assertEquals(3, (int) r.get("test2"));
 			assertEquals(1, (int) r.get("test3"));
 		}, getSourceFile(TypeScriptBodyAnnotation.class));
-		createTranspiler(new JSweetFactory<JSweetContext>());
+		createTranspiler(new JSweetFactory());
 	}
 
 	@Test
@@ -350,7 +350,7 @@ public class StructuralTests extends AbstractTest {
 			assertEquals("test3", r.get("value3"));
 			assertEquals("test4", r.get("value4"));
 		}, getSourceFile(StaticMembersInInterfaces.class));
-		createTranspiler(new JSweetFactory<JSweetContext>() {
+		createTranspiler(new JSweetFactory() {
 			@Override
 			public JSweetContext createContext(JSweetOptions options) {
 				return new JSweetContext(options) {
@@ -367,7 +367,7 @@ public class StructuralTests extends AbstractTest {
 			assertEquals("test3", r.get("value3"));
 			assertEquals("test4", r.get("value4"));
 		}, getSourceFile(StaticMembersInInterfaces.class));
-		createTranspiler(new JSweetFactory<>());
+		createTranspiler(new JSweetFactory());
 	}
 
 	@Test

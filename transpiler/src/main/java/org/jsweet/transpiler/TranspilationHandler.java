@@ -55,6 +55,6 @@ public interface TranspilationHandler {
 	 *            the files that were transpiled (can be different from
 	 *            <code>transpiler.getWatchedFiles()</code> in a non-full pass)
 	 */
-	public void onCompleted(JSweetTranspiler<?> transpiler, boolean fullPass, SourceFile[] files);
+	public void onCompleted(JSweetTranspiler transpiler, boolean fullPass, SourceFile[] files);
 
 }

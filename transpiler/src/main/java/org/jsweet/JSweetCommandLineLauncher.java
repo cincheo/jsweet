@@ -26,7 +26,6 @@ import java.util.LinkedList;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetFactory;
 import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.JSweetTranspiler;
@@ -118,17 +117,17 @@ public class JSweetCommandLineLauncher {
 				LinkedList<File> files = new LinkedList<File>();
 				Util.addFiles(".java", inputDir, files);
 
-				JSweetFactory<?> factory = null;
+				JSweetFactory factory = null;
 				String factoryClassName = jsapArgs.getString("factoryClassName");
 
 				if (factoryClassName != null) {
 					try {
-						factory = (JSweetFactory<?>) Thread.currentThread().getContextClassLoader()
+						factory = (JSweetFactory) Thread.currentThread().getContextClassLoader()
 								.loadClass(factoryClassName).newInstance();
 					} catch (Exception e) {
 						try {
 							// try forName just in case
-							factory = (JSweetFactory<?>) Class.forName(factoryClassName).newInstance();
+							factory = (JSweetFactory) Class.forName(factoryClassName).newInstance();
 						} catch (Exception e2) {
 							logger.info("cannot find or instantiate factory class: " + factoryClassName + " - "
 									+ e.getMessage() + ", " + e2.getMessage());
@@ -137,11 +136,11 @@ public class JSweetCommandLineLauncher {
 				}
 
 				if (factory == null) {
-					factory = new JSweetFactory<>();
+					factory = new JSweetFactory();
 				}
 
-				JSweetTranspiler<JSweetContext> transpiler = new JSweetTranspiler<>(new JSweetFactory<>(), tsOutputDir,
-						jsOutputDir, candiesJsOutputDir, classPath);
+				JSweetTranspiler transpiler = new JSweetTranspiler(new JSweetFactory(), tsOutputDir, jsOutputDir,
+						candiesJsOutputDir, classPath);
 
 				transpiler.setBundle(jsapArgs.getBoolean("bundle"));
 				transpiler.setNoRootDirectories(jsapArgs.getBoolean("noRootDirectories"));
@@ -263,8 +262,7 @@ public class JSweetCommandLineLauncher {
 		// Do not generate JavaScript
 		switchArg = new Switch("tsOnly");
 		switchArg.setLongFlag("tsOnly");
-		switchArg.setHelp(
-				"Do not compile the TypeScript output (let an external TypeScript compiler do so).");
+		switchArg.setHelp("Do not compile the TypeScript output (let an external TypeScript compiler do so).");
 		jsap.registerParameter(switchArg);
 
 		// Do not generate code for extended Java compatibility
@@ -363,8 +361,7 @@ public class JSweetCommandLineLauncher {
 		// Enable assertions
 		switchArg = new Switch("enableAssertions");
 		switchArg.setLongFlag("enableAssertions");
-		switchArg
-				.setHelp("Java 'assert' statements are transpiled as runtime JavaScript checks.");
+		switchArg.setHelp("Java 'assert' statements are transpiled as runtime JavaScript checks.");
 		switchArg.setDefault("false");
 		jsap.registerParameter(switchArg);
 

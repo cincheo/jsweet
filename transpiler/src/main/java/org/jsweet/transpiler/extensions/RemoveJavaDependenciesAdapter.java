@@ -65,11 +65,11 @@ import com.sun.tools.javac.tree.JCTree.JCTypeApply;
  * 
  * @author Renaud Pawlak
  */
-public class RemoveJavaDependenciesAdapter<C extends JSweetContext> extends Java2TypeScriptAdapter<C> {
+public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 
 	protected Map<String, String> extTypesMapping = new HashMap<>();
 
-	public RemoveJavaDependenciesAdapter(C context) {
+	public RemoveJavaDependenciesAdapter(JSweetContext context) {
 		super(context);
 		extTypesMapping.put(List.class.getName(), "Array");
 		extTypesMapping.put(ArrayList.class.getName(), "Array");

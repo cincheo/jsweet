@@ -13,9 +13,9 @@ import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 
-public class AddPrefixToNonPublicMembersAdapter<C extends JSweetContext> extends Java2TypeScriptAdapter<C> {
+public class AddPrefixToNonPublicMembersAdapter<C extends JSweetContext> extends Java2TypeScriptAdapter {
 
-	public AddPrefixToNonPublicMembersAdapter(AbstractPrinterAdapter<C> parentAdapter) {
+	public AddPrefixToNonPublicMembersAdapter(AbstractPrinterAdapter parentAdapter) {
 		super(parentAdapter);
 		context.addAnnotationAdapter(new AnnotationAdapter() {
 

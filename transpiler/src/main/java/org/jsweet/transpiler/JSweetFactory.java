@@ -1,5 +1,6 @@
 package org.jsweet.transpiler;
 
+import org.apache.log4j.Logger;
 import org.jsweet.transpiler.extensions.RemoveJavaDependenciesAdapter;
 import org.jsweet.transpiler.typescript.Java2TypeScriptAdapter;
 import org.jsweet.transpiler.typescript.Java2TypeScriptTranslator;
@@ -13,10 +14,10 @@ import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
  * 
  * @author Renaud Pawlak
  *
- * @param <C>
- *            the JSweet context class
  */
-public class JSweetFactory<C extends JSweetContext> {
+public class JSweetFactory {
+
+	protected final static Logger logger = Logger.getLogger(JSweetFactory.class);
 
 	/**
 	 * An empty constructor is mandatory for all subclasses.
@@ -27,9 +28,8 @@ public class JSweetFactory<C extends JSweetContext> {
 	/**
 	 * Creates the transpiler's context or any subclass.
 	 */
-	@SuppressWarnings("unchecked")
-	public C createContext(JSweetOptions options) {
-		return (C) new JSweetContext(options);
+	public JSweetContext createContext(JSweetOptions options) {
+		return new JSweetContext(options);
 	}
 
 	/**
@@ -39,21 +39,21 @@ public class JSweetFactory<C extends JSweetContext> {
 	 * For simple extensions such are redirecting invocations and field access,
 	 * the programmer should override this method and return a subclass.
 	 */
-	public Java2TypeScriptAdapter<C> createAdapter(C context) {
+	public Java2TypeScriptAdapter createAdapter(JSweetContext context) {
 		if (context.isUsingJavaRuntime()) {
-			return new Java2TypeScriptAdapter<C>(context);
+			return new Java2TypeScriptAdapter(context);
 		} else {
-			return new RemoveJavaDependenciesAdapter<C>(context);
+			return new RemoveJavaDependenciesAdapter(context);
 		}
 	}
 
 	/**
 	 * Creates the core translator or any subclass.
 	 */
-	public Java2TypeScriptTranslator<C> createTranslator(Java2TypeScriptAdapter<C> adapter,
-			TranspilationHandler transpilationHandler, C context, JCCompilationUnit compilationUnit,
+	public Java2TypeScriptTranslator createTranslator(Java2TypeScriptAdapter adapter,
+			TranspilationHandler transpilationHandler, JSweetContext context, JCCompilationUnit compilationUnit,
 			boolean fillSourceMap) {
-		return new Java2TypeScriptTranslator<C>(adapter, transpilationHandler, context, compilationUnit, fillSourceMap);
+		return new Java2TypeScriptTranslator(adapter, transpilationHandler, context, compilationUnit, fillSourceMap);
 	}
 
 	/**
@@ -65,9 +65,9 @@ public class JSweetFactory<C extends JSweetContext> {
 	 * some specific global analysis results that can be used later on by the
 	 * translator.
 	 */
-	public GlobalBeforeTranslationScanner<C> createBeforeTranslationScanner(TranspilationHandler transpilationHandler,
-			C context) {
-		return new GlobalBeforeTranslationScanner<C>(transpilationHandler, context);
+	public GlobalBeforeTranslationScanner createBeforeTranslationScanner(TranspilationHandler transpilationHandler,
+			JSweetContext context) {
+		return new GlobalBeforeTranslationScanner(transpilationHandler, context);
 	}
 
 	/**
@@ -78,8 +78,9 @@ public class JSweetFactory<C extends JSweetContext> {
 	 * One can override with a subclass to tune how JSweet reports Java
 	 * messages.
 	 */
-	public JSweetDiagnosticHandler<C> createDiagnosticHandler(TranspilationHandler transpilationHandler, C context) {
-		return new JSweetDiagnosticHandler<C>(transpilationHandler, context);
+	public JSweetDiagnosticHandler createDiagnosticHandler(TranspilationHandler transpilationHandler,
+			JSweetContext context) {
+		return new JSweetDiagnosticHandler(transpilationHandler, context);
 	}
 
 }

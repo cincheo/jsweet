@@ -123,7 +123,7 @@ import com.sun.tools.javac.util.Name;
  * 
  * @author Renaud Pawlak
  */
-public class Java2TypeScriptTranslator<C extends JSweetContext> extends AbstractTreePrinter<C> {
+public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	public static final String PARENT_CLASS_FIELD_NAME = "__parent";
 	public static final String INTERFACES_FIELD_NAME = "__interfaces";
@@ -232,8 +232,8 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 	 *            if true, the printer generates the source maps, for debugging
 	 *            purpose
 	 */
-	public Java2TypeScriptTranslator(Java2TypeScriptAdapter<C> adapter, TranspilationHandler logHandler, C context,
-			JCCompilationUnit compilationUnit, boolean fillSourceMap) {
+	public Java2TypeScriptTranslator(Java2TypeScriptAdapter adapter, TranspilationHandler logHandler,
+			JSweetContext context, JCCompilationUnit compilationUnit, boolean fillSourceMap) {
 		super(logHandler, context, compilationUnit, adapter, fillSourceMap);
 	}
 
@@ -3218,7 +3218,7 @@ public class Java2TypeScriptTranslator<C extends JSweetContext> extends Abstract
 	}
 
 	@Override
-	public AbstractTreePrinter<C> printConstructorArgList(JCNewClass newClass, boolean localClass) {
+	public AbstractTreePrinter printConstructorArgList(JCNewClass newClass, boolean localClass) {
 		boolean printed = false;
 		if (localClass || (getScope().anonymousClasses.contains(newClass.def)
 				&& !newClass.def.getModifiers().getFlags().contains(Modifier.STATIC))) {
