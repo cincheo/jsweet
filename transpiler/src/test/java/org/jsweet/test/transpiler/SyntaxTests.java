@@ -179,6 +179,7 @@ public class SyntaxTests extends AbstractTest {
 				assertTrue(generatedCode.contains("This is a test of comment."));
 				assertTrue(generatedCode.contains("A method, which has some doc comment."));
 				assertTrue(generatedCode.contains("This is a constant field."));
+				assertTrue(generatedCode.contains("@param {string} s1 string 1"));
 			} catch (Exception e) {
 				e.printStackTrace();
 				fail(e.getMessage());
