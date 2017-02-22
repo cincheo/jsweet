@@ -1861,7 +1861,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 			}
 		}
 
-		return super.adaptDocComment(element, String.join("\n", commentLines));
+		return String.join("\n", commentLines);
 	}
 
 }

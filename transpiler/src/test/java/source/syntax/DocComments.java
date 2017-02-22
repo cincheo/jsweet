@@ -16,12 +16,20 @@ public class DocComments {
 	 * @param s2 string 2
 	 * @param i integer
 	 */
-	public void m(String s1, String s2, int i) {
+	public String m(String s1, String s2, int i) {
+		return "";
 	}
 
 	/**
 	 * This is a constant field.
 	 */
 	public static final String FIELD = "test";
+	
+}
+
+/**
+ * An enum test.
+ */
+enum E { 
 	
 }
