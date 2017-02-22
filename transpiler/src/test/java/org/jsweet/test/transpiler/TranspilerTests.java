@@ -41,8 +41,6 @@ import org.jsweet.transpiler.util.Util;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.martiansoftware.jsap.JSAP;
-
 import source.blocksgame.Ball;
 import source.blocksgame.BlockElement;
 import source.blocksgame.Factory;
@@ -58,6 +56,7 @@ import source.blocksgame.util.MobileElement;
 import source.blocksgame.util.Point;
 import source.blocksgame.util.Rectangle;
 import source.blocksgame.util.Vector;
+import source.calculus.MathApi;
 import source.overload.Overload;
 import source.structural.AbstractClass;
 import source.transpiler.CanvasDrawing;
@@ -155,9 +154,27 @@ public class TranspilerTests extends AbstractTest {
 	public void testCommandLine() throws Throwable {
 		File outDir = new File(new File(TMPOUT_DIR), getCurrentTestName() + "/" + ModuleKind.none);
 		String gameDir = TEST_DIRECTORY_NAME + "/" + Ball.class.getPackage().getName().replace(".", "/");
+		String calculusDir = TEST_DIRECTORY_NAME + "/" + MathApi.class.getPackage().getName().replace(".", "/");
 		LinkedList<File> files = new LinkedList<>();
 		Process process = null;
 
+		FileUtils.deleteQuietly(outDir);
+		
+		process = ProcessUtil.runCommand("java", line -> {
+			System.out.println(line);
+		}, null, "-cp", System.getProperty("java.class.path"), //
+				JSweetCommandLineLauncher.class.getName(), //
+				"--tsout", outDir.getPath(), //
+				"--jsout", outDir.getPath(), //
+				"--sourceMap", //
+				"-i", gameDir+":"+calculusDir);
+
+		assertTrue(process.exitValue() == 0);
+		files.clear();
+		Util.addFiles(".ts", outDir, files);
+		assertTrue(files.stream().anyMatch(f -> f.getName().equals("UselessClass.ts")));
+		assertTrue(files.stream().anyMatch(f -> f.getName().equals("MathApi.ts")));
+		
 		process = ProcessUtil.runCommand("java", line -> {
 			System.out.println(line);
 		}, null, "-cp", System.getProperty("java.class.path"), //

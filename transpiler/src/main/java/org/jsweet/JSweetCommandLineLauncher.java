@@ -58,11 +58,11 @@ public class JSweetCommandLineLauncher {
 
 	private static int errorCount = 0;
 
-	private static Pattern toPattern(File inputDir, String expression) {
+	private static Pattern toPattern(String expression) {
 		if (!expression.contains("*") && !expression.contains(".")) {
 			expression += "*";
 		}
-		return Pattern.compile(inputDir.getAbsolutePath() + "/" + expression.replace(".", "\\.").replace("*", ".*"));
+		return Pattern.compile(expression.replace(".", "\\.").replace("*", ".*"));
 	}
 
 	/**
@@ -122,38 +122,38 @@ public class JSweetCommandLineLauncher {
 					sourceRootDir = jsapArgs.getFile("sourceRoot");
 				}
 
-				File inputDir = new File(jsapArgs.getString("input"));
-				logger.info("input dir: " + inputDir);
+				List<File> inputDirList = Arrays.asList(jsapArgs.getFileArray("input"));
+				logger.info("input dir: " + inputDirList);
 
 				String[] included = jsapArgs.getStringArray("includes");
 				String[] excluded = jsapArgs.getStringArray("excludes");
 
 				List<Pattern> includedPatterns = included == null ? null
-						: Arrays.asList(included).stream().map(s -> toPattern(inputDir, s))
-								.collect(Collectors.toList());
+						: Arrays.asList(included).stream().map(s -> toPattern(s)).collect(Collectors.toList());
 				List<Pattern> excludedPatterns = excluded == null ? null
-						: Arrays.asList(excluded).stream().map(s -> toPattern(inputDir, s))
-								.collect(Collectors.toList());
+						: Arrays.asList(excluded).stream().map(s -> toPattern(s)).collect(Collectors.toList());
 
 				logger.info("included: " + includedPatterns);
 				logger.info("excluded: " + excludedPatterns);
 
 				LinkedList<File> files = new LinkedList<File>();
 
-				Util.addFiles(f -> {
-					String path = f.getAbsolutePath();
-					if (path.endsWith(".java")) {
-						if (includedPatterns == null || includedPatterns.isEmpty() || includedPatterns != null
-								&& includedPatterns.stream().anyMatch(p -> p.matcher(path).matches())) {
-							if (excludedPatterns != null && !excludedPatterns.isEmpty()
-									&& excludedPatterns.stream().anyMatch(p -> p.matcher(path).matches())) {
-								return false;
+				for (File inputDir : inputDirList) {
+					Util.addFiles(f -> {
+						String path = inputDir.toURI().relativize(f.toURI()).getPath();
+						if (path.endsWith(".java")) {
+							if (includedPatterns == null || includedPatterns.isEmpty() || includedPatterns != null
+									&& includedPatterns.stream().anyMatch(p -> p.matcher(path).matches())) {
+								if (excludedPatterns != null && !excludedPatterns.isEmpty()
+										&& excludedPatterns.stream().anyMatch(p -> p.matcher(path).matches())) {
+									return false;
+								}
+								return true;
 							}
-							return true;
 						}
-					}
-					return false;
-				}, inputDir, files);
+						return false;
+					}, inputDir, files);
+				}
 
 				JSweetFactory factory = null;
 				String factoryClassName = jsapArgs.getString("factoryClassName");
@@ -263,13 +263,15 @@ public class JSweetCommandLineLauncher {
 				"Set the JDK home directory to be used to find the Java compiler. If not set, the transpiler will try to use the JAVA_HOME environment variable. Note that the expected JDK version is greater or equals to version 8.");
 		jsap.registerParameter(optionArg);
 
-		// Input directory
+		// Input directories
 		optionArg = new FlaggedOption("input");
 		optionArg.setShortFlag('i');
 		optionArg.setLongFlag("input");
-		optionArg.setStringParser(JSAP.STRING_PARSER);
+		optionArg.setList(true);
+		optionArg.setStringParser(FileStringParser.getParser());
 		optionArg.setRequired(true);
-		optionArg.setHelp("An input directory containing Java files to be transpiled.");
+		optionArg.setHelp(
+				"An input directory (or column-separated input directories) containing Java files to be transpiled.");
 		jsap.registerParameter(optionArg);
 
 		// Included files
