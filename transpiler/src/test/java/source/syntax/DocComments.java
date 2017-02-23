@@ -28,6 +28,17 @@ public class DocComments {
 }
 
 /**
+ * A class comment to be erased.
+ */
+class CommentedC {
+	/**
+	 * A constructor for C.
+	 */
+	public CommentedC(String s) {
+	}
+}
+
+/**
  * An enum test.
  */
 enum E { 

@@ -17,6 +17,7 @@
 package org.jsweet.test.transpiler;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -180,6 +181,8 @@ public class SyntaxTests extends AbstractTest {
 				assertTrue(generatedCode.contains("A method, which has some doc comment."));
 				assertTrue(generatedCode.contains("This is a constant field."));
 				assertTrue(generatedCode.contains("@param {string} s1 string 1"));
+				assertTrue(generatedCode.contains("A constructor for C"));
+				assertFalse(generatedCode.contains("A class comment to be erased"));
 			} catch (Exception e) {
 				e.printStackTrace();
 				fail(e.getMessage());

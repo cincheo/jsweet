@@ -95,6 +95,7 @@ import com.sun.tools.javac.code.Symbol.TypeVariableSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.TypeVar;
+import com.sun.tools.javac.parser.Tokens.Comment;
 import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCArrayTypeTree;
@@ -1808,6 +1809,29 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 	 */
 	@Override
 	public String adaptDocComment(JCTree element, String commentText) {
+		if (element instanceof JCClassDecl) {
+			JCMethodDecl mainConstructor = null;
+			for (JCTree member : ((JCClassDecl) element).defs) {
+				if (member instanceof JCMethodDecl) {
+					if (((JCMethodDecl) member).sym.isConstructor()) {
+						if (mainConstructor == null || mainConstructor.getParameters().size() < ((JCMethodDecl) member)
+								.getParameters().size()) {
+							mainConstructor = ((JCMethodDecl) member);
+						}
+					}
+				}
+			}
+			if (mainConstructor != null) {
+				Comment comment = getPrinter().getCompilationUnit().docComments.getComment(mainConstructor);
+				if (comment != null) {
+					commentText = comment.getText();
+					commentText = replaceLinks(commentText);
+					List<String> commentLines = new ArrayList<>(Arrays.asList(commentText.split("\n")));
+					applyForMethod(mainConstructor, commentLines);
+					return String.join("\n", commentLines);
+				}
+			}
+		}
 		if (commentText == null) {
 			return null;
 		}
@@ -1815,41 +1839,11 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		List<String> commentLines = new ArrayList<>(Arrays.asList(commentText.split("\n")));
 		if (element instanceof JCMethodDecl) {
 			JCMethodDecl method = (JCMethodDecl) element;
-			Set<String> params = new HashSet<>();
-			boolean hasReturn = false;
-			for (int i = 0; i < commentLines.size(); i++) {
-				Matcher m = paramPattern.matcher(commentLines.get(i));
-				if (m.matches()) {
-					String name = m.group(2);
-					params.add(name);
-					JCVariableDecl parameter = Util.findParameter(method, name);
-					if (parameter != null) {
-						commentLines.set(i,
-								m.group(1) + "{" + getMappedDocType(parameter.vartype, parameter.vartype.type) + "} "
-										+ m.group(2) + m.group(3));
-					}
-				} else if ((m = returnPattern.matcher(commentLines.get(i))).matches()) {
-					hasReturn = true;
-					commentLines.set(i, m.group(1) + "{" + getMappedDocType(method.restype, method.restype.type) + "} "
-							+ m.group(2));
-				}
-			}
-			for (JCVariableDecl parameter : method.getParameters()) {
-				String name = parameter.name.toString();
-				if (!params.contains(name)) {
-					commentLines.add(
-							" @param {" + getMappedDocType(parameter.vartype, parameter.vartype.type) + "} " + name);
-				}
-			}
-			if (!hasReturn && !(method.restype == null || context.symtab.voidType.equals(method.restype.type))
-					&& !method.sym.isConstructor()) {
-				commentLines.add(" @return {" + getMappedDocType(method.restype, method.restype.type) + "}");
-			}
-			if (method.sym.isPrivate()) {
-				commentLines.add(" @private");
-			}
-			if (method.sym.isConstructor()) {
-				commentLines.add(" @constructor");
+			if (!method.sym.isConstructor()) {
+				applyForMethod(method, commentLines);
+			} else {
+				// erase constructor comments because jsDoc uses class comments
+				return null;
 			}
 		} else if (element instanceof JCClassDecl) {
 			JCClassDecl clazz = (JCClassDecl) element;
@@ -1862,6 +1856,44 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		}
 
 		return String.join("\n", commentLines);
+	}
+
+	protected void applyForMethod(JCMethodDecl method, List<String> commentLines) {
+		Set<String> params = new HashSet<>();
+		boolean hasReturn = false;
+		for (int i = 0; i < commentLines.size(); i++) {
+			Matcher m = paramPattern.matcher(commentLines.get(i));
+			if (m.matches()) {
+				String name = m.group(2);
+				params.add(name);
+				JCVariableDecl parameter = Util.findParameter(method, name);
+				if (parameter != null) {
+					commentLines.set(i, m.group(1) + "{" + getMappedDocType(parameter.vartype, parameter.vartype.type)
+							+ "} " + m.group(2) + m.group(3));
+				}
+			} else if ((m = returnPattern.matcher(commentLines.get(i))).matches()) {
+				hasReturn = true;
+				commentLines.set(i,
+						m.group(1) + "{" + getMappedDocType(method.restype, method.restype.type) + "} " + m.group(2));
+			}
+		}
+		for (JCVariableDecl parameter : method.getParameters()) {
+			String name = parameter.name.toString();
+			if (!params.contains(name)) {
+				commentLines
+						.add(" @param {" + getMappedDocType(parameter.vartype, parameter.vartype.type) + "} " + name);
+			}
+		}
+		if (!hasReturn && !(method.restype == null || context.symtab.voidType.equals(method.restype.type))
+				&& !method.sym.isConstructor()) {
+			commentLines.add(" @return {" + getMappedDocType(method.restype, method.restype.type) + "}");
+		}
+		if (method.sym.isPrivate()) {
+			commentLines.add(" @private");
+		}
+		if (method.sym.isConstructor()) {
+			commentLines.add(" @class");
+		}
 	}
 
 }

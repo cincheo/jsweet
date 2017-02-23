@@ -671,7 +671,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			String commentText = getAdapter().adaptDocComment(element, comment == null ? null : comment.getText());
 
 			List<String> lines = new ArrayList<>();
-			if (comment != null) {
+			if (commentText != null) {
 				lines.addAll(Arrays.asList(commentText.split("\n")));
 			}
 			if (!lines.isEmpty()) {
