@@ -179,8 +179,8 @@ public class JSweetCommandLineLauncher {
 					factory = new JSweetFactory();
 				}
 
-				JSweetTranspiler transpiler = new JSweetTranspiler(factory, tsOutputDir, jsOutputDir,
-						candiesJsOutputDir, classPath);
+				JSweetTranspiler transpiler = new JSweetTranspiler(factory, jsapArgs.getFile("workingDir"), tsOutputDir,
+						jsOutputDir, candiesJsOutputDir, classPath);
 
 				transpiler.setBundle(jsapArgs.getBoolean("bundle"));
 				transpiler.setNoRootDirectories(jsapArgs.getBoolean("noRootDirectories"));
@@ -429,6 +429,15 @@ public class JSweetCommandLineLauncher {
 		optionArg.setLongFlag("header");
 		optionArg.setHelp(
 				"A file that contains a header to be written at the begining of each generated file. If left unspecified, JSweet will generate a default header.");
+		optionArg.setStringParser(FileStringParser.getParser());
+		optionArg.setRequired(false);
+		jsap.registerParameter(optionArg);
+
+		// Working directory
+		optionArg = new FlaggedOption("workingDir");
+		optionArg.setLongFlag("workingDir");
+		optionArg.setHelp(
+				"The directory JSweet uses to store temporary files such as extracted candies. JSweet uses '.jsweet' if left unspecified.");
 		optionArg.setStringParser(FileStringParser.getParser());
 		optionArg.setRequired(false);
 		jsap.registerParameter(optionArg);

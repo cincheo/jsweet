@@ -239,8 +239,7 @@ public class JSweetTranspiler implements JSweetOptions {
 	 */
 	public JSweetTranspiler(JSweetFactory factory, File tsOutputDir, File jsOutputDir,
 			File extractedCandiesJavascriptDir, String classPath) {
-		this(factory, new File(TMP_WORKING_DIR_NAME), tsOutputDir, jsOutputDir, extractedCandiesJavascriptDir,
-				classPath);
+		this(factory, null, tsOutputDir, jsOutputDir, extractedCandiesJavascriptDir, classPath);
 	}
 
 	private Map<String, Map<String, Object>> configuration;
@@ -269,7 +268,7 @@ public class JSweetTranspiler implements JSweetOptions {
 	 * @param factory
 	 *            the factory used to create the transpiler objects
 	 * @param workingDir
-	 *            the working directory
+	 *            the working directory (uses default one if null)
 	 * @param tsOutputDir
 	 *            the directory where TypeScript files are written
 	 * @param jsOutputDir
@@ -284,7 +283,8 @@ public class JSweetTranspiler implements JSweetOptions {
 			File extractedCandiesJavascriptDir, String classPath) {
 		this.factory = factory;
 		readConfiguration();
-		this.workingDir = workingDir.getAbsoluteFile();
+		this.workingDir = workingDir == null ? new File(TMP_WORKING_DIR_NAME).getAbsoluteFile()
+				: workingDir.getAbsoluteFile();
 		this.extractedCandyJavascriptDir = extractedCandiesJavascriptDir;
 		try {
 			tsOutputDir.mkdirs();
@@ -610,7 +610,7 @@ public class JSweetTranspiler implements JSweetOptions {
 				runProcess = ProcessUtil.runCommand(ProcessUtil.NODE_COMMAND, line -> trace.append(line + "\n"), null,
 						f.getPath());
 			} else {
-				File tmpFile = new File(new File(TMP_WORKING_DIR_NAME), "eval.tmp.js");
+				File tmpFile = new File(workingDir, "eval.tmp.js");
 				FileUtils.deleteQuietly(tmpFile);
 				if (jsLibFiles != null) {
 					for (File jsLibFile : jsLibFiles) {

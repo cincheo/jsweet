@@ -20,7 +20,6 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 
-import org.jsweet.transpiler.JSweetTranspiler;
 import org.jsweet.transpiler.ModuleKind;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -161,7 +160,7 @@ public class ApiTests extends AbstractTest {
 
 	@Test
 	public void testExpressionBuilder() {
-		transpiler.addJsLibFiles(new File(JSweetTranspiler.TMP_WORKING_DIR_NAME + "/candies/js/j4ts-0.4.0/bundle.js"));
+		transpiler.addJsLibFiles(new File(transpiler.getWorkingDirectory() + "/candies/js/j4ts-0.4.0/bundle.js"));
 		try {
 			eval(ModuleKind.none, (logHandler, r) -> {
 				logHandler.assertNoProblems();
