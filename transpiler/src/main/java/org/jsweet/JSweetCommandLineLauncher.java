@@ -198,6 +198,7 @@ public class JSweetCommandLineLauncher {
 				transpiler.setSupportSaticLazyInitialization(!jsapArgs.getBoolean("disableJavaAddons"));
 				transpiler.setGenerateDefinitions(!jsapArgs.getBoolean("ignoreDefinitions"));
 				transpiler.setDeclarationsOutputDir(dtsOutputDir);
+				transpiler.setHeaderFile(jsapArgs.getFile("header"));
 
 				transpiler.transpile(transpilationHandler, SourceFile.toSourceFiles(files));
 			} catch (NoClassDefFoundError error) {
@@ -422,6 +423,15 @@ public class JSweetCommandLineLauncher {
 		switchArg.setHelp("Java 'assert' statements are transpiled as runtime JavaScript checks.");
 		switchArg.setDefault("false");
 		jsap.registerParameter(switchArg);
+
+		// Header file
+		optionArg = new FlaggedOption("header");
+		optionArg.setLongFlag("header");
+		optionArg.setHelp(
+				"A file that contains a header to be written at the begining of each generated file. If left unspecified, JSweet will generate a default header.");
+		optionArg.setStringParser(FileStringParser.getParser());
+		optionArg.setRequired(false);
+		jsap.registerParameter(optionArg);
 
 		return jsap;
 	}

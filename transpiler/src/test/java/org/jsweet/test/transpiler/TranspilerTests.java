@@ -159,7 +159,7 @@ public class TranspilerTests extends AbstractTest {
 		Process process = null;
 
 		FileUtils.deleteQuietly(outDir);
-		
+
 		process = ProcessUtil.runCommand("java", line -> {
 			System.out.println(line);
 		}, null, "-cp", System.getProperty("java.class.path"), //
@@ -167,14 +167,14 @@ public class TranspilerTests extends AbstractTest {
 				"--tsout", outDir.getPath(), //
 				"--jsout", outDir.getPath(), //
 				"--sourceMap", //
-				"-i", gameDir+":"+calculusDir);
+				"-i", gameDir + ":" + calculusDir);
 
 		assertTrue(process.exitValue() == 0);
 		files.clear();
 		Util.addFiles(".ts", outDir, files);
 		assertTrue(files.stream().anyMatch(f -> f.getName().equals("UselessClass.ts")));
 		assertTrue(files.stream().anyMatch(f -> f.getName().equals("MathApi.ts")));
-		
+
 		process = ProcessUtil.runCommand("java", line -> {
 			System.out.println(line);
 		}, null, "-cp", System.getProperty("java.class.path"), //
@@ -360,6 +360,63 @@ public class TranspilerTests extends AbstractTest {
 			logHandler.assertNoProblems();
 		}, getSourceFile(A.class), getSourceFile(B.class), getSourceFile(Extended.class));
 		createTranspiler(new JSweetFactory());
+	}
+
+	@Test
+	public void testDefaultHeader() {
+		SourceFile f = getSourceFile(CanvasDrawing.class);
+		transpile(logHandler -> {
+			logHandler.assertNoProblems();
+			try {
+				String generatedCode = FileUtils.readFileToString(f.getTsFile());
+				assertTrue(generatedCode.startsWith("/* Generated from Java with JSweet"));
+			} catch (Exception e) {
+				e.printStackTrace();
+				fail(e.getMessage());
+			}
+		}, f);
+		transpiler.setBundle(true);
+		transpile(ModuleKind.none, logHandler -> {
+			logHandler.assertNoProblems();
+			try {
+				String generatedCode = FileUtils.readFileToString(f.getTsFile());
+				assertTrue(generatedCode.startsWith("/* Generated from Java with JSweet"));
+			} catch (Exception e) {
+				e.printStackTrace();
+				fail(e.getMessage());
+			}
+		}, f);
+		transpiler.setBundle(false);
+	}
+
+	@Test
+	public void testHeaderFile() {
+		SourceFile f = getSourceFile(CanvasDrawing.class);
+		File headerFile = new File(f.getJavaFile().getParentFile(), "header.txt");
+		transpiler.setHeaderFile(headerFile);
+		transpile(logHandler -> {
+			logHandler.assertNoProblems();
+			try {
+				String generatedCode = FileUtils.readFileToString(f.getTsFile());
+				assertTrue(generatedCode.startsWith("// This is a test header..."));
+			} catch (Exception e) {
+				e.printStackTrace();
+				fail(e.getMessage());
+			}
+		}, f);
+		transpiler.setBundle(true);
+		transpile(ModuleKind.none, logHandler -> {
+			logHandler.assertNoProblems();
+			try {
+				String generatedCode = FileUtils.readFileToString(f.getTsFile());
+				assertTrue(generatedCode.startsWith("// This is a test header..."));
+			} catch (Exception e) {
+				e.printStackTrace();
+				fail(e.getMessage());
+			}
+		}, f);
+		transpiler.setBundle(false);
+		transpiler.setHeaderFile(null);
 	}
 
 }

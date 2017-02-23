@@ -152,4 +152,11 @@ public interface JSweetOptions {
 	 */
 	boolean isIgnoreTypeScriptErrors();
 
+	/**
+	 * Gets the file containing the header to be added to the generated files.
+	 * 
+	 * @return the header file, null if undefined
+	 */
+	File getHeaderFile();
+
 }

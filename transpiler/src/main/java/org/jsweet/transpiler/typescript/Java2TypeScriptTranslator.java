@@ -354,9 +354,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					getCompilationUnit());
 		}
 
-		printIndent().print(
-				"/* Generated from Java with JSweet " + JSweetConfig.getVersionNumber() + " - http://www.jsweet.org */")
-				.println();
 		PackageSymbol rootPackage = context.getFirstEnclosingRootPackage(topLevel.packge);
 		if (rootPackage != null) {
 			if (!checkRootPackageParent(topLevel, rootPackage, (PackageSymbol) rootPackage.owner)) {

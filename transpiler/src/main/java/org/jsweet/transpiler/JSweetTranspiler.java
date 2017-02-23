@@ -177,6 +177,7 @@ public class JSweetTranspiler implements JSweetOptions {
 	private boolean ignoreTypeScriptErrors = false;
 	private boolean forceJavaRuntime = false;
 	private boolean isUsingJavaRuntime = false;
+	private File headerFile = null;
 
 	/**
 	 * Manually sets the transpiler to use (or not use) a Java runtime.
@@ -821,6 +822,7 @@ public class JSweetTranspiler implements JSweetOptions {
 			List<JCCompilationUnit> compilationUnits) throws IOException {
 		// regular file-to-file generation
 		new OverloadScanner(transpilationHandler, context).process(compilationUnits);
+		String[] headerLines = getHeaderLines();
 		for (int i = 0; i < compilationUnits.length(); i++) {
 			JCCompilationUnit cu = compilationUnits.get(i);
 			if (isModuleDefsFile(cu)) {
@@ -856,6 +858,9 @@ public class JSweetTranspiler implements JSweetOptions {
 			String outputFilePath = outputFile.getPath();
 			PrintWriter out = new PrintWriter(outputFilePath);
 			try {
+				for (String line : headerLines) {
+					out.println(line);
+				}
 				out.println(printer.getResult());
 				out.print(context.getGlobalsMappingString());
 				out.print(context.poolFooterStatements());
@@ -864,6 +869,7 @@ public class JSweetTranspiler implements JSweetOptions {
 			}
 			files[i].tsFile = outputFile;
 			files[i].javaFileLastTranspiled = files[i].getJavaFile().lastModified();
+			printer.sourceMap.shiftOutputPositions(headerLines.length);
 			files[i].setSourceMap(printer.sourceMap);
 			if (generateSourceMap && !generateJsFiles) {
 				generateTypeScriptSourceMapFile(files[i]);
@@ -965,6 +971,10 @@ public class JSweetTranspiler implements JSweetOptions {
 		context.bundleMode = true;
 		StringBuilder sb = new StringBuilder();
 		int lineCount = 0;
+		for (String line : getHeaderLines()) {
+			sb.append(line).append("\n");
+			lineCount++;
+		}
 		for (int i = 0; i < orderedCompilationUnits.size(); i++) {
 			JCCompilationUnit cu = orderedCompilationUnits.get(i);
 			if (isModuleDefsFile(cu)) {
@@ -1756,6 +1766,28 @@ public class JSweetTranspiler implements JSweetOptions {
 
 	public void setIgnoreTypeScriptErrors(boolean ignoreTypeScriptErrors) {
 		this.ignoreTypeScriptErrors = ignoreTypeScriptErrors;
+	}
+
+	@Override
+	public File getHeaderFile() {
+		return headerFile;
+	}
+
+	public void setHeaderFile(File headerFile) {
+		this.headerFile = headerFile;
+	}
+
+	private String[] getHeaderLines() {
+		if (getHeaderFile() != null) {
+			try {
+				return FileUtils.readLines(getHeaderFile(), getEncoding()).toArray(new String[0]);
+			} catch (Exception e) {
+				logger.error("cannot read header file: " + getHeaderFile() + " - using default header");
+			}
+		}
+		return new String[] { "/* Generated from Java with JSweet " + JSweetConfig.getVersionNumber()
+				+ " - http://www.jsweet.org */" };
+
 	}
 
 }
