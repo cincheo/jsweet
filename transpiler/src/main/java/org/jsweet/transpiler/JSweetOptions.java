@@ -113,6 +113,12 @@ public interface JSweetOptions {
 	boolean isGenerateJsFiles();
 
 	/**
+	 * If false, do not generate TypeScript output (just validate the Java
+	 * source code and do not transpile anything). Default is true.
+	 */
+	boolean isGenerateTsFiles();
+
+	/**
 	 * If true, JSweet will keep track of implemented interfaces in objects at
 	 * runtime, so that the instanceof operator can work properly with
 	 * interfaces.

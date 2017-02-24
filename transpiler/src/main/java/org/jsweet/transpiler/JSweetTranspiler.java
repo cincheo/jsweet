@@ -156,6 +156,7 @@ public class JSweetTranspiler implements JSweetOptions {
 	private File tsOutputDir;
 	private File jsOutputDir;
 	private String classPath;
+	private boolean generateTsFiles = true;
 	private boolean generateJsFiles = true;
 	private boolean tscWatchMode = false;
 	private File[] tsDefDirs = {};
@@ -710,6 +711,9 @@ public class JSweetTranspiler implements JSweetOptions {
 		if (transpilationHandler.getErrorCount() > 0) {
 			return null;
 		}
+		if (!generateTsFiles) {
+			return null;
+		}
 		context.useModules = isUsingModules();
 		context.useRequireForModules = moduleKind != ModuleKind.es2015;
 
@@ -771,13 +775,13 @@ public class JSweetTranspiler implements JSweetOptions {
 				.filter(source -> source.getJavaFile() != null).collect(toList());
 		java2ts(errorHandler, jsweetSources.toArray(new SourceFile[0]));
 
-		if (errorHandler.getErrorCount() == 0 && generateJsFiles) {
+		if (errorHandler.getErrorCount() == 0 && generateTsFiles && generateJsFiles) {
 			Collection<SourceFile> tsSources = asList(files).stream() //
 					.filter(source -> source.getTsFile() != null).collect(toList());
 			ts2js(errorHandler, tsSources.toArray(new SourceFile[0]));
 		}
 
-		if (!generateJsFiles) {
+		if (!generateJsFiles || !generateTsFiles) {
 			transpilationHandler.onCompleted(this, !isTscWatchMode(), files);
 		}
 
@@ -1788,6 +1792,15 @@ public class JSweetTranspiler implements JSweetOptions {
 		return new String[] { "/* Generated from Java with JSweet " + JSweetConfig.getVersionNumber()
 				+ " - http://www.jsweet.org */" };
 
+	}
+
+	@Override
+	public boolean isGenerateTsFiles() {
+		return generateTsFiles;
+	}
+
+	public void setGenerateTsFiles(boolean generateTsFiles) {
+		this.generateTsFiles = generateTsFiles;
 	}
 
 }
