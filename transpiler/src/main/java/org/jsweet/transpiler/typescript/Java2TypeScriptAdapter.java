@@ -1734,7 +1734,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		if (type instanceof TypeVar) {
 			TypeVar typeVar = (TypeVar) typeTree.type;
 			if (typeVar.getUpperBound() == null) {
-				return "Object";
+				return "*";
 			} else {
 				return getMappedDocType(null, typeVar.getUpperBound());
 			}
@@ -1759,7 +1759,7 @@ public class Java2TypeScriptAdapter extends AbstractPrinterAdapter {
 		if (!isMapped && !type.isPrimitiveOrVoid()) {
 			qualifiedName = context.getRootRelativeName(null, type.tsym);
 		}
-		return qualifiedName;
+		return "any".equals(qualifiedName) ? "*" : qualifiedName;
 	}
 
 	private String replaceLinks(String text) {
