@@ -18,7 +18,7 @@
  */
 package org.jsweet.transpiler;
 
-import com.sun.tools.javac.code.Symbol;
+import javax.lang.model.element.Element;
 
 /**
  * This interface has to be implemented to adapt the way annotations are
@@ -55,19 +55,19 @@ public interface AnnotationAdapter {
 	 * Gets the state of the given annotation type, as defined by this
 	 * annotation adapter.
 	 * 
-	 * @param symbol
+	 * @param element
 	 *            the AST element where to lookup the annotation
 	 * @param annotationType
 	 *            the looked up annotation type (fully qualified name)
 	 * @return the state of this annotation, which states if it is added,
 	 *         removed, or unchanged by this annotation adapter
 	 */
-	AnnotationState getAnnotationState(Symbol symbol, String annotationType);
+	AnnotationState getAnnotationState(Element element, String annotationType);
 
 	/**
 	 * Gets the given annotation property value.
 	 * 
-	 * @param symbol
+	 * @param element
 	 *            the AST element on which the annotation is defined
 	 * @param annotationType
 	 *            the annotation type (fully qualified name)
@@ -78,6 +78,6 @@ public interface AnnotationAdapter {
 	 *            the default value to be returned if not found
 	 * @return the annotation property value
 	 */
-	String getAnnotationValue(Symbol symbol, String annotationType, String propertyName, String defaultValue);
+	String getAnnotationValue(Element element, String annotationType, String propertyName, String defaultValue);
 
 }

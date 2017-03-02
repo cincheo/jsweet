@@ -40,14 +40,19 @@ import java.util.TreeSet;
 import java.util.Vector;
 import java.util.WeakHashMap;
 
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+
 import org.jsweet.transpiler.JSweetContext;
+import org.jsweet.transpiler.element.FieldAccessElement;
+import org.jsweet.transpiler.element.MethodInvocationElement;
+import org.jsweet.transpiler.element.NewClassElement;
 import org.jsweet.transpiler.typescript.Java2TypeScriptAdapter;
 import org.jsweet.transpiler.typescript.Java2TypeScriptTranslator;
-import org.jsweet.transpiler.util.AbstractPrinterAdapter;
+import org.jsweet.transpiler.util.PrinterAdapter;
 import org.jsweet.transpiler.util.Util;
 
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
-import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.tree.JCTree;
@@ -71,13 +76,16 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 	protected Map<String, String> extTypesMapping = new HashMap<>();
 
 	public RemoveJavaDependenciesAdapter(JSweetContext context) {
-		this((AbstractPrinterAdapter) null);
-		this.context = context;
+		super(context);
+		init();
 	}
 
-	public RemoveJavaDependenciesAdapter(AbstractPrinterAdapter parentAdapter) {
+	public RemoveJavaDependenciesAdapter(PrinterAdapter parentAdapter) {
 		super(parentAdapter);
-		this.context = getContext();
+		init();
+	}
+
+	private void init() {
 		extTypesMapping.put(List.class.getName(), "Array");
 		extTypesMapping.put(ArrayList.class.getName(), "Array");
 		extTypesMapping.put(Collection.class.getName(), "Array");
@@ -103,16 +111,14 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		extTypesMapping.put(GregorianCalendar.class.getName(), "Date");
 		extTypesMapping.put(TimeZone.class.getName(), "string");
 		addTypeMappings(extTypesMapping);
-		addTypeMapping(
-				(typeTree,
-						name) -> name.startsWith("java.")
-								&& context.types.isSubtype(typeTree.type, context.symtab.throwableType) ? "Error"
-										: null);
-		addTypeMapping(
-				(typeTree,
-						name) -> typeTree instanceof JCTypeApply && WeakReference.class.getName()
-								.equals(typeTree.type.tsym.getQualifiedName().toString())
-										? ((JCTypeApply) typeTree).arguments.head : null);
+		addTypeMapping((typeTree,
+				name) -> name.startsWith("java.")
+						&& context.types.isSubtype(typeTree.getTree().type, context.symtab.throwableType) ? "Error"
+								: null);
+		addTypeMapping((typeTree,
+				name) -> typeTree.getTree() instanceof JCTypeApply && WeakReference.class.getName()
+						.equals(typeTree.getTree().type.tsym.getQualifiedName().toString())
+								? ((JCTypeApply) typeTree.getTree()).arguments.head : null);
 	}
 
 	@Override
@@ -124,8 +130,13 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 	}
 
 	@Override
-	protected boolean substituteMethodInvocation(JCMethodInvocation invocation, JCFieldAccess fieldAccess,
-			TypeSymbol targetType, String targetClassName, String targetMethodName) {
+	public boolean substituteMethodInvocation(MethodInvocationElement invocationElement,
+			FieldAccessElement fieldAccessElement, Element targetType, String targetClassName,
+			String targetMethodName) {
+
+		JCMethodInvocation invocation = invocationElement.getTree();
+		JCFieldAccess fieldAccess = fieldAccessElement.getTree();
+
 		if (targetClassName != null && fieldAccess != null) {
 			switch (targetClassName) {
 
@@ -143,68 +154,72 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 					case "java.util.Set":
 					case "java.util.HashSet":
 					case "java.util.TreeSet":
-						print("((s, e) => { if(s.indexOf(e)==-1) s.push(e); })(").print(fieldAccess.getExpression())
-								.print(", ").print(invocation.args.head).print(")");
+						getPrinter().print("((s, e) => { if(s.indexOf(e)==-1) s.push(e); })(")
+								.print(fieldAccess.getExpression()).print(", ").print(invocation.args.head).print(")");
 						break;
 					default:
 						if (invocation.args.size() == 2) {
-							print(fieldAccess.getExpression()).print(".splice(").print(invocation.args.head)
-									.print(", 0, ").print(invocation.args.tail.head).print(")");
+							getPrinter().print(fieldAccess.getExpression()).print(".splice(")
+									.print(invocation.args.head).print(", 0, ").print(invocation.args.tail.head)
+									.print(")");
 						} else {
-							print(fieldAccess.getExpression()).print(".push(").printArgList(invocation.args).print(")");
+							getPrinter().print(fieldAccess.getExpression()).print(".push(")
+									.printArgList(invocation.args).print(")");
 						}
 					}
 					return true;
 				case "addAll":
 					printMacroName(targetMethodName);
-					print("((l1, l2) => l1.push.apply(l1, l2))(").print(fieldAccess.getExpression()).print(", ")
-							.printArgList(invocation.args).print(")");
+					getPrinter().print("((l1, l2) => l1.push.apply(l1, l2))(").print(fieldAccess.getExpression())
+							.print(", ").printArgList(invocation.args).print(")");
 					return true;
 				case "remove":
 					printMacroName(targetMethodName);
 					if (Util.isNumber(invocation.args.head.type)) {
-						print(fieldAccess.getExpression()).print(".splice(").printArgList(invocation.args)
+						getPrinter().print(fieldAccess.getExpression()).print(".splice(").printArgList(invocation.args)
 								.print(", 1)");
 					} else {
-						print("(a => a.splice(a.indexOf(").print(invocation.args.head).print(")")
+						getPrinter().print("(a => a.splice(a.indexOf(").print(invocation.args.head).print(")")
 								.print(invocation.args.tail.isEmpty() ? "" : ", ").printArgList(invocation.args.tail)
 								.print(", 1))(").print(fieldAccess.getExpression()).print(")");
 					}
 					return true;
 				case "subList":
 					printMacroName(targetMethodName);
-					print(fieldAccess.getExpression()).print(".slice(").printArgList(invocation.args).print(")");
+					getPrinter().print(fieldAccess.getExpression()).print(".slice(").printArgList(invocation.args)
+							.print(")");
 					return true;
 				case "size":
 					printMacroName(targetMethodName);
-					print(fieldAccess.getExpression()).print(".length");
+					getPrinter().print(fieldAccess.getExpression()).print(".length");
 					return true;
 				case "get":
 				case "elementAt":
 					printMacroName(targetMethodName);
-					print(fieldAccess.getExpression()).print("[").printArgList(invocation.args).print("]");
+					getPrinter().print(fieldAccess.getExpression()).print("[").printArgList(invocation.args).print("]");
 					return true;
 				case "clear":
 					printMacroName(targetMethodName);
-					print("(").print(fieldAccess.getExpression()).print(".length = 0)");
+					getPrinter().print("(").print(fieldAccess.getExpression()).print(".length = 0)");
 					return true;
 				case "isEmpty":
 					printMacroName(targetMethodName);
-					print("(").print(fieldAccess.getExpression()).print(".length == 0)");
+					getPrinter().print("(").print(fieldAccess.getExpression()).print(".length == 0)");
 					return true;
 				case "contains":
 					printMacroName(targetMethodName);
-					print("(").print(fieldAccess.getExpression()).print(".indexOf(").print(invocation.args.head)
-							.print(") >= 0)");
+					getPrinter().print("(").print(fieldAccess.getExpression()).print(".indexOf(")
+							.print(invocation.args.head).print(") >= 0)");
 					return true;
 				case "toArray":
 					printMacroName(targetMethodName);
 					if (invocation.args.length() == 1) {
-						print("((a1, a2) => { if(a1.length >= a2.length) { a1.length=0; a1.push.apply(a1, a2); return a1; } else { return a2.slice(0); } })(")
+						getPrinter()
+								.print("((a1, a2) => { if(a1.length >= a2.length) { a1.length=0; a1.push.apply(a1, a2); return a1; } else { return a2.slice(0); } })(")
 								.print(invocation.args.head).print(", ").print(fieldAccess.getExpression()).print(")");
 						return true;
 					} else {
-						print(fieldAccess.getExpression()).print(".slice(0)");
+						getPrinter().print(fieldAccess.getExpression()).print(".slice(0)");
 						return true;
 					}
 				case "elements":
@@ -228,34 +243,35 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 				switch (targetMethodName) {
 				case "put":
 					printMacroName(targetMethodName);
-					print("(").print(fieldAccess.getExpression()).print("[").print(invocation.args.head).print("] = ")
-							.print(invocation.args.tail.head).print(")");
+					getPrinter().print("(").print(fieldAccess.getExpression()).print("[").print(invocation.args.head)
+							.print("] = ").print(invocation.args.tail.head).print(")");
 					return true;
 				case "get":
 					printMacroName(targetMethodName);
-					print(fieldAccess.getExpression()).print("[").print(invocation.args.head).print("]");
+					getPrinter().print(fieldAccess.getExpression()).print("[").print(invocation.args.head).print("]");
 					return true;
 				case "containsKey":
 					printMacroName(targetMethodName);
-					print(fieldAccess.getExpression()).print(".hasOwnProperty(").print(invocation.args.head).print(")");
+					getPrinter().print(fieldAccess.getExpression()).print(".hasOwnProperty(")
+							.print(invocation.args.head).print(")");
 					return true;
 				case "keySet":
 					printMacroName(targetMethodName);
-					print("Object.keys(").print(fieldAccess.getExpression()).print(")");
+					getPrinter().print("Object.keys(").print(fieldAccess.getExpression()).print(")");
 					return true;
 				case "values":
 					printMacroName(targetMethodName);
-					print("(obj => Object.keys(obj).map(key => obj[key]))(").print(fieldAccess.getExpression())
-							.print(")");
+					getPrinter().print("(obj => Object.keys(obj).map(key => obj[key]))(")
+							.print(fieldAccess.getExpression()).print(")");
 					return true;
 				case "size":
 					printMacroName(targetMethodName);
-					print("Object.keys(").print(fieldAccess.getExpression()).print(").length");
+					getPrinter().print("Object.keys(").print(fieldAccess.getExpression()).print(").length");
 					return true;
 				case "remove":
 					printMacroName(targetMethodName);
-					print("delete ").print(fieldAccess.getExpression()).print("[").print(invocation.args.head)
-							.print("]");
+					getPrinter().print("delete ").print(fieldAccess.getExpression()).print("[")
+							.print(invocation.args.head).print("]");
 					return true;
 				}
 				break;
@@ -278,33 +294,35 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 				case "unmodifiableSet":
 				case "unmodifiableSortedSet":
 					printMacroName(targetMethodName);
-					printArgList(invocation.args).print(".slice(0)");
+					getPrinter().printArgList(invocation.args).print(".slice(0)");
 					return true;
 				case "singleton":
 					printMacroName(targetMethodName);
-					print("[").print(invocation.args.head).print("]");
+					getPrinter().print("[").print(invocation.args.head).print("]");
 					return true;
 				case "singletonList":
 					printMacroName(targetMethodName);
-					print("[").print(invocation.args.head).print("]");
+					getPrinter().print("[").print(invocation.args.head).print("]");
 					return true;
 				case "singletonMap":
 					printMacroName(targetMethodName);
 					if (invocation.args.head instanceof JCLiteral) {
-						print("{ ").print(invocation.args.head).print(": ").print(invocation.args.tail.head)
-								.print(" }");
+						getPrinter().print("{ ").print(invocation.args.head).print(": ")
+								.print(invocation.args.tail.head).print(" }");
 					} else {
-						print("(k => { let o = {}; o[k] = ").print(invocation.args.tail.head).print("; return o; })(")
-								.print(invocation.args.head).print(")");
+						getPrinter().print("(k => { let o = {}; o[k] = ").print(invocation.args.tail.head)
+								.print("; return o; })(").print(invocation.args.head).print(")");
 					}
 					return true;
 				case "binarySearch":
 					printMacroName(targetMethodName);
-					print(invocation.args.head).print(".indexOf(").printArgList(invocation.args.tail).print(")");
+					getPrinter().print(invocation.args.head).print(".indexOf(").printArgList(invocation.args.tail)
+							.print(")");
 					return true;
 				case "sort":
 					printMacroName(targetMethodName);
-					print(invocation.args.head).print(".sort(").printArgList(invocation.args.tail).print(")");
+					getPrinter().print(invocation.args.head).print(".sort(").printArgList(invocation.args.tail)
+							.print(")");
 					return true;
 				}
 				break;
@@ -313,14 +331,15 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 				case "asList":
 					printMacroName(targetMethodName);
 					if (invocation.args.size() == 1 && invocation.args.head.type instanceof ArrayType) {
-						printArgList(invocation.args).print(".slice(0)");
+						getPrinter().printArgList(invocation.args).print(".slice(0)");
 					} else {
-						print("[").printArgList(invocation.args).print("]");
+						getPrinter().print("[").printArgList(invocation.args).print("]");
 					}
 					return true;
 				case "copyOf":
 					printMacroName(targetMethodName);
-					print(invocation.args.head).print(".slice(0,").print(invocation.args.tail.head).print(")");
+					getPrinter().print(invocation.args.head).print(".slice(0,").print(invocation.args.tail.head)
+							.print(")");
 					return true;
 				case "equals":
 					printMacroName(targetMethodName);
@@ -341,7 +360,8 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 								.print(invocation.args.head).print(", ").print(invocation.args.head)
 								.print(".slice(start, end).sort(f)))(").printArgList(invocation.args).print(")");
 					} else {
-						print(invocation.args.head).print(".sort(").printArgList(invocation.args.tail).print(")");
+						getPrinter().print(invocation.args.head).print(".sort(").printArgList(invocation.args.tail)
+								.print(")");
 					}
 					return true;
 				}
@@ -535,7 +555,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			case "clone":
 				printMacroName(targetMethodName);
 				if (fieldAccess != null && fieldAccess.getExpression().type instanceof Type.ArrayType) {
-					print(fieldAccess.getExpression()).print(".slice(0)");
+					getPrinter().print(fieldAccess.getExpression()).print(".slice(0)");
 					return true;
 				}
 				break;
@@ -543,15 +563,18 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 
 		}
 
-		return super.substituteMethodInvocation(invocation, fieldAccess, targetType, targetClassName, targetMethodName);
+		return super.substituteMethodInvocation(invocationElement, fieldAccessElement, targetType, targetClassName,
+				targetMethodName);
 	}
 
 	@Override
-	protected boolean substituteFieldAccess(JCFieldAccess fieldAccess, TypeSymbol targetType, String accessedType) {
-		if (fieldAccess.sym.isStatic() && isMappedType(accessedType) && accessedType.startsWith("java.lang.")
-				&& !"class".equals(fieldAccess.name.toString())) {
+	public boolean substituteFieldAccess(FieldAccessElement fieldAccessElement, Element targetType,
+			String targetClassName, String targetFieldName) {
+		JCFieldAccess fieldAccess = fieldAccessElement.getTree();
+		if (fieldAccess.sym.isStatic() && isMappedType(targetClassName) && targetClassName.startsWith("java.lang.")
+				&& !"class".equals(targetFieldName)) {
 
-			switch (accessedType) {
+			switch (targetClassName) {
 			case "java.lang.Float":
 			case "java.lang.Double":
 			case "java.lang.Integer":
@@ -561,16 +584,17 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 				switch (fieldAccess.name.toString()) {
 				case "MIN_VALUE":
 				case "MAX_VALUE":
-					print("Number." + fieldAccess.name.toString());
+					print("Number." + targetFieldName);
 					return true;
 				}
 			}
 		}
-		return super.substituteFieldAccess(fieldAccess, targetType, accessedType);
+		return super.substituteFieldAccess(fieldAccessElement, targetType, targetClassName, targetFieldName);
 	}
 
 	@Override
-	protected boolean substituteNewClass(JCNewClass newClass, String className) {
+	public boolean substituteNewClass(NewClassElement newClassElement, TypeElement type, String className) {
+		JCNewClass newClass = newClassElement.getTree();
 		switch (className) {
 		case "java.util.ArrayList":
 		case "java.util.Vector":
@@ -580,7 +604,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 				if (Util.isNumber(newClass.args.head.type) || (newClass.args.head instanceof JCLiteral)) {
 					print("[]");
 				} else {
-					print(newClass.args.head).print(".slice(0)");
+					getPrinter().print(newClass.args.head).print(".slice(0)");
 				}
 			}
 			return true;
@@ -625,9 +649,9 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 				print("new Error(");
 				if (newClass.args.size() > 0) {
 					if (String.class.getName().equals(newClass.args.head.type.toString())) {
-						print(newClass.args.head);
+						getPrinter().print(newClass.args.head);
 					} else if (context.types.isSubtype(newClass.args.head.type, context.symtab.throwableType)) {
-						print(newClass.args.head).print(".message");
+						getPrinter().print(newClass.args.head).print(".message");
 					}
 				}
 				print(")");
@@ -637,7 +661,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			}
 		}
 
-		return super.substituteNewClass(newClass, className);
+		return super.substituteNewClass(newClassElement, type, className);
 	}
 
 	@Override
@@ -670,10 +694,10 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 	public boolean substituteInstanceof(String exprStr, JCTree expr, Type type) {
 		String typeName = type.tsym.getQualifiedName().toString();
 		if (typeName.startsWith("java.") && context.types.isSubtype(type, context.symtab.throwableType)) {
-			print(exprStr, expr);
+			getPrinter().print(exprStr, expr);
 			print(" != null && ");
 			print("(");
-			print(exprStr, expr);
+			getPrinter().print(exprStr, expr);
 			print("[\"" + Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR + "\"]").print(" == ")
 					.print("\"" + type.tsym.getQualifiedName().toString() + "\"");
 			print(")");
@@ -689,14 +713,14 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		if (mappedType != null) {
 			if ("String".equals(mappedType)) {
 				print("typeof ");
-				print(exprStr, expr);
+				getPrinter().print(exprStr, expr);
 				print(" === ").print("'string'");
 				return true;
 			} else {
-				print(exprStr, expr);
+				getPrinter().print(exprStr, expr);
 				print(" != null && ");
 				print("(");
-				print(exprStr, expr);
+				getPrinter().print(exprStr, expr);
 				print(" instanceof " + mappedType);
 				print(")");
 				return true;

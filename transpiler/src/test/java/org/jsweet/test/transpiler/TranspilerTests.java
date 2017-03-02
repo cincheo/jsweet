@@ -36,6 +36,7 @@ import org.jsweet.transpiler.SourceFile;
 import org.jsweet.transpiler.SourcePosition;
 import org.jsweet.transpiler.extensions.AddPrefixToNonPublicMembersAdapter;
 import org.jsweet.transpiler.typescript.Java2TypeScriptAdapter;
+import org.jsweet.transpiler.util.PrinterAdapter;
 import org.jsweet.transpiler.util.ProcessUtil;
 import org.jsweet.transpiler.util.Util;
 import org.junit.Ignore;
@@ -332,7 +333,7 @@ public class TranspilerTests extends AbstractTest {
 	public void testExtension() {
 		createTranspiler(new JSweetFactory() {
 			@Override
-			public Java2TypeScriptAdapter createAdapter(JSweetContext context) {
+			public PrinterAdapter createAdapter(JSweetContext context) {
 				return new AddPrefixToNonPublicMembersAdapter(super.createAdapter(context));
 			}
 		});

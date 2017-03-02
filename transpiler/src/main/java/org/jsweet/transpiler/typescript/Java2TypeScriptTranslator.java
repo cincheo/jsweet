@@ -49,7 +49,11 @@ import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.OverloadScanner.Overload;
 import org.jsweet.transpiler.TranspilationHandler;
+import org.jsweet.transpiler.element.CaseElement;
+import org.jsweet.transpiler.element.ExtendedElementFactory;
+import org.jsweet.transpiler.element.IdentifierElement;
 import org.jsweet.transpiler.util.AbstractTreePrinter;
+import org.jsweet.transpiler.util.PrinterAdapter;
 import org.jsweet.transpiler.util.Util;
 import org.jsweet.transpiler.util.VariableKind;
 
@@ -232,8 +236,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 *            if true, the printer generates the source maps, for debugging
 	 *            purpose
 	 */
-	public Java2TypeScriptTranslator(Java2TypeScriptAdapter adapter, TranspilationHandler logHandler,
-			JSweetContext context, JCCompilationUnit compilationUnit, boolean fillSourceMap) {
+	public Java2TypeScriptTranslator(PrinterAdapter adapter, TranspilationHandler logHandler, JSweetContext context,
+			JCCompilationUnit compilationUnit, boolean fillSourceMap) {
 		super(logHandler, context, compilationUnit, adapter, fillSourceMap);
 	}
 
@@ -2802,7 +2806,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 		}
 
-		if (!getAdapter().substituteIdentifier(ident)) {
+		if (!getAdapter().substituteIdentifier(new IdentifierElement(ident))) {
 			boolean lazyInitializedStatic = false;
 			// add this of class name if ident is a field
 			if (ident.sym instanceof VarSymbol && !ident.sym.name.equals(context.names._this)
@@ -3641,7 +3645,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	public void visitCase(JCCase caseStatement) {
 		if (caseStatement.pat != null) {
 			print("case ");
-			if (!getAdapter().substituteCaseStatementPattern(caseStatement, caseStatement.pat)) {
+			if (!getAdapter().substituteCaseStatementPattern(new CaseElement(caseStatement),
+					ExtendedElementFactory.INSTANCE.create(caseStatement.pat))) {
 				if (caseStatement.pat.type.isPrimitive()
 						|| String.class.getName().equals(caseStatement.pat.type.toString())) {
 					print(caseStatement.pat);
@@ -3894,7 +3899,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 	}
 
-	private void print(String exprStr, JCTree expr) {
+	public void print(String exprStr, JCTree expr) {
 		if (exprStr == null) {
 			print(expr);
 		} else {

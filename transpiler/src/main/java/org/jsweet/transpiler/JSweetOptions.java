@@ -159,6 +159,12 @@ public interface JSweetOptions {
 	boolean isIgnoreTypeScriptErrors();
 
 	/**
+	 * If true, JSweet will ignore any message reported by Java (including
+	 * error).
+	 */
+	boolean isIgnoreJavaErrors();
+
+	/**
 	 * Gets the file containing the header to be added to the generated files.
 	 * 
 	 * @return the header file, null if undefined

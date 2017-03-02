@@ -37,7 +37,7 @@ public class EnumTests extends AbstractTest {
 	class AddRootFactory extends JSweetFactory {
 		@Override
 		public Java2TypeScriptAdapter createAdapter(JSweetContext context) {
-			return new Java2TypeScriptAdapter(context) {
+			return new Java2TypeScriptAdapter(super.createAdapter(context)) {
 				{
 					context.addAnnotation("@Root", "source.enums");
 				}
@@ -48,7 +48,7 @@ public class EnumTests extends AbstractTest {
 	class EraseEnumFactory extends JSweetFactory {
 		@Override
 		public Java2TypeScriptAdapter createAdapter(JSweetContext context) {
-			return new Java2TypeScriptAdapter(context) {
+			return new Java2TypeScriptAdapter(super.createAdapter(context)) {
 				{
 					context.addAnnotation("@Erased", "source.enums.ErasedEnum");
 				}

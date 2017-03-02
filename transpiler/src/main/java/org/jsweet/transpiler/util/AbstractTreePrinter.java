@@ -25,6 +25,7 @@ import java.util.function.Consumer;
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.TranspilationHandler;
 import org.jsweet.transpiler.TypeChecker;
+import org.jsweet.transpiler.element.ExtendedElement;
 
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Type;
@@ -67,7 +68,7 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 
 	private int indent = 0;
 
-	private AbstractPrinterAdapter adapter;
+	private PrinterAdapter adapter;
 
 	public TypeChecker typeChecker;
 
@@ -94,7 +95,7 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	 *            tells if printer fills the source map
 	 */
 	public AbstractTreePrinter(TranspilationHandler logHandler, JSweetContext context, JCCompilationUnit compilationUnit,
-			AbstractPrinterAdapter adapter, boolean fillSourceMap) {
+			PrinterAdapter adapter, boolean fillSourceMap) {
 		super(logHandler, context, compilationUnit);
 		this.typeChecker = new TypeChecker(this);
 		this.adapter = adapter;
@@ -117,6 +118,14 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 		return this;
 	}
 
+	/**
+	 * Print a given AST.
+	 */
+	public AbstractTreePrinter print(ExtendedElement element) {
+		scan(element);
+		return this;
+	}
+	
 	/**
 	 * Enters the given tree (se {@link #scan(JCTree)}.
 	 */
@@ -298,14 +307,14 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	/**
 	 * Gets the adapter attached to this printer.
 	 */
-	public AbstractPrinterAdapter getAdapter() {
+	public PrinterAdapter getAdapter() {
 		return adapter;
 	}
 
 	/**
 	 * Sets the adapter attached to this printer.
 	 */
-	public void setAdapter(AbstractPrinterAdapter adapter) {
+	public void setAdapter(PrinterAdapter adapter) {
 		this.adapter = adapter;
 	}
 

@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 import org.jsweet.transpiler.extensions.RemoveJavaDependenciesAdapter;
 import org.jsweet.transpiler.typescript.Java2TypeScriptAdapter;
 import org.jsweet.transpiler.typescript.Java2TypeScriptTranslator;
+import org.jsweet.transpiler.util.PrinterAdapter;
 
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 
@@ -33,13 +34,25 @@ public class JSweetFactory {
 	}
 
 	/**
-	 * Creates the adapter or any subclass.
+	 * Creates the printer adapter or any subclass.
 	 * 
 	 * <p>
-	 * For simple extensions such are redirecting invocations and field access,
-	 * the programmer should override this method and return a subclass.
+	 * This is the method to be overridden to create composable extensions.
+	 * Adapters are chainable (decorator pattern) and new adapters will delegate
+	 * to parent adapters when not overriding the parent behavior.
+	 * 
+	 * <p>
+	 * For instance, here my own adapter will override the needed behavior and
+	 * delegate to the default adapter chain:
+	 * 
+	 * <pre>
+	 * @Override
+	 * public PrinterAdapter createAdapter(JSweetContext context) {
+	 * 	return new MyOwnAdapter(super.createAdapter(context));
+	 * }
+	 * </pre>
 	 */
-	public Java2TypeScriptAdapter createAdapter(JSweetContext context) {
+	public PrinterAdapter createAdapter(JSweetContext context) {
 		if (context.isUsingJavaRuntime()) {
 			return new Java2TypeScriptAdapter(context);
 		} else {
@@ -50,7 +63,7 @@ public class JSweetFactory {
 	/**
 	 * Creates the core translator or any subclass.
 	 */
-	public Java2TypeScriptTranslator createTranslator(Java2TypeScriptAdapter adapter,
+	public Java2TypeScriptTranslator createTranslator(PrinterAdapter adapter,
 			TranspilationHandler transpilationHandler, JSweetContext context, JCCompilationUnit compilationUnit,
 			boolean fillSourceMap) {
 		return new Java2TypeScriptTranslator(adapter, transpilationHandler, context, compilationUnit, fillSourceMap);

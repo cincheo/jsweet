@@ -1,43 +1,41 @@
 package org.jsweet.transpiler.extensions;
 
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 
 import org.jsweet.transpiler.AnnotationAdapter;
-import org.jsweet.transpiler.typescript.Java2TypeScriptAdapter;
-import org.jsweet.transpiler.util.AbstractPrinterAdapter;
+import org.jsweet.transpiler.util.PrinterAdapter;
 import org.jsweet.transpiler.util.Util;
 
-import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.code.Symbol.ClassSymbol;
-import com.sun.tools.javac.code.Symbol.MethodSymbol;
-import com.sun.tools.javac.code.Symbol.VarSymbol;
+public class AddPrefixToNonPublicMembersAdapter extends PrinterAdapter {
 
-public class AddPrefixToNonPublicMembersAdapter extends Java2TypeScriptAdapter {
-
-	public AddPrefixToNonPublicMembersAdapter(AbstractPrinterAdapter parentAdapter) {
+	public AddPrefixToNonPublicMembersAdapter(PrinterAdapter parentAdapter) {
 		super(parentAdapter);
 		context.addAnnotationAdapter(new AnnotationAdapter() {
 
 			@Override
-			public AnnotationState getAnnotationState(Symbol symbol, String annotationType) {
-				return "jsweet.lang.Name".equals(annotationType) && isNonPublicMember(symbol) ? AnnotationState.ADDED
+			public AnnotationState getAnnotationState(Element element, String annotationType) {
+				return "jsweet.lang.Name".equals(annotationType) && isNonPublicMember(element) ? AnnotationState.ADDED
 						: AnnotationState.UNCHANGED;
 			}
 
 			@Override
-			public String getAnnotationValue(Symbol symbol, String annotationType, String propertyName,
+			public String getAnnotationValue(Element element, String annotationType, String propertyName,
 					String defaultValue) {
-				if ("jsweet.lang.Name".equals(annotationType) && isNonPublicMember(symbol)) {
-					return "__" + symbol.getSimpleName();
+				if ("jsweet.lang.Name".equals(annotationType) && isNonPublicMember(element)) {
+					return "__" + element.getSimpleName();
 				} else {
 					return null;
 				}
 			}
 
-			private boolean isNonPublicMember(Symbol symbol) {
-				return (symbol instanceof VarSymbol || symbol instanceof MethodSymbol)
-						&& symbol.getEnclosingElement() instanceof ClassSymbol
-						&& !symbol.getModifiers().contains(Modifier.PUBLIC) && Util.isSourceElement(symbol);
+			private boolean isNonPublicMember(Element element) {
+				return (element instanceof VariableElement || element instanceof ExecutableElement)
+						&& element.getEnclosingElement() instanceof TypeElement
+						&& !element.getModifiers().contains(Modifier.PUBLIC) && Util.isSourceElement(element);
 
 			}
 		});

@@ -18,29 +18,41 @@
  */
 package org.jsweet.transpiler.util;
 
+import java.lang.annotation.Annotation;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
+
+import org.jsweet.transpiler.AnnotationAdapter;
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetProblem;
+import org.jsweet.transpiler.element.CaseElement;
+import org.jsweet.transpiler.element.ExtendedElement;
+import org.jsweet.transpiler.element.FieldAccessElement;
+import org.jsweet.transpiler.element.IdentifierElement;
+import org.jsweet.transpiler.element.MethodInvocationElement;
+import org.jsweet.transpiler.element.NewClassElement;
 
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
-import com.sun.tools.javac.code.Symbol.TypeVariableSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCArrayAccess;
 import com.sun.tools.javac.tree.JCTree.JCAssign;
-import com.sun.tools.javac.tree.JCTree.JCCase;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCEnhancedForLoop;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
-import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCImport;
 import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
@@ -56,28 +68,39 @@ import com.sun.tools.javac.util.Name;
  * 
  * @author Renaud Pawlak
  */
-public abstract class AbstractPrinterAdapter {
+public class PrinterAdapter {
 
-	private AbstractPrinterAdapter parentAdapter;
+	private PrinterAdapter parentAdapter;
 
 	private AbstractTreePrinter printer;
 
 	protected JSweetContext context;
 
 	/**
+	 * Creates a root adapter (with no parent).
+	 * 
+	 * @param context
+	 *            the transpilation context
+	 */
+	public PrinterAdapter(JSweetContext context) {
+		this.context = context;
+		this.parentAdapter = null;
+	}
+
+	/**
 	 * Creates a new adapter that will try delegate to the given parent adapter
 	 * when not implementing its own behavior.
 	 * 
 	 * @param parentAdapter
-	 *            can be null, in that case the adapter implements a default
-	 *            empty behavior
+	 *            cannot be null: if no parent you must use the
+	 *            {@link #AbstractPrinterAdapter(JSweetContext)} constructor
 	 */
-	public AbstractPrinterAdapter(AbstractPrinterAdapter parentAdapter) {
-		super();
-		this.parentAdapter = parentAdapter;
-		if (parentAdapter != null) {
-			this.context = parentAdapter.getContext();
+	public PrinterAdapter(PrinterAdapter parentAdapter) {
+		if (parentAdapter == null) {
+			throw new RuntimeException("cannot create an adatper with a null parent adapter: pass the context instead");
 		}
+		this.parentAdapter = parentAdapter;
+		this.context = parentAdapter.getContext();
 	}
 
 	/**
@@ -95,6 +118,150 @@ public abstract class AbstractPrinterAdapter {
 	}
 
 	/**
+	 * Adds a type mapping so that this adapter substitutes the source type with
+	 * the target type during the transpilation process.
+	 * 
+	 * @param sourceTypeName
+	 *            the fully qualified name of the type to be substituted
+	 * @param targetTypeName
+	 *            the fully Qualified name of the type the source type is mapped
+	 *            to
+	 */
+	protected final void addTypeMapping(String sourceTypeName, String targetTypeName) {
+		context.addTypeMapping(sourceTypeName, targetTypeName);
+	}
+
+	/**
+	 * Adds a set of name-based type mappings. This method is equivalent to
+	 * calling {@link #addTypeMapping(String, String)} for each entry of the
+	 * given map.
+	 */
+	protected final void addTypeMappings(Map<String, String> nameMappings) {
+		context.addTypeMappings(nameMappings);
+	}
+
+	/**
+	 * Returns true if the given type name is mapped through the
+	 * {@link #addTypeMapping(String, String)} or
+	 * {@link #addTypeMapping(String, String)} function.
+	 */
+	protected final boolean isMappedType(String sourceTypeName) {
+		return context.isMappedType(sourceTypeName);
+	}
+
+	/**
+	 * Returns the type the given type name is mapped through the
+	 * {@link #addTypeMapping(String, String)} or
+	 * {@link #addTypeMapping(String, String)} function.
+	 */
+	protected final String getTypeMappingTarget(String sourceTypeName) {
+		return context.getTypeMappingTarget(sourceTypeName);
+	}
+
+	/**
+	 * Gets the functional type mappings.
+	 */
+	protected final List<BiFunction<ExtendedElement, String, Object>> getFunctionalTypeMappings() {
+		return context.getFunctionalTypeMappings();
+	}
+
+	/**
+	 * Adds a type mapping so that this adapter substitutes the source type tree
+	 * with a target type during the transpilation process.
+	 * 
+	 * @param mappingFunction
+	 *            a function that takes the type tree, the type name, and
+	 *            returns a substitution (either under the form of a string, or
+	 *            of a string, or of another type tree).
+	 */
+	public void addTypeMapping(BiFunction<ExtendedElement, String, Object> mappingFunction) {
+		context.addTypeMapping(mappingFunction);
+	}
+
+	/**
+	 * Adds an annotation on the AST through global filters.
+	 * 
+	 * <p>
+	 * Example:
+	 * 
+	 * <pre>
+	 * context.addAnnotation(FunctionalInterface.class, "*.MyInterface");
+	 * </pre>
+	 * 
+	 * <p>
+	 * Filters are simplified regular expressions matching on the Java AST.
+	 * Special characters are the following:
+	 * 
+	 * <ul>
+	 * <li>*: matches any character in the signature of the AST element</li>
+	 * <li>!: negates the filter (first character only)</li>
+	 * </ul>
+	 * 
+	 * @param annotationType
+	 *            the annotation type
+	 * @param filters
+	 *            the annotation is activated if one of the filters match and no
+	 *            negative filter matches
+	 */
+	public final void addAnnotation(Class<? extends Annotation> annotationType, String... filters) {
+		addAnnotation(annotationType.getName(), filters);
+	}
+
+	/**
+	 * Adds an annotation on the AST through global filters.
+	 * 
+	 * The annotation to be added is described by its type and by a value, which
+	 * is passed as is to the annotation's value. If the annotation type does
+	 * not accept a value parameter, no annotations will be added.
+	 * 
+	 * @see #addAnnotation(String, String...)
+	 */
+	public final void addAnnotationWithValue(Class<? extends Annotation> annotationType, Object value,
+			String... filters) {
+		addAnnotation(annotationType.getName() + "('" + value.toString() + "')", filters);
+	}
+
+	/**
+	 * Adds an annotation adapter that will tune (add or remove) annotations on
+	 * the AST. Lastly added adapters have precedence over firstly added ones.
+	 */
+	public final void addAnnotationAdapter(AnnotationAdapter annotationAdapter) {
+		context.addAnnotationAdapter(annotationAdapter);
+	}
+
+	/**
+	 * Adds an annotation on the AST through global filters.
+	 * 
+	 * <p>
+	 * Example:
+	 * 
+	 * <pre>
+	 * context.addAnnotation("@Erased", "*.writeObject(*)");
+	 * context.addAnnotation("@Name('newName')", "*.MyDeclarationToBeRenamed");
+	 * </pre>
+	 * 
+	 * <p>
+	 * Filters are simplified regular expressions matching on the Java AST.
+	 * Special characters are the following:
+	 * 
+	 * <ul>
+	 * <li>*: matches any character in the signature of the AST element</li>
+	 * <li>!: negates the filter (first character only)</li>
+	 * </ul>
+	 * 
+	 * @param annotationDescriptor
+	 *            the annotation type name, optionally preceded with a @, and
+	 *            optionally defining a value (fully qualified name is not
+	 *            necessary for JSweet annotations)
+	 * @param filters
+	 *            the annotation is activated if one of the filters match and no
+	 *            negative filter matches
+	 */
+	public final void addAnnotation(String annotationDescriptor, String... filters) {
+		context.addAnnotation(annotationDescriptor, filters);
+	}
+
+	/**
 	 * A flags that indicates that this adapter is printing type parameters.
 	 */
 	public boolean inTypeParameters = false;
@@ -107,33 +274,43 @@ public abstract class AbstractPrinterAdapter {
 	/**
 	 * A list of type variables to be erased (mapped to any).
 	 */
-	public Set<TypeVariableSymbol> typeVariablesToErase = new HashSet<>();
+	public Set<TypeParameterElement> typeVariablesToErase = new HashSet<>();
 
 	/**
 	 * Prints a tree by delegating to the printer.
 	 */
-	protected AbstractTreePrinter print(JCTree tree) {
-		return printer.print(tree);
+	// protected AbstractTreePrinter print(JCTree tree) {
+	// return printer.print(tree);
+	// }
+
+	/**
+	 * Prints a generic element by delegating to the printer.
+	 */
+	public PrinterAdapter print(ExtendedElement element) {
+		printer.print(element);
+		return this;
 	}
 
 	/**
 	 * Prints a string by delegating to the printer.
 	 */
-	protected AbstractTreePrinter print(String string) {
-		return printer.print(string);
+	public PrinterAdapter print(String string) {
+		printer.print(string);
+		return this;
 	}
 
 	/**
 	 * Prints an argument list by delegating to the printer.
 	 */
-	protected AbstractTreePrinter printArgList(List<? extends JCTree> args) {
-		return printer.printArgList(args);
+	public PrinterAdapter printArgList(List<? extends ExtendedElement> args) {
+		printer.printArgList(args.stream().map(a -> a.getTree()).collect(Collectors.toList()));
+		return this;
 	}
 
 	/**
 	 * Print either a string, or a tree if the string is null.
 	 */
-	protected void print(String exprStr, JCTree expr) {
+	public void print(String exprStr, ExtendedElement expr) {
 		if (exprStr == null) {
 			print(expr);
 		} else {
@@ -253,7 +430,7 @@ public abstract class AbstractPrinterAdapter {
 	 *            the identifier being printed
 	 * @return true if substituted
 	 */
-	public boolean substituteIdentifier(JCIdent identifier) {
+	public boolean substituteIdentifier(IdentifierElement identifier) {
 		return parentAdapter == null ? false : parentAdapter.substituteIdentifier(identifier);
 	}
 
@@ -264,8 +441,24 @@ public abstract class AbstractPrinterAdapter {
 	 *            the new being printed
 	 * @return true if substituted
 	 */
-	public boolean substituteNewClass(JCNewClass newClass) {
-		return parentAdapter == null ? false : parentAdapter.substituteNewClass(newClass);
+	public final boolean substituteNewClass(JCNewClass newClass) {
+		return substituteNewClass(new NewClassElement(newClass), (TypeElement) newClass.type.tsym,
+				newClass.type.tsym.getQualifiedName().toString());
+	}
+
+	/**
+	 * To override to tune the printing of a new class expression.
+	 * 
+	 * @param newClass
+	 *            the new class expression
+	 * @param type
+	 *            the type of the class being instantiated
+	 * @param className
+	 *            the fully qualified name of the class being instantiated
+	 * @return true if substituted
+	 */
+	public boolean substituteNewClass(NewClassElement newClass, TypeElement type, String className) {
+		return parentAdapter == null ? false : parentAdapter.substituteNewClass(newClass, type, className);
 	}
 
 	/**
@@ -275,8 +468,28 @@ public abstract class AbstractPrinterAdapter {
 	 *            the field access being printed
 	 * @return true if substituted
 	 */
-	public boolean substituteFieldAccess(JCFieldAccess fieldAccess) {
-		return parentAdapter == null ? false : parentAdapter.substituteFieldAccess(fieldAccess);
+	public final boolean substituteFieldAccess(JCFieldAccess fieldAccess) {
+		return substituteFieldAccess(new FieldAccessElement(fieldAccess), fieldAccess.selected.type.tsym,
+				fieldAccess.selected.type.tsym.getQualifiedName().toString(), fieldAccess.name.toString());
+	}
+
+	/**
+	 * Substitutes the value of a <em>field access</em> expression.
+	 * 
+	 * @param fieldAccess
+	 *            the field access expression
+	 * @param targetType
+	 *            the target type of the field access
+	 * @param targetClassName
+	 *            the fully qualified name of the target type
+	 * @param targetFieldName
+	 *            the accessed field name
+	 * @return true if substituted
+	 */
+	public boolean substituteFieldAccess(FieldAccessElement fieldAccess, Element targetType, String targetClassName,
+			String targetFieldName) {
+		return parentAdapter == null ? false
+				: parentAdapter.substituteFieldAccess(fieldAccess, targetType, targetClassName, targetFieldName);
 	}
 
 	/**
@@ -305,12 +518,19 @@ public abstract class AbstractPrinterAdapter {
 		return parentAdapter == null ? true : parentAdapter.needsTypeCast(cast);
 	}
 
-	public AbstractTreePrinter substituteAndPrintType(JCTree typeTree) {
+	public final AbstractTreePrinter substituteAndPrintType(JCTree typeTree) {
 		return substituteAndPrintType(typeTree, false, inTypeParameters, true, disableTypeSubstitution);
 	}
 
-	protected abstract AbstractTreePrinter substituteAndPrintType(JCTree typeTree, boolean arrayComponent,
-			boolean inTypeParameters, boolean completeRawTypes, boolean disableSubstitution);
+	public AbstractTreePrinter substituteAndPrintType(JCTree typeTree, boolean arrayComponent, boolean inTypeParameters,
+			boolean completeRawTypes, boolean disableSubstitution) {
+		if (parentAdapter == null) {
+			throw new RuntimeException("no type printing method can be found in adapters");
+		} else {
+			return parentAdapter.substituteAndPrintType(typeTree, arrayComponent, inTypeParameters, completeRawTypes,
+					disableSubstitution);
+		}
+	}
 
 	/**
 	 * Tells if the printer needs to print the given variable declaration.
@@ -326,8 +546,33 @@ public abstract class AbstractPrinterAdapter {
 	 *            the invocation being printed
 	 * @return true if substituted
 	 */
-	public boolean substituteMethodInvocation(JCMethodInvocation invocation) {
-		return parentAdapter == null ? false : parentAdapter.substituteMethodInvocation(invocation);
+	final public boolean substituteMethodInvocation(JCMethodInvocation invocation) {
+		JCFieldAccess fieldAccess = null;
+		Element targetType = null;
+		String targetClassName = null;
+		String targetMethodName = null;
+		if (invocation.getMethodSelect() instanceof JCFieldAccess) {
+			fieldAccess = (JCFieldAccess) invocation.getMethodSelect();
+			targetType = fieldAccess.selected.type.tsym;
+			targetClassName = ((Symbol) targetType).getQualifiedName().toString();
+			targetMethodName = fieldAccess.name.toString();
+		} else {
+			targetMethodName = invocation.getMethodSelect().toString();
+			if (getPrinter().getStaticImports().containsKey(targetMethodName)) {
+				JCImport i = getPrinter().getStaticImports().get(targetMethodName);
+				targetType = ((JCFieldAccess) i.qualid).selected.type.tsym;
+				targetClassName = ((Symbol) targetType).getQualifiedName().toString();
+			}
+		}
+		return substituteMethodInvocation(new MethodInvocationElement(invocation), new FieldAccessElement(fieldAccess),
+				targetType, targetClassName, targetMethodName);
+	}
+
+	public boolean substituteMethodInvocation(MethodInvocationElement invocation, FieldAccessElement fieldAccess,
+			Element targetType, String targetClassName, String targetMethodName) {
+		return parentAdapter == null ? false
+				: parentAdapter.substituteMethodInvocation(invocation, fieldAccess, targetType, targetClassName,
+						targetMethodName);
 	}
 
 	/**
@@ -373,7 +618,13 @@ public abstract class AbstractPrinterAdapter {
 				: parentAdapter.getQualifiedTypeName(type, globals);
 	}
 
-	public abstract Set<String> getErasedTypes();
+	public Set<String> getErasedTypes() {
+		if (parentAdapter == null) {
+			throw new RuntimeException("unimplemented behavior");
+		} else {
+			return parentAdapter.getErasedTypes();
+		}
+	}
 
 	/**
 	 * Substitutes if required an expression that is being assigned to a given
@@ -439,7 +690,7 @@ public abstract class AbstractPrinterAdapter {
 	/**
 	 * Substitutes if necessary the pattern of a case statement.
 	 */
-	public boolean substituteCaseStatementPattern(JCCase caseStatement, JCExpression pattern) {
+	public boolean substituteCaseStatementPattern(CaseElement caseStatement, ExtendedElement pattern) {
 		return parentAdapter == null ? false : parentAdapter.substituteCaseStatementPattern(caseStatement, pattern);
 	}
 
@@ -461,7 +712,7 @@ public abstract class AbstractPrinterAdapter {
 	 * Gets the parent adapter. By default, an adapter delegates to the parent
 	 * adapter when the behavior is not overridden.
 	 */
-	public AbstractPrinterAdapter getParentAdapter() {
+	public PrinterAdapter getParentAdapter() {
 		return parentAdapter;
 	}
 
@@ -469,7 +720,7 @@ public abstract class AbstractPrinterAdapter {
 	 * Sets the parent adapter. By default, an adapter delegates to the parent
 	 * adapter when the behavior is not overridden.
 	 */
-	public void setParentAdapter(AbstractPrinterAdapter parentAdapter) {
+	public void setParentAdapter(PrinterAdapter parentAdapter) {
 		this.parentAdapter = parentAdapter;
 	}
 

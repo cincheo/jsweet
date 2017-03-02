@@ -35,6 +35,7 @@ public class ErrorCountTranspilationHandler implements TranspilationHandler {
 	private int errorCount = 0;
 	private int warningCount = 0;
 	private int problemCount = 0;
+	private boolean disabled = false;
 
 	/**
 	 * Decorates the given transpilation handler.
@@ -47,17 +48,19 @@ public class ErrorCountTranspilationHandler implements TranspilationHandler {
 	 * Count the problems and delegates to the decorated transpilation handler.
 	 */
 	public void report(JSweetProblem problem, SourcePosition sourcePosition, String message) {
-		switch (problem.getSeverity()) {
-		case ERROR:
-			problemCount++;
-			errorCount++;
-			break;
-		case WARNING:
-			problemCount++;
-			warningCount++;
-			break;
-		default:
-			problemCount++;
+		if (!disabled) {
+			switch (problem.getSeverity()) {
+			case ERROR:
+				problemCount++;
+				errorCount++;
+				break;
+			case WARNING:
+				problemCount++;
+				warningCount++;
+				break;
+			default:
+				problemCount++;
+			}
 		}
 		delegate.report(problem, sourcePosition, message);
 	}
@@ -86,6 +89,20 @@ public class ErrorCountTranspilationHandler implements TranspilationHandler {
 	 */
 	public int getProblemCount() {
 		return problemCount;
+	}
+
+	/**
+	 * Returns false if this handler actually counts anything.
+	 */
+	public boolean isDisabled() {
+		return disabled;
+	}
+
+	/**
+	 * Enables/disables the counting.
+	 */
+	public void setDisabled(boolean disabled) {
+		this.disabled = disabled;
 	}
 
 }

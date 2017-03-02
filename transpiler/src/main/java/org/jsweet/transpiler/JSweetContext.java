@@ -32,6 +32,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.BiFunction;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -48,6 +49,7 @@ import org.apache.log4j.Logger;
 import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.AnnotationAdapter.AnnotationState;
 import org.jsweet.transpiler.OverloadScanner.Overload;
+import org.jsweet.transpiler.element.ExtendedElement;
 import org.jsweet.transpiler.typescript.Java2TypeScriptTranslator;
 import org.jsweet.transpiler.util.DirectedGraph;
 
@@ -106,13 +108,77 @@ public class JSweetContext extends Context {
 		}
 	}
 
-	List<AnnotationAdapter> annotationAdapters = new ArrayList<>();
+	private List<AnnotationAdapter> annotationAdapters = new ArrayList<>();
+	private Map<String, String> typesMapping = new HashMap<String, String>();
+	private List<BiFunction<ExtendedElement, String, Object>> complexTypesMapping = new ArrayList<>();
+	protected Map<String, String> langTypesMapping = new HashMap<String, String>();
+	protected Set<String> langTypesSimpleNames = new HashSet<String>();
+	protected Set<String> baseThrowables = new HashSet<String>();
+
+	/**
+	 * Adds a type mapping in the context.
+	 * 
+	 * @param sourceTypeName
+	 *            the fully qualified name of the source type
+	 * @param targetTypeName
+	 *            the fully Qualified name of the type the source type is mapped
+	 *            to
+	 */
+	public final void addTypeMapping(String sourceTypeName, String targetTypeName) {
+		typesMapping.put(sourceTypeName, targetTypeName);
+	}
+
+	/**
+	 * Adds a set of name-based type mappings. This method is equivalent to
+	 * calling {@link #addTypeMapping(String, String)} for each entry of the
+	 * given map.
+	 */
+	public final void addTypeMappings(Map<String, String> nameMappings) {
+		typesMapping.putAll(nameMappings);
+	}
+
+	/**
+	 * Returns true if the given type name is mapped through the
+	 * {@link #addTypeMapping(String, String)} or
+	 * {@link #addTypeMapping(String, String)} function.
+	 */
+	public final boolean isMappedType(String sourceTypeName) {
+		return typesMapping.containsKey(sourceTypeName);
+	}
+
+	/**
+	 * Returns the type the given type name is mapped through the
+	 * {@link #addTypeMapping(String, String)} or
+	 * {@link #addTypeMapping(String, String)} function.
+	 */
+	public final String getTypeMappingTarget(String sourceTypeName) {
+		return typesMapping.get(sourceTypeName);
+	}
+
+	/**
+	 * Adds a functional type mapping.
+	 * 
+	 * @param mappingFunction
+	 *            a function that takes the type tree, the type name, and
+	 *            returns a mapped type (either under the form of a string, or
+	 *            of a string, or of another type tree).
+	 */
+	public final void addTypeMapping(BiFunction<ExtendedElement, String, Object> mappingFunction) {
+		complexTypesMapping.add(mappingFunction);
+	}
+
+	/**
+	 * Returns the functional type mappings.
+	 */
+	public final List<BiFunction<ExtendedElement, String, Object>> getFunctionalTypeMappings() {
+		return complexTypesMapping;
+	}
 
 	/**
 	 * Adds an annotation adapter that will tune (add or remove) annotations on
 	 * the AST. Lastly added adapters have precedence over firstly added ones.
 	 */
-	public void addAnnotationAdapter(AnnotationAdapter annotationAdapter) {
+	public final void addAnnotationAdapter(AnnotationAdapter annotationAdapter) {
 		annotationAdapters.add(annotationAdapter);
 	}
 
@@ -179,7 +245,7 @@ public class JSweetContext extends Context {
 	 *            the annotation is activated if one of the filters match and no
 	 *            negative filter matches
 	 */
-	public void addAnnotation(Class<? extends Annotation> annotationType, String... filters) {
+	public final void addAnnotation(Class<? extends Annotation> annotationType, String... filters) {
 		addAnnotation(annotationType.getName(), filters);
 	}
 
@@ -192,7 +258,8 @@ public class JSweetContext extends Context {
 	 * 
 	 * @see #addAnnotation(String, String...)
 	 */
-	public void addAnnotationWithValue(Class<? extends Annotation> annotationType, Object value, String... filters) {
+	public final void addAnnotationWithValue(Class<? extends Annotation> annotationType, Object value,
+			String... filters) {
 		addAnnotation(annotationType.getName() + "('" + value.toString() + "')", filters);
 	}
 
@@ -224,7 +291,7 @@ public class JSweetContext extends Context {
 	 *            the annotation is activated if one of the filters match and no
 	 *            negative filter matches
 	 */
-	public void addAnnotation(String annotationDescriptor, String... filters) {
+	public final void addAnnotation(String annotationDescriptor, String... filters) {
 		if (!annotationDescriptor.startsWith("@")) {
 			annotationDescriptor = "@" + annotationDescriptor;
 		}
@@ -804,7 +871,8 @@ public class JSweetContext extends Context {
 	 * Returns true if the given symbol is a root package (annotated with @Root
 	 * or a definition package).
 	 */
-	public boolean isRootPackage(Symbol symbol) {
+	public boolean isRootPackage(Element element) {
+		Symbol symbol = (Symbol) element;
 		return hasAnnotationType(symbol, JSweetConfig.ANNOTATION_ROOT) || (symbol instanceof PackageSymbol
 				&& libPackagePattern.matcher(symbol.getQualifiedName().toString()).matches());
 	}
@@ -1397,6 +1465,18 @@ public class JSweetContext extends Context {
 	 */
 	public void setUsingJavaRuntime(boolean usingJavaRuntime) {
 		this.usingJavaRuntime = usingJavaRuntime;
+	}
+
+	public final Map<String, String> getLangTypeMappings() {
+		return langTypesMapping;
+	}
+
+	public final Set<String> getLangTypesSimpleNames() {
+		return langTypesSimpleNames;
+	}
+
+	public final Set<String> getBaseThrowables() {
+		return baseThrowables;
 	}
 
 }

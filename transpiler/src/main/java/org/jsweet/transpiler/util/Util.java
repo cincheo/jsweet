@@ -46,6 +46,7 @@ import javax.tools.JavaFileObject;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.JSweetContext;
+import org.jsweet.transpiler.element.ExtendedElement;
 
 import com.sun.source.tree.Tree.Kind;
 import com.sun.tools.javac.code.Flags;
@@ -100,7 +101,7 @@ public class Util {
 	/**
 	 * Tells if the given element is within the Java sources being compiled.
 	 */
-	public static boolean isSourceElement(Symbol element) {
+	public static boolean isSourceElement(Element element) {
 		if (element == null || element instanceof PackageSymbol) {
 			return false;
 		}
@@ -359,7 +360,7 @@ public class Util {
 	/**
 	 * Finds first method matching name (no super types lookup).
 	 */
-	public static MethodSymbol findFirstMethodDeclarationInType(TypeSymbol typeSymbol, String methodName) {
+	public static MethodSymbol findFirstMethodDeclarationInType(Element typeSymbol, String methodName) {
 		if (typeSymbol == null) {
 			return null;
 		}
@@ -373,10 +374,14 @@ public class Util {
 		return null;
 	}
 
+	public static boolean isDeprecated(Element element) {
+		return ((Symbol) element).isDeprecated();
+	}
+
 	/**
 	 * Find field declaration (of any kind) matching the given name.
 	 */
-	public static Symbol findFirstDeclarationInType(TypeSymbol typeSymbol, String name) {
+	public static Symbol findFirstDeclarationInType(Element typeSymbol, String name) {
 		if (typeSymbol == null) {
 			return null;
 		}
@@ -1001,6 +1006,16 @@ public class Util {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Tells if the extended element is a constant expression.
+	 */
+	public static boolean isConstant(ExtendedElement element) {
+		if (!(element.getTree() instanceof JCExpression)) {
+			return false;
+		}
+		return isConstant((JCExpression) element.getTree());
 	}
 
 	/**

@@ -55,7 +55,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.candies.CandiesProcessor;
-import org.jsweet.transpiler.typescript.Java2TypeScriptAdapter;
 import org.jsweet.transpiler.typescript.Java2TypeScriptTranslator;
 import org.jsweet.transpiler.util.AbstractTreePrinter;
 import org.jsweet.transpiler.util.DirectedGraph;
@@ -63,6 +62,7 @@ import org.jsweet.transpiler.util.DirectedGraph.Node;
 import org.jsweet.transpiler.util.ErrorCountTranspilationHandler;
 import org.jsweet.transpiler.util.EvaluationResult;
 import org.jsweet.transpiler.util.Position;
+import org.jsweet.transpiler.util.PrinterAdapter;
 import org.jsweet.transpiler.util.ProcessUtil;
 import org.jsweet.transpiler.util.SourceMap;
 import org.jsweet.transpiler.util.SourceMap.Entry;
@@ -142,7 +142,7 @@ public class JSweetTranspiler implements JSweetOptions {
 	public final static String TSCROOTFILE = ".tsc-rootfile.ts";
 
 	private JSweetFactory factory;
-	private Java2TypeScriptAdapter adapter;
+	private PrinterAdapter adapter;
 	private long transpilationStartTimestamp;
 	private ArrayList<File> auxiliaryTsModuleFiles = new ArrayList<>();
 	private JSweetContext context;
@@ -176,6 +176,7 @@ public class JSweetTranspiler implements JSweetOptions {
 	private ArrayList<File> jsLibFiles = new ArrayList<>();
 	private File sourceRoot = null;
 	private boolean ignoreTypeScriptErrors = false;
+	private boolean ignoreJavaErrors = false;
 	private boolean forceJavaRuntime = false;
 	private boolean isUsingJavaRuntime = false;
 	private File headerFile = null;
@@ -308,7 +309,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		logger.info("factory: " + factory);
 		logger.debug("compile classpath: " + classPath);
 		logger.debug("runtime classpath: " + System.getProperty("java.class.path"));
-		this.candiesProcessor = new CandiesProcessor(workingDir, classPath, extractedCandyJavascriptDir);
+		this.candiesProcessor = new CandiesProcessor(this.workingDir, classPath, extractedCandyJavascriptDir);
 	}
 
 	/**
@@ -700,6 +701,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		List<JavaFileObject> fileObjects = toJavaFileObjects(fileManager, files);
 
 		logger.info("parsing: " + fileObjects);
+		transpilationHandler.setDisabled(isIgnoreJavaErrors());
 		List<JCCompilationUnit> compilationUnits = compiler.enterTrees(compiler.parseFiles(fileObjects));
 		if (transpilationHandler.getErrorCount() > 0) {
 			logger.warn("errors during parse tree");
@@ -707,6 +709,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		}
 		logger.info("attribution phase");
 		compiler.attribute(compiler.todo);
+		transpilationHandler.setDisabled(false);
 
 		if (transpilationHandler.getErrorCount() > 0) {
 			return null;
@@ -1801,6 +1804,15 @@ public class JSweetTranspiler implements JSweetOptions {
 
 	public void setGenerateTsFiles(boolean generateTsFiles) {
 		this.generateTsFiles = generateTsFiles;
+	}
+
+	@Override
+	public boolean isIgnoreJavaErrors() {
+		return ignoreJavaErrors;
+	}
+
+	public void setIgnoreJavaErrors(boolean ignoreJavaErrors) {
+		this.ignoreJavaErrors = ignoreJavaErrors;
 	}
 
 }
