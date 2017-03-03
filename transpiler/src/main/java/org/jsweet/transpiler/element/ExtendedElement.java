@@ -73,4 +73,13 @@ public class ExtendedElement {
 		}
 	}
 
+	@Override
+	public int hashCode() {
+		return tree.hashCode();
+	}
+
+	@Override
+	public String toString() {
+		return tree.toString();
+	}
 }
