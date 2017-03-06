@@ -16,24 +16,18 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jsweet.transpiler.element;
-
-import com.sun.tools.javac.tree.JCTree.JCIdent;
+package org.jsweet.transpiler.model;
 
 /**
- * An AST node for a Java identifier.
+ * An AST node for a Java literal.
  * 
  * @author Renaud Pawlak
  */
-public class IdentifierElement extends ExtendedElement {
+public interface LiteralElement extends ExtendedElement {
 
-	public IdentifierElement(JCIdent tree) {
-		super(tree);
-	}
-
-	@Override
-	public JCIdent getTree() {
-		return (JCIdent) tree;
-	}
+	/**
+	 * Gets the corresponding value as an object.
+	 */
+	public Object getValue();
 
 }

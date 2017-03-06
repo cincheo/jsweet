@@ -16,12 +16,13 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jsweet.transpiler.element;
+package org.jsweet.transpiler.model.support;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 
-import org.jsweet.transpiler.util.PrinterAdapter;
+import org.jsweet.transpiler.extension.PrinterAdapter;
+import org.jsweet.transpiler.model.ExtendedElement;
 
 import com.sun.tools.javac.tree.JCTree;
 
@@ -36,14 +37,14 @@ import com.sun.tools.javac.tree.JCTree;
  * @author Renaud Pawlak
  * @see PrinterAdapter
  */
-public class ExtendedElement {
-
+public class ExtendedElementSupport implements ExtendedElement {
+  
 	protected JCTree tree;
 
 	/**
 	 * Creates an extended element, wrapping the given javac tree node.
 	 */
-	public ExtendedElement(JCTree tree) {
+	public ExtendedElementSupport(JCTree tree) {
 		super();
 		this.tree = tree;
 	}

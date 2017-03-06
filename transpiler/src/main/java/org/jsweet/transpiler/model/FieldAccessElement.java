@@ -16,34 +16,28 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jsweet.transpiler.element;
+package org.jsweet.transpiler.model;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import com.sun.tools.javac.tree.JCTree.JCNewClass;
+import javax.lang.model.element.VariableElement;
 
 /**
- * An AST node for a Java new class expression.
+ * An AST node for a Java field access expression (of the form
+ * <code>expr.f</code>).
  * 
  * @author Renaud Pawlak
  */
-public class NewClassElement extends ExtendedElement {
-
-	public NewClassElement(JCNewClass tree) {
-		super(tree);
-	}
-
-	@Override
-	public JCNewClass getTree() {
-		return (JCNewClass) tree;
-	}
+public interface FieldAccessElement extends ExtendedElement {
 
 	/**
-	 * Gets the arguments that are passed to the new class expression.
+	 * Gets the expression of the field access (the part before the dot).
+	 * 
+	 * @return the part before the dot
 	 */
-	public List<ExtendedElement> getArguments() {
-		return getTree().args.stream().map(a -> ExtendedElementFactory.INSTANCE.create(a)).collect(Collectors.toList());
-	}
+	ExtendedElement getExpression();
+
+	/**
+	 * Gets the accessed field.
+	 */
+	VariableElement getField();
 
 }

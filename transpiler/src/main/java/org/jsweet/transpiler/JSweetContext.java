@@ -49,8 +49,7 @@ import org.apache.log4j.Logger;
 import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.AnnotationAdapter.AnnotationState;
 import org.jsweet.transpiler.OverloadScanner.Overload;
-import org.jsweet.transpiler.element.ExtendedElement;
-import org.jsweet.transpiler.typescript.Java2TypeScriptTranslator;
+import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.util.DirectedGraph;
 
 import com.sun.tools.javac.code.Attribute.Compound;
@@ -1478,5 +1477,7 @@ public class JSweetContext extends Context {
 	public final Set<String> getBaseThrowables() {
 		return baseThrowables;
 	}
+	
+	public Map<Element, String> docComments = new HashMap<>();
 
 }

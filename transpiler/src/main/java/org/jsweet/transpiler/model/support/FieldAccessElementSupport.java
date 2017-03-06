@@ -16,28 +16,39 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jsweet.transpiler.element;
+package org.jsweet.transpiler.model.support;
 
-import com.sun.tools.javac.tree.JCTree.JCLiteral;
+import javax.lang.model.element.VariableElement;
+
+import org.jsweet.transpiler.model.ExtendedElement;
+import org.jsweet.transpiler.model.ExtendedElementFactory;
+import org.jsweet.transpiler.model.FieldAccessElement;
+
+import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 
 /**
- * An AST node for a Java literal.
+ * An AST node for a Java field access expression.
  * 
  * @author Renaud Pawlak
  */
-public class LiteralElement extends ExtendedElement {
+public class FieldAccessElementSupport extends ExtendedElementSupport implements FieldAccessElement {
 
-	public LiteralElement(JCLiteral tree) {
+	public FieldAccessElementSupport(JCFieldAccess tree) {
 		super(tree);
 	}
 
 	@Override
-	public JCLiteral getTree() {
-		return (JCLiteral) tree;
+	public JCFieldAccess getTree() {
+		return (JCFieldAccess) tree;
 	}
 
-	public Object getValue() {
-		return getTree().getValue();
+	public ExtendedElement getExpression() {
+		return ExtendedElementFactory.INSTANCE.create(getTree().selected);
+	}
+
+	@Override
+	public VariableElement getField() {
+		return (VariableElement) getTree().sym;
 	}
 
 }

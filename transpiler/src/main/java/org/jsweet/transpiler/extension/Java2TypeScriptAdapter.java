@@ -16,7 +16,7 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jsweet.transpiler.typescript;
+package org.jsweet.transpiler.extension;
 
 import static org.jsweet.JSweetConfig.ANNOTATION_ERASED;
 import static org.jsweet.JSweetConfig.ANNOTATION_FUNCTIONAL_INTERFACE;
@@ -32,8 +32,6 @@ import static org.jsweet.JSweetConfig.INDEXED_SET_FUCTION_NAME;
 import static org.jsweet.JSweetConfig.INDEXED_SET_STATIC_FUCTION_NAME;
 import static org.jsweet.JSweetConfig.LANG_PACKAGE;
 import static org.jsweet.JSweetConfig.LANG_PACKAGE_ALT;
-import static org.jsweet.JSweetConfig.TUPLE_CLASSES_PACKAGE;
-import static org.jsweet.JSweetConfig.UNION_CLASS_NAME;
 import static org.jsweet.JSweetConfig.UTIL_CLASSNAME;
 import static org.jsweet.JSweetConfig.UTIL_PACKAGE;
 import static org.jsweet.JSweetConfig.isJSweetPath;
@@ -81,14 +79,19 @@ import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.JSweetTranspiler;
+import org.jsweet.transpiler.Java2TypeScriptTranslator;
 import org.jsweet.transpiler.TypeChecker;
-import org.jsweet.transpiler.element.ExtendedElement;
-import org.jsweet.transpiler.element.FieldAccessElement;
-import org.jsweet.transpiler.element.IdentifierElement;
-import org.jsweet.transpiler.element.MethodInvocationElement;
-import org.jsweet.transpiler.element.NewClassElement;
+import org.jsweet.transpiler.model.ExtendedElement;
+import org.jsweet.transpiler.model.FieldAccessElement;
+import org.jsweet.transpiler.model.IdentifierElement;
+import org.jsweet.transpiler.model.MethodInvocationElement;
+import org.jsweet.transpiler.model.NewClassElement;
+import org.jsweet.transpiler.model.support.ExtendedElementSupport;
+import org.jsweet.transpiler.model.support.FieldAccessElementSupport;
+import org.jsweet.transpiler.model.support.IdentifierElementSupport;
+import org.jsweet.transpiler.model.support.MethodInvocationElementSupport;
+import org.jsweet.transpiler.model.support.NewClassElementSupport;
 import org.jsweet.transpiler.util.AbstractTreePrinter;
-import org.jsweet.transpiler.util.PrinterAdapter;
 import org.jsweet.transpiler.util.Util;
 
 import com.sun.codemodel.internal.JJavaName;
@@ -98,14 +101,12 @@ import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.PackageSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
-import com.sun.tools.javac.code.Symbol.TypeVariableSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.TypeVar;
 import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.parser.Tokens.Comment;
 import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.JCArrayTypeTree;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCEnhancedForLoop;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
@@ -119,7 +120,6 @@ import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.JCTree.JCTypeApply;
 import com.sun.tools.javac.tree.JCTree.JCTypeCast;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
-import com.sun.tools.javac.tree.JCTree.JCWildcard;
 import com.sun.tools.javac.tree.JCTree.Tag;
 import com.sun.tools.javac.util.Log;
 
@@ -331,8 +331,8 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 			FieldAccessElement fieldAccessElement, Element targetType, String targetClassName,
 			String targetMethodName) {
 
-		JCMethodInvocation invocation = invocationElement.getTree();
-		JCFieldAccess fieldAccess = fieldAccessElement.getTree();
+		JCMethodInvocation invocation = ((MethodInvocationElementSupport) invocationElement).getTree();
+		JCFieldAccess fieldAccess = ((FieldAccessElementSupport) fieldAccessElement).getTree();
 
 		if ("System.out.println".equals(invocation.meth.toString())) {
 			getPrinter().print("console.info(").print(invocation.args.head).print(")");
@@ -1175,7 +1175,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 	@Override
 	public boolean substituteFieldAccess(FieldAccessElement fieldAccessElement, Element targetType,
 			String targetClassName, String targetFieldName) {
-		JCFieldAccess fieldAccess = fieldAccessElement.getTree();
+		JCFieldAccess fieldAccess = ((FieldAccessElementSupport) fieldAccessElement).getTree();
 		// translate tuple accesses
 		if (targetFieldName.startsWith("$") && targetFieldName.length() > 1
 				&& Character.isDigit(targetFieldName.charAt(1))) {
@@ -1238,26 +1238,9 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 		print("javaemul.internal." + targetClassName.substring(10) + "Helper.").print(fieldAccess.name.toString());
 	}
 
-	protected final AbstractTreePrinter printArguments(List<JCExpression> arguments) {
-		int i = 1;
-		for (JCExpression argument : arguments) {
-			printArgument(argument, i++).print(", ");
-		}
-		if (arguments.size() > 0) {
-			getPrinter().removeLastChars(2);
-		}
-		return getPrinter();
-	}
-
-	protected final AbstractTreePrinter printArgument(JCExpression argument, int i) {
-		print("p" + i + ": ");
-		substituteAndPrintType(argument, false, false, true, false);
-		return getPrinter();
-	}
-
 	@Override
 	public boolean substituteNewClass(NewClassElement newClassElement, TypeElement type, String className) {
-		JCNewClass newClass = newClassElement.getTree();
+		JCNewClass newClass = ((NewClassElementSupport) newClassElement).getTree();
 		if (className.startsWith(JSweetConfig.TUPLE_CLASSES_PACKAGE + ".")) {
 			getPrinter().print("[").printArgList(newClass.args).print("]");
 			return true;
@@ -1285,234 +1268,8 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 	}
 
 	@Override
-	public final AbstractTreePrinter substituteAndPrintType(JCTree typeTree, boolean arrayComponent,
-			boolean inTypeParameters, boolean completeRawTypes, boolean disableSubstitution) {
-		if (typeTree.type.tsym instanceof TypeVariableSymbol) {
-			if (typeVariablesToErase.contains(typeTree.type.tsym)) {
-				return getPrinter().print("any");
-			}
-		}
-		if (!disableSubstitution) {
-			if (context.hasAnnotationType(typeTree.type.tsym, ANNOTATION_ERASED)) {
-				return getPrinter().print("any");
-			}
-			if (context.hasAnnotationType(typeTree.type.tsym, ANNOTATION_OBJECT_TYPE)) {
-				// TODO: in case of object types, we should replace with the org
-				// object type...
-				return getPrinter().print("any");
-			}
-			String typeFullName = typeTree.type.getModelType().toString(); // typeTree.type.tsym.getQualifiedName().toString();
-			if (Runnable.class.getName().equals(typeFullName)) {
-				if (arrayComponent) {
-					print("(");
-				}
-				print("() => void");
-				if (arrayComponent) {
-					print(")");
-				}
-				return getPrinter();
-			}
-			if (typeTree instanceof JCTypeApply) {
-				JCTypeApply typeApply = ((JCTypeApply) typeTree);
-				String typeName = typeApply.clazz.toString();
-				if (typeFullName.startsWith(TUPLE_CLASSES_PACKAGE + ".")) {
-					print("[");
-					for (JCExpression argument : typeApply.arguments) {
-						substituteAndPrintType(argument, arrayComponent, inTypeParameters, completeRawTypes, false)
-								.print(",");
-					}
-					if (typeApply.arguments.length() > 0) {
-						getPrinter().removeLastChar();
-					}
-					print("]");
-					return getPrinter();
-				}
-				if (typeFullName.startsWith(UNION_CLASS_NAME)) {
-					print("(");
-					for (JCExpression argument : typeApply.arguments) {
-						print("(");
-						substituteAndPrintType(argument, arrayComponent, inTypeParameters, completeRawTypes, false);
-						print(")");
-						print("|");
-					}
-					if (typeApply.arguments.length() > 0) {
-						getPrinter().removeLastChar();
-					}
-					print(")");
-					return getPrinter();
-				}
-				if (typeFullName.startsWith(UTIL_PACKAGE + ".") || typeFullName.startsWith("java.util.function.")) {
-					if (typeName.endsWith("Consumer") || typeName.startsWith("Consumer")) {
-						if (arrayComponent) {
-							print("(");
-						}
-						print("(");
-						if (typeName.startsWith("Int") || typeName.startsWith("Long")
-								|| typeName.startsWith("Double")) {
-							print("p0 : number");
-						} else {
-							printArguments(typeApply.arguments);
-						}
-						print(") => void");
-						if (arrayComponent) {
-							print(")");
-						}
-						return getPrinter();
-					} else if (typeName.endsWith("Function") || typeName.startsWith("Function")) {
-						if (arrayComponent) {
-							print("(");
-						}
-						print("(");
-						if (typeName.startsWith("Int") || typeName.startsWith("Long")
-								|| typeName.startsWith("Double")) {
-							print("p0 : number");
-						} else {
-							printArguments(typeApply.arguments.subList(0, typeApply.arguments.length() - 1));
-						}
-						print(") => ");
-						substituteAndPrintType(typeApply.arguments.get(typeApply.arguments.length() - 1),
-								arrayComponent, inTypeParameters, completeRawTypes, false);
-						if (arrayComponent) {
-							print(")");
-						}
-						return getPrinter();
-					} else if (typeName.endsWith("Supplier") || typeName.startsWith("Supplier")) {
-						if (arrayComponent) {
-							print("(");
-						}
-						print("(");
-						print(") => ");
-						if (typeName.startsWith("Int") || typeName.startsWith("Long")
-								|| typeName.startsWith("Double")) {
-							print("number");
-						} else {
-							substituteAndPrintType(typeApply.arguments.get(0), arrayComponent, inTypeParameters,
-									completeRawTypes, false);
-						}
-						if (arrayComponent) {
-							print(")");
-						}
-						return getPrinter();
-					} else if (typeName.endsWith("Predicate")) {
-						if (arrayComponent) {
-							print("(");
-						}
-						print("(");
-						if (typeName.startsWith("Int") || typeName.startsWith("Long")
-								|| typeName.startsWith("Double")) {
-							print("p0 : number");
-						} else {
-							printArguments(typeApply.arguments);
-						}
-						print(") => boolean");
-						if (arrayComponent) {
-							print(")");
-						}
-						return getPrinter();
-					} else if (typeName.endsWith("Operator")) {
-						if (arrayComponent) {
-							print("(");
-						}
-						print("(");
-						printArgument(typeApply.arguments.head, 1);
-						if (typeName.startsWith("Binary")) {
-							print(", ");
-							printArgument(typeApply.arguments.head, 2);
-						}
-						print(") => ");
-						substituteAndPrintType(typeApply.arguments.head, arrayComponent, inTypeParameters,
-								completeRawTypes, false);
-						if (arrayComponent) {
-							print(")");
-						}
-						return getPrinter();
-					}
-				}
-				if (typeFullName.startsWith(Class.class.getName() + "<")) {
-					return getPrinter().print("any");
-				}
-			} else {
-				if (!(typeTree instanceof JCArrayTypeTree) && typeFullName.startsWith("java.util.function.")) {
-					// case of a raw functional type (programmer's mistake)
-					return getPrinter().print("any");
-				}
-				if (isMappedType(typeFullName)) {
-					print(getTypeMappingTarget(typeFullName));
-					if (completeRawTypes && !typeTree.type.tsym.getTypeParameters().isEmpty()
-							&& !getTypeMappingTarget(typeFullName).equals("any")) {
-						getPrinter().printAnyTypeArguments(typeTree.type.tsym.getTypeParameters().size());
-					}
-					return getPrinter();
-				}
-			}
-			for (BiFunction<ExtendedElement, String, Object> mapping : getFunctionalTypeMappings()) {
-				Object mapped = mapping.apply(new ExtendedElement(typeTree), typeFullName);
-				if (mapped instanceof String) {
-					getPrinter().print((String) mapped);
-					return getPrinter();
-				} else if (mapped instanceof JCTree) {
-					substituteAndPrintType((JCTree) mapped);
-					return getPrinter();
-				}
-			}
-		}
-
-		if (typeTree instanceof JCTypeApply) {
-			JCTypeApply typeApply = ((JCTypeApply) typeTree);
-			substituteAndPrintType(typeApply.clazz, arrayComponent, inTypeParameters, false, disableSubstitution);
-			if (!typeApply.arguments.isEmpty() && !"any".equals(getPrinter().getLastPrintedString(3))
-					&& !"Object".equals(getPrinter().getLastPrintedString(6))) {
-				getPrinter().print("<");
-				for (JCExpression argument : typeApply.arguments) {
-					substituteAndPrintType(argument, arrayComponent, false, completeRawTypes, false).print(", ");
-				}
-				if (typeApply.arguments.length() > 0) {
-					getPrinter().removeLastChars(2);
-				}
-				getPrinter().print(">");
-			}
-			return getPrinter();
-		} else if (typeTree instanceof JCWildcard) {
-			JCWildcard wildcard = ((JCWildcard) typeTree);
-			String name = getPrinter().getContext().getWildcardName(wildcard);
-			if (name == null) {
-				return getPrinter().print("any");
-			} else {
-				getPrinter().print(name);
-				if (inTypeParameters) {
-					getPrinter().print(" extends ");
-					return substituteAndPrintType(wildcard.getBound(), arrayComponent, false, completeRawTypes,
-							disableSubstitution);
-				} else {
-					return getPrinter();
-				}
-			}
-		} else {
-			if (typeTree instanceof JCArrayTypeTree) {
-				return substituteAndPrintType(((JCArrayTypeTree) typeTree).elemtype, true, inTypeParameters,
-						completeRawTypes, disableSubstitution).print("[]");
-			}
-			if (completeRawTypes && typeTree.type.tsym.getTypeParameters() != null
-					&& !typeTree.type.tsym.getTypeParameters().isEmpty()) {
-				// raw type case (Java warning)
-				getPrinter().print(typeTree);
-				getPrinter().print("<");
-				for (int i = 0; i < typeTree.type.tsym.getTypeParameters().length(); i++) {
-					getPrinter().print("any, ");
-				}
-				getPrinter().removeLastChars(2);
-				getPrinter().print(">");
-				return getPrinter();
-			} else {
-				return getPrinter().print(typeTree);
-			}
-		}
-
-	}
-
-	@Override
 	public boolean substituteIdentifier(IdentifierElement identifierElement) {
-		JCIdent identifier = identifierElement.getTree();
+		JCIdent identifier = ((IdentifierElementSupport) identifierElement).getTree();
 		if (context.hasAnnotationType(identifier.sym, ANNOTATION_STRING_TYPE)) {
 			print("\"");
 			getPrinter()
@@ -1686,7 +1443,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 		boolean isMapped = false;
 		if (typeTree != null) {
 			for (BiFunction<ExtendedElement, String, Object> mapping : getFunctionalTypeMappings()) {
-				Object mapped = mapping.apply(new ExtendedElement(typeTree), qualifiedName);
+				Object mapped = mapping.apply(new ExtendedElementSupport(typeTree), qualifiedName);
 				if (mapped instanceof String) {
 					isMapped = true;
 					qualifiedName = (String) mapped;
@@ -1745,8 +1502,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 	 * </pre>
 	 * 
 	 * @param element
-	 *            the documented element ({@link JCClassDecl},
-	 *            {@link JCMethodDecl}, or {@link JCVariableDecl})
+	 *            the documented element
 	 * @param commentText
 	 *            the comment text if any (null when no comment)
 	 * @return the adapted comment (null will remove the JavaDoc comment)

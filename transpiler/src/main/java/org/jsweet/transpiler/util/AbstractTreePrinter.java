@@ -25,7 +25,8 @@ import java.util.function.Consumer;
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.TranspilationHandler;
 import org.jsweet.transpiler.TypeChecker;
-import org.jsweet.transpiler.element.ExtendedElement;
+import org.jsweet.transpiler.extension.PrinterAdapter;
+import org.jsweet.transpiler.model.ExtendedElement;
 
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Type;
@@ -366,6 +367,8 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 
 	public abstract AbstractTreePrinter printConstructorArgList(JCNewClass newClass, boolean localClass);
 
+	protected abstract AbstractTreePrinter substituteAndPrintType(JCTree typeTree);
+	
 	/**
 	 * Prints a comma-separated list of variable names (no types).
 	 */
@@ -385,7 +388,7 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	 */
 	public AbstractTreePrinter printTypeArgList(List<? extends JCTree> args) {
 		for (JCTree arg : args) {
-			getAdapter().substituteAndPrintType(arg);
+			substituteAndPrintType(arg);
 			print(", ");
 		}
 		if (!args.isEmpty()) {

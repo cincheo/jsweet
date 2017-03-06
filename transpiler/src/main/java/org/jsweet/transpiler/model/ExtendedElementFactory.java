@@ -16,7 +16,15 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jsweet.transpiler.element;
+package org.jsweet.transpiler.model;
+
+import org.jsweet.transpiler.model.support.CaseElementSupport;
+import org.jsweet.transpiler.model.support.ExtendedElementSupport;
+import org.jsweet.transpiler.model.support.FieldAccessElementSupport;
+import org.jsweet.transpiler.model.support.IdentifierElementSupport;
+import org.jsweet.transpiler.model.support.LiteralElementSupport;
+import org.jsweet.transpiler.model.support.MethodInvocationElementSupport;
+import org.jsweet.transpiler.model.support.NewClassElementSupport;
 
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCCase;
@@ -36,53 +44,31 @@ public class ExtendedElementFactory {
 
 	public final static ExtendedElementFactory INSTANCE = new ExtendedElementFactory();
 
-	/**
-	 * Creates a generic element (fallback).
-	 */
+	@SuppressWarnings("unchecked")
+	public static <T extends JCTree> T toTree(ExtendedElement element) {
+		return (T) ((ExtendedElementSupport) element).getTree();
+	}
+
 	public ExtendedElement create(JCTree tree) {
-		return new ExtendedElement(tree);
-	}
-
-	/**
-	 * Creates a field access element.
-	 */
-	public FieldAccessElement create(JCFieldAccess tree) {
-		return new FieldAccessElement(tree);
-	}
-
-	/**
-	 * Creates a method invocation element.
-	 */
-	public MethodInvocationElement create(JCMethodInvocation tree) {
-		return new MethodInvocationElement(tree);
-	}
-
-	/**
-	 * Creates a new class element.
-	 */
-	public NewClassElement create(JCNewClass tree) {
-		return new NewClassElement(tree);
-	}
-
-	/**
-	 * Creates a literal element.
-	 */
-	public LiteralElement create(JCLiteral tree) {
-		return new LiteralElement(tree);
-	}
-
-	/**
-	 * Creates an identifier element.
-	 */
-	public IdentifierElement create(JCIdent tree) {
-		return new IdentifierElement(tree);
-	}
-
-	/**
-	 * Creates a case statement element.
-	 */
-	public CaseElement create(JCCase tree) {
-		return new CaseElement(tree);
+		if (tree == null) {
+			return null;
+		}
+		switch (tree.getTag()) {
+		case APPLY:
+			return new MethodInvocationElementSupport((JCMethodInvocation) tree);
+		case SELECT:
+			return new FieldAccessElementSupport((JCFieldAccess) tree);
+		case NEWCLASS:
+			return new NewClassElementSupport((JCNewClass) tree);
+		case IDENT:
+			return new IdentifierElementSupport((JCIdent) tree);
+		case LITERAL:
+			return new LiteralElementSupport((JCLiteral) tree);
+		case CASE:
+			return new CaseElementSupport((JCCase) tree);
+		default:
+			return new ExtendedElementSupport(tree);
+		}
 	}
 
 }

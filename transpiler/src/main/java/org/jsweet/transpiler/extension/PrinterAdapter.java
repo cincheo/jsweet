@@ -16,7 +16,7 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jsweet.transpiler.util;
+package org.jsweet.transpiler.extension;
 
 import java.lang.annotation.Annotation;
 import java.util.HashSet;
@@ -30,32 +30,40 @@ import java.util.stream.Collectors;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
 
 import org.jsweet.transpiler.AnnotationAdapter;
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetProblem;
-import org.jsweet.transpiler.element.CaseElement;
-import org.jsweet.transpiler.element.ExtendedElement;
-import org.jsweet.transpiler.element.FieldAccessElement;
-import org.jsweet.transpiler.element.IdentifierElement;
-import org.jsweet.transpiler.element.MethodInvocationElement;
-import org.jsweet.transpiler.element.NewClassElement;
+import org.jsweet.transpiler.model.CaseElement;
+import org.jsweet.transpiler.model.ExtendedElement;
+import org.jsweet.transpiler.model.FieldAccessElement;
+import org.jsweet.transpiler.model.IdentifierElement;
+import org.jsweet.transpiler.model.MethodInvocationElement;
+import org.jsweet.transpiler.model.NewClassElement;
+import org.jsweet.transpiler.model.Util;
+import org.jsweet.transpiler.model.support.ExtendedElementSupport;
+import org.jsweet.transpiler.model.support.FieldAccessElementSupport;
+import org.jsweet.transpiler.model.support.MethodInvocationElementSupport;
+import org.jsweet.transpiler.model.support.NewClassElementSupport;
+import org.jsweet.transpiler.model.support.UtilSupport;
+import org.jsweet.transpiler.util.AbstractTreePrinter;
+import org.jsweet.transpiler.util.VariableKind;
 
 import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCArrayAccess;
 import com.sun.tools.javac.tree.JCTree.JCAssign;
-import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCEnhancedForLoop;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCImport;
 import com.sun.tools.javac.tree.JCTree.JCLiteral;
-import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.JCTree.JCTypeCast;
@@ -262,26 +270,9 @@ public class PrinterAdapter {
 	}
 
 	/**
-	 * A flags that indicates that this adapter is printing type parameters.
-	 */
-	public boolean inTypeParameters = false;
-
-	/**
-	 * A flags that indicates that this adapter is not substituting types.
-	 */
-	public boolean disableTypeSubstitution = false;
-
-	/**
 	 * A list of type variables to be erased (mapped to any).
 	 */
 	public Set<TypeParameterElement> typeVariablesToErase = new HashSet<>();
-
-	/**
-	 * Prints a tree by delegating to the printer.
-	 */
-	// protected AbstractTreePrinter print(JCTree tree) {
-	// return printer.print(tree);
-	// }
 
 	/**
 	 * Prints a generic element by delegating to the printer.
@@ -303,7 +294,8 @@ public class PrinterAdapter {
 	 * Prints an argument list by delegating to the printer.
 	 */
 	public PrinterAdapter printArgList(List<? extends ExtendedElement> args) {
-		printer.printArgList(args.stream().map(a -> a.getTree()).collect(Collectors.toList()));
+		printer.printArgList(
+				args.stream().map(a -> ((ExtendedElementSupport) a).getTree()).collect(Collectors.toList()));
 		return this;
 	}
 
@@ -442,7 +434,7 @@ public class PrinterAdapter {
 	 * @return true if substituted
 	 */
 	public final boolean substituteNewClass(JCNewClass newClass) {
-		return substituteNewClass(new NewClassElement(newClass), (TypeElement) newClass.type.tsym,
+		return substituteNewClass(new NewClassElementSupport(newClass), (TypeElement) newClass.type.tsym,
 				newClass.type.tsym.getQualifiedName().toString());
 	}
 
@@ -469,7 +461,7 @@ public class PrinterAdapter {
 	 * @return true if substituted
 	 */
 	public final boolean substituteFieldAccess(JCFieldAccess fieldAccess) {
-		return substituteFieldAccess(new FieldAccessElement(fieldAccess), fieldAccess.selected.type.tsym,
+		return substituteFieldAccess(new FieldAccessElementSupport(fieldAccess), fieldAccess.selected.type.tsym,
 				fieldAccess.selected.type.tsym.getQualifiedName().toString(), fieldAccess.name.toString());
 	}
 
@@ -518,20 +510,6 @@ public class PrinterAdapter {
 		return parentAdapter == null ? true : parentAdapter.needsTypeCast(cast);
 	}
 
-	public final AbstractTreePrinter substituteAndPrintType(JCTree typeTree) {
-		return substituteAndPrintType(typeTree, false, inTypeParameters, true, disableTypeSubstitution);
-	}
-
-	public AbstractTreePrinter substituteAndPrintType(JCTree typeTree, boolean arrayComponent, boolean inTypeParameters,
-			boolean completeRawTypes, boolean disableSubstitution) {
-		if (parentAdapter == null) {
-			throw new RuntimeException("no type printing method can be found in adapters");
-		} else {
-			return parentAdapter.substituteAndPrintType(typeTree, arrayComponent, inTypeParameters, completeRawTypes,
-					disableSubstitution);
-		}
-	}
-
 	/**
 	 * Tells if the printer needs to print the given variable declaration.
 	 */
@@ -564,8 +542,8 @@ public class PrinterAdapter {
 				targetClassName = ((Symbol) targetType).getQualifiedName().toString();
 			}
 		}
-		return substituteMethodInvocation(new MethodInvocationElement(invocation), new FieldAccessElement(fieldAccess),
-				targetType, targetClassName, targetMethodName);
+		return substituteMethodInvocation(new MethodInvocationElementSupport(invocation),
+				new FieldAccessElementSupport(fieldAccess), targetType, targetClassName, targetMethodName);
 	}
 
 	public boolean substituteMethodInvocation(MethodInvocationElement invocation, FieldAccessElement fieldAccess,
@@ -652,15 +630,15 @@ public class PrinterAdapter {
 	/**
 	 * Tells if a super class has to be erased in the generated source.
 	 */
-	public boolean eraseSuperClass(JCClassDecl classdecl, ClassSymbol superClass) {
-		return parentAdapter == null ? false : parentAdapter.eraseSuperClass(classdecl, superClass);
+	public boolean eraseSuperClass(TypeElement type, TypeElement superClass) {
+		return parentAdapter == null ? false : parentAdapter.eraseSuperClass(type, superClass);
 	}
 
 	/**
 	 * Tells if a super interface has to be erased in the generated source.
 	 */
-	public boolean eraseSuperInterface(JCClassDecl classdecl, ClassSymbol superInterface) {
-		return parentAdapter == null ? false : parentAdapter.eraseSuperInterface(classdecl, superInterface);
+	public boolean eraseSuperInterface(TypeElement type, TypeElement superInterface) {
+		return parentAdapter == null ? false : parentAdapter.eraseSuperInterface(type, superInterface);
 	}
 
 	/**
@@ -683,7 +661,7 @@ public class PrinterAdapter {
 	 *            the type of the instanceof expression
 	 * @return true if substituted
 	 */
-	public boolean substituteInstanceof(String exprStr, JCTree expr, Type type) {
+	public boolean substituteInstanceof(String exprStr, ExtendedElement expr, Type type) {
 		return parentAdapter == null ? false : parentAdapter.substituteInstanceof(exprStr, expr, type);
 	}
 
@@ -722,6 +700,34 @@ public class PrinterAdapter {
 	 */
 	public void setParentAdapter(PrinterAdapter parentAdapter) {
 		this.parentAdapter = parentAdapter;
+	}
+
+	private Types types;
+
+	/**
+	 * Gets the types API, which provides a set of utilities on TypeMirror.
+	 * 
+	 * @see TypeMirror
+	 * @see Element#asType()
+	 * @see ExtendedElement#asType()
+	 */
+	public Types types() {
+		if (types == null) {
+			types = JavacTypes.instance(context);
+		}
+		return types;
+	}
+
+	private Util util;
+
+	/**
+	 * Gets the util API, which provides a set of utilities.
+	 */
+	public Util util() {
+		if (util == null) {
+			util = new UtilSupport(context);
+		}
+		return util;
 	}
 
 }

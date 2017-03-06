@@ -1,8 +1,7 @@
-package org.jsweet.transpiler.extensions;
+package org.jsweet.transpiler.extension;
 
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetFactory;
-import org.jsweet.transpiler.typescript.Java2TypeScriptAdapter;
 
 /**
  * Tunes the transpiler to avoid using Java APIs as much as possible (JDK).

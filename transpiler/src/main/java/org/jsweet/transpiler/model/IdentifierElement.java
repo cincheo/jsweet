@@ -16,34 +16,13 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jsweet.transpiler.element;
-
-import java.util.List;
-import java.util.stream.Collectors;
-
-import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
+package org.jsweet.transpiler.model;
 
 /**
- * An AST node for a Java method invocation.
+ * An AST node for a Java identifier.
  * 
  * @author Renaud Pawlak
  */
-public class MethodInvocationElement extends ExtendedElement {
-
-	public MethodInvocationElement(JCMethodInvocation tree) {
-		super(tree);
-	}
-
-	@Override
-	public JCMethodInvocation getTree() {
-		return (JCMethodInvocation) tree;
-	}
-
-	/**
-	 * Gets the arguments that are passed to the invoked method.
-	 */
-	public List<ExtendedElement> getArguments() {
-		return getTree().args.stream().map(a -> ExtendedElementFactory.INSTANCE.create(a)).collect(Collectors.toList());
-	}
+public interface IdentifierElement extends ExtendedElement {
 
 }

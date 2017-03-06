@@ -26,7 +26,7 @@ import org.jsweet.transpiler.JSweetFactory;
 import org.jsweet.transpiler.JSweetOptions;
 import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.ModuleKind;
-import org.jsweet.transpiler.typescript.Java2TypeScriptAdapter;
+import org.jsweet.transpiler.extension.Java2TypeScriptAdapter;
 import org.junit.Assert;
 import org.junit.Test;
 

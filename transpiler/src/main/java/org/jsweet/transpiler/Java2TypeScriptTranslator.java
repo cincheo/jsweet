@@ -16,13 +16,18 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jsweet.transpiler.typescript;
+package org.jsweet.transpiler;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.jsweet.JSweetConfig.ANNOTATION_ERASED;
+import static org.jsweet.JSweetConfig.ANNOTATION_OBJECT_TYPE;
 import static org.jsweet.JSweetConfig.ANNOTATION_STRING_TYPE;
 import static org.jsweet.JSweetConfig.GLOBALS_CLASS_NAME;
 import static org.jsweet.JSweetConfig.GLOBALS_PACKAGE_NAME;
 import static org.jsweet.JSweetConfig.TS_IDENTIFIER_FORBIDDEN_CHARS;
+import static org.jsweet.JSweetConfig.TUPLE_CLASSES_PACKAGE;
+import static org.jsweet.JSweetConfig.UNION_CLASS_NAME;
+import static org.jsweet.JSweetConfig.UTIL_PACKAGE;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -37,23 +42,28 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
+import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.WildcardType;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.jsweet.JSweetConfig;
-import org.jsweet.transpiler.JSweetContext;
-import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.OverloadScanner.Overload;
-import org.jsweet.transpiler.TranspilationHandler;
-import org.jsweet.transpiler.element.CaseElement;
-import org.jsweet.transpiler.element.ExtendedElementFactory;
-import org.jsweet.transpiler.element.IdentifierElement;
+import org.jsweet.transpiler.extension.PrinterAdapter;
+import org.jsweet.transpiler.model.ExtendedElement;
+import org.jsweet.transpiler.model.ExtendedElementFactory;
+import org.jsweet.transpiler.model.support.CaseElementSupport;
+import org.jsweet.transpiler.model.support.ExtendedElementSupport;
+import org.jsweet.transpiler.model.support.IdentifierElementSupport;
 import org.jsweet.transpiler.util.AbstractTreePrinter;
-import org.jsweet.transpiler.util.PrinterAdapter;
 import org.jsweet.transpiler.util.Util;
 import org.jsweet.transpiler.util.VariableKind;
 
@@ -118,6 +128,7 @@ import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.JCTree.JCUnary;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.JCTree.JCWhileLoop;
+import com.sun.tools.javac.tree.JCTree.JCWildcard;
 import com.sun.tools.javac.tree.TreeScanner;
 import com.sun.tools.javac.util.Name;
 
@@ -729,6 +740,297 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		return scope.size() > 1 && getScope(1).isLocalClass;
 	}
 
+	/**
+	 * A flags that indicates that this adapter is printing type parameters.
+	 */
+	private boolean inTypeParameters = false;
+
+	/**
+	 * A flags that indicates that this adapter is not substituting types.
+	 */
+	private boolean disableTypeSubstitution = false;
+
+	protected final AbstractTreePrinter substituteAndPrintType(JCTree typeTree) {
+		return substituteAndPrintType(typeTree, false, inTypeParameters, true, disableTypeSubstitution);
+	}
+
+	protected final void buildMappedType(StringBuilder stringBuilder, TypeMirror type) {
+		if (type instanceof DeclaredType) {
+			DeclaredType declaredType = (DeclaredType) type;
+			Element element = declaredType.asElement();
+			String elementName = element.toString();
+			String mapped = context.getTypeMappingTarget(elementName);
+			if (mapped != null) {
+				stringBuilder.append(mapped);
+			} else {
+				print(element.getSimpleName().toString());
+			}
+			if (!declaredType.getTypeArguments().isEmpty()) {
+				print("<");
+				for (TypeMirror arg : declaredType.getTypeArguments()) {
+					buildMappedType(stringBuilder, arg);
+					print(", ");
+				}
+				removeLastChars(2);
+				print(">");
+			}
+		} else if (type instanceof javax.lang.model.type.ArrayType) {
+			buildMappedType(stringBuilder, ((javax.lang.model.type.ArrayType) type).getComponentType());
+			stringBuilder.append("[]");
+		} else if (type instanceof TypeVariable) {
+			stringBuilder.append("any");
+		} else if (type instanceof WildcardType) {
+			stringBuilder.append("any");
+		}
+	}
+
+	private AbstractTreePrinter printArguments(List<JCExpression> arguments) {
+		int i = 1;
+		for (JCExpression argument : arguments) {
+			printArgument(argument, i++).print(", ");
+		}
+		if (arguments.size() > 0) {
+			removeLastChars(2);
+		}
+		return this;
+	}
+
+	private AbstractTreePrinter printArgument(JCExpression argument, int i) {
+		print("p" + i + ": ");
+		substituteAndPrintType(argument, false, false, true, false);
+		return this;
+	}
+
+	private AbstractTreePrinter substituteAndPrintType(JCTree typeTree, boolean arrayComponent,
+			boolean inTypeParameters, boolean completeRawTypes, boolean disableSubstitution) {
+		if (typeTree.type.tsym instanceof TypeVariableSymbol) {
+			if (getAdapter().typeVariablesToErase.contains(typeTree.type.tsym)) {
+				return print("any");
+			}
+		}
+		if (!disableSubstitution) {
+			if (context.hasAnnotationType(typeTree.type.tsym, ANNOTATION_ERASED)) {
+				return print("any");
+			}
+			if (context.hasAnnotationType(typeTree.type.tsym, ANNOTATION_OBJECT_TYPE)) {
+				// TODO: in case of object types, we should replace with the org
+				// object type...
+				return print("any");
+			}
+			String typeFullName = typeTree.type.getModelType().toString(); // typeTree.type.tsym.getQualifiedName().toString();
+			if (Runnable.class.getName().equals(typeFullName)) {
+				if (arrayComponent) {
+					print("(");
+				}
+				print("() => void");
+				if (arrayComponent) {
+					print(")");
+				}
+				return this;
+			}
+			if (typeTree instanceof JCTypeApply) {
+				JCTypeApply typeApply = ((JCTypeApply) typeTree);
+				String typeName = typeApply.clazz.toString();
+				if (typeFullName.startsWith(TUPLE_CLASSES_PACKAGE + ".")) {
+					print("[");
+					for (JCExpression argument : typeApply.arguments) {
+						substituteAndPrintType(argument, arrayComponent, inTypeParameters, completeRawTypes, false)
+								.print(",");
+					}
+					if (typeApply.arguments.length() > 0) {
+						removeLastChar();
+					}
+					print("]");
+					return this;
+				}
+				if (typeFullName.startsWith(UNION_CLASS_NAME)) {
+					print("(");
+					for (JCExpression argument : typeApply.arguments) {
+						print("(");
+						substituteAndPrintType(argument, arrayComponent, inTypeParameters, completeRawTypes, false);
+						print(")");
+						print("|");
+					}
+					if (typeApply.arguments.length() > 0) {
+						removeLastChar();
+					}
+					print(")");
+					return this;
+				}
+				if (typeFullName.startsWith(UTIL_PACKAGE + ".") || typeFullName.startsWith("java.util.function.")) {
+					if (typeName.endsWith("Consumer") || typeName.startsWith("Consumer")) {
+						if (arrayComponent) {
+							print("(");
+						}
+						print("(");
+						if (typeName.startsWith("Int") || typeName.startsWith("Long")
+								|| typeName.startsWith("Double")) {
+							print("p0 : number");
+						} else {
+							printArguments(typeApply.arguments);
+						}
+						print(") => void");
+						if (arrayComponent) {
+							print(")");
+						}
+						return this;
+					} else if (typeName.endsWith("Function") || typeName.startsWith("Function")) {
+						if (arrayComponent) {
+							print("(");
+						}
+						print("(");
+						if (typeName.startsWith("Int") || typeName.startsWith("Long")
+								|| typeName.startsWith("Double")) {
+							print("p0 : number");
+						} else {
+							printArguments(typeApply.arguments.subList(0, typeApply.arguments.length() - 1));
+						}
+						print(") => ");
+						substituteAndPrintType(typeApply.arguments.get(typeApply.arguments.length() - 1),
+								arrayComponent, inTypeParameters, completeRawTypes, false);
+						if (arrayComponent) {
+							print(")");
+						}
+						return this;
+					} else if (typeName.endsWith("Supplier") || typeName.startsWith("Supplier")) {
+						if (arrayComponent) {
+							print("(");
+						}
+						print("(");
+						print(") => ");
+						if (typeName.startsWith("Int") || typeName.startsWith("Long")
+								|| typeName.startsWith("Double")) {
+							print("number");
+						} else {
+							substituteAndPrintType(typeApply.arguments.get(0), arrayComponent, inTypeParameters,
+									completeRawTypes, false);
+						}
+						if (arrayComponent) {
+							print(")");
+						}
+						return this;
+					} else if (typeName.endsWith("Predicate")) {
+						if (arrayComponent) {
+							print("(");
+						}
+						print("(");
+						if (typeName.startsWith("Int") || typeName.startsWith("Long")
+								|| typeName.startsWith("Double")) {
+							print("p0 : number");
+						} else {
+							printArguments(typeApply.arguments);
+						}
+						print(") => boolean");
+						if (arrayComponent) {
+							print(")");
+						}
+						return this;
+					} else if (typeName.endsWith("Operator")) {
+						if (arrayComponent) {
+							print("(");
+						}
+						print("(");
+						printArgument(typeApply.arguments.head, 1);
+						if (typeName.startsWith("Binary")) {
+							print(", ");
+							printArgument(typeApply.arguments.head, 2);
+						}
+						print(") => ");
+						substituteAndPrintType(typeApply.arguments.head, arrayComponent, inTypeParameters,
+								completeRawTypes, false);
+						if (arrayComponent) {
+							print(")");
+						}
+						return this;
+					}
+				}
+				if (typeFullName.startsWith(Class.class.getName() + "<")) {
+					return print("any");
+				}
+			} else {
+				if (!(typeTree instanceof JCArrayTypeTree) && typeFullName.startsWith("java.util.function.")) {
+					// case of a raw functional type (programmer's mistake)
+					return print("any");
+				}
+				if (context.isMappedType(typeFullName)) {
+					print(context.getTypeMappingTarget(typeFullName));
+					if (completeRawTypes && !typeTree.type.tsym.getTypeParameters().isEmpty()
+							&& !context.getTypeMappingTarget(typeFullName).equals("any")) {
+						printAnyTypeArguments(typeTree.type.tsym.getTypeParameters().size());
+					}
+					return this;
+				}
+			}
+			for (BiFunction<ExtendedElement, String, Object> mapping : context.getFunctionalTypeMappings()) {
+				Object mapped = mapping.apply(new ExtendedElementSupport(typeTree), typeFullName);
+				if (mapped instanceof String) {
+					print((String) mapped);
+					return this;
+				} else if (mapped instanceof JCTree) {
+					substituteAndPrintType((JCTree) mapped);
+					return this;
+				} else if (mapped instanceof TypeMirror) {
+					StringBuilder sb = new StringBuilder();
+					buildMappedType(sb, (TypeMirror) mapped);
+					print(sb.toString());
+					return this;
+				}
+			}
+		}
+
+		if (typeTree instanceof JCTypeApply) {
+			JCTypeApply typeApply = ((JCTypeApply) typeTree);
+			substituteAndPrintType(typeApply.clazz, arrayComponent, inTypeParameters, false, disableSubstitution);
+			if (!typeApply.arguments.isEmpty() && !"any".equals(getLastPrintedString(3))
+					&& !"Object".equals(getLastPrintedString(6))) {
+				print("<");
+				for (JCExpression argument : typeApply.arguments) {
+					substituteAndPrintType(argument, arrayComponent, false, completeRawTypes, false).print(", ");
+				}
+				if (typeApply.arguments.length() > 0) {
+					removeLastChars(2);
+				}
+				print(">");
+			}
+			return this;
+		} else if (typeTree instanceof JCWildcard) {
+			JCWildcard wildcard = ((JCWildcard) typeTree);
+			String name = context.getWildcardName(wildcard);
+			if (name == null) {
+				return print("any");
+			} else {
+				print(name);
+				if (inTypeParameters) {
+					print(" extends ");
+					return substituteAndPrintType(wildcard.getBound(), arrayComponent, false, completeRawTypes,
+							disableSubstitution);
+				} else {
+					return this;
+				}
+			}
+		} else {
+			if (typeTree instanceof JCArrayTypeTree) {
+				return substituteAndPrintType(((JCArrayTypeTree) typeTree).elemtype, true, inTypeParameters,
+						completeRawTypes, disableSubstitution).print("[]");
+			}
+			if (completeRawTypes && typeTree.type.tsym.getTypeParameters() != null
+					&& !typeTree.type.tsym.getTypeParameters().isEmpty()) {
+				// raw type case (Java warning)
+				print(typeTree);
+				print("<");
+				for (int i = 0; i < typeTree.type.tsym.getTypeParameters().length(); i++) {
+					print("any, ");
+				}
+				removeLastChars(2);
+				print(">");
+				return this;
+			} else {
+				return print(typeTree);
+			}
+		}
+
+	}
+
 	@Override
 	public void visitClassDef(JCClassDecl classdecl) {
 		if (context.isIgnored(classdecl)) {
@@ -846,8 +1148,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (!removeIterable && !JSweetConfig.isJDKReplacementMode()
 						&& !(JSweetConfig.OBJECT_CLASSNAME.equals(classdecl.extending.type.toString())
 								|| Object.class.getName().equals(classdecl.extending.type.toString()))
-						&& !(mixin != null && mixin.equals(classdecl.extending.type.toString()))
-						&& !(getAdapter().eraseSuperClass(classdecl, (ClassSymbol) classdecl.extending.type.tsym))) {
+						&& !(mixin != null && mixin.equals(classdecl.extending.type.toString())) && !(getAdapter()
+								.eraseSuperClass(classdecl.sym, (ClassSymbol) classdecl.extending.type.tsym))) {
 					if (!getScope().interfaceScope && context.isInterface(classdecl.extending.type.tsym)) {
 						extendsInterface = true;
 						print(" implements ");
@@ -858,9 +1160,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					if (getScope().enumWrapperClassScope && getScope(1).anonymousClasses.contains(classdecl)) {
 						print(classdecl.extending.toString() + ENUM_WRAPPER_CLASS_SUFFIX);
 					} else {
-						getAdapter().disableTypeSubstitution = !getAdapter().isSubstituteSuperTypes();
-						getAdapter().substituteAndPrintType(classdecl.extending);
-						getAdapter().disableTypeSubstitution = false;
+						disableTypeSubstitution = !getAdapter().isSubstituteSuperTypes();
+						substituteAndPrintType(classdecl.extending);
+						disableTypeSubstitution = false;
 					}
 					if (context.classesWithWrongConstructorOverload.contains(classdecl.sym)) {
 						getScope().hasConstructorOverloadWithSuperClass = true;
@@ -882,7 +1184,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 				// erase Java interfaces
 				for (JCExpression itf : classdecl.implementing) {
-					if (getAdapter().eraseSuperInterface(classdecl, (ClassSymbol) itf.type.tsym)) {
+					if (getAdapter().eraseSuperInterface(classdecl.sym, (ClassSymbol) itf.type.tsym)) {
 						implementing.remove(itf);
 					}
 				}
@@ -898,9 +1200,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						print(", ");
 					}
 					for (JCExpression itf : implementing) {
-						getAdapter().disableTypeSubstitution = !getAdapter().isSubstituteSuperTypes();
-						getAdapter().substituteAndPrintType(itf);
-						getAdapter().disableTypeSubstitution = false;
+						disableTypeSubstitution = !getAdapter().isSubstituteSuperTypes();
+						substituteAndPrintType(itf);
+						disableTypeSubstitution = false;
 						implementedInterfaces.add(itf.type);
 						print(", ");
 					}
@@ -1359,7 +1661,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (JSweetConfig.INDEXED_GET_FUCTION_NAME.equals(methodDecl.getName().toString())
 				&& methodDecl.getParameters().size() == 1) {
 			print("[").print(methodDecl.getParameters().head).print("]: ");
-			getAdapter().substituteAndPrintType(methodDecl.restype).print(";");
+			substituteAndPrintType(methodDecl.restype).print(";");
 			return;
 		}
 
@@ -1569,7 +1871,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 		if ((methodDecl.typarams != null && !methodDecl.typarams.isEmpty())
 				|| (getContext().getWildcards(methodDecl.sym) != null)) {
-			getAdapter().inTypeParameters = true;
+			inTypeParameters = true;
 			print("<");
 			if (methodDecl.typarams != null && !methodDecl.typarams.isEmpty()) {
 				printArgList(methodDecl.typarams);
@@ -1578,10 +1880,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 			}
 			if (getContext().getWildcards(methodDecl.sym) != null) {
-				printArgList(getContext().getWildcards(methodDecl.sym), getAdapter()::substituteAndPrintType);
+				printArgList(getContext().getWildcards(methodDecl.sym), this::substituteAndPrintType);
 			}
 			print(">");
-			getAdapter().inTypeParameters = false;
+			inTypeParameters = false;
 		}
 		print("(");
 		if (inCoreWrongOverload) {
@@ -1621,7 +1923,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		} else {
 			if (methodDecl.restype != null && methodDecl.restype.type.getTag() != TypeTag.VOID) {
 				print(" : ");
-				getAdapter().substituteAndPrintType(methodDecl.restype);
+				substituteAndPrintType(methodDecl.restype);
 			}
 		}
 		if (inCoreWrongOverload && context.isInterface(parent.sym)) {
@@ -2222,7 +2524,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 										varDecl.vartype.type.tsym.name.toString()).toString());
 								print("\"");
 							} else {
-								getAdapter().substituteAndPrintType(varDecl.vartype);
+								substituteAndPrintType(varDecl.vartype);
 							}
 						}
 					}
@@ -2246,7 +2548,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					print("public static ");
 				}
 				print(name).print(STATIC_INITIALIZATION_SUFFIX + "() : ");
-				getAdapter().substituteAndPrintType(varDecl.vartype);
+				substituteAndPrintType(varDecl.vartype);
 				print(" { ");
 				int liCount = context.getStaticInitializerCount(clazz.sym);
 				if (liCount > 0) {
@@ -2703,7 +3005,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (inv.typeargs != null && !inv.typeargs.isEmpty()) {
 					print("<");
 					for (JCExpression argument : inv.typeargs) {
-						getAdapter().substituteAndPrintType(argument).print(",");
+						substituteAndPrintType(argument).print(",");
 					}
 					removeLastChar();
 					print(">");
@@ -2806,7 +3108,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 		}
 
-		if (!getAdapter().substituteIdentifier(new IdentifierElement(ident))) {
+		if (!getAdapter().substituteIdentifier(new IdentifierElementSupport(ident))) {
 			boolean lazyInitializedStatic = false;
 			// add this of class name if ident is a field
 			if (ident.sym instanceof VarSymbol && !ident.sym.name.equals(context.names._this)
@@ -2936,7 +3238,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	@Override
 	public void visitTypeApply(JCTypeApply typeApply) {
-		getAdapter().substituteAndPrintType(typeApply);
+		substituteAndPrintType(typeApply);
 	}
 
 	private int initAnonymousClass(JCNewClass newClass) {
@@ -3645,7 +3947,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	public void visitCase(JCCase caseStatement) {
 		if (caseStatement.pat != null) {
 			print("case ");
-			if (!getAdapter().substituteCaseStatementPattern(new CaseElement(caseStatement),
+			if (!getAdapter().substituteCaseStatementPattern(new CaseElementSupport(caseStatement),
 					ExtendedElementFactory.INSTANCE.create(caseStatement.pat))) {
 				if (caseStatement.pat.type.isPrimitive()
 						|| String.class.getName().equals(caseStatement.pat.type.toString())) {
@@ -3692,7 +3994,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			if (cast.expr.type.getKind() == TypeKind.TYPEVAR) {
 				print("<any>");
 			} else {
-				print("<").getAdapter().substituteAndPrintType(cast.clazz).print(">");
+				print("<");
+				substituteAndPrintType(cast.clazz).print(">");
 			}
 		}
 		print(cast.expr);
@@ -3754,7 +4057,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				// print(catcher.param).print(" = ").print("__e;").println();
 				// } else {
 				print(catcher.param).print(" = <");
-				getAdapter().substituteAndPrintType(catcher.param.getType());
+				substituteAndPrintType(catcher.param.getType());
 				print(">__e;").println();
 				// }
 				printBlockStatements(catcher.body.getStatements());
@@ -3847,7 +4150,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			if ("<init>".equals(memberReference.name.toString())) {
 				if (context.types.isArray(memberReference.expr.type)) {
 					print("new Array<");
-					getAdapter().substituteAndPrintType(((JCArrayTypeTree) memberReference.expr).elemtype);
+					substituteAndPrintType(((JCArrayTypeTree) memberReference.expr).elemtype);
 					print(">");
 				} else {
 					print("new ").print(memberReference.expr);
@@ -3885,7 +4188,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (typeParameter.bounds != null && !typeParameter.bounds.isEmpty()) {
 			print(" extends ");
 			for (JCExpression e : typeParameter.bounds) {
-				getAdapter().substituteAndPrintType(e).print(" & ");
+				substituteAndPrintType(e).print(" & ");
 			}
 			removeLastChars(3);
 		}
@@ -3915,7 +4218,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (!(getParent() instanceof JCParens)) {
 			print("(");
 		}
-		if (checkFirstArrayElement || !getAdapter().substituteInstanceof(exprStr, expr, type)) {
+		if (checkFirstArrayElement
+				|| !getAdapter().substituteInstanceof(exprStr, ExtendedElementFactory.INSTANCE.create(expr), type)) {
 			if (TYPE_MAPPING.containsKey(type.toString())) {
 				print("typeof ");
 				print(exprStr, expr);

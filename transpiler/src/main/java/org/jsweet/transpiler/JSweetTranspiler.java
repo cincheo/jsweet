@@ -54,15 +54,14 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.jsweet.JSweetConfig;
-import org.jsweet.transpiler.candies.CandiesProcessor;
-import org.jsweet.transpiler.typescript.Java2TypeScriptTranslator;
+import org.jsweet.transpiler.candy.CandyProcessor;
+import org.jsweet.transpiler.extension.PrinterAdapter;
 import org.jsweet.transpiler.util.AbstractTreePrinter;
 import org.jsweet.transpiler.util.DirectedGraph;
 import org.jsweet.transpiler.util.DirectedGraph.Node;
 import org.jsweet.transpiler.util.ErrorCountTranspilationHandler;
 import org.jsweet.transpiler.util.EvaluationResult;
 import org.jsweet.transpiler.util.Position;
-import org.jsweet.transpiler.util.PrinterAdapter;
 import org.jsweet.transpiler.util.ProcessUtil;
 import org.jsweet.transpiler.util.SourceMap;
 import org.jsweet.transpiler.util.SourceMap.Entry;
@@ -150,7 +149,7 @@ public class JSweetTranspiler implements JSweetOptions {
 	private JavaFileManager fileManager;
 	private JavaCompiler compiler;
 	private Log log;
-	private CandiesProcessor candiesProcessor;
+	private CandyProcessor candiesProcessor;
 	private boolean generateSourceMap = false;
 	private File workingDir;
 	private File tsOutputDir;
@@ -309,7 +308,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		logger.info("factory: " + factory);
 		logger.debug("compile classpath: " + classPath);
 		logger.debug("runtime classpath: " + System.getProperty("java.class.path"));
-		this.candiesProcessor = new CandiesProcessor(this.workingDir, classPath, extractedCandyJavascriptDir);
+		this.candiesProcessor = new CandyProcessor(this.workingDir, classPath, extractedCandyJavascriptDir);
 	}
 
 	/**
@@ -1528,7 +1527,7 @@ public class JSweetTranspiler implements JSweetOptions {
 	/**
 	 * Gets the candies processor.
 	 */
-	public CandiesProcessor getCandiesProcessor() {
+	public CandyProcessor getCandiesProcessor() {
 		return candiesProcessor;
 	}
 

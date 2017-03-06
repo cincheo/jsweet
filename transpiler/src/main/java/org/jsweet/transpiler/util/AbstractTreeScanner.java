@@ -31,7 +31,8 @@ import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.SourcePosition;
 import org.jsweet.transpiler.TranspilationHandler;
-import org.jsweet.transpiler.element.ExtendedElement;
+import org.jsweet.transpiler.model.ExtendedElement;
+import org.jsweet.transpiler.model.support.ExtendedElementSupport;
 
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Types;
@@ -145,7 +146,7 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 	}
 
 	public void scan(ExtendedElement element) {
-		scan(element.getTree());
+		scan(((ExtendedElementSupport) element).getTree());
 	}
 
 	@Override

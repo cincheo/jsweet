@@ -17,11 +17,13 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 /**
- * This package contains the actual translation  to TypeScript.
+ * This package contains a extension of the Java model ({@link javax.lang.model}
+ * ).
  * 
  * <p>
- * The translation is implemented as a Java code tree scanner.
+ * It wraps the javac tree API. It shall be used by the adapters in order to use
+ * a stable and public API.
  * 
  * @author Renaud Pawlak
  */
-package org.jsweet.transpiler.typescript;
+package org.jsweet.transpiler.model;

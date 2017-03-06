@@ -1,10 +1,9 @@
 package org.jsweet.transpiler;
 
 import org.apache.log4j.Logger;
-import org.jsweet.transpiler.extensions.RemoveJavaDependenciesAdapter;
-import org.jsweet.transpiler.typescript.Java2TypeScriptAdapter;
-import org.jsweet.transpiler.typescript.Java2TypeScriptTranslator;
-import org.jsweet.transpiler.util.PrinterAdapter;
+import org.jsweet.transpiler.extension.Java2TypeScriptAdapter;
+import org.jsweet.transpiler.extension.PrinterAdapter;
+import org.jsweet.transpiler.extension.RemoveJavaDependenciesAdapter;
 
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 

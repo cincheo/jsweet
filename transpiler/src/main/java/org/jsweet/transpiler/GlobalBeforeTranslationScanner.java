@@ -67,9 +67,16 @@ public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {
 
 	@Override
 	public void visitClassDef(JCClassDecl classdecl) {
+		if (getCompilationUnit().docComments.hasComment(classdecl)) {
+			context.docComments.put(classdecl.sym, getCompilationUnit().docComments.getCommentText(classdecl));
+		}
 		for (JCTree def : classdecl.defs) {
 			if (def instanceof JCVariableDecl) {
 				JCVariableDecl var = (JCVariableDecl) def;
+				if (getCompilationUnit().docComments.hasComment(var)) {
+					context.docComments.put(var.sym, getCompilationUnit().docComments.getCommentText(var));
+				}
+
 				MethodSymbol m = Util.findMethodDeclarationInType(context.types, classdecl.sym, var.name.toString(),
 						null);
 				if (m != null) {
@@ -94,6 +101,10 @@ public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {
 
 	@Override
 	public void visitMethodDef(JCMethodDecl methodDecl) {
+		if (getCompilationUnit().docComments.hasComment(methodDecl)) {
+			context.docComments.put(methodDecl.sym, getCompilationUnit().docComments.getCommentText(methodDecl));
+		}
+
 		if (methodDecl.mods.getFlags().contains(Modifier.DEFAULT)) {
 			getContext().addDefaultMethod(compilationUnit, getParent(JCClassDecl.class), methodDecl);
 		}

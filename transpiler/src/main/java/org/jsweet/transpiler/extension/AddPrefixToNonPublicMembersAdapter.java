@@ -1,4 +1,4 @@
-package org.jsweet.transpiler.extensions;
+package org.jsweet.transpiler.extension;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -7,7 +7,6 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
 import org.jsweet.transpiler.AnnotationAdapter;
-import org.jsweet.transpiler.util.PrinterAdapter;
 import org.jsweet.transpiler.util.Util;
 
 public class AddPrefixToNonPublicMembersAdapter extends PrinterAdapter {

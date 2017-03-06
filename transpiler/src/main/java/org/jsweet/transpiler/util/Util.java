@@ -40,13 +40,16 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.JSweetContext;
-import org.jsweet.transpiler.element.ExtendedElement;
+import org.jsweet.transpiler.model.ExtendedElement;
+import org.jsweet.transpiler.model.ExtendedElementFactory;
+import org.jsweet.transpiler.model.support.ExtendedElementSupport;
 
 import com.sun.source.tree.Tree.Kind;
 import com.sun.tools.javac.code.Flags;
@@ -780,7 +783,7 @@ public class Util {
 	/**
 	 * Returns true is the type is a number.
 	 */
-	public static boolean isNumber(Type type) {
+	public static boolean isNumber(TypeMirror type) {
 		if (type == null) {
 			return false;
 		}
@@ -800,7 +803,7 @@ public class Util {
 	/**
 	 * Returns true is the type is a core.
 	 */
-	public static boolean isCoreType(Type type) {
+	public static boolean isCoreType(TypeMirror type) {
 		if (type == null) {
 			return false;
 		}
@@ -1012,10 +1015,10 @@ public class Util {
 	 * Tells if the extended element is a constant expression.
 	 */
 	public static boolean isConstant(ExtendedElement element) {
-		if (!(element.getTree() instanceof JCExpression)) {
+		if (!(((ExtendedElementSupport) element).getTree() instanceof JCExpression)) {
 			return false;
 		}
-		return isConstant((JCExpression) element.getTree());
+		return isConstant((JCExpression) ((ExtendedElementSupport) element).getTree());
 	}
 
 	/**

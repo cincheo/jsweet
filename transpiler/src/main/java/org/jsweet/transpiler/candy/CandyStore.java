@@ -16,7 +16,7 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jsweet.transpiler.candies;
+package org.jsweet.transpiler.candy;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -26,14 +26,14 @@ import java.util.List;
  * 
  * @author Louis Grignon
  */
-class CandiesStore {
+class CandyStore {
 	private List<CandyDescriptor> candies = new LinkedList<>();
 
-	public CandiesStore() {
+	public CandyStore() {
 		this(new LinkedList<CandyDescriptor>());
 	}
 
-	public CandiesStore(List<CandyDescriptor> candiesDescriptors) {
+	public CandyStore(List<CandyDescriptor> candiesDescriptors) {
 		this.candies = candiesDescriptors;
 	}
 
@@ -44,11 +44,11 @@ class CandiesStore {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (!(obj instanceof CandiesStore)) {
+		if (!(obj instanceof CandyStore)) {
 			return false;
 		}
 
-		CandiesStore other = (CandiesStore) obj;
+		CandyStore other = (CandyStore) obj;
 		return candies.size() == other.candies.size() && candies.containsAll(other.candies);
 	}
 

@@ -16,7 +16,7 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jsweet.transpiler.extensions;
+package org.jsweet.transpiler.extension;
 
 import static org.jsweet.JSweetConfig.isJDKPath;
 
@@ -41,28 +41,24 @@ import java.util.Vector;
 import java.util.WeakHashMap;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.ArrayType;
 
 import org.jsweet.transpiler.JSweetContext;
-import org.jsweet.transpiler.element.FieldAccessElement;
-import org.jsweet.transpiler.element.MethodInvocationElement;
-import org.jsweet.transpiler.element.NewClassElement;
-import org.jsweet.transpiler.typescript.Java2TypeScriptAdapter;
-import org.jsweet.transpiler.typescript.Java2TypeScriptTranslator;
-import org.jsweet.transpiler.util.PrinterAdapter;
+import org.jsweet.transpiler.Java2TypeScriptTranslator;
+import org.jsweet.transpiler.model.ExtendedElement;
+import org.jsweet.transpiler.model.ExtendedElementFactory;
+import org.jsweet.transpiler.model.FieldAccessElement;
+import org.jsweet.transpiler.model.LiteralElement;
+import org.jsweet.transpiler.model.MethodInvocationElement;
+import org.jsweet.transpiler.model.NewClassElement;
 import org.jsweet.transpiler.util.Util;
 
-import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.code.Type.ArrayType;
-import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCEnhancedForLoop;
-import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCImport;
 import com.sun.tools.javac.tree.JCTree.JCLiteral;
-import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
-import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.JCTree.JCTypeApply;
 
 /**
@@ -111,14 +107,22 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		extTypesMapping.put(GregorianCalendar.class.getName(), "Date");
 		extTypesMapping.put(TimeZone.class.getName(), "string");
 		addTypeMappings(extTypesMapping);
+		addTypeMapping(
+				(typeTree,
+						name) -> name.startsWith("java.")
+								&& types().isSubtype(typeTree.asType(), util().getType(Throwable.class)) ? "Error"
+										: null);
+		// TODO: use standard API
+		// addTypeMapping((typeTree,
+		// name) -> typeTree.asType() instanceof DeclaredType
+		// &&
+		// WeakReference.class.getName().equals(types().getQualifiedName(typeTree.asType()))
+		// ? ((DeclaredType) typeTree.asType()).getTypeArguments().get(0) :
+		// null);
 		addTypeMapping((typeTree,
-				name) -> name.startsWith("java.")
-						&& context.types.isSubtype(typeTree.getTree().type, context.symtab.throwableType) ? "Error"
-								: null);
-		addTypeMapping((typeTree,
-				name) -> typeTree.getTree() instanceof JCTypeApply && WeakReference.class.getName()
-						.equals(typeTree.getTree().type.tsym.getQualifiedName().toString())
-								? ((JCTypeApply) typeTree.getTree()).arguments.head : null);
+				name) -> ExtendedElementFactory.toTree(typeTree) instanceof JCTypeApply && WeakReference.class.getName()
+						.equals(ExtendedElementFactory.toTree(typeTree).type.tsym.getQualifiedName().toString())
+								? ((JCTypeApply) ExtendedElementFactory.toTree(typeTree)).arguments.head : null);
 	}
 
 	@Override
@@ -130,12 +134,11 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 	}
 
 	@Override
-	public boolean substituteMethodInvocation(MethodInvocationElement invocationElement,
-			FieldAccessElement fieldAccessElement, Element targetType, String targetClassName,
-			String targetMethodName) {
+	public boolean substituteMethodInvocation(MethodInvocationElement invocation, FieldAccessElement fieldAccess,
+			Element targetType, String targetClassName, String targetMethodName) {
 
-		JCMethodInvocation invocation = invocationElement.getTree();
-		JCFieldAccess fieldAccess = fieldAccessElement.getTree();
+		// JCMethodInvocation invocation = invocationElement.getTree();
+		// JCFieldAccess fieldAccess = fieldAccessElement.getTree();
 
 		if (targetClassName != null && fieldAccess != null) {
 			switch (targetClassName) {
@@ -154,84 +157,82 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 					case "java.util.Set":
 					case "java.util.HashSet":
 					case "java.util.TreeSet":
-						getPrinter().print("((s, e) => { if(s.indexOf(e)==-1) s.push(e); })(")
-								.print(fieldAccess.getExpression()).print(", ").print(invocation.args.head).print(")");
+						print("((s, e) => { if(s.indexOf(e)==-1) s.push(e); })(").print(fieldAccess.getExpression())
+								.print(", ").print(invocation.getArguments().get(0)).print(")");
 						break;
 					default:
-						if (invocation.args.size() == 2) {
-							getPrinter().print(fieldAccess.getExpression()).print(".splice(")
-									.print(invocation.args.head).print(", 0, ").print(invocation.args.tail.head)
-									.print(")");
+						if (invocation.getArgumentCount() == 2) {
+							print(fieldAccess.getExpression()).print(".splice(").print(invocation.getArguments().get(0))
+									.print(", 0, ").print(invocation.getArguments().get(1)).print(")");
 						} else {
-							getPrinter().print(fieldAccess.getExpression()).print(".push(")
-									.printArgList(invocation.args).print(")");
+							print(fieldAccess.getExpression()).print(".push(").printArgList(invocation.getArguments())
+									.print(")");
 						}
 					}
 					return true;
 				case "addAll":
 					printMacroName(targetMethodName);
-					getPrinter().print("((l1, l2) => l1.push.apply(l1, l2))(").print(fieldAccess.getExpression())
-							.print(", ").printArgList(invocation.args).print(")");
+					print("((l1, l2) => l1.push.apply(l1, l2))(").print(fieldAccess.getExpression()).print(", ")
+							.printArgList(invocation.getArguments()).print(")");
 					return true;
 				case "remove":
 					printMacroName(targetMethodName);
-					if (Util.isNumber(invocation.args.head.type)) {
-						getPrinter().print(fieldAccess.getExpression()).print(".splice(").printArgList(invocation.args)
+					if (Util.isNumber(invocation.getArguments().get(0).asType())) {
+						print(fieldAccess.getExpression()).print(".splice(").printArgList(invocation.getArguments())
 								.print(", 1)");
 					} else {
-						getPrinter().print("(a => a.splice(a.indexOf(").print(invocation.args.head).print(")")
-								.print(invocation.args.tail.isEmpty() ? "" : ", ").printArgList(invocation.args.tail)
-								.print(", 1))(").print(fieldAccess.getExpression()).print(")");
+						print("(a => a.splice(a.indexOf(").print(invocation.getFirstArgument()).print(")")
+								.print(invocation.getArgumentCount() == 1 ? "" : ", ")
+								.printArgList(invocation.getArgumentTail()).print(", 1))(")
+								.print(fieldAccess.getExpression()).print(")");
 					}
 					return true;
 				case "subList":
 					printMacroName(targetMethodName);
-					getPrinter().print(fieldAccess.getExpression()).print(".slice(").printArgList(invocation.args)
+					print(fieldAccess.getExpression()).print(".slice(").printArgList(invocation.getArguments())
 							.print(")");
 					return true;
 				case "size":
 					printMacroName(targetMethodName);
-					getPrinter().print(fieldAccess.getExpression()).print(".length");
+					print(fieldAccess.getExpression()).print(".length");
 					return true;
 				case "get":
 				case "elementAt":
 					printMacroName(targetMethodName);
-					getPrinter().print(fieldAccess.getExpression()).print("[").printArgList(invocation.args).print("]");
+					print(fieldAccess.getExpression()).print("[").printArgList(invocation.getArguments()).print("]");
 					return true;
 				case "clear":
 					printMacroName(targetMethodName);
-					getPrinter().print("(").print(fieldAccess.getExpression()).print(".length = 0)");
+					print("(").print(fieldAccess.getExpression()).print(".length = 0)");
 					return true;
 				case "isEmpty":
 					printMacroName(targetMethodName);
-					getPrinter().print("(").print(fieldAccess.getExpression()).print(".length == 0)");
+					print("(").print(fieldAccess.getExpression()).print(".length == 0)");
 					return true;
 				case "contains":
 					printMacroName(targetMethodName);
-					getPrinter().print("(").print(fieldAccess.getExpression()).print(".indexOf(")
-							.print(invocation.args.head).print(") >= 0)");
+					print("(").print(fieldAccess.getExpression()).print(".indexOf(")
+							.print(invocation.getArguments().get(0)).print(") >= 0)");
 					return true;
 				case "toArray":
 					printMacroName(targetMethodName);
-					if (invocation.args.length() == 1) {
-						getPrinter()
-								.print("((a1, a2) => { if(a1.length >= a2.length) { a1.length=0; a1.push.apply(a1, a2); return a1; } else { return a2.slice(0); } })(")
-								.print(invocation.args.head).print(", ").print(fieldAccess.getExpression()).print(")");
+					if (invocation.getArgumentCount() == 1) {
+						print("((a1, a2) => { if(a1.length >= a2.length) { a1.length=0; a1.push.apply(a1, a2); return a1; } else { return a2.slice(0); } })(")
+								.print(invocation.getArguments().get(0)).print(", ").print(fieldAccess.getExpression())
+								.print(")");
 						return true;
 					} else {
-						getPrinter().print(fieldAccess.getExpression()).print(".slice(0)");
+						print(fieldAccess.getExpression()).print(".slice(0)");
 						return true;
 					}
 				case "elements":
 					printMacroName(targetMethodName);
-					getPrinter()
-							.print("((a) => { var i = 0; return { nextElement: function() { return i<a.length?a[i++]:null; }, hasMoreElements: function() { return i<a.length; }}})(")
+					print("((a) => { var i = 0; return { nextElement: function() { return i<a.length?a[i++]:null; }, hasMoreElements: function() { return i<a.length; }}})(")
 							.print(fieldAccess.getExpression()).print(")");
 					return true;
 				case "iterator":
 					printMacroName(targetMethodName);
-					getPrinter()
-							.print("((a) => { var i = 0; return { next: function() { return i<a.length?a[i++]:null; }, hasNext: function() { return i<a.length; }}})(")
+					print("((a) => { var i = 0; return { next: function() { return i<a.length?a[i++]:null; }, hasNext: function() { return i<a.length; }}})(")
 							.print(fieldAccess.getExpression()).print(")");
 					return true;
 				}
@@ -243,35 +244,35 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 				switch (targetMethodName) {
 				case "put":
 					printMacroName(targetMethodName);
-					getPrinter().print("(").print(fieldAccess.getExpression()).print("[").print(invocation.args.head)
-							.print("] = ").print(invocation.args.tail.head).print(")");
+					print("(").print(fieldAccess.getExpression()).print("[").print(invocation.getArguments().get(0))
+							.print("] = ").print(invocation.getArguments().get(1)).print(")");
 					return true;
 				case "get":
 					printMacroName(targetMethodName);
-					getPrinter().print(fieldAccess.getExpression()).print("[").print(invocation.args.head).print("]");
+					print(fieldAccess.getExpression()).print("[").print(invocation.getArguments().get(0)).print("]");
 					return true;
 				case "containsKey":
 					printMacroName(targetMethodName);
-					getPrinter().print(fieldAccess.getExpression()).print(".hasOwnProperty(")
-							.print(invocation.args.head).print(")");
+					print(fieldAccess.getExpression()).print(".hasOwnProperty(").print(invocation.getArguments().get(0))
+							.print(")");
 					return true;
 				case "keySet":
 					printMacroName(targetMethodName);
-					getPrinter().print("Object.keys(").print(fieldAccess.getExpression()).print(")");
+					print("Object.keys(").print(fieldAccess.getExpression()).print(")");
 					return true;
 				case "values":
 					printMacroName(targetMethodName);
-					getPrinter().print("(obj => Object.keys(obj).map(key => obj[key]))(")
-							.print(fieldAccess.getExpression()).print(")");
+					print("(obj => Object.keys(obj).map(key => obj[key]))(").print(fieldAccess.getExpression())
+							.print(")");
 					return true;
 				case "size":
 					printMacroName(targetMethodName);
-					getPrinter().print("Object.keys(").print(fieldAccess.getExpression()).print(").length");
+					print("Object.keys(").print(fieldAccess.getExpression()).print(").length");
 					return true;
 				case "remove":
 					printMacroName(targetMethodName);
-					getPrinter().print("delete ").print(fieldAccess.getExpression()).print("[")
-							.print(invocation.args.head).print("]");
+					print("delete ").print(fieldAccess.getExpression()).print("[")
+							.print(invocation.getArguments().get(0)).print("]");
 					return true;
 				}
 				break;
@@ -294,34 +295,34 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 				case "unmodifiableSet":
 				case "unmodifiableSortedSet":
 					printMacroName(targetMethodName);
-					getPrinter().printArgList(invocation.args).print(".slice(0)");
+					printArgList(invocation.getArguments()).print(".slice(0)");
 					return true;
 				case "singleton":
 					printMacroName(targetMethodName);
-					getPrinter().print("[").print(invocation.args.head).print("]");
+					print("[").print(invocation.getArguments().get(0)).print("]");
 					return true;
 				case "singletonList":
 					printMacroName(targetMethodName);
-					getPrinter().print("[").print(invocation.args.head).print("]");
+					print("[").print(invocation.getArguments().get(0)).print("]");
 					return true;
 				case "singletonMap":
 					printMacroName(targetMethodName);
-					if (invocation.args.head instanceof JCLiteral) {
-						getPrinter().print("{ ").print(invocation.args.head).print(": ")
-								.print(invocation.args.tail.head).print(" }");
+					if (invocation.getArguments().get(0) instanceof JCLiteral) {
+						getPrinter().print("{ ").print(invocation.getArguments().get(0)).print(": ")
+								.print(invocation.getArguments().get(1)).print(" }");
 					} else {
-						getPrinter().print("(k => { let o = {}; o[k] = ").print(invocation.args.tail.head)
-								.print("; return o; })(").print(invocation.args.head).print(")");
+						getPrinter().print("(k => { let o = {}; o[k] = ").print(invocation.getArguments().get(1))
+								.print("; return o; })(").print(invocation.getArguments().get(0)).print(")");
 					}
 					return true;
 				case "binarySearch":
 					printMacroName(targetMethodName);
-					getPrinter().print(invocation.args.head).print(".indexOf(").printArgList(invocation.args.tail)
+					print(invocation.getFirstArgument()).print(".indexOf(").printArgList(invocation.getArgumentTail())
 							.print(")");
 					return true;
 				case "sort":
 					printMacroName(targetMethodName);
-					getPrinter().print(invocation.args.head).print(".sort(").printArgList(invocation.args.tail)
+					print(invocation.getFirstArgument()).print(".sort(").printArgList(invocation.getArgumentTail())
 							.print(")");
 					return true;
 				}
@@ -330,37 +331,37 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 				switch (targetMethodName) {
 				case "asList":
 					printMacroName(targetMethodName);
-					if (invocation.args.size() == 1 && invocation.args.head.type instanceof ArrayType) {
-						getPrinter().printArgList(invocation.args).print(".slice(0)");
+					if (invocation.getArgumentCount() == 1
+							&& invocation.getFirstArgument().asType() instanceof ArrayType) {
+						printArgList(invocation.getArguments()).print(".slice(0)");
 					} else {
-						getPrinter().print("[").printArgList(invocation.args).print("]");
+						print("[").printArgList(invocation.getArguments()).print("]");
 					}
 					return true;
 				case "copyOf":
 					printMacroName(targetMethodName);
-					getPrinter().print(invocation.args.head).print(".slice(0,").print(invocation.args.tail.head)
+					print(invocation.getFirstArgument()).print(".slice(0,").print(invocation.getArguments().get(1))
 							.print(")");
 					return true;
 				case "equals":
 					printMacroName(targetMethodName);
-					getPrinter()
-							.print("((a1, a2) => { if(a1==null && a2==null) return true; if(a1==null || a2==null) return false; if(a1.length != a2.length) return false; for(let i = 0; i < a1.length; i++) { if(<any>a1[i] != <any>a2[i]) return false; } return true; })(")
-							.printArgList(invocation.args).print(")");
+					print("((a1, a2) => { if(a1==null && a2==null) return true; if(a1==null || a2==null) return false; if(a1.length != a2.length) return false; for(let i = 0; i < a1.length; i++) { if(<any>a1[i] != <any>a2[i]) return false; } return true; })(")
+							.printArgList(invocation.getArguments()).print(")");
 					return true;
 				case "deepEquals":
 					printMacroName(targetMethodName);
-					getPrinter().print("(JSON.stringify(").print(invocation.args.head).print(") === JSON.stringify(")
-							.print(invocation.args.tail.head).print("))");
+					print("(JSON.stringify(").print(invocation.getFirstArgument()).print(") === JSON.stringify(")
+							.print(invocation.getArguments().get(1)).print("))");
 					return true;
 				case "sort":
 					printMacroName(targetMethodName);
-					if (invocation.args.length() > 2) {
-						getPrinter()
-								.print("((arr, start, end, f?) => ((arr1, arr2) => arr1.splice.apply(arr1, (<any[]>[start, arr2.length]).concat(arr2)))(")
-								.print(invocation.args.head).print(", ").print(invocation.args.head)
-								.print(".slice(start, end).sort(f)))(").printArgList(invocation.args).print(")");
+					if (invocation.getArgumentCount() > 2) {
+						print("((arr, start, end, f?) => ((arr1, arr2) => arr1.splice.apply(arr1, (<any[]>[start, arr2.length]).concat(arr2)))(")
+								.print(invocation.getFirstArgument()).print(", ").print(invocation.getFirstArgument())
+								.print(".slice(start, end).sort(f)))(").printArgList(invocation.getArguments())
+								.print(")");
 					} else {
-						getPrinter().print(invocation.args.head).print(".sort(").printArgList(invocation.args.tail)
+						print(invocation.getFirstArgument()).print(".sort(").printArgList(invocation.getArgumentTail())
 								.print(")");
 					}
 					return true;
@@ -370,14 +371,13 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 				switch (targetMethodName) {
 				case "arraycopy":
 					printMacroName(targetMethodName);
-					getPrinter()
-							.print("((srcPts, srcOff, dstPts, dstOff, size) => { if(srcPts !== dstPts || dstOff >= srcOff + size) { while (--size >= 0) dstPts[dstOff++] = srcPts[srcOff++];"
-									+ "} else { let tmp = srcPts.slice(srcOff, srcOff + size); for (let i = 0; i < size; i++) dstPts[dstOff++] = tmp[i]; }})(")
-							.printArgList(invocation.args).print(")");
+					print("((srcPts, srcOff, dstPts, dstOff, size) => { if(srcPts !== dstPts || dstOff >= srcOff + size) { while (--size >= 0) dstPts[dstOff++] = srcPts[srcOff++];"
+							+ "} else { let tmp = srcPts.slice(srcOff, srcOff + size); for (let i = 0; i < size; i++) dstPts[dstOff++] = tmp[i]; }})(")
+									.printArgList(invocation.getArguments()).print(")");
 					return true;
 				case "currentTimeMillis":
 					printMacroName(targetMethodName);
-					getPrinter().print("Date.now()");
+					print("Date.now()");
 					return true;
 				}
 				break;
@@ -386,12 +386,12 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 				switch (targetMethodName) {
 				case "append":
 					printMacroName(targetMethodName);
-					getPrinter().print("(sb => sb.str = sb.str.concat(").printArgList(invocation.args).print("))(")
+					print("(sb => sb.str = sb.str.concat(").printArgList(invocation.getArguments()).print("))(")
 							.print(fieldAccess.getExpression()).print(")");
 					return true;
 				case "toString":
 					printMacroName(targetMethodName);
-					getPrinter().print(fieldAccess.getExpression()).print(".str");
+					print(fieldAccess.getExpression()).print(".str");
 					return true;
 				}
 				break;
@@ -399,22 +399,22 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 				switch (targetMethodName) {
 				case "get":
 					printMacroName(targetMethodName);
-					getPrinter().print(fieldAccess.getExpression());
+					print(fieldAccess.getExpression());
 					return true;
 				}
 			case "java.text.Collator":
 				switch (targetMethodName) {
 				case "getInstance":
 					printMacroName(targetMethodName);
-					getPrinter().print("((o1, o2) => o1.toString().localeCompare(o2.toString()))");
+					print("((o1, o2) => o1.toString().localeCompare(o2.toString()))");
 					return true;
 				}
 			case "java.util.TimeZone":
 				switch (targetMethodName) {
 				case "getTimeZone":
-					if (invocation.args.size() == 1) {
+					if (invocation.getArgumentCount() == 1) {
 						printMacroName(targetMethodName);
-						getPrinter().print(invocation.args.head);
+						getPrinter().print(invocation.getFirstArgument());
 						return true;
 					}
 					break;
@@ -431,62 +431,62 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			case "java.util.GregorianCalendar":
 				switch (targetMethodName) {
 				case "set":
-					if (invocation.args.size() == 2) {
-						String first = invocation.args.head.toString();
+					if (invocation.getArgumentCount() == 2) {
+						String first = invocation.getFirstArgument().toString();
 						if (first.endsWith("YEAR")) {
 							printMacroName(targetMethodName);
-							getPrinter().print("((d, p) => d[\"UTC\"]?d.setUTCFullYear(p):d.setFullYear(p))(")
-									.print(fieldAccess.getExpression()).print(", ").print(invocation.args.tail.head)
-									.print(")");
+							print("((d, p) => d[\"UTC\"]?d.setUTCFullYear(p):d.setFullYear(p))(")
+									.print(fieldAccess.getExpression()).print(", ")
+									.print(invocation.getArguments().get(1)).print(")");
 							return true;
 						} else if (first.endsWith("DAY_OF_MONTH")) {
 							printMacroName(targetMethodName);
-							getPrinter().print("((d, p) => d[\"UTC\"]?d.setUTCDate(p):d.setDate(p))(")
-									.print(fieldAccess.getExpression()).print(", ").print(invocation.args.tail.head)
-									.print(")");
+							print("((d, p) => d[\"UTC\"]?d.setUTCDate(p):d.setDate(p))(")
+									.print(fieldAccess.getExpression()).print(", ")
+									.print(invocation.getArguments().get(1)).print(")");
 							return true;
 						} else if (first.endsWith("DAY_OF_WEEK")) {
 							printMacroName(targetMethodName);
-							getPrinter().print("((d, p) => d[\"UTC\"]?d.setUTCDay(p):d.setDay(p))(")
-									.print(fieldAccess.getExpression()).print(", ").print(invocation.args.tail.head)
-									.print(")");
+							print("((d, p) => d[\"UTC\"]?d.setUTCDay(p):d.setDay(p))(")
+									.print(fieldAccess.getExpression()).print(", ")
+									.print(invocation.getArguments().get(1)).print(")");
 							return true;
 						} else if (first.endsWith("MONTH")) {
 							printMacroName(targetMethodName);
-							getPrinter().print("((d, p) => d[\"UTC\"]?d.setUTCMonth(p):d.setMonth(p))(")
-									.print(fieldAccess.getExpression()).print(", ").print(invocation.args.tail.head)
-									.print(")");
+							print("((d, p) => d[\"UTC\"]?d.setUTCMonth(p):d.setMonth(p))(")
+									.print(fieldAccess.getExpression()).print(", ")
+									.print(invocation.getArguments().get(1)).print(")");
 							return true;
 						} else if (first.endsWith("HOUR_OF_DAY")) {
 							printMacroName(targetMethodName);
-							getPrinter().print("((d, p) => d[\"UTC\"]?d.setUTCHours(p):d.setHours(p))(")
-									.print(fieldAccess.getExpression()).print(", ").print(invocation.args.tail.head)
-									.print(")");
+							print("((d, p) => d[\"UTC\"]?d.setUTCHours(p):d.setHours(p))(")
+									.print(fieldAccess.getExpression()).print(", ")
+									.print(invocation.getArguments().get(1)).print(")");
 							return true;
 						} else if (first.endsWith("MINUTE")) {
 							printMacroName(targetMethodName);
-							getPrinter().print("((d, p) => d[\"UTC\"]?d.setUTCMinutes(p):d.setMinutes(p))(")
-									.print(fieldAccess.getExpression()).print(", ").print(invocation.args.tail.head)
-									.print(")");
+							print("((d, p) => d[\"UTC\"]?d.setUTCMinutes(p):d.setMinutes(p))(")
+									.print(fieldAccess.getExpression()).print(", ")
+									.print(invocation.getArguments().get(1)).print(")");
 							return true;
 						} else if (first.endsWith("MILLISECOND")) {
 							printMacroName(targetMethodName);
-							getPrinter().print("((d, p) => d[\"UTC\"]?d.setUTCMilliseconds(p):d.setMilliseconds(p))(")
-									.print(fieldAccess.getExpression()).print(", ").print(invocation.args.tail.head)
-									.print(")");
+							print("((d, p) => d[\"UTC\"]?d.setUTCMilliseconds(p):d.setMilliseconds(p))(")
+									.print(fieldAccess.getExpression()).print(", ")
+									.print(invocation.getArguments().get(1)).print(")");
 							return true;
 						} else if (first.endsWith("SECOND")) {
 							printMacroName(targetMethodName);
-							getPrinter().print("((d, p) => d[\"UTC\"]?d.setUTCSeconds(p):d.setSeconds(p))(")
-									.print(fieldAccess.getExpression()).print(", ").print(invocation.args.tail.head)
-									.print(")");
+							print("((d, p) => d[\"UTC\"]?d.setUTCSeconds(p):d.setSeconds(p))(")
+									.print(fieldAccess.getExpression()).print(", ")
+									.print(invocation.getArguments().get(1)).print(")");
 							return true;
 						}
 					}
 					break;
 				case "get":
-					if (invocation.args.size() == 1) {
-						String first = invocation.args.head.toString();
+					if (invocation.getArgumentCount() == 1) {
+						String first = invocation.getFirstArgument().toString();
 						if (first.endsWith("YEAR")) {
 							printMacroName(targetMethodName);
 							getPrinter().print("(d => d[\"UTC\"]?d.getUTCFullYear():d.getFullYear())(")
@@ -532,16 +532,16 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 					break;
 				case "setTimeInMillis":
 					printMacroName(targetMethodName);
-					getPrinter().print(fieldAccess.getExpression()).print(".setTime(").print(invocation.args.head)
+					print(fieldAccess.getExpression()).print(".setTime(").print(invocation.getFirstArgument())
 							.print(")");
 					return true;
 				case "getTimeInMillis":
 					printMacroName(targetMethodName);
-					getPrinter().print(fieldAccess.getExpression()).print(".getTime()");
+					print(fieldAccess.getExpression()).print(".getTime()");
 					return true;
 				case "setTime":
 					printMacroName(targetMethodName);
-					getPrinter().print(fieldAccess.getExpression()).print(".setTime(").print(invocation.args.head)
+					print(fieldAccess.getExpression()).print(".setTime(").print(invocation.getFirstArgument())
 							.print(".getTime())");
 					return true;
 				case "getTime":
@@ -554,8 +554,8 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			switch (targetMethodName) {
 			case "clone":
 				printMacroName(targetMethodName);
-				if (fieldAccess != null && fieldAccess.getExpression().type instanceof Type.ArrayType) {
-					getPrinter().print(fieldAccess.getExpression()).print(".slice(0)");
+				if (fieldAccess != null && fieldAccess.getExpression().asType() instanceof ArrayType) {
+					print(fieldAccess.getExpression()).print(".slice(0)");
 					return true;
 				}
 				break;
@@ -563,16 +563,14 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 
 		}
 
-		return super.substituteMethodInvocation(invocationElement, fieldAccessElement, targetType, targetClassName,
-				targetMethodName);
+		return super.substituteMethodInvocation(invocation, fieldAccess, targetType, targetClassName, targetMethodName);
 	}
 
 	@Override
-	public boolean substituteFieldAccess(FieldAccessElement fieldAccessElement, Element targetType,
-			String targetClassName, String targetFieldName) {
-		JCFieldAccess fieldAccess = fieldAccessElement.getTree();
-		if (fieldAccess.sym.isStatic() && isMappedType(targetClassName) && targetClassName.startsWith("java.lang.")
-				&& !"class".equals(targetFieldName)) {
+	public boolean substituteFieldAccess(FieldAccessElement fieldAccess, Element targetType, String targetClassName,
+			String targetFieldName) {
+		if (fieldAccess.getField().getModifiers().contains(Modifier.STATIC) && isMappedType(targetClassName)
+				&& targetClassName.startsWith("java.lang.") && !"class".equals(targetFieldName)) {
 
 			switch (targetClassName) {
 			case "java.lang.Float":
@@ -581,7 +579,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			case "java.lang.Byte":
 			case "java.lang.Long":
 			case "java.lang.Short":
-				switch (fieldAccess.name.toString()) {
+				switch (targetFieldName) {
 				case "MIN_VALUE":
 				case "MAX_VALUE":
 					print("Number." + targetFieldName);
@@ -589,22 +587,22 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 				}
 			}
 		}
-		return super.substituteFieldAccess(fieldAccessElement, targetType, targetClassName, targetFieldName);
+		return super.substituteFieldAccess(fieldAccess, targetType, targetClassName, targetFieldName);
 	}
 
 	@Override
-	public boolean substituteNewClass(NewClassElement newClassElement, TypeElement type, String className) {
-		JCNewClass newClass = newClassElement.getTree();
+	public boolean substituteNewClass(NewClassElement newClass, TypeElement type, String className) {
 		switch (className) {
 		case "java.util.ArrayList":
 		case "java.util.Vector":
-			if (newClass.args.isEmpty()) {
+			if (newClass.getArgumentCount() == 0) {
 				print("[]");
 			} else {
-				if (Util.isNumber(newClass.args.head.type) || (newClass.args.head instanceof JCLiteral)) {
+				if (Util.isNumber(newClass.getFirstArgument().asType())
+						|| (newClass.getFirstArgument() instanceof LiteralElement)) {
 					print("[]");
 				} else {
-					getPrinter().print(newClass.args.head).print(".slice(0)");
+					getPrinter().print(newClass.getFirstArgument()).print(".slice(0)");
 				}
 			}
 			return true;
@@ -615,26 +613,26 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			return true;
 		case "java.lang.StringBuffer":
 		case "java.lang.StringBuilder":
-			if (newClass.args.isEmpty() || Util.isNumber(newClass.args.head.type)) {
+			if (newClass.getArgumentCount() == 0 || Util.isNumber(newClass.getFirstArgument().asType())) {
 				getPrinter().print("{ str: \"\", toString: function() { return this.str; } }");
 			} else {
-				getPrinter().print("{ str: ").print(newClass.args.head)
+				getPrinter().print("{ str: ").print(newClass.getFirstArgument())
 						.print(", toString: function() { return this.str; } } }");
 			}
 			return true;
 		case "java.lang.ref.WeakReference":
-			getPrinter().print(newClass.args.head);
+			getPrinter().print(newClass.getFirstArgument());
 			return true;
 		case "java.util.GregorianCalendar":
-			if (newClass.args.isEmpty()) {
+			if (newClass.getArgumentCount() == 0) {
 				getPrinter().print("new Date()");
 				return true;
-			} else if (newClass.args.size() == 1
-					&& TimeZone.class.getName().equals(newClass.args.head.type.tsym.getQualifiedName().toString())) {
-				if (newClass.args.head instanceof JCMethodInvocation) {
-					JCMethodInvocation inv = (JCMethodInvocation) newClass.args.head;
-					if (inv.meth.toString().endsWith("getTimeZone") && inv.args.head instanceof JCLiteral
-							&& ((JCLiteral) inv.args.head).getValue().equals("UTC")) {
+			} else if (newClass.getArgumentCount() == 1
+					&& TimeZone.class.getName().equals(newClass.getFirstArgument().asType().toString())) {
+				if (newClass.getFirstArgument() instanceof MethodInvocationElement) {
+					MethodInvocationElement inv = (MethodInvocationElement) newClass.getFirstArgument();
+					if (inv.getMethodName().equals("getTimeZone") && inv.getFirstArgument() instanceof LiteralElement
+							&& ((LiteralElement) inv.getFirstArgument()).getValue().equals("UTC")) {
 						getPrinter().print("(d => { d[\"UTC\"]=true; return d; })(new Date())");
 						return true;
 					}
@@ -644,14 +642,14 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		}
 
 		if (className.startsWith("java.")) {
-			if (context.types.isSubtype(newClass.clazz.type, context.symtab.throwableType)) {
+			if (types().isSubtype(type.asType(), context.symtab.throwableType)) {
 				print("Object.defineProperty(");
 				print("new Error(");
-				if (newClass.args.size() > 0) {
-					if (String.class.getName().equals(newClass.args.head.type.toString())) {
-						getPrinter().print(newClass.args.head);
-					} else if (context.types.isSubtype(newClass.args.head.type, context.symtab.throwableType)) {
-						getPrinter().print(newClass.args.head).print(".message");
+				if (newClass.getArgumentCount() > 0) {
+					if (String.class.getName().equals(newClass.getFirstArgument().asType().toString())) {
+						getPrinter().print(newClass.getFirstArgument());
+					} else if (types().isSubtype(newClass.getFirstArgument().asType(), context.symtab.throwableType)) {
+						getPrinter().print(newClass.getFirstArgument()).print(".message");
 					}
 				}
 				print(")");
@@ -661,7 +659,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			}
 		}
 
-		return super.substituteNewClass(newClassElement, type, className);
+		return super.substituteNewClass(newClass, type, className);
 	}
 
 	@Override
@@ -670,17 +668,17 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 	}
 
 	@Override
-	public boolean eraseSuperClass(JCClassDecl classdecl, ClassSymbol superClass) {
+	public boolean eraseSuperClass(TypeElement classdecl, TypeElement superClass) {
 		return superClass.getQualifiedName().toString().startsWith("java.")
-				&& !(superClass.type.equals(context.symtab.throwableType)
-						|| superClass.type.equals(context.symtab.exceptionType)
-						|| superClass.type.equals(context.symtab.runtimeExceptionType)
-						|| superClass.type.equals(context.symtab.errorType))
+				&& !(superClass.asType().equals(context.symtab.throwableType)
+						|| superClass.asType().equals(context.symtab.exceptionType)
+						|| superClass.asType().equals(context.symtab.runtimeExceptionType)
+						|| superClass.asType().equals(context.symtab.errorType))
 				&& !Util.isSourceElement(superClass);
 	}
 
 	@Override
-	public boolean eraseSuperInterface(JCClassDecl classdecl, ClassSymbol superInterface) {
+	public boolean eraseSuperInterface(TypeElement classdecl, TypeElement superInterface) {
 		return superInterface.getQualifiedName().toString().startsWith("java.")
 				&& !Util.isSourceElement(superInterface);
 	}
@@ -691,13 +689,13 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 	}
 
 	@Override
-	public boolean substituteInstanceof(String exprStr, JCTree expr, Type type) {
+	public boolean substituteInstanceof(String exprStr, ExtendedElement expr, Type type) {
 		String typeName = type.tsym.getQualifiedName().toString();
 		if (typeName.startsWith("java.") && context.types.isSubtype(type, context.symtab.throwableType)) {
-			getPrinter().print(exprStr, expr);
+			print(exprStr, expr);
 			print(" != null && ");
 			print("(");
-			getPrinter().print(exprStr, expr);
+			print(exprStr, expr);
 			print("[\"" + Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR + "\"]").print(" == ")
 					.print("\"" + type.tsym.getQualifiedName().toString() + "\"");
 			print(")");
@@ -713,14 +711,14 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		if (mappedType != null) {
 			if ("String".equals(mappedType)) {
 				print("typeof ");
-				getPrinter().print(exprStr, expr);
+				print(exprStr, expr);
 				print(" === ").print("'string'");
 				return true;
 			} else {
-				getPrinter().print(exprStr, expr);
+				print(exprStr, expr);
 				print(" != null && ");
 				print("(");
-				getPrinter().print(exprStr, expr);
+				print(exprStr, expr);
 				print(" instanceof " + mappedType);
 				print(")");
 				return true;

@@ -16,7 +16,7 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jsweet.transpiler.candies;
+package org.jsweet.transpiler.candy;
 
 import java.io.IOException;
 import java.util.Enumeration;
@@ -38,7 +38,7 @@ import com.google.gson.GsonBuilder;
 /**
  * A candy descriptor for the candies store.
  * 
- * @see CandiesStore
+ * @see CandyStore
  * 
  * @author Louis Grignon
  */

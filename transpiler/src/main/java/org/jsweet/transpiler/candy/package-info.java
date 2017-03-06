@@ -27,4 +27,4 @@
  * 
  * @author Louis Grignon
  */
-package org.jsweet.transpiler.candies;
+package org.jsweet.transpiler.candy;

@@ -16,32 +16,19 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jsweet.transpiler.element;
+package org.jsweet.transpiler.model;
 
-import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
+import javax.lang.model.element.ExecutableElement;
 
 /**
- * An AST node for a Java field access expression.
+ * An AST node for a Java method invocation.
  * 
  * @author Renaud Pawlak
  */
-public class FieldAccessElement extends ExtendedElement {
+public interface MethodInvocationElement extends InvocationElement {
 
-	public FieldAccessElement(JCFieldAccess tree) {
-		super(tree);
-	}
+	String getMethodName();
 
-	@Override
-	public JCFieldAccess getTree() {
-		return (JCFieldAccess) tree;
-	}
-
-	public ExtendedElement getSelected() {
-		return ExtendedElementFactory.INSTANCE.create(getTree().selected);
-	}
-
-	public ExtendedElement getExpression() {
-		return ExtendedElementFactory.INSTANCE.create(getTree().getExpression());
-	}
+	ExecutableElement getMethod();
 
 }

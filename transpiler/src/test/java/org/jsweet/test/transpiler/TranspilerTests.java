@@ -34,9 +34,9 @@ import org.jsweet.transpiler.JSweetTranspiler;
 import org.jsweet.transpiler.ModuleKind;
 import org.jsweet.transpiler.SourceFile;
 import org.jsweet.transpiler.SourcePosition;
-import org.jsweet.transpiler.extensions.AddPrefixToNonPublicMembersAdapter;
-import org.jsweet.transpiler.typescript.Java2TypeScriptAdapter;
-import org.jsweet.transpiler.util.PrinterAdapter;
+import org.jsweet.transpiler.extension.AddPrefixToNonPublicMembersAdapter;
+import org.jsweet.transpiler.extension.Java2TypeScriptAdapter;
+import org.jsweet.transpiler.extension.PrinterAdapter;
 import org.jsweet.transpiler.util.ProcessUtil;
 import org.jsweet.transpiler.util.Util;
 import org.junit.Ignore;
@@ -230,7 +230,7 @@ public class TranspilerTests extends AbstractTest {
 				"--tsout", outDir.getPath(), //
 				"--jsout", outDir.getPath(), //
 				"--sourceMap", //
-				"--factoryClassName", "org.jsweet.transpiler.extensions.RemoveJavaDependenciesFactory", //
+				"--factoryClassName", "org.jsweet.transpiler.extension.RemoveJavaDependenciesFactory", //
 				"-i", gameDir, //
 				"--includes", "UselessClass.java:dummy");
 

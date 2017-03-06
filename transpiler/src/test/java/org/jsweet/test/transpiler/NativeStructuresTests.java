@@ -3,7 +3,7 @@ package org.jsweet.test.transpiler;
 import static org.junit.Assert.assertEquals;
 
 import org.jsweet.transpiler.JSweetFactory;
-import org.jsweet.transpiler.extensions.RemoveJavaDependenciesFactory;
+import org.jsweet.transpiler.extension.RemoveJavaDependenciesFactory;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;

@@ -16,7 +16,7 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jsweet.transpiler.candies;
+package org.jsweet.transpiler.candy;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,19 +40,19 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 /**
- * The candies processor extracts and processes what is required from the candy
- * jars in order to ensure safe transpilation.
+ * The candy processor extracts and processes what is required from the candy
+ * jars. It can include:
  * 
  * <ul>
- * <li>The embedded TypeScript definition files (*.d.ts)</li>
- * <li>Cross-candies mixins, which are merged by {@link CandiesMerger}</li>
+ * <li>embedded TypeScript definition files (*.d.ts)</li>
+ * <li>embedded JavaScript</li>
  * </ul>
  * 
  * @author Louis Grignon
  */
-public class CandiesProcessor {
+public class CandyProcessor {
 
-	private static final Logger logger = Logger.getLogger(CandiesProcessor.class);
+	private static final Logger logger = Logger.getLogger(CandyProcessor.class);
 	private final static Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
 	private String classPath;
@@ -69,7 +69,7 @@ public class CandiesProcessor {
 	 * The name of the file that stores processed candies info.
 	 */
 	public static final String CANDIES_STORE_FILE_NAME = CANDIES_DIR_NAME + File.separator
-			+ CandiesStore.class.getSimpleName() + ".json";
+			+ CandyStore.class.getSimpleName() + ".json";
 	/**
 	 * The name of the directory that contains the TypeScript source files.
 	 */
@@ -97,7 +97,7 @@ public class CandiesProcessor {
 	 * @param extractedCandiesJavascriptDir
 	 *            see JSweetTranspiler.extractedCandyJavascriptDir
 	 */
-	public CandiesProcessor(File workingDir, String classPath, File extractedCandiesJavascriptDir) {
+	public CandyProcessor(File workingDir, String classPath, File extractedCandiesJavascriptDir) {
 		this.workingDir = workingDir;
 		this.classPath = (classPath == null ? System.getProperty("java.class.path") : classPath);
 		String[] cp = this.classPath.split(File.pathSeparator);
@@ -140,11 +140,11 @@ public class CandiesProcessor {
 	 * Do the processing for the candies jars found in the classpath.
 	 */
 	public void processCandies(TranspilationHandler transpilationHandler) throws IOException {
-		CandiesStore candiesStore = getCandiesStore();
+		CandyStore candiesStore = getCandiesStore();
 
 		LinkedHashMap<File, CandyDescriptor> newCandiesDescriptors = getCandiesDescriptorsFromClassPath(
 				transpilationHandler);
-		CandiesStore newStore = new CandiesStore(new ArrayList<>(newCandiesDescriptors.values()));
+		CandyStore newStore = new CandyStore(new ArrayList<>(newCandiesDescriptors.values()));
 		if (newStore.equals(candiesStore)) {
 			logger.info("candies are up to date");
 			return;
@@ -301,7 +301,7 @@ public class CandiesProcessor {
 		}
 	}
 
-	private CandiesStore candiesStore;
+	private CandyStore candiesStore;
 
 	/**
 	 * Cleans the candies store so that it will be read from file next time.
@@ -310,18 +310,18 @@ public class CandiesProcessor {
 		candiesStore = null;
 	}
 
-	private CandiesStore getCandiesStore() {
+	private CandyStore getCandiesStore() {
 		if (candiesStore == null) {
 			if (candiesStoreFile.exists()) {
 				try {
-					candiesStore = gson.fromJson(FileUtils.readFileToString(candiesStoreFile), CandiesStore.class);
+					candiesStore = gson.fromJson(FileUtils.readFileToString(candiesStoreFile), CandyStore.class);
 				} catch (Exception e) {
 					logger.error("cannot read candies index", e);
 				}
 			}
 
 			if (candiesStore == null) {
-				candiesStore = new CandiesStore();
+				candiesStore = new CandyStore();
 			}
 		}
 
