@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 
@@ -52,6 +53,7 @@ import org.jsweet.transpiler.util.AbstractTreePrinter;
 import org.jsweet.transpiler.util.VariableKind;
 
 import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.model.JavacTypes;
@@ -461,8 +463,14 @@ public class PrinterAdapter {
 	 * @return true if substituted
 	 */
 	public final boolean substituteFieldAccess(JCFieldAccess fieldAccess) {
-		return substituteFieldAccess(new FieldAccessElementSupport(fieldAccess), fieldAccess.selected.type.tsym,
-				fieldAccess.selected.type.tsym.getQualifiedName().toString(), fieldAccess.name.toString());
+		if (fieldAccess.sym instanceof VariableElement) {
+			return substituteFieldAccess(new FieldAccessElementSupport(fieldAccess), fieldAccess.selected.type.tsym,
+					fieldAccess.selected.type.tsym.getQualifiedName().toString(), fieldAccess.name.toString());
+		}
+
+		// TODO fieldAccess.sym may be instanceof ClassSymbol for fully
+		// qualified declaration, we should allow to substitute this
+		return false;
 	}
 
 	/**
