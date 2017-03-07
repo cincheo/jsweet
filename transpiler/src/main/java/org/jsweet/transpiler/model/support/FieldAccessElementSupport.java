@@ -18,7 +18,7 @@
  */
 package org.jsweet.transpiler.model.support;
 
-import javax.lang.model.element.VariableElement;
+import javax.lang.model.element.Element;
 
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.ExtendedElementFactory;
@@ -47,8 +47,8 @@ public class FieldAccessElementSupport extends ExtendedElementSupport implements
 	}
 
 	@Override
-	public VariableElement getField() {
-		return (VariableElement) getTree().sym;
+	public Element getElement() {
+		return getTree().sym;
 	}
-
+	
 }

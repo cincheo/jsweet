@@ -42,8 +42,14 @@ public interface ExtendedElement {
 	TypeMirror asType();
 
 	/**
-	 * Gets this element's type, as a standard element.
+	 * Gets this element's type (if any), as a standard element.
 	 */
-	public Element getTypeElement();
+	Element getTypeElement();
+
+	/**
+	 * Gets the element attached to this extended element, if any (may be null
+	 * if no attached element).
+	 */
+	Element getElement();
 
 }

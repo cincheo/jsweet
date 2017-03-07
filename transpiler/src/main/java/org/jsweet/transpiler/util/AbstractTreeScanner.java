@@ -26,19 +26,25 @@ import java.util.Map.Entry;
 import java.util.Stack;
 import java.util.function.Consumer;
 
+import javax.lang.model.element.Element;
+
 import org.apache.commons.io.FileUtils;
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.SourcePosition;
 import org.jsweet.transpiler.TranspilationHandler;
 import org.jsweet.transpiler.model.ExtendedElement;
+import org.jsweet.transpiler.model.ExtendedElementFactory;
 import org.jsweet.transpiler.model.support.ExtendedElementSupport;
 
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCImport;
+import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
+import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.TreeScanner;
 import com.sun.tools.javac.util.DiagnosticSource;
 import com.sun.tools.javac.util.Log;
@@ -228,11 +234,33 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 		}
 	}
 
+	/**
+	 * Gets the parent element in the printer's scanning stack.
+	 */
+	public ExtendedElement getParentElement() {
+		return ExtendedElementFactory.INSTANCE.create(getParent());
+	}
+
 	@SuppressWarnings("unchecked")
 	public <T extends JCTree> T getParent(Class<T> type) {
 		for (int i = this.stack.size() - 2; i >= 0; i--) {
 			if (type.isAssignableFrom(this.stack.get(i).getClass())) {
 				return (T) this.stack.get(i);
+			}
+		}
+		return null;
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T extends Element> T getParentElement(Class<T> type) {
+		for (int i = this.stack.size() - 2; i >= 0; i--) {
+			JCTree t = this.stack.get(i);
+			if (t instanceof JCClassDecl && type.isAssignableFrom(((JCClassDecl) t).sym.getClass())) {
+				return (T) ((JCClassDecl) t).sym;
+			} else if (t instanceof JCMethodDecl && type.isAssignableFrom(((JCMethodDecl) t).sym.getClass())) {
+				return (T) ((JCClassDecl) t).sym;
+			} else if (t instanceof JCVariableDecl && type.isAssignableFrom(((JCVariableDecl) t).sym.getClass())) {
+				return (T) ((JCClassDecl) t).sym;
 			}
 		}
 		return null;

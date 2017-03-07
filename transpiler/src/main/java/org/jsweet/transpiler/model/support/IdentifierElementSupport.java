@@ -18,6 +18,8 @@
  */
 package org.jsweet.transpiler.model.support;
 
+import javax.lang.model.element.Element;
+
 import org.jsweet.transpiler.model.IdentifierElement;
 
 import com.sun.tools.javac.tree.JCTree.JCIdent;
@@ -36,6 +38,11 @@ public class IdentifierElementSupport extends ExtendedElementSupport implements 
 	@Override
 	public JCIdent getTree() {
 		return (JCIdent) tree;
+	}
+	
+	@Override
+	public Element getElement() {
+		return getTree().sym;
 	}
 
 }

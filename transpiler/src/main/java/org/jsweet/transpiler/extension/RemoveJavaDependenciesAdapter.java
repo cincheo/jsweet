@@ -569,7 +569,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 	@Override
 	public boolean substituteFieldAccess(FieldAccessElement fieldAccess, Element targetType, String targetClassName,
 			String targetFieldName) {
-		if (fieldAccess.getField().getModifiers().contains(Modifier.STATIC) && isMappedType(targetClassName)
+		if (fieldAccess.getElement().getModifiers().contains(Modifier.STATIC) && isMappedType(targetClassName)
 				&& targetClassName.startsWith("java.lang.") && !"class".equals(targetFieldName)) {
 
 			switch (targetClassName) {

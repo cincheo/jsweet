@@ -28,6 +28,7 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.TypeMirror;
@@ -58,12 +59,14 @@ import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCArrayAccess;
 import com.sun.tools.javac.tree.JCTree.JCAssign;
+import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCEnhancedForLoop;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCImport;
 import com.sun.tools.javac.tree.JCTree.JCLiteral;
+import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.JCTree.JCTypeCast;
@@ -348,8 +351,30 @@ public class PrinterAdapter {
 	/**
 	 * Gets the parent element in the printer's scanning stack.
 	 */
+	public ExtendedElement getParentElement() {
+		return printer.getParentElement();
+	}
+
+	/**
+	 * Gets the parent element in the printer's scanning stack.
+	 */
 	public <T extends JCTree> T getParent(Class<T> type) {
 		return printer.getParent(type);
+	}
+
+	/**
+	 * Gets the parent element in the printer's scanning stack.
+	 */
+	public <T extends Element> T getParentElement(Class<T> type) {
+		return printer.getParentElement(type);
+	}
+
+	/**
+	 * Looks-up the executable that is invoked by the given invocation.
+	 */
+	public ExecutableElement findExecutableDeclarationInType(TypeElement type, MethodInvocationElement invocation) {
+		return org.jsweet.transpiler.util.Util.findMethodDeclarationInType(context.types, (TypeSymbol) type,
+				((MethodInvocationElementSupport) invocation).getTree());
 	}
 
 	/**

@@ -75,6 +75,11 @@ public class ExtendedElementSupport implements ExtendedElement {
 	}
 
 	@Override
+	public Element getElement() {
+		return null;
+	}
+	
+	@Override
 	public int hashCode() {
 		return tree.hashCode();
 	}

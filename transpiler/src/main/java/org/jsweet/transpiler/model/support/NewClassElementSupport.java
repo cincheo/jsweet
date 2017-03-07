@@ -69,5 +69,5 @@ public class NewClassElementSupport extends ExtendedElementSupport implements Ne
 	public ExecutableElement getConstructor() {
 		return (ExecutableElement) getTree().constructor;
 	}
-
+	
 }

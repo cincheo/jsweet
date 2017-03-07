@@ -18,8 +18,6 @@
  */
 package org.jsweet.transpiler.model;
 
-import javax.lang.model.element.VariableElement;
-
 /**
  * An AST node for a Java field access expression (of the form
  * <code>expr.f</code>).
@@ -34,10 +32,5 @@ public interface FieldAccessElement extends ExtendedElement {
 	 * @return the part before the dot
 	 */
 	ExtendedElement getExpression();
-
-	/**
-	 * Gets the accessed field.
-	 */
-	VariableElement getField();
 
 }
