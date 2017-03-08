@@ -29,8 +29,10 @@ import java.util.stream.Collectors;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 
@@ -71,7 +73,6 @@ import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.JCTree.JCTypeCast;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
-import com.sun.tools.javac.util.Name;
 
 /**
  * A printer adapter, which can be overridden to change the default printer
@@ -190,6 +191,59 @@ public class PrinterAdapter {
 	}
 
 	/**
+	 * Gets the string that corresponds to the given type, taking into account
+	 * all type mappings.
+	 * 
+	 * <p>
+	 * Some type mappings are set by default, some are added in the context by
+	 * adapters.
+	 */
+	public final String getMappedType(TypeMirror type) {
+		StringBuilder stringBuilder = new StringBuilder();
+		buildMappedType(stringBuilder, type);
+		return stringBuilder.toString();
+	}
+
+	private final void buildMappedType(StringBuilder stringBuilder, TypeMirror type) {
+		switch (type.getKind()) {
+		case DECLARED:
+			DeclaredType declaredType = (DeclaredType) type;
+			Element element = declaredType.asElement();
+			String elementName = element.toString();
+			String mapped = context.getTypeMappingTarget(elementName);
+			if (mapped != null) {
+				stringBuilder.append(mapped);
+			} else {
+				print(element.getSimpleName().toString());
+			}
+			if (!declaredType.getTypeArguments().isEmpty()) {
+				print("<");
+				for (TypeMirror arg : declaredType.getTypeArguments()) {
+					buildMappedType(stringBuilder, arg);
+					print(", ");
+				}
+				getPrinter().removeLastChars(2);
+				print(">");
+			}
+			break;
+		case ARRAY:
+			buildMappedType(stringBuilder, ((javax.lang.model.type.ArrayType) type).getComponentType());
+			stringBuilder.append("[]");
+			break;
+		case TYPEVAR:
+		case WILDCARD:
+			stringBuilder.append("any");
+			break;
+		default:
+			if (context.isMappedType(type.toString())) {
+				stringBuilder.append(context.getTypeMappingTarget(type.toString()));
+			} else {
+				stringBuilder.append(type.toString());
+			}
+		}
+	}
+
+	/**
 	 * Adds an annotation on the AST through global filters.
 	 * 
 	 * <p>
@@ -294,6 +348,22 @@ public class PrinterAdapter {
 	}
 
 	/**
+	 * Prints a name by delegating to the printer.
+	 */
+	public PrinterAdapter print(Name name) {
+		printer.print(name.toString());
+		return this;
+	}
+
+	/**
+	 * Prints a new line by delegating to the printer.
+	 */
+	public PrinterAdapter println() {
+		printer.println();
+		return this;
+	}
+
+	/**
 	 * Prints an argument list by delegating to the printer.
 	 */
 	public PrinterAdapter printArgList(List<? extends ExtendedElement> args) {
@@ -316,22 +386,64 @@ public class PrinterAdapter {
 	/**
 	 * Prints an indentation for the current indentation value.
 	 */
-	public AbstractTreePrinter printIndent() {
-		return printer.printIndent();
+	public PrinterAdapter printIndent() {
+		printer.printIndent();
+		return this;
 	}
 
 	/**
 	 * Increments the current indentation value.
 	 */
-	public AbstractTreePrinter startIndent() {
-		return printer.startIndent();
+	public PrinterAdapter startIndent() {
+		printer.startIndent();
+		return this;
 	}
 
 	/**
 	 * Decrements the current indentation value.
 	 */
-	public AbstractTreePrinter endIndent() {
-		return printer.endIndent();
+	public PrinterAdapter endIndent() {
+		printer.endIndent();
+		return this;
+	}
+
+	/**
+	 * Adds a space to the output.
+	 */
+	public PrinterAdapter space() {
+		printer.space();
+		return this;
+	}
+
+	/**
+	 * removes last character if expectedChar
+	 */
+	public boolean removeLastChar(char expectedChar) {
+		return printer.removeLastChar(expectedChar);
+	}
+
+	/**
+	 * Removes the last output character.
+	 */
+	public PrinterAdapter removeLastChar() {
+		printer.removeLastChar();
+		return this;
+	}
+
+	/**
+	 * Removes the last output characters.
+	 */
+	public PrinterAdapter removeLastChars(int count) {
+		printer.removeLastChars(count);
+		return this;
+	}
+
+	/**
+	 * Removes the last printed indentation.
+	 */
+	public PrinterAdapter removeLastIndent() {
+		printer.removeLastIndent();
+		return this;
 	}
 
 	/**
@@ -418,7 +530,7 @@ public class PrinterAdapter {
 	 * @param params
 	 *            the parameters if any
 	 */
-	protected void report(JCTree tree, Name name, JSweetProblem problem, Object... params) {
+	protected void report(JCTree tree, com.sun.tools.javac.util.Name name, JSweetProblem problem, Object... params) {
 		printer.report(tree, name, problem, params);
 	}
 
@@ -695,6 +807,15 @@ public class PrinterAdapter {
 	 */
 	public boolean substituteCaseStatementPattern(CaseElement caseStatement, ExtendedElement pattern) {
 		return parentAdapter == null ? false : parentAdapter.substituteCaseStatementPattern(caseStatement, pattern);
+	}
+
+	/**
+	 * This method is called after a type was printed.
+	 */
+	public void afterType(TypeElement type) {
+		if (parentAdapter != null) {
+			parentAdapter.afterType(type);
+		}
 	}
 
 	/**

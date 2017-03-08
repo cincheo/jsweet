@@ -1416,7 +1416,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 					.print(".iterator();" + indexVarName + ".hasNext();) {").println().startIndent().printIndent();
 			getPrinter().print(VAR_DECL_KEYWORD + " " + foreachLoop.var.name.toString() + " = ")
 					.print(indexVarName + ".next();").println();
-			printIndent().print(foreachLoop.body);
+			getPrinter().printIndent().print(foreachLoop.body);
 			endIndent().println().printIndent().print("}");
 			return true;
 		}

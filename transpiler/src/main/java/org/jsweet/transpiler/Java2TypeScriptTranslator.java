@@ -45,13 +45,9 @@ import java.util.Stack;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
-import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVariable;
-import javax.lang.model.type.WildcardType;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -357,7 +353,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 		}
 		// do not print the compilation unit at all if no defs are to be printed
-		if (noDefs) {
+		if (!context.bundleMode && noDefs) {
 			return;
 		}
 
@@ -754,36 +750,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		return substituteAndPrintType(typeTree, false, inTypeParameters, true, disableTypeSubstitution);
 	}
 
-	protected final void buildMappedType(StringBuilder stringBuilder, TypeMirror type) {
-		if (type instanceof DeclaredType) {
-			DeclaredType declaredType = (DeclaredType) type;
-			Element element = declaredType.asElement();
-			String elementName = element.toString();
-			String mapped = context.getTypeMappingTarget(elementName);
-			if (mapped != null) {
-				stringBuilder.append(mapped);
-			} else {
-				print(element.getSimpleName().toString());
-			}
-			if (!declaredType.getTypeArguments().isEmpty()) {
-				print("<");
-				for (TypeMirror arg : declaredType.getTypeArguments()) {
-					buildMappedType(stringBuilder, arg);
-					print(", ");
-				}
-				removeLastChars(2);
-				print(">");
-			}
-		} else if (type instanceof javax.lang.model.type.ArrayType) {
-			buildMappedType(stringBuilder, ((javax.lang.model.type.ArrayType) type).getComponentType());
-			stringBuilder.append("[]");
-		} else if (type instanceof TypeVariable) {
-			stringBuilder.append("any");
-		} else if (type instanceof WildcardType) {
-			stringBuilder.append("any");
-		}
-	}
-
 	private AbstractTreePrinter printArguments(List<JCExpression> arguments) {
 		int i = 1;
 		for (JCExpression argument : arguments) {
@@ -970,9 +936,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					substituteAndPrintType((JCTree) mapped);
 					return this;
 				} else if (mapped instanceof TypeMirror) {
-					StringBuilder sb = new StringBuilder();
-					buildMappedType(sb, (TypeMirror) mapped);
-					print(sb.toString());
+					print(getAdapter().getMappedType((TypeMirror) mapped));
 					return this;
 				}
 			}
@@ -1034,6 +998,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	@Override
 	public void visitClassDef(JCClassDecl classdecl) {
 		if (context.isIgnored(classdecl)) {
+			getAdapter().afterType(classdecl.sym);
 			return;
 		}
 		String name = classdecl.getSimpleName().toString();
@@ -1609,6 +1574,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 		getAdapter().typeVariablesToErase.removeAll(parentTypeVars);
 		exitScope();
+
+		getAdapter().afterType(classdecl.sym);
+
 	}
 
 	private void printDefaultImplementation(MethodSymbol method) {
