@@ -32,6 +32,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
@@ -598,8 +599,14 @@ public class PrinterAdapter {
 	 * @return true if substituted
 	 */
 	public final boolean substituteFieldAccess(JCFieldAccess fieldAccess) {
-		return substituteFieldAccess(new FieldAccessElementSupport(fieldAccess), fieldAccess.selected.type.tsym,
-				fieldAccess.selected.type.tsym.getQualifiedName().toString(), fieldAccess.name.toString());
+		if (fieldAccess.sym instanceof VariableElement) {
+			return substituteFieldAccess(new FieldAccessElementSupport(fieldAccess), fieldAccess.selected.type.tsym,
+					fieldAccess.selected.type.tsym.getQualifiedName().toString(), fieldAccess.name.toString());
+		}
+
+		// TODO fieldAccess.sym may be instanceof ClassSymbol for fully
+		// qualified declaration, we should allow to substitute this
+		return false;
 	}
 
 	/**
