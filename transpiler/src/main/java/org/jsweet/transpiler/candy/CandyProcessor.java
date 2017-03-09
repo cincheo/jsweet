@@ -137,7 +137,7 @@ public class CandyProcessor {
 	}
 
 	/**
-	 * Do the processing for the candies jars found in the classpath.
+	 * Does the processing for the candies jars found in the classpath.
 	 */
 	public void processCandies(TranspilationHandler transpilationHandler) throws IOException {
 		CandyStore candiesStore = getCandiesStore();
@@ -165,14 +165,14 @@ public class CandyProcessor {
 	}
 
 	/**
-	 * Return true if the candy store contains the J4TS candy.
+	 * Returns true if the candy store contains the J4TS candy.
 	 */
 	public boolean isUsingJavaRuntime() {
 		if (candiesStore == null) {
 			return false;
 		} else {
 			for (CandyDescriptor c : candiesStore.getCandies()) {
-				if (c.name != null && c.name.contains("j4ts")) {
+				if (c.name != null && c.name.equals("j4ts")) {
 					logger.info("found j4ts Java runtime in classpath");
 					return true;
 				}

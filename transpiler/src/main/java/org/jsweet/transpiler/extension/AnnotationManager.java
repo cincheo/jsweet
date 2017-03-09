@@ -40,7 +40,7 @@ public abstract class AnnotationManager {
 	 * 
 	 * @see AnnotationManager#manageAnnotation(Element, String)
 	 */
-	public enum Action {
+	public static enum Action {
 		/**
 		 * To be returned when a manager adds an annotation.
 		 */
