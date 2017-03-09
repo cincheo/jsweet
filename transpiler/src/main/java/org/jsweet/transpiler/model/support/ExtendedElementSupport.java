@@ -23,8 +23,10 @@ import javax.lang.model.type.TypeMirror;
 
 import org.jsweet.transpiler.extension.PrinterAdapter;
 import org.jsweet.transpiler.model.ExtendedElement;
+import org.jsweet.transpiler.util.Util;
 
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCExpression;
 
 /**
  * The root class for AST nodes that represent Java program elements that are
@@ -38,7 +40,7 @@ import com.sun.tools.javac.tree.JCTree;
  * @see PrinterAdapter
  */
 public class ExtendedElementSupport implements ExtendedElement {
-  
+
 	protected JCTree tree;
 
 	/**
@@ -78,7 +80,7 @@ public class ExtendedElementSupport implements ExtendedElement {
 	public Element getElement() {
 		return null;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		return tree.hashCode();
@@ -87,5 +89,13 @@ public class ExtendedElementSupport implements ExtendedElement {
 	@Override
 	public String toString() {
 		return tree.toString();
+	}
+
+	@Override
+	public boolean isConstant() {
+		if (!(getTree() instanceof JCExpression)) {
+			return false;
+		}
+		return Util.isConstant((JCExpression) getTree());
 	}
 }

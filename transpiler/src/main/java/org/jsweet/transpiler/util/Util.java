@@ -47,9 +47,6 @@ import javax.tools.JavaFileObject;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.JSweetContext;
-import org.jsweet.transpiler.model.ExtendedElement;
-import org.jsweet.transpiler.model.ExtendedElementFactory;
-import org.jsweet.transpiler.model.support.ExtendedElementSupport;
 
 import com.sun.source.tree.Tree.Kind;
 import com.sun.tools.javac.code.Flags;
@@ -1009,16 +1006,6 @@ public class Util {
 			}
 		}
 		return null;
-	}
-
-	/**
-	 * Tells if the extended element is a constant expression.
-	 */
-	public static boolean isConstant(ExtendedElement element) {
-		if (!(((ExtendedElementSupport) element).getTree() instanceof JCExpression)) {
-			return false;
-		}
-		return isConstant((JCExpression) ((ExtendedElementSupport) element).getTree());
 	}
 
 	/**

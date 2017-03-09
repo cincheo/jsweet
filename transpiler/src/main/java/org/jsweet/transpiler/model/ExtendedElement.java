@@ -52,4 +52,9 @@ public interface ExtendedElement {
 	 */
 	Element getElement();
 
+	/**
+	 * Tells if this extended element is a constant expression.
+	 */
+	boolean isConstant();
+
 }
