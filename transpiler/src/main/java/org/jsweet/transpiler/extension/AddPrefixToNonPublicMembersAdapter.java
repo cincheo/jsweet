@@ -6,19 +6,18 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
-import org.jsweet.transpiler.AnnotationAdapter;
 import org.jsweet.transpiler.util.Util;
 
 public class AddPrefixToNonPublicMembersAdapter extends PrinterAdapter {
 
 	public AddPrefixToNonPublicMembersAdapter(PrinterAdapter parentAdapter) {
 		super(parentAdapter);
-		context.addAnnotationAdapter(new AnnotationAdapter() {
+		context.addAnnotationManager(new AnnotationManager() {
 
 			@Override
-			public AnnotationState getAnnotationState(Element element, String annotationType) {
-				return "jsweet.lang.Name".equals(annotationType) && isNonPublicMember(element) ? AnnotationState.ADDED
-						: AnnotationState.UNCHANGED;
+			public Action manageAnnotation(Element element, String annotationType) {
+				return "jsweet.lang.Name".equals(annotationType) && isNonPublicMember(element) ? Action.ADD
+						: Action.VOID;
 			}
 
 			@Override

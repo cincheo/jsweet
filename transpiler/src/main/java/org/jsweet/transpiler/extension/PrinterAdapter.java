@@ -36,7 +36,6 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 
-import org.jsweet.transpiler.AnnotationAdapter;
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.model.CaseElement;
@@ -287,11 +286,11 @@ public class PrinterAdapter {
 	}
 
 	/**
-	 * Adds an annotation adapter that will tune (add or remove) annotations on
-	 * the AST. Lastly added adapters have precedence over firstly added ones.
+	 * Adds an annotation manager that will tune (add or remove) annotations on
+	 * the AST. Lastly added managers have precedence over firstly added ones.
 	 */
-	public final void addAnnotationAdapter(AnnotationAdapter annotationAdapter) {
-		context.addAnnotationAdapter(annotationAdapter);
+	public final void addAnnotationManager(AnnotationManager annotationManager) {
+		context.addAnnotationManager(annotationManager);
 	}
 
 	/**

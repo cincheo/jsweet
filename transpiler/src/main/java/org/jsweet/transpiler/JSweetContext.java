@@ -47,8 +47,9 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.jsweet.JSweetConfig;
-import org.jsweet.transpiler.AnnotationAdapter.AnnotationState;
 import org.jsweet.transpiler.OverloadScanner.Overload;
+import org.jsweet.transpiler.extension.AnnotationManager;
+import org.jsweet.transpiler.extension.AnnotationManager.Action;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.util.DirectedGraph;
 
@@ -107,7 +108,7 @@ public class JSweetContext extends Context {
 		}
 	}
 
-	private List<AnnotationAdapter> annotationAdapters = new ArrayList<>();
+	private List<AnnotationManager> annotationManagers = new ArrayList<>();
 	private Map<String, String> typesMapping = new HashMap<String, String>();
 	private List<BiFunction<ExtendedElement, String, Object>> complexTypesMapping = new ArrayList<>();
 	protected Map<String, String> langTypesMapping = new HashMap<String, String>();
@@ -174,11 +175,11 @@ public class JSweetContext extends Context {
 	}
 
 	/**
-	 * Adds an annotation adapter that will tune (add or remove) annotations on
-	 * the AST. Lastly added adapters have precedence over firstly added ones.
+	 * Adds an annotation manager that will tune (add or remove) annotations on
+	 * the AST. Lastly added managers have precedence over firstly added ones.
 	 */
-	public final void addAnnotationAdapter(AnnotationAdapter annotationAdapter) {
-		annotationAdapters.add(annotationAdapter);
+	public final void addAnnotationManager(AnnotationManager annotationManager) {
+		annotationManagers.add(annotationManager);
 	}
 
 	private String toRegexp(String pattern) {
@@ -889,12 +890,12 @@ public class JSweetContext extends Context {
 	 */
 	public boolean hasAnnotationType(Symbol symbol, String... annotationTypes) {
 		String[] types = annotationTypes;
-		for (AnnotationAdapter annotationIntrospector : annotationAdapters) {
+		for (AnnotationManager annotationIntrospector : annotationManagers) {
 			for (String annotationType : types) {
-				AnnotationState state = annotationIntrospector.getAnnotationState(symbol, annotationType);
-				if (state == AnnotationState.ADDED) {
+				Action state = annotationIntrospector.manageAnnotation(symbol, annotationType);
+				if (state == Action.ADD) {
 					return true;
-				} else if (state == AnnotationState.REMOVED) {
+				} else if (state == Action.REMOVE) {
 					types = ArrayUtils.removeElement(annotationTypes, annotationType);
 				}
 			}
@@ -1094,7 +1095,7 @@ public class JSweetContext extends Context {
 	 * if found on the given symbol.
 	 */
 	public String getAnnotationValue(Symbol symbol, String annotationType, String propertyName, String defaultValue) {
-		for (AnnotationAdapter annotationIntrospector : annotationAdapters) {
+		for (AnnotationManager annotationIntrospector : annotationManagers) {
 			String value = annotationIntrospector.getAnnotationValue(symbol, annotationType, propertyName,
 					defaultValue);
 			if (value != null) {
