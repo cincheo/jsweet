@@ -2081,7 +2081,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			for (JCTree member : clazz.defs) {
 				if (member instanceof JCVariableDecl) {
 					JCVariableDecl var = (JCVariableDecl) member;
-					if (!var.sym.isStatic()) {
+					if (!var.sym.isStatic() && !context.hasAnnotationType(var.sym, JSweetConfig.ANNOTATION_ERASED)) {
 						printVariableInitialization(clazz, var);
 					}
 				} else if (member instanceof JCBlock) {
@@ -3097,7 +3097,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							boolean foundInParent = false;
 							while (getScope(level++).innerClassNotStatic) {
 								parent = getParent(JCClassDecl.class, parent);
-								if (varSym.owner == parent.sym) {
+								if (parent != null && varSym.owner == parent.sym) {
 									foundInParent = true;
 									break;
 								}
@@ -3419,12 +3419,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				print("new ").print(newClass.clazz).print("(").printArgList(newClass.args).print("))");
 			}
 		} else {
-			if (context.hasAnnotationType(newClass.clazz.type.tsym, JSweetConfig.ANNOTATION_ERASED)) {
-				if (newClass.args.length() != 1) {
-					report(newClass, JSweetProblem.ERASED_CLASS_CONSTRUCTOR);
-				}
-				print("(").print(newClass.args.head).print(")");
-			} else if (context.hasAnnotationType(newClass.clazz.type.tsym, JSweetConfig.ANNOTATION_OBJECT_TYPE)) {
+			if (context.hasAnnotationType(newClass.clazz.type.tsym, JSweetConfig.ANNOTATION_OBJECT_TYPE)) {
 				print("{}");
 			} else {
 				if (!getAdapter().substituteNewClass(newClass)) {

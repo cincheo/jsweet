@@ -183,7 +183,8 @@ public class JSweetContext extends Context {
 	}
 
 	private String toRegexp(String pattern) {
-		return pattern.replace("(", "\\(").replace(")", "\\)").replace(".", "\\.").replace("*", ".*");
+		return pattern.replace("(", "\\(").replace(")", "\\)").replace(".", "\\.").replace("*", "[^.,]*")
+				.replace("**", ".*").replace("..", ".*");
 	}
 
 	private Pattern annotationWithParameterPattern = Pattern.compile("@([^(]*)\\((.*)\\)");
@@ -1478,7 +1479,7 @@ public class JSweetContext extends Context {
 	public final Set<String> getBaseThrowables() {
 		return baseThrowables;
 	}
-	
+
 	public Map<Element, String> docComments = new HashMap<>();
 
 }

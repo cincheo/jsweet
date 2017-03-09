@@ -81,11 +81,6 @@ public enum JSweetProblem {
 	 */
 	ERASED_METHOD(Severity.ERROR),
 	/**
-	 * Raised when the program misuses a class annotated with the Erased
-	 * annotation.
-	 */
-	ERASED_CLASS_CONSTRUCTOR(Severity.ERROR),
-	/**
 	 * Raised when the program tries to use the synchronized keyword.
 	 */
 	SYNCHRONIZATION(Severity.WARNING),
@@ -341,8 +336,6 @@ public enum JSweetProblem {
 			return String.format("invalid access to JDK method '%s' from JSweet", params);
 		case ERASED_METHOD:
 			return String.format("invalid access to erased method '%s'", params);
-		case ERASED_CLASS_CONSTRUCTOR:
-			return String.format("erased class constructors must take exactly one parameter", params);
 		case SYNCHRONIZATION:
 			return String.format("synchronization is ignored in JSweet", params);
 		case METHOD_CONFLICTS_FIELD:
