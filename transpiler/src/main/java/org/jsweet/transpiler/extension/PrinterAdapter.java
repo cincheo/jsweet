@@ -249,7 +249,7 @@ public class PrinterAdapter {
 	 * Example:
 	 * 
 	 * <pre>
-	 * context.addAnnotation(FunctionalInterface.class, "*.MyInterface");
+	 * context.addAnnotation(FunctionalInterface.class, "**.MyInterface");
 	 * </pre>
 	 * 
 	 * <p>
@@ -257,8 +257,26 @@ public class PrinterAdapter {
 	 * Special characters are the following:
 	 * 
 	 * <ul>
-	 * <li>*: matches any character in the signature of the AST element</li>
+	 * <li>*: matches any token/identifier in the signature of the AST element
+	 * </li>
+	 * <li>**: matches any list of tokens in signature of the AST element (same
+	 * as ..)</li>
+	 * <li>..: matches any list of tokens in signature of the AST element (same
+	 * as **)</li>
 	 * <li>!: negates the filter (first character only)</li>
+	 * </ul>
+	 * 
+	 * <p>
+	 * For example, to match:
+	 * 
+	 * <ul>
+	 * <li>all the elements in the x.y.z package: x.y.z.*</li>
+	 * <li>all the elements and subelements (fields, methods, ...) in the x.y.z
+	 * package: x.y.z.**</li>
+	 * <li>all the methods in the x.y.z.A class: x.y.z.A.*(..)</li>
+	 * <li>all the methods taking 2 arguments in the x.y.z.A class:
+	 * x.y.z.A.*(*,*)</li>
+	 * <li>all fields call aField in all the classes: **.aField</li>
 	 * </ul>
 	 * 
 	 * @param annotationType

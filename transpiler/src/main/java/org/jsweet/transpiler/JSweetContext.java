@@ -182,9 +182,50 @@ public class JSweetContext extends Context {
 		annotationManagers.add(annotationManager);
 	}
 
-	private String toRegexp(String pattern) {
-		return pattern.replace("(", "\\(").replace(")", "\\)").replace(".", "\\.").replace("*", "[^.,]*")
-				.replace("**", ".*").replace("..", ".*");
+	private static boolean testStringAt(StringBuilder sb, int i, String string) {
+		if (i < 0) {
+			return false;
+		} else if (i + string.length() > sb.length()) {
+			return false;
+		} else {
+			return sb.subSequence(i, i + string.length()).equals(string);
+		}
+	}
+
+	private static String toRegexp(String pattern) {
+		StringBuilder sb = new StringBuilder(pattern);
+		for (int i = 0; i < sb.length(); i++) {
+			char c = sb.charAt(i);
+			switch (c) {
+			case '(':
+				sb.insert(i++, '\\');
+				break;
+			case ')':
+				sb.insert(i++, '\\');
+				break;
+			case '.':
+				if (testStringAt(sb, i + 1, ".")) {
+					sb.deleteCharAt(i);
+					sb.deleteCharAt(i);
+					sb.insert(i++, ".*");
+				} else {
+					sb.insert(i++, '\\');
+				}
+				break;
+			case '*':
+				if (testStringAt(sb, i + 1, "*")) {
+					sb.deleteCharAt(i);
+					sb.deleteCharAt(i);
+					sb.insert(i++, ".*");
+				} else {
+					sb.deleteCharAt(i);
+					sb.insert(i, "[^.,]*");
+					i += 5;
+				}
+				break;
+			}
+		}
+		return sb.toString();
 	}
 
 	private Pattern annotationWithParameterPattern = Pattern.compile("@([^(]*)\\((.*)\\)");
@@ -236,8 +277,26 @@ public class JSweetContext extends Context {
 	 * Special characters are the following:
 	 * 
 	 * <ul>
-	 * <li>*: matches any character in the signature of the AST element</li>
+	 * <li>*: matches any token/identifier in the signature of the AST element
+	 * </li>
+	 * <li>**: matches any list of tokens in signature of the AST element (same
+	 * as ..)</li>
+	 * <li>..: matches any list of tokens in signature of the AST element (same
+	 * as **)</li>
 	 * <li>!: negates the filter (first character only)</li>
+	 * </ul>
+	 * 
+	 * <p>
+	 * For example, to match:
+	 * 
+	 * <ul>
+	 * <li>all the elements in the x.y.z package: x.y.z.*</li>
+	 * <li>all the elements and subelements (fields, methods, ...) in the x.y.z
+	 * package: x.y.z.**</li>
+	 * <li>all the methods in the x.y.z.A class: x.y.z.A.*(..)</li>
+	 * <li>all the methods taking 2 arguments in the x.y.z.A class:
+	 * x.y.z.A.*(*,*)</li>
+	 * <li>all fields call aField in all the classes: **.aField</li>
 	 * </ul>
 	 * 
 	 * @param annotationType
