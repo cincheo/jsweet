@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -96,6 +97,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		extTypesMapping.put(Map.class.getName(), "Object");
 		extTypesMapping.put(HashMap.class.getName(), "Object");
 		extTypesMapping.put(WeakHashMap.class.getName(), "Object");
+		extTypesMapping.put(LinkedHashMap.class.getName(), "Object");
 		extTypesMapping.put(Hashtable.class.getName(), "Object");
 		extTypesMapping.put(Comparator.class.getName(), "any");
 		extTypesMapping.put(Exception.class.getName(), "Error");
@@ -142,6 +144,25 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		if (targetClassName != null && fieldAccess != null) {
 			switch (targetClassName) {
 
+			case "java.lang.Float":
+			case "java.lang.Double":
+			case "java.lang.Integer":
+			case "java.lang.Byte":
+			case "java.lang.Long":
+			case "java.lang.Short":
+				switch (targetMethodName) {
+				case "parseInt":
+				case "parseLong":
+				case "parseShort":
+				case "parseByte":
+					print("parseInt").print("(").printArgList(invocation.getArguments()).print(")");
+					return true;
+				case "parseFloat":
+				case "parseDouble":
+					print("parseFloat").print("(").printArgList(invocation.getArguments()).print(")");
+					return true;
+				}
+				break;
 			case "java.util.Collection":
 			case "java.util.List":
 			case "java.util.ArrayList":
@@ -249,6 +270,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			case "java.util.HashMap":
 			case "java.util.Hashtable":
 			case "java.util.WeakHashMap":
+			case "java.util.LinkedHashMap":
 				switch (targetMethodName) {
 				case "put":
 					printMacroName(targetMethodName);
@@ -281,6 +303,11 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 					printMacroName(targetMethodName);
 					print("delete ").print(fieldAccess.getExpression()).print("[")
 							.print(invocation.getArguments().get(0)).print("]");
+					return true;
+				case "clear":
+					printMacroName(targetMethodName);
+					print("(obj => { for (var member in obj) delete obj[member]; })(")
+							.print(fieldAccess.getExpression()).print(")");
 					return true;
 				}
 				break;
@@ -396,6 +423,11 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 					printMacroName(targetMethodName);
 					print("(sb => sb.str = sb.str.concat(").printArgList(invocation.getArguments()).print("))(")
 							.print(fieldAccess.getExpression()).print(")");
+					return true;
+				case "setLength":
+					printMacroName(targetMethodName);
+					print("((sb, length) => sb.str = sb.str.substring(0, length))(").print(fieldAccess.getExpression())
+							.print(", ").printArgList(invocation.getArguments()).print(")");
 					return true;
 				case "toString":
 					printMacroName(targetMethodName);
@@ -618,6 +650,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		case "java.util.HashMap":
 		case "java.util.Hashtable":
 		case "java.util.WeakHashMap":
+		case "java.util.LinkedHashMap":
 			print("{}");
 			return true;
 		case "java.lang.StringBuffer":

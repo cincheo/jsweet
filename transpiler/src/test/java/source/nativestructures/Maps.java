@@ -46,6 +46,9 @@ public class Maps {
 		trace.push(Collections.singletonMap(key2(), "1").get("a"));
 		trace.push(Collections.singletonMap("b", "2").get("b"));
 
+		m.clear();
+		trace.push("[" + m.values() + "]");
+		
 		$export("trace", trace.join(","));
 
 	}

@@ -893,4 +893,11 @@ public class PrinterAdapter {
 		return util;
 	}
 
+	/**
+	 * Print the macro name in the code.
+	 */
+	protected final void printMacroName(String macroName) {
+		print("/* " + macroName + " */");
+	}
+
 }

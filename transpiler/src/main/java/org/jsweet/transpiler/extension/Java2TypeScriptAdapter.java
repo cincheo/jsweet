@@ -1158,10 +1158,6 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 		printTarget(target).print(")");
 	}
 
-	protected final void printMacroName(String macroName) {
-		print("/* " + macroName + " */");
-	}
-
 	protected final void printCastMethodInvocation(JCMethodInvocation invocation) {
 		if (getParent() instanceof JCMethodInvocation) {
 			print("(");
