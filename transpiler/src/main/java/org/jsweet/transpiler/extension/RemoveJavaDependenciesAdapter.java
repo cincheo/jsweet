@@ -306,7 +306,12 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 					return true;
 				case "clear":
 					printMacroName(targetMethodName);
-					print("(obj => { for (var member in obj) delete obj[member]; })(")
+					print("(obj => { for (let member in obj) delete obj[member]; })(")
+							.print(fieldAccess.getExpression()).print(")");
+					return true;
+				case "entrySet":
+					printMacroName(targetMethodName);
+					print("(o => { let s = []; for (let e in o) s.push({ k: e, v: o[e], getKey: function() { return this.k }, getValue: function() { return this.v } }); return s; })(")
 							.print(fieldAccess.getExpression()).print(")");
 					return true;
 				}

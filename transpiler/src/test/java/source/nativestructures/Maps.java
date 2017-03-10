@@ -5,6 +5,7 @@ import static jsweet.util.Globals.$export;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import def.js.Array;
 
@@ -29,6 +30,11 @@ public class Maps {
 		m.put(key1(), "a");
 		m.put("2", "b");
 
+		for(Entry<String, String> e : m.entrySet()) {
+			trace.push("" + e.getKey());
+			trace.push("" + e.getValue());
+		}
+		
 		trace.push("" + m.size());
 		trace.push(m.get("1"));
 
