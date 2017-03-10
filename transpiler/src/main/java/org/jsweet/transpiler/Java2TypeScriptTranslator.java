@@ -2198,7 +2198,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		for (JCTree t : clazz.getMembers()) {
 			if (t instanceof JCVariableDecl && !getScope().fieldsWithInitializers.contains(t)) {
 				JCVariableDecl field = (JCVariableDecl) t;
-				if (!field.sym.isStatic()) {
+				if (!field.sym.isStatic() && !context.hasAnnotationType(field.sym, JSweetConfig.ANNOTATION_ERASED)) {
 					String name = getAdapter().getIdentifier(field.sym);
 					if (context.getFieldNameMapping(field.sym) != null) {
 						name = context.getFieldNameMapping(field.sym);
@@ -2209,6 +2209,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 		}
 		for (JCVariableDecl field : getScope().fieldsWithInitializers) {
+			if (context.hasAnnotationType(field.sym, JSweetConfig.ANNOTATION_ERASED)) {
+				continue;
+			}
 			String name = getAdapter().getIdentifier(field.sym);
 			if (context.getFieldNameMapping(field.sym) != null) {
 				name = context.getFieldNameMapping(field.sym);
