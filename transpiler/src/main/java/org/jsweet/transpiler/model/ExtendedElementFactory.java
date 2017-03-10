@@ -20,7 +20,7 @@ package org.jsweet.transpiler.model;
 
 import org.jsweet.transpiler.model.support.CaseElementSupport;
 import org.jsweet.transpiler.model.support.ExtendedElementSupport;
-import org.jsweet.transpiler.model.support.FieldAccessElementSupport;
+import org.jsweet.transpiler.model.support.SelectElementSupport;
 import org.jsweet.transpiler.model.support.IdentifierElementSupport;
 import org.jsweet.transpiler.model.support.LiteralElementSupport;
 import org.jsweet.transpiler.model.support.MethodInvocationElementSupport;
@@ -57,7 +57,7 @@ public class ExtendedElementFactory {
 		case APPLY:
 			return new MethodInvocationElementSupport((JCMethodInvocation) tree);
 		case SELECT:
-			return new FieldAccessElementSupport((JCFieldAccess) tree);
+			return new SelectElementSupport((JCFieldAccess) tree);
 		case NEWCLASS:
 			return new NewClassElementSupport((JCNewClass) tree);
 		case IDENT:

@@ -40,13 +40,13 @@ import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.model.CaseElement;
 import org.jsweet.transpiler.model.ExtendedElement;
-import org.jsweet.transpiler.model.FieldAccessElement;
+import org.jsweet.transpiler.model.SelectElement;
 import org.jsweet.transpiler.model.IdentifierElement;
 import org.jsweet.transpiler.model.MethodInvocationElement;
 import org.jsweet.transpiler.model.NewClassElement;
 import org.jsweet.transpiler.model.Util;
 import org.jsweet.transpiler.model.support.ExtendedElementSupport;
-import org.jsweet.transpiler.model.support.FieldAccessElementSupport;
+import org.jsweet.transpiler.model.support.SelectElementSupport;
 import org.jsweet.transpiler.model.support.MethodInvocationElementSupport;
 import org.jsweet.transpiler.model.support.NewClassElementSupport;
 import org.jsweet.transpiler.model.support.UtilSupport;
@@ -608,34 +608,16 @@ public class PrinterAdapter {
 	}
 
 	/**
-	 * Substitutes the value of a <em>field access</em> expression.
+	 * Substitutes the value of a <em>select</em> expression (of the form
+	 * <code>target.name</code>).
 	 * 
-	 * @param fieldAccess
-	 *            the field access being printed
+	 * @param select
+	 *            the select being printed
 	 * @return true if substituted
 	 */
-	public final boolean substituteFieldAccess(JCFieldAccess fieldAccess) {
-		return substituteFieldAccess(new FieldAccessElementSupport(fieldAccess), fieldAccess.selected.type.tsym,
-				fieldAccess.selected.type.tsym.getQualifiedName().toString(), fieldAccess.name.toString());
-	}
-
-	/**
-	 * Substitutes the value of a <em>field access</em> expression.
-	 * 
-	 * @param fieldAccess
-	 *            the field access expression
-	 * @param targetType
-	 *            the target type of the field access
-	 * @param targetClassName
-	 *            the fully qualified name of the target type
-	 * @param targetFieldName
-	 *            the accessed field name
-	 * @return true if substituted
-	 */
-	public boolean substituteFieldAccess(FieldAccessElement fieldAccess, Element targetType, String targetClassName,
-			String targetFieldName) {
-		return parentAdapter == null ? false
-				: parentAdapter.substituteFieldAccess(fieldAccess, targetType, targetClassName, targetFieldName);
+	public boolean substituteSelect(SelectElement select) {
+		return parentAdapter == null ? false : parentAdapter.substituteSelect(select);
+		
 	}
 
 	/**
@@ -697,10 +679,10 @@ public class PrinterAdapter {
 			}
 		}
 		return substituteMethodInvocation(new MethodInvocationElementSupport(invocation),
-				new FieldAccessElementSupport(fieldAccess), targetType, targetClassName, targetMethodName);
+				new SelectElementSupport(fieldAccess), targetType, targetClassName, targetMethodName);
 	}
 
-	public boolean substituteMethodInvocation(MethodInvocationElement invocation, FieldAccessElement fieldAccess,
+	public boolean substituteMethodInvocation(MethodInvocationElement invocation, SelectElement fieldAccess,
 			Element targetType, String targetClassName, String targetMethodName) {
 		return parentAdapter == null ? false
 				: parentAdapter.substituteMethodInvocation(invocation, fieldAccess, targetType, targetClassName,

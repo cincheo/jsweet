@@ -82,12 +82,12 @@ import org.jsweet.transpiler.JSweetTranspiler;
 import org.jsweet.transpiler.Java2TypeScriptTranslator;
 import org.jsweet.transpiler.TypeChecker;
 import org.jsweet.transpiler.model.ExtendedElement;
-import org.jsweet.transpiler.model.FieldAccessElement;
+import org.jsweet.transpiler.model.SelectElement;
 import org.jsweet.transpiler.model.IdentifierElement;
 import org.jsweet.transpiler.model.MethodInvocationElement;
 import org.jsweet.transpiler.model.NewClassElement;
 import org.jsweet.transpiler.model.support.ExtendedElementSupport;
-import org.jsweet.transpiler.model.support.FieldAccessElementSupport;
+import org.jsweet.transpiler.model.support.SelectElementSupport;
 import org.jsweet.transpiler.model.support.IdentifierElementSupport;
 import org.jsweet.transpiler.model.support.MethodInvocationElementSupport;
 import org.jsweet.transpiler.model.support.NewClassElementSupport;
@@ -328,11 +328,11 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 
 	@Override
 	public boolean substituteMethodInvocation(MethodInvocationElement invocationElement,
-			FieldAccessElement fieldAccessElement, Element targetType, String targetClassName,
+			SelectElement fieldAccessElement, Element targetType, String targetClassName,
 			String targetMethodName) {
 
 		JCMethodInvocation invocation = ((MethodInvocationElementSupport) invocationElement).getTree();
-		JCFieldAccess fieldAccess = ((FieldAccessElementSupport) fieldAccessElement).getTree();
+		JCFieldAccess fieldAccess = ((SelectElementSupport) fieldAccessElement).getTree();
 
 		if ("System.out.println".equals(invocation.meth.toString())) {
 			getPrinter().print("console.info(").print(invocation.args.head).print(")");
@@ -1169,9 +1169,10 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 	}
 
 	@Override
-	public boolean substituteFieldAccess(FieldAccessElement fieldAccessElement, Element targetType,
-			String targetClassName, String targetFieldName) {
-		JCFieldAccess fieldAccess = ((FieldAccessElementSupport) fieldAccessElement).getTree();
+	public boolean substituteSelect(SelectElement select) {
+		JCFieldAccess fieldAccess = ((SelectElementSupport) select).getTree();
+		String targetFieldName = select.getName();
+		Element targetType = select.getTargetElement();
 		// translate tuple accesses
 		if (targetFieldName.startsWith("$") && targetFieldName.length() > 1
 				&& Character.isDigit(targetFieldName.charAt(1))) {
@@ -1227,7 +1228,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 			delegateToEmulLayer(accessedType, fieldAccess);
 			return true;
 		}
-		return super.substituteFieldAccess(fieldAccessElement, targetType, targetClassName, targetFieldName);
+		return super.substituteSelect(select);
 	}
 
 	protected final void delegateToEmulLayer(String targetClassName, JCFieldAccess fieldAccess) {

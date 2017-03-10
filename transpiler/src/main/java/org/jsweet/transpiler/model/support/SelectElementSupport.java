@@ -22,7 +22,7 @@ import javax.lang.model.element.Element;
 
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.ExtendedElementFactory;
-import org.jsweet.transpiler.model.FieldAccessElement;
+import org.jsweet.transpiler.model.SelectElement;
 
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 
@@ -31,9 +31,9 @@ import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
  * 
  * @author Renaud Pawlak
  */
-public class FieldAccessElementSupport extends ExtendedElementSupport implements FieldAccessElement {
+public class SelectElementSupport extends ExtendedElementSupport implements SelectElement {
 
-	public FieldAccessElementSupport(JCFieldAccess tree) {
+	public SelectElementSupport(JCFieldAccess tree) {
 		super(tree);
 	}
 
@@ -42,7 +42,7 @@ public class FieldAccessElementSupport extends ExtendedElementSupport implements
 		return (JCFieldAccess) tree;
 	}
 
-	public ExtendedElement getExpression() {
+	public ExtendedElement getTargetExpression() {
 		return ExtendedElementFactory.INSTANCE.create(getTree().selected);
 	}
 
@@ -50,5 +50,15 @@ public class FieldAccessElementSupport extends ExtendedElementSupport implements
 	public Element getElement() {
 		return getTree().sym;
 	}
-	
+
+	@Override
+	public String getName() {
+		return getTree().name.toString();
+	}
+
+	@Override
+	public Element getTargetElement() {
+		return getTree().selected.type.tsym;
+	}
+
 }

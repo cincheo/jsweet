@@ -18,19 +18,30 @@
  */
 package org.jsweet.transpiler.model;
 
+import javax.lang.model.element.Element;
+
 /**
- * An AST node for a Java field access expression (of the form
- * <code>expr.f</code>).
+ * An AST node for a Java select (of the form <code>target.name</code>).
  * 
  * @author Renaud Pawlak
  */
-public interface FieldAccessElement extends ExtendedElement {
+public interface SelectElement extends ExtendedElement {
 
 	/**
-	 * Gets the expression of the field access (the part before the dot).
+	 * Gets the target expression of the select (the part before the dot).
 	 * 
 	 * @return the part before the dot
 	 */
-	ExtendedElement getExpression();
+	ExtendedElement getTargetExpression();
 
+	/**
+	 * Gets the name of the select (the part after the dot).
+	 */
+	String getName();
+
+	/**
+	 * Returns the target element.
+	 */
+	Element getTargetElement();
+	
 }

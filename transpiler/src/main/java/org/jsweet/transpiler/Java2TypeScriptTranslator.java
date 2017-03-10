@@ -59,6 +59,7 @@ import org.jsweet.transpiler.model.ExtendedElementFactory;
 import org.jsweet.transpiler.model.support.CaseElementSupport;
 import org.jsweet.transpiler.model.support.ExtendedElementSupport;
 import org.jsweet.transpiler.model.support.IdentifierElementSupport;
+import org.jsweet.transpiler.model.support.SelectElementSupport;
 import org.jsweet.transpiler.util.AbstractTreePrinter;
 import org.jsweet.transpiler.util.Util;
 import org.jsweet.transpiler.util.VariableKind;
@@ -2651,7 +2652,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	@Override
 	public void visitSelect(JCFieldAccess fieldAccess) {
-		if (!getAdapter().substituteFieldAccess(fieldAccess)) {
+		if (!getAdapter().substituteSelect(new SelectElementSupport(fieldAccess))) {
 			if ("class".equals(fieldAccess.name.toString())) {
 				if (fieldAccess.type instanceof Type.ClassType
 						&& context.isInterface(((Type.ClassType) fieldAccess.type).typarams_field.head.tsym)) {
