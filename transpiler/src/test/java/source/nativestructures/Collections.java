@@ -11,6 +11,7 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.Stack;
 import java.util.Vector;
 
 import def.js.Array;
@@ -190,6 +191,19 @@ public class Collections implements Cloneable, Serializable {
 		
 		trace.push("[" + array1 + "]");
 
+		Stack<String> stack = new Stack<>();
+		stack.push("aa");
+		stack.push("bb");
+		stack.push("cc");
+		
+		trace.push("[" + stack + "]");
+
+		trace.push(stack.peek());
+		
+		stack.pop();
+		
+		trace.push("[" + stack + "]");
+		
 		$export("trace", trace.join(","));
 
 	}

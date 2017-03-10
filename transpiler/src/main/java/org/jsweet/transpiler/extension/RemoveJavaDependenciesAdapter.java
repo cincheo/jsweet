@@ -35,6 +35,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 import java.util.TimeZone;
 import java.util.TreeSet;
 import java.util.Vector;
@@ -86,6 +87,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		extTypesMapping.put(ArrayList.class.getName(), "Array");
 		extTypesMapping.put(Collection.class.getName(), "Array");
 		extTypesMapping.put(Set.class.getName(), "Array");
+		extTypesMapping.put(Stack.class.getName(), "Array");
 		extTypesMapping.put(HashSet.class.getName(), "Array");
 		extTypesMapping.put(TreeSet.class.getName(), "Array");
 		extTypesMapping.put(Vector.class.getName(), "Array");
@@ -137,21 +139,20 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 	public boolean substituteMethodInvocation(MethodInvocationElement invocation, FieldAccessElement fieldAccess,
 			Element targetType, String targetClassName, String targetMethodName) {
 
-		// JCMethodInvocation invocation = invocationElement.getTree();
-		// JCFieldAccess fieldAccess = fieldAccessElement.getTree();
-
 		if (targetClassName != null && fieldAccess != null) {
 			switch (targetClassName) {
 
 			case "java.util.Collection":
 			case "java.util.List":
 			case "java.util.ArrayList":
+			case "java.util.Stack":
 			case "java.util.Vector":
 			case "java.util.Set":
 			case "java.util.HashSet":
 			case "java.util.TreeSet":
 				switch (targetMethodName) {
 				case "add":
+				case "push":
 					printMacroName(targetMethodName);
 					switch (targetClassName) {
 					case "java.util.Set":
@@ -174,6 +175,13 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 					printMacroName(targetMethodName);
 					print("((l1, l2) => l1.push.apply(l1, l2))(").print(fieldAccess.getExpression()).print(", ")
 							.printArgList(invocation.getArguments()).print(")");
+					return true;
+				case "pop":
+					print(fieldAccess.getExpression()).print(".pop(").printArgList(invocation.getArguments())
+							.print(")");
+					return true;
+				case "peek":
+					print("((s) => { return s[s.length-1]; })(").print(fieldAccess.getExpression()).print(")");
 					return true;
 				case "remove":
 					printMacroName(targetMethodName);
@@ -595,6 +603,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		switch (className) {
 		case "java.util.ArrayList":
 		case "java.util.Vector":
+		case "java.util.Stack":
 			if (newClass.getArgumentCount() == 0) {
 				print("[]");
 			} else {
