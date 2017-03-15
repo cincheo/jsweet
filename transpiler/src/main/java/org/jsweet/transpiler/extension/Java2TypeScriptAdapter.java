@@ -375,9 +375,9 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 			}
 		}
 
-		if (targetType != null
-				&& targetType.getKind() == ElementKind.ENUM
-				&& !"this".equals(invocationElement.getTargetExpression().toString())) {
+		if (targetType != null && targetType.getKind() == ElementKind.ENUM
+				&& (invocationElement.getTargetExpression() != null
+						&& !"this".equals(invocationElement.getTargetExpression().toString()))) {
 			// TODO: enum type simple name will not be valid when uses as fully
 			// qualified name (not imported)
 			String relTarget = context.useModules ? targetType.getSimpleName().toString()
@@ -501,7 +501,8 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 									args.head.toString());
 						}
 						print(": ");
-						getPrinter().print(args.tail.head);;
+						getPrinter().print(args.tail.head);
+						;
 						args = args.tail.tail;
 						if (args != null && args.head != null) {
 							print(",");
