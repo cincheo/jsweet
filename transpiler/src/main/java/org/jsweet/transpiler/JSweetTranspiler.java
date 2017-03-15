@@ -1814,4 +1814,12 @@ public class JSweetTranspiler implements JSweetOptions {
 		this.ignoreJavaErrors = ignoreJavaErrors;
 	}
 
+	public JSweetContext getContext() {
+		return context;
+	}
+
+	public Options getOptions() {
+		return options;
+	}
+
 }
