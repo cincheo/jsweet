@@ -18,11 +18,19 @@
  */
 package org.jsweet.transpiler.model;
 
+import javax.lang.model.element.Element;
+
 /**
  * An AST node for a Java identifier.
  * 
  * @author Renaud Pawlak
  */
 public interface IdentifierElement extends ExtendedElement {
+
+	/**
+	 * Gets the element referenced by this identifier, if any (may be null
+	 * if no referenced element).
+	 */
+	Element getReferencedElement();
 
 }

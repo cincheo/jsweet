@@ -43,5 +43,11 @@ public interface SelectElement extends ExtendedElement {
 	 * Returns the target element.
 	 */
 	Element getTargetElement();
-	
+
+	/**
+	 * Gets the element referenced by this select, if any (may be null if no
+	 * referenced element).
+	 */
+	Element getReferencedElement();
+
 }

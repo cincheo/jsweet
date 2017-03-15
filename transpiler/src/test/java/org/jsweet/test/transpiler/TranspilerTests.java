@@ -350,7 +350,7 @@ public class TranspilerTests extends AbstractTest {
 			public Java2TypeScriptAdapter createAdapter(JSweetContext context) {
 				return new Java2TypeScriptAdapter(super.createAdapter(context)) {
 					{
-						context.addAnnotation("@Erased", "*.testMethod(*)", "source.transpiler.AClass",
+						context.addAnnotation("@Erased", "**.testMethod(..)", "source.transpiler.AClass",
 								"source.transpiler.p");
 					}
 				};

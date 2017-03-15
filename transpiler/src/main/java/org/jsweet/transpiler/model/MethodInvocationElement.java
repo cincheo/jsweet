@@ -27,8 +27,23 @@ import javax.lang.model.element.ExecutableElement;
  */
 public interface MethodInvocationElement extends InvocationElement {
 
+	/**
+	 * The invoked method name.
+	 */
 	String getMethodName();
 
+	/**
+	 * The invoked method as an element, if accessible.
+	 */
 	ExecutableElement getMethod();
+
+	/**
+	 * The target expression of the invocation if any, null otherwise.
+	 * 
+	 * @return for an invocation such as <code>target.name(..)</code>, returns
+	 *         <code>target</code>, and returns null when no target is specified
+	 *         (<code>target.name(..)</code>).
+	 */
+	ExtendedElement getTargetExpression();
 
 }

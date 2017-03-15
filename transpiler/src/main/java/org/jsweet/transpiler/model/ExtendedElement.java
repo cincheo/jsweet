@@ -24,12 +24,13 @@ import javax.lang.model.type.TypeMirror;
 import org.jsweet.transpiler.extension.PrinterAdapter;
 
 /**
- * The root class for AST nodes that represent Java program elements that are
- * not accessible through the {@link Element} API.
+ * The root class for AST nodes that represent Java program elements
+ * (expressions and statements) that are not accessible through the regular
+ * {@link Element} API.
  * 
  * <p>
  * This class wraps Javac tree nodes to allow the JSweet printer adapters to use
- * an API with is independent from the Javac API.
+ * an API that is independent from the Javac API.
  * 
  * @author Renaud Pawlak
  * @see PrinterAdapter
@@ -38,23 +39,34 @@ public interface ExtendedElement {
 
 	/**
 	 * Gets the type that corresponds to this element, if any.
+	 * 
+	 * <p>
+	 * Not all elements have a type. For instance, statements such as if, case,
+	 * for, and so on do not have a type, while expressions have a type.
+	 * 
+	 * <p>
+	 * To return the corresponding element rather than the type mirror, use
+	 * {@link #getTypeAsElement()} instead.
+	 * 
+	 * see {@link #getTypeAsElement()}
 	 */
-	TypeMirror asType();
+	TypeMirror getType();
 
 	/**
-	 * Gets this element's type (if any), as a standard element.
+	 * Gets the standard element that corresponds to the type (if any).
+	 * 
+	 * @see #getType()
 	 */
-	Element getTypeElement();
-
-	/**
-	 * Gets the element attached to this extended element, if any (may be null
-	 * if no attached element).
-	 */
-	Element getElement();
+	Element getTypeAsElement();
 
 	/**
 	 * Tells if this extended element is a constant expression.
 	 */
 	boolean isConstant();
+
+	/**
+	 * Tells if this extended element is a string literal.
+	 */
+	boolean isStringLiteral();
 
 }

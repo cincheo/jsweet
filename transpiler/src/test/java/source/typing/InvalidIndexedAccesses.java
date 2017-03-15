@@ -29,6 +29,7 @@ public class InvalidIndexedAccesses {
 		// ok
 		bar.dataset.$set("progress", "0");
 
+		bar.dataset.$get("");
 		// error: the value should be a string
 		bar.dataset.$set("progress", 0);
 	}

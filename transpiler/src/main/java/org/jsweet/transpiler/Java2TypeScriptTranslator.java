@@ -59,6 +59,7 @@ import org.jsweet.transpiler.model.ExtendedElementFactory;
 import org.jsweet.transpiler.model.support.CaseElementSupport;
 import org.jsweet.transpiler.model.support.ExtendedElementSupport;
 import org.jsweet.transpiler.model.support.IdentifierElementSupport;
+import org.jsweet.transpiler.model.support.MethodInvocationElementSupport;
 import org.jsweet.transpiler.model.support.SelectElementSupport;
 import org.jsweet.transpiler.util.AbstractTreePrinter;
 import org.jsweet.transpiler.util.Util;
@@ -2760,7 +2761,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	@Override
 	public void visitApply(JCMethodInvocation inv) {
-		if (!getAdapter().substituteMethodInvocation(inv)) {
+		if (!getAdapter().substituteMethodInvocation(new MethodInvocationElementSupport(inv))) {
 			String meth = inv.meth.toString();
 			String methName = meth.substring(meth.lastIndexOf('.') + 1);
 			if (methName.equals("super") && getScope().removedSuperclass) {
@@ -2948,7 +2949,27 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						}
 						if (methSym != null && inv.meth instanceof JCFieldAccess) {
 							JCExpression selected = ((JCFieldAccess) inv.meth).selected;
-							print(selected).print(".");
+							if (!GLOBALS_CLASS_NAME.equals(selected.type.tsym.getSimpleName().toString())) {
+								print(selected).print(".");
+							} else {
+								if (context.useModules) {
+									if (!((ClassSymbol) selected.type.tsym).sourcefile.getName()
+											.equals(getCompilationUnit().sourcefile.getName())) {
+										// TODO: when using several qualified
+										// Globals classes, we
+										// need to disambiguate (use qualified
+										// name with
+										// underscores)
+										print(GLOBALS_CLASS_NAME).print(".");
+									}
+								}
+
+								Map<String, VarSymbol> vars = new HashMap<>();
+								Util.fillAllVariablesInScope(vars, getStack(), inv, getParent(JCMethodDecl.class));
+								if (vars.containsKey(methName)) {
+									report(inv, JSweetProblem.HIDDEN_INVOCATION, methName);
+								}
+							}
 						}
 						if (methSym != null) {
 							if (context.isInvalidOverload(methSym) && !methSym.getParameters().isEmpty()

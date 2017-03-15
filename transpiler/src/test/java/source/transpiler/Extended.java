@@ -9,6 +9,7 @@ public class Extended extends def.js.Object {
 
 	public static void main(String[] args) {
 		Extended extended = new Extended();
+		// JSweet extension erases all these elements
 		assert extended.$get("testMethod") == null;
 		assert eval("source.transpiler.AClass") == null;
 		assert eval("source.transpiler.p") == null;

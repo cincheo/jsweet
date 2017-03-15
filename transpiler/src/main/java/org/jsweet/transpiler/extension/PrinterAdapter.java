@@ -40,13 +40,12 @@ import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.model.CaseElement;
 import org.jsweet.transpiler.model.ExtendedElement;
-import org.jsweet.transpiler.model.SelectElement;
 import org.jsweet.transpiler.model.IdentifierElement;
 import org.jsweet.transpiler.model.MethodInvocationElement;
 import org.jsweet.transpiler.model.NewClassElement;
+import org.jsweet.transpiler.model.SelectElement;
 import org.jsweet.transpiler.model.Util;
 import org.jsweet.transpiler.model.support.ExtendedElementSupport;
-import org.jsweet.transpiler.model.support.SelectElementSupport;
 import org.jsweet.transpiler.model.support.MethodInvocationElementSupport;
 import org.jsweet.transpiler.model.support.NewClassElementSupport;
 import org.jsweet.transpiler.model.support.UtilSupport;
@@ -64,11 +63,9 @@ import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCEnhancedForLoop;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
-import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCImport;
 import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
-import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.JCTree.JCTypeCast;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
@@ -312,6 +309,30 @@ public class PrinterAdapter {
 	}
 
 	/**
+	 * Returns true if the given element is annotated with one of the given
+	 * annotation types.
+	 */
+	public boolean hasAnnotationType(Element element, String... annotationTypes) {
+		return context.hasAnnotationType((Symbol) element, annotationTypes);
+	}
+
+	/**
+	 * Gets the first value of the 'value' property for the given annotation
+	 * type if found on the given symbol.
+	 */
+	public final String getAnnotationValue(Element element, String annotationType, String defaultValue) {
+		return getAnnotationValue((Symbol) element, annotationType, null, defaultValue);
+	}
+
+	/**
+	 * Gets the first value of the given property for the given annotation type
+	 * if found on the given symbol.
+	 */
+	public String getAnnotationValue(Element element, String annotationType, String propertyName, String defaultValue) {
+		return context.getAnnotationValue((Symbol) element, annotationType, propertyName, defaultValue);
+	}
+
+	/**
 	 * Adds an annotation on the AST through global filters.
 	 * 
 	 * <p>
@@ -352,7 +373,7 @@ public class PrinterAdapter {
 	 * Prints a generic element by delegating to the printer.
 	 */
 	public PrinterAdapter print(ExtendedElement element) {
-		printer.print(element);
+		printer.print(((ExtendedElementSupport) element).getTree());
 		return this;
 	}
 
@@ -531,8 +552,8 @@ public class PrinterAdapter {
 	 * @param params
 	 *            the parameters if any
 	 */
-	protected void report(JCTree tree, JSweetProblem problem, Object... params) {
-		printer.report(tree, problem, params);
+	protected void report(ExtendedElement element, JSweetProblem problem, Object... params) {
+		printer.report(((ExtendedElementSupport) element).getTree(), problem, params);
 	}
 
 	/**
@@ -547,8 +568,9 @@ public class PrinterAdapter {
 	 * @param params
 	 *            the parameters if any
 	 */
-	protected void report(JCTree tree, com.sun.tools.javac.util.Name name, JSweetProblem problem, Object... params) {
-		printer.report(tree, name, problem, params);
+	protected void report(ExtendedElement element, Name name, JSweetProblem problem, Object... params) {
+		printer.report(((ExtendedElementSupport) element).getTree(), (com.sun.tools.javac.util.Name) name, problem,
+				params);
 	}
 
 	/**
@@ -617,7 +639,7 @@ public class PrinterAdapter {
 	 */
 	public boolean substituteSelect(SelectElement select) {
 		return parentAdapter == null ? false : parentAdapter.substituteSelect(select);
-		
+
 	}
 
 	/**
@@ -660,33 +682,32 @@ public class PrinterAdapter {
 	 *            the invocation being printed
 	 * @return true if substituted
 	 */
-	final public boolean substituteMethodInvocation(JCMethodInvocation invocation) {
-		JCFieldAccess fieldAccess = null;
-		Element targetType = null;
-		String targetClassName = null;
-		String targetMethodName = null;
-		if (invocation.getMethodSelect() instanceof JCFieldAccess) {
-			fieldAccess = (JCFieldAccess) invocation.getMethodSelect();
-			targetType = fieldAccess.selected.type.tsym;
-			targetClassName = ((Symbol) targetType).getQualifiedName().toString();
-			targetMethodName = fieldAccess.name.toString();
-		} else {
-			targetMethodName = invocation.getMethodSelect().toString();
-			if (getPrinter().getStaticImports().containsKey(targetMethodName)) {
-				JCImport i = getPrinter().getStaticImports().get(targetMethodName);
-				targetType = ((JCFieldAccess) i.qualid).selected.type.tsym;
-				targetClassName = ((Symbol) targetType).getQualifiedName().toString();
-			}
-		}
-		return substituteMethodInvocation(new MethodInvocationElementSupport(invocation),
-				new SelectElementSupport(fieldAccess), targetType, targetClassName, targetMethodName);
-	}
+//	final public boolean substituteMethodInvocation(JCMethodInvocation invocation) {
+//		JCFieldAccess fieldAccess = null;
+//		Element targetType = null;
+//		String targetClassName = null;
+//		String targetMethodName = null;
+//		if (invocation.getMethodSelect() instanceof JCFieldAccess) {
+//			fieldAccess = (JCFieldAccess) invocation.getMethodSelect();
+//			targetType = fieldAccess.selected.type.tsym;
+//			targetClassName = ((Symbol) targetType).getQualifiedName().toString();
+//			targetMethodName = fieldAccess.name.toString();
+//		} else {
+//			targetMethodName = invocation.getMethodSelect().toString();
+//			System.out.println(((JCIdent) invocation.meth).sym.getEnclosingElement());
+//			if (getPrinter().getStaticImports().containsKey(targetMethodName)) {
+//				JCImport i = getPrinter().getStaticImports().get(targetMethodName);
+//				targetType = ((JCFieldAccess) i.qualid).selected.type.tsym;
+//				targetClassName = ((Symbol) targetType).getQualifiedName().toString();
+//			}
+//		}
+//		return substituteMethodInvocation(new MethodInvocationElementSupport(invocation),
+//				new SelectElementSupport(fieldAccess), targetType, targetClassName, targetMethodName);
+//	}
 
-	public boolean substituteMethodInvocation(MethodInvocationElement invocation, SelectElement fieldAccess,
-			Element targetType, String targetClassName, String targetMethodName) {
+	public boolean substituteMethodInvocation(MethodInvocationElement invocation) {
 		return parentAdapter == null ? false
-				: parentAdapter.substituteMethodInvocation(invocation, fieldAccess, targetType, targetClassName,
-						targetMethodName);
+				: parentAdapter.substituteMethodInvocation(invocation);
 	}
 
 	/**
@@ -854,7 +875,7 @@ public class PrinterAdapter {
 	 * 
 	 * @see TypeMirror
 	 * @see Element#asType()
-	 * @see ExtendedElement#asType()
+	 * @see ExtendedElement#getType()
 	 */
 	public Types types() {
 		if (types == null) {

@@ -26,7 +26,6 @@ import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.TranspilationHandler;
 import org.jsweet.transpiler.TypeChecker;
 import org.jsweet.transpiler.extension.PrinterAdapter;
-import org.jsweet.transpiler.model.ExtendedElement;
 
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Type;
@@ -119,13 +118,13 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 		return this;
 	}
 
-	/**
-	 * Print a given AST.
-	 */
-	public AbstractTreePrinter print(ExtendedElement element) {
-		scan(element);
-		return this;
-	}
+//	/**
+//	 * Print a given AST.
+//	 */
+//	public AbstractTreePrinter print(ExtendedElement element) {
+//		scan(element);
+//		return this;
+//	}
 	
 	/**
 	 * Enters the given tree (se {@link #scan(JCTree)}.

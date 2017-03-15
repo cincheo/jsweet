@@ -47,7 +47,7 @@ public class SelectElementSupport extends ExtendedElementSupport implements Sele
 	}
 
 	@Override
-	public Element getElement() {
+	public Element getReferencedElement() {
 		return getTree().sym;
 	}
 

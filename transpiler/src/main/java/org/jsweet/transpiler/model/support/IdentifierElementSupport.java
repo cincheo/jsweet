@@ -41,7 +41,7 @@ public class IdentifierElementSupport extends ExtendedElementSupport implements 
 	}
 	
 	@Override
-	public Element getElement() {
+	public Element getReferencedElement() {
 		return getTree().sym;
 	}
 

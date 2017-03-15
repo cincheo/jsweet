@@ -61,8 +61,8 @@ public class NewClassElementSupport extends ExtendedElementSupport implements Ne
 	}
 
 	@Override
-	public ExtendedElement getFirstArgument() {
-		return ExtendedElementFactory.INSTANCE.create(getTree().args.head);
+	public ExtendedElement getArgument(int i) {
+		return ExtendedElementFactory.INSTANCE.create(getTree().args.get(i));
 	}
 
 	@Override

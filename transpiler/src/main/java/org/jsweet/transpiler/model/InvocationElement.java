@@ -10,10 +10,10 @@ public interface InvocationElement extends ExtendedElement {
 	List<ExtendedElement> getArguments();
 
 	/**
-	 * Gets first argument that is passed to the invoked element.
+	 * Gets the ith argument that is passed to the invoked element.
 	 */
-	ExtendedElement getFirstArgument();
-
+	ExtendedElement getArgument(int i);
+	
 	/**
 	 * Gets the arguments that are passed to the invoked element, omitting the
 	 * first argument.

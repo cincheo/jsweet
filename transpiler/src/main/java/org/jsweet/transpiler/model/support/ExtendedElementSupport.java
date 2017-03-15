@@ -25,6 +25,7 @@ import org.jsweet.transpiler.extension.PrinterAdapter;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.util.Util;
 
+import com.sun.source.tree.Tree.Kind;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 
@@ -61,24 +62,19 @@ public class ExtendedElementSupport implements ExtendedElement {
 	/**
 	 * Gets the type that corresponds to this element, if any.
 	 */
-	public TypeMirror asType() {
+	public TypeMirror getType() {
 		return tree.type;
 	}
 
 	/**
 	 * Gets this element's type, as a standard element.
 	 */
-	public Element getTypeElement() {
+	public Element getTypeAsElement() {
 		if (tree.type == null) {
 			return null;
 		} else {
 			return tree.type.tsym;
 		}
-	}
-
-	@Override
-	public Element getElement() {
-		return null;
 	}
 
 	@Override
@@ -97,5 +93,10 @@ public class ExtendedElementSupport implements ExtendedElement {
 			return false;
 		}
 		return Util.isConstant((JCExpression) getTree());
+	}
+
+	@Override
+	public boolean isStringLiteral() {
+		return getTree().getKind() == Kind.STRING_LITERAL;
 	}
 }

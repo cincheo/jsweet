@@ -24,7 +24,7 @@ public class UtilSupport implements Util {
 				return ((TypeElement) e).getQualifiedName().toString();
 			}
 		}
-		return null;
+		return type.toString();
 	}
 
 	@Override

@@ -27,7 +27,7 @@ class TestAdapter extends Java2TypeScriptAdapter {
 
 	public TestAdapter(JSweetContext context) {
 		super(context);
-		context.addAnnotation("@Erased", "*.toBeErased(*)");
+		context.addAnnotation("@Erased", "**.toBeErased(..)");
 	}
 
 }

@@ -64,8 +64,8 @@ public class MethodInvocationElementSupport extends ExtendedElementSupport imple
 	}
 
 	@Override
-	public ExtendedElement getFirstArgument() {
-		return ExtendedElementFactory.INSTANCE.create(getTree().args.head);
+	public ExtendedElement getArgument(int i) {
+		return ExtendedElementFactory.INSTANCE.create(getTree().args.get(i));
 	}
 
 	@Override
@@ -87,6 +87,16 @@ public class MethodInvocationElementSupport extends ExtendedElementSupport imple
 			return (ExecutableElement) ((JCIdent) tree).sym;
 		} else if (tree instanceof JCFieldAccess) {
 			return (ExecutableElement) ((JCFieldAccess) tree).sym;
+		} else {
+			return null;
+		}
+	}
+
+	@Override
+	public ExtendedElement getTargetExpression() {
+		JCTree tree = getTree().meth;
+		if (tree instanceof JCFieldAccess) {
+			return ExtendedElementFactory.INSTANCE.create(((JCFieldAccess) tree).selected);
 		} else {
 			return null;
 		}
