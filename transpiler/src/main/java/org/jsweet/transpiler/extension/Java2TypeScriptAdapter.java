@@ -73,6 +73,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
@@ -88,12 +89,12 @@ import org.jsweet.transpiler.model.IdentifierElement;
 import org.jsweet.transpiler.model.InvocationElement;
 import org.jsweet.transpiler.model.MethodInvocationElement;
 import org.jsweet.transpiler.model.NewClassElement;
-import org.jsweet.transpiler.model.SelectElement;
+import org.jsweet.transpiler.model.VariableAccessElement;
 import org.jsweet.transpiler.model.support.ExtendedElementSupport;
 import org.jsweet.transpiler.model.support.IdentifierElementSupport;
 import org.jsweet.transpiler.model.support.MethodInvocationElementSupport;
 import org.jsweet.transpiler.model.support.NewClassElementSupport;
-import org.jsweet.transpiler.model.support.SelectElementSupport;
+import org.jsweet.transpiler.model.support.VariableAccessElementSupport;
 import org.jsweet.transpiler.util.Util;
 
 import com.sun.codemodel.internal.JJavaName;
@@ -1148,66 +1149,70 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 	}
 
 	@Override
-	public boolean substituteSelect(SelectElement select) {
-		JCFieldAccess fieldAccess = ((SelectElementSupport) select).getTree();
-		String targetFieldName = select.getName();
-		Element targetType = select.getTargetElement();
-		// translate tuple accesses
-		if (targetFieldName.startsWith("$") && targetFieldName.length() > 1
-				&& Character.isDigit(targetFieldName.charAt(1))) {
-			try {
-				int i = Integer.parseInt(targetFieldName.substring(1));
-				print(select.getTargetExpression());
-				print("[" + i + "]");
-				return true;
-			} catch (NumberFormatException e) {
-				// swallow
+	public boolean substituteVariableAccess(VariableAccessElement variableAccess) {
+		if (variableAccess.getTargetExpression() != null) {
+			JCFieldAccess fieldAccess = (JCFieldAccess) ((VariableAccessElementSupport) variableAccess).getTree();
+			String targetFieldName = variableAccess.getVariableName();
+			Element targetType = variableAccess.getTargetElement();
+			if (!(fieldAccess.sym instanceof VariableElement)) {
+				System.out.println();
 			}
-		}
-
-		if (hasAnnotationType(select.getReferencedElement(), ANNOTATION_STRING_TYPE)) {
-			print("\"");
-			print(getAnnotationValue(select.getReferencedElement(), ANNOTATION_STRING_TYPE, select.getName()));
-			print("\"");
-			return true;
-		}
-
-		if (fieldAccess.selected.type.tsym instanceof PackageSymbol) {
-			if (context.isRootPackage(fieldAccess.selected.type.tsym)) {
-				if (fieldAccess.type != null && fieldAccess.type.tsym != null) {
-					getPrinter().printIdentifier(fieldAccess.type.tsym);
-				} else {
-					// TODO: see if it breaks something
-					print(targetFieldName);
+			// translate tuple accesses
+			if (targetFieldName.startsWith("$") && targetFieldName.length() > 1
+					&& Character.isDigit(targetFieldName.charAt(1))) {
+				try {
+					int i = Integer.parseInt(targetFieldName.substring(1));
+					print(variableAccess.getTargetExpression());
+					print("[" + i + "]");
+					return true;
+				} catch (NumberFormatException e) {
+					// swallow
 				}
+			}
+
+			if (hasAnnotationType(variableAccess.getVariable(), ANNOTATION_STRING_TYPE)) {
+				print("\"");
+				print(getAnnotationValue(variableAccess.getVariable(), ANNOTATION_STRING_TYPE,
+						variableAccess.getVariableName()));
+				print("\"");
+				return true;
+			}
+
+			if (fieldAccess.selected.toString().equals("this")) {
+				if (fieldAccess.sym.isStatic()) {
+					report(variableAccess, JSweetProblem.CANNOT_ACCESS_STATIC_MEMBER_ON_THIS, fieldAccess.name);
+				}
+			}
+
+			// enum objects wrapping
+			if (targetType != null && targetType.getKind() == ElementKind.ENUM && !fieldAccess.sym.isEnum()
+					&& !"this".equals(fieldAccess.selected.toString()) && !"class".equals(targetFieldName)) {
+				String relTarget = context.useModules ? targetType.getSimpleName().toString()
+						: getRootRelativeName((Symbol) targetType);
+				getPrinter().print(relTarget)
+						.print("[\"" + Java2TypeScriptTranslator.ENUM_WRAPPER_CLASS_WRAPPERS + "\"][")
+						.print(fieldAccess.selected).print("].").print(fieldAccess.name.toString());
+				return true;
+			}
+
+			// built-in Java support
+			String accessedType = ((Symbol) targetType).getQualifiedName().toString();
+			if (fieldAccess.sym.isStatic() && isMappedType(accessedType) && accessedType.startsWith("java.lang.")
+					&& !"class".equals(fieldAccess.name.toString())) {
+				delegateToEmulLayer(accessedType, fieldAccess);
+				return true;
+			}
+		} else {
+			JCIdent identifier = (JCIdent) ((VariableAccessElementSupport) variableAccess).getTree();
+			if (context.hasAnnotationType(identifier.sym, ANNOTATION_STRING_TYPE)) {
+				print("\"");
+				getPrinter().print(
+						context.getAnnotationValue(identifier.sym, ANNOTATION_STRING_TYPE, identifier.toString()));
+				print("\"");
 				return true;
 			}
 		}
-
-		if (fieldAccess.selected.toString().equals("this")) {
-			if (fieldAccess.sym.isStatic()) {
-				report(select, JSweetProblem.CANNOT_ACCESS_STATIC_MEMBER_ON_THIS, fieldAccess.name);
-			}
-		}
-
-		// enum objects wrapping
-		if (targetType != null && targetType.getKind() == ElementKind.ENUM && !fieldAccess.sym.isEnum()
-				&& !"this".equals(fieldAccess.selected.toString()) && !"class".equals(targetFieldName)) {
-			String relTarget = context.useModules ? targetType.getSimpleName().toString()
-					: getRootRelativeName((Symbol) targetType);
-			getPrinter().print(relTarget).print("[\"" + Java2TypeScriptTranslator.ENUM_WRAPPER_CLASS_WRAPPERS + "\"][")
-					.print(fieldAccess.selected).print("].").print(fieldAccess.name.toString());
-			return true;
-		}
-
-		// built-in Java support
-		String accessedType = ((Symbol) targetType).getQualifiedName().toString();
-		if (fieldAccess.sym.isStatic() && isMappedType(accessedType) && accessedType.startsWith("java.lang.")
-				&& !"class".equals(fieldAccess.name.toString())) {
-			delegateToEmulLayer(accessedType, fieldAccess);
-			return true;
-		}
-		return super.substituteSelect(select);
+		return super.substituteVariableAccess(variableAccess);
 	}
 
 	protected final void delegateToEmulLayer(String targetClassName, JCFieldAccess fieldAccess) {
@@ -1215,8 +1220,9 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 	}
 
 	@Override
-	public boolean substituteNewClass(NewClassElement newClassElement, TypeElement type, String className) {
+	public boolean substituteNewClass(NewClassElement newClassElement) {
 		JCNewClass newClass = ((NewClassElementSupport) newClassElement).getTree();
+		String className = newClassElement.getTypeAsElement().toString();
 		if (className.startsWith(JSweetConfig.TUPLE_CLASSES_PACKAGE + ".")) {
 			getPrinter().print("[").printArgList(newClass.args).print("]");
 			return true;
@@ -1239,34 +1245,26 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 			}
 		}
 
-		return super.substituteNewClass(newClassElement, type, className);
+		return super.substituteNewClass(newClassElement);
 
 	}
 
 	@Override
 	public boolean substituteIdentifier(IdentifierElement identifierElement) {
 		JCIdent identifier = ((IdentifierElementSupport) identifierElement).getTree();
-		if (context.hasAnnotationType(identifier.sym, ANNOTATION_STRING_TYPE)) {
-			print("\"");
-			getPrinter()
-					.print(context.getAnnotationValue(identifier.sym, ANNOTATION_STRING_TYPE, identifier.toString()));
-			print("\"");
-			return true;
-		}
-		if (identifier.type == null) {
-			return super.substituteIdentifier(identifierElement);
-		}
-		if (context.getLangTypesSimpleNames().contains(identifier.toString())
-				&& context.getLangTypeMappings().containsKey(identifier.type.toString())) {
-			print(context.getLangTypeMappings().get(identifier.type.toString()));
-			return true;
-		}
-		if (identifier.type.toString().startsWith("java.lang.")) {
-			if (("java.lang." + identifier.toString()).equals(identifier.type.toString())) {
-				// it is a java.lang class being referenced, so we expand
-				// its name
-				print(identifier.type.toString());
+		if (identifier.type != null) {
+			if (context.getLangTypesSimpleNames().contains(identifier.toString())
+					&& context.getLangTypeMappings().containsKey(identifier.type.toString())) {
+				print(context.getLangTypeMappings().get(identifier.type.toString()));
 				return true;
+			}
+			if (identifier.type.toString().startsWith("java.lang.")) {
+				if (("java.lang." + identifier.toString()).equals(identifier.type.toString())) {
+					// it is a java.lang class being referenced, so we expand
+					// its name
+					print(identifier.type.toString());
+					return true;
+				}
 			}
 		}
 		return super.substituteIdentifier(identifierElement);

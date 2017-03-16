@@ -53,7 +53,7 @@ import org.jsweet.transpiler.model.ExtendedElementFactory;
 import org.jsweet.transpiler.model.LiteralElement;
 import org.jsweet.transpiler.model.MethodInvocationElement;
 import org.jsweet.transpiler.model.NewClassElement;
-import org.jsweet.transpiler.model.SelectElement;
+import org.jsweet.transpiler.model.VariableAccessElement;
 import org.jsweet.transpiler.util.Util;
 
 import com.sun.tools.javac.code.Type;
@@ -618,10 +618,10 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 	}
 
 	@Override
-	public boolean substituteSelect(SelectElement select) {
-		String targetClassName = select.getTargetElement().toString();
-		if (select.getReferencedElement().getModifiers().contains(Modifier.STATIC) && isMappedType(targetClassName)
-				&& targetClassName.startsWith("java.lang.") && !"class".equals(select.getName())) {
+	public boolean substituteVariableAccess(VariableAccessElement variableAccess) {
+		String targetClassName = variableAccess.getTargetElement().toString();
+		if (variableAccess.getVariable().getModifiers().contains(Modifier.STATIC) && isMappedType(targetClassName)
+				&& targetClassName.startsWith("java.lang.") && !"class".equals(variableAccess.getVariableName())) {
 
 			switch (targetClassName) {
 			case "java.lang.Float":
@@ -630,19 +630,20 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			case "java.lang.Byte":
 			case "java.lang.Long":
 			case "java.lang.Short":
-				switch (select.getName()) {
+				switch (variableAccess.getVariableName()) {
 				case "MIN_VALUE":
 				case "MAX_VALUE":
-					print("Number." + select.getName());
+					print("Number." + variableAccess.getVariableName());
 					return true;
 				}
 			}
 		}
-		return super.substituteSelect(select);
+		return super.substituteVariableAccess(variableAccess);
 	}
 
 	@Override
-	public boolean substituteNewClass(NewClassElement newClass, TypeElement type, String className) {
+	public boolean substituteNewClass(NewClassElement newClass) {
+		String className = newClass.getTypeAsElement().toString();
 		switch (className) {
 		case "java.util.ArrayList":
 		case "java.util.Vector":
@@ -695,7 +696,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		}
 
 		if (className.startsWith("java.")) {
-			if (types().isSubtype(type.asType(), context.symtab.throwableType)) {
+			if (types().isSubtype(newClass.getType(), context.symtab.throwableType)) {
 				print("Object.defineProperty(");
 				print("new Error(");
 				if (newClass.getArgumentCount() > 0) {
@@ -712,7 +713,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			}
 		}
 
-		return super.substituteNewClass(newClass, type, className);
+		return super.substituteNewClass(newClass);
 	}
 
 	@Override

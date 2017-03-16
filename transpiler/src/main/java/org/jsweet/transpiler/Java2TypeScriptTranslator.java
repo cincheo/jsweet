@@ -58,9 +58,8 @@ import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.ExtendedElementFactory;
 import org.jsweet.transpiler.model.support.CaseElementSupport;
 import org.jsweet.transpiler.model.support.ExtendedElementSupport;
-import org.jsweet.transpiler.model.support.IdentifierElementSupport;
 import org.jsweet.transpiler.model.support.MethodInvocationElementSupport;
-import org.jsweet.transpiler.model.support.SelectElementSupport;
+import org.jsweet.transpiler.model.support.NewClassElementSupport;
 import org.jsweet.transpiler.util.AbstractTreePrinter;
 import org.jsweet.transpiler.util.Util;
 import org.jsweet.transpiler.util.VariableKind;
@@ -2653,7 +2652,19 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	@Override
 	public void visitSelect(JCFieldAccess fieldAccess) {
-		if (!getAdapter().substituteSelect(new SelectElementSupport(fieldAccess))) {
+		if (!getAdapter().substitute(ExtendedElementFactory.INSTANCE.create(fieldAccess))) {
+			if (fieldAccess.selected.type.tsym instanceof PackageSymbol) {
+				if (context.isRootPackage(fieldAccess.selected.type.tsym)) {
+					if (fieldAccess.type != null && fieldAccess.type.tsym != null) {
+						printIdentifier(fieldAccess.type.tsym);
+					} else {
+						// TODO: see if it breaks something
+						print(fieldAccess.name.toString());
+					}
+					return;
+				}
+			}
+
 			if ("class".equals(fieldAccess.name.toString())) {
 				if (fieldAccess.type instanceof Type.ClassType
 						&& context.isInterface(((Type.ClassType) fieldAccess.type).typarams_field.head.tsym)) {
@@ -3101,7 +3112,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 		}
 
-		if (!getAdapter().substituteIdentifier(new IdentifierElementSupport(ident))) {
+		if (!getAdapter().substitute(ExtendedElementFactory.INSTANCE.create(ident))) {
 			boolean lazyInitializedStatic = false;
 			// add this of class name if ident is a field
 			if (ident.sym instanceof VarSymbol && !ident.sym.name.equals(context.names._this)
@@ -3447,7 +3458,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			if (context.hasAnnotationType(newClass.clazz.type.tsym, JSweetConfig.ANNOTATION_OBJECT_TYPE)) {
 				print("{}");
 			} else {
-				if (!getAdapter().substituteNewClass(newClass)) {
+				if (!getAdapter().substituteNewClass(new NewClassElementSupport(newClass))) {
 					if (typeChecker.checkType(newClass, null, newClass.clazz)) {
 
 						boolean applyVarargs = true;

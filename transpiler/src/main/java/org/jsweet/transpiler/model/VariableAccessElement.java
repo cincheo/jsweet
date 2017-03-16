@@ -19,35 +19,38 @@
 package org.jsweet.transpiler.model;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.VariableElement;
 
 /**
- * An AST node for a Java select (of the form <code>target.name</code>).
+ * An AST node for a Java variable/field access (of the form
+ * <code>targetExpression.variableName</code> or <code>variableName</code>).
  * 
  * @author Renaud Pawlak
  */
-public interface SelectElement extends ExtendedElement {
+public interface VariableAccessElement extends ExtendedElement {
 
 	/**
-	 * Gets the target expression of the select (the part before the dot).
+	 * Gets the target expression of the access (the part before the dot), if
+	 * any.
 	 * 
 	 * @return the part before the dot
 	 */
 	ExtendedElement getTargetExpression();
 
 	/**
-	 * Gets the name of the select (the part after the dot).
+	 * Gets the name of the accessed variable.
 	 */
-	String getName();
+	String getVariableName();
 
 	/**
-	 * Returns the target element.
+	 * Returns the target element holding the variable declaration (can be a
+	 * type or an executable in case of a local variable).
 	 */
 	Element getTargetElement();
 
 	/**
-	 * Gets the element referenced by this select, if any (may be null if no
-	 * referenced element).
+	 * Gets the accessed variable element .
 	 */
-	Element getReferencedElement();
+	VariableElement getVariable();
 
 }

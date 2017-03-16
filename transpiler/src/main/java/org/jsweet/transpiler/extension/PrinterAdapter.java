@@ -43,11 +43,10 @@ import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.IdentifierElement;
 import org.jsweet.transpiler.model.MethodInvocationElement;
 import org.jsweet.transpiler.model.NewClassElement;
-import org.jsweet.transpiler.model.SelectElement;
 import org.jsweet.transpiler.model.Util;
+import org.jsweet.transpiler.model.VariableAccessElement;
 import org.jsweet.transpiler.model.support.ExtendedElementSupport;
 import org.jsweet.transpiler.model.support.MethodInvocationElementSupport;
-import org.jsweet.transpiler.model.support.NewClassElementSupport;
 import org.jsweet.transpiler.model.support.UtilSupport;
 import org.jsweet.transpiler.util.AbstractTreePrinter;
 import org.jsweet.transpiler.util.VariableKind;
@@ -66,7 +65,6 @@ import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCImport;
 import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
-import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.JCTree.JCTypeCast;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 
@@ -603,42 +601,39 @@ public class PrinterAdapter {
 	}
 
 	/**
-	 * Substitutes the value of a <code>new</code> expression.
-	 * 
-	 * @param newClass
-	 *            the new being printed
-	 * @return true if substituted
-	 */
-	public final boolean substituteNewClass(JCNewClass newClass) {
-		return substituteNewClass(new NewClassElementSupport(newClass), (TypeElement) newClass.type.tsym,
-				newClass.type.tsym.getQualifiedName().toString());
-	}
-
-	/**
 	 * To override to tune the printing of a new class expression.
 	 * 
 	 * @param newClass
 	 *            the new class expression
-	 * @param type
-	 *            the type of the class being instantiated
-	 * @param className
-	 *            the fully qualified name of the class being instantiated
 	 * @return true if substituted
 	 */
-	public boolean substituteNewClass(NewClassElement newClass, TypeElement type, String className) {
-		return parentAdapter == null ? false : parentAdapter.substituteNewClass(newClass, type, className);
+	public boolean substituteNewClass(NewClassElement newClass) {
+		return parentAdapter == null ? false : parentAdapter.substituteNewClass(newClass);
 	}
 
 	/**
-	 * Substitutes the value of a <em>select</em> expression (of the form
-	 * <code>target.name</code>).
+	 * Upcalled by the transpiler to forward to the right subtitution method
+	 * depending on the actual extended element type.
+	 */
+	public final boolean substitute(ExtendedElement extendedElement) {
+		if (extendedElement instanceof VariableAccessElement) {
+			return substituteVariableAccess((VariableAccessElement) extendedElement);
+		} else if (extendedElement instanceof IdentifierElement) {
+			return substituteIdentifier((IdentifierElement) extendedElement);
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * Substitutes the given variable access.
 	 * 
-	 * @param select
-	 *            the select being printed
+	 * @param variableAccess
+	 *            the variable access being printed
 	 * @return true if substituted
 	 */
-	public boolean substituteSelect(SelectElement select) {
-		return parentAdapter == null ? false : parentAdapter.substituteSelect(select);
+	public boolean substituteVariableAccess(VariableAccessElement variableAccess) {
+		return parentAdapter == null ? false : parentAdapter.substituteVariableAccess(variableAccess);
 
 	}
 
@@ -682,32 +677,8 @@ public class PrinterAdapter {
 	 *            the invocation being printed
 	 * @return true if substituted
 	 */
-//	final public boolean substituteMethodInvocation(JCMethodInvocation invocation) {
-//		JCFieldAccess fieldAccess = null;
-//		Element targetType = null;
-//		String targetClassName = null;
-//		String targetMethodName = null;
-//		if (invocation.getMethodSelect() instanceof JCFieldAccess) {
-//			fieldAccess = (JCFieldAccess) invocation.getMethodSelect();
-//			targetType = fieldAccess.selected.type.tsym;
-//			targetClassName = ((Symbol) targetType).getQualifiedName().toString();
-//			targetMethodName = fieldAccess.name.toString();
-//		} else {
-//			targetMethodName = invocation.getMethodSelect().toString();
-//			System.out.println(((JCIdent) invocation.meth).sym.getEnclosingElement());
-//			if (getPrinter().getStaticImports().containsKey(targetMethodName)) {
-//				JCImport i = getPrinter().getStaticImports().get(targetMethodName);
-//				targetType = ((JCFieldAccess) i.qualid).selected.type.tsym;
-//				targetClassName = ((Symbol) targetType).getQualifiedName().toString();
-//			}
-//		}
-//		return substituteMethodInvocation(new MethodInvocationElementSupport(invocation),
-//				new SelectElementSupport(fieldAccess), targetType, targetClassName, targetMethodName);
-//	}
-
 	public boolean substituteMethodInvocation(MethodInvocationElement invocation) {
-		return parentAdapter == null ? false
-				: parentAdapter.substituteMethodInvocation(invocation);
+		return parentAdapter == null ? false : parentAdapter.substituteMethodInvocation(invocation);
 	}
 
 	/**

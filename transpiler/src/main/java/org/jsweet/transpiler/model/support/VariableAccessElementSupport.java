@@ -19,46 +19,68 @@
 package org.jsweet.transpiler.model.support;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.VariableElement;
 
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.ExtendedElementFactory;
-import org.jsweet.transpiler.model.SelectElement;
+import org.jsweet.transpiler.model.VariableAccessElement;
 
+import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
+import com.sun.tools.javac.tree.JCTree.JCIdent;
 
 /**
  * An AST node for a Java field access expression.
  * 
  * @author Renaud Pawlak
  */
-public class SelectElementSupport extends ExtendedElementSupport implements SelectElement {
+public class VariableAccessElementSupport extends ExtendedElementSupport implements VariableAccessElement {
 
-	public SelectElementSupport(JCFieldAccess tree) {
+	public VariableAccessElementSupport(JCTree tree) {
 		super(tree);
 	}
 
-	@Override
-	public JCFieldAccess getTree() {
-		return (JCFieldAccess) tree;
-	}
-
 	public ExtendedElement getTargetExpression() {
-		return ExtendedElementFactory.INSTANCE.create(getTree().selected);
+		if(tree instanceof JCFieldAccess) {
+			return ExtendedElementFactory.INSTANCE.create(((JCFieldAccess)tree).selected);
+		} else {
+			return null;
+		}
 	}
 
 	@Override
-	public Element getReferencedElement() {
-		return getTree().sym;
-	}
-
-	@Override
-	public String getName() {
-		return getTree().name.toString();
+	public VariableElement getVariable() {
+		if(tree instanceof JCFieldAccess) {
+			return (VariableElement)((JCFieldAccess)tree).sym;
+		} else {
+			return (VariableElement)((JCIdent)tree).sym;
+		}
 	}
 
 	@Override
 	public Element getTargetElement() {
-		return getTree().selected.type.tsym;
+		return getVariable().getEnclosingElement();
 	}
+	
+//	@Override
+//	public Element getReferencedElement() {
+//		return getTree().sym;
+//	}
+
+	@Override
+	public String getVariableName() {
+		if(tree instanceof JCFieldAccess) {
+			return ((JCFieldAccess)tree).name.toString();
+		} else {
+			return tree.toString();
+		}
+	}
+
+	
+	
+//	@Override
+//	public Element getTargetElement() {
+//		return getTree().selected.type.tsym;
+//	}
 
 }

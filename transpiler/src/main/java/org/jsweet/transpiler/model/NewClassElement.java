@@ -27,6 +27,9 @@ import javax.lang.model.element.ExecutableElement;
  */
 public interface NewClassElement extends InvocationElement {
 
+	/**
+	 * Gets the constructor being invoked by this new class element.
+	 */
 	ExecutableElement getConstructor();
 
 }

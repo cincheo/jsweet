@@ -18,13 +18,15 @@
  */
 package org.jsweet.transpiler.model;
 
+import javax.lang.model.element.VariableElement;
+
 import org.jsweet.transpiler.model.support.CaseElementSupport;
 import org.jsweet.transpiler.model.support.ExtendedElementSupport;
-import org.jsweet.transpiler.model.support.SelectElementSupport;
 import org.jsweet.transpiler.model.support.IdentifierElementSupport;
 import org.jsweet.transpiler.model.support.LiteralElementSupport;
 import org.jsweet.transpiler.model.support.MethodInvocationElementSupport;
 import org.jsweet.transpiler.model.support.NewClassElementSupport;
+import org.jsweet.transpiler.model.support.VariableAccessElementSupport;
 
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCCase;
@@ -57,11 +59,19 @@ public class ExtendedElementFactory {
 		case APPLY:
 			return new MethodInvocationElementSupport((JCMethodInvocation) tree);
 		case SELECT:
-			return new SelectElementSupport((JCFieldAccess) tree);
+			if(((JCFieldAccess)tree).sym instanceof VariableElement) {
+				return new VariableAccessElementSupport(tree);
+			} else {
+				return new ExtendedElementSupport(tree);
+			}
 		case NEWCLASS:
 			return new NewClassElementSupport((JCNewClass) tree);
 		case IDENT:
-			return new IdentifierElementSupport((JCIdent) tree);
+			if(((JCIdent)tree).sym instanceof VariableElement) {
+				return new VariableAccessElementSupport(tree);
+			} else {
+				return new IdentifierElementSupport((JCIdent)tree);
+			}
 		case LITERAL:
 			return new LiteralElementSupport((JCLiteral) tree);
 		case CASE:
