@@ -286,7 +286,8 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 					return true;
 				case "get":
 					printMacroName(targetMethodName);
-					print(invocation.getTargetExpression()).print("[").print(invocation.getArgument(0)).print("]");
+					print("((m,k) => m[k]?m[k]:null)(").print(invocation.getTargetExpression()).print(", ")
+							.print(invocation.getArgument(0)).print(")");
 					return true;
 				case "containsKey":
 					printMacroName(targetMethodName);
@@ -378,7 +379,8 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 				switch (targetMethodName) {
 				case "asList":
 					printMacroName(targetMethodName);
-					if (invocation.getArgumentCount() == 1 && invocation.getArgument(0).getType() instanceof ArrayType) {
+					if (invocation.getArgumentCount() == 1
+							&& invocation.getArgument(0).getType() instanceof ArrayType) {
 						printArgList(invocation.getArguments()).print(".slice(0)");
 					} else {
 						print("[").printArgList(invocation.getArguments()).print("]");
@@ -431,8 +433,14 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 				switch (targetMethodName) {
 				case "append":
 					printMacroName(targetMethodName);
-					print("(sb => sb.str = sb.str.concat(").printArgList(invocation.getArguments()).print("))(")
-							.print(invocation.getTargetExpression()).print(")");
+					if (invocation.getArgumentCount() == 1) {
+						print("(sb => sb.str = sb.str.concat(<any>").printArgList(invocation.getArguments())
+								.print("))(").print(invocation.getTargetExpression()).print(")");
+					} else {
+						print("(sb => sb.str = sb.str.concat((<any>").print(invocation.getArgument(0))
+								.print(").substr(").printArgList(invocation.getArgumentTail()).print(")))(")
+								.print(invocation.getTargetExpression()).print(")");
+					}
 					return true;
 				case "setLength":
 					printMacroName(targetMethodName);
@@ -645,6 +653,14 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 	public boolean substituteNewClass(NewClassElement newClass) {
 		String className = newClass.getTypeAsElement().toString();
 		switch (className) {
+		case "java.lang.Integer":
+		case "java.lang.Long":
+		case "java.lang.Double":
+		case "java.lang.Float":
+		case "java.long.Short":
+		case "java.util.Byte":
+			print("new Number(").print(newClass.getArgument(0)).print(").valueOf()");
+			return true;
 		case "java.util.ArrayList":
 		case "java.util.Vector":
 		case "java.util.Stack":
