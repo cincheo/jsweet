@@ -54,6 +54,8 @@ public class Maps {
 
 		m.clear();
 		trace.push("[" + m.values() + "]");
+
+		trace.push("-" + m.get("undefinedKey") + "-");
 		
 		$export("trace", trace.join(","));
 

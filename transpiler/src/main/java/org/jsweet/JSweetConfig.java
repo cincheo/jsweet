@@ -238,7 +238,7 @@ public abstract class JSweetConfig {
 	public static final String ANNOTATION_ROOT = JSweetConfig.LANG_PACKAGE + ".Root";
 	public static final String ANNOTATION_NAME = JSweetConfig.LANG_PACKAGE + ".Name";
 	public static final String ANNOTATION_DECORATOR = JSweetConfig.LANG_PACKAGE + ".Decorator";
-	public static final String ANNOTATION_TYPE_SCRIPT_BODY = JSweetConfig.LANG_PACKAGE + ".TypeScriptBody";
+	public static final String ANNOTATION_REPLACE = JSweetConfig.LANG_PACKAGE + ".Replace";
 	public static final String ANNOTATION_FUNCTIONAL_INTERFACE = FunctionalInterface.class.getName();
 
 	/**

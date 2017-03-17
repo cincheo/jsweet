@@ -2,7 +2,7 @@ package source.structural;
 
 import static jsweet.util.Globals.$export;
 
-import jsweet.lang.TypeScriptBody;
+import jsweet.lang.Replace;
 
 public class TypeScriptBodyAnnotation {
 
@@ -14,7 +14,7 @@ public class TypeScriptBodyAnnotation {
 
 	int i = 1;
 
-	@TypeScriptBody("return this.i + 1;")
+	@Replace("return this.i + 1;")
 	public int m1() {
 		return i;
 	}

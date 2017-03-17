@@ -44,4 +44,12 @@ public class NativeStringBuilder {
 
 	}
 
+	StringBuilder sb2 = new StringBuilder();
+
+	public void test(char[] c, int i, int l) {
+		sb2.append(c);
+		sb2.append(c, i, l);
+	}
+
+	
 }

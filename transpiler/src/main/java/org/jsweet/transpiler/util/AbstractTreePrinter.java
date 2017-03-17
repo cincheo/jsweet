@@ -62,7 +62,7 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 		return positionStack;
 	}
 
-	private static final String INDENT = "    ";
+	protected static final String INDENT = "    ";
 
 	private StringBuilder out = new StringBuilder();
 
@@ -94,8 +94,8 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	 * @param fillSourceMap
 	 *            tells if printer fills the source map
 	 */
-	public AbstractTreePrinter(TranspilationHandler logHandler, JSweetContext context, JCCompilationUnit compilationUnit,
-			PrinterAdapter adapter, boolean fillSourceMap) {
+	public AbstractTreePrinter(TranspilationHandler logHandler, JSweetContext context,
+			JCCompilationUnit compilationUnit, PrinterAdapter adapter, boolean fillSourceMap) {
 		super(logHandler, context, compilationUnit);
 		this.typeChecker = new TypeChecker(this);
 		this.adapter = adapter;
@@ -118,14 +118,14 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 		return this;
 	}
 
-//	/**
-//	 * Print a given AST.
-//	 */
-//	public AbstractTreePrinter print(ExtendedElement element) {
-//		scan(element);
-//		return this;
-//	}
-	
+	// /**
+	// * Print a given AST.
+	// */
+	// public AbstractTreePrinter print(ExtendedElement element) {
+	// scan(element);
+	// return this;
+	// }
+
 	/**
 	 * Enters the given tree (se {@link #scan(JCTree)}.
 	 */
@@ -199,6 +199,17 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 			print(INDENT);
 		}
 		return this;
+	}
+
+	/**
+	 * Returns the current indentation as a string.
+	 */
+	public String getIndentString() {
+		String indentString = "";
+		for (int i = 0; i < indent; i++) {
+			indentString += INDENT;
+		}
+		return indentString;
 	}
 
 	/**
@@ -367,7 +378,7 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	public abstract AbstractTreePrinter printConstructorArgList(JCNewClass newClass, boolean localClass);
 
 	protected abstract AbstractTreePrinter substituteAndPrintType(JCTree typeTree);
-	
+
 	/**
 	 * Prints a comma-separated list of variable names (no types).
 	 */

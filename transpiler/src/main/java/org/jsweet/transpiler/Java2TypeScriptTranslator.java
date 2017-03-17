@@ -147,6 +147,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	public static final String ENUM_WRAPPER_CLASS_NAME = "_$name";
 	public static final String ENUM_WRAPPER_CLASS_ORDINAL = "_$ordinal";
 	public static final String VAR_DECL_KEYWORD = "let";
+	public static final String BODY_MARKER = "#BODY#";
+	public static final String BASE_INDENT_MARKER = "#BASEINDENT#";
+	public static final String INDENT_MARKER = "#INDENT#";
+	public static final String METHOD_NAME_MARKER = "#METHODNAME#";
+	public static final String CLASS_NAME_MARKER = "#CLASSNAME#";
 
 	protected static Logger logger = Logger.getLogger(Java2TypeScriptTranslator.class);
 
@@ -2021,11 +2026,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				} else {
 					print(" ").print("{").println().startIndent();
 
-					if (context.hasAnnotationType(methodDecl.sym, JSweetConfig.ANNOTATION_TYPE_SCRIPT_BODY)) {
-						String replacedBody = (String) context.getAnnotationValue(methodDecl.sym,
-								JSweetConfig.ANNOTATION_TYPE_SCRIPT_BODY, null);
-						printIndent().print(replacedBody).println();
-					} else {
+					String replacedBody = null;
+					if (context.hasAnnotationType(methodDecl.sym, JSweetConfig.ANNOTATION_REPLACE)) {
+						replacedBody = (String) context.getAnnotationValue(methodDecl.sym,
+								JSweetConfig.ANNOTATION_REPLACE, null);
+					}
+					int position = getCurrentPosition();
+					if (replacedBody == null || replacedBody.contains(BODY_MARKER)) {
 						enter(methodDecl.getBody());
 						if (!methodDecl.getBody().stats.isEmpty()
 								&& methodDecl.getBody().stats.head.toString().startsWith("super(")) {
@@ -2041,6 +2048,17 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							printBlockStatements(methodDecl.getBody().stats);
 						}
 						exit();
+						if (replacedBody != null) {
+							String orgBody = getOutput().substring(position);
+							removeLastChars(getCurrentPosition() - position);
+							replacedBody = replacedBody.replace(BODY_MARKER, orgBody)
+									.replace(BASE_INDENT_MARKER, getIndentString()).replace(INDENT_MARKER, INDENT)
+									.replace(METHOD_NAME_MARKER, methodDecl.getName().toString())
+									.replace(CLASS_NAME_MARKER, parent.sym.getQualifiedName().toString());
+						}
+					}
+					if (replacedBody != null) {
+						printIndent().print(replacedBody).println();
 					}
 					endIndent().printIndent().print("}");
 				}
@@ -2148,11 +2166,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 
 			}
-			if (context.hasAnnotationType(method.sym, JSweetConfig.ANNOTATION_TYPE_SCRIPT_BODY)) {
-				String replacedBody = (String) context.getAnnotationValue(method.sym,
-						JSweetConfig.ANNOTATION_TYPE_SCRIPT_BODY, null);
-				printIndent().print(replacedBody).println();
-			} else {
+			String replacedBody = null;
+			if (context.hasAnnotationType(method.sym, JSweetConfig.ANNOTATION_REPLACE)) {
+				replacedBody = (String) context.getAnnotationValue(method.sym, JSweetConfig.ANNOTATION_REPLACE,
+						null);
+			}
+			int position = getCurrentPosition();
+			if (replacedBody == null || replacedBody.contains(BODY_MARKER)) {
 				enter(method.getBody());
 				com.sun.tools.javac.util.List<JCStatement> stats = skipFirst ? method.getBody().stats.tail
 						: method.getBody().stats;
@@ -2184,6 +2204,19 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					}
 				}
 				exit();
+				if (replacedBody != null) {
+					getIndent();
+					printIndent();
+					String orgBody = getOutput().substring(position);
+					removeLastChars(getCurrentPosition() - position);
+					replacedBody = replacedBody.replace(BODY_MARKER, orgBody)
+							.replace(BASE_INDENT_MARKER, getIndentString()).replace(INDENT_MARKER, INDENT)
+							.replace(METHOD_NAME_MARKER, method.getName().toString())
+							.replace(CLASS_NAME_MARKER, method.sym.getEnclosingElement().getQualifiedName().toString());
+				}
+			}
+			if (replacedBody != null) {
+				printIndent().print(replacedBody).println();
 			}
 		} else {
 			String returnValue = Util.getTypeInitialValue(method.sym.getReturnType());
