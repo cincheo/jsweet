@@ -166,6 +166,13 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 				case "parseDouble":
 					print("parseFloat").print("(").printArgList(invocation.getArguments()).print(")");
 					return true;
+				case "valueOf":
+					if (util().isNumber(invocation.getArgument(0).getType())) {
+						print(invocation.getArgument(0));
+						return true;
+					} else {
+						print("parseFloat").print("(").printArgList(invocation.getArguments()).print(")");
+					}
 				}
 				break;
 			case "java.util.Collection":
