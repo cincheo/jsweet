@@ -57,7 +57,7 @@ import source.structural.NoWildcardsInImports;
 import source.structural.ObjectTypes;
 import source.structural.StaticMembersInInterfaces;
 import source.structural.TwoClassesInSameFile;
-import source.structural.TypeScriptBodyAnnotation;
+import source.structural.ReplaceAnnotation;
 import source.structural.WrongConstructsInInterfaces;
 import source.structural.WrongThisAccessOnStatic;
 import source.structural.globalclasses.Globals;
@@ -310,14 +310,16 @@ public class StructuralTests extends AbstractTest {
 	}
 
 	@Test
-	public void testTypeScriptBody() {
+	public void testReplaceAnnotation() {
 		createTranspiler(new JSweetFactory() {
 			@Override
 			public Java2TypeScriptAdapter createAdapter(JSweetContext context) {
 				return new Java2TypeScriptAdapter(context) {
 					{
-						context.addAnnotation("@TypeScriptBody('return (this.i + 2)')",
-								"source.structural.TypeScriptBodyAnnotation.m2()");
+						context.addAnnotation("@Replace('return (this.i + 2)')",
+								"source.structural.ReplaceAnnotation.m2()");
+						context.addAnnotation("@Replace('let result = (() => { #BODY# })(); return (result + '#METHODNAME#'.length);')",
+								"source.structural.ReplaceAnnotation.m4()");
 					}
 				};
 			}
@@ -327,7 +329,8 @@ public class StructuralTests extends AbstractTest {
 			assertEquals(2, (int) r.get("test1"));
 			assertEquals(3, (int) r.get("test2"));
 			assertEquals(1, (int) r.get("test3"));
-		}, getSourceFile(TypeScriptBodyAnnotation.class));
+			assertEquals(3, (int) r.get("test4"));
+		}, getSourceFile(ReplaceAnnotation.class));
 		createTranspiler(new JSweetFactory());
 	}
 

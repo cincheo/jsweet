@@ -4,12 +4,13 @@ import static jsweet.util.Globals.$export;
 
 import jsweet.lang.Replace;
 
-public class TypeScriptBodyAnnotation {
+public class ReplaceAnnotation {
 
 	public static void main(String[] args) {
-		$export("test1", new TypeScriptBodyAnnotation().m1());
-		$export("test2", new TypeScriptBodyAnnotation().m2());
-		$export("test3", new TypeScriptBodyAnnotation().m3());
+		$export("test1", new ReplaceAnnotation().m1());
+		$export("test2", new ReplaceAnnotation().m2());
+		$export("test3", new ReplaceAnnotation().m3());
+		$export("test4", new ReplaceAnnotation().m4());
 	}
 
 	int i = 1;
@@ -27,4 +28,8 @@ public class TypeScriptBodyAnnotation {
 		return i;
 	}
 
+	public int m4() {
+		return i;
+	}
+	
 }
