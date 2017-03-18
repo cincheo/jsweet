@@ -8,6 +8,8 @@ import javax.lang.model.type.TypeMirror;
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.Util;
 
+import com.sun.tools.javac.code.Type;
+
 public class UtilSupport implements Util {
 
 	JSweetContext context;
@@ -72,4 +74,23 @@ public class UtilSupport implements Util {
 		return null;
 	}
 
+	@Override
+	public boolean isNumber(TypeMirror type) {
+		return org.jsweet.transpiler.util.Util.isNumber(type);
+	}
+
+	@Override
+	public boolean isDeprecated(Element element) {
+		return org.jsweet.transpiler.util.Util.isDeprecated(element);
+	}
+	
+	@Override
+	public boolean isCoreType(TypeMirror type) {
+		return org.jsweet.transpiler.util.Util.isCoreType(type);
+	}
+	
+	@Override
+	public boolean isIntegral(TypeMirror type) {
+		return org.jsweet.transpiler.util.Util.isIntegral((Type)type);
+	}
 }
