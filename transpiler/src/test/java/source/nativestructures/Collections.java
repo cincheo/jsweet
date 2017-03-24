@@ -19,6 +19,7 @@ import def.js.Array;
 /**
  * This test is executed without any Java runtime.
  */
+@SuppressWarnings("serial")
 public class Collections implements Cloneable, Serializable {
 
 	static Array<String> trace = new Array<>();
@@ -191,6 +192,10 @@ public class Collections implements Cloneable, Serializable {
 		
 		trace.push("[" + array1 + "]");
 
+		java.util.Collections.reverse(l3);
+
+		trace.push("[" + l3 + "]");
+		
 		Stack<String> stack = new Stack<>();
 		stack.push("aa");
 		stack.push("bb");
@@ -198,12 +203,40 @@ public class Collections implements Cloneable, Serializable {
 		
 		trace.push("[" + stack + "]");
 
+		trace.push("" + java.util.Collections.binarySearch(stack, "bb1"));
+
+		trace.push("" + java.util.Collections.binarySearch(stack, "bb1", new Comparator<String>() {
+			@Override
+			public int compare(String o1, String o2) {
+				return o1.compareTo(o2);
+			}
+		}));
+		
 		trace.push(stack.peek());
 		
 		stack.pop();
 		
 		trace.push("[" + stack + "]");
 		
+		Arrays.fill(array1, "a");
+		
+		trace.push("[" + array1 + "]");
+
+		l.toArray(new String[l.size()]);
+
+		l = new ArrayList<>();
+		l.add("a");
+		l.add("b");
+		l.add("c");
+		
+		List<String> ll = new ArrayList<>();
+		ll.add("d");
+		ll.add("e");
+		
+		l.addAll(1, ll);
+		
+		trace.push("[" + l + "]");
+
 		$export("trace", trace.join(","));
 
 	}

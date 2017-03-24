@@ -19,7 +19,6 @@
 package org.jsweet.transpiler.extension;
 
 import static org.jsweet.JSweetConfig.ANNOTATION_ERASED;
-import static org.jsweet.JSweetConfig.ANNOTATION_FUNCTIONAL_INTERFACE;
 import static org.jsweet.JSweetConfig.ANNOTATION_OBJECT_TYPE;
 import static org.jsweet.JSweetConfig.ANNOTATION_STRING_TYPE;
 import static org.jsweet.JSweetConfig.GLOBALS_CLASS_NAME;
@@ -85,13 +84,17 @@ import org.jsweet.transpiler.JSweetTranspiler;
 import org.jsweet.transpiler.Java2TypeScriptTranslator;
 import org.jsweet.transpiler.TypeChecker;
 import org.jsweet.transpiler.model.ExtendedElement;
+import org.jsweet.transpiler.model.ForeachLoopElement;
 import org.jsweet.transpiler.model.IdentifierElement;
+import org.jsweet.transpiler.model.ImportElement;
 import org.jsweet.transpiler.model.InvocationElement;
 import org.jsweet.transpiler.model.MethodInvocationElement;
 import org.jsweet.transpiler.model.NewClassElement;
 import org.jsweet.transpiler.model.VariableAccessElement;
 import org.jsweet.transpiler.model.support.ExtendedElementSupport;
+import org.jsweet.transpiler.model.support.ForeachLoopElementSupport;
 import org.jsweet.transpiler.model.support.IdentifierElementSupport;
+import org.jsweet.transpiler.model.support.ImportElementSupport;
 import org.jsweet.transpiler.model.support.MethodInvocationElementSupport;
 import org.jsweet.transpiler.model.support.NewClassElementSupport;
 import org.jsweet.transpiler.model.support.VariableAccessElementSupport;
@@ -119,7 +122,6 @@ import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.JCTree.JCTypeApply;
-import com.sun.tools.javac.tree.JCTree.JCTypeCast;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.JCTree.Tag;
 
@@ -236,7 +238,8 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 	}
 
 	@Override
-	public String needsImport(JCImport importDecl, String qualifiedName) {
+	public String needsImport(ImportElement importElement, String qualifiedName) {
+		JCImport importDecl = ((ImportElementSupport) importElement).getTree();
 		if (isJSweetPath(qualifiedName) || isMappedType(qualifiedName)
 				|| context.getLangTypeMappings().containsKey(qualifiedName)
 				|| qualifiedName.startsWith("java.util.function.")
@@ -314,7 +317,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 				}
 			}
 		}
-		return super.needsImport(importDecl, qualifiedName);
+		return super.needsImport(importElement, qualifiedName);
 	}
 
 	private boolean isWithinGlobals(String targetClassName) {
@@ -1271,16 +1274,6 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 	}
 
 	@Override
-	public boolean needsTypeCast(JCTypeCast cast) {
-		if (context.hasAnnotationType(cast.clazz.type.tsym, ANNOTATION_ERASED, ANNOTATION_OBJECT_TYPE,
-				ANNOTATION_FUNCTIONAL_INTERFACE)) {
-			return false;
-		} else {
-			return super.needsTypeCast(cast);
-		}
-	}
-
-	@Override
 	public String getIdentifier(Symbol symbol) {
 		return context.getActualName(symbol);
 	}
@@ -1384,13 +1377,14 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 	}
 
 	@Override
-	public boolean substituteForEachLoop(JCEnhancedForLoop foreachLoop, boolean targetHasLength, String indexVarName) {
+	public boolean substituteForEachLoop(ForeachLoopElement foreachLoop, boolean targetHasLength, String indexVarName) {
 		if (!targetHasLength) {
-			getPrinter().print("for(" + VAR_DECL_KEYWORD + " " + indexVarName + "=").print(foreachLoop.expr)
+			JCEnhancedForLoop loop = ((ForeachLoopElementSupport)foreachLoop).getTree();
+			getPrinter().print("for(" + VAR_DECL_KEYWORD + " " + indexVarName + "=").print(loop.expr)
 					.print(".iterator();" + indexVarName + ".hasNext();) {").println().startIndent().printIndent();
-			getPrinter().print(VAR_DECL_KEYWORD + " " + foreachLoop.var.name.toString() + " = ")
+			getPrinter().print(VAR_DECL_KEYWORD + " " + loop.var.name.toString() + " = ")
 					.print(indexVarName + ".next();").println();
-			getPrinter().printIndent().print(foreachLoop.body);
+			getPrinter().printIndent().print(loop.body);
 			endIndent().println().printIndent().print("}");
 			return true;
 		}

@@ -20,6 +20,7 @@ package org.jsweet.transpiler;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.jsweet.JSweetConfig.ANNOTATION_ERASED;
+import static org.jsweet.JSweetConfig.ANNOTATION_FUNCTIONAL_INTERFACE;
 import static org.jsweet.JSweetConfig.ANNOTATION_OBJECT_TYPE;
 import static org.jsweet.JSweetConfig.ANNOTATION_STRING_TYPE;
 import static org.jsweet.JSweetConfig.GLOBALS_CLASS_NAME;
@@ -56,13 +57,16 @@ import org.jsweet.transpiler.OverloadScanner.Overload;
 import org.jsweet.transpiler.extension.PrinterAdapter;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.ExtendedElementFactory;
+import org.jsweet.transpiler.model.support.ArrayAccessElementSupport;
+import org.jsweet.transpiler.model.support.AssignmentElementSupport;
 import org.jsweet.transpiler.model.support.CaseElementSupport;
 import org.jsweet.transpiler.model.support.ExtendedElementSupport;
+import org.jsweet.transpiler.model.support.ForeachLoopElementSupport;
+import org.jsweet.transpiler.model.support.ImportElementSupport;
 import org.jsweet.transpiler.model.support.MethodInvocationElementSupport;
 import org.jsweet.transpiler.model.support.NewClassElementSupport;
 import org.jsweet.transpiler.util.AbstractTreePrinter;
 import org.jsweet.transpiler.util.Util;
-import org.jsweet.transpiler.util.VariableKind;
 
 import com.sun.source.tree.Tree.Kind;
 import com.sun.tools.javac.code.Symbol;
@@ -1294,9 +1298,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					getScope().isComplexEnum = true;
 					continue;
 				}
-				if (!getAdapter().needsVariableDecl((JCVariableDecl) def, VariableKind.FIELD)) {
-					continue;
-				}
 				if (!((JCVariableDecl) def).getModifiers().getFlags().contains(Modifier.STATIC)
 						&& ((JCVariableDecl) def).init == null) {
 					hasUninitializedFields = true;
@@ -2168,8 +2169,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 			String replacedBody = null;
 			if (context.hasAnnotationType(method.sym, JSweetConfig.ANNOTATION_REPLACE)) {
-				replacedBody = (String) context.getAnnotationValue(method.sym, JSweetConfig.ANNOTATION_REPLACE,
-						null);
+				replacedBody = (String) context.getAnnotationValue(method.sym, JSweetConfig.ANNOTATION_REPLACE, null);
 			}
 			int position = getCurrentPosition();
 			if (replacedBody == null || replacedBody.contains(BODY_MARKER)) {
@@ -2636,7 +2636,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			report(importDecl, JSweetProblem.WILDCARD_IMPORT);
 			return;
 		}
-		String adaptedQualId = getAdapter().needsImport(importDecl, qualId);
+		String adaptedQualId = getAdapter().needsImport(new ImportElementSupport(importDecl), qualId);
 		if (adaptedQualId != null && adaptedQualId.contains(".")) {
 			if (importDecl.isStatic() && !qualId.contains("." + JSweetConfig.GLOBALS_CLASS_NAME + ".")
 					&& !qualId.contains("." + JSweetConfig.STRING_TYPES_INTERFACE_NAME + ".")) {
@@ -3612,7 +3612,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	@Override
 	public void visitIndexed(JCArrayAccess arrayAccess) {
-		print(arrayAccess.indexed).print("[").print(arrayAccess.index).print("]");
+		if (!getAdapter().substituteArrayAccess(new ArrayAccessElementSupport(arrayAccess))) {
+			print(arrayAccess.indexed).print("[").print(arrayAccess.index).print("]");
+		}
 	}
 
 	@Override
@@ -3629,7 +3631,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 			return true;
 		});
-		if (!getAdapter().substituteForEachLoop(foreachLoop, hasLength[0], indexVarName)) {
+		if (!getAdapter().substituteForEachLoop(new ForeachLoopElementSupport(foreachLoop), hasLength[0],
+				indexVarName)) {
 			boolean noVariable = foreachLoop.expr instanceof JCIdent || foreachLoop.expr instanceof JCFieldAccess;
 			if (noVariable) {
 				print("for(" + VAR_DECL_KEYWORD + " " + indexVarName + "=0; " + indexVarName + " < ")
@@ -4020,7 +4023,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				print("(");
 			}
 		}
-		if (getAdapter().needsTypeCast(cast)) {
+		if (!context.hasAnnotationType(cast.clazz.type.tsym, ANNOTATION_ERASED, ANNOTATION_OBJECT_TYPE,
+				ANNOTATION_FUNCTIONAL_INTERFACE)) {
 			// Java is more permissive than TypeScript when casting type
 			// variables
 			if (cast.expr.type.getKind() == TypeKind.TYPEVAR) {
@@ -4059,7 +4063,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	@Override
 	public void visitAssign(JCAssign assign) {
-		if (!getAdapter().substituteAssignment(assign)) {
+		if (!getAdapter().substituteAssignment(new AssignmentElementSupport(assign))) {
 			staticInitializedAssignment = getStaticInitializedField(assign.lhs) != null;
 			print(assign.lhs).print(isAnnotationScope ? ": " : " = ");
 			if (!getAdapter().substituteAssignedExpression(assign.lhs.type, assign.rhs)) {

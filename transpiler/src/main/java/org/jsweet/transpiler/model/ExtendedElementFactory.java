@@ -20,20 +20,30 @@ package org.jsweet.transpiler.model;
 
 import javax.lang.model.element.VariableElement;
 
+import org.jsweet.transpiler.model.support.ArrayAccessElementSupport;
+import org.jsweet.transpiler.model.support.AssignmentElementSupport;
 import org.jsweet.transpiler.model.support.CaseElementSupport;
 import org.jsweet.transpiler.model.support.ExtendedElementSupport;
+import org.jsweet.transpiler.model.support.ForeachLoopElementSupport;
 import org.jsweet.transpiler.model.support.IdentifierElementSupport;
+import org.jsweet.transpiler.model.support.ImportElementSupport;
 import org.jsweet.transpiler.model.support.LiteralElementSupport;
 import org.jsweet.transpiler.model.support.MethodInvocationElementSupport;
+import org.jsweet.transpiler.model.support.NewArrayElementSupport;
 import org.jsweet.transpiler.model.support.NewClassElementSupport;
 import org.jsweet.transpiler.model.support.VariableAccessElementSupport;
 
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCArrayAccess;
+import com.sun.tools.javac.tree.JCTree.JCAssign;
 import com.sun.tools.javac.tree.JCTree.JCCase;
+import com.sun.tools.javac.tree.JCTree.JCEnhancedForLoop;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
+import com.sun.tools.javac.tree.JCTree.JCImport;
 import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
+import com.sun.tools.javac.tree.JCTree.JCNewArray;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
 
 /**
@@ -59,7 +69,7 @@ public class ExtendedElementFactory {
 		case APPLY:
 			return new MethodInvocationElementSupport((JCMethodInvocation) tree);
 		case SELECT:
-			if(((JCFieldAccess)tree).sym instanceof VariableElement) {
+			if (((JCFieldAccess) tree).sym instanceof VariableElement) {
 				return new VariableAccessElementSupport(tree);
 			} else {
 				return new ExtendedElementSupport(tree);
@@ -67,15 +77,25 @@ public class ExtendedElementFactory {
 		case NEWCLASS:
 			return new NewClassElementSupport((JCNewClass) tree);
 		case IDENT:
-			if(((JCIdent)tree).sym instanceof VariableElement) {
+			if (((JCIdent) tree).sym instanceof VariableElement) {
 				return new VariableAccessElementSupport(tree);
 			} else {
-				return new IdentifierElementSupport((JCIdent)tree);
+				return new IdentifierElementSupport((JCIdent) tree);
 			}
 		case LITERAL:
 			return new LiteralElementSupport((JCLiteral) tree);
 		case CASE:
 			return new CaseElementSupport((JCCase) tree);
+		case NEWARRAY:
+			return new NewArrayElementSupport((JCNewArray) tree);
+		case INDEXED:
+			return new ArrayAccessElementSupport((JCArrayAccess) tree);
+		case FOREACHLOOP:
+			return new ForeachLoopElementSupport((JCEnhancedForLoop) tree);
+		case ASSIGN:
+			return new AssignmentElementSupport((JCAssign) tree);
+		case IMPORT:
+			return new ImportElementSupport((JCImport) tree);
 		default:
 			return new ExtendedElementSupport(tree);
 		}

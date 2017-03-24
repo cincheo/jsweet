@@ -50,15 +50,16 @@ import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.Java2TypeScriptTranslator;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.ExtendedElementFactory;
+import org.jsweet.transpiler.model.ForeachLoopElement;
+import org.jsweet.transpiler.model.ImportElement;
 import org.jsweet.transpiler.model.LiteralElement;
 import org.jsweet.transpiler.model.MethodInvocationElement;
+import org.jsweet.transpiler.model.NewArrayElement;
 import org.jsweet.transpiler.model.NewClassElement;
 import org.jsweet.transpiler.model.VariableAccessElement;
 import org.jsweet.transpiler.util.Util;
 
 import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.tree.JCTree.JCEnhancedForLoop;
-import com.sun.tools.javac.tree.JCTree.JCImport;
 import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCTypeApply;
 
@@ -129,11 +130,11 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 	}
 
 	@Override
-	public String needsImport(JCImport importDecl, String qualifiedName) {
+	public String needsImport(ImportElement importElement, String qualifiedName) {
 		if (isJDKPath(qualifiedName)) {
 			return null;
 		}
-		return super.needsImport(importDecl, qualifiedName);
+		return super.needsImport(importElement, qualifiedName);
 	}
 
 	@Override
@@ -207,8 +208,14 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 					return true;
 				case "addAll":
 					printMacroName(targetMethodName);
-					print("((l1, l2) => l1.push.apply(l1, l2))(").print(invocation.getTargetExpression()).print(", ")
-							.printArgList(invocation.getArguments()).print(")");
+					if (invocation.getArgumentCount() == 2) {
+						print("((l1, ndx, l2) => { for(let i=l2.length-1;i>=0;i--) l1.splice(ndx,0,l2[i]); })(")
+								.print(invocation.getTargetExpression()).print(", ")
+								.printArgList(invocation.getArguments()).print(")");
+					} else {
+						print("((l1, l2) => l1.push.apply(l1, l2))(").print(invocation.getTargetExpression())
+								.print(", ").printArgList(invocation.getArguments()).print(")");
+					}
 					return true;
 				case "pop":
 					print(invocation.getTargetExpression()).print(".pop(").printArgList(invocation.getArguments())
@@ -260,6 +267,28 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 				case "toArray":
 					printMacroName(targetMethodName);
 					if (invocation.getArgumentCount() == 1) {
+						ExtendedElement e = invocation.getArgument(0);
+						if (invocation.getTargetExpression() instanceof VariableAccessElement
+								&& e instanceof NewArrayElement) {
+							NewArrayElement newArray = (NewArrayElement) e;
+							boolean simplified = false;
+							if (newArray.getDimensionCount() == 1) {
+								ExtendedElement d = newArray.getDimension(0);
+								if (d.isConstant() && d.toString().equals("0")) {
+									simplified = true;
+								} else if (d instanceof MethodInvocationElement) {
+									if (((MethodInvocationElement) d).getMethodName().equals("size")
+											&& ((MethodInvocationElement) d).getTargetExpression().toString()
+													.equals(invocation.getTargetExpression().toString())) {
+										simplified = true;
+									}
+								}
+							}
+							if (simplified) {
+								print(invocation.getTargetExpression()).print(".slice(0)");
+								return true;
+							}
+						}
 						print("((a1, a2) => { if(a1.length >= a2.length) { a1.length=0; a1.push.apply(a1, a2); return a1; } else { return a2.slice(0); } })(")
 								.print(invocation.getArgument(0)).print(", ").print(invocation.getTargetExpression())
 								.print(")");
@@ -372,13 +401,33 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 					return true;
 				case "binarySearch":
 					printMacroName(targetMethodName);
-					print(invocation.getArgument(0)).print(".indexOf(").printArgList(invocation.getArgumentTail())
-							.print(")");
-					return true;
+					if (invocation.getArgumentCount() == 3) {
+						print("((l, key, c) => { let comp : any = c; if(typeof c != 'function') { comp = (a,b)=>c.compare(a,b); } let low = 0; let high = l.length-1; while (low <= high) { let mid = (low + high) >>> 1; let midVal = l[mid]; "
+								+ "let cmp = comp(midVal, key); if (cmp < 0) low = mid + 1; else if (cmp > 0) high = mid - 1; else return mid; } "
+								+ "return -(low + 1); })(").printArgList(invocation.getArguments()).print(")");
+						return true;
+					}
+					if (invocation.getArgumentCount() == 2) {
+						if (util().isNumber(invocation.getArgument(1).getType())) {
+							print("((l, key) => { let comp = (a,b)=>a-b; let low = 0; let high = l.length-1; while (low <= high) { let mid = (low + high) >>> 1; let midVal = l[mid]; "
+									+ "let cmp = comp(midVal, key); if (cmp < 0) low = mid + 1; else if (cmp > 0) high = mid - 1; else return mid; } "
+									+ "return -(low + 1); })(").printArgList(invocation.getArguments()).print(")");
+							return true;
+						} else {
+							print("((l, key) => { let comp = (a,b)=>a.localeCompare(b); let low = 0; let high = l.length-1; while (low <= high) { let mid = (low + high) >>> 1; let midVal = l[mid]; "
+									+ "let cmp = comp(midVal, key); if (cmp < 0) low = mid + 1; else if (cmp > 0) high = mid - 1; else return mid; } "
+									+ "return -(low + 1); })(").printArgList(invocation.getArguments()).print(")");
+							return true;
+						}
+					}
 				case "sort":
 					printMacroName(targetMethodName);
 					print(invocation.getArgument(0)).print(".sort(").printArgList(invocation.getArgumentTail())
 							.print(")");
+					return true;
+				case "reverse":
+					printMacroName(targetMethodName);
+					print(invocation.getArgument(0)).print(".reverse()");
 					return true;
 				}
 				break;
@@ -396,6 +445,14 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 				case "copyOf":
 					printMacroName(targetMethodName);
 					print(invocation.getArgument(0)).print(".slice(0,").print(invocation.getArgument(1)).print(")");
+					return true;
+				case "fill":
+					printMacroName(targetMethodName);
+					print("((a, v) => { for(let i=0;i<a.length;i++) a[i]=v; })(")
+							.printArgList(invocation.getArguments()).print(")");
+					// ES6 implementation
+					// print(invocation.getArgument(0)).print(".fill(").printArgList(invocation.getArgumentTail())
+					// .print(")");
 					return true;
 				case "equals":
 					printMacroName(targetMethodName);
@@ -740,7 +797,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 	}
 
 	@Override
-	public boolean substituteForEachLoop(JCEnhancedForLoop foreachLoop, boolean targetHasLength, String indexVarName) {
+	public boolean substituteForEachLoop(ForeachLoopElement foreachLoop, boolean targetHasLength, String indexVarName) {
 		return false;
 	}
 

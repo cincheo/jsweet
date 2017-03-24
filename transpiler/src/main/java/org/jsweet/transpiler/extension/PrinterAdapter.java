@@ -38,9 +38,13 @@ import javax.lang.model.util.Types;
 
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetProblem;
+import org.jsweet.transpiler.model.ArrayAccessElement;
+import org.jsweet.transpiler.model.AssignmentElement;
 import org.jsweet.transpiler.model.CaseElement;
 import org.jsweet.transpiler.model.ExtendedElement;
+import org.jsweet.transpiler.model.ForeachLoopElement;
 import org.jsweet.transpiler.model.IdentifierElement;
+import org.jsweet.transpiler.model.ImportElement;
 import org.jsweet.transpiler.model.MethodInvocationElement;
 import org.jsweet.transpiler.model.NewClassElement;
 import org.jsweet.transpiler.model.Util;
@@ -49,23 +53,17 @@ import org.jsweet.transpiler.model.support.ExtendedElementSupport;
 import org.jsweet.transpiler.model.support.MethodInvocationElementSupport;
 import org.jsweet.transpiler.model.support.UtilSupport;
 import org.jsweet.transpiler.util.AbstractTreePrinter;
-import org.jsweet.transpiler.util.VariableKind;
 
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.JCArrayAccess;
-import com.sun.tools.javac.tree.JCTree.JCAssign;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
-import com.sun.tools.javac.tree.JCTree.JCEnhancedForLoop;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
-import com.sun.tools.javac.tree.JCTree.JCImport;
 import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
-import com.sun.tools.javac.tree.JCTree.JCTypeCast;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 
 /**
@@ -532,6 +530,10 @@ public class PrinterAdapter {
 		return printer.getCompilationUnit();
 	}
 
+	public String getRootRelativeName(Element element) {
+		return printer.getRootRelativeName((Symbol) element);
+	}
+
 	public String getRootRelativeName(Symbol symbol) {
 		return printer.getRootRelativeName(symbol);
 	}
@@ -585,7 +587,7 @@ public class PrinterAdapter {
 	 *            the array access being printed
 	 * @return true if substituted
 	 */
-	public boolean substituteArrayAccess(JCArrayAccess arrayAccess) {
+	public boolean substituteArrayAccess(ArrayAccessElement arrayAccess) {
 		return parentAdapter == null ? false : parentAdapter.substituteArrayAccess(arrayAccess);
 	}
 
@@ -641,33 +643,19 @@ public class PrinterAdapter {
 	 * Returns the import qualified id if the given import requires an import
 	 * statement to be printed.
 	 * 
-	 * @param importDecl
+	 * @param importElement
 	 *            the given import declaration
 	 * @param qualifiedName
 	 *            the qualified import id
 	 * @return the possibly adapted qualified id or null if the import should be
 	 *         ignored by the printer
 	 */
-	public String needsImport(JCImport importDecl, String qualifiedName) {
-		if (importDecl.isStatic()) {
+	public String needsImport(ImportElement importElement, String qualifiedName) {
+		if (importElement.isStatic()) {
 			return null;
 		} else {
-			return getPrinter().getRootRelativeName(importDecl.getQualifiedIdentifier().type.tsym);
+			return getRootRelativeName(importElement.getImportedType());
 		}
-	}
-
-	/**
-	 * Tells if this cast is required to be printed or not.
-	 */
-	public boolean needsTypeCast(JCTypeCast cast) {
-		return parentAdapter == null ? true : parentAdapter.needsTypeCast(cast);
-	}
-
-	/**
-	 * Tells if the printer needs to print the given variable declaration.
-	 */
-	public boolean needsVariableDecl(JCVariableDecl variableDecl, VariableKind kind) {
-		return parentAdapter == null ? true : parentAdapter.needsVariableDecl(variableDecl, kind);
 	}
 
 	/**
@@ -684,12 +672,12 @@ public class PrinterAdapter {
 	/**
 	 * Substitutes the value of a <em>field assignment</em> expression.
 	 * 
-	 * @param assign
+	 * @param assignment
 	 *            the field assignment being printed
 	 * @return true if substituted
 	 */
-	public boolean substituteAssignment(JCAssign assign) {
-		return parentAdapter == null ? false : parentAdapter.substituteAssignment(assign);
+	public boolean substituteAssignment(AssignmentElement assignment) {
+		return parentAdapter == null ? false : parentAdapter.substituteAssignment(assignment);
 	}
 
 	/**
@@ -743,14 +731,14 @@ public class PrinterAdapter {
 	/**
 	 * Substitutes if necessary the given foreach loop.
 	 * 
-	 * @param the
-	 *            foreach loop to print
+	 * @param foreachLoop
+	 *            the foreach loop to print
 	 * @param targetHasLength
 	 *            true if the iterable defines a public length field
 	 * @param indexVarName
 	 *            a possible (fresh) variable name that can used to iterate
 	 */
-	public boolean substituteForEachLoop(JCEnhancedForLoop foreachLoop, boolean targetHasLength, String indexVarName) {
+	public boolean substituteForEachLoop(ForeachLoopElement foreachLoop, boolean targetHasLength, String indexVarName) {
 		return parentAdapter == null ? false
 				: parentAdapter.substituteForEachLoop(foreachLoop, targetHasLength, indexVarName);
 	}
