@@ -1082,36 +1082,38 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 
 		}
 
-		switch (targetMethodName) {
-		case "getClass":
-			print("(<any>");
-			printTarget(invocationElement.getTargetExpression());
-			print(".constructor)");
-			return true;
-		case "hashCode":
-			printMacroName(targetMethodName);
-			print("(<any>(o => { if(o.hashCode) { return o.hashCode(); } else { return o.toString(); } })(");
-			printTarget(invocationElement.getTargetExpression());
-			print("))");
-			return true;
-		case "clone":
-			if (!invocationElement.getMethod().getModifiers().contains(Modifier.STATIC)
-					&& invocationElement.getArgumentCount() == 0) {
-				printMacroName(targetMethodName);
-				if ("super".equals(invocationElement.getTargetExpression().toString())) {
-					JCClassDecl parent = getParent(JCClassDecl.class);
-					if (parent.sym.getSuperclass() != null
-							&& !context.symtab.objectType.equals(parent.sym.getSuperclass())) {
-						print("((o) => { if(super.clone) { return super.clone(); } else { let clone = Object.create(o); for(let p in o) { if (o.hasOwnProperty(p)) clone[p] = o[p]; } return clone; } })(this)");
-					} else {
-						print("((o) => { let clone = Object.create(o); for(let p in o) { if (o.hasOwnProperty(p)) clone[p] = o[p]; } return clone; })(this)");
-					}
-				} else {
-					print("((o) => { if(o.clone) { return (<any>o).clone(); } else { let clone = Object.create(o); for(let p in o) { if (o.hasOwnProperty(p)) clone[p] = o[p]; } return clone; } })(");
-					print(invocationElement.getTargetExpression());
-					print(")");
-				}
+		if (invocationElement.getTargetExpression() != null) {
+			switch (targetMethodName) {
+			case "getClass":
+				print("(<any>");
+				printTarget(invocationElement.getTargetExpression());
+				print(".constructor)");
 				return true;
+			case "hashCode":
+				printMacroName(targetMethodName);
+				print("(<any>(o => { if(o.hashCode) { return o.hashCode(); } else { return o.toString(); } })(");
+				printTarget(invocationElement.getTargetExpression());
+				print("))");
+				return true;
+			case "clone":
+				if (!invocationElement.getMethod().getModifiers().contains(Modifier.STATIC)
+						&& invocationElement.getArgumentCount() == 0) {
+					printMacroName(targetMethodName);
+					if ("super".equals(invocationElement.getTargetExpression().toString())) {
+						JCClassDecl parent = getParent(JCClassDecl.class);
+						if (parent.sym.getSuperclass() != null
+								&& !context.symtab.objectType.equals(parent.sym.getSuperclass())) {
+							print("((o) => { if(super.clone) { return super.clone(); } else { let clone = Object.create(o); for(let p in o) { if (o.hasOwnProperty(p)) clone[p] = o[p]; } return clone; } })(this)");
+						} else {
+							print("((o) => { let clone = Object.create(o); for(let p in o) { if (o.hasOwnProperty(p)) clone[p] = o[p]; } return clone; })(this)");
+						}
+					} else {
+						print("((o) => { if(o.clone) { return (<any>o).clone(); } else { let clone = Object.create(o); for(let p in o) { if (o.hasOwnProperty(p)) clone[p] = o[p]; } return clone; } })(");
+						print(invocationElement.getTargetExpression());
+						print(")");
+					}
+					return true;
+				}
 			}
 		}
 
@@ -1379,7 +1381,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 	@Override
 	public boolean substituteForEachLoop(ForeachLoopElement foreachLoop, boolean targetHasLength, String indexVarName) {
 		if (!targetHasLength) {
-			JCEnhancedForLoop loop = ((ForeachLoopElementSupport)foreachLoop).getTree();
+			JCEnhancedForLoop loop = ((ForeachLoopElementSupport) foreachLoop).getTree();
 			getPrinter().print("for(" + VAR_DECL_KEYWORD + " " + indexVarName + "=").print(loop.expr)
 					.print(".iterator();" + indexVarName + ".hasNext();) {").println().startIndent().printIndent();
 			getPrinter().print(VAR_DECL_KEYWORD + " " + loop.var.name.toString() + " = ")
