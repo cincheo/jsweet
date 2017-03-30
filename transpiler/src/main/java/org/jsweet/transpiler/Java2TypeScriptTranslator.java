@@ -1194,6 +1194,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (defaultMethods != null && !defaultMethods.isEmpty()) {
 			getScope().defaultMethodScope = true;
 			for (Entry<JCClassDecl, JCMethodDecl> entry : defaultMethods) {
+				if (!(entry.getValue().type instanceof MethodType)) {
+					continue;
+				}
 				MethodSymbol s = Util.findMethodDeclarationInType(context.types, classdecl.sym,
 						entry.getValue().getName().toString(), (MethodType) entry.getValue().type);
 				if (s == null || s == entry.getValue().sym) {
