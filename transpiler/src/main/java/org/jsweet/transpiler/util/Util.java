@@ -949,7 +949,7 @@ public class Util {
 	 */
 	public static boolean isImported(JCCompilationUnit compilationUnit, TypeSymbol type) {
 		for (JCImport i : compilationUnit.getImports()) {
-			if (i.isStatic()) {
+			if (i.isStatic() || i.qualid.type == null) {
 				continue;
 			}
 			if (i.qualid.type.tsym == type) {
