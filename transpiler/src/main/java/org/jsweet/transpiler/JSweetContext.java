@@ -1457,8 +1457,8 @@ public class JSweetContext extends Context {
 		String name = type.getQualifiedName().toString();
 		return name.startsWith("java.util.function.") //
 				|| name.equals(Runnable.class.getName()) //
-				|| (type.isInterface() && (hasAnnotationType(type, FunctionalInterface.class.getName())
-						|| hasAnonymousFunction(type)));
+				|| name.startsWith(JSweetConfig.FUNCTION_CLASSES_PACKAGE+".") //
+				|| (type.isInterface() && hasAnonymousFunction(type));
 	}
 
 	/**

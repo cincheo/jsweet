@@ -1330,19 +1330,11 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 				if (assignedType.tsym.isInterface() && !context.isFunctionalType(assignedType.tsym)) {
 					JCLambda lambda = (JCLambda) expression;
 					MethodSymbol method = (MethodSymbol) assignedType.tsym.getEnclosedElements().get(0);
-					print("(() => { ");
-					getPrinter().print(VAR_DECL_KEYWORD + " v = ").print(lambda).print(";");
-					print(VAR_DECL_KEYWORD + " f = function() { this." + method.getSimpleName() + " = v; };");
-					print("return new f(); })()");
+					getPrinter().print("{ " + method.getSimpleName() + " : ").print(lambda).print(" }");
 					return true;
 				}
 			} else if (expression instanceof JCNewClass) {
-				if (((JCNewClass) expression).def != null
-						&& (assignedType.tsym.getQualifiedName().toString().startsWith("java.util.function")
-								|| assignedType.tsym.getQualifiedName().toString()
-										.startsWith(JSweetConfig.FUNCTION_CLASSES_PACKAGE)
-								|| context.hasAnnotationType(assignedType.tsym,
-										JSweetConfig.ANNOTATION_FUNCTIONAL_INTERFACE))) {
+				if (((JCNewClass) expression).def != null && context.isFunctionalType(assignedType.tsym)) {
 					List<JCTree> defs = ((JCNewClass) expression).def.defs;
 					boolean printed = false;
 					for (JCTree def : defs) {

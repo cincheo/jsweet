@@ -26,17 +26,33 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
+import jsweet.util.StringTypes.map;
 import jsweet.util.function.TriFunction;
 
+@FunctionalInterface
+interface FI {
+	int m();
+}
+
+class CFI implements FI {
+	public int m() {
+		return 0;
+	}
+}
+
 public class Lambdas<T> {
-	
+
 	final BinaryOperator<T>[] operations = null;
-    final Lambdas<UnaryOperator<T>> unary = null;
-    
+	final Lambdas<UnaryOperator<T>> unary = null;
+
 	void m() {
 		Runnable r = (Runnable) () -> {
 		};
 		r.run();
+	}
+
+	static void accept(FI fi) {
+
 	}
 
 	void test(Function<String, String> f) {
@@ -45,6 +61,19 @@ public class Lambdas<T> {
 
 	public static void main(String[] args) {
 		new Lambdas<String>().test(p -> p);
+		new CFI().m();
+		new FI() {
+			@Override
+			public int m() {
+				return 0;
+			}
+		}.m();
+		accept(new FI() {
+			@Override
+			public int m() {
+				return 0;
+			}
+		});
 	}
 
 	void invoker() {

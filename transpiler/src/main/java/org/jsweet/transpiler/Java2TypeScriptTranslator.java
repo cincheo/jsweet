@@ -1832,16 +1832,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				report(methodDecl, methodDecl.name, JSweetProblem.WRONG_USE_OF_AMBIENT, methodDecl.name);
 			}
 		}
-		if (parent == null || !context.hasAnnotationType(parent.sym, FunctionalInterface.class.getName())) {
-			if (inOverload && !overload.isValid && !inCoreWrongOverload) {
-				print(getOverloadMethodName(methodDecl.sym));
+		if (inOverload && !overload.isValid && !inCoreWrongOverload) {
+			print(getOverloadMethodName(methodDecl.sym));
+		} else {
+			String tsMethodName = getTSMethodName(methodDecl);
+			if (doesMemberNameRequireQuotes(tsMethodName)) {
+				print("'" + tsMethodName + "'");
 			} else {
-				String tsMethodName = getTSMethodName(methodDecl);
-				if (doesMemberNameRequireQuotes(tsMethodName)) {
-					print("'" + tsMethodName + "'");
-				} else {
-					print(tsMethodName);
-				}
+				print(tsMethodName);
 			}
 		}
 		if ((methodDecl.typarams != null && !methodDecl.typarams.isEmpty())
@@ -2933,7 +2931,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			} else {
 				if (inv.meth instanceof JCFieldAccess) {
 					JCExpression selected = ((JCFieldAccess) inv.meth).selected;
-					if (context.hasAnnotationType(selected.type.tsym, FunctionalInterface.class.getName())) {
+					if (context.isFunctionalType(selected.type.tsym)) {
 						anonymous = true;
 					}
 					methSym = Util.findMethodDeclarationInType(context.types, selected.type.tsym, methName, type);
