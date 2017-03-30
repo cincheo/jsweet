@@ -1457,10 +1457,22 @@ public class JSweetContext extends Context {
 		String name = type.getQualifiedName().toString();
 		return name.startsWith("java.util.function.") //
 				|| name.equals(Runnable.class.getName()) //
-				|| name.startsWith(JSweetConfig.FUNCTION_CLASSES_PACKAGE+".") //
-				|| (type.isInterface() && hasAnonymousFunction(type));
+				|| name.startsWith(JSweetConfig.FUNCTION_CLASSES_PACKAGE + ".") //
+				|| (type.isInterface() && (hasAnnotationType(type, FunctionalInterface.class.getName())
+						|| hasAnonymousFunction(type)));
 	}
 
+	/**
+	 * Returns true if the given type symbol corresponds to a core functional type.
+	 */
+	public boolean isCoreFunctionalType(TypeSymbol type) {
+		String name = type.getQualifiedName().toString();
+		return name.startsWith("java.util.function.") //
+				|| name.equals(Runnable.class.getName()) //
+				|| name.startsWith(JSweetConfig.FUNCTION_CLASSES_PACKAGE + ".") //
+				|| (type.isInterface() && hasAnonymousFunction(type));
+	}
+	
 	/**
 	 * Tells if the given type has a anonymous function (instances can be used
 	 * as lambdas).

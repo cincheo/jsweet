@@ -106,6 +106,7 @@ import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.PackageSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
+import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.TypeVar;
 import com.sun.tools.javac.code.TypeTag;
@@ -1334,8 +1335,9 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 					return true;
 				}
 			} else if (expression instanceof JCNewClass) {
-				if (((JCNewClass) expression).def != null && context.isFunctionalType(assignedType.tsym)) {
-					List<JCTree> defs = ((JCNewClass) expression).def.defs;
+				JCNewClass newClass = (JCNewClass) expression;
+				if (newClass.def != null && context.isFunctionalType(assignedType.tsym)) {
+					List<JCTree> defs = newClass.def.defs;
 					boolean printed = false;
 					for (JCTree def : defs) {
 						if (def instanceof JCMethodDecl) {
@@ -1357,7 +1359,37 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 						return true;
 					}
 				} else {
-					JCNewClass newClass = (JCNewClass) expression;
+					// object assignment to functional type
+					if ((newClass.def == null && context.isFunctionalType(assignedType.tsym))) {
+						MethodSymbol method;
+						for (Symbol s : assignedType.tsym.getEnclosedElements()) {
+							if (s instanceof MethodSymbol) {
+								// TODO also check that the method is compatible
+								// (here we just apply to the first found
+								// method)
+								method = (MethodSymbol) s;
+								print("(");
+								for (VarSymbol p : method.getParameters()) {
+									print(p.getSimpleName().toString()).print(", ");
+								}
+								if (!method.getParameters().isEmpty()) {
+									getPrinter().removeLastChars(2);
+								}
+								getPrinter().print(") => { return new ").print(newClass.clazz).print("(")
+										.printArgList(newClass.args);
+								print(").").print(method.getSimpleName()).print("(");
+								for (VarSymbol p : method.getParameters()) {
+									print(p.getSimpleName().toString()).print(", ");
+								}
+								if (!method.getParameters().isEmpty()) {
+									getPrinter().removeLastChars(2);
+								}
+								print("); }");
+								return true;
+							}
+						}
+
+					}
 					// raw generic type
 					if (!newClass.type.tsym.getTypeParameters().isEmpty() && newClass.typeargs.isEmpty()) {
 						getPrinter().print("<any>(").print(expression).print(")");

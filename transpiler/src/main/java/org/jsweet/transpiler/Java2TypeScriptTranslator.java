@@ -1159,7 +1159,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 				// erase Java interfaces
 				for (JCExpression itf : classdecl.implementing) {
-					if (getAdapter().eraseSuperInterface(classdecl.sym, (ClassSymbol) itf.type.tsym)) {
+					if (context.isFunctionalType(itf.type.tsym) || getAdapter().eraseSuperInterface(classdecl.sym, (ClassSymbol) itf.type.tsym)) {
 						implementing.remove(itf);
 					}
 				}
@@ -1835,14 +1835,16 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				report(methodDecl, methodDecl.name, JSweetProblem.WRONG_USE_OF_AMBIENT, methodDecl.name);
 			}
 		}
-		if (inOverload && !overload.isValid && !inCoreWrongOverload) {
-			print(getOverloadMethodName(methodDecl.sym));
-		} else {
-			String tsMethodName = getTSMethodName(methodDecl);
-			if (doesMemberNameRequireQuotes(tsMethodName)) {
-				print("'" + tsMethodName + "'");
+		if (parent == null || !context.isFunctionalType(parent.sym)) {
+			if (inOverload && !overload.isValid && !inCoreWrongOverload) {
+				print(getOverloadMethodName(methodDecl.sym));
 			} else {
-				print(tsMethodName);
+				String tsMethodName = getTSMethodName(methodDecl);
+				if (doesMemberNameRequireQuotes(tsMethodName)) {
+					print("'" + tsMethodName + "'");
+				} else {
+					print(tsMethodName);
+				}
 			}
 		}
 		if ((methodDecl.typarams != null && !methodDecl.typarams.isEmpty())
@@ -3776,7 +3778,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (parentFunction instanceof JCMethodDecl) {
 					returnType = ((JCMethodDecl) parentFunction).restype.type;
 				} else {
-					returnType = ((JCLambda) parentFunction).type;
+					// TODO: this cannot work! Calculate the return type of the lambda
+					// either from the functional type type arguments, of from the method defining the lambda's signature
+					//returnType = ((JCLambda) parentFunction).type;
 				}
 			}
 			if (!getAdapter().substituteAssignedExpression(returnType, returnStatement.expr)) {

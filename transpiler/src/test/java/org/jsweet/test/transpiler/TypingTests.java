@@ -52,6 +52,7 @@ public class TypingTests extends AbstractTest {
 		eval(ModuleKind.none, (logHandler, r) -> {
 			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
 			Assert.assertEquals("a", r.get("result"));
+			Assert.assertEquals("1:0,1:1,2:2,3:0", r.get("trace"));
 		}, getSourceFile(Lambdas.class));
 	}
 

@@ -26,22 +26,25 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
-import jsweet.util.StringTypes.map;
+import def.js.Array;
 import jsweet.util.function.TriFunction;
 
 @FunctionalInterface
 interface FI {
-	int m();
+	int m(String s);
 }
 
 class CFI implements FI {
-	public int m() {
-		return 0;
+	public int m(String s) {
+		Lambdas.trace.push("1:"+s);
+		return 1;
 	}
 }
 
 public class Lambdas<T> {
 
+	public static Array<String> trace = new Array<>();
+	
 	final BinaryOperator<T>[] operations = null;
 	final Lambdas<UnaryOperator<T>> unary = null;
 
@@ -52,7 +55,7 @@ public class Lambdas<T> {
 	}
 
 	static void accept(FI fi) {
-
+		fi.m("0");
 	}
 
 	void test(Function<String, String> f) {
@@ -61,19 +64,23 @@ public class Lambdas<T> {
 
 	public static void main(String[] args) {
 		new Lambdas<String>().test(p -> p);
-		new CFI().m();
+		accept(new CFI());
+		new CFI().m("1");
 		new FI() {
 			@Override
-			public int m() {
-				return 0;
+			public int m(String s) {
+				Lambdas.trace.push("2:"+s);
+				return 2;
 			}
-		}.m();
+		}.m("2");
 		accept(new FI() {
 			@Override
-			public int m() {
-				return 0;
+			public int m(String s) {
+				Lambdas.trace.push("3:"+s);
+				return 3;
 			}
 		});
+		$export("trace", trace.join(","));
 	}
 
 	void invoker() {
