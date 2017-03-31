@@ -91,7 +91,7 @@ public class MigrationTest extends AbstractTest {
 		writer.flush();
 		// System.out.println(baos); // prints resulting code
 		// verify that there are exactly two comments in the code
-		Assert.assertEquals(3, baos.toString().split("/\\*").length);
-		Assert.assertEquals(3, baos.toString().split("\\*/").length);
+		Assert.assertEquals(4, baos.toString().split("/\\*").length);
+		Assert.assertEquals(4, baos.toString().split("\\*/").length);
 	}
 }
