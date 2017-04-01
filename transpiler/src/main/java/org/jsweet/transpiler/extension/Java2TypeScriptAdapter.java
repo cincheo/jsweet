@@ -343,11 +343,17 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 		if ("println".equals(targetMethodName)) {
 			if (invocationElement.getTargetExpression() != null) {
 				if ("System.out".equals(invocationElement.getTargetExpression().toString())) {
-					print("console.info(").print(invocationElement.getArgument(0)).print(")");
+					PrinterAdapter print = print("console.info(");
+					if (invocationElement.getArgumentCount() > 0)
+						print.print(invocationElement.getArgument(0));
+					print.print(")");
 					return true;
 				}
 				if ("System.err".equals(invocationElement.getTargetExpression().toString())) {
-					print("console.error(").print(invocationElement.getArgument(0)).print(")");
+					PrinterAdapter print = print("console.error(");
+					if (invocationElement.getArgumentCount() > 0)
+						print.print(invocationElement.getArgument(0));
+					print.print(")");
 					return true;
 				}
 			}

@@ -13,6 +13,10 @@ public class QuickStart {
         return result;
     }
 
+    public void empty() {
+        System.out.println();
+    }
+
     public void fail(String a, String b) {
         System.out.println(concat(new String[]{a, b}));
     }
