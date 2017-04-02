@@ -32,6 +32,7 @@ import static org.jsweet.JSweetConfig.INDEXED_SET_STATIC_FUCTION_NAME;
 import static org.jsweet.JSweetConfig.LANG_PACKAGE;
 import static org.jsweet.JSweetConfig.LANG_PACKAGE_ALT;
 import static org.jsweet.JSweetConfig.UTIL_CLASSNAME;
+import static org.jsweet.JSweetConfig.DEPRECATED_UTIL_CLASSNAME;
 import static org.jsweet.JSweetConfig.UTIL_PACKAGE;
 import static org.jsweet.JSweetConfig.isJSweetPath;
 
@@ -433,6 +434,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 		if (targetClassName != null && targetMethodName != null) {
 			switch (targetClassName) {
 			case UTIL_CLASSNAME:
+			case DEPRECATED_UTIL_CLASSNAME:
 				switch (targetMethodName) {
 				case "$export":
 					if (!invocationElement.getArgument(0).isStringLiteral()) {
@@ -549,7 +551,8 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 					}
 				}
 
-				if (invocationElement.getTargetExpression() != null && !UTIL_CLASSNAME.equals(targetClassName)) {
+				if (invocationElement.getTargetExpression() != null && !(UTIL_CLASSNAME.equals(targetClassName)
+						|| DEPRECATED_UTIL_CLASSNAME.equals(targetClassName))) {
 					print(invocationElement.getTargetExpression()).print("[").print(invocationElement.getArgument(0))
 							.print("]");
 				} else {
@@ -584,7 +587,8 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 					}
 				}
 
-				if (invocationElement.getTargetExpression() != null && !UTIL_CLASSNAME.equals(targetClassName)) {
+				if (invocationElement.getTargetExpression() != null && !(UTIL_CLASSNAME.equals(targetClassName)
+						|| DEPRECATED_UTIL_CLASSNAME.equals(targetClassName))) {
 					// check the type through the getter
 					for (Element e : invocationElement.getTargetExpression().getTypeAsElement().getEnclosedElements()) {
 						if (e instanceof ExecutableElement
@@ -643,7 +647,8 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 					}
 				}
 
-				if (invocationElement.getTargetExpression() != null && !UTIL_CLASSNAME.equals(targetClassName)) {
+				if (invocationElement.getTargetExpression() != null && !(UTIL_CLASSNAME.equals(targetClassName)
+						|| DEPRECATED_UTIL_CLASSNAME.equals(targetClassName))) {
 					print("delete ").print(invocationElement.getTargetExpression()).print("[")
 							.print(invocationElement.getArguments().get(0)).print("]");
 				} else {
@@ -662,7 +667,8 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 					return true;
 				}
 
-				if (invocationElement.getTargetExpression() != null && !UTIL_CLASSNAME.equals(targetClassName)) {
+				if (invocationElement.getTargetExpression() != null && !(UTIL_CLASSNAME.equals(targetClassName)
+						|| DEPRECATED_UTIL_CLASSNAME.equals(targetClassName))) {
 					print("delete ").print(invocationElement.getTargetExpression()).print("[")
 							.print(invocationElement.getArgument(0)).print("]");
 				} else {

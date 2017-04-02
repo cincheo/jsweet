@@ -176,7 +176,8 @@ public abstract class JSweetConfig {
 	 */
 	public static final String GLOBALS_CLASS_NAME = "Globals";
 	/** The constant for predefined utilities. */
-	public static final String UTIL_CLASSNAME = UTIL_PACKAGE + ".Globals";
+	public static final String DEPRECATED_UTIL_CLASSNAME = UTIL_PACKAGE + ".Globals";
+	public static final String UTIL_CLASSNAME = UTIL_PACKAGE + ".Lang";
 	/**
 	 * The constant for the interface name that contains all the generated
 	 * string types (short name).

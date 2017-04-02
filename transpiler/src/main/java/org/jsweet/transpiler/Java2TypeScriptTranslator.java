@@ -1159,7 +1159,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 				// erase Java interfaces
 				for (JCExpression itf : classdecl.implementing) {
-					if (context.isFunctionalType(itf.type.tsym) || getAdapter().eraseSuperInterface(classdecl.sym, (ClassSymbol) itf.type.tsym)) {
+					if (context.isFunctionalType(itf.type.tsym)
+							|| getAdapter().eraseSuperInterface(classdecl.sym, (ClassSymbol) itf.type.tsym)) {
 						implementing.remove(itf);
 					}
 				}
@@ -3373,9 +3374,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 										&& ((JCExpressionStatement) s).expr instanceof JCMethodInvocation) {
 									JCMethodInvocation invocation = (JCMethodInvocation) ((JCExpressionStatement) s).expr;
 									String meth = invocation.meth.toString();
-									if (meth.equals(JSweetConfig.INDEXED_SET_FUCTION_NAME)
-											|| meth.equals(JSweetConfig.UTIL_CLASSNAME + "."
-													+ JSweetConfig.INDEXED_SET_FUCTION_NAME)) {
+									if (meth.equals(JSweetConfig.INDEXED_SET_FUCTION_NAME) || (meth
+											.equals(JSweetConfig.UTIL_CLASSNAME + "."
+													+ JSweetConfig.INDEXED_SET_FUCTION_NAME)
+											|| meth.equals(JSweetConfig.DEPRECATED_UTIL_CLASSNAME + "."
+													+ JSweetConfig.INDEXED_SET_FUCTION_NAME))) {
 										if (invocation.getArguments().size() == 3) {
 											if ("this".equals(invocation.getArguments().get(0).toString())) {
 												printIndent().print(invocation.args.tail.head).print(": ")
@@ -3464,8 +3467,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 									&& ((JCExpressionStatement) s).expr instanceof JCMethodInvocation) {
 								JCMethodInvocation invocation = (JCMethodInvocation) ((JCExpressionStatement) s).expr;
 								String meth = invocation.meth.toString();
-								if (meth.equals(JSweetConfig.INDEXED_SET_FUCTION_NAME) || meth.equals(
-										JSweetConfig.UTIL_CLASSNAME + "." + JSweetConfig.INDEXED_SET_FUCTION_NAME)) {
+								if (meth.equals(JSweetConfig.INDEXED_SET_FUCTION_NAME) || (meth
+										.equals(JSweetConfig.UTIL_CLASSNAME + "."
+												+ JSweetConfig.INDEXED_SET_FUCTION_NAME)
+										|| meth.equals(JSweetConfig.DEPRECATED_UTIL_CLASSNAME + "."
+												+ JSweetConfig.INDEXED_SET_FUCTION_NAME))) {
 									if (invocation.getArguments().size() == 3) {
 										if ("this".equals(invocation.getArguments().get(0).toString())) {
 											printIndent().print("target[").print(invocation.args.tail.head).print("]")
@@ -3778,9 +3784,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (parentFunction instanceof JCMethodDecl) {
 					returnType = ((JCMethodDecl) parentFunction).restype.type;
 				} else {
-					// TODO: this cannot work! Calculate the return type of the lambda
-					// either from the functional type type arguments, of from the method defining the lambda's signature
-					//returnType = ((JCLambda) parentFunction).type;
+					// TODO: this cannot work! Calculate the return type of the
+					// lambda
+					// either from the functional type type arguments, of from
+					// the method defining the lambda's signature
+					// returnType = ((JCLambda) parentFunction).type;
 				}
 			}
 			if (!getAdapter().substituteAssignedExpression(returnType, returnStatement.expr)) {
