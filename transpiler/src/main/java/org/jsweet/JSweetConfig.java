@@ -240,6 +240,8 @@ public abstract class JSweetConfig {
 	public static final String ANNOTATION_NAME = JSweetConfig.LANG_PACKAGE + ".Name";
 	public static final String ANNOTATION_DECORATOR = JSweetConfig.LANG_PACKAGE + ".Decorator";
 	public static final String ANNOTATION_REPLACE = JSweetConfig.LANG_PACKAGE + ".Replace";
+	public static final String ANNOTATION_GENERATOR = JSweetConfig.LANG_PACKAGE + ".Generator";
+	public static final String ANNOTATION_NO_DEBUG = JSweetConfig.LANG_PACKAGE + ".NoDebug";
 	public static final String ANNOTATION_FUNCTIONAL_INTERFACE = FunctionalInterface.class.getName();
 
 	/**

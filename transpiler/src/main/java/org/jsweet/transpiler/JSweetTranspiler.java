@@ -179,6 +179,7 @@ public class JSweetTranspiler implements JSweetOptions {
 	private boolean forceJavaRuntime = false;
 	private boolean isUsingJavaRuntime = false;
 	private File headerFile = null;
+	private boolean debugMode = false;
 
 	/**
 	 * Manually sets the transpiler to use (or not use) a Java runtime.
@@ -1784,16 +1785,22 @@ public class JSweetTranspiler implements JSweetOptions {
 	}
 
 	private String[] getHeaderLines() {
+		String[] headerLines = null;
 		if (getHeaderFile() != null) {
 			try {
-				return FileUtils.readLines(getHeaderFile(), getEncoding()).toArray(new String[0]);
+				headerLines = FileUtils.readLines(getHeaderFile(), getEncoding()).toArray(new String[0]);
 			} catch (Exception e) {
 				logger.error("cannot read header file: " + getHeaderFile() + " - using default header");
 			}
 		}
-		return new String[] { "/* Generated from Java with JSweet " + JSweetConfig.getVersionNumber()
-				+ " - http://www.jsweet.org */" };
-
+		if (headerLines == null) {
+			headerLines = new String[] { "/* Generated from Java with JSweet " + JSweetConfig.getVersionNumber()
+					+ " - http://www.jsweet.org */" };
+		}
+		if (context.options.isDebugMode()) {
+			headerLines = ArrayUtils.add(headerLines, "declare function __debug_exec(className, functionName, argNames, target, args, generator);");
+		}
+		return headerLines;
 	}
 
 	@Override
@@ -1822,4 +1829,12 @@ public class JSweetTranspiler implements JSweetOptions {
 		return options;
 	}
 
+	@Override
+	public boolean isDebugMode() {
+		return debugMode;
+	}
+
+	public void setDebugMode(boolean debugMode) {
+		this.debugMode = debugMode;
+	}
 }

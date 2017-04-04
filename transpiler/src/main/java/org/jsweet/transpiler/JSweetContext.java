@@ -182,6 +182,16 @@ public class JSweetContext extends Context {
 		annotationManagers.add(annotationManager);
 	}
 
+	/**
+	 * Removes the given annotation manager from the existing annotation manager
+	 * chain.
+	 * 
+	 * @see #addAnnotationManager(AnnotationManager)
+	 */
+	public final void removeAnnotationManager(AnnotationManager annotationManager) {
+		annotationManagers.remove(annotationManager);
+	}
+
 	private static boolean testStringAt(StringBuilder sb, int i, String string) {
 		if (i < 0) {
 			return false;
@@ -1463,7 +1473,8 @@ public class JSweetContext extends Context {
 	}
 
 	/**
-	 * Returns true if the given type symbol corresponds to a core functional type.
+	 * Returns true if the given type symbol corresponds to a core functional
+	 * type.
 	 */
 	public boolean isCoreFunctionalType(TypeSymbol type) {
 		String name = type.getQualifiedName().toString();
@@ -1472,7 +1483,7 @@ public class JSweetContext extends Context {
 				|| name.startsWith(JSweetConfig.FUNCTION_CLASSES_PACKAGE + ".") //
 				|| (type.isInterface() && hasAnonymousFunction(type));
 	}
-	
+
 	/**
 	 * Tells if the given type has a anonymous function (instances can be used
 	 * as lambdas).

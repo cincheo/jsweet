@@ -171,4 +171,9 @@ public interface JSweetOptions {
 	 */
 	File getHeaderFile();
 
+	/**
+	 * If true, the transpiler generates code that can be debugged with
+	 * JavaScript.
+	 */
+	boolean isDebugMode();
 }
