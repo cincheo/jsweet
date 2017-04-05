@@ -16,6 +16,7 @@ import source.nativestructures.Maps;
 import source.nativestructures.NativeArrays;
 import source.nativestructures.NativeStringBuilder;
 import source.nativestructures.NativeSystem;
+import source.nativestructures.ObjectMaps;
 import source.nativestructures.OverloadWithNative;
 import source.nativestructures.WeakReferences;
 
@@ -81,6 +82,14 @@ public class NativeStructuresTests extends AbstractTest {
 		}, getSourceFile(Maps.class));
 	}
 
+	@Test
+	public void testObjectMaps() {
+		eval((logHandler, result) -> {
+			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+			assertEquals("1,a,2,b,2,a,true,[1,2],[a,b],1,true,1,2,[],-null-", result.get("trace"));
+		}, getSourceFile(ObjectMaps.class));
+	}
+	
 	@Test
 	public void testNativeArrays() {
 		eval((logHandler, result) -> {

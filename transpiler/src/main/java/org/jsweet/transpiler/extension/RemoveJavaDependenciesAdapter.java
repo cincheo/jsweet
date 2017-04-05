@@ -45,6 +45,7 @@ import java.util.WeakHashMap;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
 
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.Java2TypeScriptTranslator;
@@ -94,11 +95,11 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		extTypesMapping.put(Vector.class.getName(), "Array");
 		extTypesMapping.put(Enumeration.class.getName(), "any");
 		extTypesMapping.put(Iterator.class.getName(), "any");
-		extTypesMapping.put(Map.class.getName(), "Object");
-		extTypesMapping.put(HashMap.class.getName(), "Object");
-		extTypesMapping.put(WeakHashMap.class.getName(), "Object");
-		extTypesMapping.put(LinkedHashMap.class.getName(), "Object");
-		extTypesMapping.put(Hashtable.class.getName(), "Object");
+		extTypesMapping.put(Map.class.getName(), "any");
+		extTypesMapping.put(HashMap.class.getName(), "any");
+		extTypesMapping.put(WeakHashMap.class.getName(), "any");
+		extTypesMapping.put(LinkedHashMap.class.getName(), "any");
+		extTypesMapping.put(Hashtable.class.getName(), "any");
 		extTypesMapping.put(Comparator.class.getName(), "any");
 		extTypesMapping.put(Exception.class.getName(), "Error");
 		extTypesMapping.put(RuntimeException.class.getName(), "Error");
@@ -187,6 +188,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 				switch (targetMethodName) {
 				case "add":
 				case "push":
+				case "addElement":
 					printMacroName(targetMethodName);
 					switch (targetClassName) {
 					case "java.util.Set":
@@ -218,13 +220,17 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 					}
 					return true;
 				case "pop":
+					printMacroName(targetMethodName);
 					print(invocation.getTargetExpression()).print(".pop(").printArgList(invocation.getArguments())
 							.print(")");
 					return true;
 				case "peek":
+				case "lastElement":
+					printMacroName(targetMethodName);
 					print("((s) => { return s[s.length-1]; })(").print(invocation.getTargetExpression()).print(")");
 					return true;
 				case "remove":
+				case "removeElement":
 					printMacroName(targetMethodName);
 					if (Util.isNumber(invocation.getArgument(0).getType())) {
 						print(invocation.getTargetExpression()).print(".splice(")
@@ -235,6 +241,11 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 								.printArgList(invocation.getArgumentTail()).print(", 1))(")
 								.print(invocation.getTargetExpression()).print(")");
 					}
+					return true;
+				case "removeElementAt":
+					printMacroName(targetMethodName);
+					print(invocation.getTargetExpression()).print(".splice(").printArgList(invocation.getArguments())
+							.print(", 1)");
 					return true;
 				case "subList":
 					printMacroName(targetMethodName);
@@ -314,50 +325,105 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			case "java.util.Hashtable":
 			case "java.util.WeakHashMap":
 			case "java.util.LinkedHashMap":
-				switch (targetMethodName) {
-				case "put":
-					printMacroName(targetMethodName);
-					print("(").print(invocation.getTargetExpression()).print("[").print(invocation.getArgument(0))
-							.print("] = ").print(invocation.getArgument(1)).print(")");
-					return true;
-				case "get":
-					printMacroName(targetMethodName);
-					print("((m,k) => m[k]?m[k]:null)(").print(invocation.getTargetExpression()).print(", ")
-							.print(invocation.getArgument(0)).print(")");
-					return true;
-				case "containsKey":
-					printMacroName(targetMethodName);
-					print(invocation.getTargetExpression()).print(".hasOwnProperty(").print(invocation.getArgument(0))
-							.print(")");
-					return true;
-				case "keySet":
-					printMacroName(targetMethodName);
-					print("Object.keys(").print(invocation.getTargetExpression()).print(")");
-					return true;
-				case "values":
-					printMacroName(targetMethodName);
-					print("(obj => Object.keys(obj).map(key => obj[key]))(").print(invocation.getTargetExpression())
-							.print(")");
-					return true;
-				case "size":
-					printMacroName(targetMethodName);
-					print("Object.keys(").print(invocation.getTargetExpression()).print(").length");
-					return true;
-				case "remove":
-					printMacroName(targetMethodName);
-					print("delete ").print(invocation.getTargetExpression()).print("[").print(invocation.getArgument(0))
-							.print("]");
-					return true;
-				case "clear":
-					printMacroName(targetMethodName);
-					print("(obj => { for (let member in obj) delete obj[member]; })(")
-							.print(invocation.getTargetExpression()).print(")");
-					return true;
-				case "entrySet":
-					printMacroName(targetMethodName);
-					print("(o => { let s = []; for (let e in o) s.push({ k: e, v: o[e], getKey: function() { return this.k }, getValue: function() { return this.v } }); return s; })(")
-							.print(invocation.getTargetExpression()).print(")");
-					return true;
+				if (((DeclaredType) targetExpression.getType()).getTypeArguments().size() == 2
+						&& types().isSameType(((DeclaredType) targetExpression.getType()).getTypeArguments().get(0),
+								util().getType(String.class))) {
+					switch (targetMethodName) {
+					case "put":
+						printMacroName(targetMethodName);
+						print("(").print(invocation.getTargetExpression()).print("[").print(invocation.getArgument(0))
+								.print("] = ").print(invocation.getArgument(1)).print(")");
+						return true;
+					case "get":
+						printMacroName(targetMethodName);
+						print("((m,k) => m[k]?m[k]:null)(").print(invocation.getTargetExpression()).print(", ")
+								.print(invocation.getArgument(0)).print(")");
+						return true;
+					case "containsKey":
+						printMacroName(targetMethodName);
+						print(invocation.getTargetExpression()).print(".hasOwnProperty(")
+								.print(invocation.getArgument(0)).print(")");
+						return true;
+					case "keySet":
+						printMacroName(targetMethodName);
+						print("Object.keys(").print(invocation.getTargetExpression()).print(")");
+						return true;
+					case "values":
+						printMacroName(targetMethodName);
+						print("(obj => Object.keys(obj).map(key => obj[key]))(").print(invocation.getTargetExpression())
+								.print(")");
+						return true;
+					case "size":
+						printMacroName(targetMethodName);
+						print("Object.keys(").print(invocation.getTargetExpression()).print(").length");
+						return true;
+					case "remove":
+						printMacroName(targetMethodName);
+						print("delete ").print(invocation.getTargetExpression()).print("[")
+								.print(invocation.getArgument(0)).print("]");
+						return true;
+					case "clear":
+						printMacroName(targetMethodName);
+						print("(obj => { for (let member in obj) delete obj[member]; })(")
+								.print(invocation.getTargetExpression()).print(")");
+						return true;
+					case "entrySet":
+						printMacroName(targetMethodName);
+						print("(o => { let s = []; for (let e in o) s.push({ k: e, v: o[e], getKey: function() { return this.k }, getValue: function() { return this.v } }); return s; })(")
+								.print(invocation.getTargetExpression()).print(")");
+						return true;
+					}
+				} else {
+					switch (targetMethodName) {
+					case "put":
+						printMacroName(targetMethodName);
+						print("((m,k,v) => { if(m.entries==null) m.entries=[]; for(let i=0;i<m.entries.length;i++) if(m.entries[i].key.equals!=null && m.entries[i].key.equals(k) || m.entries[i].key===k) { m.entries[i].value=v; return; } m.entries.push({key:k,value:v,getKey: function() { return this.key }, getValue: function() { return this.value }}); })(")
+								.print("<any>").print(invocation.getTargetExpression()).print(", ")
+								.printArgList(invocation.getArguments()).print(")");
+						return true;
+					case "get":
+						printMacroName(targetMethodName);
+						print("((m,k) => { if(m.entries==null) m.entries=[]; for(let i=0;i<m.entries.length;i++) if(m.entries[i].key.equals!=null && m.entries[i].key.equals(k) || m.entries[i].key===k) { return m.entries[i].value; } return null; })(")
+								.print("<any>").print(invocation.getTargetExpression()).print(", ")
+								.printArgList(invocation.getArguments()).print(")");
+						return true;
+					case "containsKey":
+						printMacroName(targetMethodName);
+						print("((m,k) => { if(m.entries==null) m.entries=[]; for(let i=0;i<m.entries.length;i++) if(m.entries[i].key.equals!=null && m.entries[i].key.equals(k) || m.entries[i].key===k) { return true; } return false; })(")
+								.print("<any>").print(invocation.getTargetExpression()).print(", ")
+								.printArgList(invocation.getArguments()).print(")");
+						return true;
+					case "keySet":
+						printMacroName(targetMethodName);
+						print("((m) => { let r=[]; if(m.entries==null) m.entries=[]; for(let i=0;i<m.entries.length;i++) r.push(m.entries[i].key); return r; })(")
+								.print("<any>").print(invocation.getTargetExpression()).print(")");
+						return true;
+					case "values":
+						printMacroName(targetMethodName);
+						print("((m) => { let r=[]; if(m.entries==null) m.entries=[]; for(let i=0;i<m.entries.length;i++) r.push(m.entries[i].value); return r; })(")
+								.print("<any>").print(invocation.getTargetExpression()).print(")");
+						return true;
+					case "size":
+						printMacroName(targetMethodName);
+						print("((m) => { if(m.entries==null) m.entries=[]; return m.entries.length; })(").print("<any>")
+								.print(invocation.getTargetExpression()).print(")");
+						return true;
+					case "remove":
+						printMacroName(targetMethodName);
+						print("((m,k) => { if(m.entries==null) m.entries=[]; for(let i=0;i<m.entries.length;i++) if(m.entries[i].key.equals!=null && m.entries[i].key.equals(k) || m.entries[i].key===k) { return m.entries.splice(i,1)[0]; } })(")
+								.print("<any>").print(invocation.getTargetExpression()).print(", ")
+								.printArgList(invocation.getArguments()).print(")");
+						return true;
+					case "clear":
+						printMacroName(targetMethodName);
+						print("(<any>").print(invocation.getTargetExpression()).print(").entries=[]");
+						return true;
+					case "entrySet":
+						printMacroName(targetMethodName);
+						print("((m) => { if(m.entries==null) m.entries=[]; return m.entries; })(").print("<any>")
+								.print(invocation.getTargetExpression()).print(")");
+						return true;
+					}
 				}
 				break;
 			case "java.util.Collections":
@@ -391,12 +457,17 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 					return true;
 				case "singletonMap":
 					printMacroName(targetMethodName);
-					if (invocation.getArgument(0) instanceof JCLiteral) {
-						print("{ ").print(invocation.getArgument(0)).print(": ").print(invocation.getArgument(1))
-								.print(" }");
+					if (types().isSameType(invocation.getArgument(0).getType(), util().getType(String.class))) {
+						if (invocation.getArgument(0) instanceof JCLiteral) {
+							print("{ ").print(invocation.getArgument(0)).print(": ").print(invocation.getArgument(1))
+									.print(" }");
+						} else {
+							print("(k => { let o = {}; o[k] = ").print(invocation.getArgument(1))
+									.print("; return o; })(").print(invocation.getArgument(0)).print(")");
+						}
 					} else {
-						print("(k => { let o = {}; o[k] = ").print(invocation.getArgument(1)).print("; return o; })(")
-								.print(invocation.getArgument(0)).print(")");
+						print("(k => { let o = {entries: [{getKey: function() { return this.key }, getValue: function() { return this.value },key:k, value:").print(invocation.getArgument(1))
+								.print("}]}; return o; })(").print(invocation.getArgument(0)).print(")");
 					}
 					return true;
 				case "binarySearch":
