@@ -36,17 +36,35 @@ interface FI {
 
 class CFI implements FI {
 	public int m(String s) {
-		Lambdas.trace.push("1:"+s);
+		Lambdas.trace.push("1:" + s);
 		return 1;
 	}
 }
 
 public class Lambdas<T> {
 
-	public static Array<String> trace = new Array<>();
+	public Lambdas() {
+		i = 1;
+	}
+
+	public Lambdas(int i) {
+		this.i = i;
+	}
 	
+	int i;
+
+	public static Array<String> trace = new Array<>();
+
 	final BinaryOperator<T>[] operations = null;
 	final Lambdas<UnaryOperator<T>> unary = null;
+
+	FI fi2 = new FI() {
+		@Override
+		public int m(String s) {
+			Lambdas.trace.push("2:" + s);
+			return 2;
+		}
+	};
 
 	void m() {
 		Runnable r = (Runnable) () -> {
@@ -66,17 +84,18 @@ public class Lambdas<T> {
 		new Lambdas<String>().test(p -> p);
 		accept(new CFI());
 		new CFI().m("1");
-		new FI() {
+		FI fi = new FI() {
 			@Override
 			public int m(String s) {
-				Lambdas.trace.push("2:"+s);
+				Lambdas.trace.push("2:" + s);
 				return 2;
 			}
-		}.m("2");
+		};
+		fi.m("2");
 		accept(new FI() {
 			@Override
 			public int m(String s) {
-				Lambdas.trace.push("3:"+s);
+				Lambdas.trace.push("3:" + s);
 				return 3;
 			}
 		});

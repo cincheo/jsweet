@@ -2162,10 +2162,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 		if (getScope().innerClassNotStatic && !Util.isConstantOrNullField(var)) {
 			if (doesMemberNameRequireQuotes(name)) {
-				printIndent().print("this['").print(name).print("'] = ").print(var.init).print(";").println();
+				printIndent().print("this['").print(name).print("'] = ");
 			} else {
-				printIndent().print("this.").print(name).print(" = ").print(var.init).print(";").println();
+				printIndent().print("this.").print(name).print(" = ");
 			}
+			if (!getAdapter().substituteAssignedExpression(var.type, var.init)) {
+				print(var.init);
+			}
+			print(";").println();
 		} else if (var.init == null) {
 			if (doesMemberNameRequireQuotes(name)) {
 				printIndent().print("this['").print(name).print("'] = ").print(Util.getTypeInitialValue(var.type))
@@ -2336,7 +2340,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			if (context.getFieldNameMapping(field.sym) != null) {
 				name = context.getFieldNameMapping(field.sym);
 			}
-			printIndent().print("this.").print(name).print(" = ").print(field.init).print(";").println();
+			printIndent().print("this.").print(name).print(" = ");
+			if (!getAdapter().substituteAssignedExpression(field.type, field.init)) {
+				print(field.init);
+			}
+			print(";").println();
 		}
 	}
 
