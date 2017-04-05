@@ -318,6 +318,9 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 					print("((a) => { var i = 0; return { next: function() { return i<a.length?a[i++]:null; }, hasNext: function() { return i<a.length; }}})(")
 							.print(invocation.getTargetExpression()).print(")");
 					return true;
+				case "ensureCapacity":
+					printMacroName(targetMethodName);
+					return true;
 				}
 				break;
 			case "java.util.Map":
