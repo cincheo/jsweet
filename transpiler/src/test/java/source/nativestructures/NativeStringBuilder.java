@@ -51,5 +51,13 @@ public class NativeStringBuilder {
 		sb2.append(c, i, l);
 	}
 
+	public void overload(StringBuilder sb1) {
+		
+	}
+
+	public void overload(StringBuilder sb2, String s) {
+		
+	}
+	
 	
 }

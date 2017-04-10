@@ -29,13 +29,25 @@ public class Chars {
 		"abc".lastIndexOf('a');
 		"abc".indexOf('a');
 		// would need latest j4ts
-		//Character.toUpperCase(i3);
-		
+		// Character.toUpperCase(i3);
+
 		char c = 'a';
 		if (c == 60) {
 			System.out.println("success");
 		}
-		
+
+		int i4 = 20;
+		switch (i4) {
+		case 12:
+		case 'a':
+		case 'b':
+		}
+		boolean test = true;
+		String string = "abc";
+		int result = (test) ? -1 : string.charAt(0);
+		result = string.charAt(0);
+		result = (test) ? m(test ? 'a' : string.charAt(0)) : string.charAt(0);
+
 	}
 
 	public static final int MIN_RADIX = 2;
@@ -50,6 +62,10 @@ public class Chars {
 
 	public static int test2() {
 		return 0;
+	}
+
+	static int m(char i) {
+		return (char) i;
 	}
 
 	public static int digit(char c, int radix) {

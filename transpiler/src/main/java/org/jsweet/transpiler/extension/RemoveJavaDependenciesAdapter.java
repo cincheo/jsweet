@@ -20,6 +20,11 @@ package org.jsweet.transpiler.extension;
 
 import static org.jsweet.JSweetConfig.isJDKPath;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringReader;
 import java.lang.ref.WeakReference;
 import java.text.Collator;
 import java.util.ArrayList;
@@ -34,6 +39,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
@@ -111,6 +117,12 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		extTypesMapping.put(Calendar.class.getName(), "Date");
 		extTypesMapping.put(GregorianCalendar.class.getName(), "Date");
 		extTypesMapping.put(TimeZone.class.getName(), "string");
+		extTypesMapping.put(Locale.class.getName(), "string");
+		extTypesMapping.put(Reader.class.getName(), "{ str: string, cursor: number }");
+		extTypesMapping.put(StringReader.class.getName(), "{ str: string, cursor: number }");
+		extTypesMapping.put(InputStream.class.getName(), "{ str: string, cursor: number }");
+		extTypesMapping.put(InputStreamReader.class.getName(), "{ str: string, cursor: number }");
+		extTypesMapping.put(BufferedReader.class.getName(), "{ str: string, cursor: number }");
 		addTypeMappings(extTypesMapping);
 		addTypeMapping(
 				(typeTree,
@@ -469,8 +481,9 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 									.print("; return o; })(").print(invocation.getArgument(0)).print(")");
 						}
 					} else {
-						print("(k => { let o = {entries: [{getKey: function() { return this.key }, getValue: function() { return this.value },key:k, value:").print(invocation.getArgument(1))
-								.print("}]}; return o; })(").print(invocation.getArgument(0)).print(")");
+						print("(k => { let o = {entries: [{getKey: function() { return this.key }, getValue: function() { return this.value },key:k, value:")
+								.print(invocation.getArgument(1)).print("}]}; return o; })(")
+								.print(invocation.getArgument(0)).print(")");
 					}
 					return true;
 				case "binarySearch":
@@ -604,6 +617,13 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 				case "getInstance":
 					printMacroName(targetMethodName);
 					print("((o1, o2) => o1.toString().localeCompare(o2.toString()))");
+					return true;
+				}
+			case "java.util.Locale":
+				switch (targetMethodName) {
+				case "getDefault":
+					printMacroName(targetMethodName);
+					getPrinter().print("(window.navigator['userLanguage'] || window.navigator.language)");
 					return true;
 				}
 			case "java.util.TimeZone":
@@ -746,6 +766,31 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 					print("(new Date(").print(invocation.getTargetExpression()).print(".getTime()))");
 					return true;
 				}
+
+			case "java.io.Reader":
+			case "java.io.StringReader":
+			case "java.io.InputStream":
+			case "java.io.InputStreamReader":
+			case "java.io.BufferedReader":
+				switch (targetMethodName) {
+				case "read":
+					printMacroName(targetMethodName);
+					print("(r => r.str.charCodeAt(r.cursor++))(").print(invocation.getTargetExpression()).print(")");
+					return true;
+				case "skip":
+					printMacroName(targetMethodName);
+					print(invocation.getTargetExpression()).print(".cursor+=").print(invocation.getArgument(0));
+					return true;
+				case "reset":
+					printMacroName(targetMethodName);
+					print(invocation.getTargetExpression()).print(".cursor=0");
+					return true;
+				case "close":
+					printMacroName(targetMethodName);
+					// ignore but we could flag it and throw an error...
+					return true;
+				}
+
 			}
 
 			switch (targetMethodName) {
@@ -779,6 +824,8 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 				switch (variableAccess.getVariableName()) {
 				case "MIN_VALUE":
 				case "MAX_VALUE":
+				case "POSITIVE_INFINITY":
+				case "NEGATIVE_INFINITY":
 					print("Number." + variableAccess.getVariableName());
 					return true;
 				}
@@ -829,6 +876,13 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			}
 			return true;
 		case "java.lang.ref.WeakReference":
+			print(newClass.getArgument(0));
+			return true;
+		case "java.io.StringReader":
+			print("{ str: ").print(newClass.getArgument(0)).print(", cursor: 0 }");
+			return true;
+		case "java.io.InputStreamReader":
+		case "java.io.BufferedReader":
 			print(newClass.getArgument(0));
 			return true;
 		case "java.util.GregorianCalendar":
@@ -913,7 +967,10 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		if ("string".equals(mappedType)) {
 			mappedType = "String";
 		}
-		if ("any".equals(mappedType)) {
+		if ("boolean".equals(mappedType)) {
+			mappedType = "Boolean";
+		}
+		if ("any".equals(mappedType) || (mappedType != null && mappedType.startsWith("{"))) {
 			mappedType = "Object";
 		}
 		if (mappedType != null) {

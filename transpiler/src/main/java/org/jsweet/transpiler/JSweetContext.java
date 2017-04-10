@@ -444,6 +444,13 @@ public class JSweetContext extends Context {
 			}
 			filterDescriptors.add(new AnnotationFilterDescriptor(inclusionPatterns, exclusionPatterns, parameter));
 
+		} else {
+			switch (entry.getKey()) {
+			case "typeMapping":
+				for (Entry<String, Object> e : entry.getValue().entrySet()) {
+					addTypeMapping(e.getKey(), (String) e.getValue());
+				}
+			}
 		}
 
 	}

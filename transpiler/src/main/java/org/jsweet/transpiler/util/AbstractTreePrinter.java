@@ -352,6 +352,18 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	}
 
 	/**
+	 * Conditionally subtitutes an expression when it is assigned to a given
+	 * type.
+	 * 
+	 * @param assignedType
+	 *            the type the expression is being assigned to
+	 * @param expression
+	 *            the assigned expression
+	 * @return true if the expression what subtituted
+	 */
+	abstract protected boolean substituteAssignedExpression(Type assignedType, JCExpression expression);
+
+	/**
 	 * Prints an invocation argument list, with type assignment.
 	 */
 	public AbstractTreePrinter printArgList(JCMethodInvocation inv) {
@@ -360,7 +372,7 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 			if (inv.meth.type != null) {
 				List<Type> argTypes = ((MethodType) inv.meth.type).argtypes;
 				Type paramType = i < argTypes.size() ? argTypes.get(i) : argTypes.get(argTypes.size() - 1);
-				if (!getAdapter().substituteAssignedExpression(paramType, arg)) {
+				if (!substituteAssignedExpression(paramType, arg)) {
 					print(arg);
 				}
 			}

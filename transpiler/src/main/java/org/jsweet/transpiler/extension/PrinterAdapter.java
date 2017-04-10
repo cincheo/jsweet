@@ -721,14 +721,6 @@ public class PrinterAdapter {
 	}
 
 	/**
-	 * Substitutes if required an expression that is being assigned to a given
-	 * type.
-	 */
-	public boolean substituteAssignedExpression(Type assignedType, JCExpression expression) {
-		return parentAdapter == null ? false : parentAdapter.substituteAssignedExpression(assignedType, expression);
-	}
-
-	/**
 	 * Substitutes if necessary the given foreach loop.
 	 * 
 	 * @param foreachLoop

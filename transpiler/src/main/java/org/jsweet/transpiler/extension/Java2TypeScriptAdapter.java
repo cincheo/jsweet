@@ -21,6 +21,7 @@ package org.jsweet.transpiler.extension;
 import static org.jsweet.JSweetConfig.ANNOTATION_ERASED;
 import static org.jsweet.JSweetConfig.ANNOTATION_OBJECT_TYPE;
 import static org.jsweet.JSweetConfig.ANNOTATION_STRING_TYPE;
+import static org.jsweet.JSweetConfig.DEPRECATED_UTIL_CLASSNAME;
 import static org.jsweet.JSweetConfig.GLOBALS_CLASS_NAME;
 import static org.jsweet.JSweetConfig.GLOBALS_PACKAGE_NAME;
 import static org.jsweet.JSweetConfig.INDEXED_DELETE_FUCTION_NAME;
@@ -32,7 +33,6 @@ import static org.jsweet.JSweetConfig.INDEXED_SET_STATIC_FUCTION_NAME;
 import static org.jsweet.JSweetConfig.LANG_PACKAGE;
 import static org.jsweet.JSweetConfig.LANG_PACKAGE_ALT;
 import static org.jsweet.JSweetConfig.UTIL_CLASSNAME;
-import static org.jsweet.JSweetConfig.DEPRECATED_UTIL_CLASSNAME;
 import static org.jsweet.JSweetConfig.UTIL_PACKAGE;
 import static org.jsweet.JSweetConfig.isJSweetPath;
 
@@ -104,13 +104,10 @@ import org.jsweet.transpiler.util.Util;
 import com.sun.codemodel.internal.JJavaName;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
-import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.PackageSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
-import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.TypeVar;
-import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.parser.Tokens.Comment;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
@@ -119,7 +116,6 @@ import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCImport;
-import com.sun.tools.javac.tree.JCTree.JCLambda;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
@@ -200,7 +196,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 		addTypeMapping("byte", "number");
 		addTypeMapping("short", "number");
 		addTypeMapping("char", "string");
-		addTypeMapping("Class", "Function");
+		addTypeMapping(Class.class.getName(), "Function<>");
 		addTypeMapping(LANG_PACKAGE + ".Object", "Object");
 		addTypeMapping(LANG_PACKAGE + ".Boolean", "boolean");
 		addTypeMapping(LANG_PACKAGE + ".String", "string");
@@ -335,6 +331,11 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 	public boolean substituteMethodInvocation(MethodInvocationElement invocationElement) {
 
 		Element targetType = invocationElement.getMethod().getEnclosingElement();
+		if (hasAnnotationType(targetType, ANNOTATION_ERASED)
+				|| hasAnnotationType(invocationElement.getMethod(), ANNOTATION_ERASED)) {
+			print("null");
+			return true;
+		}
 		if (invocationElement.getTargetExpression() != null) {
 			targetType = invocationElement.getTargetExpression().getTypeAsElement();
 		}
@@ -1295,10 +1296,14 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 	@Override
 	public String getQualifiedTypeName(TypeSymbol type, boolean globals) {
 		String qualifiedName = super.getQualifiedTypeName(type, globals);
-		if (context.getLangTypeMappings().containsKey(type.getQualifiedName().toString())) {
-			qualifiedName = context.getLangTypeMappings().get(type.getQualifiedName().toString());
-		} else if (isMappedType(type.getQualifiedName().toString())) {
-			qualifiedName = getTypeMappingTarget(type.getQualifiedName().toString());
+		String typeName = type.getQualifiedName().toString();
+		if (context.getLangTypeMappings().containsKey(typeName)) {
+			qualifiedName = context.getLangTypeMappings().get(typeName);
+		} else if (isMappedType(typeName)) {
+			qualifiedName = getTypeMappingTarget(typeName);
+			if (qualifiedName.endsWith("<>")) {
+				qualifiedName = qualifiedName.substring(0, qualifiedName.length() - 2);
+			}
 		} else {
 			if (context.useModules) {
 				String[] namePath = qualifiedName.split("\\.");
@@ -1325,92 +1330,6 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 	@Override
 	public Set<String> getErasedTypes() {
 		return context.getLangTypeMappings().keySet();
-	}
-
-	@Override
-	public boolean substituteAssignedExpression(Type assignedType, JCExpression expression) {
-		if (assignedType == null) {
-			return false;
-		}
-		if (assignedType.getTag() == TypeTag.CHAR && expression.type.getTag() != TypeTag.CHAR) {
-			getPrinter().print("String.fromCharCode(").print(expression).print(")");
-			return true;
-		} else if (Util.isNumber(assignedType) && expression.type.getTag() == TypeTag.CHAR) {
-			getPrinter().print("(").print(expression).print(").charCodeAt(0)");
-			return true;
-		} else {
-			if (expression instanceof JCLambda) {
-				if (assignedType.tsym.isInterface() && !context.isFunctionalType(assignedType.tsym)) {
-					JCLambda lambda = (JCLambda) expression;
-					MethodSymbol method = (MethodSymbol) assignedType.tsym.getEnclosedElements().get(0);
-					getPrinter().print("{ " + method.getSimpleName() + " : ").print(lambda).print(" }");
-					return true;
-				}
-			} else if (expression instanceof JCNewClass) {
-				JCNewClass newClass = (JCNewClass) expression;
-				if (newClass.def != null && context.isFunctionalType(assignedType.tsym)) {
-					List<JCTree> defs = newClass.def.defs;
-					boolean printed = false;
-					for (JCTree def : defs) {
-						if (def instanceof JCMethodDecl) {
-							if (printed) {
-								// should never happen... report error?
-							}
-							JCMethodDecl method = (JCMethodDecl) def;
-							if (method.sym.isConstructor()) {
-								continue;
-							}
-							getStack().push(method);
-							getPrinter().print("(").printArgList(method.getParameters()).print(") => ")
-									.print(method.body);
-							getStack().pop();
-							printed = true;
-						}
-					}
-					if (printed) {
-						return true;
-					}
-				} else {
-					// object assignment to functional type
-					if ((newClass.def == null && context.isFunctionalType(assignedType.tsym))) {
-						MethodSymbol method;
-						for (Symbol s : assignedType.tsym.getEnclosedElements()) {
-							if (s instanceof MethodSymbol) {
-								// TODO also check that the method is compatible
-								// (here we just apply to the first found
-								// method)
-								method = (MethodSymbol) s;
-								print("(");
-								for (VarSymbol p : method.getParameters()) {
-									print(p.getSimpleName().toString()).print(", ");
-								}
-								if (!method.getParameters().isEmpty()) {
-									getPrinter().removeLastChars(2);
-								}
-								getPrinter().print(") => { return new ").print(newClass.clazz).print("(")
-										.printArgList(newClass.args);
-								print(").").print(method.getSimpleName()).print("(");
-								for (VarSymbol p : method.getParameters()) {
-									print(p.getSimpleName().toString()).print(", ");
-								}
-								if (!method.getParameters().isEmpty()) {
-									getPrinter().removeLastChars(2);
-								}
-								print("); }");
-								return true;
-							}
-						}
-
-					}
-					// raw generic type
-					if (!newClass.type.tsym.getTypeParameters().isEmpty() && newClass.typeargs.isEmpty()) {
-						getPrinter().print("<any>(").print(expression).print(")");
-						return true;
-					}
-				}
-			}
-			return false;
-		}
 	}
 
 	@Override

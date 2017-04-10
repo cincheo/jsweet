@@ -12,6 +12,7 @@ import org.junit.Test;
 import source.nativestructures.Collections;
 import source.nativestructures.Dates;
 import source.nativestructures.Exceptions;
+import source.nativestructures.Input;
 import source.nativestructures.Maps;
 import source.nativestructures.NativeArrays;
 import source.nativestructures.NativeStringBuilder;
@@ -114,4 +115,12 @@ public class NativeStructuresTests extends AbstractTest {
 		}, getSourceFile(Dates.class));
 	}
 
+	@Test
+	public void testInput() {
+		eval((logHandler, result) -> {
+			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+			assertEquals("t,h,s,t", result.get("trace"));
+		}, getSourceFile(Input.class));
+	}
+	
 }

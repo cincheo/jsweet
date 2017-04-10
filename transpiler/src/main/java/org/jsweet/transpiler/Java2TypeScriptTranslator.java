@@ -291,6 +291,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	private static java.util.List<Class<?>> statementsWithNoSemis = Arrays
 			.asList(new Class<?>[] { JCIf.class, JCForLoop.class, JCEnhancedForLoop.class, JCSwitch.class });
 
+	private static String mapConstructorType(String typeName) {
+		if (CONSTRUCTOR_TYPE_MAPPING.containsKey(typeName)) {
+			return CONSTRUCTOR_TYPE_MAPPING.get(typeName);
+		} else {
+			return typeName;
+		}
+	}
+
 	public static final Map<String, String> TYPE_MAPPING;
 	static {
 		Map<String, String> mapping = new HashMap<>();
@@ -313,6 +321,16 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		mapping.put("byte", "Number");
 		mapping.put("long", "Number");
 		TYPE_MAPPING = Collections.unmodifiableMap(mapping);
+	}
+
+	private static final Map<String, String> CONSTRUCTOR_TYPE_MAPPING;
+	static {
+		Map<String, String> mapping = new HashMap<>();
+		mapping.put("string", "String");
+		mapping.put("number", "Number");
+		mapping.put("boolean", "Boolean");
+		mapping.put("any", "Object");
+		CONSTRUCTOR_TYPE_MAPPING = Collections.unmodifiableMap(mapping);
 	}
 
 	private JCMethodDecl mainMethod;
@@ -837,6 +855,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			if (typeTree instanceof JCTypeApply) {
 				JCTypeApply typeApply = ((JCTypeApply) typeTree);
 				String typeName = typeApply.clazz.toString();
+				String mappedTypeName = context.getTypeMappingTarget(typeName);
+				if (mappedTypeName != null && mappedTypeName.endsWith("<>")) {
+					print(typeName.substring(0, mappedTypeName.length() - 2));
+					return this;
+				}
+
 				if (typeFullName.startsWith(TUPLE_CLASSES_PACKAGE + ".")) {
 					print("[");
 					for (JCExpression argument : typeApply.arguments) {
@@ -958,11 +982,16 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					// case of a raw functional type (programmer's mistake)
 					return print("any");
 				}
-				if (context.isMappedType(typeFullName)) {
-					print(context.getTypeMappingTarget(typeFullName));
-					if (completeRawTypes && !typeTree.type.tsym.getTypeParameters().isEmpty()
-							&& !context.getTypeMappingTarget(typeFullName).equals("any")) {
-						printAnyTypeArguments(typeTree.type.tsym.getTypeParameters().size());
+				String mappedType = context.getTypeMappingTarget(typeFullName);
+				if (mappedType != null) {
+					if (mappedType.endsWith("<>")) {
+						print(mappedType.substring(0, mappedType.length() - 2));
+					} else {
+						print(mappedType);
+						if (completeRawTypes && !typeTree.type.tsym.getTypeParameters().isEmpty()
+								&& !context.getTypeMappingTarget(typeFullName).equals("any")) {
+							printAnyTypeArguments(typeTree.type.tsym.getTypeParameters().size());
+						}
 					}
 					return this;
 				}
@@ -2166,7 +2195,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			} else {
 				printIndent().print("this.").print(name).print(" = ");
 			}
-			if (!getAdapter().substituteAssignedExpression(var.type, var.init)) {
+			if (!substituteAssignedExpression(var.type, var.init)) {
 				print(var.init);
 			}
 			print(";").println();
@@ -2341,7 +2370,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				name = context.getFieldNameMapping(field.sym);
 			}
 			printIndent().print("this.").print(name).print(" = ");
-			if (!getAdapter().substituteAssignedExpression(field.type, field.init)) {
+			if (!substituteAssignedExpression(field.type, field.init)) {
 				print(field.init);
 			}
 			print(";").println();
@@ -2687,7 +2716,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						print("new ").print(clazz.getSimpleName().toString()).print("(").printArgList(newClass.args)
 								.print(")");
 					} else {
-						if (!getAdapter().substituteAssignedExpression(varDecl.type, varDecl.init)) {
+						if (!substituteAssignedExpression(varDecl.type, varDecl.init)) {
 							print(varDecl.init);
 						}
 					}
@@ -2710,7 +2739,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							if (!(getScope().hasConstructorOverloadWithSuperClass
 									&& getScope().fieldsWithInitializers.contains(varDecl))) {
 								print(" = ");
-								if (!getAdapter().substituteAssignedExpression(varDecl.type, varDecl.init)) {
+								if (!substituteAssignedExpression(varDecl.type, varDecl.init)) {
 									print(varDecl.init);
 								}
 							}
@@ -3222,7 +3251,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (inv.meth.type != null) {
 					List<Type> argTypes = ((MethodType) inv.meth.type).argtypes;
 					Type paramType = i < argTypes.size() ? argTypes.get(i) : argTypes.get(argTypes.size() - 1);
-					if (!getAdapter().substituteAssignedExpression(paramType, arg)) {
+					if (!substituteAssignedExpression(paramType, arg)) {
 						print(arg);
 					}
 				} else {
@@ -3616,6 +3645,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				print("{}");
 			} else {
 				if (!getAdapter().substituteNewClass(new NewClassElementSupport(newClass))) {
+					String mappedType = context.getTypeMappingTarget(newClass.clazz.type.toString());
 					if (typeChecker.checkType(newClass, null, newClass.clazz)) {
 
 						boolean applyVarargs = true;
@@ -3633,7 +3663,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							// Function class that hides the global Function
 							// class
 							context.addGlobalsMapping("Function", "__Function");
-							print("<any>new (__Function.prototype.bind.apply(").print(newClass.clazz).print(", [null");
+							print("<any>new (__Function.prototype.bind.apply(");
+							if (mappedType != null) {
+								print(mapConstructorType(mappedType));
+							} else {
+								print(newClass.clazz);
+							}
+							print(", [null");
 							for (int i = 0; i < newClass.args.length() - 1; i++) {
 								print(", ").print(newClass.args.get(i));
 							}
@@ -3641,7 +3677,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						} else {
 							if (newClass.clazz instanceof JCTypeApply) {
 								JCTypeApply typeApply = (JCTypeApply) newClass.clazz;
-								print("new ").print(typeApply.clazz);
+								mappedType = context.getTypeMappingTarget(typeApply.clazz.type.toString());
+								print("new ");
+								if (mappedType != null) {
+									print(mapConstructorType(mappedType));
+								} else {
+									print(typeApply.clazz);
+								}
 								if (!typeApply.arguments.isEmpty()) {
 									print("<").printTypeArgList(typeApply.arguments).print(">");
 								} else {
@@ -3653,8 +3695,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 								}
 								print("(").printConstructorArgList(newClass, false).print(")");
 							} else {
-								print("new ").print(newClass.clazz).print("(").printConstructorArgList(newClass, false)
-										.print(")");
+								print("new ");
+								if (mappedType != null) {
+									print(mapConstructorType(mappedType));
+								} else {
+									print(newClass.clazz);
+								}
+								print("(").printConstructorArgList(newClass, false).print(")");
 							}
 						}
 					}
@@ -3906,7 +3953,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					// returnType = ((JCLambda) parentFunction).type;
 				}
 			}
-			if (!getAdapter().substituteAssignedExpression(returnType, returnStatement.expr)) {
+			if (!substituteAssignedExpression(returnType, returnStatement.expr)) {
 				print(returnStatement.expr);
 			}
 		}
@@ -3953,9 +4000,18 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	public void visitConditional(JCConditional conditional) {
 		print(conditional.cond);
 		print("?");
-		print(conditional.truepart);
+		if (!substituteAssignedExpression(rootAssignedTypes.isEmpty() ? null : rootAssignedTypes.peek(),
+				conditional.truepart)) {
+			print(conditional.truepart);
+		}
 		print(":");
-		print(conditional.falsepart);
+		if (!substituteAssignedExpression(rootAssignedTypes.isEmpty() ? null : rootAssignedTypes.peek(),
+				conditional.falsepart)) {
+			print(conditional.falsepart);
+		}
+		if (!rootAssignedTypes.isEmpty()) {
+			rootAssignedTypes.pop();
+		}
 	}
 
 	@Override
@@ -4113,8 +4169,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			if (!getAdapter().substituteCaseStatementPattern(new CaseElementSupport(caseStatement),
 					ExtendedElementFactory.INSTANCE.create(caseStatement.pat))) {
 				if (caseStatement.pat.type.isPrimitive()
-						|| String.class.getName().equals(caseStatement.pat.type.toString())) {
-					print(caseStatement.pat);
+						|| context.types.isSameType(context.symtab.stringType, caseStatement.pat.type)) {
+					if (context.types.isSameType(context.symtab.charType, caseStatement.pat.type)) {
+						print("" + ((JCLiteral) caseStatement.pat).value + " /* " + caseStatement.pat + " */");
+					} else {
+						print(caseStatement.pat);
+					}
 				} else {
 					if (context.useModules) {
 						print(caseStatement.pat.type.tsym.getSimpleName() + "." + caseStatement.pat);
@@ -4141,7 +4201,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	@Override
 	public void visitTypeCast(JCTypeCast cast) {
-		if (getAdapter().substituteAssignedExpression(cast.type, cast.expr)) {
+		if (substituteAssignedExpression(cast.type, cast.expr)) {
 			return;
 		}
 		if (Util.isIntegral(cast.type)) {
@@ -4194,7 +4254,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (!getAdapter().substituteAssignment(new AssignmentElementSupport(assign))) {
 			staticInitializedAssignment = getStaticInitializedField(assign.lhs) != null;
 			print(assign.lhs).print(isAnnotationScope ? ": " : " = ");
-			if (!getAdapter().substituteAssignedExpression(assign.lhs.type, assign.rhs)) {
+			if (!substituteAssignedExpression(assign.lhs.type, assign.rhs)) {
 				print(assign.rhs);
 			}
 			staticInitializedAssignment = false;
@@ -4456,32 +4516,38 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							|| Object.class.getName().equals(type.tsym.getQualifiedName().toString())) {
 						print(" != null");
 					} else {
-						print(" != null && ");
-						print(exprStr, expr);
-						if (checkFirstArrayElement)
-							print("[0]");
 						String qualifiedName = getQualifiedTypeName(type.tsym, false);
-						if (qualifiedName.startsWith(JSweetConfig.LIBS_PACKAGE + ".")) {
-							print(" instanceof ").print(qualifiedName);
-						} else {
-							print(" instanceof <any>").print(qualifiedName);
+						if (qualifiedName.startsWith("{")) {
+							qualifiedName = "Object";
 						}
-						if (type instanceof ArrayType) {
-							ArrayType t = (ArrayType) type;
-							print(" && (");
+						print(" != null");
+						if (!"any".equals(qualifiedName)) {
+							print(" && ");
 							print(exprStr, expr);
 							if (checkFirstArrayElement)
 								print("[0]");
-							print(".length==0 || ");
-							print(exprStr, expr);
-							print("[0] == null ||");
-							if (t.elemtype instanceof ArrayType) {
-								print(exprStr, expr);
-								print("[0] instanceof Array");
+							if (qualifiedName.startsWith(JSweetConfig.LIBS_PACKAGE + ".")) {
+								print(" instanceof ").print(qualifiedName);
 							} else {
-								printInstanceOf(exprStr, expr, t.elemtype, true);
+								print(" instanceof <any>").print(qualifiedName);
 							}
-							print(")");
+							if (type instanceof ArrayType) {
+								ArrayType t = (ArrayType) type;
+								print(" && (");
+								print(exprStr, expr);
+								if (checkFirstArrayElement)
+									print("[0]");
+								print(".length==0 || ");
+								print(exprStr, expr);
+								print("[0] == null ||");
+								if (t.elemtype instanceof ArrayType) {
+									print(exprStr, expr);
+									print("[0] instanceof Array");
+								} else {
+									printInstanceOf(exprStr, expr, t.elemtype, true);
+								}
+								print(")");
+							}
 						}
 					}
 				}
@@ -4529,6 +4595,97 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			isAnnotationScope = false;
 		}
 		print(")").println().printIndent();
+	}
+
+	Stack<Type> rootAssignedTypes = new Stack<>();
+
+	@Override
+	protected boolean substituteAssignedExpression(Type assignedType, JCExpression expression) {
+		if (assignedType == null) {
+			return false;
+		}
+		if (expression instanceof JCConditional) {
+			rootAssignedTypes.push(assignedType);
+			return false;
+		}
+		if (assignedType.getTag() == TypeTag.CHAR && expression.type.getTag() != TypeTag.CHAR) {
+			print("String.fromCharCode(").print(expression).print(")");
+			return true;
+		} else if (Util.isNumber(assignedType) && expression.type.getTag() == TypeTag.CHAR) {
+			print("(").print(expression).print(").charCodeAt(0)");
+			return true;
+		} else {
+			if (expression instanceof JCLambda) {
+				if (assignedType.tsym.isInterface() && !context.isFunctionalType(assignedType.tsym)) {
+					JCLambda lambda = (JCLambda) expression;
+					MethodSymbol method = (MethodSymbol) assignedType.tsym.getEnclosedElements().get(0);
+					print("{ " + method.getSimpleName() + " : ").print(lambda).print(" }");
+					return true;
+				}
+			} else if (expression instanceof JCNewClass) {
+				JCNewClass newClass = (JCNewClass) expression;
+				if (newClass.def != null && context.isFunctionalType(assignedType.tsym)) {
+					List<JCTree> defs = newClass.def.defs;
+					boolean printed = false;
+					for (JCTree def : defs) {
+						if (def instanceof JCMethodDecl) {
+							if (printed) {
+								// should never happen... report error?
+							}
+							JCMethodDecl method = (JCMethodDecl) def;
+							if (method.sym.isConstructor()) {
+								continue;
+							}
+							getStack().push(method);
+							print("(").printArgList(method.getParameters()).print(") => ").print(method.body);
+							getStack().pop();
+							printed = true;
+						}
+					}
+					if (printed) {
+						return true;
+					}
+				} else {
+					// object assignment to functional type
+					if ((newClass.def == null && context.isFunctionalType(assignedType.tsym))) {
+						MethodSymbol method;
+						for (Symbol s : assignedType.tsym.getEnclosedElements()) {
+							if (s instanceof MethodSymbol) {
+								// TODO also check that the method is compatible
+								// (here we just apply to the first found
+								// method)
+								method = (MethodSymbol) s;
+								print("(");
+								for (VarSymbol p : method.getParameters()) {
+									print(p.getSimpleName().toString()).print(", ");
+								}
+								if (!method.getParameters().isEmpty()) {
+									removeLastChars(2);
+								}
+								print(") => { return new ").print(newClass.clazz).print("(")
+										.printArgList(newClass.args);
+								print(").").print(method.getSimpleName().toString()).print("(");
+								for (VarSymbol p : method.getParameters()) {
+									print(p.getSimpleName().toString()).print(", ");
+								}
+								if (!method.getParameters().isEmpty()) {
+									removeLastChars(2);
+								}
+								print("); }");
+								return true;
+							}
+						}
+
+					}
+					// raw generic type
+					if (!newClass.type.tsym.getTypeParameters().isEmpty() && newClass.typeargs.isEmpty()) {
+						print("<any>(").print(expression).print(")");
+						return true;
+					}
+				}
+			}
+			return false;
+		}
 	}
 
 }
