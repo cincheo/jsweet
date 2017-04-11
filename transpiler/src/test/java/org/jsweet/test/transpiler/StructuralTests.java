@@ -37,6 +37,7 @@ import source.structural.AutoImportClassesInSamePackage;
 import source.structural.AutoImportClassesInSamePackageUsed;
 import source.structural.DefaultMethods;
 import source.structural.DefaultMethodsConsumer;
+import source.structural.EndsWithGlobals;
 import source.structural.ExtendsClassInSameFile;
 import source.structural.ExtendsObject;
 import source.structural.GetClass;
@@ -280,6 +281,13 @@ public class StructuralTests extends AbstractTest {
 		}, getSourceFile(source.structural.wrongglobals.Globals.class));
 	}
 
+	@Test
+	public void testEndsWithGlobals() {
+		eval((logHandler, r) -> {
+			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+		}, getSourceFile(EndsWithGlobals.class));
+	}
+	
 	@Test
 	public void testObjectTypes() {
 		transpile(logHandler -> {

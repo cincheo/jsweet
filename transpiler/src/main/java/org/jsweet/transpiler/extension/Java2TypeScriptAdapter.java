@@ -545,7 +545,9 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 						report(invocationElement, JSweetProblem.GLOBAL_INDEXER_GET);
 						return true;
 					} else {
-						if (invocationElement.getArgument(0).toString().endsWith(GLOBALS_CLASS_NAME + ".class")) {
+						if (invocationElement.getArgument(0).toString().equals(GLOBALS_CLASS_NAME + ".class")
+								|| invocationElement.getArgument(0).toString()
+										.endsWith("." + GLOBALS_CLASS_NAME + ".class")) {
 							report(invocationElement, JSweetProblem.GLOBAL_INDEXER_GET);
 							return true;
 						}
@@ -581,7 +583,9 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 						report(invocationElement, JSweetProblem.GLOBAL_INDEXER_SET);
 						return true;
 					} else {
-						if (invocationElement.getArgument(0).toString().endsWith(GLOBALS_CLASS_NAME + ".class")) {
+						if (invocationElement.getArgument(0).toString().equals(GLOBALS_CLASS_NAME + ".class")
+								|| invocationElement.getArgument(0).toString()
+										.endsWith(GLOBALS_CLASS_NAME + ".class")) {
 							report(invocationElement, JSweetProblem.GLOBAL_INDEXER_SET);
 							return true;
 						}
@@ -640,7 +644,8 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 						report(invocationElement, JSweetProblem.GLOBAL_DELETE);
 						return true;
 					} else {
-						if (invocationElement.getArguments().get(0).toString()
+						if (invocationElement.getArgument(0).toString().equals(GLOBALS_CLASS_NAME + ".class")
+								|| invocationElement.getArguments().get(0).toString()
 								.endsWith(GLOBALS_CLASS_NAME + ".class")) {
 							report(invocationElement, JSweetProblem.GLOBAL_DELETE);
 							return true;

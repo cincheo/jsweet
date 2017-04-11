@@ -3453,7 +3453,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	@Override
 	public void visitNewClass(JCNewClass newClass) {
 		ClassSymbol clazz = ((ClassSymbol) newClass.clazz.type.tsym);
-		if (clazz.name.toString().endsWith(JSweetConfig.GLOBALS_CLASS_NAME)) {
+		if (clazz.getSimpleName().toString().equals(JSweetConfig.GLOBALS_CLASS_NAME)) {
 			report(newClass, JSweetProblem.GLOBAL_CANNOT_BE_INSTANTIATED);
 			return;
 		}
@@ -4368,7 +4368,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			print(" => { return ");
 		}
 
-		if (memberReference.expr.type.toString().endsWith(JSweetConfig.GLOBALS_CLASS_NAME)) {
+		if (JSweetConfig.GLOBALS_CLASS_NAME.equals(memberReference.expr.type.tsym.getSimpleName().toString())) {
 			print(memberReference.name.toString());
 		} else {
 			if ("<init>".equals(memberReference.name.toString())) {
