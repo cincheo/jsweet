@@ -25,6 +25,7 @@ public class InnerClass {
 		new InnerClass().m();
 		InnerClass1.m2();
 		String s = InnerClass1.S;
+		$export("value5", s);
 	}
 
 	public void m() {
@@ -41,6 +42,7 @@ public class InnerClass {
 	private final static class InnerClass1 {
 
 		private static String S = "abc";
+		static final int I = 2;
 
 		private void m1() {
 			$export("value1", "test" + i);

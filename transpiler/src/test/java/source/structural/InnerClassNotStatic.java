@@ -26,6 +26,11 @@ public class InnerClassNotStatic {
 
 	public static void main(String[] args) {
 		new InnerClassNotStatic().m();
+		int i = InnerClassNotStatic.ActionType.CREATE;
+		i = InnerClassNotStatic.ActionType.DELETE;
+		i = InnerClassNotStatic.ActionType.UPDATE;
+		trace.push("" + i);
+		$export("trace", trace.join(","));
 	}
 
 	int i = 2;
@@ -33,7 +38,7 @@ public class InnerClassNotStatic {
 	int getI() {
 		return i;
 	}
-	
+
 	private static void staticMethod() {
 		trace.push("staticMethod");
 	}
@@ -43,11 +48,13 @@ public class InnerClassNotStatic {
 		new InnerClass1("ABC").m1();
 		new InnerClass2().m();
 		new InnerClass1("ABC").m2();
-		$export("trace", trace.join(","));
 	}
 
 	public class InnerClass1 {
+		public static final int I = 2;
+
 		int j = i + 1;
+
 		public InnerClass1(String s) {
 			trace.push("" + i + getI() + s);
 		}
@@ -67,7 +74,7 @@ public class InnerClassNotStatic {
 			trace.push("" + i + getI() + "b");
 			new InnerOfInnerClass().m();
 		}
-		
+
 		public final class InnerOfInnerClass {
 			public void m() {
 				trace.push("" + i + getI() + "c");
@@ -78,6 +85,11 @@ public class InnerClassNotStatic {
 	public interface I {
 	}
 
+	private class ActionType {
+		private static final int CREATE = 0;
+		private static final int UPDATE = 1;
+		private static final int DELETE = 2;
+	}
 }
 
 class Sub extends InnerClassNotStatic {

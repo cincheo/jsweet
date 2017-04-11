@@ -2730,7 +2730,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 			} else {
 				if (varDecl.init != null && !isDefinitionScope) {
-					if (!(parent instanceof JCClassDecl && getScope().innerClassNotStatic
+					if (!(parent instanceof JCClassDecl && getScope().innerClassNotStatic && !varDecl.sym.isStatic()
 							&& !Util.isConstantOrNullField(varDecl))) {
 						if (!globals && parent instanceof JCClassDecl && getScope().interfaceScope) {
 							report(varDecl, varDecl.name, JSweetProblem.INVALID_FIELD_INITIALIZER_IN_INTERFACE,
