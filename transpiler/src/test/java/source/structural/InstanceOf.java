@@ -22,6 +22,7 @@ import static jsweet.util.Globals.equalsStrict;
 import static jsweet.util.Globals.typeof;
 
 import def.js.Array;
+import jsweet.lang.Interface;
 
 public class InstanceOf {
 	public static void main(String[] args) {
@@ -32,6 +33,23 @@ public class InstanceOf {
 		C2 c = new C2();
 		Object anArray = new int[0];
 		InstanceOf object = new InstanceOf();
+
+		Interface1 i1 = new Interface1() {
+			{
+			}
+		};
+		Interface2 i2 = new Interface2() {
+			{
+			}
+		};
+		Interface3 i3 = new Interface3() {
+			{
+			}
+		};
+		Interface4 i4 = new Interface4() {
+			{
+			}
+		};
 
 		assert n1 instanceof Number;
 		assert n2 instanceof Number;
@@ -52,14 +70,32 @@ public class InstanceOf {
 
 		assert c instanceof C1;
 
+		assert i1 instanceof Interface1;
+		assert i2 instanceof Interface2;
+		assert i3 instanceof Interface3;
+		assert i4 instanceof Interface4;
 	}
 
 }
 
 class C1 {
-	
+
 }
 
 class C2 extends C1 {
 
+}
+
+@Interface
+abstract class Interface1 {
+}
+
+@Interface
+abstract class Interface2 extends Interface1 {
+}
+
+interface Interface3 {
+}
+
+interface Interface4 extends Interface3 {
 }
