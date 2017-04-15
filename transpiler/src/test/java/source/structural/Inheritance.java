@@ -23,6 +23,8 @@ import def.js.Array;
 import jsweet.lang.Interface;
 import def.js.JSON;
 
+import java.util.Iterator;
+
 class AloneInTheDarkClass extends def.js.Object {
 	public AloneInTheDarkClass() {
 		// super() call shouldn't be generated
@@ -134,4 +136,9 @@ class SomeShape implements Shape {
 		return null;
 	}
 
+}
+
+abstract class AbstractIterator<T> implements Iterator<T> {
+	@Override
+	public final T next() { return null; }
 }

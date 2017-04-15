@@ -149,7 +149,7 @@ public class StructuralTests extends AbstractTest {
 
 	@Test
 	public void testInheritance() {
-		eval((logHandler, r) -> {
+		eval((logHandler, r) -> { // TODO
 			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
 			assertEquals(true, r.<Boolean> get("X"));
 			assertEquals(true, r.<Boolean> get("Y"));
