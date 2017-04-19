@@ -207,25 +207,57 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 		}
 	}
 
+	/**
+	 * A global handler to be called when a rollback operation terminates.
+	 * 
+	 * @param target
+	 *            the rollback's target
+	 * @see #rollback(JCTree, Consumer)
+	 */
 	protected void onRollbacked(JCTree target) {
 	}
 
+	/**
+	 * Rollbacks (undo) the current printing transaction up to the target.
+	 * 
+	 * @param target
+	 *            the element up to which the printing should be undone
+	 * @param onRollbacked
+	 *            the callback to be invoked once the rollback is finished (see
+	 *            also {@link #onRollbacked(JCTree)}
+	 */
 	protected void rollback(JCTree target, Consumer<JCTree> onRollbacked) {
 		throw new RollbackException(target, onRollbacked);
 	}
 
+	/**
+	 * Enters a tree element (to be scanned for printing).
+	 * 
+	 * @see #exit()
+	 */
 	protected void enter(JCTree tree) {
 		stack.push(tree);
 	}
 
+	/**
+	 * Exits a tree element (to be scanned for printing).
+	 * 
+	 * @see #enter(JCTree)
+	 */
 	protected void exit() {
 		stack.pop();
 	}
 
+	/**
+	 * Returns the printer's scanning stack.
+	 */
 	public Stack<JCTree> getStack() {
 		return this.stack;
 	}
 
+	/**
+	 * Returns the immediate parent in the printer's scanning stack.
+	 */
 	public JCTree getParent() {
 		if (this.stack.size() >= 2) {
 			return this.stack.get(this.stack.size() - 2);
