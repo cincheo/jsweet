@@ -48,12 +48,23 @@ public class Chars {
 		result = string.charAt(0);
 		result = (test) ? m(test ? 'a' : string.charAt(0)) : string.charAt(0);
 
-		byte[] data = {};
+		byte b2 = '\n';
+		byte[] data = { 'a', 'b', '\n' };
 		if (data[2] == '\n') {
 		}
+		assert data[2] == '\n';
 
 		Foo foo = new Foo();
 		foo.bar("baz", 2);
+
+		char c4 = 'A';
+		char c5 = c4;
+		c4 += '0';
+		assert c4 != c5;
+		c4 -= '0';
+		assert c4 == c5;
+		c4 *= '0';
+		c4 /= '0';
 
 	}
 

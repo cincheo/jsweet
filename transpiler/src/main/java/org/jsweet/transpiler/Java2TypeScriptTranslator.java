@@ -4029,6 +4029,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	@Override
 	public void visitAssignop(JCAssignOp assignOp) {
 		boolean expand = staticInitializedAssignment = (getStaticInitializedField(assignOp.lhs) != null);
+		boolean expandChar = assignOp.lhs.type.getKind() == TypeKind.CHAR;
 		print(assignOp.lhs);
 		staticInitializedAssignment = false;
 		String op = assignOp.operator.name.toString();
@@ -4040,6 +4041,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				print(" = ").print(assignOp.lhs).print(" && ").print(assignOp.rhs);
 				return;
 			}
+		}
+		if (expandChar) {
+			print(" = String.fromCharCode(").print(assignOp.lhs).print(".charCodeAt(0) " + op + " ").print(assignOp.rhs)
+					.print(".charCodeAt(0))");
+			return;
 		}
 		if (expand) {
 			print(" = ").print(assignOp.lhs).print(" " + op + " ").print(assignOp.rhs);
@@ -4053,17 +4059,19 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	public void visitConditional(JCConditional conditional) {
 		print(conditional.cond);
 		print("?");
-		if (!substituteAssignedExpression(rootAssignedTypes.isEmpty() ? null : rootAssignedTypes.peek(),
+		if (!substituteAssignedExpression(
+				rootConditionalAssignedTypes.isEmpty() ? null : rootConditionalAssignedTypes.peek(),
 				conditional.truepart)) {
 			print(conditional.truepart);
 		}
 		print(":");
-		if (!substituteAssignedExpression(rootAssignedTypes.isEmpty() ? null : rootAssignedTypes.peek(),
+		if (!substituteAssignedExpression(
+				rootConditionalAssignedTypes.isEmpty() ? null : rootConditionalAssignedTypes.peek(),
 				conditional.falsepart)) {
 			print(conditional.falsepart);
 		}
-		if (!rootAssignedTypes.isEmpty()) {
-			rootAssignedTypes.pop();
+		if (!rootConditionalAssignedTypes.isEmpty()) {
+			rootConditionalAssignedTypes.pop();
 		}
 	}
 
@@ -4140,8 +4148,21 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 		} else {
 			print("[");
-			if (newArray.elems != null) {
-				printArgList(newArray.elems);
+			if (newArray.elems != null && !newArray.elems.isEmpty()) {
+				for (JCExpression e : newArray.elems) {
+					if (!rootArrayAssignedTypes.isEmpty()) {
+						if (!substituteAssignedExpression(rootArrayAssignedTypes.peek(), e)) {
+							print(e);
+						}
+					} else {
+						print(e);
+					}
+					print(", ");
+				}
+				removeLastChars(2);
+				if (!rootArrayAssignedTypes.isEmpty()) {
+					rootArrayAssignedTypes.pop();
+				}
 			}
 			print("]");
 		}
@@ -4662,7 +4683,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		print(")").println().printIndent();
 	}
 
-	Stack<Type> rootAssignedTypes = new Stack<>();
+	Stack<Type> rootConditionalAssignedTypes = new Stack<>();
+	Stack<Type> rootArrayAssignedTypes = new Stack<>();
 
 	@Override
 	protected boolean substituteAssignedExpression(Type assignedType, JCExpression expression) {
@@ -4670,7 +4692,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			return false;
 		}
 		if (expression instanceof JCConditional) {
-			rootAssignedTypes.push(assignedType);
+			rootConditionalAssignedTypes.push(assignedType);
+			return false;
+		}
+		if (expression instanceof JCNewArray && assignedType instanceof ArrayType) {
+			rootArrayAssignedTypes.push(((ArrayType) assignedType).elemtype);
 			return false;
 		}
 		if (assignedType.getTag() == TypeTag.CHAR && expression.type.getTag() != TypeTag.CHAR) {
