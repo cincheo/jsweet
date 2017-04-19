@@ -47,9 +47,13 @@ public class Chars {
 		int result = (test) ? -1 : string.charAt(0);
 		result = string.charAt(0);
 		result = (test) ? m(test ? 'a' : string.charAt(0)) : string.charAt(0);
-		
+
 		byte[] data = {};
-		if (data[2] == '\n') {}
+		if (data[2] == '\n') {
+		}
+
+		Foo foo = new Foo();
+		foo.bar("baz", 2);
 
 	}
 
@@ -96,4 +100,77 @@ public class Chars {
 		return c;
 	}
 
+}
+
+class Foo {
+	final int EOF = -1;
+	final char ETX = 3;
+	final char _CR = 0xD;
+	final char _LF = 0xA;
+	final char _BS = 0x8;
+	final char _HT = 0x9;
+	final char _VT = 0xB;
+	final char _SO = 0xE;
+	final char _SI = 'a';
+	final int ESC = 0x1B;
+	final int NUMPENS = 256;
+	final int LT_solid = 0;
+	final int LT_adaptive = 1;
+	final int LT_plot_at = 2;
+	final int LT_fixed = 3;
+	final int LT_MIN = -8;
+	final int LT_ZERO = 0;
+	final int LT_MAX = 8;
+	final int LB_direct = 0;
+	final int LB_buffered = 1;
+	final int LB_buffered_in_use = 2;
+	final String TEST = "abc";
+
+	void bar(String txt, int mode) {
+		txt = txt + "\u0000";
+		int i;
+		char c;
+
+		for (i = 0; (c = txt.charAt(i)) != '\0'; ++i) {
+			switch (c) {
+			case ' ':
+				break;
+			case _CR:
+				switch (mode) {
+				case LB_direct:
+					break;
+				case LB_buffered:
+					break;
+				default:
+					break;
+				}
+				break;
+			case _LF:
+				break;
+			case _BS:
+				break;
+			case _HT:
+				break;
+			case _VT:
+				break;
+			case _SO:
+				break;
+			case _SI:
+				break;
+			default:
+				break;
+			}
+			switch (txt) {
+			case "ABC":
+			case TEST:
+				break;
+			default:
+				break;
+			}
+			switch (mode) {
+			case 1:
+			case _LF:
+			}
+		}
+	}
 }

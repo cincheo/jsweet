@@ -4204,6 +4204,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	public void visitSwitch(JCSwitch switchStatement) {
 		print("switch(");
 		print(switchStatement.selector);
+		if (context.types.isSameType(context.symtab.charType, switchStatement.selector.type)) {
+			print(".charCodeAt(0)");
+		}
 		print(") {").println();
 		for (JCCase caseStatement : switchStatement.cases) {
 			printIndent();
@@ -4223,10 +4226,19 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					ExtendedElementFactory.INSTANCE.create(caseStatement.pat))) {
 				if (caseStatement.pat.type.isPrimitive()
 						|| context.types.isSameType(context.symtab.stringType, caseStatement.pat.type)) {
-					if (context.types.isSameType(context.symtab.charType, caseStatement.pat.type)) {
-						print("" + ((JCLiteral) caseStatement.pat).value + " /* " + caseStatement.pat + " */");
+					if (caseStatement.pat instanceof JCIdent) {
+						Object value = ((VarSymbol) ((JCIdent) caseStatement.pat).sym).getConstValue();
+						if (context.types.isSameType(context.symtab.stringType, caseStatement.pat.type)) {
+							print("\"" + value + "\" /* " + caseStatement.pat + " */");
+						} else {
+							print("" + value + " /* " + caseStatement.pat + " */");
+						}
 					} else {
-						print(caseStatement.pat);
+						if (context.types.isSameType(context.symtab.charType, caseStatement.pat.type)) {
+							print("" + ((JCLiteral) caseStatement.pat).value + " /* " + caseStatement.pat + " */");
+						} else {
+							print(caseStatement.pat);
+						}
 					}
 				} else {
 					if (context.useModules) {
