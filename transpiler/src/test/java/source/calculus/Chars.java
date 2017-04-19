@@ -47,6 +47,9 @@ public class Chars {
 		int result = (test) ? -1 : string.charAt(0);
 		result = string.charAt(0);
 		result = (test) ? m(test ? 'a' : string.charAt(0)) : string.charAt(0);
+		
+		byte[] data = {};
+		if (data[2] == '\n') {}
 
 	}
 
