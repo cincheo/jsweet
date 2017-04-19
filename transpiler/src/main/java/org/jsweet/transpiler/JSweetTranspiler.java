@@ -1799,6 +1799,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		}
 		if (context.options.isDebugMode()) {
 			headerLines = ArrayUtils.add(headerLines, "declare function __debug_exec(className, functionName, argNames, target, args, generator);");
+			headerLines = ArrayUtils.add(headerLines, "declare function __debug_result(expression);");
 		}
 		return headerLines;
 	}

@@ -1778,8 +1778,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			printMethodModifiers(methodDecl, parent, constructor, inOverload, overload);
 			print(getTSMethodName(methodDecl)).print("(");
 			printArgList(methodDecl.params);
-			print(") {").println();
+			print(") : ");
+			substituteAndPrintType(methodDecl.getReturnType());
+			print(" {").println();
 			startIndent().printIndent();
+			if (!context.types.isSameType(context.symtab.voidType, methodDecl.sym.getReturnType())) {
+				print("return ");
+			}
 			print("__debug_exec('" + parent.sym.getQualifiedName() + "', '" + methodDecl.getName() + "', ");
 			if (!methodDecl.params.isEmpty()) {
 				print("[");
@@ -2389,22 +2394,52 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					}
 					printIndent().print("yield { row: ").print("" + diagnosticSource.getLineNumber(s))
 							.print(", column: " + diagnosticSource.getColumnNumber(s, false)).print(", statement: \"");
-					print(StringEscapeUtils.escapeJson(statement.toString()));
-					print("\" };").println();
+					print(StringEscapeUtils.escapeJson(statement.toString())).print("\"");
+
+					final Stack<List<String>> locals = new Stack<>();
+					try {
+						new TreeScanner() {
+							public void scan(JCTree tree) {
+								if (tree == statement) {
+									throw new RuntimeException();
+								}
+								boolean contextChange = false;
+								if (tree instanceof JCBlock || tree instanceof JCEnhancedForLoop
+										|| tree instanceof JCLambda || tree instanceof JCForLoop
+										|| tree instanceof JCDoWhileLoop) {
+									locals.push(new ArrayList<>());
+									contextChange = true;
+								}
+								if (tree instanceof JCVariableDecl) {
+									locals.peek().add(((JCVariableDecl) tree).name.toString());
+								}
+								super.scan(tree);
+								if (contextChange) {
+									locals.pop();
+								}
+							}
+
+						}.scan(methodDecl.body);
+					} catch (Exception end) {
+						// swallow
+					}
+					List<String> accessibleLocals = new ArrayList<>();
+					for (List<String> l : locals) {
+						accessibleLocals.addAll(l);
+					}
+					if (!accessibleLocals.isEmpty()) {
+						print(", locals: ");
+						print("{");
+						for (String local : accessibleLocals) {
+							print("" + local + ": " + local + ", ");
+						}
+						removeLastChars(2);
+						print("}");
+					}
+					print(" };").println();
 				}
 			}
-			if (context.options.isDebugMode() && statement instanceof JCReturn) {
-				printIndent().print("let __result = ").print(((JCReturn) statement).expr).print(";").println();
-				printIndent().print("yield;").println();
-				printIndent().print("return __result;").println();
-			} else {
-				printBlockStatement(statement);
-			}
-		}
-		if (context.options.isDebugMode() && !constructor
-				&& (getStack().get(getStack().size() - 2) instanceof JCMethodDecl)
-				&& !(statements.get(statements.size() - 1) instanceof JCReturn)) {
-			printIndent().print("yield;").println();
+			printBlockStatement(statement);
 		}
 	}
 
@@ -2953,6 +2988,20 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	@Override
 	public void visitApply(JCMethodInvocation inv) {
+
+		boolean debugMode = false;
+		if (context.options.isDebugMode()) {
+			if (Util.getSymbol(inv.meth) instanceof MethodSymbol) {
+				MethodSymbol methodSymbol = (MethodSymbol) Util.getSymbol(inv.meth);
+				if (!methodSymbol.isConstructor() && Util.isSourceElement(methodSymbol)) {
+					debugMode = true;
+				}
+			}
+		}
+		if (debugMode) {
+			print("__debug_result(yield ");
+		}
+
 		if (!getAdapter().substituteMethodInvocation(new MethodInvocationElementSupport(inv))) {
 			String meth = inv.meth.toString();
 			String methName = meth.substring(meth.lastIndexOf('.') + 1);
@@ -3280,6 +3329,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 			print(")");
 		}
+		if (debugMode) {
+			print(")");
+		}
+
 	}
 
 	@Override
