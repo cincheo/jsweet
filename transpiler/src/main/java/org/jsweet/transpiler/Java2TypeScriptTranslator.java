@@ -213,34 +213,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	}
 
-	// class GeneratorAnnotationManager extends AnnotationManager {
-	//
-	// @Override
-	// public Action manageAnnotation(Element element, String annotationType) {
-	// if ((annotationType.equals(JSweetConfig.ANNOTATION_NAME)
-	// || annotationType.equals(JSweetConfig.ANNOTATION_GENERATOR)) &&
-	// getParent() instanceof JCClassDecl
-	// && (element instanceof ExecutableElement)) {
-	// return Action.ADD;
-	// } else {
-	// return Action.VOID;
-	// }
-	// }
-	//
-	// @Override
-	// public String getAnnotationValue(Element element, String annotationType,
-	// String propertyName,
-	// String defaultValue) {
-	// if (annotationType.equals(JSweetConfig.ANNOTATION_NAME) && getParent()
-	// instanceof JCClassDecl
-	// && element instanceof ExecutableElement) {
-	// return GENERATOR_PREFIX + element.getSimpleName();
-	// }
-	// return super.getAnnotationValue(element, annotationType, propertyName,
-	// defaultValue);
-	// }
-	// }
-
 	private Stack<ClassScope> scope = new Stack<>();
 
 	private boolean isAnnotationScope = false;
@@ -2780,6 +2752,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							}
 						}
 					}
+				}
+				if(!(ambient || (isTopLevelScope() && isDefinitionScope)) && varDecl.sym.isStatic() && varDecl.init==null) {
+					print(" = ").print(Util.getTypeInitialValue(varDecl.sym.type));
 				}
 			}
 		}
