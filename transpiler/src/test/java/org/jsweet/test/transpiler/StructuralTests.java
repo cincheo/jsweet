@@ -20,6 +20,7 @@ import static org.jsweet.transpiler.JSweetProblem.GLOBAL_DELETE;
 import static org.jsweet.transpiler.JSweetProblem.GLOBAL_INDEXER_GET;
 import static org.jsweet.transpiler.JSweetProblem.GLOBAL_INDEXER_SET;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetFactory;
@@ -59,6 +60,7 @@ import source.structural.ObjectTypes;
 import source.structural.StaticMembersInInterfaces;
 import source.structural.TwoClassesInSameFile;
 import source.structural.ReplaceAnnotation;
+import source.structural.FunctionalObjects;
 import source.structural.WrongConstructsInInterfaces;
 import source.structural.WrongThisAccessOnStatic;
 import source.structural.globalclasses.Globals;
@@ -289,7 +291,7 @@ public class StructuralTests extends AbstractTest {
 			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
 		}, getSourceFile(EndsWithGlobals.class));
 	}
-	
+
 	@Test
 	public void testObjectTypes() {
 		transpile(logHandler -> {
@@ -328,7 +330,8 @@ public class StructuralTests extends AbstractTest {
 					{
 						context.addAnnotation("@Replace('return (this.i + 2)')",
 								"source.structural.ReplaceAnnotation.m2()");
-						context.addAnnotation("@Replace('let result = (() => { #BODY# })(); return (result + '#METHODNAME#'.length);')",
+						context.addAnnotation(
+								"@Replace('let result = (() => { #BODY# })(); return (result + '#METHODNAME#'.length);')",
 								"source.structural.ReplaceAnnotation.m4()");
 					}
 				};
@@ -416,6 +419,17 @@ public class StructuralTests extends AbstractTest {
 		transpile(logHandler -> {
 			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
 		}, getSourceFile(LocalClasses.class));
+	}
+
+	@Test
+	public void testFunctionalObjects() {
+		eval((logHandler, r) -> {
+			logHandler.assertNoProblems();
+			assertTrue((Boolean) r.get("run1"));
+			assertTrue((Boolean) r.get("run2"));
+			assertEquals("a", r.get("s1"));
+			assertEquals("b", r.get("s2"));
+		}, getSourceFile(FunctionalObjects.class));
 	}
 
 }

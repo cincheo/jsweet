@@ -331,8 +331,15 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 	public boolean substituteMethodInvocation(MethodInvocationElement invocationElement) {
 
 		Element targetType = invocationElement.getMethod().getEnclosingElement();
-		if (hasAnnotationType(targetType, ANNOTATION_ERASED)
-				|| hasAnnotationType(invocationElement.getMethod(), ANNOTATION_ERASED)) {
+		// This is some sort of hack to avoid invoking erased methods.
+		// If the containing class is erased, we still invoke it because we
+		// don't know if the class may be provided externally.
+		// Pitfalls: (1) may erase invocations that are provided externally, (2)
+		// if the invocation is the target of an enclosing invocation or field
+		// access, TS compilation will fail.
+		// So, we should probably find a better way to erase invocations (or at
+		// least do it conditionally).
+		if (hasAnnotationType(invocationElement.getMethod(), ANNOTATION_ERASED)) {
 			print("null");
 			return true;
 		}
@@ -447,10 +454,10 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 					if (invocationElement.getArgumentCount() == 1) {
 						print(varName);
 					} else {
-						print(varName + " = ").print(invocationElement.getArgument(1)).print("; ");
+						print("{ " + varName + " = ").print(invocationElement.getArgument(1)).print("; ");
 						print("console.log('" + JSweetTranspiler.EXPORTED_VAR_BEGIN
 								+ StringUtils.strip(invocationElement.getArgument(0).toString(), "\"") + "='+")
-										.print(varName).print("+'" + JSweetTranspiler.EXPORTED_VAR_END + "')");
+										.print(varName).print("+'" + JSweetTranspiler.EXPORTED_VAR_END + "') }");
 					}
 					return true;
 				case "array":
@@ -646,7 +653,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 					} else {
 						if (invocationElement.getArgument(0).toString().equals(GLOBALS_CLASS_NAME + ".class")
 								|| invocationElement.getArguments().get(0).toString()
-								.endsWith(GLOBALS_CLASS_NAME + ".class")) {
+										.endsWith(GLOBALS_CLASS_NAME + ".class")) {
 							report(invocationElement, JSweetProblem.GLOBAL_DELETE);
 							return true;
 						}
@@ -701,14 +708,14 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 					&& TypeChecker.FORBIDDEN_JDK_FUNCTIONAL_METHODS.contains(targetMethodName)) {
 				report(invocationElement, JSweetProblem.JDK_METHOD, targetMethodName);
 			}
-			print(invocationElement.getTargetExpression()).print("(").printArgList(invocationElement.getArguments())
-					.print(")");
+			printFunctionalInvocation(invocationElement.getTargetExpression(), targetMethodName,
+					invocationElement.getArguments());
 			return true;
 		}
 		if (invocationElement.getTargetExpression() != null && targetClassName != null
 				&& targetClassName.equals(java.lang.Runnable.class.getName())) {
-			print(invocationElement.getTargetExpression()).print("(").printArgList(invocationElement.getArguments())
-					.print(")");
+			printFunctionalInvocation(invocationElement.getTargetExpression(), targetMethodName,
+					invocationElement.getArguments());
 			return true;
 		}
 
@@ -1139,6 +1146,18 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 
 	}
 
+	protected void printFunctionalInvocation(ExtendedElement target, String functionName,
+			List<ExtendedElement> arguments) {
+		if (target instanceof IdentifierElement) {
+			print("(typeof ").print(target).print(" === 'function'?target").print("(").printArgList(arguments)
+					.print("):(<any>target).").print(functionName).print("(").printArgList(arguments).print("))");
+		} else {
+			print("(target => (typeof target === 'function')?target").print("(").printArgList(arguments)
+					.print("):(<any>target).").print(functionName).print("(").printArgList(arguments).print("))(")
+					.print(target).print(")");
+		}
+	}
+
 	protected final PrinterAdapter printTarget(ExtendedElement target) {
 		if (target == null) {
 			return print("this");
@@ -1247,7 +1266,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 		JCNewClass newClass = ((NewClassElementSupport) newClassElement).getTree();
 		String className = newClassElement.getTypeAsElement().toString();
 		if (className.startsWith(JSweetConfig.TUPLE_CLASSES_PACKAGE + ".")) {
-			getPrinter().print("[").printArgList(newClass.args).print("]");
+			getPrinter().print("[").printArgList(null, newClass.args).print("]");
 			return true;
 		}
 

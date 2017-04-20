@@ -334,12 +334,20 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	/**
 	 * Prints a comma-separated list of subtrees.
 	 */
-	public AbstractTreePrinter printArgList(List<? extends JCTree> args, Consumer<JCTree> printer) {
+	public AbstractTreePrinter printArgList(List<Type> assignedTypes, List<? extends JCTree> args,
+			Consumer<JCTree> printer) {
+		int i = 0;
 		for (JCTree arg : args) {
 			if (printer != null) {
 				printer.accept(arg);
 			} else {
-				print(arg);
+				if (assignedTypes != null && (arg instanceof JCExpression) && i < assignedTypes.size()) {
+					if (!substituteAssignedExpression(assignedTypes.get(i++), (JCExpression) arg)) {
+						print(arg);
+					}
+				} else {
+					print(arg);
+				}
 			}
 			print(", ");
 			inArgListTail = true;
@@ -383,8 +391,8 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 		return this;
 	}
 
-	public AbstractTreePrinter printArgList(List<? extends JCTree> args) {
-		return printArgList(args, null);
+	public AbstractTreePrinter printArgList(List<Type> assignedTypes, List<? extends JCTree> args) {
+		return printArgList(assignedTypes, args, null);
 	}
 
 	public abstract AbstractTreePrinter printConstructorArgList(JCNewClass newClass, boolean localClass);

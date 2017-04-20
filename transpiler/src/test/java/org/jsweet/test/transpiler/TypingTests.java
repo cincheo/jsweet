@@ -16,11 +16,8 @@
  */
 package org.jsweet.test.transpiler;
 
-import static org.junit.Assert.fail;
-
 import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.ModuleKind;
-import org.jsweet.transpiler.util.EvaluationResult;
 import org.junit.Assert;
 import org.junit.Test;
 

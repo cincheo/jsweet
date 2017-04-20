@@ -1158,7 +1158,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			print(name + (getScope().enumWrapperClassScope ? ENUM_WRAPPER_CLASS_SUFFIX : ""));
 
 			if (classdecl.typarams != null && classdecl.typarams.size() > 0) {
-				print("<").printArgList(classdecl.typarams).print(">");
+				print("<").printArgList(null, classdecl.typarams).print(">");
 			} else if (isAnonymousClass() && classdecl.getModifiers().getFlags().contains(Modifier.STATIC)) {
 				JCNewClass newClass = getScope(1).anonymousClassesConstructors
 						.get(getScope(1).anonymousClasses.indexOf(classdecl));
@@ -1584,7 +1584,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						if (!newClass.args.isEmpty()) {
 							print(", ");
 						}
-						printArgList(newClass.args).print(")");
+						printArgList(null, newClass.args).print(")");
 						print(", ");
 					} catch (Exception e) {
 						logger.error(e.getMessage(), e);
@@ -1777,7 +1777,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (isDebugMode(methodDecl)) {
 			printMethodModifiers(methodDecl, parent, constructor, inOverload, overload);
 			print(getTSMethodName(methodDecl)).print("(");
-			printArgList(methodDecl.params);
+			printArgList(null, methodDecl.params);
 			print(") : ");
 			substituteAndPrintType(methodDecl.getReturnType());
 			print(" {").println();
@@ -1933,13 +1933,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			inTypeParameters = true;
 			print("<");
 			if (methodDecl.typarams != null && !methodDecl.typarams.isEmpty()) {
-				printArgList(methodDecl.typarams);
+				printArgList(null, methodDecl.typarams);
 				if (getContext().getWildcards(methodDecl.sym) != null) {
 					print(", ");
 				}
 			}
 			if (getContext().getWildcards(methodDecl.sym) != null) {
-				printArgList(getContext().getWildcards(methodDecl.sym), this::substituteAndPrintType);
+				printArgList(null, getContext().getWildcards(methodDecl.sym), this::substituteAndPrintType);
 			}
 			print(">");
 			inTypeParameters = false;
@@ -2748,8 +2748,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					print("if(" + prefix).print(name).print(" == null) ").print(prefix).print(name).print(" = ");
 					if (getScope().enumWrapperClassScope) {
 						JCNewClass newClass = (JCNewClass) varDecl.init;
-						print("new ").print(clazz.getSimpleName().toString()).print("(").printArgList(newClass.args)
-								.print(")");
+						print("new ").print(clazz.getSimpleName().toString()).print("(")
+								.printArgList(null, newClass.args).print(")");
 					} else {
 						if (!substituteAssignedExpression(varDecl.type, varDecl.init)) {
 							print(varDecl.init);
@@ -3691,7 +3691,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 				printIndent().print("return target;").println();
 				println().endIndent().printIndent().print("})(");
-				print("new ").print(newClass.clazz).print("(").printArgList(newClass.args).print("))");
+				print("new ").print(newClass.clazz).print("(").printArgList(null, newClass.args).print("))");
 			}
 		} else {
 			if (context.hasAnnotationType(newClass.clazz.type.tsym, JSweetConfig.ANNOTATION_OBJECT_TYPE)) {
@@ -3800,7 +3800,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			printed = true;
 		}
 
-		printArgList(newClass.args);
+		MethodType t = (MethodType) newClass.constructorType;
+
+		printArgList(t == null ? null : t.argtypes, newClass.args);
 		int index = getScope().anonymousClasses.indexOf(newClass.def);
 		if (index >= 0 && !getScope().finalVariables.get(index).isEmpty()) {
 			if (printed || !newClass.args.isEmpty()) {
@@ -4077,8 +4079,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	@Override
 	public void visitForLoop(JCForLoop forLoop) {
-		print("for(").printArgList(forLoop.init).print("; ").print(forLoop.cond).print("; ").printArgList(forLoop.step)
-				.print(") ");
+		print("for(").printArgList(null, forLoop.init).print("; ").print(forLoop.cond).print("; ")
+				.printArgList(null, forLoop.step).print(") ");
 		print(forLoop.body);
 	}
 
@@ -4143,7 +4145,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						+ " array = []; for(" + VAR_DECL_KEYWORD
 						+ " i = 0; i < dims[0]; i++) { array.push(allocate(dims.slice(1))); } return array; }}; return allocate(dims);})");
 				print("([");
-				printArgList(newArray.dims);
+				printArgList(null, newArray.dims);
 				print("])");
 			}
 		} else {
@@ -4419,7 +4421,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			print(") => {").println().startIndent().printIndent().print("return ");
 		}
 		getScope().skipTypeAnnotations = true;
-		print("(").printArgList(lamba.params).print(") => ");
+		print("(").printArgList(null, lamba.params).print(") => ");
 		getScope().skipTypeAnnotations = false;
 		print(lamba.body);
 
@@ -4728,7 +4730,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 								continue;
 							}
 							getStack().push(method);
-							print("(").printArgList(method.getParameters()).print(") => ").print(method.body);
+							print("(").printArgList(null, method.getParameters()).print(") => ").print(method.body);
 							getStack().pop();
 							printed = true;
 						}
@@ -4753,8 +4755,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 								if (!method.getParameters().isEmpty()) {
 									removeLastChars(2);
 								}
-								print(") => { return new ").print(newClass.clazz).print("(")
-										.printArgList(newClass.args);
+								print(") => { return new ").print(newClass.clazz).print("(").printArgList(null,
+										newClass.args);
 								print(").").print(method.getSimpleName().toString()).print("(");
 								for (VarSymbol p : method.getParameters()) {
 									print(p.getSimpleName().toString()).print(", ");
@@ -4774,6 +4776,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						return true;
 					}
 				}
+			} else if (!(expression instanceof JCLambda || expression instanceof JCMemberReference)
+					&& context.isFunctionalType(assignedType.tsym)) {
+				// disallow typing to force objects to be passed as function
+				// (may require runtime checks later on)
+				print("<any>(").print(expression).print(")");
+				return true;
 			}
 			return false;
 		}

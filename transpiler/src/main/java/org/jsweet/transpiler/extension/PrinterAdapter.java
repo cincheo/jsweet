@@ -61,7 +61,6 @@ import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
-import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
@@ -401,7 +400,7 @@ public class PrinterAdapter {
 	 * Prints an argument list by delegating to the printer.
 	 */
 	public PrinterAdapter printArgList(List<? extends ExtendedElement> args) {
-		printer.printArgList(
+		printer.printArgList(null,
 				args.stream().map(a -> ((ExtendedElementSupport) a).getTree()).collect(Collectors.toList()));
 		return this;
 	}
