@@ -478,8 +478,14 @@ public class JSweetTranspiler implements JSweetOptions {
 	};
 
 	private void initExportedVarMap() throws Exception {
-		Field f = Thread.currentThread().getContextClassLoader().loadClass("jsweet.util.Globals")
-				.getDeclaredField("EXPORTED_VARS");
+		Field f = null;
+		try {
+			f = Thread.currentThread().getContextClassLoader().loadClass(JSweetConfig.UTIL_CLASSNAME)
+					.getDeclaredField("EXPORTED_VARS");
+		} catch (ClassNotFoundException ex) {
+			f = Thread.currentThread().getContextClassLoader().loadClass(JSweetConfig.DEPRECATED_UTIL_CLASSNAME)
+					.getDeclaredField("EXPORTED_VARS");
+		}
 		f.setAccessible(true);
 		@SuppressWarnings("unchecked")
 		ThreadLocal<Map<String, Object>> exportedVars = (ThreadLocal<Map<String, Object>>) f.get(null);
@@ -487,8 +493,14 @@ public class JSweetTranspiler implements JSweetOptions {
 	}
 
 	private Map<String, Object> getExportedVarMap() throws Exception {
-		Field f = Thread.currentThread().getContextClassLoader().loadClass("jsweet.util.Globals")
-				.getDeclaredField("EXPORTED_VARS");
+		Field f = null;
+		try {
+			f = Thread.currentThread().getContextClassLoader().loadClass(JSweetConfig.UTIL_CLASSNAME)
+					.getDeclaredField("EXPORTED_VARS");
+		} catch (ClassNotFoundException ex) {
+			f = Thread.currentThread().getContextClassLoader().loadClass(JSweetConfig.DEPRECATED_UTIL_CLASSNAME)
+					.getDeclaredField("EXPORTED_VARS");
+		}
 		f.setAccessible(true);
 		@SuppressWarnings("unchecked")
 		ThreadLocal<Map<String, Object>> exportedVars = (ThreadLocal<Map<String, Object>>) f.get(null);
@@ -1798,7 +1810,8 @@ public class JSweetTranspiler implements JSweetOptions {
 					+ " - http://www.jsweet.org */" };
 		}
 		if (context.options.isDebugMode()) {
-			headerLines = ArrayUtils.add(headerLines, "declare function __debug_exec(className, functionName, argNames, target, args, generator);");
+			headerLines = ArrayUtils.add(headerLines,
+					"declare function __debug_exec(className, functionName, argNames, target, args, generator);");
 			headerLines = ArrayUtils.add(headerLines, "declare function __debug_result(expression);");
 		}
 		return headerLines;

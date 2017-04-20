@@ -1,6 +1,6 @@
 package source.nativestructures;
 
-import static jsweet.util.Globals.$export;
+import static jsweet.util.Lang.$export;
 
 import java.io.IOException;
 import java.io.Reader;

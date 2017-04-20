@@ -17,9 +17,9 @@
 package source.structural;
 
 import static def.js.Globals.eval;
-import static jsweet.util.Globals.any;
-import static jsweet.util.Globals.equalsStrict;
-import static jsweet.util.Globals.typeof;
+import static jsweet.util.Lang.any;
+import static jsweet.util.Lang.equalsStrict;
+import static jsweet.util.Lang.typeof;
 
 import def.js.Array;
 import jsweet.lang.Interface;

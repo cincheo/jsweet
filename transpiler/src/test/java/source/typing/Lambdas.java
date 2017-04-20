@@ -16,7 +16,7 @@
  */
 package source.typing;
 
-import static jsweet.util.Globals.$export;
+import static jsweet.util.Lang.$export;
 
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;

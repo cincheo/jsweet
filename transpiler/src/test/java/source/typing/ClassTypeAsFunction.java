@@ -16,7 +16,7 @@
  */
 package source.typing;
 
-import static jsweet.util.Globals.function;
+import static jsweet.util.Lang.function;
 
 import def.js.Function;
 

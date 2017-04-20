@@ -319,7 +319,8 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 	}
 
 	private boolean isWithinGlobals(String targetClassName) {
-		if (targetClassName == null || targetClassName.endsWith("." + GLOBALS_CLASS_NAME)) {
+		if (targetClassName == null
+				|| (targetClassName.equals(UTIL_CLASSNAME) || targetClassName.equals(DEPRECATED_UTIL_CLASSNAME))) {
 			JCClassDecl c = getParent(JCClassDecl.class);
 			return c != null && c.sym.getQualifiedName().toString().endsWith("." + GLOBALS_CLASS_NAME);
 		} else {

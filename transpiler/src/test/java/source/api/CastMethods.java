@@ -16,26 +16,26 @@
  */
 package source.api;
 
-import static jsweet.util.Globals.array;
-import static jsweet.util.Globals.bool;
-import static jsweet.util.Globals.object;
+import static jsweet.util.Lang.array;
+import static jsweet.util.Lang.bool;
+import static jsweet.util.Lang.object;
 
 import def.js.Boolean;
 import def.js.Number;
-import jsweet.util.Globals;
+import jsweet.util.Lang;
 
 public class CastMethods {
 
 	@SuppressWarnings("unused")
 	void m() {
-		Boolean b1 = Globals.bool(true);
+		Boolean b1 = Lang.bool(true);
 		b1 = bool(true);
-		boolean b2 = Globals.bool(b1);
+		boolean b2 = Lang.bool(b1);
 		b2 = bool(b1);
 		if (b2) {
 			b1 = bool(b2);
 			int[] array = {};
-			Globals.array(array).push(1, 2, 3);
+			Lang.array(array).push(1, 2, 3);
 			array(array).push(1, 2, 3);
 			int i = array(array(array))[1];
 			m1(b1);
@@ -43,11 +43,11 @@ public class CastMethods {
 			m2(bool(b1));
 			m2(b2);
 		}
-		Number n = Globals.number(1);
+		Number n = Lang.number(1);
 		n.toLocaleString();
 		n.toFixed();
-		int i = Globals.integer(n);
-		double d = Globals.number(n);
+		int i = Lang.integer(n);
+		double d = Lang.number(n);
 		object("");
 	}
 	

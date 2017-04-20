@@ -16,7 +16,7 @@
  */
 package source.tscomparison;
 
-import static jsweet.util.Globals.$export;
+import static jsweet.util.Lang.$export;
 
 public class SaferVarargs {
 	public static void main(String[] args) {

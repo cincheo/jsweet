@@ -1,6 +1,6 @@
 package source.overload;
 
-import static jsweet.util.Globals.$export;
+import static jsweet.util.Lang.$export;
 
 import java.util.function.BinaryOperator;
 

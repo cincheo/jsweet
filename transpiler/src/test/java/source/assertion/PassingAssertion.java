@@ -1,6 +1,6 @@
 package source.assertion;
 
-import static jsweet.util.Globals.$export;
+import static jsweet.util.Lang.$export;
 
 public class PassingAssertion {
 

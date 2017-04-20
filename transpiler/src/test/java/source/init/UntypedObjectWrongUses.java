@@ -1,6 +1,6 @@
 package source.init;
 
-import static jsweet.util.Globals.$map;
+import static jsweet.util.Lang.$map;
 
 import def.js.Object;
 

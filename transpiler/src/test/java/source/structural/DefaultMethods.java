@@ -1,7 +1,7 @@
 package source.structural;
 
 import static source.structural.globalclasses.a.ClassWithStaticMethod.aStaticMethod;
-import static jsweet.util.Globals.$export;
+import static jsweet.util.Lang.$export;
 
 import def.js.Array;
 import source.structural.globalclasses.a.ClassWithStaticMethod;

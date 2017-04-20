@@ -16,7 +16,7 @@
  */
 package source.typing;
 
-import static jsweet.util.Globals.array;
+import static jsweet.util.Lang.array;
 
 import java.util.function.Consumer;
 

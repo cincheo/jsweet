@@ -16,8 +16,8 @@
  */
 package source.tscomparison;
 
-import static jsweet.util.Globals.$export;
-import static jsweet.util.Globals.array;
+import static jsweet.util.Lang.$export;
+import static jsweet.util.Lang.array;
 
 class Operation {
 	double x;

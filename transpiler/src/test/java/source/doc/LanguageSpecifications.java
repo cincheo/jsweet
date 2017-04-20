@@ -1,8 +1,8 @@
 package source.doc;
 
-import static jsweet.util.Globals.$export;
-import static jsweet.util.Globals.array;
-import static jsweet.util.Globals.string;
+import static jsweet.util.Lang.$export;
+import static jsweet.util.Lang.array;
+import static jsweet.util.Lang.string;
 
 import java.util.function.BiFunction;
 

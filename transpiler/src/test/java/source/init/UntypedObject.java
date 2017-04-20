@@ -1,7 +1,7 @@
 package source.init;
 
-import static jsweet.util.Globals.$export;
-import static jsweet.util.Globals.$map;
+import static jsweet.util.Lang.$export;
+import static jsweet.util.Lang.$map;
 
 import def.js.Object;
 

@@ -16,7 +16,7 @@
  */
 package source.structural.globalclasses.d;
 
-import static jsweet.util.Globals.$export;
+import static jsweet.util.Lang.$export;
 import static source.structural.globalclasses.Globals.test;
 import static source.structural.globalclasses.e.Globals.Static;
 import static source.structural.globalclasses.e.Globals.Ok;

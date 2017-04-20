@@ -1,7 +1,7 @@
 package source.api;
 
-import static jsweet.util.Globals.$export;
-import static jsweet.util.Globals.any;
+import static jsweet.util.Lang.$export;
+import static jsweet.util.Lang.any;
 
 import def.js.Array;
 import def.js.ArrayBuffer;

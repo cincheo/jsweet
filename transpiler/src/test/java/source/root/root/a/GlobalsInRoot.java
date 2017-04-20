@@ -16,7 +16,7 @@
  */
 package source.root.root.a;
 
-import static jsweet.util.Globals.$export;
+import static jsweet.util.Lang.$export;
 import static source.root.root.a.Globals.m2;
 
 public class GlobalsInRoot {

@@ -16,7 +16,7 @@
  */
 package source.generics;
 
-import static jsweet.util.Globals.$export;
+import static jsweet.util.Lang.$export;
 
 import java.util.function.DoubleConsumer;
 

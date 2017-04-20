@@ -16,7 +16,7 @@
  */
 package source.require.b;
 
-import static jsweet.util.Globals.$export;
+import static jsweet.util.Lang.$export;
 
 import source.require.a.A;
 

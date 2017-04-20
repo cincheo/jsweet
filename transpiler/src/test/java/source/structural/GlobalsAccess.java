@@ -16,8 +16,8 @@
  */
 package source.structural;
 
-import static jsweet.util.Globals.$export;
-import static jsweet.util.Globals.string;
+import static jsweet.util.Lang.$export;
+import static jsweet.util.Lang.string;
 import static source.structural.Globals.toTitleCase;
 
 import def.js.RegExp;

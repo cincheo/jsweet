@@ -3,7 +3,7 @@ package source.transpiler;
 import static def.dom.Globals.console;
 import static def.dom.Globals.document;
 import static def.dom.Globals.window;
-import static jsweet.util.Globals.union;
+import static jsweet.util.Lang.union;
 
 import def.dom.CanvasRenderingContext2D;
 import def.dom.Element;

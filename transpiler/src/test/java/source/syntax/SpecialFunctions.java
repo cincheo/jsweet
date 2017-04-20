@@ -16,8 +16,8 @@
  */
 package source.syntax;
 
-import static jsweet.util.Globals.$apply;
-import static jsweet.util.Globals.$new;
+import static jsweet.util.Lang.$apply;
+import static jsweet.util.Lang.$new;
 
 public class SpecialFunctions {
 

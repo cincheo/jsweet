@@ -48,19 +48,16 @@ import jsweet.util.union.Union4;
  * Programmers should import these helpers most of the time:
  * 
  * <pre>
- * import static jsweet.util.Globals.*;
+ * import static jsweet.util.Lang.*;
  * </pre>
- * 
- * @deprecated Replaced with {@link Lang}
  * 
  * @author Renaud Pawlak
  */
-@Deprecated
-public final class Globals {
+public final class Lang {
 
 	private static final ThreadLocal<Map<String, Object>> EXPORTED_VARS = new ThreadLocal<>();
 
-	private Globals() {
+	private Lang() {
 	}
 
 	/**

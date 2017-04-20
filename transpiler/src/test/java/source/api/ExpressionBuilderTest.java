@@ -1,6 +1,6 @@
 package source.api;
 
-import static jsweet.util.Globals.$export;
+import static jsweet.util.Lang.$export;
 
 import java.util.Deque;
 import java.util.LinkedList;

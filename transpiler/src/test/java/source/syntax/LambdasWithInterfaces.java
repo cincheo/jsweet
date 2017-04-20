@@ -1,6 +1,6 @@
 package source.syntax;
 
-import static jsweet.util.Globals.$export;
+import static jsweet.util.Lang.$export;
 
 import def.js.Array;
 

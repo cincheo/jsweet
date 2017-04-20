@@ -1,6 +1,6 @@
 package source.structural.wrongglobals;
 
-import static jsweet.util.Globals.$get;
+import static jsweet.util.Lang.$get;
 
 public class Globals extends SuperClass {
 

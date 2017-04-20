@@ -1,6 +1,6 @@
 package source.calculus;
 
-import static jsweet.util.Globals.$export;
+import static jsweet.util.Lang.$export;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.cbrt;

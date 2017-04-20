@@ -16,7 +16,7 @@
  */
 package source.typing;
 
-import static jsweet.util.Globals.union;
+import static jsweet.util.Lang.union;
 
 import def.js.Date;
 import def.js.Function;

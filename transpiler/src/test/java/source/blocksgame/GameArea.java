@@ -18,8 +18,8 @@ package source.blocksgame;
 
 import static def.dom.Globals.console;
 import static def.dom.Globals.document;
-import static jsweet.util.Globals.array;
-import static jsweet.util.Globals.union;
+import static jsweet.util.Lang.array;
+import static jsweet.util.Lang.union;
 import static jsweet.util.StringTypes._2d;
 
 import def.dom.CanvasRenderingContext2D;

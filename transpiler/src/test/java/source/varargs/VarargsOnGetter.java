@@ -16,7 +16,7 @@
  */
 package source.varargs;
 
-import static jsweet.util.Globals.$export;
+import static jsweet.util.Lang.$export;
 
 public class VarargsOnGetter {
 	public static void main(String[] args) {

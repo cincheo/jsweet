@@ -1,6 +1,6 @@
 package source.structural.globalclasses.a;
 
-import static jsweet.util.Globals.$export;
+import static jsweet.util.Lang.$export;
 
 public class ClassWithStaticMethod {
 

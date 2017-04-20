@@ -18,7 +18,7 @@ package source.api;
 
 import def.js.Array;
 import def.js.IArguments;
-import jsweet.util.Globals;
+import jsweet.util.Lang;
 
 public class ForeachIteration {
 
@@ -29,7 +29,7 @@ public class ForeachIteration {
 		for (String s : array) {
 			seq+=s;
 		}
-		Globals.$export("out", seq);
+		Lang.$export("out", seq);
 	}
 
 	void m2(IArguments args) {

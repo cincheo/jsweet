@@ -16,7 +16,7 @@
  */
 package source.typing;
 
-import static jsweet.util.Globals.$export;
+import static jsweet.util.Lang.$export;
 
 import jsweet.util.tuple.Tuple2;
 

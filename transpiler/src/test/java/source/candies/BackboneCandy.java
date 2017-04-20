@@ -1,14 +1,14 @@
 package source.candies;
 
-import static jsweet.util.Globals.function;
-import static jsweet.util.Globals.union;
+import static jsweet.util.Lang.function;
+import static jsweet.util.Lang.union;
 
 import java.util.function.Function;
 
 import def.backbone.backbone.Collection;
 import def.backbone.backbone.Model;
 import def.backbone.backbone.ObjectHash;
-import jsweet.util.Globals;
+import jsweet.util.Lang;
 
 public class BackboneCandy {
 
@@ -88,7 +88,7 @@ class TodoList extends Collection<Todo> {
 	// TODO: this is wrong... there is a problem with varargs... to be
 	// investigated
 	Todo[] remaining() {
-		return this.without(Globals.any(this.done()));
+		return this.without(Lang.any(this.done()));
 	}
 
 	// We keep the Todos in sequential order, despite being saved by unordered

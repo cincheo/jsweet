@@ -20,6 +20,7 @@ import org.junit.Test;
 
 import source.statics.AnonymousClasses;
 import source.statics.Classes;
+import source.statics.DefaultValues;
 import source.statics.InnerClasses;
 import source.statics.StaticsInInterfaces;
 import source.statics.StaticInitializer;
@@ -35,7 +36,7 @@ public class StaticsTests extends AbstractTest {
 	public void testInnerClasses() {
 		eval((h, r) -> {
 			h.assertNoProblems();
-		} , getSourceFile(InnerClasses.class));
+		}, getSourceFile(InnerClasses.class));
 	}
 
 	@Test
@@ -43,7 +44,7 @@ public class StaticsTests extends AbstractTest {
 		eval((h, r) -> {
 			h.assertNoProblems();
 			Assert.assertTrue(r.get("m"));
-		} , getSourceFile(AnonymousClasses.class));
+		}, getSourceFile(AnonymousClasses.class));
 	}
 
 	@Test
@@ -52,7 +53,7 @@ public class StaticsTests extends AbstractTest {
 			h.assertNoProblems();
 			Assert.assertEquals("name", r.get("name1"));
 			Assert.assertEquals("name", r.get("name2"));
-		} , getSourceFile(Classes.class));
+		}, getSourceFile(Classes.class));
 	}
 
 	@Test
@@ -60,7 +61,7 @@ public class StaticsTests extends AbstractTest {
 		eval((h, r) -> {
 			h.assertNoProblems();
 			Assert.assertEquals(4, (int) r.get("result"));
-		} , getSourceFile(StaticInitializer.class));
+		}, getSourceFile(StaticInitializer.class));
 	}
 
 	@Test
@@ -68,17 +69,23 @@ public class StaticsTests extends AbstractTest {
 		eval((h, r) -> {
 			h.assertNoProblems();
 			Assert.assertTrue(r.get("ok"));
-		} , getSourceFile(StaticInitializerWithNoFields.class));
+		}, getSourceFile(StaticInitializerWithNoFields.class));
 	}
-	
+
 	@Test
 	public void testStaticsInInterfaces() {
 		eval((h, r) -> {
 			h.assertNoProblems();
-			Assert.assertEquals(1, (int)r.get("c1"));
-			Assert.assertEquals(2, (int)r.get("c2"));
-		} , getSourceFile(StaticsInInterfaces.class));
+			Assert.assertEquals(1, (int) r.get("c1"));
+			Assert.assertEquals(2, (int) r.get("c2"));
+		}, getSourceFile(StaticsInInterfaces.class));
 	}
-	
+
+	@Test
+	public void testDefaultValues() {
+		eval((h, r) -> {
+			h.assertNoProblems();
+		}, getSourceFile(DefaultValues.class));
+	}
 
 }

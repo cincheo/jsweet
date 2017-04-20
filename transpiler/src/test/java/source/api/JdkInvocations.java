@@ -16,7 +16,7 @@
  */
 package source.api;
 
-import static jsweet.util.Globals.$export;
+import static jsweet.util.Lang.$export;
 
 public class JdkInvocations {
 

@@ -2,8 +2,8 @@ package source.api;
 
 import static def.js.JSON.stringify;
 import def.js.JSON;
-import static jsweet.util.Globals.$get;
-import jsweet.util.Globals;
+import static jsweet.util.Lang.$get;
+import jsweet.util.Lang;
 
 public class AccessStaticMethod {
 
@@ -13,8 +13,8 @@ public class AccessStaticMethod {
 		stringify("test");
 		Object o = null;
 		$get(o, "f");
-		Globals.$get(o, "f");
-		jsweet.util.Globals.$get(o, "f");
+		Lang.$get(o, "f");
+		jsweet.util.Lang.$get(o, "f");
 	}
 
 }

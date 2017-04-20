@@ -16,8 +16,8 @@
  */
 package source.structural;
 
-import static jsweet.util.Globals.$export;
-import static jsweet.util.Globals.$get;
+import static jsweet.util.Lang.$export;
+import static jsweet.util.Lang.$get;
 
 import def.js.Array;
 import jsweet.lang.Interface;

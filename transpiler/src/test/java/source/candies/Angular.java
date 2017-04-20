@@ -17,8 +17,8 @@
 package source.candies;
 
 import static def.angularjs.Globals.angular;
-import static jsweet.util.Globals.array;
-import static jsweet.util.Globals.union;
+import static jsweet.util.Lang.array;
+import static jsweet.util.Lang.union;
 
 import java.util.function.Consumer;
 

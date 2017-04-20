@@ -16,7 +16,7 @@
  */
 package source.syntax;
 
-import static jsweet.util.Globals.number;
+import static jsweet.util.Lang.number;
 
 public class GlobalsCastMethod {
 

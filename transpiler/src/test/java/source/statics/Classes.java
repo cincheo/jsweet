@@ -1,6 +1,6 @@
 package source.statics;
 
-import static jsweet.util.Globals.$export;
+import static jsweet.util.Lang.$export;
 
 public class Classes {
 

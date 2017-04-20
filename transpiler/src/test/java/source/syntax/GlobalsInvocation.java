@@ -16,7 +16,7 @@
  */
 package source.syntax;
 
-import static jsweet.util.Globals.string;
+import static jsweet.util.Lang.string;
 import static source.syntax.Globals.toTitleCase;
 
 import def.js.RegExp;

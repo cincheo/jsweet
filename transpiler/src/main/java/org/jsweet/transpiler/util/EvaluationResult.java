@@ -33,7 +33,7 @@ import org.jsweet.transpiler.JSweetTranspiler;
 public interface EvaluationResult {
 	/**
 	 * Get access to the value of an exported variable (exported with a call to
-	 * the jsweet.util.Globals.$export function).
+	 * the jsweet.util.Lang.$export function).
 	 * 
 	 * @param variableName
 	 *            the variable to access

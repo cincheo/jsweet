@@ -16,7 +16,7 @@
  */
 package source.structural.globalclasses.a;
 
-import static jsweet.util.Globals.$set;
+import static jsweet.util.Lang.$set;
 
 class Globals {
 

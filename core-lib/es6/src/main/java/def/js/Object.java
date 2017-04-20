@@ -237,18 +237,18 @@ public class Object {
 	/**
 	 * Gets the value for the given key. Generates <code>this[key]</code>.
 	 * 
-	 * @see jsweet.util.Globals#$get(java.lang.String)
-	 * @see jsweet.util.Globals#$set(java.lang.String,java.lang.Object)
-	 * @see jsweet.util.Globals#$delete(java.lang.String)
+	 * @see jsweet.util.Lang#$get(java.lang.String)
+	 * @see jsweet.util.Lang#$set(java.lang.String,java.lang.Object)
+	 * @see jsweet.util.Lang#$delete(java.lang.String)
 	 */
 	native public java.lang.Object $get(java.lang.String key);
 
 	/**
 	 * Sets the value for the given key. Generates <code>this[key]=value</code>.
 	 * 
-	 * @see jsweet.util.Globals#$get(java.lang.String)
-	 * @see jsweet.util.Globals#$set(java.lang.String,java.lang.Object)
-	 * @see jsweet.util.Globals#$delete(java.lang.String)
+	 * @see jsweet.util.Lang#$get(java.lang.String)
+	 * @see jsweet.util.Lang#$set(java.lang.String,java.lang.Object)
+	 * @see jsweet.util.Lang#$delete(java.lang.String)
 	 */
 	native public void $set(java.lang.String key, java.lang.Object value);
 
@@ -256,9 +256,9 @@ public class Object {
 	 * Deletes the value of the given key. Generates
 	 * <code>delete this[key]</code>.
 	 * 
-	 * @see jsweet.util.Globals#$get(java.lang.String)
-	 * @see jsweet.util.Globals#$set(java.lang.String,java.lang.Object)
-	 * @see jsweet.util.Globals#$delete(java.lang.String)
+	 * @see jsweet.util.Lang#$get(java.lang.String)
+	 * @see jsweet.util.Lang#$set(java.lang.String,java.lang.Object)
+	 * @see jsweet.util.Lang#$delete(java.lang.String)
 	 */
 	native public void $delete(java.lang.String key);
 

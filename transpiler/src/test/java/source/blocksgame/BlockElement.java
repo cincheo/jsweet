@@ -17,7 +17,7 @@
 package source.blocksgame;
 
 import static def.dom.Globals.document;
-import static jsweet.util.Globals.union;
+import static jsweet.util.Lang.union;
 
 import def.dom.CanvasRenderingContext2D;
 import def.dom.HTMLImageElement;

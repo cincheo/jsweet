@@ -16,7 +16,7 @@
  */
 package source.structural;
 
-import static jsweet.util.Globals.$export;
+import static jsweet.util.Lang.$export;
 
 import java.util.function.BinaryOperator;
 import java.util.function.IntFunction;
