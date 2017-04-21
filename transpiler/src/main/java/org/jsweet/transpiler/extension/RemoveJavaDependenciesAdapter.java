@@ -187,6 +187,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 						return true;
 					} else {
 						print("parseFloat").print("(").printArgList(invocation.getArguments()).print(")");
+						return true;
 					}
 				}
 				break;
