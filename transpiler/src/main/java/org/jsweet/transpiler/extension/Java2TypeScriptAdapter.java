@@ -853,8 +853,14 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 							.printArgList(invocationElement.getArguments()).print(")");
 					return true;
 				case "indexOf":
-					print(invocationElement.getTargetExpression()).print(".indexOf(")
-							.printArgList(invocationElement.getArguments()).print(")");
+					if (invocationElement.getArgumentCount() == 1
+							&& util().isNumber(invocationElement.getArgument(0).getType())) {
+						print(invocationElement.getTargetExpression()).print(".indexOf(String.fromCharCode(")
+								.print(invocationElement.getArgument(0)).print("))");
+					} else {
+						print(invocationElement.getTargetExpression()).print(".indexOf(")
+								.printArgList(invocationElement.getArguments()).print(")");
+					}
 					return true;
 				case "toLowerCase":
 					if (invocationElement.getArgumentCount() > 0) {

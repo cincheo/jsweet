@@ -21,6 +21,7 @@ import source.nativestructures.Numbers;
 import source.nativestructures.ObjectMaps;
 import source.nativestructures.OverloadWithNative;
 import source.nativestructures.Reflect;
+import source.nativestructures.Strings;
 import source.nativestructures.WeakReferences;
 
 public class NativeStructuresTests extends AbstractTest {
@@ -141,4 +142,12 @@ public class NativeStructuresTests extends AbstractTest {
 		}, getSourceFile(Numbers.class));
 	}
 
+	@Test
+	public void testStrings() {
+		eval((logHandler, result) -> {
+			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+			assertEquals(">,0", result.get("trace"));
+		}, getSourceFile(Strings.class));
+	}
+	
 }
