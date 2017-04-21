@@ -232,13 +232,13 @@ public class JSweetCommandLineLauncher {
     }
 
     private static EcmaScriptComplianceLevel getEcmaTargetVersion(String targetVersion) throws Exception {
-        for (EcmaScriptComplianceLevel esVersion : EcmaScriptComplianceLevel.values()) {
-            if (esVersion.toString().equals(targetVersion)) {
-                return esVersion;
-            }
-        }
 
-        throw new Exception("Invalid EcmaScript target version: " + targetVersion);
+        try {
+            EcmaScriptComplianceLevel lvl = EcmaScriptComplianceLevel.valueOf(targetVersion);
+            return lvl;
+        } catch (IllegalArgumentException e) {
+            throw new Exception("Invalid EcmaScript target version: " + targetVersion);
+        }
     }
 
     private static JSAP defineArgs() throws JSAPException {
