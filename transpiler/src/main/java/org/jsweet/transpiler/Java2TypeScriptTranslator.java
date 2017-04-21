@@ -2753,7 +2753,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						}
 					}
 				}
-				if(!(ambient || (isTopLevelScope() && isDefinitionScope)) && varDecl.sym.isStatic() && varDecl.init==null) {
+				if (!(ambient || (isTopLevelScope() && isDefinitionScope)) && varDecl.sym.isStatic()
+						&& varDecl.init == null) {
 					print(" = ").print(Util.getTypeInitialValue(varDecl.sym.type));
 				}
 			}
@@ -4020,8 +4021,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 		}
 		if (expandChar) {
-			print(" = String.fromCharCode(").print(assignOp.lhs).print(".charCodeAt(0) " + op + " ").print(assignOp.rhs)
-					.print(".charCodeAt(0))");
+			print(" = String.fromCharCode(").substituteAndPrintAssignedExpression(context.symtab.intType, assignOp.lhs)
+					.print(" " + op + " ").substituteAndPrintAssignedExpression(context.symtab.intType, assignOp.rhs)
+					.print(")");
 			return;
 		}
 		if (expand) {

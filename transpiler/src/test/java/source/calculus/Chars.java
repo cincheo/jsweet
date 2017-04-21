@@ -66,6 +66,11 @@ public class Chars {
 		c4 *= '0';
 		c4 /= '0';
 
+		char x = 'a';
+		x = (char) ((int) x & 0x20);
+		x &= 0x20;
+		//System.out.println("Char: " + x);
+
 	}
 
 	public static final int MIN_RADIX = 2;

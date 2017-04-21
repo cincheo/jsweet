@@ -360,7 +360,23 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	}
 
 	/**
-	 * Conditionally subtitutes an expression when it is assigned to a given
+	 * Print an expression being assigned to a type (should handled necessary
+	 * wraping/unwraping).
+	 * 
+	 * @param assignedType
+	 *            the type the expression is being assigned to
+	 * @param expression
+	 *            the assigned expression
+	 */
+	public AbstractTreePrinter substituteAndPrintAssignedExpression(Type assignedType, JCExpression expression) {
+		if (!substituteAssignedExpression(assignedType, expression)) {
+			print(expression);
+		}
+		return this;
+	}
+
+	/**
+	 * Conditionally substitutes an expression when it is assigned to a given
 	 * type.
 	 * 
 	 * @param assignedType
