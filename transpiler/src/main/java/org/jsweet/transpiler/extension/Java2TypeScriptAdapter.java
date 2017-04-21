@@ -942,7 +942,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 				case "toString":
 					if (invocationElement.getArgumentCount() > 0) {
 						printMacroName(targetMethodName);
-						print("(''+").print(invocationElement.getArgument(0)).print(")");
+						print("(''+(").print(invocationElement.getArgument(0)).print("))");
 						return true;
 					}
 				}

@@ -17,6 +17,7 @@ import source.nativestructures.Maps;
 import source.nativestructures.NativeArrays;
 import source.nativestructures.NativeStringBuilder;
 import source.nativestructures.NativeSystem;
+import source.nativestructures.Numbers;
 import source.nativestructures.ObjectMaps;
 import source.nativestructures.OverloadWithNative;
 import source.nativestructures.Reflect;
@@ -67,7 +68,7 @@ public class NativeStructuresTests extends AbstractTest {
 			assertEquals("1,2", result.get("trace"));
 		}, getSourceFile(OverloadWithNative.class));
 	}
-	
+
 	@Test
 	public void testExceptions() {
 		eval((logHandler, result) -> {
@@ -91,7 +92,7 @@ public class NativeStructuresTests extends AbstractTest {
 			assertEquals("1,a,2,b,2,a,true,[1,2],[a,b],1,true,1,2,[],-null-", result.get("trace"));
 		}, getSourceFile(ObjectMaps.class));
 	}
-	
+
 	@Test
 	public void testNativeArrays() {
 		eval((logHandler, result) -> {
@@ -131,5 +132,13 @@ public class NativeStructuresTests extends AbstractTest {
 			assertEquals("constructor", result.get("trace"));
 		}, getSourceFile(Reflect.class));
 	}
-	
+
+	@Test
+	public void testNumbers() {
+		eval((logHandler, result) -> {
+			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+			assertEquals(">,1", result.get("trace"));
+		}, getSourceFile(Numbers.class));
+	}
+
 }
