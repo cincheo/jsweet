@@ -46,6 +46,7 @@ import com.martiansoftware.jsap.JSAPResult;
 import com.martiansoftware.jsap.Switch;
 import com.martiansoftware.jsap.stringparsers.EnumeratedStringParser;
 import com.martiansoftware.jsap.stringparsers.FileStringParser;
+import org.jsweet.transpiler.EcmaScriptComplianceLevel;
 
 /**
  * The command line launcher for the JSweet transpiler.
@@ -73,7 +74,7 @@ public class JSweetCommandLineLauncher {
 		try {
 			JSAP jsapSpec = defineArgs();
 			JSAPResult jsapArgs = parseArgs(jsapSpec, args);
-
+                        
 			if (!jsapArgs.success()) {
 				printUsage(jsapSpec);
 				System.exit(-1);
@@ -94,8 +95,12 @@ public class JSweetCommandLineLauncher {
 
 			ErrorCountTranspilationHandler transpilationHandler = new ErrorCountTranspilationHandler(
 					new ConsoleTranspilationHandler());
+                        
+                        EcmaScriptComplianceLevel esTarget = getEcmaTargetVersion(jsapArgs.getString("esTarget"));
+                        logger.info(esTarget.toString());
 
 			try {
+                                
 				File tsOutputDir = jsapArgs.getFile("tsout");
 				tsOutputDir.mkdirs();
 				logger.info("ts output dir: " + tsOutputDir);
@@ -199,6 +204,7 @@ public class JSweetCommandLineLauncher {
 				transpiler.setGenerateDefinitions(!jsapArgs.getBoolean("ignoreDefinitions"));
 				transpiler.setDeclarationsOutputDir(dtsOutputDir);
 				transpiler.setHeaderFile(jsapArgs.getFile("header"));
+				transpiler.setEcmaTargetVersion(esTarget);
 
 				transpiler.transpile(transpilationHandler, SourceFile.toSourceFiles(files));
 			} catch (NoClassDefFoundError error) {
@@ -223,6 +229,16 @@ public class JSweetCommandLineLauncher {
 			System.exit(1);
 		}
 		System.exit(errorCount > 0 ? 1 : 0);
+	}
+        
+        private static EcmaScriptComplianceLevel getEcmaTargetVersion(String targetVersion) throws Exception {
+		switch (targetVersion) {
+                        case "3": return EcmaScriptComplianceLevel.ES3;
+			case "5": return EcmaScriptComplianceLevel.ES5;
+			case "6": return EcmaScriptComplianceLevel.ES6;
+		}
+                
+                throw new Exception("Invalid EcmaScript target version: " + targetVersion);
 	}
 
 	private static JSAP defineArgs() throws JSAPException {
@@ -439,6 +455,14 @@ public class JSweetCommandLineLauncher {
 		optionArg.setHelp(
 				"The directory JSweet uses to store temporary files such as extracted candies. JSweet uses '.jsweet' if left unspecified.");
 		optionArg.setStringParser(FileStringParser.getParser());
+		optionArg.setRequired(false);
+		jsap.registerParameter(optionArg);
+                
+                optionArg = new FlaggedOption("esTarget");
+		optionArg.setLongFlag("esTarget");
+		optionArg.setHelp(
+				"The ecma script target version. Possible values: 3, 5, 6 - for ES3 to ES6.");
+                optionArg.setDefault("3");
 		optionArg.setRequired(false);
 		jsap.registerParameter(optionArg);
 
