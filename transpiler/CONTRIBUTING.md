@@ -18,7 +18,7 @@ Please make sure that contributed new features has been discussed thoroughly fir
 
 ## Contribution License Agreement
 
-By contributing through a pull request, you acknowledge that you fully own your Contribution and that you are legally entitled to make it available to the JSweet project under the terms and conditions of the Apache 2.0 license. This license implies that you grant the JSweet project, and those who receive the code directly or indirectly from the JSweet project, a perpetual, worldwide, non-exclusive, royalty-free, irrevocable license in the Contribution to reproduce, prepare derivative works of, publicly display, publicly perform, and distribute your Contribution and such derivative works, and to sublicense any or all of the foregoing rights to third parties. 
+By contributing through a pull request, you acknowledge that you fully own your Contribution and that you are legally entitled to make it available to the JSweet project under the terms and conditions of the [license](https://github.com/cincheo/jsweet/blob/master/LICENSE). This license implies that you grant the JSweet project, and those who receive the code directly or indirectly from the JSweet project, a perpetual, worldwide, non-exclusive, royalty-free, irrevocable license in the Contribution to reproduce, prepare derivative works of, publicly display, publicly perform, and distribute your Contribution and such derivative works, and to sublicense any or all of the foregoing rights to third parties. 
 
 Your execution and/or acceptance of this agreement does not influence any of your right and title to use and distribute your own Contribution.
 
