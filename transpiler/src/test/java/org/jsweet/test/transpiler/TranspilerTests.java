@@ -250,7 +250,7 @@ public class TranspilerTests extends AbstractTest {
 				"--factoryClassName", "org.jsweet.transpiler.extension.RemoveJavaDependenciesFactory", //
 				"-i", gameDir, //
 				"--includes", "UselessClass.java:dummy",
-                                "--esTarget", "5");
+                                "--targetVersion", "ES5");
                 
 		assertTrue(process.exitValue() == 0);
 		files.clear();
@@ -268,7 +268,7 @@ public class TranspilerTests extends AbstractTest {
 				"--factoryClassName", "org.jsweet.transpiler.extension.RemoveJavaDependenciesFactory", //
 				"-i", gameDir, //
 				"--includes", "UselessClass.java:dummy",
-                                "--esTarget", "3");
+                                "--targetVersion", "ES3");
 
 		assertTrue(process.exitValue() == 0);
 		files.clear();
@@ -286,7 +286,7 @@ public class TranspilerTests extends AbstractTest {
 				"--factoryClassName", "org.jsweet.transpiler.extension.RemoveJavaDependenciesFactory", //
 				"-i", gameDir, //
 				"--includes", "UselessClass.java:dummy",
-                                "--esTarget", "4");
+                                "--targetVersion", "ES4");
 
 		assertTrue(process.exitValue() == 1);
 
