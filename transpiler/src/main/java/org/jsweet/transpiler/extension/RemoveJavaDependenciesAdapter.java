@@ -55,6 +55,7 @@ import javax.lang.model.type.DeclaredType;
 
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.Java2TypeScriptTranslator;
+import org.jsweet.transpiler.ModuleKind;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.ExtendedElementFactory;
 import org.jsweet.transpiler.model.ForeachLoopElement;
@@ -612,6 +613,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 					print(invocation.getTargetExpression());
 					return true;
 				}
+				break;
 			case "java.text.Collator":
 				switch (targetMethodName) {
 				case "getInstance":
@@ -619,6 +621,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 					print("((o1, o2) => o1.toString().localeCompare(o2.toString()))");
 					return true;
 				}
+				break;
 			case "java.util.Locale":
 				switch (targetMethodName) {
 				case "getDefault":
@@ -626,6 +629,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 					getPrinter().print("(window.navigator['userLanguage'] || window.navigator.language)");
 					return true;
 				}
+				break;
 			case "java.util.TimeZone":
 				switch (targetMethodName) {
 				case "getTimeZone":
@@ -644,6 +648,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 					print(invocation.getTargetExpression());
 					return true;
 				}
+				break;
 			case "java.util.Calendar":
 			case "java.util.GregorianCalendar":
 				switch (targetMethodName) {
@@ -766,6 +771,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 					print("(new Date(").print(invocation.getTargetExpression()).print(".getTime()))");
 					return true;
 				}
+				break;
 
 			case "java.io.Reader":
 			case "java.io.StringReader":
@@ -788,6 +794,24 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 				case "close":
 					printMacroName(targetMethodName);
 					// ignore but we could flag it and throw an error...
+					return true;
+				}
+				break;
+
+			case "java.lang.Class":
+				switch (targetMethodName) {
+				case "forName":
+					printMacroName(targetMethodName);
+					if (getContext().options.getModuleKind() != ModuleKind.none) {
+						print("eval(").print(invocation.getArgument(0)).print(".split('.').slice(-1)[0])");
+					} else {
+						print("eval(").print(invocation.getArgument(0)).print(")");
+					}
+					return true;
+				case "newInstance":
+					printMacroName(targetMethodName);
+					print("new ").print(invocation.getTargetExpression()).print("(")
+							.printArgList(invocation.getArguments()).print(")");
 					return true;
 				}
 
