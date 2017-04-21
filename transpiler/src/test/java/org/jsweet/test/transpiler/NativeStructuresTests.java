@@ -50,7 +50,7 @@ public class NativeStructuresTests extends AbstractTest {
 	public void testStringBuilder() {
 		eval((logHandler, result) -> {
 			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-			assertEquals("a,abc,a,abc,ab,X", result.get("trace"));
+			assertEquals("a,abc,a,abc,ab,X,tEst", result.get("trace"));
 		}, getSourceFile(NativeStringBuilder.class));
 	}
 
@@ -149,5 +149,6 @@ public class NativeStructuresTests extends AbstractTest {
 			assertEquals(">,0", result.get("trace"));
 		}, getSourceFile(Strings.class));
 	}
+
 	
 }

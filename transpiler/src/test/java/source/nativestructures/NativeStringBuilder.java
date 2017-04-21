@@ -40,6 +40,12 @@ public class NativeStringBuilder {
 
 		trace.push("X" + sb2.toString());
 
+		StringBuffer sb3 = new StringBuffer("test");
+
+		sb3.setCharAt(1, 'E');
+		
+		trace.push(sb3.toString());
+		
 		$export("trace", trace.join(","));
 
 	}

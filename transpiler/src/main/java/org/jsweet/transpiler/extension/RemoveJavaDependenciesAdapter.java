@@ -595,6 +595,12 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 								.print(invocation.getTargetExpression()).print(")");
 					}
 					return true;
+				case "setCharAt":
+					printMacroName(targetMethodName);
+					print("((sb, index, c) => sb.str = sb.str.substr(0, index) + c + sb.str.substr(index + 1))(")
+							.print(invocation.getTargetExpression()).print(", ").printArgList(invocation.getArguments())
+							.print(")");
+					return true;
 				case "setLength":
 					printMacroName(targetMethodName);
 					print("((sb, length) => sb.str = sb.str.substring(0, length))(")
@@ -896,8 +902,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			if (newClass.getArgumentCount() == 0 || Util.isNumber(newClass.getArgument(0).getType())) {
 				print("{ str: \"\", toString: function() { return this.str; } }");
 			} else {
-				print("{ str: ").print(newClass.getArgument(0))
-						.print(", toString: function() { return this.str; } } }");
+				print("{ str: ").print(newClass.getArgument(0)).print(", toString: function() { return this.str; } }");
 			}
 			return true;
 		case "java.lang.ref.WeakReference":
