@@ -4684,6 +4684,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		} else if (Util.isNumber(assignedType) && expression.type.getTag() == TypeTag.CHAR) {
 			print("(").print(expression).print(").charCodeAt(0)");
 			return true;
+		} else if (assignedType.getTag() == TypeTag.FLOAT && expression.type.getTag() == TypeTag.DOUBLE) {
+			// TODO: fround is only available from ES5 (should skip this or
+			// provide macro)
+			print("((<any>Math).fround?(").print(expression).print("):(<any>Math).fround(")
+					.print(expression).print("))");
+			return true;
 		} else {
 			if (expression instanceof JCLambda) {
 				if (assignedType.tsym.isInterface() && !context.isFunctionalType(assignedType.tsym)) {
