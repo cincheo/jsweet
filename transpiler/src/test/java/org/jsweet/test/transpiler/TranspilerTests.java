@@ -169,7 +169,7 @@ public class TranspilerTests extends AbstractTest {
 				"--jsout", outDir.getPath(), //
 				"--sourceMap", //
 				"-i", gameDir + ":" + calculusDir);
-
+                
 		assertTrue(process.exitValue() == 0);
 		files.clear();
 		Util.addFiles(".ts", outDir, files);
@@ -239,6 +239,56 @@ public class TranspilerTests extends AbstractTest {
 		Util.addFiles(".ts", outDir, files);
 		assertTrue(files.size() == 3);
 		assertTrue(files.stream().anyMatch(f -> f.getName().equals("UselessClass.ts")));
+                
+                process = ProcessUtil.runCommand("java", line -> {
+			System.out.println(line);
+		}, null, "-cp", System.getProperty("java.class.path"), //
+				JSweetCommandLineLauncher.class.getName(), //
+				"--tsout", outDir.getPath(), //
+				"--jsout", outDir.getPath(), //
+				"--sourceMap", //
+				"--factoryClassName", "org.jsweet.transpiler.extension.RemoveJavaDependenciesFactory", //
+				"-i", gameDir, //
+				"--includes", "UselessClass.java:dummy",
+                                "--targetVersion", "ES5");
+                
+		assertTrue(process.exitValue() == 0);
+		files.clear();
+		Util.addFiles(".ts", outDir, files);
+		assertTrue(files.size() == 3);
+		assertTrue(files.stream().anyMatch(f -> f.getName().equals("UselessClass.ts")));
+                
+                process = ProcessUtil.runCommand("java", line -> {
+			System.out.println(line);
+		}, null, "-cp", System.getProperty("java.class.path"), //
+				JSweetCommandLineLauncher.class.getName(), //
+				"--tsout", outDir.getPath(), //
+				"--jsout", outDir.getPath(), //
+				"--sourceMap", //
+				"--factoryClassName", "org.jsweet.transpiler.extension.RemoveJavaDependenciesFactory", //
+				"-i", gameDir, //
+				"--includes", "UselessClass.java:dummy",
+                                "--targetVersion", "ES3");
+
+		assertTrue(process.exitValue() == 0);
+		files.clear();
+		Util.addFiles(".ts", outDir, files);
+		assertTrue(files.size() == 3);
+		assertTrue(files.stream().anyMatch(f -> f.getName().equals("UselessClass.ts")));
+                
+                process = ProcessUtil.runCommand("java", line -> {
+			System.out.println(line);
+		}, null, "-cp", System.getProperty("java.class.path"), //
+				JSweetCommandLineLauncher.class.getName(), //
+				"--tsout", outDir.getPath(), //
+				"--jsout", outDir.getPath(), //
+				"--sourceMap", //
+				"--factoryClassName", "org.jsweet.transpiler.extension.RemoveJavaDependenciesFactory", //
+				"-i", gameDir, //
+				"--includes", "UselessClass.java:dummy",
+                                "--targetVersion", "ES4");
+
+		assertTrue(process.exitValue() == 1);
 
 	}
 
