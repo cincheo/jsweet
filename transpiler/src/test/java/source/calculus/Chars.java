@@ -69,7 +69,14 @@ public class Chars {
 		char x = 'a';
 		x = (char) ((int) x & 0x20);
 		x &= 0x20;
-		//System.out.println("Char: " + x);
+		// System.out.println("Char: " + x);
+
+		char[] buf = new char[2];
+		assert buf.length == 2;
+		"abcd".getChars(1, 3, buf, 0);
+		assert buf.length == 2;
+		assert buf[0] == 'b';
+		assert buf[1] == 'c';
 
 	}
 

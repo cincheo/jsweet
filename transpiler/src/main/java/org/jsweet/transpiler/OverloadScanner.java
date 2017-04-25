@@ -101,7 +101,14 @@ public class OverloadScanner extends AbstractTreeScanner {
 
 		@Override
 		public String toString() {
-			return "overload(" + methodName + ")[" + methods.size() + "," + isValid + "]";
+			StringBuilder sb = new StringBuilder(
+					"overload(" + methodName + ")[" + methods.size() + "," + isValid + "]");
+			if (methods.size() > 1) {
+				for (JCMethodDecl method : methods) {
+					sb.append("\n      # " + method.sym.getEnclosingElement() + "." + method.sym);
+				}
+			}
+			return sb.toString();
 		}
 
 		/**
@@ -167,7 +174,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 					}
 				}
 
-				// valid overloads can only be in the same classe because of
+				// valid overloads can only be in the same class because of
 				// potential side effects in subclasses
 				if (m1.sym.getEnclosingElement() != m2.sym.getEnclosingElement()) {
 					isValid = false;
@@ -386,6 +393,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 				}
 			}
 		}
+		//context.dumpOverloads(System.out);
 	}
 
 }

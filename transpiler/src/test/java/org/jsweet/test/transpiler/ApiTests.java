@@ -66,14 +66,14 @@ public class ApiTests extends AbstractTest {
 			// logHandler.reportedSourcePositions.get(11).getStartLine());
 			assertEquals(127, logHandler.reportedSourcePositions.get(12).getStartLine());
 			assertEquals(131, logHandler.reportedSourcePositions.get(13).getStartLine());
-		} , getSourceFile(J4TSInvocations.class), getSourceFile(WrongJdkInvocations.class));
+		}, getSourceFile(J4TSInvocations.class), getSourceFile(WrongJdkInvocations.class));
 	}
 
 	@Test
 	public void testJ4TSInvocations() {
 		transpile(ModuleKind.none, logHandler -> {
 			logHandler.assertNoProblems();
-		} , getSourceFile(J4TSInvocations.class));
+		}, getSourceFile(J4TSInvocations.class));
 	}
 
 	@Test
@@ -88,7 +88,7 @@ public class ApiTests extends AbstractTest {
 			assertEquals(-1, result.<Number> get("i2").intValue());
 			assertEquals(4, result.<Number> get("l").intValue());
 			assertEquals("t1st", result.<String> get("r"));
-		} , getSourceFile(JdkInvocations.class));
+		}, getSourceFile(JdkInvocations.class));
 	}
 
 	@Test
@@ -96,58 +96,59 @@ public class ApiTests extends AbstractTest {
 		eval((logHandler, r) -> {
 			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
 			Assert.assertEquals("Wrong behavior output trace", "abc", r.get("out"));
-		} , getSourceFile(ForeachIteration.class));
+		}, getSourceFile(ForeachIteration.class));
 	}
 
 	@Test
 	public void testPrimitiveInstantiation() {
 		transpile(logHandler -> {
 			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-		} , getSourceFile(PrimitiveInstantiation.class));
+		}, getSourceFile(PrimitiveInstantiation.class));
 	}
 
 	@Test
 	public void testAccessStaticMethod() {
 		transpile(logHandler -> {
 			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-		} , getSourceFile(AccessStaticMethod.class));
+		}, getSourceFile(AccessStaticMethod.class));
 	}
 
-	
 	@Test
 	public void testQualifiedInstantiation() {
 		transpile(logHandler -> {
 			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-		} , getSourceFile(QualifiedInstantiation.class));
+		}, getSourceFile(QualifiedInstantiation.class));
 	}
 
 	@Test
 	public void testCastMethods() {
 		transpile(logHandler -> {
 			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-		} , getSourceFile(CastMethods.class));
+		}, getSourceFile(CastMethods.class));
 	}
 
 	@Test
 	public void testErasingJava() {
 		transpile(logHandler -> {
 			logHandler.assertNoProblems();
-		} , getSourceFile(ErasingJava.class));
+		}, getSourceFile(ErasingJava.class));
 	}
 
 	@Test
 	public void testStrings() {
 		eval(ModuleKind.none, (logHandler, r) -> {
 			logHandler.assertNoProblems();
-			Assert.assertEquals("b,bc,c,bc,3,true,ab,32,b,0,false,true,source.api.Strings,Strings,abc,cdcdcd,true,false,true,false,true,true,false,a,aa", r.get("trace"));
-		} , getSourceFile(Strings.class));
+			Assert.assertEquals(
+					"b,bc,c,bc,3,true,ab,32,b,0,false,true,source.api.Strings,Strings,abc,cdcdcd,true,false,true,false,true,true,false,a,aa",
+					r.get("trace"));
+		}, getSourceFile(Strings.class));
 	}
 
 	@Test
 	public void testNumbers() {
 		eval(ModuleKind.none, (logHandler, r) -> {
 			logHandler.assertNoProblems();
-		} , getSourceFile(Numbers.class));
+		}, getSourceFile(Numbers.class));
 	}
 
 	@Test
@@ -155,18 +156,18 @@ public class ApiTests extends AbstractTest {
 		eval(ModuleKind.none, (logHandler, r) -> {
 			logHandler.assertNoProblems();
 			Assert.assertEquals("0,0,1", r.get("trace"));
-		} , getSourceFile(ArrayBuffers.class));
+		}, getSourceFile(ArrayBuffers.class));
 	}
 
 	@Test
 	public void testExpressionBuilder() {
-		transpiler.addJsLibFiles(new File(transpiler.getWorkingDirectory() + "/candies/js/j4ts-0.4.0/bundle.js"));
+		transpiler.addJsLibFiles(getJ4TSRuntime());
 		try {
 			eval(ModuleKind.none, (logHandler, r) -> {
 				logHandler.assertNoProblems();
 				Assert.assertEquals(30, (int) r.get("result"));
 				Assert.assertEquals(30, (int) r.get("result2"));
-			} , getSourceFile(ExpressionBuilderTest.class), getSourceFile(ExpressionBuilderTest2.class));
+			}, getSourceFile(ExpressionBuilderTest.class), getSourceFile(ExpressionBuilderTest2.class));
 		} finally {
 			transpiler.clearJsLibFiles();
 		}

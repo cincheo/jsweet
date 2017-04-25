@@ -244,7 +244,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		this(factory, null, tsOutputDir, jsOutputDir, extractedCandiesJavascriptDir, classPath);
 	}
 
-	private Map<String, Map<String, Object>> configuration;
+	private Map<String, Object> configuration;
 
 	private void readConfiguration() {
 		File confFile = new File(JSweetConfig.CONFIGURATION_FILE_NAME);
@@ -252,8 +252,7 @@ public class JSweetTranspiler implements JSweetOptions {
 			try {
 				logger.info("configuration file found");
 				@SuppressWarnings("unchecked")
-				Map<String, Map<String, Object>> fromJson = new Gson().fromJson(FileUtils.readFileToString(confFile),
-						Map.class);
+				Map<String, Object> fromJson = new Gson().fromJson(FileUtils.readFileToString(confFile), Map.class);
 				configuration = fromJson;
 				System.out.println(configuration);
 			} catch (Exception e) {
@@ -1774,7 +1773,7 @@ public class JSweetTranspiler implements JSweetOptions {
 	}
 
 	@Override
-	public Map<String, Map<String, Object>> getConfiguration() {
+	public Map<String, Object> getConfiguration() {
 		return configuration;
 	}
 

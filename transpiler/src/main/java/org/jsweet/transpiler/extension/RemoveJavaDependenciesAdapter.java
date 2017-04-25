@@ -92,6 +92,8 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 	}
 
 	private void init() {
+		addTypeMapping(Class.class.getName(), "Function<>");
+		
 		extTypesMapping.put(List.class.getName(), "Array");
 		extTypesMapping.put(ArrayList.class.getName(), "Array");
 		extTypesMapping.put(Collection.class.getName(), "Array");

@@ -21,6 +21,7 @@ package org.jsweet.transpiler;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.io.File;
+import java.io.PrintStream;
 import java.lang.annotation.Annotation;
 import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleEntry;
@@ -32,8 +33,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.function.BiFunction;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -52,6 +53,7 @@ import org.jsweet.transpiler.extension.AnnotationManager;
 import org.jsweet.transpiler.extension.AnnotationManager.Action;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.util.DirectedGraph;
+import org.jsweet.transpiler.util.Util;
 
 import com.sun.tools.javac.code.Attribute.Compound;
 import com.sun.tools.javac.code.Symbol;
@@ -263,7 +265,7 @@ public class JSweetContext extends Context {
 	public JSweetContext(JSweetOptions options) {
 		this.options = options;
 		if (options.getConfiguration() != null) {
-			for (Entry<String, Map<String, Object>> entry : options.getConfiguration().entrySet()) {
+			for (Entry<String, Object> entry : options.getConfiguration().entrySet()) {
 				addConfigurationEntry(entry);
 			}
 		}
@@ -366,7 +368,7 @@ public class JSweetContext extends Context {
 			annotationDescriptor = "@" + annotationDescriptor;
 		}
 		Map<String, Object> map = new HashMap<>();
-		Entry<String, Map<String, Object>> entry = new SimpleEntry<>(annotationDescriptor, map);
+		Entry<String, Object> entry = new SimpleEntry<>(annotationDescriptor, map);
 		for (String filter : filters) {
 			String listKind = filter.startsWith("!") ? "exclude" : "include";
 			@SuppressWarnings("unchecked")
@@ -380,8 +382,10 @@ public class JSweetContext extends Context {
 		addConfigurationEntry(entry);
 	}
 
-	private void addConfigurationEntry(Entry<String, Map<String, Object>> entry) {
-		if (entry.getKey().startsWith("@")) {
+	private void addConfigurationEntry(Entry<String, Object> untypedEntry) {
+		if (untypedEntry.getKey().startsWith("@")) {
+			@SuppressWarnings("unchecked")
+			Entry<String, Map<String, Object>> entry = (Entry<String, Map<String, Object>>) (Object) untypedEntry;
 			String annotationType = null;
 			Matcher m = annotationWithParameterPattern.matcher(entry.getKey());
 			String parameter = null;
@@ -445,11 +449,14 @@ public class JSweetContext extends Context {
 			filterDescriptors.add(new AnnotationFilterDescriptor(inclusionPatterns, exclusionPatterns, parameter));
 
 		} else {
-			switch (entry.getKey()) {
+			switch (untypedEntry.getKey()) {
 			case "typeMapping":
+				@SuppressWarnings("unchecked")
+				Entry<String, Map<String, Object>> entry = (Entry<String, Map<String, Object>>) (Object) untypedEntry;
 				for (Entry<String, Object> e : entry.getValue().entrySet()) {
 					addTypeMapping(e.getKey(), (String) e.getValue());
 				}
+				break;
 			}
 		}
 
@@ -477,6 +484,24 @@ public class JSweetContext extends Context {
 	 * @see OverloadScanner.Overload
 	 */
 	private Map<ClassSymbol, Map<String, Overload>> staticOverloads = new HashMap<>();
+
+	/**
+	 * Dump all the overloads gathered by {@link OverloadScanner}.
+	 */
+	public void dumpOverloads(PrintStream out) {
+		for (Entry<ClassSymbol, Map<String, Overload>> e1 : overloads.entrySet()) {
+			out.println("*** " + e1.getKey());
+			for (Entry<String, Overload> e2 : e1.getValue().entrySet()) {
+				out.println("  - " + e2.getValue());
+			}
+		}
+		for (Entry<ClassSymbol, Map<String, Overload>> e1 : staticOverloads.entrySet()) {
+			out.println("*** " + e1.getKey() + " [STATIC]");
+			for (Entry<String, Overload> e2 : e1.getValue().entrySet()) {
+				out.println("  - " + e2.getValue());
+			}
+		}
+	}
 
 	/**
 	 * Returns all the overloads in this context.
@@ -530,7 +555,7 @@ public class JSweetContext extends Context {
 	 */
 	public boolean isInvalidOverload(MethodSymbol method) {
 		Overload overload = getOverload((ClassSymbol) method.getEnclosingElement(), method);
-		return overload != null && !overload.isValid;
+		return overload != null && overload.methods.size() > 1 && !overload.isValid;
 	}
 
 	/**
@@ -1319,7 +1344,9 @@ public class JSweetContext extends Context {
 		if (isInterface(type)) {
 			for (Symbol s : type.getEnclosedElements()) {
 				if (s instanceof MethodSymbol) {
-					methods.add((MethodSymbol) s);
+					if (!Util.isOverridingBuiltInJavaObjectMethod((MethodSymbol) s)) {
+						methods.add((MethodSymbol) s);
+					}
 				}
 			}
 		}

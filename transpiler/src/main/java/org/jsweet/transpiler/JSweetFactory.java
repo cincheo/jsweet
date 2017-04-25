@@ -1,5 +1,8 @@
 package org.jsweet.transpiler;
 
+import java.lang.reflect.Constructor;
+import java.util.List;
+
 import org.apache.log4j.Logger;
 import org.jsweet.transpiler.extension.Java2TypeScriptAdapter;
 import org.jsweet.transpiler.extension.PrinterAdapter;
@@ -45,26 +48,62 @@ public class JSweetFactory {
 	 * delegate to the default adapter chain:
 	 * 
 	 * <pre>
-	 * @Override
+	 * &#64;Override
 	 * public PrinterAdapter createAdapter(JSweetContext context) {
 	 * 	return new MyOwnAdapter(super.createAdapter(context));
 	 * }
 	 * </pre>
 	 */
 	public PrinterAdapter createAdapter(JSweetContext context) {
-		if (context.isUsingJavaRuntime()) {
-			return new Java2TypeScriptAdapter(context);
+		if (context.options.getConfiguration() != null && context.options.getConfiguration().containsKey("adapters")) {
+			// generically creates the adapter chain from the "adapters"
+			// configuration entry
+			logger.info("constructing adapters: " + context.options.getConfiguration().get("adapters"));
+			try {
+				Class<?> adapterClass;
+				PrinterAdapter adapter = null;
+				List<?> adapters = (List<?>) context.options.getConfiguration().get("adapters");
+				for (int i = adapters.size() - 1; i >= 0; i--) {
+					if (adapters.get(i) instanceof String) {
+						adapterClass = Thread.currentThread().getContextClassLoader()
+								.loadClass((String) adapters.get(i));
+						if (i == adapters.size() - 1) {
+							Constructor<?> constructor = adapterClass.getConstructor(JSweetContext.class);
+							if (constructor == null) {
+								adapter = context.isUsingJavaRuntime() ? new Java2TypeScriptAdapter(context)
+										: new RemoveJavaDependenciesAdapter(context);
+							} else {
+								adapter = (PrinterAdapter) constructor.newInstance(context);
+							}
+						} else {
+							Constructor<?> constructor = adapterClass.getConstructor(PrinterAdapter.class);
+							if (constructor == null) {
+								throw new RuntimeException(
+										"a chainable adapter must define a constructor accepting a parent adapter");
+							} else {
+								adapter = (PrinterAdapter) constructor.newInstance(adapter);
+							}
+						}
+					}
+				}
+				return adapter;
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
 		} else {
-			return new RemoveJavaDependenciesAdapter(context);
+			if (context.isUsingJavaRuntime()) {
+				return new Java2TypeScriptAdapter(context);
+			} else {
+				return new RemoveJavaDependenciesAdapter(context);
+			}
 		}
 	}
 
 	/**
 	 * Creates the core translator or any subclass.
 	 */
-	public Java2TypeScriptTranslator createTranslator(PrinterAdapter adapter,
-			TranspilationHandler transpilationHandler, JSweetContext context, JCCompilationUnit compilationUnit,
-			boolean fillSourceMap) {
+	public Java2TypeScriptTranslator createTranslator(PrinterAdapter adapter, TranspilationHandler transpilationHandler,
+			JSweetContext context, JCCompilationUnit compilationUnit, boolean fillSourceMap) {
 		return new Java2TypeScriptTranslator(adapter, transpilationHandler, context, compilationUnit, fillSourceMap);
 	}
 

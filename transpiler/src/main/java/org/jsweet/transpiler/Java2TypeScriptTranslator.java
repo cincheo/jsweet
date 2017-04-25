@@ -80,6 +80,7 @@ import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.code.Type.MethodType;
+import com.sun.tools.javac.code.Type.TypeVar;
 import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.parser.Tokens.Comment;
 import com.sun.tools.javac.tree.JCTree;
@@ -1259,6 +1260,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (meth.type instanceof MethodType) {
 					MethodSymbol s = Util.findMethodDeclarationInType(getContext().types, classdecl.sym,
 							meth.getSimpleName().toString(), (MethodType) meth.type, true);
+					if (Object.class.getName().equals(s.getEnclosingElement().toString())) {
+						s = null;
+					}
 					boolean printDefaultImplementation = false;
 					if (s != null) {
 						if (!s.getEnclosingElement().equals(classdecl.sym)) {
@@ -1323,6 +1327,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					|| (def instanceof JCVariableDecl && ((JCVariableDecl) def).sym.isStatic()))) {
 				// static interface members are printed in a namespace
 				continue;
+			}
+			if (getScope().interfaceScope && def instanceof JCMethodDecl) {
+				// object method should not be defined otherwise they will have
+				// to be implemented
+				if (Util.isOverridingBuiltInJavaObjectMethod(((JCMethodDecl) def).sym)) {
+					continue;
+				}
 			}
 			if (def instanceof JCClassDecl) {
 				// inner types are be printed in a namespace
@@ -1718,8 +1729,18 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							if (methodDecl.sym.isConstructor()) {
 								return;
 							}
-							if (!overload.printed && overload.coreMethod.sym.getEnclosingElement() != parent.sym
-									&& !overload.coreMethod.sym.getModifiers().contains(Modifier.ABSTRACT)) {
+							boolean addCoreMethod = false;
+							addCoreMethod = !overload.printed
+									&& overload.coreMethod.sym.getEnclosingElement() != parent.sym
+									&& (!overload.coreMethod.sym.getModifiers().contains(Modifier.ABSTRACT)
+											|| context.isInterface(parent.sym)
+											|| !context.types.isSubtype(parent.sym.type,
+													overload.coreMethod.sym.getEnclosingElement().type));
+							if (!overload.printed && !addCoreMethod && overload.coreMethod.type instanceof MethodType) {
+								addCoreMethod = Util.findMethodDeclarationInType(context.types, parent.sym,
+										methodDecl.getName().toString(), (MethodType) overload.coreMethod.type) == null;
+							}
+							if (addCoreMethod) {
 								visitMethodDef(overload.coreMethod);
 								overload.printed = true;
 								if (!context.isInterface(parent.sym)) {
@@ -4687,8 +4708,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		} else if (assignedType.getTag() == TypeTag.FLOAT && expression.type.getTag() == TypeTag.DOUBLE) {
 			// TODO: fround is only available from ES5 (should skip this or
 			// provide macro)
-			print("((<any>Math).fround?(").print(expression).print("):(<any>Math).fround(")
-					.print(expression).print("))");
+			print("((<any>Math).fround?(<any>Math).fround(").print(expression).print("):(").print(expression)
+					.print("))");
 			return true;
 		} else {
 			if (expression instanceof JCLambda) {
@@ -4765,6 +4786,15 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				// (may require runtime checks later on)
 				print("<any>(").print(expression).print(")");
 				return true;
+			} else if (expression instanceof JCMethodInvocation) {
+				// disable type checking when the method returns a type variable
+				// because it may to be correctly set in the invocation
+				MethodSymbol m = (MethodSymbol) Util.getSymbol(((JCMethodInvocation) expression).meth);
+				if (m != null && m.getReturnType() instanceof TypeVar
+						&& m.getReturnType().tsym.getEnclosingElement() == m) {
+					print("<any>(").print(expression).print(")");
+					return true;
+				}
 			}
 			return false;
 		}

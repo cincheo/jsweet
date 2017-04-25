@@ -18,10 +18,36 @@ package source.candies;
 
 import static def.jquery.Globals.$;
 
+import def.jquery.JQueryAjaxSettings;
+import def.jquery.JQueryXHR;
+import static jsweet.util.Lang.function;
+
 public class JQuery {
 
 	public static void main(String[] args) {
-		$("p").append(" (end)");	
+		$("p").append(" (end)");
+		JQueryAjaxSettings jas1 = new JQueryAjaxSettings() {
+			{
+				url = "...";
+				$set("success", function((Object data, String textStatus, JQueryXHR jqXHR) -> {
+					return "...";
+				}));
+			}
+		};
+
+		// TODO: make this work (see #259)
+		// JQueryAjaxSettings jas2 = new JQueryAjaxSettings() {
+		// {
+		// url = "...";
+		// }
+		//
+		// @Override
+		// public Object success(Object data, String textStatus, JQueryXHR
+		// jqXHR) {
+		// return "...";
+		// }
+		// };
+
 	}
 
 }

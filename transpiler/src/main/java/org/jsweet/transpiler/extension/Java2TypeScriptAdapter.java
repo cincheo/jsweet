@@ -73,7 +73,6 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
@@ -104,9 +103,11 @@ import org.jsweet.transpiler.util.Util;
 import com.sun.codemodel.internal.JJavaName;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.PackageSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.Type.MethodType;
 import com.sun.tools.javac.code.Type.TypeVar;
 import com.sun.tools.javac.parser.Tokens.Comment;
 import com.sun.tools.javac.tree.JCTree;
@@ -187,7 +188,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 		addTypeMapping(Double.class.getName(), "number");
 		addTypeMapping(Boolean.class.getName(), "boolean");
 		addTypeMapping(Character.class.getName(), "string");
-		addTypeMapping(CharSequence.class.getName(), "string");
+		addTypeMapping(CharSequence.class.getName(), "any");
 		addTypeMapping(Void.class.getName(), "void");
 		addTypeMapping("double", "number");
 		addTypeMapping("int", "number");
@@ -196,7 +197,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 		addTypeMapping("byte", "number");
 		addTypeMapping("short", "number");
 		addTypeMapping("char", "string");
-		addTypeMapping(Class.class.getName(), "Function<>");
+		addTypeMapping("Class", "Function");
 		addTypeMapping(LANG_PACKAGE + ".Object", "Object");
 		addTypeMapping(LANG_PACKAGE + ".Boolean", "boolean");
 		addTypeMapping(LANG_PACKAGE + ".String", "string");
@@ -836,6 +837,12 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 					printMacroName(targetMethodName);
 					print("(").print(invocationElement.getTargetExpression()).print(").split('')");
 					return true;
+				case "getChars":
+					printMacroName(targetMethodName);
+					print("((a, s, e, d, l) => { d.splice.apply(d, [l, e-s].concat(<any>a.substring(s, e).split(''))); })(")
+							.print(invocationElement.getTargetExpression()).print(", ")
+							.printArgList(invocationElement.getArguments()).print(")");
+					return true;
 				case "replaceAll":
 					printMacroName(targetMethodName);
 					print(invocationElement.getTargetExpression()).print(".replace(new RegExp(")
@@ -1105,8 +1112,8 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 					switch (targetMethodName) {
 					case "equals":
 						printMacroName(targetMethodName);
-						print("(");
-						printTarget(invocationElement.getTargetExpression()).print(" === ")
+						print("((<any>");
+						printTarget(invocationElement.getTargetExpression()).print(") === ")
 								.printArgList(invocationElement.getArguments()).print(")");
 						return true;
 					}
@@ -1123,10 +1130,25 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 			return true;
 		case "hashCode":
 			printMacroName(targetMethodName);
-			print("(<any>(o => { if(o.hashCode) { return o.hashCode(); } else { return o.toString(); } })(");
+			print("(<any>((o: any) => { if(o.hashCode) { return o.hashCode(); } else { return o.toString(); } })(");
 			printTarget(invocationElement.getTargetExpression());
 			print("))");
 			return true;
+		case "equals":
+			if (invocationElement.getTargetExpression() != null) {
+				MethodSymbol methSym = Util.findMethodDeclarationInType(context.types,
+						(TypeSymbol) invocationElement.getTargetExpression().getTypeAsElement(), targetMethodName,
+						(MethodType) invocationElement.getMethod().asType());
+				if (methSym != null && (Object.class.getName().equals(methSym.getEnclosingElement().toString())
+						|| methSym.getEnclosingElement().isInterface())) {
+					printMacroName(targetMethodName);
+					print("((<any>");
+					printTarget(invocationElement.getTargetExpression()).print(") === ")
+							.printArgList(invocationElement.getArguments()).print(")");
+					return true;
+				}
+			}
+			break;
 		case "clone":
 			if (!invocationElement.getMethod().getModifiers().contains(Modifier.STATIC)
 					&& invocationElement.getArgumentCount() == 0) {
@@ -1203,9 +1225,6 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 			JCFieldAccess fieldAccess = (JCFieldAccess) ((VariableAccessElementSupport) variableAccess).getTree();
 			String targetFieldName = variableAccess.getVariableName();
 			Element targetType = variableAccess.getTargetElement();
-			if (!(fieldAccess.sym instanceof VariableElement)) {
-				System.out.println();
-			}
 			// translate tuple accesses
 			if (targetFieldName.startsWith("$") && targetFieldName.length() > 1
 					&& Character.isDigit(targetFieldName.charAt(1))) {

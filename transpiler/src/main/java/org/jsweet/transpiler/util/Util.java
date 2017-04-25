@@ -310,8 +310,10 @@ public class Util {
 		}
 		MethodSymbol result = null;
 		if (typeSymbol instanceof ClassSymbol && ((ClassSymbol) typeSymbol).getSuperclass() != null) {
-			result = findMethodDeclarationInType(types, ((ClassSymbol) typeSymbol).getSuperclass().tsym, methodName,
-					methodType);
+			if (!overrides || !Object.class.getName().equals(((ClassSymbol) typeSymbol).getSuperclass().toString())) {
+				result = findMethodDeclarationInType(types, ((ClassSymbol) typeSymbol).getSuperclass().tsym, methodName,
+						methodType);
+			}
 		}
 		if (result == null) {
 			if (typeSymbol instanceof ClassSymbol && ((ClassSymbol) typeSymbol).getInterfaces() != null) {
@@ -1082,6 +1084,16 @@ public class Util {
 			if (member instanceof MethodSymbol && ((MethodSymbol) member).getModifiers().contains(Modifier.ABSTRACT)) {
 				return true;
 			}
+		}
+		return false;
+	}
+
+	public static boolean isOverridingBuiltInJavaObjectMethod(MethodSymbol method) {
+		switch (method.toString()) {
+		case "toString()":
+		case "hashCode()":
+		case "equals(java.lang.Object)":
+			return true;
 		}
 		return false;
 	}
