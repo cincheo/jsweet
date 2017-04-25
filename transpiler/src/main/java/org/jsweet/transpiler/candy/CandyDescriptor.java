@@ -42,15 +42,15 @@ import com.google.gson.GsonBuilder;
  * 
  * @author Louis Grignon
  */
-class CandyDescriptor {
-	final String name;
-	final String version;
-	final long lastUpdateTimestamp;
-	final String modelVersion;
-	final String transpilerVersion;
-	final String jsOutputDirPath;
-	final String jsDirPath;
-	final List<String> jsFilesPaths;
+public class CandyDescriptor {
+	public final String name;
+	public final String version;
+	public final long lastUpdateTimestamp;
+	public final String modelVersion;
+	public final String transpilerVersion;
+	public final String jsOutputDirPath;
+	public final String jsDirPath;
+	public final List<String> jsFilesPaths;
 
 	public CandyDescriptor( //
 			String name, //
