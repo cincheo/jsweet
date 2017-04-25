@@ -46,6 +46,7 @@ import java.util.Stack;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
+import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -67,6 +68,7 @@ import org.jsweet.transpiler.model.support.ImportElementSupport;
 import org.jsweet.transpiler.model.support.MethodInvocationElementSupport;
 import org.jsweet.transpiler.model.support.NewClassElementSupport;
 import org.jsweet.transpiler.util.AbstractTreePrinter;
+import org.jsweet.transpiler.util.JSDoc;
 import org.jsweet.transpiler.util.Util;
 
 import com.sun.source.tree.Tree.Kind;
@@ -710,7 +712,20 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	private void printDocComment(JCTree element, boolean indent) {
 		if (compilationUnit != null && compilationUnit.docComments != null) {
 			Comment comment = compilationUnit.docComments.getComment(element);
-			String commentText = getAdapter().adaptDocComment(element, comment == null ? null : comment.getText());
+			String commentText = JSDoc.adaptDocComment(context, getCompilationUnit(), element,
+					comment == null ? null : comment.getText());
+
+			Element elt = null;
+			if (element instanceof JCVariableDecl) {
+				elt = ((JCVariableDecl) element).sym;
+			} else if (element instanceof JCMethodDecl) {
+				elt = ((JCMethodDecl) element).sym;
+			} else if (element instanceof JCClassDecl) {
+				elt = ((JCClassDecl) element).sym;
+			}
+			if (elt != null) {
+				commentText = getAdapter().adaptDocComment(elt, commentText);
+			}
 
 			List<String> lines = new ArrayList<>();
 			if (commentText != null) {
@@ -1646,10 +1661,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		print(": any;").println();
 	}
 
-	private String getQualifiedTypeName(TypeSymbol type, boolean globals) {
-		return getAdapter().getQualifiedTypeName(type, globals);
-	}
-
 	private String getTSMethodName(JCMethodDecl methodDecl) {
 		String name = context.getActualName(methodDecl.sym);
 		switch (name) {
@@ -2185,7 +2196,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (context.getFieldNameMapping(var.sym) != null) {
 			name = context.getFieldNameMapping(var.sym);
 		} else {
-			name = getAdapter().getIdentifier(var.sym);
+			name = getIdentifier(var.sym);
 		}
 		if (getScope().innerClassNotStatic && !Util.isConstantOrNullField(var)) {
 			if (doesMemberNameRequireQuotes(name)) {
@@ -2350,7 +2361,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			if (t instanceof JCVariableDecl && !getScope().fieldsWithInitializers.contains(t)) {
 				JCVariableDecl field = (JCVariableDecl) t;
 				if (!field.sym.isStatic() && !context.hasAnnotationType(field.sym, JSweetConfig.ANNOTATION_ERASED)) {
-					String name = getAdapter().getIdentifier(field.sym);
+					String name = getIdentifier(field.sym);
 					if (context.getFieldNameMapping(field.sym) != null) {
 						name = context.getFieldNameMapping(field.sym);
 					}
@@ -2363,7 +2374,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			if (context.hasAnnotationType(field.sym, JSweetConfig.ANNOTATION_ERASED)) {
 				continue;
 			}
-			String name = getAdapter().getIdentifier(field.sym);
+			String name = getIdentifier(field.sym);
 			if (context.getFieldNameMapping(field.sym) != null) {
 				name = context.getFieldNameMapping(field.sym);
 			}
@@ -2561,7 +2572,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				return;
 			}
 
-			String name = getAdapter().getIdentifier(varDecl.sym);
+			String name = getIdentifier(varDecl.sym);
 			if (context.getFieldNameMapping(varDecl.sym) != null) {
 				name = context.getFieldNameMapping(varDecl.sym);
 			}
@@ -2923,7 +2934,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (fieldAccess.sym instanceof VarSymbol && context.getFieldNameMapping(fieldAccess.sym) != null) {
 					fieldName = context.getFieldNameMapping(fieldAccess.sym);
 				} else {
-					fieldName = getAdapter().getIdentifier(fieldAccess.sym);
+					fieldName = getIdentifier(fieldAccess.sym);
 				}
 				if (doesMemberNameRequireQuotes(fieldName)) {
 					if (getLastPrintedChar() == '.') {
@@ -3355,7 +3366,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						if (context.getFieldNameMapping(varSym) != null) {
 							name = context.getFieldNameMapping(varSym);
 						} else {
-							name = getAdapter().getIdentifier(varSym);
+							name = getIdentifier(varSym);
 						}
 						if (!varSym.getModifiers().contains(Modifier.STATIC)) {
 							print("this.");
@@ -4798,6 +4809,40 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 			return false;
 		}
+	}
+
+	@Override
+	public String getQualifiedTypeName(TypeSymbol type, boolean globals) {
+		String qualifiedName = super.getQualifiedTypeName(type, globals);
+		String typeName = type.getQualifiedName().toString();
+		if (context.getLangTypeMappings().containsKey(typeName)) {
+			qualifiedName = context.getLangTypeMappings().get(typeName);
+		} else if (context.isMappedType(typeName)) {
+			qualifiedName = context.getTypeMappingTarget(typeName);
+			if (qualifiedName.endsWith("<>")) {
+				qualifiedName = qualifiedName.substring(0, qualifiedName.length() - 2);
+			}
+		} else {
+			if (context.useModules) {
+				String[] namePath = qualifiedName.split("\\.");
+				int i = namePath.length - 1;
+				Symbol s = type;
+				qualifiedName = "";
+				while (i >= 0 && !(s instanceof PackageSymbol)) {
+					qualifiedName = namePath[i--] + ("".equals(qualifiedName) ? "" : "." + qualifiedName);
+					s = s.getEnclosingElement();
+				}
+			}
+			if (globals) {
+				int dotIndex = qualifiedName.lastIndexOf(".");
+				if (dotIndex == -1) {
+					qualifiedName = "";
+				} else {
+					qualifiedName = qualifiedName.substring(0, dotIndex);
+				}
+			}
+		}
+		return qualifiedName;
 	}
 
 }

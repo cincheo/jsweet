@@ -36,12 +36,8 @@ import static org.jsweet.JSweetConfig.UTIL_CLASSNAME;
 import static org.jsweet.JSweetConfig.UTIL_PACKAGE;
 import static org.jsweet.JSweetConfig.isJSweetPath;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.BiFunction;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleBinaryOperator;
 import java.util.function.DoubleConsumer;
@@ -65,8 +61,6 @@ import java.util.function.LongSupplier;
 import java.util.function.LongToDoubleFunction;
 import java.util.function.LongToIntFunction;
 import java.util.function.LongUnaryOperator;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -91,7 +85,6 @@ import org.jsweet.transpiler.model.InvocationElement;
 import org.jsweet.transpiler.model.MethodInvocationElement;
 import org.jsweet.transpiler.model.NewClassElement;
 import org.jsweet.transpiler.model.VariableAccessElement;
-import org.jsweet.transpiler.model.support.ExtendedElementSupport;
 import org.jsweet.transpiler.model.support.ForeachLoopElementSupport;
 import org.jsweet.transpiler.model.support.IdentifierElementSupport;
 import org.jsweet.transpiler.model.support.ImportElementSupport;
@@ -104,24 +97,16 @@ import com.sun.codemodel.internal.JJavaName;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
-import com.sun.tools.javac.code.Symbol.PackageSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
-import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.MethodType;
-import com.sun.tools.javac.code.Type.TypeVar;
-import com.sun.tools.javac.parser.Tokens.Comment;
-import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCEnhancedForLoop;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCImport;
-import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
-import com.sun.tools.javac.tree.JCTree.JCTypeApply;
-import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.JCTree.Tag;
 
 /**
@@ -261,7 +246,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 				case "java.lang.Math":
 					return null;
 				}
-				String name = getRootRelativeName(fa.selected.type.tsym, context.useModules);
+				String name = getPrinter().getRootRelativeName(fa.selected.type.tsym, context.useModules);
 				String methodName = fa.name.toString();
 
 				// function is a top-level global function (no need to import)
@@ -283,7 +268,8 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 				}
 				// function belong to the current package (no need to
 				// import)
-				String current = getRootRelativeName(getCompilationUnit().packge, context.useModules);
+				String current = getPrinter().getRootRelativeName(getPrinter().getCompilationUnit().packge,
+						context.useModules);
 				if (context.useModules) {
 					if (current.equals(name)) {
 						return null;
@@ -300,7 +286,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 				}
 
 				return StringUtils.isBlank(name) ? null
-						: name + "." + (nameSymbol == null ? methodName : getIdentifier(nameSymbol));
+						: name + "." + (nameSymbol == null ? methodName : getPrinter().getIdentifier(nameSymbol));
 			} else {
 				return null;
 			}
@@ -322,7 +308,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 	private boolean isWithinGlobals(String targetClassName) {
 		if (targetClassName == null
 				|| (targetClassName.equals(UTIL_CLASSNAME) || targetClassName.equals(DEPRECATED_UTIL_CLASSNAME))) {
-			JCClassDecl c = getParent(JCClassDecl.class);
+			JCClassDecl c = getPrinter().getParent(JCClassDecl.class);
 			return c != null && c.sym.getQualifiedName().toString().endsWith("." + GLOBALS_CLASS_NAME);
 		} else {
 			return false;
@@ -373,8 +359,8 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 		if ("super".equals(invocationElement.getMethodName())) {
 			// we omit call to super if class extends nothing or if parent is an
 			// interface
-			if (getParent(JCClassDecl.class).extending == null //
-					|| context.isInterface(getParent(JCClassDecl.class).extending.type.tsym)) {
+			if (getPrinter().getParent(JCClassDecl.class).extending == null //
+					|| context.isInterface(getPrinter().getParent(JCClassDecl.class).extending.type.tsym)) {
 				return true;
 			}
 			// special case when subclassing a Java exception type
@@ -477,7 +463,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 					print(")");
 					return true;
 				case "union":
-					getPrinter().typeChecker.checkUnionTypeAssignment(context.types, getParent(),
+					getPrinter().typeChecker.checkUnionTypeAssignment(context.types, getPrinter().getParent(),
 							((MethodInvocationElementSupport) invocationElement).getTree());
 					print("(<any>");
 					printCastMethodInvocation(invocationElement);
@@ -1155,7 +1141,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 				printMacroName(targetMethodName);
 				if (invocationElement.getTargetExpression() != null
 						&& "super".equals(invocationElement.getTargetExpression().toString())) {
-					JCClassDecl parent = getParent(JCClassDecl.class);
+					JCClassDecl parent = getPrinter().getParent(JCClassDecl.class);
 					if (parent.sym.getSuperclass() != null
 							&& !context.symtab.objectType.equals(parent.sym.getSuperclass())) {
 						print("((o:any) => { if(super.clone!=undefined) { return super.clone(); } else { let clone = Object.create(o); for(let p in o) { if (o.hasOwnProperty(p)) clone[p] = o[p]; } return clone; } })(this)");
@@ -1210,11 +1196,11 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 	}
 
 	protected final void printCastMethodInvocation(InvocationElement invocation) {
-		if (getParent() instanceof JCMethodInvocation) {
+		if (getPrinter().getParent() instanceof JCMethodInvocation) {
 			print("(");
 		}
 		print(invocation.getArgument(0));
-		if (getParent() instanceof JCMethodInvocation) {
+		if (getPrinter().getParent() instanceof JCMethodInvocation) {
 			print(")");
 		}
 	}
@@ -1267,7 +1253,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 			String accessedType = ((Symbol) targetType).getQualifiedName().toString();
 			if (fieldAccess.sym.isStatic() && isMappedType(accessedType) && accessedType.startsWith("java.lang.")
 					&& !"class".equals(fieldAccess.name.toString())) {
-				delegateToEmulLayer(accessedType, fieldAccess);
+				delegateToEmulLayer(accessedType, variableAccess);
 				return true;
 			}
 		} else {
@@ -1283,8 +1269,8 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 		return super.substituteVariableAccess(variableAccess);
 	}
 
-	protected final void delegateToEmulLayer(String targetClassName, JCFieldAccess fieldAccess) {
-		print("javaemul.internal." + targetClassName.substring(10) + "Helper.").print(fieldAccess.name.toString());
+	protected final void delegateToEmulLayer(String targetClassName, VariableAccessElement fieldAccess) {
+		print("javaemul.internal." + targetClassName.substring(10) + "Helper.").print(fieldAccess.getVariableName());
 	}
 
 	@Override
@@ -1339,45 +1325,6 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 	}
 
 	@Override
-	public String getIdentifier(Symbol symbol) {
-		return context.getActualName(symbol);
-	}
-
-	@Override
-	public String getQualifiedTypeName(TypeSymbol type, boolean globals) {
-		String qualifiedName = super.getQualifiedTypeName(type, globals);
-		String typeName = type.getQualifiedName().toString();
-		if (context.getLangTypeMappings().containsKey(typeName)) {
-			qualifiedName = context.getLangTypeMappings().get(typeName);
-		} else if (isMappedType(typeName)) {
-			qualifiedName = getTypeMappingTarget(typeName);
-			if (qualifiedName.endsWith("<>")) {
-				qualifiedName = qualifiedName.substring(0, qualifiedName.length() - 2);
-			}
-		} else {
-			if (context.useModules) {
-				String[] namePath = qualifiedName.split("\\.");
-				int i = namePath.length - 1;
-				Symbol s = type;
-				qualifiedName = "";
-				while (i >= 0 && !(s instanceof PackageSymbol)) {
-					qualifiedName = namePath[i--] + ("".equals(qualifiedName) ? "" : "." + qualifiedName);
-					s = s.getEnclosingElement();
-				}
-			}
-			if (globals) {
-				int dotIndex = qualifiedName.lastIndexOf(".");
-				if (dotIndex == -1) {
-					qualifiedName = "";
-				} else {
-					qualifiedName = qualifiedName.substring(0, dotIndex);
-				}
-			}
-		}
-		return qualifiedName;
-	}
-
-	@Override
 	public Set<String> getErasedTypes() {
 		return context.getLangTypeMappings().keySet();
 	}
@@ -1395,179 +1342,6 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 			return true;
 		}
 		return super.substituteForEachLoop(foreachLoop, targetHasLength, indexVarName);
-	}
-
-	protected final Pattern paramPattern = Pattern.compile("(\\s*@param\\s+)(\\w+)(.*)");
-	protected final Pattern returnPattern = Pattern.compile("(\\s*@return\\s+)(.*)");
-	protected final Pattern linkPattern = Pattern.compile("(\\{@link\\s+)([\\w\\.#,]+)\\s+[^}]*(\\})");
-
-	protected String getMappedDocType(JCTree typeTree, Type type) {
-		String qualifiedName = type.toString();
-		if (typeTree instanceof JCTypeApply) {
-			return getMappedDocType(((JCTypeApply) typeTree).clazz, ((JCTypeApply) typeTree).clazz.type);
-		}
-		if (type instanceof TypeVar) {
-			TypeVar typeVar = (TypeVar) typeTree.type;
-			if (typeVar.getUpperBound() == null) {
-				return "*";
-			} else {
-				return getMappedDocType(null, typeVar.getUpperBound());
-			}
-		}
-		boolean isMapped = false;
-		if (typeTree != null) {
-			for (BiFunction<ExtendedElement, String, Object> mapping : getFunctionalTypeMappings()) {
-				Object mapped = mapping.apply(new ExtendedElementSupport(typeTree), qualifiedName);
-				if (mapped instanceof String) {
-					isMapped = true;
-					qualifiedName = (String) mapped;
-				} else if (mapped instanceof JCTree) {
-					isMapped = true;
-					qualifiedName = getMappedDocType((JCTree) mapped, ((JCTree) mapped).type);
-				}
-			}
-		}
-		if (isMappedType(qualifiedName)) {
-			isMapped = true;
-			qualifiedName = getTypeMappingTarget(qualifiedName);
-		}
-		if (!isMapped && !type.isPrimitiveOrVoid()) {
-			qualifiedName = context.getRootRelativeName(null, type.tsym);
-		}
-		return "any".equals(qualifiedName) ? "*" : qualifiedName;
-	}
-
-	private String replaceLinks(String text) {
-		Matcher linkMatcher = linkPattern.matcher(text);
-		boolean result = linkMatcher.find();
-		int lastMatch = 0;
-		if (result) {
-			StringBuffer sb = new StringBuffer();
-			do {
-				sb.append(text.substring(lastMatch, linkMatcher.start()));
-				sb.append(linkMatcher.group(1));
-				TypeSymbol type = Util.getTypeByName(context, linkMatcher.group(2));
-				sb.append(type == null ? linkMatcher.group(2) : getMappedDocType(null, type.type));
-				sb.append(linkMatcher.group(3));
-				lastMatch = linkMatcher.end();
-				result = linkMatcher.find();
-			} while (result);
-			sb.append(text.substring(lastMatch));
-			return sb.toString();
-		}
-		return text;
-	}
-
-	/**
-	 * Adapts the JavaDoc comment for a given element to conform to JSDoc.
-	 * 
-	 * <p>
-	 * By default, this implementation does not auto-generate comments. This
-	 * behavior can be overridden by adding a line in the comment before calling
-	 * this method. For example:
-	 * 
-	 * <pre>
-	 * public String adaptDocComment(JCTree element, String commentText) {
-	 * 	if (commentText == null) {
-	 * 		return "My default comment";
-	 * 	}
-	 * 	super(element, commentText);
-	 * }
-	 * </pre>
-	 * 
-	 * @param element
-	 *            the documented element
-	 * @param commentText
-	 *            the comment text if any (null when no comment)
-	 * @return the adapted comment (null will remove the JavaDoc comment)
-	 */
-	@Override
-	public String adaptDocComment(JCTree element, String commentText) {
-		if (element instanceof JCClassDecl) {
-			JCMethodDecl mainConstructor = null;
-			for (JCTree member : ((JCClassDecl) element).defs) {
-				if (member instanceof JCMethodDecl) {
-					if (((JCMethodDecl) member).sym.isConstructor()) {
-						if (mainConstructor == null || mainConstructor.getParameters().size() < ((JCMethodDecl) member)
-								.getParameters().size()) {
-							mainConstructor = ((JCMethodDecl) member);
-						}
-					}
-				}
-			}
-			if (mainConstructor != null) {
-				Comment comment = getPrinter().getCompilationUnit().docComments.getComment(mainConstructor);
-				if (comment != null) {
-					commentText = comment.getText();
-					commentText = replaceLinks(commentText);
-					List<String> commentLines = new ArrayList<>(Arrays.asList(commentText.split("\n")));
-					applyForMethod(mainConstructor, commentLines);
-					return String.join("\n", commentLines);
-				}
-			}
-		}
-		if (commentText == null) {
-			return null;
-		}
-		commentText = replaceLinks(commentText);
-		List<String> commentLines = new ArrayList<>(Arrays.asList(commentText.split("\n")));
-		if (element instanceof JCMethodDecl) {
-			JCMethodDecl method = (JCMethodDecl) element;
-			if (!method.sym.isConstructor()) {
-				applyForMethod(method, commentLines);
-			} else {
-				// erase constructor comments because jsDoc uses class comments
-				return null;
-			}
-		} else if (element instanceof JCClassDecl) {
-			JCClassDecl clazz = (JCClassDecl) element;
-			if (clazz.sym.isEnum()) {
-				commentLines.add(" @enum");
-			}
-			if (clazz.extending != null) {
-				commentLines.add(" @extends " + getMappedDocType(clazz.extending, clazz.extending.type));
-			}
-		}
-
-		return String.join("\n", commentLines);
-	}
-
-	protected void applyForMethod(JCMethodDecl method, List<String> commentLines) {
-		Set<String> params = new HashSet<>();
-		boolean hasReturn = false;
-		for (int i = 0; i < commentLines.size(); i++) {
-			Matcher m = paramPattern.matcher(commentLines.get(i));
-			if (m.matches()) {
-				String name = m.group(2);
-				params.add(name);
-				JCVariableDecl parameter = Util.findParameter(method, name);
-				if (parameter != null) {
-					commentLines.set(i, m.group(1) + "{" + getMappedDocType(parameter.vartype, parameter.vartype.type)
-							+ "} " + m.group(2) + m.group(3));
-				}
-			} else if ((m = returnPattern.matcher(commentLines.get(i))).matches()) {
-				hasReturn = true;
-				commentLines.set(i,
-						m.group(1) + "{" + getMappedDocType(method.restype, method.restype.type) + "} " + m.group(2));
-			}
-		}
-		for (JCVariableDecl parameter : method.getParameters()) {
-			String name = parameter.name.toString();
-			if (!params.contains(name)) {
-				commentLines
-						.add(" @param {" + getMappedDocType(parameter.vartype, parameter.vartype.type) + "} " + name);
-			}
-		}
-		if (!hasReturn && !(method.restype == null || context.symtab.voidType.equals(method.restype.type))
-				&& !method.sym.isConstructor()) {
-			commentLines.add(" @return {" + getMappedDocType(method.restype, method.restype.type) + "}");
-		}
-		if (method.sym.isPrivate()) {
-			commentLines.add(" @private");
-		}
-		if (method.sym.isConstructor()) {
-			commentLines.add(" @class");
-		}
 	}
 
 }

@@ -23,7 +23,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
@@ -53,17 +52,6 @@ import org.jsweet.transpiler.model.support.ExtendedElementSupport;
 import org.jsweet.transpiler.model.support.MethodInvocationElementSupport;
 import org.jsweet.transpiler.model.support.UtilSupport;
 import org.jsweet.transpiler.util.AbstractTreePrinter;
-
-import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.code.Symbol.TypeSymbol;
-import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.model.JavacTypes;
-import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.JCClassDecl;
-import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
-import com.sun.tools.javac.tree.JCTree.JCLiteral;
-import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
-import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 
 /**
  * A printer adapter, which can be overridden to change the default printer
@@ -308,7 +296,7 @@ public class PrinterAdapter {
 	 * annotation types.
 	 */
 	public boolean hasAnnotationType(Element element, String... annotationTypes) {
-		return context.hasAnnotationType((Symbol) element, annotationTypes);
+		return context.hasAnnotationType((com.sun.tools.javac.code.Symbol) element, annotationTypes);
 	}
 
 	/**
@@ -316,7 +304,7 @@ public class PrinterAdapter {
 	 * type if found on the given symbol.
 	 */
 	public final String getAnnotationValue(Element element, String annotationType, String defaultValue) {
-		return getAnnotationValue((Symbol) element, annotationType, null, defaultValue);
+		return getAnnotationValue((com.sun.tools.javac.code.Symbol) element, annotationType, null, defaultValue);
 	}
 
 	/**
@@ -324,7 +312,8 @@ public class PrinterAdapter {
 	 * if found on the given symbol.
 	 */
 	public String getAnnotationValue(Element element, String annotationType, String propertyName, String defaultValue) {
-		return context.getAnnotationValue((Symbol) element, annotationType, propertyName, defaultValue);
+		return context.getAnnotationValue((com.sun.tools.javac.code.Symbol) element, annotationType, propertyName,
+				defaultValue);
 	}
 
 	/**
@@ -480,31 +469,10 @@ public class PrinterAdapter {
 	}
 
 	/**
-	 * Gets the printer's stack.
-	 */
-	public Stack<JCTree> getStack() {
-		return printer.getStack();
-	}
-
-	/**
-	 * Gets the parent element in the printer's scanning stack.
-	 */
-	public JCTree getParent() {
-		return printer.getParent();
-	}
-
-	/**
 	 * Gets the parent element in the printer's scanning stack.
 	 */
 	public ExtendedElement getParentElement() {
 		return printer.getParentElement();
-	}
-
-	/**
-	 * Gets the parent element in the printer's scanning stack.
-	 */
-	public <T extends JCTree> T getParent(Class<T> type) {
-		return printer.getParent(type);
 	}
 
 	/**
@@ -518,27 +486,13 @@ public class PrinterAdapter {
 	 * Looks-up the executable that is invoked by the given invocation.
 	 */
 	public ExecutableElement findExecutableDeclarationInType(TypeElement type, MethodInvocationElement invocation) {
-		return org.jsweet.transpiler.util.Util.findMethodDeclarationInType(context.types, (TypeSymbol) type,
+		return org.jsweet.transpiler.util.Util.findMethodDeclarationInType(context.types,
+				(com.sun.tools.javac.code.Symbol.TypeSymbol) type,
 				((MethodInvocationElementSupport) invocation).getTree());
 	}
 
-	/**
-	 * Gets the printer's current compilation unit.
-	 */
-	public JCCompilationUnit getCompilationUnit() {
-		return printer.getCompilationUnit();
-	}
-
 	public String getRootRelativeName(Element element) {
-		return printer.getRootRelativeName((Symbol) element);
-	}
-
-	public String getRootRelativeName(Symbol symbol) {
-		return printer.getRootRelativeName(symbol);
-	}
-
-	public String getRootRelativeName(Symbol symbol, boolean useJavaNames) {
-		return printer.getRootRelativeName(symbol, useJavaNames);
+		return printer.getRootRelativeName((com.sun.tools.javac.code.Symbol) element);
 	}
 
 	/**
@@ -570,13 +524,6 @@ public class PrinterAdapter {
 	protected void report(ExtendedElement element, Name name, JSweetProblem problem, Object... params) {
 		printer.report(((ExtendedElementSupport) element).getTree(), (com.sun.tools.javac.util.Name) name, problem,
 				params);
-	}
-
-	/**
-	 * Gets the print value of the given literal tree.
-	 */
-	public String getLiteralStringValue(JCTree tree) {
-		return (String) ((JCLiteral) tree).value;
 	}
 
 	/**
@@ -696,21 +643,6 @@ public class PrinterAdapter {
 		}
 	}
 
-	/**
-	 * Gets the adapted identifier string.
-	 */
-	public String getIdentifier(Symbol symbol) {
-		return parentAdapter == null ? symbol.name.toString() : parentAdapter.getIdentifier(symbol);
-	}
-
-	/**
-	 * Returns the qualified type name.
-	 */
-	public String getQualifiedTypeName(TypeSymbol type, boolean globals) {
-		return parentAdapter == null ? getPrinter().getRootRelativeName(type)
-				: parentAdapter.getQualifiedTypeName(type, globals);
-	}
-
 	public Set<String> getErasedTypes() {
 		if (parentAdapter == null) {
 			throw new RuntimeException("unimplemented behavior");
@@ -768,7 +700,7 @@ public class PrinterAdapter {
 	 *            the type of the instanceof expression
 	 * @return true if substituted
 	 */
-	public boolean substituteInstanceof(String exprStr, ExtendedElement expr, Type type) {
+	public boolean substituteInstanceof(String exprStr, ExtendedElement expr, TypeMirror type) {
 		return parentAdapter == null ? false : parentAdapter.substituteInstanceof(exprStr, expr, type);
 	}
 
@@ -792,13 +724,12 @@ public class PrinterAdapter {
 	 * Adapts the JavaDoc comment for a given element.
 	 * 
 	 * @param element
-	 *            the documented element ({@link JCClassDecl},
-	 *            {@link JCMethodDecl}, or {@link JCVariableDecl})
+	 *            the documented element
 	 * @param commentText
 	 *            the comment text if any (null when no comment)
 	 * @return the adapted comment (null will remove the JavaDoc comment)
 	 */
-	public String adaptDocComment(JCTree element, String commentText) {
+	public String adaptDocComment(Element element, String commentText) {
 		return parentAdapter == null ? commentText : parentAdapter.adaptDocComment(element, commentText);
 	}
 
@@ -829,7 +760,7 @@ public class PrinterAdapter {
 	 */
 	public Types types() {
 		if (types == null) {
-			types = JavacTypes.instance(context);
+			types = com.sun.tools.javac.model.JavacTypes.instance(context);
 		}
 		return types;
 	}

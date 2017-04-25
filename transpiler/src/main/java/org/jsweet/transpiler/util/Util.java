@@ -89,6 +89,9 @@ import com.sun.tools.javac.util.Name;
  */
 public class Util {
 
+	private Util() {
+	}
+	
 	private static long id = 121;
 
 	/**

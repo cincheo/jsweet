@@ -52,6 +52,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeMirror;
 
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.Java2TypeScriptTranslator;
@@ -67,7 +68,6 @@ import org.jsweet.transpiler.model.NewClassElement;
 import org.jsweet.transpiler.model.VariableAccessElement;
 import org.jsweet.transpiler.util.Util;
 
-import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCTypeApply;
 
@@ -983,7 +983,8 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 	}
 
 	@Override
-	public boolean substituteInstanceof(String exprStr, ExtendedElement expr, Type type) {
+	public boolean substituteInstanceof(String exprStr, ExtendedElement expr, TypeMirror typeMirror) {
+		com.sun.tools.javac.code.Type type = (com.sun.tools.javac.code.Type)typeMirror;
 		String typeName = type.tsym.getQualifiedName().toString();
 		if (typeName.startsWith("java.") && context.types.isSubtype(type, context.symtab.throwableType)) {
 			print(exprStr, expr);

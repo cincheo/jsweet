@@ -28,6 +28,7 @@ import org.jsweet.transpiler.TypeChecker;
 import org.jsweet.transpiler.extension.PrinterAdapter;
 
 import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.MethodType;
 import com.sun.tools.javac.tree.JCTree;
@@ -241,8 +242,16 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	 * Outputs an identifier.
 	 */
 	public AbstractTreePrinter printIdentifier(Symbol symbol) {
-		String adaptedIdentifier = getAdapter().getIdentifier(symbol);
+		String adaptedIdentifier = context.getActualName(symbol);
 		return print(adaptedIdentifier);
+	}
+
+	public String getQualifiedTypeName(TypeSymbol type, boolean globals) {
+		return getRootRelativeName(type);
+	}
+
+	public String getIdentifier(Symbol symbol) {
+		return context.getActualName(symbol);
 	}
 
 	/**
