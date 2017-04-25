@@ -54,6 +54,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.jsweet.JSweetConfig;
+import org.jsweet.transpiler.candy.CandyDescriptor;
 import org.jsweet.transpiler.candy.CandyProcessor;
 import org.jsweet.transpiler.extension.PrinterAdapter;
 import org.jsweet.transpiler.util.AbstractTreePrinter;
@@ -771,6 +772,9 @@ public class JSweetTranspiler implements JSweetOptions {
 			return;
 		}
 		candiesProcessor.processCandies(transpilationHandler);
+
+		checkDepreciations();
+
 		addTsDefDir(candiesProcessor.getCandiesTsdefsDir());
 
 		ErrorCountTranspilationHandler errorHandler = new ErrorCountTranspilationHandler(transpilationHandler);
@@ -790,6 +794,26 @@ public class JSweetTranspiler implements JSweetOptions {
 
 		logger.info("transpilation process finished in " + (System.currentTimeMillis() - transpilationStartTimestamp)
 				+ " ms");
+	}
+
+	private void checkDepreciations() {
+		boolean classPathContainsOutDatedCandies = false;
+		for (CandyDescriptor candy : candiesProcessor.getCandies()) {
+			if (candy.transpilerVersion.startsWith("1")) {
+				classPathContainsOutDatedCandies = true;
+				break;
+			}
+		}
+
+		if (classPathContainsOutDatedCandies) {
+			logger.warn("\n*********************************************************************\n" //
+					+ "*********************************************************************\n" //
+					+ " YOUR CLASSPATH CONTAINS JSweet v1.x CANDIES \n" //
+					+ " This can lead to unexpected behaviors, please contribute to https://github.com/jsweet-candies \n" //
+					+ " to add your library's typings \n" //
+					+ "*********************************************************************\n" //
+					+ "*********************************************************************\n");
+		}
 	}
 
 	private void java2ts(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files) throws IOException {
@@ -1798,7 +1822,8 @@ public class JSweetTranspiler implements JSweetOptions {
 					+ " - http://www.jsweet.org */" };
 		}
 		if (context.options.isDebugMode()) {
-			headerLines = ArrayUtils.add(headerLines, "declare function __debug_exec(className, functionName, argNames, target, args, generator);");
+			headerLines = ArrayUtils.add(headerLines,
+					"declare function __debug_exec(className, functionName, argNames, target, args, generator);");
 			headerLines = ArrayUtils.add(headerLines, "declare function __debug_result(expression);");
 		}
 		return headerLines;
