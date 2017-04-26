@@ -159,13 +159,13 @@ public class Promise<T> extends def.js.Object {
     @java.lang.FunctionalInterface()
     @jsweet.lang.Erased
     public interface ExecutorPromiseLikeBiConsumer<T1,T2> {
-        public void apply(T1 p1, T2 p2);
+        public void $apply(T1 p1, T2 p2);
     }
     /** This functional interface should be used for disambiguating lambdas in function parameters (by casting to this interface).<p>It was automatically generated for functions (taking lambdas) that lead to the same erased signature. */
     @java.lang.FunctionalInterface()
     @jsweet.lang.Erased
     public interface ExecutorBiConsumer<T1,T2> {
-        public void apply(T1 p1, T2 p2);
+        public void $apply(T1 p1, T2 p2);
     }
     /** This class was automatically generated for disambiguating erased method signatures. */
     @jsweet.lang.Erased

@@ -9,9 +9,9 @@ public abstract class ProxyHandler<T> extends def.js.Object {
     native public java.lang.Boolean deleteProperty(T target, java.lang.String p);
     native public Union3<java.lang.String,Double,String>[] enumerate(T target);
     native public Union3<java.lang.String,Double,String>[] ownKeys(T target);
-    native public java.lang.Object apply(T target, java.lang.Object thisArg, java.lang.Object argArray);
+    native public java.lang.Object $apply(T target, java.lang.Object thisArg, java.lang.Object argArray);
     native public java.lang.Object construct(T target, java.lang.Object thisArg, java.lang.Object argArray);
-    native public java.lang.Object apply(T target, java.lang.Object thisArg);
+    native public java.lang.Object $apply(T target, java.lang.Object thisArg);
     native public java.lang.Object construct(T target, java.lang.Object thisArg);
     native public PropertyDescriptor getOwnPropertyDescriptor(T target, double p);
     native public PropertyDescriptor getOwnPropertyDescriptor(T target, String p);

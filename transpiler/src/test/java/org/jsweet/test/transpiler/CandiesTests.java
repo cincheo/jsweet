@@ -16,8 +16,6 @@
  */
 package org.jsweet.test.transpiler;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.File;
 
 import org.jsweet.transpiler.ModuleKind;
@@ -40,19 +38,6 @@ public class CandiesTests extends AbstractTest {
 
 	@Test
 	public void testGlobalsImport() {
-		// transpile(ModuleKind.none, logHandler -> {
-		// logHandler.assertReportedProblems(JSweetProblem.INTERNAL_TSC_ERROR,
-		// //
-		// JSweetProblem.INTERNAL_TSC_ERROR, JSweetProblem.INTERNAL_TSC_ERROR,
-		// //
-		// JSweetProblem.INTERNAL_TSC_ERROR, JSweetProblem.INTERNAL_TSC_ERROR,
-		// //
-		// JSweetProblem.INTERNAL_TSC_ERROR, JSweetProblem.INTERNAL_TSC_ERROR,
-		// //
-		// JSweetProblem.INTERNAL_TSC_ERROR, JSweetProblem.INTERNAL_TSC_ERROR,
-		// //
-		// JSweetProblem.INTERNAL_TSC_ERROR, JSweetProblem.INTERNAL_TSC_ERROR);
-		// } , getSourceFile(GlobalsImport.class));
 		transpile(ModuleKind.commonjs, logHandler -> {
 			logHandler.assertNoProblems();
 		}, getSourceFile(GlobalsImport.class));

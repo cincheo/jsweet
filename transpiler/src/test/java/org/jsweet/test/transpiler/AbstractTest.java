@@ -38,6 +38,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.rules.TestName;
+import org.junit.rules.TestRule;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 
 public class AbstractTest {
 
@@ -51,8 +54,18 @@ public class AbstractTest {
 
 	private static boolean testSuiteInitialized = false;
 
+	private static int testCount;
+
 	@Rule
 	public final TestName testNameRule = new TestName();
+
+	@Rule
+	public TestRule watcher = new TestWatcher() {
+		protected void starting(Description description) {
+			logger.info("*********************** " + description.getMethodName() + " #" + (++testCount)
+					+ " ***********************");
+		}
+	};
 
 	protected File getTestFile(String name) {
 		return new File(TEST_DIRECTORY_NAME + "/" + getClass().getPackage().getName().replace('.', '/'),
@@ -102,6 +115,7 @@ public class AbstractTest {
 				new File(JSweetTranspiler.TMP_WORKING_DIR_NAME + "/candies/js"), System.getProperty("java.class.path"));
 		transpiler.setEcmaTargetVersion(EcmaScriptComplianceLevel.ES5);
 		transpiler.setEncoding("UTF-8");
+		transpiler.setSkipTypeScriptChecks(true);
 		// transpiler.setPreserveSourceLineNumbers(true);
 	}
 
@@ -126,7 +140,6 @@ public class AbstractTest {
 	@Before
 	public void setUp() {
 		initOutputDir();
-		logger.info("*********************** " + getCurrentTestName() + " ***********************");
 	}
 
 	public AbstractTest() {
@@ -209,6 +222,7 @@ public class AbstractTest {
 			TestTranspilationHandler logHandler = new TestTranspilationHandler();
 			EvaluationResult res = null;
 			transpiler.setModuleKind(moduleKind);
+
 			// touch will force the transpilation even if the files were
 			// already
 			// transpiled

@@ -1,5 +1,5 @@
 package def.dom;
 public interface FunctionStringCallback {
-    public void apply(String data);
+    public void $apply(String data);
 }
 

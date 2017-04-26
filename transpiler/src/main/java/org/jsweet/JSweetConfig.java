@@ -203,8 +203,11 @@ public abstract class JSweetConfig {
 	public static final String INDEXED_SET_STATIC_FUCTION_NAME = "$setStatic";
 	public static final String INDEXED_DELETE_STATIC_FUCTION_NAME = "$deleteStatic";
 	public static final String NEW_FUNCTION_NAME = "$new";
-	public static final String ANONYMOUS_FUNCTION_NAME = "apply";
-	public static final String ANONYMOUS_STATIC_FUNCTION_NAME = "applyStatic";
+	
+	public static final String ANONYMOUS_DEPRECATED_FUNCTION_NAME = "apply";
+	public static final String ANONYMOUS_FUNCTION_NAME = "$apply";
+	public static final String ANONYMOUS_DEPRECATED_STATIC_FUNCTION_NAME = "applyStatic";
+	public static final String ANONYMOUS_STATIC_FUNCTION_NAME = "$applyStatic";
 
 	/**
 	 * Default name of the directory where the TypeScript definition files can

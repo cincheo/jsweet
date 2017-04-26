@@ -22,6 +22,7 @@ import def.jquery.JQueryAjaxSettings;
 import def.jquery.JQueryXHR;
 import static jsweet.util.Lang.function;
 
+@SuppressWarnings("all")
 public class JQuery {
 
 	public static void main(String[] args) {

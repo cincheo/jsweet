@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 import java.util.jar.JarEntry;
@@ -116,6 +117,10 @@ public class CandyProcessor {
 		candiesTsdefsDir = new File(workingDir, CANDIES_TSDEFS_DIR_NAME);
 
 		setCandiesJavascriptOutDir(extractedCandiesJavascriptDir);
+	}
+	
+	public List<CandyDescriptor> getCandies() {
+		return getCandiesStore().getCandies();
 	}
 
 	private void setCandiesJavascriptOutDir(File extractedCandiesJavascriptDir) {

@@ -46,6 +46,6 @@ public interface TriFunction<T, U, V, R> {
 	 *            the third function argument
 	 * @return the function result
 	 */
-	R apply(T t, U u, V v);
+	R $apply(T t, U u, V v);
 
 }

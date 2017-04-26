@@ -16,14 +16,15 @@
  */
 package source.candies;
 
-//import static def.socket_io.Globals.socket_io;
+import static def.socket_io.Globals.socket_io;
 
+@SuppressWarnings("all")
 public class QualifiedNames {
 
-//	public static void main(String[] args) {
-//
-//		def.socket_io.socketio.Server ioServer = socket_io();
-//
-//	}
+	public static void main(String[] args) {
+
+		def.socket_io.socketio.Server ioServer = socket_io();
+
+	}
 
 }

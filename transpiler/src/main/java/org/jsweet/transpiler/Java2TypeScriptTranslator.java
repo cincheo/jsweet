@@ -1669,6 +1669,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		case JSweetConfig.ANONYMOUS_FUNCTION_NAME:
 		case JSweetConfig.ANONYMOUS_STATIC_FUNCTION_NAME:
 			return "";
+		case JSweetConfig.ANONYMOUS_DEPRECATED_FUNCTION_NAME:
+		case JSweetConfig.ANONYMOUS_DEPRECATED_STATIC_FUNCTION_NAME:
+			if (context.deprecatedApply) {
+				return "";
+			} else {
+				return name;
+			}
 		case JSweetConfig.NEW_FUNCTION_NAME:
 			return "new";
 		default:
@@ -2785,8 +2792,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						}
 					}
 				}
-				if (!(ambient || (isTopLevelScope() && isDefinitionScope)) && varDecl.sym.isStatic()
-						&& varDecl.init == null) {
+				
+				// var initialization is not allowed in definition 
+				if (!isDefinitionScope && !(ambient || (isTopLevelScope() && isDefinitionScope))
+						&& varDecl.sym.isStatic() && varDecl.init == null) {
 					print(" = ").print(Util.getTypeInitialValue(varDecl.sym.type));
 				}
 			}
@@ -3023,9 +3032,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				applyVarargs = false;
 			}
 
-			boolean anonymous = JSweetConfig.ANONYMOUS_FUNCTION_NAME.equals(methName)
-					|| JSweetConfig.ANONYMOUS_STATIC_FUNCTION_NAME.equals(methName)
-					|| JSweetConfig.NEW_FUNCTION_NAME.equals(methName);
+			boolean anonymous = isAnonymousMethod(methName);
 			boolean targetIsThisOrStaticImported = meth.equals(methName) || meth.equals("this." + methName);
 
 			MethodType type = inv.meth.type instanceof MethodType ? (MethodType) inv.meth.type : null;
@@ -3225,7 +3232,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 									&& !Util.hasTypeParameters(methSym) && !Util.hasVarargs(methSym)
 									&& getParent(JCMethodDecl.class) != null
 									&& !getParent(JCMethodDecl.class).sym.isDefault()) {
-								if (methSym.getEnclosingElement().isInterface()) {
+								if (context.isInterface((TypeSymbol) methSym.getEnclosingElement())) {
 									removeLastChar('.');
 									print("['" + getOverloadMethodName(methSym) + "']");
 								} else {
@@ -3341,6 +3348,15 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			print(")");
 		}
 
+	}
+
+	private boolean isAnonymousMethod(String methName) {
+		boolean anonymous = JSweetConfig.ANONYMOUS_FUNCTION_NAME.equals(methName)
+				|| JSweetConfig.ANONYMOUS_STATIC_FUNCTION_NAME.equals(methName)
+				|| (context.deprecatedApply && JSweetConfig.ANONYMOUS_DEPRECATED_FUNCTION_NAME.equals(methName))
+				|| (context.deprecatedApply && JSweetConfig.ANONYMOUS_DEPRECATED_STATIC_FUNCTION_NAME.equals(methName))
+				|| JSweetConfig.NEW_FUNCTION_NAME.equals(methName);
+		return anonymous;
 	}
 
 	@Override

@@ -16,6 +16,7 @@
  */
 package org.jsweet.test.transpiler;
 
+import static java.util.stream.Collectors.joining;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -24,6 +25,7 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -37,8 +39,10 @@ import org.jsweet.transpiler.SourcePosition;
 import org.jsweet.transpiler.extension.AddPrefixToNonPublicMembersAdapter;
 import org.jsweet.transpiler.extension.Java2TypeScriptAdapter;
 import org.jsweet.transpiler.extension.PrinterAdapter;
+import org.jsweet.transpiler.extension.RemoveJavaDependenciesFactory;
 import org.jsweet.transpiler.util.ProcessUtil;
 import org.jsweet.transpiler.util.Util;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -67,6 +71,18 @@ import source.transpiler.p.A;
 import source.transpiler.p.B;
 
 public class TranspilerTests extends AbstractTest {
+
+	private File outDir;
+	private File gameDir;
+	private File calculusDir;
+
+	@Before
+	public void init() throws Throwable {
+		outDir = new File(new File(TMPOUT_DIR), getCurrentTestName() + "/" + ModuleKind.none);
+		gameDir = new File(TEST_DIRECTORY_NAME + "/" + Ball.class.getPackage().getName().replace(".", "/"));
+		calculusDir = new File(TEST_DIRECTORY_NAME + "/" + MathApi.class.getPackage().getName().replace(".", "/"));
+		FileUtils.deleteQuietly(outDir);
+	}
 
 	@Ignore
 	@Test
@@ -153,14 +169,9 @@ public class TranspilerTests extends AbstractTest {
 
 	@Test
 	public void testCommandLine() throws Throwable {
-		File outDir = new File(new File(TMPOUT_DIR), getCurrentTestName() + "/" + ModuleKind.none);
-		String gameDir = TEST_DIRECTORY_NAME + "/" + Ball.class.getPackage().getName().replace(".", "/");
-		String calculusDir = TEST_DIRECTORY_NAME + "/" + MathApi.class.getPackage().getName().replace(".", "/");
 		LinkedList<File> files = new LinkedList<>();
 		Process process = null;
 
-		FileUtils.deleteQuietly(outDir);
-
 		process = ProcessUtil.runCommand("java", line -> {
 			System.out.println(line);
 		}, null, "-cp", System.getProperty("java.class.path"), //
@@ -168,22 +179,7 @@ public class TranspilerTests extends AbstractTest {
 				"--tsout", outDir.getPath(), //
 				"--jsout", outDir.getPath(), //
 				"--sourceMap", //
-				"-i", gameDir + ":" + calculusDir);
-                
-		assertTrue(process.exitValue() == 0);
-		files.clear();
-		Util.addFiles(".ts", outDir, files);
-		assertTrue(files.stream().anyMatch(f -> f.getName().equals("UselessClass.ts")));
-		assertTrue(files.stream().anyMatch(f -> f.getName().equals("MathApi.ts")));
-
-		process = ProcessUtil.runCommand("java", line -> {
-			System.out.println(line);
-		}, null, "-cp", System.getProperty("java.class.path"), //
-				JSweetCommandLineLauncher.class.getName(), //
-				"--tsout", outDir.getPath(), //
-				"--jsout", outDir.getPath(), //
-				"--sourceMap", //
-				"-i", gameDir);
+				"-i", gameDir.getAbsolutePath());
 
 		assertTrue(process.exitValue() == 0);
 		files.clear();
@@ -206,7 +202,7 @@ public class TranspilerTests extends AbstractTest {
 				"--tsout", outDir.getPath(), //
 				"--jsout", outDir.getPath(), //
 				"--sourceMap", //
-				"-i", gameDir, //
+				"-i", gameDir.getAbsolutePath(), //
 				"--excludes", "UselessClass.java:dummy");
 
 		assertTrue(process.exitValue() == 0);
@@ -231,7 +227,7 @@ public class TranspilerTests extends AbstractTest {
 				"--jsout", outDir.getPath(), //
 				"--sourceMap", //
 				"--factoryClassName", "org.jsweet.transpiler.extension.RemoveJavaDependenciesFactory", //
-				"-i", gameDir, //
+				"-i", gameDir.getAbsolutePath(), //
 				"--includes", "UselessClass.java:dummy");
 
 		assertTrue(process.exitValue() == 0);
@@ -239,8 +235,8 @@ public class TranspilerTests extends AbstractTest {
 		Util.addFiles(".ts", outDir, files);
 		assertTrue(files.size() == 3);
 		assertTrue(files.stream().anyMatch(f -> f.getName().equals("UselessClass.ts")));
-                
-                process = ProcessUtil.runCommand("java", line -> {
+
+		process = ProcessUtil.runCommand("java", line -> {
 			System.out.println(line);
 		}, null, "-cp", System.getProperty("java.class.path"), //
 				JSweetCommandLineLauncher.class.getName(), //
@@ -248,35 +244,16 @@ public class TranspilerTests extends AbstractTest {
 				"--jsout", outDir.getPath(), //
 				"--sourceMap", //
 				"--factoryClassName", "org.jsweet.transpiler.extension.RemoveJavaDependenciesFactory", //
-				"-i", gameDir, //
-				"--includes", "UselessClass.java:dummy",
-                                "--targetVersion", "ES5");
-                
-		assertTrue(process.exitValue() == 0);
-		files.clear();
-		Util.addFiles(".ts", outDir, files);
-		assertTrue(files.size() == 3);
-		assertTrue(files.stream().anyMatch(f -> f.getName().equals("UselessClass.ts")));
-                
-                process = ProcessUtil.runCommand("java", line -> {
-			System.out.println(line);
-		}, null, "-cp", System.getProperty("java.class.path"), //
-				JSweetCommandLineLauncher.class.getName(), //
-				"--tsout", outDir.getPath(), //
-				"--jsout", outDir.getPath(), //
-				"--sourceMap", //
-				"--factoryClassName", "org.jsweet.transpiler.extension.RemoveJavaDependenciesFactory", //
-				"-i", gameDir, //
-				"--includes", "UselessClass.java:dummy",
-                                "--targetVersion", "ES3");
+				"-i", gameDir.getAbsolutePath(), //
+				"--includes", "UselessClass.java:dummy", "--targetVersion", "ES5");
 
 		assertTrue(process.exitValue() == 0);
 		files.clear();
 		Util.addFiles(".ts", outDir, files);
 		assertTrue(files.size() == 3);
 		assertTrue(files.stream().anyMatch(f -> f.getName().equals("UselessClass.ts")));
-                
-                process = ProcessUtil.runCommand("java", line -> {
+
+		process = ProcessUtil.runCommand("java", line -> {
 			System.out.println(line);
 		}, null, "-cp", System.getProperty("java.class.path"), //
 				JSweetCommandLineLauncher.class.getName(), //
@@ -284,12 +261,58 @@ public class TranspilerTests extends AbstractTest {
 				"--jsout", outDir.getPath(), //
 				"--sourceMap", //
 				"--factoryClassName", "org.jsweet.transpiler.extension.RemoveJavaDependenciesFactory", //
-				"-i", gameDir, //
-				"--includes", "UselessClass.java:dummy",
-                                "--targetVersion", "ES4");
+				"-i", gameDir.getAbsolutePath(), //
+				"--includes", "UselessClass.java:dummy", "--targetVersion", "ES3");
+
+		assertTrue(process.exitValue() == 0);
+		files.clear();
+		Util.addFiles(".ts", outDir, files);
+		assertTrue(files.size() == 3);
+		assertTrue(files.stream().anyMatch(f -> f.getName().equals("UselessClass.ts")));
+
+	}
+
+	@Test
+	public void testCommandLineSuccess() {
+		Process process;
+		Stream<File> sources = Stream.of(gameDir, calculusDir);
+		logger.info("launching transpiler with sources: " + sources);
+
+		process = ProcessUtil.runCommand("java", line -> {
+			System.out.println(line);
+		}, null, "-cp", System.getProperty("java.class.path"), //
+				JSweetCommandLineLauncher.class.getName(), //
+				"--tsout", outDir.getPath(), //
+				"--jsout", outDir.getPath(), //
+				"--factoryClassName", RemoveJavaDependenciesFactory.class.getName(), //
+				"--sourceMap", //
+				"--verbose", //
+				"-i", sources.map(File::getAbsolutePath).collect(joining(":")));
+
+		assertTrue(process.exitValue() == 0);
+		LinkedList<File> files = new LinkedList<>();
+		Util.addFiles(".ts", outDir, files);
+		assertTrue("cant find useless class in " + files,
+				files.stream().anyMatch(f -> f.getName().equals("UselessClass.ts")));
+		assertTrue("cant find MathApi class in " + files,
+				files.stream().anyMatch(f -> f.getName().equals("MathApi.ts")));
+	}
+
+	@Test
+	public void testErroneousCommandLineArgument() throws Throwable {
+		Process process;
+		process = ProcessUtil.runCommand("java", line -> {
+			System.out.println(line);
+		}, null, "-cp", System.getProperty("java.class.path"), //
+				JSweetCommandLineLauncher.class.getName(), //
+				"--tsout", outDir.getPath(), //
+				"--jsout", outDir.getPath(), //
+				"--sourceMap", //
+				"--factoryClassName", "org.jsweet.transpiler.extension.RemoveJavaDependenciesFactory", //
+				"-i", gameDir.getAbsolutePath(), //
+				"--includes", "UselessClass.java:dummy", "--targetVersion", "ES4");
 
 		assertTrue(process.exitValue() == 1);
-
 	}
 
 	@Test

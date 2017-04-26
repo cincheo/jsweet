@@ -285,6 +285,7 @@ public class JSweetCommandLineLauncher {
 		optionArg.setLongFlag("input");
 		optionArg.setList(true);
 		optionArg.setStringParser(FileStringParser.getParser());
+		optionArg.setListSeparator(':');
 		optionArg.setRequired(true);
 		optionArg.setHelp(
 				"An input directory (or column-separated input directories) containing Java files to be transpiled.");
@@ -294,6 +295,7 @@ public class JSweetCommandLineLauncher {
 		optionArg = new FlaggedOption("includes");
 		optionArg.setLongFlag("includes");
 		optionArg.setList(true);
+		optionArg.setListSeparator(':');
 		optionArg.setHelp(
 				"A column-separated list of expressions matching files to be inclcluded (relatively to the input directory).");
 		jsap.registerParameter(optionArg);
@@ -302,6 +304,7 @@ public class JSweetCommandLineLauncher {
 		optionArg = new FlaggedOption("excludes");
 		optionArg.setLongFlag("excludes");
 		optionArg.setList(true);
+		optionArg.setListSeparator(':');
 		optionArg.setHelp(
 				"A column-separated list of expressions matching files to be excluded (relatively to the input directory).");
 		jsap.registerParameter(optionArg);

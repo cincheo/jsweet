@@ -176,4 +176,5 @@ public interface JSweetOptions {
 	 * JavaScript.
 	 */
 	boolean isDebugMode();
+	
 }

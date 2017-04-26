@@ -16,8 +16,11 @@
  */
 package source.syntax;
 
+import static jsweet.util.Lang.$export;
 import static jsweet.util.Lang.$apply;
 import static jsweet.util.Lang.$new;
+
+import java.util.function.Function;
 
 public class SpecialFunctions {
 
@@ -25,6 +28,13 @@ public class SpecialFunctions {
 		a1.apply();
 		a1.apply("test");
 		c1.$new("test");
+		
+		Function<Object, Object> f = x -> x;
+		f.apply(null);
+	}
+	void m3(ApplyI2 a1) {
+		a1.$apply();
+		a1.$apply("test");
 	}
 
 	void m2(Object o) {
@@ -33,7 +43,7 @@ public class SpecialFunctions {
 		@SuppressWarnings("unused")
 		Object result2 = $new(o, "param");
 	}
-
+	
 }
 
 @jsweet.lang.Interface
@@ -41,6 +51,13 @@ abstract class ApplyI1 extends def.js.Object {
 	abstract public String apply();
 
 	abstract public ApplyI1 apply(String a);
+}
+
+@jsweet.lang.Interface
+abstract class ApplyI2 extends def.js.Object {
+	abstract public String $apply();
+
+	abstract public String $apply(String a);
 }
 
 @jsweet.lang.Interface

@@ -224,8 +224,10 @@ public class JSDoc {
 				}
 			} else if ((m = returnPattern.matcher(commentLines.get(i))).matches()) {
 				hasReturn = true;
-				commentLines.set(i, m.group(1) + "{" + getMappedDocType(context, method.restype, method.restype.type)
-						+ "} " + m.group(2));
+				if (method.restype != null) {
+					commentLines.set(i, m.group(1) + "{"
+							+ getMappedDocType(context, method.restype, method.restype.type) + "} " + m.group(2));
+				}
 			}
 		}
 		for (JCVariableDecl parameter : method.getParameters()) {
