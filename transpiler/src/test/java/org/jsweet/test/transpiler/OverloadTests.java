@@ -22,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 import org.jsweet.transpiler.ModuleKind;
 import org.junit.Test;
 
+import def.test.AmbientWithOverload;
 import source.overload.BasicOverride;
 import source.overload.ConstructorOverLoadWithArray;
 import source.overload.ConstructorOverloadWithFieldInitializer;
@@ -34,6 +35,7 @@ import source.overload.OverloadWithAbstractClass;
 import source.overload.OverloadWithEnums;
 import source.overload.OverloadWithInterfaces;
 import source.overload.OverloadWithStaticAndInstanceMethods;
+import source.overload.WithAmbients;
 import source.overload.WrongOverload;
 import source.overload.WrongOverloadConstructorWithParamNameCollision;
 import source.overload.WrongOverloadConstructorWithVarargs;
@@ -236,6 +238,13 @@ public class OverloadTests extends AbstractTest {
 			logHandler.assertNoProblems();
 			assertEquals("1,2,3,3", r.get("trace"));
 		}, getSourceFile(OverloadWithInterfaces.class));
+	}
+
+	@Test
+	public void testWithAmbients() {
+		transpile(ModuleKind.none, (logHandler) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(WithAmbients.class), getSourceFile(AmbientWithOverload.class));
 	}
 
 }

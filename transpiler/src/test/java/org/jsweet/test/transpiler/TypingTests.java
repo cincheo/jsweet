@@ -21,6 +21,8 @@ import org.jsweet.transpiler.ModuleKind;
 import org.junit.Assert;
 import org.junit.Test;
 
+import def.test.Globals;
+import def.test.JQuery;
 import source.typing.ArraysOfLambdas;
 import source.typing.ClassTypeAsFunction;
 import source.typing.ClassTypeAsTypeOf;
@@ -28,12 +30,14 @@ import source.typing.CustomLambdas;
 import source.typing.CustomStringTypes;
 import source.typing.InvalidIndexedAccesses;
 import source.typing.Lambdas;
+import source.typing.MixinsWithDefs;
 import source.typing.Numbers;
 import source.typing.StringTypesUsage;
 import source.typing.Tuples;
 import source.typing.Unions;
 import source.typing.VoidType;
 import source.typing.WrongUnions;
+import source.typing.root.MixinsWithAmbient;
 
 public class TypingTests extends AbstractTest {
 
@@ -119,9 +123,10 @@ public class TypingTests extends AbstractTest {
 	@Test
 	public void testWrongUnions() {
 		transpile(ModuleKind.none, logHandler -> {
-			logHandler.assertReportedProblems(JSweetProblem.UNION_TYPE_MISMATCH, JSweetProblem.UNION_TYPE_MISMATCH, JSweetProblem.UNION_TYPE_MISMATCH,
-					JSweetProblem.UNION_TYPE_MISMATCH, JSweetProblem.UNION_TYPE_MISMATCH, JSweetProblem.UNION_TYPE_MISMATCH, JSweetProblem.UNION_TYPE_MISMATCH,
-					JSweetProblem.UNION_TYPE_MISMATCH);
+			logHandler.assertReportedProblems(JSweetProblem.UNION_TYPE_MISMATCH, JSweetProblem.UNION_TYPE_MISMATCH,
+					JSweetProblem.UNION_TYPE_MISMATCH, JSweetProblem.UNION_TYPE_MISMATCH,
+					JSweetProblem.UNION_TYPE_MISMATCH, JSweetProblem.UNION_TYPE_MISMATCH,
+					JSweetProblem.UNION_TYPE_MISMATCH, JSweetProblem.UNION_TYPE_MISMATCH);
 		}, getSourceFile(WrongUnions.class));
 	}
 
@@ -129,7 +134,8 @@ public class TypingTests extends AbstractTest {
 	public void testInvalidIndexedAccesses() {
 		transpile(ModuleKind.none, logHandler -> {
 			Assert.assertEquals("There should be one error", 1, logHandler.reportedProblems.size());
-			Assert.assertEquals("Wrong type of expected error", JSweetProblem.INDEXED_SET_TYPE_MISMATCH, logHandler.reportedProblems.get(0));
+			Assert.assertEquals("Wrong type of expected error", JSweetProblem.INDEXED_SET_TYPE_MISMATCH,
+					logHandler.reportedProblems.get(0));
 		}, getSourceFile(InvalidIndexedAccesses.class));
 	}
 
@@ -139,6 +145,20 @@ public class TypingTests extends AbstractTest {
 			logHandler.assertNoProblems();
 			Assert.assertEquals("test1", r.get("lambda"));
 		}, getSourceFile(CustomLambdas.class));
+	}
+
+	@Test
+	public void testMixinsWithAmbient() {
+		transpile(ModuleKind.none, logHandler -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(MixinsWithAmbient.class));
+	}
+
+	@Test
+	public void testMixinsWithDefs() {
+		transpile(ModuleKind.none, logHandler -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(MixinsWithDefs.class), getSourceFile(Globals.class), getSourceFile(JQuery.class));
 	}
 
 }

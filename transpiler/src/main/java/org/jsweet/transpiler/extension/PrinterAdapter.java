@@ -294,14 +294,22 @@ public class PrinterAdapter {
 	/**
 	 * Returns true if the given element is annotated with one of the given
 	 * annotation types.
+	 * 
+	 * To change the behavior of this method in a composable way, use
+	 * {@link #addAnnotation(Class, String...)} or
+	 * {@link #addAnnotationManager(AnnotationManager)}.
 	 */
-	public boolean hasAnnotationType(Element element, String... annotationTypes) {
+	public final boolean hasAnnotationType(Element element, String... annotationTypes) {
 		return context.hasAnnotationType((com.sun.tools.javac.code.Symbol) element, annotationTypes);
 	}
 
 	/**
 	 * Gets the first value of the 'value' property for the given annotation
-	 * type if found on the given symbol.
+	 * type if found on the given element.
+	 * 
+	 * To change the behavior of this method in a composable way, use
+	 * {@link #addAnnotation(Class, String...)} or
+	 * {@link #addAnnotationManager(AnnotationManager)}.
 	 */
 	public final String getAnnotationValue(Element element, String annotationType, String defaultValue) {
 		return getAnnotationValue((com.sun.tools.javac.code.Symbol) element, annotationType, null, defaultValue);
@@ -309,9 +317,10 @@ public class PrinterAdapter {
 
 	/**
 	 * Gets the first value of the given property for the given annotation type
-	 * if found on the given symbol.
+	 * if found on the given element.
 	 */
-	public String getAnnotationValue(Element element, String annotationType, String propertyName, String defaultValue) {
+	public final String getAnnotationValue(Element element, String annotationType, String propertyName,
+			String defaultValue) {
 		return context.getAnnotationValue((com.sun.tools.javac.code.Symbol) element, annotationType, propertyName,
 				defaultValue);
 	}
@@ -416,7 +425,7 @@ public class PrinterAdapter {
 	/**
 	 * Increments the current indentation value.
 	 */
-	public PrinterAdapter startIndent() {
+	public final PrinterAdapter startIndent() {
 		printer.startIndent();
 		return this;
 	}
@@ -424,7 +433,7 @@ public class PrinterAdapter {
 	/**
 	 * Decrements the current indentation value.
 	 */
-	public PrinterAdapter endIndent() {
+	public final PrinterAdapter endIndent() {
 		printer.endIndent();
 		return this;
 	}
@@ -432,7 +441,7 @@ public class PrinterAdapter {
 	/**
 	 * Adds a space to the output.
 	 */
-	public PrinterAdapter space() {
+	public final PrinterAdapter space() {
 		printer.space();
 		return this;
 	}
@@ -440,14 +449,14 @@ public class PrinterAdapter {
 	/**
 	 * removes last character if expectedChar
 	 */
-	public boolean removeLastChar(char expectedChar) {
+	public final boolean removeLastChar(char expectedChar) {
 		return printer.removeLastChar(expectedChar);
 	}
 
 	/**
 	 * Removes the last output character.
 	 */
-	public PrinterAdapter removeLastChar() {
+	public final PrinterAdapter removeLastChar() {
 		printer.removeLastChar();
 		return this;
 	}
@@ -455,7 +464,7 @@ public class PrinterAdapter {
 	/**
 	 * Removes the last output characters.
 	 */
-	public PrinterAdapter removeLastChars(int count) {
+	public final PrinterAdapter removeLastChars(int count) {
 		printer.removeLastChars(count);
 		return this;
 	}
@@ -463,7 +472,7 @@ public class PrinterAdapter {
 	/**
 	 * Removes the last printed indentation.
 	 */
-	public PrinterAdapter removeLastIndent() {
+	public final PrinterAdapter removeLastIndent() {
 		printer.removeLastIndent();
 		return this;
 	}
@@ -471,27 +480,32 @@ public class PrinterAdapter {
 	/**
 	 * Gets the parent element in the printer's scanning stack.
 	 */
-	public ExtendedElement getParentElement() {
+	public final ExtendedElement getParentElement() {
 		return printer.getParentElement();
 	}
 
 	/**
 	 * Gets the parent element in the printer's scanning stack.
 	 */
-	public <T extends Element> T getParentElement(Class<T> type) {
+	public final <T extends Element> T getParentElement(Class<T> type) {
 		return printer.getParentElement(type);
 	}
 
 	/**
 	 * Looks-up the executable that is invoked by the given invocation.
 	 */
-	public ExecutableElement findExecutableDeclarationInType(TypeElement type, MethodInvocationElement invocation) {
+	public final ExecutableElement findExecutableDeclarationInType(TypeElement type,
+			MethodInvocationElement invocation) {
 		return org.jsweet.transpiler.util.Util.findMethodDeclarationInType(context.types,
 				(com.sun.tools.javac.code.Symbol.TypeSymbol) type,
 				((MethodInvocationElementSupport) invocation).getTree());
 	}
 
-	public String getRootRelativeName(Element element) {
+	/**
+	 * Gets the qualified name of an element, relatively to a possible
+	 * <code>@Root</code> annotation.
+	 */
+	public final String getRootRelativeName(Element element) {
 		return printer.getRootRelativeName((com.sun.tools.javac.code.Symbol) element);
 	}
 
@@ -782,6 +796,14 @@ public class PrinterAdapter {
 	 */
 	protected final void printMacroName(String macroName) {
 		print("/* " + macroName + " */");
+	}
+
+	/**
+	 * Tells if the given element is ambient (part of a def.* package or within
+	 * an <code>@Ambient</code>-annotated scope).
+	 */
+	public final boolean isAmbientDeclaration(Element element) {
+		return context.isAmbientDeclaration((com.sun.tools.javac.code.Symbol) element);
 	}
 
 }

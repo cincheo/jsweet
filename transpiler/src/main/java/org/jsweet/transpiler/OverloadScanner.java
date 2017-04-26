@@ -345,9 +345,15 @@ public class OverloadScanner extends AbstractTreeScanner {
 	@Override
 	public void visitClassDef(JCClassDecl classdecl) {
 		ClassSymbol clazz = classdecl.sym;
+		if (clazz.getQualifiedName().toString().startsWith(JSweetConfig.LIBS_PACKAGE + ".")
+				|| context.hasAnnotationType(clazz, JSweetConfig.ANNOTATION_ERASED, JSweetConfig.ANNOTATION_AMBIENT)) {
+			return;
+		}
+
 		for (JCTree member : classdecl.defs) {
 			if (member instanceof JCMethodDecl) {
-				if (context.hasAnnotationType(((JCMethodDecl) member).sym, JSweetConfig.ANNOTATION_ERASED)) {
+				if (context.hasAnnotationType(((JCMethodDecl) member).sym, JSweetConfig.ANNOTATION_ERASED,
+						JSweetConfig.ANNOTATION_AMBIENT)) {
 					continue;
 				}
 				JCMethodDecl method = (JCMethodDecl) member;
@@ -393,7 +399,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 				}
 			}
 		}
-		//context.dumpOverloads(System.out);
+		// context.dumpOverloads(System.out);
 	}
 
 }

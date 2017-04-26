@@ -102,6 +102,7 @@ import com.sun.tools.javac.code.Type.MethodType;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCEnhancedForLoop;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
+import com.sun.tools.javac.tree.JCTree.JCExpressionStatement;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCImport;
@@ -327,7 +328,8 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 		// access, TS compilation will fail.
 		// So, we should probably find a better way to erase invocations (or at
 		// least do it conditionally).
-		if (hasAnnotationType(invocationElement.getMethod(), ANNOTATION_ERASED)) {
+		if (hasAnnotationType(invocationElement.getMethod(), ANNOTATION_ERASED)
+				&& !isAmbientDeclaration(invocationElement.getMethod())) {
 			print("null");
 			return true;
 		}

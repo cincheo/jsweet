@@ -1606,4 +1606,30 @@ public class JSweetContext extends Context {
 
 	public Map<Element, String> docComments = new HashMap<>();
 
+	private boolean isAmbientAnnotatedDeclaration(Symbol symbol) {
+		if (symbol == null) {
+			return false;
+		}
+		if (hasAnnotationType(symbol, JSweetConfig.ANNOTATION_AMBIENT)) {
+			return true;
+		} else {
+			return isAmbientAnnotatedDeclaration(symbol.getEnclosingElement());
+		}
+	}
+
+	/**
+	 * Tells if the given symbol is ambient (part of a def.* package or within
+	 * an <code>@Ambient</code>-annotated scope).
+	 */
+	public boolean isAmbientDeclaration(Symbol symbol) {
+		if (symbol instanceof TypeSymbol
+				? symbol.getQualifiedName().toString().startsWith(JSweetConfig.LIBS_PACKAGE + ".")
+				: symbol.getEnclosingElement().getQualifiedName().toString()
+						.startsWith(JSweetConfig.LIBS_PACKAGE + ".")) {
+			return true;
+		} else {
+			return isAmbientAnnotatedDeclaration(symbol);
+		}
+	}
+
 }
