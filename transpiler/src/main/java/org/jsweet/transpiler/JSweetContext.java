@@ -809,6 +809,12 @@ public class JSweetContext extends Context {
 	 */
 	public boolean strictMode = false;
 
+	/**
+	 * A flag that indicates if the transpiler should transform old-fashionned
+	 * apply method to lambda or use the new convention ($apply)
+	 */
+	public boolean deprecatedApply;
+
 	private List<String> footerStatements = new LinkedList<String>();
 
 	/**
@@ -1525,7 +1531,9 @@ public class JSweetContext extends Context {
 	public boolean hasAnonymousFunction(TypeSymbol type) {
 		for (Symbol s : type.getEnclosedElements()) {
 			if (s instanceof MethodSymbol) {
-				if (JSweetConfig.ANONYMOUS_FUNCTION_NAME.equals(s.getSimpleName().toString())) {
+				String methodName = s.getSimpleName().toString();
+				if (JSweetConfig.ANONYMOUS_FUNCTION_NAME.equals(methodName) //
+						|| (deprecatedApply && JSweetConfig.ANONYMOUS_DEPRECATED_FUNCTION_NAME.equals(methodName))) {
 					return true;
 				}
 			}

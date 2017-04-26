@@ -16,49 +16,49 @@
  */
 package source.candies;
 
-//import static def.body_parser.body_parser.Globals.json;
-//import static def.body_parser.body_parser.Globals.urlencoded;
-//import static def.errorhandler.Globals.errorhandler;
-//import static def.express.Globals.express;
-//import static def.jquery.Globals.$;
-//import static def.serve_static.Globals.serve_static;
-//import static def.socket_io.Globals.socket_io;
-//import static jsweet.util.Globals.union;
-//
-//import def.body_parser.body_parser.OptionsDto;
-//import def.errorhandler.errorhandler.Options;
-//import def.express.express.RequestHandler;
-//import def.express_serve_static_core.express_serve_static_core.Express;
-//import def.node.http.Server;
+import static def.body_parser.body_parser.Globals.json;
+import static def.body_parser.body_parser.Globals.urlencoded;
+import static def.errorhandler.Globals.errorhandler;
+import static def.express.Globals.express_lib_express;
+import static def.express.Globals.express_serve_static;
+import static def.jquery.Globals.$;
+import static def.socket_io.Globals.socket_io;
+import static jsweet.util.Lang.union;
 
+import def.body_parser.body_parser.OptionsDto;
+import def.errorhandler.errorhandler.Options;
+import def.express.express_lib_application.Application;
+import def.express.express_lib_router_index.RequestHandler;
+import def.node.http.Server;
+
+@SuppressWarnings("all")
 public class GlobalsImport {
 
-//	public static void main(String[] args) {
-//
-//		Express app = express();
-//
-//		RequestHandler h = json();
-//
-//		urlencoded(new OptionsDto() {
-//			{
-//				extended = true;
-//			}
-//		});
-//
-//		serve_static("test");
-//
-//		Server server = null;
-//
-//		errorhandler(new Options() {
-//			{
-//				log = union(true);
-//			}
-//		});
-//
-//		socket_io();
-//
-//		$("test").addClass("test");
-//		
-//	}
+	public static void main(String[] args) {
+
+		Application app = express_lib_express();
+
+		RequestHandler h = json();
+
+		urlencoded(new OptionsDto() {
+			{
+				extended = true;
+			}
+		});
+
+		express_serve_static("test");
+
+		Server server = null;
+
+		errorhandler(new Options() {
+			{
+				log = union(true);
+			}
+		});
+
+		def.socket_io.socketio.Server ioServer = socket_io.listen.apply(server);
+
+		$("test").addClass("test");
+	}
 
 }

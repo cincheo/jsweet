@@ -16,16 +16,11 @@
  */
 package org.jsweet.test.transpiler;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
 import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.ModuleKind;
-import org.jsweet.transpiler.util.EvaluationResult;
 import org.junit.Assert;
 import org.junit.Test;
 
-import source.candies.SocketIOLib;
 import source.throwable.InvalidTryCatchTest;
 import source.throwable.MultipleTryCatchTest;
 import source.throwable.Throwables;

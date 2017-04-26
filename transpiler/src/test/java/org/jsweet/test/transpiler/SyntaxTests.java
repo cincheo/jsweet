@@ -104,6 +104,14 @@ public class SyntaxTests extends AbstractTest {
 
 	@Test
 	public void testSpecialFunctions() {
+		System.setProperty("jsweet.forceDeprecatedApplySupport", "true");
+		transpile((logHandler) -> {
+			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+		}, getSourceFile(SpecialFunctions.class));
+	}
+
+	@Test
+	public void testDeprecatedApply() {
 		transpile((logHandler) -> {
 			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
 		}, getSourceFile(SpecialFunctions.class));
@@ -119,7 +127,7 @@ public class SyntaxTests extends AbstractTest {
 	@Test
 	public void testFinalVariables() {
 		transpile((logHandler) -> {
-			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+			logHandler.assertNoProblems();
 		}, getSourceFile(FinalVariables.class));
 	}
 
