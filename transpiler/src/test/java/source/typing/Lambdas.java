@@ -104,7 +104,7 @@ public class Lambdas<T> {
 
 	void invoker() {
 		f1.apply("a", "b");
-		f2.$apply("a", "b", "c");
+		f2.apply("a", "b", "c");
 		f3.getAsDouble();
 		f4.accept(20);
 		f5.accept("a", "b");
