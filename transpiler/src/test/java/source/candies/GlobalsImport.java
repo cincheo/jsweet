@@ -56,7 +56,7 @@ public class GlobalsImport {
 			}
 		});
 
-		def.socket_io.socketio.Server ioServer = socket_io.listen.apply(server);
+		def.socket_io.socketio.Server ioServer = socket_io.listen.$apply(server);
 
 		$("test").addClass("test");
 	}

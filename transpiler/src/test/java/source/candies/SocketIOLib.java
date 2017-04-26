@@ -35,7 +35,7 @@ public class SocketIOLib {
 		}));
 
 		def.socket_io.socketio.Server ioServer //
-		= socket_io.listen.apply(server);
+		= socket_io.listen.$apply(server);
 
 		Object users = new Object();
 		Array<Message> messages = new Array<>();

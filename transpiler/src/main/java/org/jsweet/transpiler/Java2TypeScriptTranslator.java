@@ -2792,8 +2792,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						}
 					}
 				}
-				if (!(ambient || (isTopLevelScope() && isDefinitionScope)) && varDecl.sym.isStatic()
-						&& varDecl.init == null) {
+				
+				// var initialization is not allowed in definition 
+				if (!isDefinitionScope && !(ambient || (isTopLevelScope() && isDefinitionScope))
+						&& varDecl.sym.isStatic() && varDecl.init == null) {
 					print(" = ").print(Util.getTypeInitialValue(varDecl.sym.type));
 				}
 			}

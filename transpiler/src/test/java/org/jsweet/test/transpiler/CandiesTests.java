@@ -16,8 +16,6 @@
  */
 package org.jsweet.test.transpiler;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.File;
 
 import org.jsweet.transpiler.ModuleKind;
