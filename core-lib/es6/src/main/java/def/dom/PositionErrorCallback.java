@@ -1,5 +1,5 @@
 package def.dom;
 public interface PositionErrorCallback {
-    public void apply(PositionError error);
+    public void $apply(PositionError error);
 }
 

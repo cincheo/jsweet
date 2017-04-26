@@ -1,5 +1,5 @@
 package def.dom;
 public interface FrameRequestCallback {
-    public void apply(double time);
+    public void $apply(double time);
 }
 

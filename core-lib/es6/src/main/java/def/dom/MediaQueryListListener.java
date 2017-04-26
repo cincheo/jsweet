@@ -1,5 +1,5 @@
 package def.dom;
 public interface MediaQueryListListener {
-    public void apply(MediaQueryList mql);
+    public void $apply(MediaQueryList mql);
 }
 
