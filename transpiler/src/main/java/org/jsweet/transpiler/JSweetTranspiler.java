@@ -51,11 +51,9 @@ import javax.tools.JavaFileObject;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.jsweet.JSweetConfig;
-import org.jsweet.transpiler.candy.CandyDescriptor;
 import org.jsweet.transpiler.candy.CandyProcessor;
 import org.jsweet.transpiler.extension.PrinterAdapter;
 import org.jsweet.transpiler.util.AbstractTreePrinter;
@@ -807,33 +805,6 @@ public class JSweetTranspiler implements JSweetOptions {
 				+ " ms");
 	}
 
-	private void checkDepreciations() {
-		boolean classPathContainsOutDatedCandies = false;
-		for (CandyDescriptor candy : candiesProcessor.getCandies()) {
-			if (candy.transpilerVersion.startsWith("1")) {
-				classPathContainsOutDatedCandies = true;
-				break;
-			}
-		}
-
-		if (classPathContainsOutDatedCandies) {
-			logger.warn("\n\n\n*********************************************************************\n" //
-					+ "*********************************************************************\n" //
-					+ " YOUR CLASSPATH CONTAINS JSweet v1.x CANDIES \n" //
-					+ " This can lead to unexpected behaviors, please contribute to https://github.com/jsweet-candies \n" //
-					+ " to add your library's typings \n" //
-					+ "*********************************************************************\n" //
-					+ "*********************************************************************\n\n");
-
-			// TODO : override with option param
-			context.deprecatedApply = true && !BooleanUtils.toBoolean(System.getProperty("jsweet.forceStandardApply"));
-		}
-
-		if (BooleanUtils.toBoolean(System.getProperty("jsweet.forceDeprecatedApplySupport"))) {
-			context.deprecatedApply = true;
-		}
-	}
-
 	private void java2ts(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files) throws IOException {
 		List<JCCompilationUnit> compilationUnits = setupCompiler(Arrays.asList(SourceFile.toFiles(files)),
 				transpilationHandler);
@@ -841,7 +812,16 @@ public class JSweetTranspiler implements JSweetOptions {
 			return;
 		}
 
-		checkDepreciations();
+		if (candiesProcessor.hasDeprecatedCandy()) {
+			context.deprecatedApply = true;
+			logger.warn("\n\n\n*********************************************************************\n" //
+					+ "*********************************************************************\n" //
+					+ " YOUR CLASSPATH CONTAINS JSweet v1.x CANDIES \n" //
+					+ " This can lead to unexpected behaviors, please contribute to https://github.com/jsweet-candies \n" //
+					+ " to add your library's typings \n" //
+					+ "*********************************************************************\n" //
+					+ "*********************************************************************\n\n");
+		}
 
 		context.sourceFiles = files;
 		factory.createBeforeTranslationScanner(transpilationHandler, context).process(compilationUnits);

@@ -118,8 +118,8 @@ public class CandyProcessor {
 
 		setCandiesJavascriptOutDir(extractedCandiesJavascriptDir);
 	}
-	
-	public List<CandyDescriptor> getCandies() {
+
+	private List<CandyDescriptor> getCandies() {
 		return getCandiesStore().getCandies();
 	}
 
@@ -341,6 +341,18 @@ public class CandyProcessor {
 				logger.error("cannot read candies index", e);
 			}
 		}
+	}
+
+	/**
+	 * Checks if the candy store contains a deprecated candy.
+	 */
+	public boolean hasDeprecatedCandy() {
+		for (CandyDescriptor candy : getCandies()) {
+			if (candy.transpilerVersion.startsWith("1")) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 }

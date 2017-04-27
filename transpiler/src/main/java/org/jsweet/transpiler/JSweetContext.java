@@ -813,7 +813,7 @@ public class JSweetContext extends Context {
 	 * A flag that indicates if the transpiler should transform old-fashionned
 	 * apply method to lambda or use the new convention ($apply)
 	 */
-	public boolean deprecatedApply;
+	public boolean deprecatedApply = false;
 
 	private List<String> footerStatements = new LinkedList<String>();
 
