@@ -92,6 +92,17 @@ public abstract class JSweetConfig {
 					break;
 				}
 			}
+			boolean foundExtension = false;
+			for (URL url : urlClassLoader.getURLs()) {
+				if (url.getPath().endsWith("/" + EXTENSION_DIR)) {
+					foundExtension = true;
+					logger.debug("extension dir already in classpath");
+					break;
+				}
+			}
+			Method method = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
+			method.setAccessible(true);
+
 			if (!found) {
 				logger.debug("adding tools.jar in classpath");
 				File toolsLib = null;
@@ -125,14 +136,14 @@ public abstract class JSweetConfig {
 						toolsLib = new File(System.getenv("JAVA_HOME"), "../Classes/classes.jar");
 					}
 				}
-				if (!toolsLib.exists()) {
-					return;
+				if (toolsLib.exists()) {
+					method.invoke(urlClassLoader, toolsLib.toURI().toURL());
+					logger.debug("updated classpath with: " + toolsLib);
 				}
-
-				Method method = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
-				method.setAccessible(true);
-				method.invoke(urlClassLoader, toolsLib.toURI().toURL());
-				logger.debug("updated classpath with: " + toolsLib);
+			}
+			if (!foundExtension) {
+				method.invoke(urlClassLoader, new File(EXTENSION_DIR).toURI().toURL());
+				logger.debug("updated classpath with: " + new File(EXTENSION_DIR).toURI().toURL());
 			}
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
@@ -203,11 +214,13 @@ public abstract class JSweetConfig {
 	public static final String INDEXED_SET_STATIC_FUCTION_NAME = "$setStatic";
 	public static final String INDEXED_DELETE_STATIC_FUCTION_NAME = "$deleteStatic";
 	public static final String NEW_FUNCTION_NAME = "$new";
-	
+
 	public static final String ANONYMOUS_DEPRECATED_FUNCTION_NAME = "apply";
 	public static final String ANONYMOUS_FUNCTION_NAME = "$apply";
 	public static final String ANONYMOUS_DEPRECATED_STATIC_FUNCTION_NAME = "applyStatic";
 	public static final String ANONYMOUS_STATIC_FUNCTION_NAME = "$applyStatic";
+
+	public static final String EXTENSION_DIR = "jsweet_extension";
 
 	/**
 	 * Default name of the directory where the TypeScript definition files can

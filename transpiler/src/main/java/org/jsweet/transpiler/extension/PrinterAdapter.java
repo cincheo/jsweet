@@ -611,11 +611,8 @@ public class PrinterAdapter {
 	 *         ignored by the printer
 	 */
 	public String needsImport(ImportElement importElement, String qualifiedName) {
-		if (importElement.isStatic()) {
-			return null;
-		} else {
-			return getRootRelativeName(importElement.getImportedType());
-		}
+		return parentAdapter == null ? getRootRelativeName(importElement.getImportedType())
+				: parentAdapter.needsImport(importElement, qualifiedName);
 	}
 
 	/**

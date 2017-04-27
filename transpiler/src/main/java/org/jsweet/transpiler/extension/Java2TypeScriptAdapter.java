@@ -316,7 +316,11 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 				}
 			}
 		}
-		return super.needsImport(importElement, qualifiedName);
+		if (importElement.isStatic()) {
+			return null;
+		} else {
+			return super.needsImport(importElement, qualifiedName);
+		}
 	}
 
 	private boolean isWithinGlobals(String targetClassName) {

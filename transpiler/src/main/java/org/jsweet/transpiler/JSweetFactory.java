@@ -65,21 +65,38 @@ public class JSweetFactory {
 				List<?> adapters = (List<?>) context.options.getConfiguration().get("adapters");
 				for (int i = adapters.size() - 1; i >= 0; i--) {
 					if (adapters.get(i) instanceof String) {
-						adapterClass = Thread.currentThread().getContextClassLoader()
-								.loadClass((String) adapters.get(i));
+						adapterClass = PrinterAdapter.class.getClassLoader().loadClass((String) adapters.get(i));
 						if (i == adapters.size() - 1) {
-							Constructor<?> constructor = adapterClass.getConstructor(JSweetContext.class);
+							Constructor<?> constructor = null;
+							try {
+								constructor = adapterClass.getConstructor(JSweetContext.class);
+							} catch (Exception e) {
+								// swallow
+							}
 							if (constructor == null) {
+								logger.debug("constructing default adapter");
 								adapter = context.isUsingJavaRuntime() ? new Java2TypeScriptAdapter(context)
 										: new RemoveJavaDependenciesAdapter(context);
+								try {
+									constructor = adapterClass.getConstructor(PrinterAdapter.class);
+								} catch (Exception e) {
+									// swallow
+								}
+								if (constructor != null) {
+									adapter = (PrinterAdapter) constructor.newInstance(adapter);
+								} else {
+									throw new RuntimeException("wrong adapter class " + adapterClass.getName()
+											+ ": the last adapter must be chainable or be the root adapter (see the PrinterAdapter API)");
+								}
+
 							} else {
 								adapter = (PrinterAdapter) constructor.newInstance(context);
 							}
 						} else {
 							Constructor<?> constructor = adapterClass.getConstructor(PrinterAdapter.class);
 							if (constructor == null) {
-								throw new RuntimeException(
-										"a chainable adapter must define a constructor accepting a parent adapter");
+								throw new RuntimeException("wrong adapter class " + adapterClass.getName()
+										+ ": a chainable adapter must define a constructor accepting a parent adapter");
 							} else {
 								adapter = (PrinterAdapter) constructor.newInstance(adapter);
 							}
@@ -87,6 +104,8 @@ public class JSweetFactory {
 					}
 				}
 				return adapter;
+			} catch (RuntimeException e) {
+				throw e;
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}

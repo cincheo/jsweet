@@ -177,4 +177,9 @@ public interface JSweetOptions {
 	 */
 	boolean isDebugMode();
 	
+	/**
+	 * If true, JSweet has been launched in verbose mode.
+	 */
+	boolean isVerbose();
+	
 }

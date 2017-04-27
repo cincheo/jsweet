@@ -52,9 +52,12 @@ import javax.tools.JavaFileObject;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Level;
+import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.candy.CandyProcessor;
+import org.jsweet.transpiler.extension.ExtensionManager;
 import org.jsweet.transpiler.extension.PrinterAdapter;
 import org.jsweet.transpiler.util.AbstractTreePrinter;
 import org.jsweet.transpiler.util.DirectedGraph;
@@ -255,7 +258,7 @@ public class JSweetTranspiler implements JSweetOptions {
 				@SuppressWarnings("unchecked")
 				Map<String, Object> fromJson = new Gson().fromJson(FileUtils.readFileToString(confFile), Map.class);
 				configuration = fromJson;
-				System.out.println(configuration);
+				logger.debug("configuration: " + configuration);
 			} catch (Exception e) {
 				logger.warn("error reading configuration file", e);
 			}
@@ -300,6 +303,8 @@ public class JSweetTranspiler implements JSweetOptions {
 			throw new RuntimeException("cannot locate output dirs", e);
 		}
 		this.classPath = classPath == null ? System.getProperty("java.class.path") : classPath;
+		this.classPath = JSweetConfig.EXTENSION_DIR + File.pathSeparator + this.classPath;
+
 		logger.info("creating transpiler version " + JSweetConfig.getVersionNumber() + " (build date: "
 				+ JSweetConfig.getBuildDate() + ")");
 		logger.info("curent dir: " + new File(".").getAbsolutePath());
@@ -310,6 +315,8 @@ public class JSweetTranspiler implements JSweetOptions {
 		logger.debug("compile classpath: " + classPath);
 		logger.debug("runtime classpath: " + System.getProperty("java.class.path"));
 		this.candiesProcessor = new CandyProcessor(this.workingDir, classPath, extractedCandyJavascriptDir);
+
+		new ExtensionManager(JSweetConfig.EXTENSION_DIR).checkAndCompileExtension(this.workingDir, classPath);
 	}
 
 	/**
@@ -1875,4 +1882,14 @@ public class JSweetTranspiler implements JSweetOptions {
 	public void setDebugMode(boolean debugMode) {
 		this.debugMode = debugMode;
 	}
+
+	@Override
+	public boolean isVerbose() {
+		return LogManager.getLogger("org.jsweet").getLevel() == Level.ALL;
+	}
+
+	public void setVerbose(boolean verbose) {
+		LogManager.getLogger("org.jsweet").setLevel(Level.ALL);
+	}
+
 }
