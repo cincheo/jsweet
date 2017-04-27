@@ -82,7 +82,7 @@ public class CandyProcessor {
 	private static final String CANDIES_DEFAULT_JS_DIR_NAME = CANDIES_DIR_NAME + File.separator + "js";
 
 	private File candiesSourceDir;
-	private File candiesStoreFile;
+	private File candyStoreFile;
 	private File candiesTsdefsDir;
 	private File candiesJavascriptOutDir;
 	private File workingDir;
@@ -113,7 +113,7 @@ public class CandyProcessor {
 		this.classPath = StringUtils.join(cp, File.pathSeparator);
 		logger.info("candies processor classpath: " + this.classPath);
 		candiesSourceDir = new File(workingDir, CANDIES_SOURCES_DIR_NAME);
-		candiesStoreFile = new File(workingDir, CANDIES_STORE_FILE_NAME);
+		candyStoreFile = new File(workingDir, CANDIES_STORE_FILE_NAME);
 		candiesTsdefsDir = new File(workingDir, CANDIES_TSDEFS_DIR_NAME);
 
 		setCandiesJavascriptOutDir(extractedCandiesJavascriptDir);
@@ -155,13 +155,13 @@ public class CandyProcessor {
 			return;
 		}
 
-		this.candiesStore = newStore;
-		logger.info("candies changed, processing candies: " + this.candiesStore);
+		this.candyStore = newStore;
+		logger.info("candies changed, processing candies: " + this.candyStore);
 
 		try {
 			extractCandies(newCandiesDescriptors);
 
-			writeCandiesStore();
+			writeCandyStore();
 
 		} catch (Throwable t) {
 			logger.error("cannot generate candies bundle", t);
@@ -173,10 +173,10 @@ public class CandyProcessor {
 	 * Returns true if the candy store contains the J4TS candy.
 	 */
 	public boolean isUsingJavaRuntime() {
-		if (candiesStore == null) {
+		if (candyStore == null) {
 			return false;
 		} else {
-			for (CandyDescriptor c : candiesStore.getCandies()) {
+			for (CandyDescriptor c : candyStore.getCandies()) {
 				if (c.name != null && c.name.equals("j4ts")) {
 					logger.info("found j4ts Java runtime in classpath");
 					return true;
@@ -306,37 +306,37 @@ public class CandyProcessor {
 		}
 	}
 
-	private CandyStore candiesStore;
+	private CandyStore candyStore;
 
 	/**
 	 * Cleans the candies store so that it will be read from file next time.
 	 */
 	public void touch() {
-		candiesStore = null;
+		candyStore = null;
 	}
 
 	private CandyStore getCandiesStore() {
-		if (candiesStore == null) {
-			if (candiesStoreFile.exists()) {
+		if (candyStore == null) {
+			if (candyStoreFile.exists()) {
 				try {
-					candiesStore = gson.fromJson(FileUtils.readFileToString(candiesStoreFile), CandyStore.class);
+					candyStore = gson.fromJson(FileUtils.readFileToString(candyStoreFile), CandyStore.class);
 				} catch (Exception e) {
 					logger.error("cannot read candies index", e);
 				}
 			}
 
-			if (candiesStore == null) {
-				candiesStore = new CandyStore();
+			if (candyStore == null) {
+				candyStore = new CandyStore();
 			}
 		}
 
-		return candiesStore;
+		return candyStore;
 	}
 
-	private void writeCandiesStore() {
-		if (candiesStore != null) {
+	private void writeCandyStore() {
+		if (candyStore != null) {
 			try {
-				FileUtils.write(candiesStoreFile, gson.toJson(candiesStore));
+				FileUtils.write(candyStoreFile, gson.toJson(candyStore));
 			} catch (Exception e) {
 				logger.error("cannot read candies index", e);
 			}
