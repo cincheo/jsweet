@@ -641,7 +641,20 @@ public class PrinterAdapter {
 	}
 
 	/**
-	 * Gets the printer attached to this adapter.
+	 * Gets the printer on which rely the adapter (this is not recommended).
+	 * 
+	 * <p>
+	 * Accessing the printer with this method allows the user to access the
+	 * internal javac API directly ({@link com.sun.tools.javac}), which is
+	 * non-standard and may get deprecated in future Java versions. As a
+	 * consequence, to write sustainable adapters, it is not recommended to use
+	 * the printer API.
+	 * 
+	 * <p>
+	 * Instead, use the adapter's API directly, which relies on an abstraction
+	 * of the AST: {@link javax.lang.model} and
+	 * {@link org.jsweet.transpiler.model}. If some feature seems to be missing,
+	 * please contact JSweet.org to help improving this API.
 	 */
 	public AbstractTreePrinter getPrinter() {
 		return printer;

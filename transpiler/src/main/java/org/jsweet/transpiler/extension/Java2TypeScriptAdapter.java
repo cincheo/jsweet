@@ -102,7 +102,6 @@ import com.sun.tools.javac.code.Type.MethodType;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCEnhancedForLoop;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
-import com.sun.tools.javac.tree.JCTree.JCExpressionStatement;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCImport;
@@ -124,11 +123,25 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 		return (Java2TypeScriptTranslator) super.getPrinter();
 	}
 
+	/**
+	 * Creates a root adapter (with no parent).
+	 * 
+	 * @param context
+	 *            the transpilation context
+	 */
 	public Java2TypeScriptAdapter(JSweetContext context) {
 		super(context);
 		init();
 	}
 
+	/**
+	 * Creates a new adapter that will try delegate to the given parent adapter
+	 * when not implementing its own behavior.
+	 * 
+	 * @param parentAdapter
+	 *            cannot be null: if no parent you must use the
+	 *            {@link #AbstractPrinterAdapter(JSweetContext)} constructor
+	 */
 	public Java2TypeScriptAdapter(PrinterAdapter parent) {
 		super(parent);
 		init();
