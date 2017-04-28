@@ -46,6 +46,18 @@ public class NativeStringBuilder {
 		
 		trace.push(sb3.toString());
 		
+		trace.push(""+sb3.charAt(1));
+		
+		trace.push(""+sb3.length());
+
+		sb3.deleteCharAt(1);
+
+		trace.push(""+sb3);
+
+		sb3.delete(1, 2);
+
+		trace.push(""+sb3);
+		
 		$export("trace", trace.join(","));
 
 	}

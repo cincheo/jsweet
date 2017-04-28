@@ -93,7 +93,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 
 	private void init() {
 		addTypeMapping(Class.class.getName(), "Function<>");
-		
+
 		extTypesMapping.put(List.class.getName(), "Array");
 		extTypesMapping.put(ArrayList.class.getName(), "Array");
 		extTypesMapping.put(Collection.class.getName(), "Array");
@@ -603,6 +603,27 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 							.print(invocation.getTargetExpression()).print(", ").printArgList(invocation.getArguments())
 							.print(")");
 					return true;
+				case "deleteCharAt":
+					printMacroName(targetMethodName);
+					print("((sb, index) => sb.str = sb.str.substr(0, index) + sb.str.substr(index + 1))(")
+							.print(invocation.getTargetExpression()).print(", ").printArgList(invocation.getArguments())
+							.print(")");
+					return true;
+				case "delete":
+					printMacroName(targetMethodName);
+					print("((sb, i1, i2) => sb.str = sb.str.substr(0, i1) + sb.str.substr(i2))(")
+							.print(invocation.getTargetExpression()).print(", ").printArgList(invocation.getArguments())
+							.print(")");
+					return true;
+				case "length":
+					printMacroName(targetMethodName);
+					print(invocation.getTargetExpression()).print(".str.length");
+					return true;
+				case "charAt":
+					printMacroName(targetMethodName);
+					print(invocation.getTargetExpression()).print(".str.charAt(").print(invocation.getArgument(0))
+							.print(")");
+					return true;
 				case "setLength":
 					printMacroName(targetMethodName);
 					print("((sb, length) => sb.str = sb.str.substring(0, length))(")
@@ -984,7 +1005,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 
 	@Override
 	public boolean substituteInstanceof(String exprStr, ExtendedElement expr, TypeMirror typeMirror) {
-		com.sun.tools.javac.code.Type type = (com.sun.tools.javac.code.Type)typeMirror;
+		com.sun.tools.javac.code.Type type = (com.sun.tools.javac.code.Type) typeMirror;
 		String typeName = type.tsym.getQualifiedName().toString();
 		if (typeName.startsWith("java.") && context.types.isSubtype(type, context.symtab.throwableType)) {
 			print(exprStr, expr);
