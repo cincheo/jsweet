@@ -1056,7 +1056,9 @@ public class JSweetTranspiler implements JSweetOptions {
 		PrintWriter out = new PrintWriter(outputFilePath);
 		try {
 			out.println(sb.toString());
-			out.print(context.getGlobalsMappingString());
+			if (!definitionBundle) {
+				out.print(context.getGlobalsMappingString());
+			}
 			out.print(context.poolFooterStatements());
 			if (definitionBundle && context.getExportedElements() != null) {
 				for (java.util.Map.Entry<String, java.util.List<Symbol>> exportedElements : context
