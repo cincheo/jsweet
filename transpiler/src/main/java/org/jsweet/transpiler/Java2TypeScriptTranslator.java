@@ -2792,8 +2792,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						}
 					}
 				}
-				
-				// var initialization is not allowed in definition 
+
+				// var initialization is not allowed in definition
 				if (!isDefinitionScope && !(ambient || (isTopLevelScope() && isDefinitionScope))
 						&& varDecl.sym.isStatic() && varDecl.init == null) {
 					print(" = ").print(Util.getTypeInitialValue(varDecl.sym.type));
@@ -3628,11 +3628,28 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 									}
 								}
 							}
-							if (statementPrinted) {
-								removeLastChars(2);
+						}
+						if (m instanceof JCMethodDecl) {
+							JCMethodDecl method = (JCMethodDecl) m;
+							if (!method.sym.isConstructor()) {
+								printIndent().print(method.getName() + ": (");
+								for (JCVariableDecl param : method.getParameters()) {
+									print(param.getName() + ", ");
+								}
+								if (!method.getParameters().isEmpty()) {
+									removeLastChars(2);
+								}
+								print(") => ");
+								print(method.body);
+								print(",").println();
+								statementPrinted = true;
 							}
 						}
 					}
+					if (statementPrinted) {
+						removeLastChars(2);
+					}
+
 				}
 				if (!statementPrinted && !initializationBlockFound) {
 					for (Symbol s : clazz.getEnclosedElements()) {

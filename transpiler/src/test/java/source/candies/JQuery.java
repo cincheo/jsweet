@@ -36,18 +36,17 @@ public class JQuery {
 			}
 		};
 
-		// TODO: make this work (see #259)
-		// JQueryAjaxSettings jas2 = new JQueryAjaxSettings() {
-		// {
-		// url = "...";
-		// }
-		//
-		// @Override
-		// public Object success(Object data, String textStatus, JQueryXHR
-		// jqXHR) {
-		// return "...";
-		// }
-		// };
+		// see #259
+		JQueryAjaxSettings jas2 = new JQueryAjaxSettings() {
+			{
+				url = "...";
+			}
+
+			@Override
+			public Object success(Object data, String textStatus, JQueryXHR jqXHR) {
+				return "...";
+			}
+		};
 
 	}
 
