@@ -184,6 +184,7 @@ public class JSweetTranspiler implements JSweetOptions {
 	private File headerFile = null;
 	private boolean debugMode = false;
 	private boolean skipTypeScriptChecks = false;
+	private boolean disableSingleFloatPrecision = false;
 
 	/**
 	 * Manually sets the transpiler to use (or not use) a Java runtime.
@@ -1579,6 +1580,11 @@ public class JSweetTranspiler implements JSweetOptions {
 		this.ecmaTargetVersion = ecmaTargetVersion;
 	}
 
+	@Override
+	public EcmaScriptComplianceLevel getEcmaTargetVersion() {
+		return ecmaTargetVersion;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -1892,6 +1898,15 @@ public class JSweetTranspiler implements JSweetOptions {
 
 	public void setVerbose(boolean verbose) {
 		LogManager.getLogger("org.jsweet").setLevel(Level.ALL);
+	}
+
+	@Override
+	public boolean isDisableSinglePrecisionFloats() {
+		return disableSingleFloatPrecision;
+	}
+
+	public void setDisableSinglePrecisionFloats(boolean disableSinglePrecisionFloats) {
+		this.disableSingleFloatPrecision = disableSinglePrecisionFloats;
 	}
 
 }

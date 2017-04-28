@@ -830,7 +830,7 @@ public class Util {
 	/**
 	 * Returns true is an arithmetic operator.
 	 */
-	public static boolean isArithmeticOperator(Kind kind) {
+	public static boolean isArithmeticOrLogicalOperator(Kind kind) {
 		switch (kind) {
 		case MINUS:
 		case PLUS:
@@ -839,6 +839,21 @@ public class Util {
 		case AND:
 		case OR:
 		case XOR:
+			return true;
+		default:
+			return false;
+		}
+	}
+
+	/**
+	 * Returns true is an arithmetic operator.
+	 */
+	public static boolean isArithmeticOperator(Kind kind) {
+		switch (kind) {
+		case MINUS:
+		case PLUS:
+		case MULTIPLY:
+		case DIVIDE:
 			return true;
 		default:
 			return false;

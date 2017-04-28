@@ -205,6 +205,7 @@ public class JSweetCommandLineLauncher {
 				transpiler.setDeclarationsOutputDir(dtsOutputDir);
 				transpiler.setHeaderFile(jsapArgs.getFile("header"));
 				transpiler.setEcmaTargetVersion(esTarget);
+				transpiler.setDisableSinglePrecisionFloats(jsapArgs.getBoolean("disableSinglePrecisionFloats"));
 
 				transpiler.transpile(transpilationHandler, SourceFile.toSourceFiles(files));
 			} catch (NoClassDefFoundError error) {
@@ -335,6 +336,13 @@ public class JSweetCommandLineLauncher {
 		optionArg.setStringParser(FileStringParser.getParser());
 		optionArg.setRequired(false);
 		jsap.registerParameter(optionArg);
+
+		// Disable single precision floats
+		switchArg = new Switch("disableSinglePrecisionFloats");
+		switchArg.setLongFlag("disableSinglePrecisionFloats");
+		switchArg.setHelp(
+				"By default, for a target version >=ES5, JSweet will force Java floats to be mapped to JavaScript numbers that will be constrained with ES5 Math.fround function. If this option is true, then the calls to Math.fround are erased and the generated program will use the JavaScript default precision (double precision).");
+		jsap.registerParameter(switchArg);
 
 		// Do not generate JavaScript
 		switchArg = new Switch("tsOnly");

@@ -176,10 +176,23 @@ public interface JSweetOptions {
 	 * JavaScript.
 	 */
 	boolean isDebugMode();
-	
+
 	/**
 	 * If true, JSweet has been launched in verbose mode.
 	 */
 	boolean isVerbose();
-	
+
+	/**
+	 * By default, for a target version >=ES5, JSweet will force Java floats to
+	 * be mapped to JavaScript numbers that will be constrained with the
+	 * Math.fround function. If this option is true, then the calls to
+	 * Math.fround are erased and the generated program will use the JavaScript
+	 * default precision (double precision).
+	 */
+	boolean isDisableSinglePrecisionFloats();
+
+	/**
+	 * The targeted ECMAScript version.
+	 */
+	EcmaScriptComplianceLevel getEcmaTargetVersion();
 }

@@ -3941,16 +3941,29 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 	}
 
+	private boolean singlePrecisionFloats() {
+		return !context.options.isDisableSinglePrecisionFloats()
+				&& context.options.getEcmaTargetVersion().higherThan(EcmaScriptComplianceLevel.ES3);
+	}
+
 	@Override
 	public void visitBinary(JCBinary binary) {
+		boolean closeParen = false;
+		boolean truncate = false;
 		if (Util.isIntegral(binary.type) && binary.getKind() == Kind.DIVIDE) {
 			if (binary.type.getKind() == TypeKind.LONG) {
 				print("Math.floor(");
+				closeParen = true;
 			} else {
 				print("(");
+				truncate = true;
 			}
 		}
-		boolean charWrapping = Util.isArithmeticOperator(binary.getKind())
+		if (binary.type.getKind() == TypeKind.FLOAT) {
+			print("(<any>Math).fround(");
+			closeParen = true;
+		}
+		boolean charWrapping = Util.isArithmeticOrLogicalOperator(binary.getKind())
 				|| Util.isComparisonOperator(binary.getKind());
 		boolean actualCharWrapping = false;
 		if (charWrapping && binary.lhs.type.isPrimitive() && context.symtab.charType.tsym == binary.lhs.type.tsym
@@ -3997,12 +4010,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		} else {
 			print(binary.rhs);
 		}
-		if (Util.isIntegral(binary.type) && binary.getKind() == Kind.DIVIDE) {
-			if (binary.type.getKind() == TypeKind.LONG) {
-				print(")");
-			} else {
-				print("|0)");
-			}
+		if (closeParen) {
+			print(")");
+		}
+		if (truncate) {
+			print("|0)");
 		}
 	}
 
@@ -4749,11 +4761,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		} else if (Util.isNumber(assignedType) && expression.type.getTag() == TypeTag.CHAR) {
 			print("(").print(expression).print(").charCodeAt(0)");
 			return true;
-		} else if (assignedType.getTag() == TypeTag.FLOAT && expression.type.getTag() == TypeTag.DOUBLE) {
-			// TODO: fround is only available from ES5 (should skip this or
-			// provide macro)
-			print("((<any>Math).fround?(<any>Math).fround(").print(expression).print("):(").print(expression)
-					.print("))");
+		} else if (singlePrecisionFloats() && assignedType.getTag() == TypeTag.FLOAT
+				&& expression.type.getTag() == TypeTag.DOUBLE) {
+			print("(<any>Math).fround(").print(expression).print(")");
 			return true;
 		} else {
 			if (expression instanceof JCLambda) {
