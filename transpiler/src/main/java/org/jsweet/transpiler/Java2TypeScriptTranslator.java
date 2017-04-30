@@ -1466,7 +1466,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (!globals) {
 			endIndent().printIndent().print("}");
 			if (getContext().options.isSupportGetClass() && !getScope().interfaceScope && !getScope().declareClassScope
-					&& !getScope().enumScope) {
+					&& !getScope().enumScope && !(getScope().enumWrapperClassScope && classdecl.sym.isAnonymous())) {
 				if (!classdecl.sym.isAnonymous()) {
 					println().printIndent().print(classdecl.sym.getSimpleName().toString())
 							.print("[\"" + CLASS_NAME_IN_CONSTRUCTOR + "\"] = ")
@@ -1475,7 +1475,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				Set<String> interfaces = new HashSet<>();
 				context.grabSupportedInterfaceNames(interfaces, classdecl.sym);
 				if (!interfaces.isEmpty()) {
-					println().printIndent().print(name).print("[\"" + INTERFACES_FIELD_NAME + "\"] = ");
+					println().printIndent()
+							.print(getScope().enumWrapperClassScope
+									? classdecl.sym.getSimpleName().toString() : name)
+							.print("[\"" + INTERFACES_FIELD_NAME + "\"] = ");
 					print("[");
 					for (String itf : interfaces) {
 						print("\"").print(itf).print("\",");
