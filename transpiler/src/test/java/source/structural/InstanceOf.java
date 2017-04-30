@@ -43,11 +43,20 @@ public class InstanceOf {
 			}
 		};
 		Interface3 i3 = new Interface3() {
-			{
+			@Override
+			public String m1() {
+				return "m1";
 			}
 		};
 		Interface4 i4 = new Interface4() {
-			{
+			@Override
+			public String m1() {
+				return "m12";
+			}
+
+			@Override
+			public String m2() {
+				return "m2";
 			}
 		};
 
@@ -73,7 +82,10 @@ public class InstanceOf {
 		assert i1 instanceof Interface1;
 		assert i2 instanceof Interface2;
 		assert i3 instanceof Interface3;
+		assert i3.m1().equals("m1");
 		assert i4 instanceof Interface4;
+		assert i4.m1().equals("m12");
+		assert i4.m2().equals("m2");
 	}
 
 }
@@ -95,7 +107,9 @@ abstract class Interface2 extends Interface1 {
 }
 
 interface Interface3 {
+	String m1();
 }
 
 interface Interface4 extends Interface3 {
+	String m2();
 }

@@ -1466,16 +1466,16 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (!globals) {
 			endIndent().printIndent().print("}");
 			if (getContext().options.isSupportGetClass() && !getScope().interfaceScope && !getScope().declareClassScope
-					&& !getScope().enumScope && !classdecl.sym.isAnonymous()) {
-				println().printIndent().print(classdecl.sym.getSimpleName().toString())
-						.print("[\"" + CLASS_NAME_IN_CONSTRUCTOR + "\"] = ")
-						.print("\"" + context.getRootRelativeName(null, classdecl.sym) + "\";");
-
+					&& !getScope().enumScope) {
+				if (!classdecl.sym.isAnonymous()) {
+					println().printIndent().print(classdecl.sym.getSimpleName().toString())
+							.print("[\"" + CLASS_NAME_IN_CONSTRUCTOR + "\"] = ")
+							.print("\"" + context.getRootRelativeName(null, classdecl.sym) + "\";");
+				}
 				Set<String> interfaces = new HashSet<>();
 				context.grabSupportedInterfaceNames(interfaces, classdecl.sym);
 				if (!interfaces.isEmpty()) {
-					println().printIndent().print(classdecl.sym.getSimpleName().toString())
-							.print("[\"" + INTERFACES_FIELD_NAME + "\"] = ");
+					println().printIndent().print(name).print("[\"" + INTERFACES_FIELD_NAME + "\"] = ");
 					print("[");
 					for (String itf : interfaces) {
 						print("\"").print(itf).print("\",");
