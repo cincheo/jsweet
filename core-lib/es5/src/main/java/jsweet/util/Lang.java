@@ -648,4 +648,19 @@ public final class Lang {
 		EXPORTED_VARS.get().put("_exportedVar_" + name, value);
 	}
 
+	/**
+	 * Accesses the current method arguments (<code>arguments</code> implicit variable in
+	 * JavaScript).
+	 */
+	public static final Object[] arguments = null;
+
+	/**
+	 * Accesses the current JavaScript <code>this</code>. Within an object
+	 * scope, <code>$this</code> corresponds to a regular object oriented
+	 * <code>this</code>. Outside on an object (i.e. within a global function),
+	 * <code>$this</code> has the JavaScript meaning, representing the current
+	 * function object.
+	 */
+	public static final Object $this = null;
+
 }
