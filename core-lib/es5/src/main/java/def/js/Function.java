@@ -8,7 +8,7 @@ public class Function extends def.js.Object {
       * @param thisArg The object to be used as the this object.
       * @param argArray A set of arguments to be passed to the function.
       */
-    native public java.lang.Object $apply(java.lang.Object thisArg, java.lang.Object argArray);
+    native public java.lang.Object apply(java.lang.Object thisArg, java.lang.Object argArray);
     /**
       * Calls a method of an object, substituting another object for the current object.
       * @param thisArg The object to be used as the current object.
@@ -37,7 +37,7 @@ public class Function extends def.js.Object {
       * @param thisArg The object to be used as the this object.
       * @param argArray A set of arguments to be passed to the function.
       */
-    native public java.lang.Object $apply(java.lang.Object thisArg);
+    native public java.lang.Object apply(java.lang.Object thisArg);
     native public java.lang.Object caller(java.lang.Object... args);
     protected Function(){}
 }
