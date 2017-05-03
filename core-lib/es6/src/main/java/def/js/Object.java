@@ -10,8 +10,12 @@ public class Object {
 	/** Returns a string representation of an object. */
 	native public java.lang.String toString();
 
+	/** Returns a JavaScript string representation of an object. */
+	@jsweet.lang.Name("toString")
+	native public String toJSString();
+
 	/** Returns a date converted to a string using the current locale. */
-	native public java.lang.String toLocaleString();
+	native public String toLocaleString();
 
 	/** Returns the primitive value of the specified object. */
 	native public java.lang.Object valueOf();
@@ -27,12 +31,12 @@ public class Object {
 	public Object(java.lang.Object value) {
 	}
 
-	native public static java.lang.Object applyStatic();
+	native public static Object $applyStatic();
 
-	native public static java.lang.Object applyStatic(java.lang.Object value);
+	native public static Object $applyStatic(java.lang.Object value);
 
 	/** A reference to the prototype for a class of objects. */
-	public static java.lang.Object prototype;
+	public static Object prototype;
 
 	/**
 	 * Returns the prototype of an object.
@@ -40,7 +44,7 @@ public class Object {
 	 * @param o
 	 *            The object that references the prototype.
 	 */
-	native public static java.lang.Object getPrototypeOf(java.lang.Object o);
+	native public static Object getPrototypeOf(java.lang.Object o);
 
 	/**
 	 * Gets the own property descriptor of the specified object. An own property
@@ -63,7 +67,7 @@ public class Object {
 	 * @param o
 	 *            Object that contains the own properties.
 	 */
-	native public static java.lang.String[] getOwnPropertyNames(java.lang.Object o);
+	native public static Array<String> getOwnPropertyNames(java.lang.Object o);
 
 	/**
 	 * Creates an object that has the specified prototype, and that optionally
@@ -75,7 +79,7 @@ public class Object {
 	 *            JavaScript object that contains one or more property
 	 *            descriptors.
 	 */
-	native public static java.lang.Object create(java.lang.Object o, PropertyDescriptorMap properties);
+	native public static Object create(java.lang.Object o, PropertyDescriptorMap properties);
 
 	/**
 	 * Adds a property to an object, or modifies attributes of an existing
@@ -91,8 +95,23 @@ public class Object {
 	 *            Descriptor for the property. It can be for a data property or
 	 *            an accessor property.
 	 */
-	native public static java.lang.Object defineProperty(java.lang.Object o, java.lang.String p,
-			PropertyDescriptor attributes);
+	native public static Object defineProperty(java.lang.Object o, java.lang.String p, PropertyDescriptor attributes);
+
+	/**
+	 * Adds a property to an object, or modifies attributes of an existing
+	 * property.
+	 * 
+	 * @param o
+	 *            Object on which to add or modify the property. This can be a
+	 *            native JavaScript object (that is, a user-defined object or a
+	 *            built in object) or a DOM object.
+	 * @param p
+	 *            The property name.
+	 * @param attributes
+	 *            Descriptor for the property. It can be for a data property or
+	 *            an accessor property.
+	 */
+	native public static Object defineProperty(java.lang.Object o, String p, PropertyDescriptor attributes);
 
 	/**
 	 * Adds one or more properties to an object, and/or modifies attributes of
@@ -106,7 +125,7 @@ public class Object {
 	 *            objects. Each descriptor object describes a data property or
 	 *            an accessor property.
 	 */
-	native public static java.lang.Object defineProperties(java.lang.Object o, PropertyDescriptorMap properties);
+	native public static Object defineProperties(java.lang.Object o, PropertyDescriptorMap properties);
 
 	/**
 	 * Prevents the modification of attributes of existing properties, and
@@ -169,7 +188,7 @@ public class Object {
 	 *            an object that you created or an existing Document Object
 	 *            Model (DOM) object.
 	 */
-	native public static java.lang.String[] keys(java.lang.Object o);
+	native public static Array<String> keys(java.lang.Object o);
 
 	/**
 	 * Determines whether an object has a property with the specified name.
@@ -200,7 +219,7 @@ public class Object {
 	 *            JavaScript object that contains one or more property
 	 *            descriptors.
 	 */
-	native public static java.lang.Object create(java.lang.Object o);
+	native public static Object create(java.lang.Object o);
 
 	/**
 	 * Determines whether an object has a property with the specified name.
@@ -241,7 +260,16 @@ public class Object {
 	 * @see jsweet.util.Lang#$set(java.lang.String,java.lang.Object)
 	 * @see jsweet.util.Lang#$delete(java.lang.String)
 	 */
-	native public java.lang.Object $get(java.lang.String key);
+	native public <T> T $get(java.lang.String key);
+
+	/**
+	 * Gets the value for the given key. Generates <code>this[key]</code>.
+	 * 
+	 * @see jsweet.util.Lang#$get(String)
+	 * @see jsweet.util.Lang#$set(String,java.lang.Object)
+	 * @see jsweet.util.Lang#$delete(String)
+	 */
+	native public <T> T $get(String key);
 
 	/**
 	 * Sets the value for the given key. Generates <code>this[key]=value</code>.
@@ -253,6 +281,15 @@ public class Object {
 	native public void $set(java.lang.String key, java.lang.Object value);
 
 	/**
+	 * Sets the value for the given key. Generates <code>this[key]=value</code>.
+	 * 
+	 * @see jsweet.util.Lang#$get(String)
+	 * @see jsweet.util.Lang#$set(String,java.lang.Object)
+	 * @see jsweet.util.Lang#$delete(String)
+	 */
+	native public void $set(String key, java.lang.Object value);
+
+	/**
 	 * Deletes the value of the given key. Generates
 	 * <code>delete this[key]</code>.
 	 * 
@@ -260,7 +297,21 @@ public class Object {
 	 * @see jsweet.util.Lang#$set(java.lang.String,java.lang.Object)
 	 * @see jsweet.util.Lang#$delete(java.lang.String)
 	 */
-	native public void $delete(java.lang.String key);
+	native public boolean $delete(java.lang.String key);
 
+	/**
+	 * Deletes the value of the given key. Generates
+	 * <code>delete this[key]</code>.
+	 * 
+	 * @see jsweet.util.Lang#$get(String)
+	 * @see jsweet.util.Lang#$set(String,java.lang.Object)
+	 * @see jsweet.util.Lang#$delete(String)
+	 */
+	native public boolean $delete(String key);
+	
+	/**
+	 * A syntax macro to call super in a constructor, without the regular Java
+	 * constraints (can call super even if not the first statement).
+	 */
 	native public java.lang.Object $super(java.lang.Object... params);
 }

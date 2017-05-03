@@ -1,18 +1,14 @@
 package def.js;
 /** Enables basic storage and retrieval of dates and times. */
 public class Date extends def.js.Object {
-    /** Returns a string representation of a date. The format of the string depends on the locale. */
-    native public java.lang.String toString();
     /** Returns a date as a string value. */
-    native public java.lang.String toDateString();
+    native public String toDateString();
     /** Returns a time as a string value. */
-    native public java.lang.String toTimeString();
-    /** Returns a value as a string value appropriate to the host environment's current locale. */
-    native public java.lang.String toLocaleString();
+    native public String toTimeString();
     /** Returns a date as a string value appropriate to the host environment's current locale. */
-    native public java.lang.String toLocaleDateString();
+    native public String toLocaleDateString();
     /** Returns a time as a string value appropriate to the host environment's current locale. */
-    native public java.lang.String toLocaleTimeString();
+    native public String toLocaleTimeString();
     /** Returns the stored time value in milliseconds since midnight, January 1, 1970 UTC. */
     native public Number valueOf();
     /** Gets the time value in milliseconds. */

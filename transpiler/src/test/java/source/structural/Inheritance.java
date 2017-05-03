@@ -17,7 +17,7 @@
 package source.structural;
 
 import static jsweet.util.Lang.$export;
-import static jsweet.util.Lang.$get;
+import static jsweet.util.Lang.object;
 
 import def.js.Array;
 import jsweet.lang.Interface;
@@ -62,14 +62,14 @@ public class Inheritance extends SuperClass1 {
 		B b = new B();
 		$export("X", b instanceof X);
 		$export("Y", b instanceof Y);
-		$export("s1b", $get(b, "s1"));
-		$export("s2b", $get(b, "s2"));
+		$export("s1b", object(b).$get("s1"));
+		$export("s2b", object(b).$get("s2"));
 		String s = JSON.stringify(b);
 		Object o = JSON.parse(s);
 		// by default, serialization looses types
 		$export("itfo", o instanceof X);
-		$export("s1o", $get(o, "s1"));
-		$export("s2o", $get(o, "s2"));
+		$export("s1o", object(o).$get("s1"));
+		$export("s2o", object(o).$get("s2"));
 	}
 
 }

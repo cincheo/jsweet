@@ -1,7 +1,7 @@
 package def.js;
 import jsweet.util.union.Union3;
 /** Utility class. */
-public class Reflect extends def.js.Object {
+public class Reflect {
     private Reflect(){}
     native public static java.lang.Object applyStatic(Function target, java.lang.Object thisArgument, ArrayLike<?> argumentsList);
     native public static java.lang.Object construct(Function target, ArrayLike<?> argumentsList);
@@ -10,7 +10,7 @@ public class Reflect extends def.js.Object {
     native public static IterableIterator<?> enumerate(java.lang.Object target);
     native public static java.lang.Object get(java.lang.Object target, java.lang.String propertyKey, java.lang.Object receiver);
     native public static PropertyDescriptor getOwnPropertyDescriptor(java.lang.Object target, java.lang.String propertyKey);
-    native public static java.lang.Object getPrototypeOf(java.lang.Object target);
+    native public static Object getPrototypeOf(java.lang.Object target);
     native public static java.lang.Boolean has(java.lang.Object target, java.lang.String propertyKey);
     native public static java.lang.Boolean has(java.lang.Object target, String propertyKey);
     native public static java.lang.Boolean isExtensible(java.lang.Object target);

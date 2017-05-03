@@ -1,9 +1,9 @@
 package def.dom;
 
-import def.js.StringTypes;
-import def.js.StringTypes.cuechange;
-import def.js.StringTypes.error;
-import def.js.StringTypes.load;
+import jsweet.util.StringTypes;
+import jsweet.util.StringTypes.cuechange;
+import jsweet.util.StringTypes.error;
+import jsweet.util.StringTypes.load;
 
 public class TextTrack extends EventTarget {
     public TextTrackCueList activeCues;
@@ -26,15 +26,15 @@ public class TextTrack extends EventTarget {
     public double LOADING;
     public double NONE;
     public double SHOWING;
-    native public void addEventListener(def.js.StringTypes.cuechange type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
-    native public void addEventListener(def.js.StringTypes.error type, java.util.function.Function<ErrorEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
-    native public void addEventListener(def.js.StringTypes.load type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(jsweet.util.StringTypes.cuechange type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(jsweet.util.StringTypes.error type, java.util.function.Function<ErrorEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(jsweet.util.StringTypes.load type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
     native public void addEventListener(java.lang.String type, EventListener listener, java.lang.Boolean useCapture);
     public static TextTrack prototype;
     public TextTrack(){}
-    native public void addEventListener(def.js.StringTypes.cuechange type, java.util.function.Function<Event,java.lang.Object> listener);
-    native public void addEventListener(def.js.StringTypes.error type, java.util.function.Function<ErrorEvent,java.lang.Object> listener);
-    native public void addEventListener(def.js.StringTypes.load type, java.util.function.Function<Event,java.lang.Object> listener);
+    native public void addEventListener(jsweet.util.StringTypes.cuechange type, java.util.function.Function<Event,java.lang.Object> listener);
+    native public void addEventListener(jsweet.util.StringTypes.error type, java.util.function.Function<ErrorEvent,java.lang.Object> listener);
+    native public void addEventListener(jsweet.util.StringTypes.load type, java.util.function.Function<Event,java.lang.Object> listener);
     native public void addEventListener(java.lang.String type, EventListener listener);
     native public void addEventListener(java.lang.String type, EventListenerObject listener, java.lang.Boolean useCapture);
     native public void addEventListener(java.lang.String type, EventListenerObject listener);

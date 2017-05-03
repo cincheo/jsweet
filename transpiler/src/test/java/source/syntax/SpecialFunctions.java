@@ -16,7 +16,6 @@
  */
 package source.syntax;
 
-import static jsweet.util.Lang.$export;
 import static jsweet.util.Lang.$apply;
 import static jsweet.util.Lang.$new;
 

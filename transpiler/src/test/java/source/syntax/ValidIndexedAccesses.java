@@ -17,8 +17,9 @@
 package source.syntax;
 
 import static jsweet.util.Lang.$export;
-import static jsweet.util.Lang.$get;
-import static jsweet.util.Lang.$set;
+import static jsweet.util.Lang.object;
+import static jsweet.util.Globals.$get;
+import static jsweet.util.Globals.$set;
 
 import def.js.Date;
 import jsweet.lang.Interface;
@@ -28,35 +29,49 @@ public class ValidIndexedAccesses {
 	{
 		$get(this, "a");
 		$set(this, "a", "value");
-		jsweet.util.Lang.$get(this, "a");
-		jsweet.util.Lang.$set(this, "a", "value");
+		jsweet.util.Globals.$get(this, "a");
+		jsweet.util.Globals.$set(this, "a", "value");
+		object(this).$get("a");
+		object(this).$set("a", "value");
+		jsweet.util.Lang.object(this).$get("a");
+		jsweet.util.Lang.object(this).$set("a", "value");
 	}
 
 	public ValidIndexedAccesses() {
 		$get(this, "a");
 		$set(this, "a", "value");
-		jsweet.util.Lang.$get(this, "a");
-		jsweet.util.Lang.$set(this, "a", "value");
+		jsweet.util.Globals.$get(this, "a");
+		jsweet.util.Globals.$set(this, "a", "value");
+		object(this).$get("a");
+		object(this).$set("a", "value");
+		jsweet.util.Lang.object(this).$get("a");
+		jsweet.util.Lang.object(this).$set("a", "value");
 	}
 
 	public void m() {
 		$get(this, "a");
 		$set(this, "a", "value");
-		jsweet.util.Lang.$get(this, "a");
-		jsweet.util.Lang.$set(this, "a", "value");
+		jsweet.util.Globals.$get(this, "a");
+		jsweet.util.Globals.$set(this, "a", "value");
+		object(this).$get("a");
+		object(this).$set("a", "value");
+		jsweet.util.Lang.object(this).$get("a");
+		jsweet.util.Lang.object(this).$set("a", "value");
 		ValidIndexedAccesses2 o1 = new ValidIndexedAccesses2();
 		o1.$get("a");
 		o1.$set("a", "value");
 		new ValidIndexedAccesses2() {
 			{
 				$set("a", "value");
-				jsweet.util.Lang.$set(this, "a2", "value");
+				jsweet.util.Globals.$set(this, "a2", "value");
 			}
 		};
 		new ValidIndexedAccesses() {
 			{
 				$set(this, "a", "value");
-				jsweet.util.Lang.$set(this, "a2", "value");
+				jsweet.util.Globals.$set(this, "a2", "value");
+				object(this).$set("a", "value");
+				jsweet.util.Lang.object(this).$set("a", "value");
 			}
 		};
 
@@ -66,7 +81,9 @@ public class ValidIndexedAccesses {
 		new ValidIndexedAccesses() {
 			{
 				$set(this, "a", "value");
-				jsweet.util.Lang.$set(this, "a", "value");
+				jsweet.util.Globals.$set(this, "a", "value");
+				object(this).$set("a", "value");
+				jsweet.util.Lang.object(this).$set("a", "value");
 			}
 		};
 	}
@@ -92,8 +109,10 @@ public class ValidIndexedAccesses {
 		Object validAccesses2 = new Object();
 
 		$set(validAccesses2, "field4", "value4");
-
+		object(validAccesses2).$set("field5", "value5");
+		
 		$export("field4", $get(validAccesses2, "field4"));
+		$export("field5", object(validAccesses2).$get("field5"));
 
 	}
 }
@@ -103,22 +122,22 @@ class ValidIndexedAccesses2 extends def.js.Object {
 	{
 		$get("a");
 		$set("a", "value");
-		jsweet.util.Lang.$get(this, "a");
-		jsweet.util.Lang.$set(this, "a", "value");
+		jsweet.util.Globals.$get(this, "a");
+		jsweet.util.Globals.$set(this, "a", "value");
 	}
 
 	public ValidIndexedAccesses2() {
 		$get("a");
 		$set("a", "value");
-		jsweet.util.Lang.$get(this, "a");
-		jsweet.util.Lang.$set(this, "a", "value");
+		jsweet.util.Globals.$get(this, "a");
+		jsweet.util.Globals.$set(this, "a", "value");
 	}
 
 	public void m() {
 		$get("a");
 		$set("a", "value");
-		jsweet.util.Lang.$get(this, "a");
-		jsweet.util.Lang.$set(this, "a", "value");
+		jsweet.util.Globals.$get(this, "a");
+		jsweet.util.Globals.$set(this, "a", "value");
 		Test t = new Test() {
 			{
 			}

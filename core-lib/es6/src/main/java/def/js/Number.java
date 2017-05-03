@@ -86,12 +86,6 @@ public class Number extends def.js.Object {
     native public java.lang.String toLocaleString(java.lang.String[] locales);
     /**
       * Converts a number to a string by using the current or specified locale. 
-      * @param locales An array of locale strings that contain one or more language or locale tags. If you include more than one locale string, list them in descending order of priority so that the first entry is the preferred locale. If you omit this parameter, the default locale of the JavaScript runtime is used.
-      * @param options An object that contains one or more properties that specify comparison options.
-      */
-    native public java.lang.String toLocaleString();
-    /**
-      * Converts a number to a string by using the current or specified locale. 
       * @param locale Locale tag. If you omit this parameter, the default locale of the JavaScript runtime is used.
       * @param options An object that contains one or more properties that specify comparison options.
       */

@@ -3,7 +3,7 @@ package def.dom;
 import def.js.Iterable;
 
 @jsweet.lang.SyntacticIterable
-public class NodeList extends Iterable<Node> {
+public class NodeList extends Iterable<Node> implements java.lang.Iterable<Node> {
     public double length;
     native public Node item(double index);
     native public Node $get(double index);

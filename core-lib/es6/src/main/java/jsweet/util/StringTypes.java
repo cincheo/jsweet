@@ -1,19 +1,3 @@
-/* 
- * JSweet - http://www.jsweet.org
- * Copyright (C) 2015 CINCHEO SAS <renaud.pawlak@cincheo.fr>
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *     http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package jsweet.util;
 
 public interface StringTypes {
@@ -2024,21 +2008,38 @@ public interface StringTypes {
 	public static jsweet.util.StringTypes.xmp xmp = null;
 
 	/**
-	 * Generated to type the string "http:__www.w3.org_2000_svg".
+	 * Generated to type the string "article".
 	 * 
 	 * @exclude
 	 */
-	@jsweet.lang.StringType("http:__www.w3.org_2000_svg")
-	public interface http___www_w3_org_2000_svg {
+	@jsweet.lang.StringType
+	public interface article {
 	}
 
 	/**
-	 * Generated to type the string "http:__www.w3.org_2000_svg".
+	 * Generated to type the string "article".
 	 * 
 	 * @exclude
 	 */
-	@jsweet.lang.StringType("http:__www.w3.org_2000_svg")
-	public static jsweet.util.StringTypes.http___www_w3_org_2000_svg http___www_w3_org_2000_svg = null;
+	@jsweet.lang.StringType
+	public static jsweet.util.StringTypes.article article = null;
+
+	/**
+	 * Generated to type the string "aside".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public interface aside {
+	}
+
+	/**
+	 * Generated to type the string "aside".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public static jsweet.util.StringTypes.aside aside = null;
 
 	/**
 	 * Generated to type the string "circle".
@@ -2058,38 +2059,21 @@ public interface StringTypes {
 	public static jsweet.util.StringTypes.circle circle = null;
 
 	/**
-	 * Generated to type the string "clipPath".
+	 * Generated to type the string "clippath".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public interface clipPath {
+	public interface clippath {
 	}
 
 	/**
-	 * Generated to type the string "clipPath".
+	 * Generated to type the string "clippath".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.clipPath clipPath = null;
-
-	/**
-	 * Generated to type the string "componentTransferFunction".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public interface componentTransferFunction {
-	}
-
-	/**
-	 * Generated to type the string "componentTransferFunction".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.componentTransferFunction componentTransferFunction = null;
+	public static jsweet.util.StringTypes.clippath clippath = null;
 
 	/**
 	 * Generated to type the string "defs".
@@ -2143,905 +2127,412 @@ public interface StringTypes {
 	public static jsweet.util.StringTypes.ellipse ellipse = null;
 
 	/**
-	 * Generated to type the string "feBlend".
+	 * Generated to type the string "feblend".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public interface feBlend {
+	public interface feblend {
 	}
 
 	/**
-	 * Generated to type the string "feBlend".
+	 * Generated to type the string "feblend".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.feBlend feBlend = null;
+	public static jsweet.util.StringTypes.feblend feblend = null;
 
 	/**
-	 * Generated to type the string "feColorMatrix".
+	 * Generated to type the string "fecolormatrix".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public interface feColorMatrix {
+	public interface fecolormatrix {
 	}
 
 	/**
-	 * Generated to type the string "feColorMatrix".
+	 * Generated to type the string "fecolormatrix".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.feColorMatrix feColorMatrix = null;
+	public static jsweet.util.StringTypes.fecolormatrix fecolormatrix = null;
 
 	/**
-	 * Generated to type the string "feComponentTransfer".
+	 * Generated to type the string "fecomponenttransfer".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public interface feComponentTransfer {
+	public interface fecomponenttransfer {
 	}
 
 	/**
-	 * Generated to type the string "feComponentTransfer".
+	 * Generated to type the string "fecomponenttransfer".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.feComponentTransfer feComponentTransfer = null;
+	public static jsweet.util.StringTypes.fecomponenttransfer fecomponenttransfer = null;
 
 	/**
-	 * Generated to type the string "feComposite".
+	 * Generated to type the string "fecomposite".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public interface feComposite {
+	public interface fecomposite {
 	}
 
 	/**
-	 * Generated to type the string "feComposite".
+	 * Generated to type the string "fecomposite".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.feComposite feComposite = null;
+	public static jsweet.util.StringTypes.fecomposite fecomposite = null;
 
 	/**
-	 * Generated to type the string "feConvolveMatrix".
+	 * Generated to type the string "feconvolvematrix".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public interface feConvolveMatrix {
+	public interface feconvolvematrix {
 	}
 
 	/**
-	 * Generated to type the string "feConvolveMatrix".
+	 * Generated to type the string "feconvolvematrix".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.feConvolveMatrix feConvolveMatrix = null;
+	public static jsweet.util.StringTypes.feconvolvematrix feconvolvematrix = null;
 
 	/**
-	 * Generated to type the string "feDiffuseLighting".
+	 * Generated to type the string "fediffuselighting".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public interface feDiffuseLighting {
+	public interface fediffuselighting {
 	}
 
 	/**
-	 * Generated to type the string "feDiffuseLighting".
+	 * Generated to type the string "fediffuselighting".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.feDiffuseLighting feDiffuseLighting = null;
+	public static jsweet.util.StringTypes.fediffuselighting fediffuselighting = null;
 
 	/**
-	 * Generated to type the string "feDisplacementMap".
+	 * Generated to type the string "fedisplacementmap".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public interface feDisplacementMap {
+	public interface fedisplacementmap {
 	}
 
 	/**
-	 * Generated to type the string "feDisplacementMap".
+	 * Generated to type the string "fedisplacementmap".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.feDisplacementMap feDisplacementMap = null;
+	public static jsweet.util.StringTypes.fedisplacementmap fedisplacementmap = null;
 
 	/**
-	 * Generated to type the string "feDistantLight".
+	 * Generated to type the string "fedistantlight".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public interface feDistantLight {
+	public interface fedistantlight {
 	}
 
 	/**
-	 * Generated to type the string "feDistantLight".
+	 * Generated to type the string "fedistantlight".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.feDistantLight feDistantLight = null;
+	public static jsweet.util.StringTypes.fedistantlight fedistantlight = null;
 
 	/**
-	 * Generated to type the string "feFlood".
+	 * Generated to type the string "feflood".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public interface feFlood {
+	public interface feflood {
 	}
 
 	/**
-	 * Generated to type the string "feFlood".
+	 * Generated to type the string "feflood".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.feFlood feFlood = null;
+	public static jsweet.util.StringTypes.feflood feflood = null;
 
 	/**
-	 * Generated to type the string "feFuncA".
+	 * Generated to type the string "fefunca".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public interface feFuncA {
+	public interface fefunca {
 	}
 
 	/**
-	 * Generated to type the string "feFuncA".
+	 * Generated to type the string "fefunca".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.feFuncA feFuncA = null;
+	public static jsweet.util.StringTypes.fefunca fefunca = null;
 
 	/**
-	 * Generated to type the string "feFuncB".
+	 * Generated to type the string "fefuncb".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public interface feFuncB {
+	public interface fefuncb {
 	}
 
 	/**
-	 * Generated to type the string "feFuncB".
+	 * Generated to type the string "fefuncb".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.feFuncB feFuncB = null;
+	public static jsweet.util.StringTypes.fefuncb fefuncb = null;
 
 	/**
-	 * Generated to type the string "feFuncG".
+	 * Generated to type the string "fefuncg".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public interface feFuncG {
+	public interface fefuncg {
 	}
 
 	/**
-	 * Generated to type the string "feFuncG".
+	 * Generated to type the string "fefuncg".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.feFuncG feFuncG = null;
+	public static jsweet.util.StringTypes.fefuncg fefuncg = null;
 
 	/**
-	 * Generated to type the string "feFuncR".
+	 * Generated to type the string "fefuncr".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public interface feFuncR {
+	public interface fefuncr {
 	}
 
 	/**
-	 * Generated to type the string "feFuncR".
+	 * Generated to type the string "fefuncr".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.feFuncR feFuncR = null;
+	public static jsweet.util.StringTypes.fefuncr fefuncr = null;
 
 	/**
-	 * Generated to type the string "feGaussianBlur".
+	 * Generated to type the string "fegaussianblur".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public interface feGaussianBlur {
+	public interface fegaussianblur {
 	}
 
 	/**
-	 * Generated to type the string "feGaussianBlur".
+	 * Generated to type the string "fegaussianblur".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.feGaussianBlur feGaussianBlur = null;
+	public static jsweet.util.StringTypes.fegaussianblur fegaussianblur = null;
 
 	/**
-	 * Generated to type the string "feImage".
+	 * Generated to type the string "feimage".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public interface feImage {
+	public interface feimage {
 	}
 
 	/**
-	 * Generated to type the string "feImage".
+	 * Generated to type the string "feimage".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.feImage feImage = null;
+	public static jsweet.util.StringTypes.feimage feimage = null;
 
 	/**
-	 * Generated to type the string "feMerge".
+	 * Generated to type the string "femerge".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public interface feMerge {
+	public interface femerge {
 	}
 
 	/**
-	 * Generated to type the string "feMerge".
+	 * Generated to type the string "femerge".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.feMerge feMerge = null;
+	public static jsweet.util.StringTypes.femerge femerge = null;
 
 	/**
-	 * Generated to type the string "feMergeNode".
+	 * Generated to type the string "femergenode".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public interface feMergeNode {
+	public interface femergenode {
 	}
 
 	/**
-	 * Generated to type the string "feMergeNode".
+	 * Generated to type the string "femergenode".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.feMergeNode feMergeNode = null;
+	public static jsweet.util.StringTypes.femergenode femergenode = null;
 
 	/**
-	 * Generated to type the string "feMorphology".
+	 * Generated to type the string "femorphology".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public interface feMorphology {
+	public interface femorphology {
 	}
 
 	/**
-	 * Generated to type the string "feMorphology".
+	 * Generated to type the string "femorphology".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.feMorphology feMorphology = null;
+	public static jsweet.util.StringTypes.femorphology femorphology = null;
 
 	/**
-	 * Generated to type the string "feOffset".
+	 * Generated to type the string "feoffset".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public interface feOffset {
+	public interface feoffset {
 	}
 
 	/**
-	 * Generated to type the string "feOffset".
+	 * Generated to type the string "feoffset".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.feOffset feOffset = null;
+	public static jsweet.util.StringTypes.feoffset feoffset = null;
 
 	/**
-	 * Generated to type the string "fePointLight".
+	 * Generated to type the string "fepointlight".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public interface fePointLight {
+	public interface fepointlight {
 	}
 
 	/**
-	 * Generated to type the string "fePointLight".
+	 * Generated to type the string "fepointlight".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.fePointLight fePointLight = null;
+	public static jsweet.util.StringTypes.fepointlight fepointlight = null;
 
 	/**
-	 * Generated to type the string "feSpecularLighting".
+	 * Generated to type the string "fespecularlighting".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public interface feSpecularLighting {
+	public interface fespecularlighting {
 	}
 
 	/**
-	 * Generated to type the string "feSpecularLighting".
+	 * Generated to type the string "fespecularlighting".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.feSpecularLighting feSpecularLighting = null;
+	public static jsweet.util.StringTypes.fespecularlighting fespecularlighting = null;
 
 	/**
-	 * Generated to type the string "feSpotLight".
+	 * Generated to type the string "fespotlight".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public interface feSpotLight {
+	public interface fespotlight {
 	}
 
 	/**
-	 * Generated to type the string "feSpotLight".
+	 * Generated to type the string "fespotlight".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.feSpotLight feSpotLight = null;
+	public static jsweet.util.StringTypes.fespotlight fespotlight = null;
 
 	/**
-	 * Generated to type the string "feTile".
+	 * Generated to type the string "fetile".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public interface feTile {
+	public interface fetile {
 	}
 
 	/**
-	 * Generated to type the string "feTile".
+	 * Generated to type the string "fetile".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.feTile feTile = null;
+	public static jsweet.util.StringTypes.fetile fetile = null;
 
 	/**
-	 * Generated to type the string "feTurbulence".
+	 * Generated to type the string "feturbulence".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public interface feTurbulence {
+	public interface feturbulence {
 	}
 
 	/**
-	 * Generated to type the string "feTurbulence".
+	 * Generated to type the string "feturbulence".
 	 * 
 	 * @exclude
 	 */
 	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.feTurbulence feTurbulence = null;
-
-	/**
-	 * Generated to type the string "filter".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public interface filter {
-	}
-
-	/**
-	 * Generated to type the string "filter".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.filter filter = null;
-
-	/**
-	 * Generated to type the string "foreignObject".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public interface foreignObject {
-	}
-
-	/**
-	 * Generated to type the string "foreignObject".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.foreignObject foreignObject = null;
-
-	/**
-	 * Generated to type the string "g".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public interface g {
-	}
-
-	/**
-	 * Generated to type the string "g".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.g g = null;
-
-	/**
-	 * Generated to type the string "image".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public interface image {
-	}
-
-	/**
-	 * Generated to type the string "image".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.image image = null;
-
-	/**
-	 * Generated to type the string "gradient".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public interface gradient {
-	}
-
-	/**
-	 * Generated to type the string "gradient".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.gradient gradient = null;
-
-	/**
-	 * Generated to type the string "line".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public interface line {
-	}
-
-	/**
-	 * Generated to type the string "line".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.line line = null;
-
-	/**
-	 * Generated to type the string "linearGradient".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public interface linearGradient {
-	}
-
-	/**
-	 * Generated to type the string "linearGradient".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.linearGradient linearGradient = null;
-
-	/**
-	 * Generated to type the string "marker".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public interface marker {
-	}
-
-	/**
-	 * Generated to type the string "marker".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.marker marker = null;
-
-	/**
-	 * Generated to type the string "mask".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public interface mask {
-	}
-
-	/**
-	 * Generated to type the string "mask".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.mask mask = null;
-
-	/**
-	 * Generated to type the string "path".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public interface path {
-	}
-
-	/**
-	 * Generated to type the string "path".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.path path = null;
-
-	/**
-	 * Generated to type the string "metadata".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public interface metadata {
-	}
-
-	/**
-	 * Generated to type the string "metadata".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.metadata metadata = null;
-
-	/**
-	 * Generated to type the string "pattern".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public interface pattern {
-	}
-
-	/**
-	 * Generated to type the string "pattern".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.pattern pattern = null;
-
-	/**
-	 * Generated to type the string "polygon".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public interface polygon {
-	}
-
-	/**
-	 * Generated to type the string "polygon".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.polygon polygon = null;
-
-	/**
-	 * Generated to type the string "polyline".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public interface polyline {
-	}
-
-	/**
-	 * Generated to type the string "polyline".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.polyline polyline = null;
-
-	/**
-	 * Generated to type the string "radialGradient".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public interface radialGradient {
-	}
-
-	/**
-	 * Generated to type the string "radialGradient".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.radialGradient radialGradient = null;
-
-	/**
-	 * Generated to type the string "rect".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public interface rect {
-	}
-
-	/**
-	 * Generated to type the string "rect".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.rect rect = null;
-
-	/**
-	 * Generated to type the string "svg".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public interface svg {
-	}
-
-	/**
-	 * Generated to type the string "svg".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.svg svg = null;
-
-	/**
-	 * Generated to type the string "stop".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public interface stop {
-	}
-
-	/**
-	 * Generated to type the string "stop".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.stop stop = null;
-
-	/**
-	 * Generated to type the string "switch".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType("switch")
-	public interface Switch {
-	}
-
-	/**
-	 * Generated to type the string "switch".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType("switch")
-	public static jsweet.util.StringTypes.Switch Switch = null;
-
-	/**
-	 * Generated to type the string "symbol".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public interface symbol {
-	}
-
-	/**
-	 * Generated to type the string "symbol".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.symbol symbol = null;
-
-	/**
-	 * Generated to type the string "tspan".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public interface tspan {
-	}
-
-	/**
-	 * Generated to type the string "tspan".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.tspan tspan = null;
-
-	/**
-	 * Generated to type the string "textContent".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public interface textContent {
-	}
-
-	/**
-	 * Generated to type the string "textContent".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.textContent textContent = null;
-
-	/**
-	 * Generated to type the string "text".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public interface text {
-	}
-
-	/**
-	 * Generated to type the string "text".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.text text = null;
-
-	/**
-	 * Generated to type the string "textPath".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public interface textPath {
-	}
-
-	/**
-	 * Generated to type the string "textPath".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.textPath textPath = null;
-
-	/**
-	 * Generated to type the string "textPositioning".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public interface textPositioning {
-	}
-
-	/**
-	 * Generated to type the string "textPositioning".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.textPositioning textPositioning = null;
-
-	/**
-	 * Generated to type the string "use".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public interface use {
-	}
-
-	/**
-	 * Generated to type the string "use".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.use use = null;
-
-	/**
-	 * Generated to type the string "view".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public interface view {
-	}
-
-	/**
-	 * Generated to type the string "view".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.view view = null;
-
-	/**
-	 * Generated to type the string "article".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public interface article {
-	}
-
-	/**
-	 * Generated to type the string "article".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.article article = null;
-
-	/**
-	 * Generated to type the string "aside".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public interface aside {
-	}
-
-	/**
-	 * Generated to type the string "aside".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.aside aside = null;
+	public static jsweet.util.StringTypes.feturbulence feturbulence = null;
 
 	/**
 	 * Generated to type the string "figcaption".
@@ -3078,6 +2569,23 @@ public interface StringTypes {
 	public static jsweet.util.StringTypes.figure figure = null;
 
 	/**
+	 * Generated to type the string "filter".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public interface filter {
+	}
+
+	/**
+	 * Generated to type the string "filter".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public static jsweet.util.StringTypes.filter filter = null;
+
+	/**
 	 * Generated to type the string "footer".
 	 * 
 	 * @exclude
@@ -3093,6 +2601,40 @@ public interface StringTypes {
 	 */
 	@jsweet.lang.StringType
 	public static jsweet.util.StringTypes.footer footer = null;
+
+	/**
+	 * Generated to type the string "foreignobject".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public interface foreignobject {
+	}
+
+	/**
+	 * Generated to type the string "foreignobject".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public static jsweet.util.StringTypes.foreignobject foreignobject = null;
+
+	/**
+	 * Generated to type the string "g".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public interface g {
+	}
+
+	/**
+	 * Generated to type the string "g".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public static jsweet.util.StringTypes.g g = null;
 
 	/**
 	 * Generated to type the string "header".
@@ -3129,6 +2671,57 @@ public interface StringTypes {
 	public static jsweet.util.StringTypes.hgroup hgroup = null;
 
 	/**
+	 * Generated to type the string "image".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public interface image {
+	}
+
+	/**
+	 * Generated to type the string "image".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public static jsweet.util.StringTypes.image image = null;
+
+	/**
+	 * Generated to type the string "line".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public interface line {
+	}
+
+	/**
+	 * Generated to type the string "line".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public static jsweet.util.StringTypes.line line = null;
+
+	/**
+	 * Generated to type the string "lineargradient".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public interface lineargradient {
+	}
+
+	/**
+	 * Generated to type the string "lineargradient".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public static jsweet.util.StringTypes.lineargradient lineargradient = null;
+
+	/**
 	 * Generated to type the string "mark".
 	 * 
 	 * @exclude
@@ -3144,6 +2737,57 @@ public interface StringTypes {
 	 */
 	@jsweet.lang.StringType
 	public static jsweet.util.StringTypes.mark mark = null;
+
+	/**
+	 * Generated to type the string "marker".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public interface marker {
+	}
+
+	/**
+	 * Generated to type the string "marker".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public static jsweet.util.StringTypes.marker marker = null;
+
+	/**
+	 * Generated to type the string "mask".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public interface mask {
+	}
+
+	/**
+	 * Generated to type the string "mask".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public static jsweet.util.StringTypes.mask mask = null;
+
+	/**
+	 * Generated to type the string "metadata".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public interface metadata {
+	}
+
+	/**
+	 * Generated to type the string "metadata".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public static jsweet.util.StringTypes.metadata metadata = null;
 
 	/**
 	 * Generated to type the string "nav".
@@ -3197,6 +2841,108 @@ public interface StringTypes {
 	public static jsweet.util.StringTypes.noscript noscript = null;
 
 	/**
+	 * Generated to type the string "path".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public interface path {
+	}
+
+	/**
+	 * Generated to type the string "path".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public static jsweet.util.StringTypes.path path = null;
+
+	/**
+	 * Generated to type the string "pattern".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public interface pattern {
+	}
+
+	/**
+	 * Generated to type the string "pattern".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public static jsweet.util.StringTypes.pattern pattern = null;
+
+	/**
+	 * Generated to type the string "polygon".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public interface polygon {
+	}
+
+	/**
+	 * Generated to type the string "polygon".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public static jsweet.util.StringTypes.polygon polygon = null;
+
+	/**
+	 * Generated to type the string "polyline".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public interface polyline {
+	}
+
+	/**
+	 * Generated to type the string "polyline".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public static jsweet.util.StringTypes.polyline polyline = null;
+
+	/**
+	 * Generated to type the string "radialgradient".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public interface radialgradient {
+	}
+
+	/**
+	 * Generated to type the string "radialgradient".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public static jsweet.util.StringTypes.radialgradient radialgradient = null;
+
+	/**
+	 * Generated to type the string "rect".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public interface rect {
+	}
+
+	/**
+	 * Generated to type the string "rect".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public static jsweet.util.StringTypes.rect rect = null;
+
+	/**
 	 * Generated to type the string "section".
 	 * 
 	 * @exclude
@@ -3214,6 +2960,159 @@ public interface StringTypes {
 	public static jsweet.util.StringTypes.section section = null;
 
 	/**
+	 * Generated to type the string "stop".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public interface stop {
+	}
+
+	/**
+	 * Generated to type the string "stop".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public static jsweet.util.StringTypes.stop stop = null;
+
+	/**
+	 * Generated to type the string "svg".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public interface svg {
+	}
+
+	/**
+	 * Generated to type the string "svg".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public static jsweet.util.StringTypes.svg svg = null;
+
+	/**
+	 * Generated to type the string "switch".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType("switch")
+	public interface Switch {
+	}
+
+	/**
+	 * Generated to type the string "switch".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType("switch")
+	public static jsweet.util.StringTypes.Switch Switch = null;
+
+	/**
+	 * Generated to type the string "symbol".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public interface symbol {
+	}
+
+	/**
+	 * Generated to type the string "symbol".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public static jsweet.util.StringTypes.symbol symbol = null;
+
+	/**
+	 * Generated to type the string "text".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public interface text {
+	}
+
+	/**
+	 * Generated to type the string "text".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public static jsweet.util.StringTypes.text text = null;
+
+	/**
+	 * Generated to type the string "textpath".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public interface textpath {
+	}
+
+	/**
+	 * Generated to type the string "textpath".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public static jsweet.util.StringTypes.textpath textpath = null;
+
+	/**
+	 * Generated to type the string "tspan".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public interface tspan {
+	}
+
+	/**
+	 * Generated to type the string "tspan".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public static jsweet.util.StringTypes.tspan tspan = null;
+
+	/**
+	 * Generated to type the string "use".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public interface use {
+	}
+
+	/**
+	 * Generated to type the string "use".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public static jsweet.util.StringTypes.use use = null;
+
+	/**
+	 * Generated to type the string "view".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public interface view {
+	}
+
+	/**
+	 * Generated to type the string "view".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public static jsweet.util.StringTypes.view view = null;
+
+	/**
 	 * Generated to type the string "wbr".
 	 * 
 	 * @exclude
@@ -3229,23 +3128,6 @@ public interface StringTypes {
 	 */
 	@jsweet.lang.StringType
 	public static jsweet.util.StringTypes.wbr wbr = null;
-
-	/**
-	 * Generated to type the string "picture".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public interface picture {
-	}
-
-	/**
-	 * Generated to type the string "picture".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.picture picture = null;
 
 	/**
 	 * Generated to type the string "MSContentZoom".
@@ -5815,57 +5697,6 @@ public interface StringTypes {
 	public static jsweet.util.StringTypes.afterprint afterprint = null;
 
 	/**
-	 * Generated to type the string "beforecopy".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public interface beforecopy {
-	}
-
-	/**
-	 * Generated to type the string "beforecopy".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.beforecopy beforecopy = null;
-
-	/**
-	 * Generated to type the string "beforecut".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public interface beforecut {
-	}
-
-	/**
-	 * Generated to type the string "beforecut".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.beforecut beforecut = null;
-
-	/**
-	 * Generated to type the string "beforepaste".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public interface beforepaste {
-	}
-
-	/**
-	 * Generated to type the string "beforepaste".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.beforepaste beforepaste = null;
-
-	/**
 	 * Generated to type the string "beforeprint".
 	 * 
 	 * @exclude
@@ -5900,57 +5731,6 @@ public interface StringTypes {
 	public static jsweet.util.StringTypes.beforeunload beforeunload = null;
 
 	/**
-	 * Generated to type the string "copy".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public interface copy {
-	}
-
-	/**
-	 * Generated to type the string "copy".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.copy copy = null;
-
-	/**
-	 * Generated to type the string "cuechange".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public interface cuechange {
-	}
-
-	/**
-	 * Generated to type the string "cuechange".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.cuechange cuechange = null;
-
-	/**
-	 * Generated to type the string "cut".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public interface cut {
-	}
-
-	/**
-	 * Generated to type the string "cut".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.cut cut = null;
-
-	/**
 	 * Generated to type the string "hashchange".
 	 * 
 	 * @exclude
@@ -5983,40 +5763,6 @@ public interface StringTypes {
 	 */
 	@jsweet.lang.StringType
 	public static jsweet.util.StringTypes.message message = null;
-
-	/**
-	 * Generated to type the string "mouseenter".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public interface mouseenter {
-	}
-
-	/**
-	 * Generated to type the string "mouseenter".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.mouseenter mouseenter = null;
-
-	/**
-	 * Generated to type the string "mouseleave".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public interface mouseleave {
-	}
-
-	/**
-	 * Generated to type the string "mouseleave".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.mouseleave mouseleave = null;
 
 	/**
 	 * Generated to type the string "offline".
@@ -6102,23 +5848,6 @@ public interface StringTypes {
 	 */
 	@jsweet.lang.StringType
 	public static jsweet.util.StringTypes.pageshow pageshow = null;
-
-	/**
-	 * Generated to type the string "paste".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public interface paste {
-	}
-
-	/**
-	 * Generated to type the string "paste".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.paste paste = null;
 
 	/**
 	 * Generated to type the string "popstate".
@@ -6221,6 +5950,159 @@ public interface StringTypes {
 	 */
 	@jsweet.lang.StringType
 	public static jsweet.util.StringTypes.experimental_webgl experimental_webgl = null;
+
+	/**
+	 * Generated to type the string "beforecopy".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public interface beforecopy {
+	}
+
+	/**
+	 * Generated to type the string "beforecopy".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public static jsweet.util.StringTypes.beforecopy beforecopy = null;
+
+	/**
+	 * Generated to type the string "beforecut".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public interface beforecut {
+	}
+
+	/**
+	 * Generated to type the string "beforecut".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public static jsweet.util.StringTypes.beforecut beforecut = null;
+
+	/**
+	 * Generated to type the string "beforepaste".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public interface beforepaste {
+	}
+
+	/**
+	 * Generated to type the string "beforepaste".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public static jsweet.util.StringTypes.beforepaste beforepaste = null;
+
+	/**
+	 * Generated to type the string "copy".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public interface copy {
+	}
+
+	/**
+	 * Generated to type the string "copy".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public static jsweet.util.StringTypes.copy copy = null;
+
+	/**
+	 * Generated to type the string "cuechange".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public interface cuechange {
+	}
+
+	/**
+	 * Generated to type the string "cuechange".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public static jsweet.util.StringTypes.cuechange cuechange = null;
+
+	/**
+	 * Generated to type the string "cut".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public interface cut {
+	}
+
+	/**
+	 * Generated to type the string "cut".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public static jsweet.util.StringTypes.cut cut = null;
+
+	/**
+	 * Generated to type the string "mouseenter".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public interface mouseenter {
+	}
+
+	/**
+	 * Generated to type the string "mouseenter".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public static jsweet.util.StringTypes.mouseenter mouseenter = null;
+
+	/**
+	 * Generated to type the string "mouseleave".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public interface mouseleave {
+	}
+
+	/**
+	 * Generated to type the string "mouseleave".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public static jsweet.util.StringTypes.mouseleave mouseleave = null;
+
+	/**
+	 * Generated to type the string "paste".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public interface paste {
+	}
+
+	/**
+	 * Generated to type the string "paste".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public static jsweet.util.StringTypes.paste paste = null;
 
 	/**
 	 * Generated to type the string "bounce".
@@ -6359,23 +6241,6 @@ public interface StringTypes {
 	public static jsweet.util.StringTypes.blocked blocked = null;
 
 	/**
-	 * Generated to type the string "success".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public interface success {
-	}
-
-	/**
-	 * Generated to type the string "success".
-	 * 
-	 * @exclude
-	 */
-	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.success success = null;
-
-	/**
 	 * Generated to type the string "upgradeneeded".
 	 * 
 	 * @exclude
@@ -6391,6 +6256,23 @@ public interface StringTypes {
 	 */
 	@jsweet.lang.StringType
 	public static jsweet.util.StringTypes.upgradeneeded upgradeneeded = null;
+
+	/**
+	 * Generated to type the string "success".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public interface success {
+	}
+
+	/**
+	 * Generated to type the string "success".
+	 * 
+	 * @exclude
+	 */
+	@jsweet.lang.StringType
+	public static jsweet.util.StringTypes.success success = null;
 
 	/**
 	 * Generated to type the string "complete".

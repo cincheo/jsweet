@@ -1,7 +1,7 @@
 package def.dom;
 
-import def.js.StringTypes;
-import def.js.StringTypes.MSOrientationChange;
+import jsweet.util.StringTypes;
+import jsweet.util.StringTypes.MSOrientationChange;
 
 public class Screen extends EventTarget {
     public double availHeight;
@@ -23,11 +23,11 @@ public class Screen extends EventTarget {
     native public java.lang.Boolean msLockOrientation(java.lang.String orientations);
     native public java.lang.Boolean msLockOrientation(java.lang.String[] orientations);
     native public void msUnlockOrientation();
-    native public void addEventListener(def.js.StringTypes.MSOrientationChange type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(jsweet.util.StringTypes.MSOrientationChange type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
     native public void addEventListener(java.lang.String type, EventListener listener, java.lang.Boolean useCapture);
     public static Screen prototype;
     public Screen(){}
-    native public void addEventListener(def.js.StringTypes.MSOrientationChange type, java.util.function.Function<Event,java.lang.Object> listener);
+    native public void addEventListener(jsweet.util.StringTypes.MSOrientationChange type, java.util.function.Function<Event,java.lang.Object> listener);
     native public void addEventListener(java.lang.String type, EventListener listener);
     native public void addEventListener(java.lang.String type, EventListenerObject listener, java.lang.Boolean useCapture);
     native public void addEventListener(java.lang.String type, EventListenerObject listener);

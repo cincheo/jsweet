@@ -17,8 +17,11 @@
 package source.structural;
 
 import static def.js.Globals.eval;
+import static def.dom.Globals.console;
 import static jsweet.util.Lang.any;
-import static jsweet.util.Lang.equalsStrict;
+import static jsweet.util.Lang.$strict;
+import static jsweet.util.Globals.equalsLoose;
+import static jsweet.util.Lang.$loose;
 import static jsweet.util.Lang.typeof;
 
 import def.js.Array;
@@ -30,6 +33,7 @@ public class InstanceOf {
 		Object n2 = 2;
 		int n3 = 2;
 		Object s = "test";
+		Object s2 = "2";
 		C2 c = new C2();
 		Object anArray = new int[0];
 		InstanceOf object = new InstanceOf();
@@ -69,7 +73,7 @@ public class InstanceOf {
 		assert !(s instanceof Integer);
 		assert c instanceof C2;
 		assert typeof(n3) == "number";
-		assert equalsStrict(typeof(n3), "number");
+		assert $strict(typeof(n3) == "number");
 
 		assert ((String) eval("typeof n3")) == "number";
 
@@ -86,6 +90,16 @@ public class InstanceOf {
 		assert i4 instanceof Interface4;
 		assert i4.m1().equals("m12");
 		assert i4.m2().equals("m2");
+		
+		console.info("s="+s);
+		console.info("n2="+s);
+		
+		assert $loose(any(2) == any("2"));
+		assert $loose(any(s2) == any(n2));
+		assert equalsLoose(any(s2), any(n2));
+		assert s != null;
+		assert $strict(s != null);
+		
 	}
 
 }

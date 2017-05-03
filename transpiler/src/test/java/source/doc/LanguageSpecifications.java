@@ -66,7 +66,7 @@ public class LanguageSpecifications {
 	public static void basicConcepts_coreTypes_coreJavascript() {
 		String str = "This is a test string";
 		assert str.toLowerCase() == "this is a test string";
-		assert string(str).substr(1) == "his is a test string";
+		assert string(str).substr(1) == string("his is a test string");
 
 		String[] strings = { "a", "b", "c" };
 		array(strings).push("d");

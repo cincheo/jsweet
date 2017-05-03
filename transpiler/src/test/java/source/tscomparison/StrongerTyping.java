@@ -17,7 +17,7 @@
 package source.tscomparison;
 
 import static def.dom.Globals.console;
-import static jsweet.util.Lang.$set;
+import static jsweet.util.Lang.object;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -41,7 +41,7 @@ public class StrongerTyping {
 		func.accept(new Options() {
 			{
 				field = "foo";
-				$set(this, "whatever", "bar");
+				object(this).$set("whatever", "bar");
 			}
 		});
 	}

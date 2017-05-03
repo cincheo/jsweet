@@ -294,8 +294,17 @@ public enum JSweetProblem {
 	/**
 	 * Raised when a cycle is detected in static initializers.
 	 */
-	CYCLE_IN_STATIC_INITIALIZER_DEPENDENCIES(Severity.ERROR);
+	CYCLE_IN_STATIC_INITIALIZER_DEPENDENCIES(Severity.ERROR),
+	/**
+	 * Raised when an insert macro is not used properly.
+	 */
+	MISUSED_INSERT_MACRO(Severity.ERROR),
+	/**
+	 * Raised when a template literal is not used properly.
+	 */
+	MISUSED_TEMPLATE_MACRO(Severity.ERROR);
 
+	
 	private Severity severity;
 
 	/**
@@ -440,6 +449,10 @@ public enum JSweetProblem {
 			return String.format("a cycle was detected in static intializers involving '%s'", params);
 		case INTERNAL_TRANSPILER_ERROR:
 			return String.format("internal transpiler error");
+		case MISUSED_INSERT_MACRO:
+			return String.format("the %s macro argument must be a raw string literal");
+		case MISUSED_TEMPLATE_MACRO:
+			return String.format("the %s macro last argument must be a raw string literal");
 		}
 		return null;
 	}

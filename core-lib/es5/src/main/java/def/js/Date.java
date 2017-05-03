@@ -1,18 +1,16 @@
 package def.js;
 /** Enables basic storage and retrieval of dates and times. */
 public class Date extends def.js.Object {
-    /** Returns a string representation of a date. The format of the string depends on the locale. */
-    native public java.lang.String toString();
     /** Returns a date as a string value. */
-    native public java.lang.String toDateString();
+    native public String toDateString();
     /** Returns a time as a string value. */
-    native public java.lang.String toTimeString();
+    native public String toTimeString();
     /** Returns a value as a string value appropriate to the host environment's current locale. */
-    native public java.lang.String toLocaleString();
+    native public String toLocaleString();
     /** Returns a date as a string value appropriate to the host environment's current locale. */
-    native public java.lang.String toLocaleDateString();
+    native public String toLocaleDateString();
     /** Returns a time as a string value appropriate to the host environment's current locale. */
-    native public java.lang.String toLocaleTimeString();
+    native public String toLocaleTimeString();
     /** Returns the stored time value in milliseconds since midnight, January 1, 1970 UTC. */
     native public Number valueOf();
     /** Gets the time value in milliseconds. */
@@ -145,22 +143,28 @@ public class Date extends def.js.Object {
       */
     native public double setUTCFullYear(double year, double month, double date);
     /** Returns a date converted to a string using Universal Coordinated Time (UTC). */
-    native public java.lang.String toUTCString();
+    native public String toUTCString();
     /** Returns a date as a string value in ISO format. */
-    native public java.lang.String toISOString();
+    native public String toISOString();
     /** Used by the JSON.stringify method to enable the transformation of an object's data for JavaScript Object Notation (JSON) serialization. */
-    native public java.lang.String toJSON(java.lang.Object key);
+    native public String toJSON(java.lang.Object key);
     public Date(){}
     public Date(double value){}
     public Date(java.lang.String value){}
+    public Date(String value){}
     public Date(double year, double month, double date, double hours, double minutes, double seconds, double ms){}
-    native public static java.lang.String applyStatic();
+    native public static String $applyStatic();
     public static final Date prototype=null;
     /**
       * Parses a string containing a date, and returns the number of milliseconds between that date and midnight, January 1, 1970.
       * @param s A date string
       */
     native public static double parse(java.lang.String s);
+    /**
+     * Parses a string containing a date, and returns the number of milliseconds between that date and midnight, January 1, 1970.
+     * @param s A date string
+     */
+   native public static double parse(String s);
     /**
       * Returns the number of milliseconds between midnight, January 1, 1970 Universal Coordinated Time (UTC) (or GMT) and the specified date. 
       * @param year The full year designation is required for cross-century date accuracy. If year is between 0 and 99 is used, then year is assumed to be 1900 + year.

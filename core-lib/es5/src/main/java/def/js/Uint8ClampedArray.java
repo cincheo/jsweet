@@ -209,7 +209,7 @@ public class Uint8ClampedArray extends def.js.Object implements Iterable<java.la
     /**
       * Converts a number to a string by using the current locale. 
       */
-    native public java.lang.String toLocaleString();
+    native public String toLocaleString();
     /**
       * Returns a string representation of an array.
       */

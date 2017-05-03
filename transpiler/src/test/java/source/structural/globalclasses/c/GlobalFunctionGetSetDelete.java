@@ -16,22 +16,20 @@
  */
 package source.structural.globalclasses.c;
 
-import static jsweet.util.Lang.$delete;
-import static jsweet.util.Lang.$get;
-import static jsweet.util.Lang.$set;
+import static jsweet.util.Lang.object;
 
 @SuppressWarnings("all")
 class Globals {
 
 	public static void test() {
 		Object val;
-		val = $get(new GlobalFunctionGetSetDelete(), "ttest");
-		$set(new GlobalFunctionGetSetDelete(), "ttest", val);
-		$delete(new GlobalFunctionGetSetDelete(), "ttest");
-		val = $get(GlobalFunctionGetSetDelete.class, "ttest");
-		$set(GlobalFunctionGetSetDelete.class, "ttest", val);
-		$delete(GlobalFunctionGetSetDelete.class, "ttest");
-		
+		val = object(new GlobalFunctionGetSetDelete()).$get("ttest");
+		object(new GlobalFunctionGetSetDelete()).$set("ttest", val);
+		object(new GlobalFunctionGetSetDelete()).$delete("ttest");
+		val = object(GlobalFunctionGetSetDelete.class).$get("ttest");
+		object(GlobalFunctionGetSetDelete.class).$set("ttest", val);
+		object(GlobalFunctionGetSetDelete.class).$delete("ttest");
+
 		// valid
 		def.js.Object otherObject = null;
 		otherObject.$get("test");

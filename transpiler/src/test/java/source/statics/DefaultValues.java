@@ -11,7 +11,7 @@ public class DefaultValues {
 	public static void main(String[] args) {
 		assert i == 0;
 		assert b == false;
-		assert Lang.equalsStrict(s, null);
+		assert Lang.$strict(s == null);
 	}
 
 }

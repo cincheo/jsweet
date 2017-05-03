@@ -16,7 +16,7 @@
  */
 package source.structural.globalclasses.a;
 
-import static jsweet.util.Lang.$set;
+import static jsweet.util.Lang.object;
 
 class Globals {
 
@@ -35,7 +35,7 @@ public class GlobalsConstructor {
 		
 		new Globals() {
 			{
-				$set(this, "b", 6);
+				object(this).$set("b", 6);
 			}
 		};
 	}

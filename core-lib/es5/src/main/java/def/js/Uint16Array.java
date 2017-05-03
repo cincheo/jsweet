@@ -209,7 +209,7 @@ public class Uint16Array extends def.js.Object implements Iterable<java.lang.Dou
     /**
       * Converts a number to a string by using the current locale. 
       */
-    native public java.lang.String toLocaleString();
+    native public String toLocaleString();
     /**
       * Returns a string representation of an array.
       */

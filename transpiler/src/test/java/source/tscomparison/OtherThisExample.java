@@ -26,19 +26,16 @@ class Operation {
 	}
 
 	public double add(Double number) {
-		return add(number, null, null);
-	}
-
-	public double add(Double number, Double d, Double[] ds) {
 		return number + x;
 	}
+
 }
 
 public class OtherThisExample {
 	public static void main(String[] args) {
 		double[] numbers = {1, 2, 3};
 		Operation twoOperation = new Operation(2);
-		Double[] results = array(numbers).map(twoOperation::add);
+		Double[] results = array(array(numbers).map(twoOperation::add));
 		$export("results", results);
 	}
 }

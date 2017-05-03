@@ -41,17 +41,20 @@ import jsweet.util.union.Union4;
  * 
  * <p>
  * Be aware that these functions have no corresponding implementation. They are
- * used mainly for typing purpose, and most of them can be seen as cast
- * functions, which will be erased during the generation process.
+ * used mainly for typing and syntax purpose. By convention, most functions
+ * starting with $ are syntax macros to support JavaScript syntactic constructs.
+ * Most other functions are cast functions to switch from Java to JavaScript
+ * objects. The later are erased during the generation process or are translated
+ * to TypeScript casts (in any case they have no runtime counterparts).
  * 
  * <p>
- * Programmers should import these helpers most of the time:
- * 
- * <pre>
- * import static jsweet.util.Lang.*;
- * </pre>
+ * To work with JSweet, programmers may import these helpers most of the time,
+ * as well as JavaScript's {@link def.js.Globals} (and DOM's
+ * {@link def.dom.Globals}).
  * 
  * @author Renaud Pawlak
+ * @see def.js.Globals
+ * @see def.dom.Globals
  */
 public final class Lang {
 
@@ -409,72 +412,15 @@ public final class Lang {
 	native public static def.js.Object object(Object object);
 
 	/**
-	 * This helper function allows the programmer to use indexed modification on
-	 * the target object.
-	 * 
-	 * <p>
-	 * It is transpiled to:
-	 * 
-	 * <pre>
-	 * target[key] = value
-	 * </pre>
-	 * 
-	 * @param target
-	 *            the target object
-	 * @param key
-	 *            the key to be set
-	 * @param value
-	 *            the new value
-	 * @return the new value
-	 */
-	native public static <T> T $set(Object target, String key, T value);
-
-	/**
-	 * This helper function allows the programmer to use indexed access on the
-	 * target object.
-	 * 
-	 * <p>
-	 * It is transpiled to:
-	 * 
-	 * <pre>
-	 * target[key]
-	 * </pre>
-	 * 
-	 * @param target
-	 *            the target object
-	 * @param key
-	 *            the key to be set
-	 */
-	native public static <T> T $get(Object target, String key);
-
-	/**
-	 * This helper function allows the programmer to use indexed deletion on the
-	 * target object.
-	 * 
-	 * <p>
-	 * It is transpiled to:
-	 * 
-	 * <pre>
-	 * delete target[key]
-	 * </pre>
-	 * 
-	 * @param target
-	 *            the target object
-	 * @param key
-	 *            the key to be deleted
-	 */
-	native public static void $delete(Object target, String key);
-
-	/**
-	 * This helper function is a shortcut to create an untyped JavaScript
-	 * object/map. It takes a list of key/value pairs, where the keys must be
+	 * This syntax macro should be used to create untyped JavaScript
+	 * objects/maps. It takes a list of key/value pairs, where the keys must be
 	 * string literals and values are objects.
 	 * 
 	 * <p>
 	 * For instance, the expression:
 	 * 
 	 * <pre>
-	 * $object("responsive", true, "defaultSize", "100px")
+	 * $map("responsive", true, "defaultSize", "100px")
 	 * </pre>
 	 * 
 	 * <p>
@@ -487,9 +433,34 @@ public final class Lang {
 	 * @param keyValues
 	 *            the key values pairs that initialize the object (keys must be
 	 *            string literals)
-	 * @return an untyped object
+	 * @return an untyped object containing the given key/value pairs
 	 */
 	native public static def.js.Object $map(Object... keyValues);
+
+	/**
+	 * A syntax macro to construct an array with the given elements.
+	 * 
+	 * <p>
+	 * For instance, the expression:
+	 * 
+	 * <pre>
+	 * $array("a", "b", "c")
+	 * </pre>
+	 * 
+	 * <p>
+	 * Will be transpiled to:
+	 * 
+	 * <pre>
+	 * ["a", "b", "c"]
+	 * </pre>
+	 * 
+	 * 
+	 * @param elements
+	 *            the elements initializing the array
+	 * @return a new array
+	 */
+	@SafeVarargs
+	native public static <E> def.js.Array<E> $array(E... elements);
 
 	/**
 	 * Uses the target object as a function and call it. This is not typesafe
@@ -578,46 +549,66 @@ public final class Lang {
 	native public static String typeof(Object o);
 
 	/**
-	 * This utility function allows using the <code>===</code> JavaScript
-	 * operator directly.
-	 */
-	native public static boolean equalsStrict(Object o1, Object o2);
-
-	/**
-	 * This utility function allows using the <code>!==</code> JavaScript
-	 * operator directly.
-	 */
-	native public static boolean notEqualsStrict(Object o1, Object o2);
-
-	/**
-	 * This utility function allows using the <code>==</code> JavaScript
-	 * operator.
+	 * This syntax macro allows using the <code>==</code> or <code>!=</code>
+	 * JavaScript operators. Note that this macro will have no effect on other
+	 * operators than <code>==</code> or <code>!=</code>, but will recursively
+	 * apply to all operators contained in the macro.
 	 * 
-	 * Since JSweet version 1.1, the Java expression <code>o1==o2</code>
-	 * transpiles to <code>o1===o2</code> to remain close to the Java strict
-	 * equality (except when equaling to the <code>null</code> literal where the
-	 * <code>==</code> operator is used). So, the expression
-	 * <code>equalsLoose(o1,o2)</code> transpiles to <code>o1==o2</code>. See
-	 * the JavaScript documentation for more details.
-	 * 
-	 * @since 1.1
-	 */
-	native public static boolean equalsLoose(Object o1, Object o2);
-
-	/**
-	 * This utility function allows using the <code>!=</code> JavaScript
-	 * operator.
-	 * 
+	 * <p>
 	 * Since JSweet version 1.1, the Java expression <code>o1!=o2</code>
 	 * transpiles to <code>o1!==o2</code> to remain close to the Java strict
 	 * inequality (except when diffing with the <code>null</code> literal where
-	 * the <code>==</code> operator is used). So, the expression
-	 * <code>notEqualsLoose(o1,o2)</code> transpiles to <code>o1!=o2</code>. See
-	 * the JavaScript documentation for more details.
+	 * the <code>==</code> operator is used).
 	 * 
-	 * @since 1.1
+	 * <p>
+	 * Examples:
+	 * 
+	 * <pre>
+	 * if(a == b) { ... }
+	 * if(a != b) { ... }
+	 * if($loose(a == b)) { ... }
+	 * if($loose(a != b)) { ... }
+	 * if($strict(a == b)) { ... }
+	 * if(a == undefined) { ... }
+	 * if(a != null) { ... }
+	 * if($strict(a != null)) { ... }
+	 * if($loose(a == f(b != a))) { ... }
+	 * </pre>
+	 * 
+	 * Transpile to:
+	 * 
+	 * <pre>
+	 * if(a === b) { ... }
+	 * if(a !== b) { ... }
+	 * if(a == b) { ... }
+	 * if(a != b) { ... }
+	 * if(a === b) { ... }
+	 * if(a === undefined) { ... }
+	 * if(a != null) { ... }
+	 * if(a !== null) { ... }
+	 * if(a == f(b != a)) { ... }
+	 * </pre>
+	 * 
+	 * @param expression
+	 *            can be any expression returning a boolean, but only
+	 *            (in)equalities operators will be impacted
+	 * @return the expression modified to use loose JavaScript (in)equalities
+	 *         operators
+	 * @since 2.0
 	 */
-	native public static boolean notEqualsLoose(Object o1, Object o2);
+	native public static boolean $loose(boolean expression);
+
+	/**
+	 * This syntax macro is the reverse of {@link #$loose(boolean)}, and
+	 * enforces strict (in)equalities when it makes sense.
+	 * 
+	 * @param expression
+	 *            can be any expression returning a boolean, but only
+	 *            (in)equalities operators will be impacted
+	 * @return the expression modified to use strict JavaScript (in)equalities
+	 *         operators
+	 */
+	native public static boolean $strict(boolean expression);
 
 	/**
 	 * Disable type checking on the target object (cast to any). This helper is
@@ -649,18 +640,56 @@ public final class Lang {
 	}
 
 	/**
-	 * Accesses the current method arguments (arguments implicit variable in
-	 * JavaScript).
-	 */
-	public static final Object[] arguments = null;
-
-	/**
 	 * Accesses the current JavaScript <code>this</code>. Within an object
 	 * scope, <code>$this</code> corresponds to a regular object oriented
 	 * <code>this</code>. Outside on an object (i.e. within a global function),
 	 * <code>$this</code> has the JavaScript meaning, representing the current
 	 * function object.
 	 */
-	public static final Object $this = null;
-	
+	public static final def.js.Object $this = null;
+
+	/**
+	 * Defines a template string.
+	 * 
+	 * <p>
+	 * For example:
+	 * 
+	 * <pre>
+	 * console.info($template("Get: ${key} => ${_val}"));
+	 * </pre>
+	 * 
+	 * <p>
+	 * gets transpiled to:
+	 * </p>
+	 * 
+	 * <pre>
+	 * console.info(`Get: ${key} => ${_val}`));
+	 * </pre>
+	 * 
+	 * @param templateString
+	 *            the regular Java string to be turned into a template string
+	 * @return a JavaScript template string
+	 */
+	public static native String $template(String templateString);
+
+	/**
+	 * Defines a template string with a tag.
+	 * 
+	 * @see #$template(String)
+	 */
+	public static native String $template(Object tag, String templateString);
+
+	/**
+	 * Inserts a TypeScript string as is in the generated program (not
+	 * recommended). This can be seen as a compile-time eval.
+	 * 
+	 * <p>
+	 * Although the TypeScript compiler will check the inserted code by
+	 * compiling it, it is obviously a dangerous macro that should be used only
+	 * in last resort.
+	 * 
+	 * @see def.js.Globals#eval(String)
+	 */
+	public static native String $insert(String typescriptString);
+
 }

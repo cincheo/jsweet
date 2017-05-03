@@ -1,21 +1,21 @@
 package def.dom;
 
-import def.js.StringTypes;
-import def.js.StringTypes.MSContentZoom;
-import def.js.StringTypes.afterprint;
-import def.js.StringTypes.beforeprint;
-import def.js.StringTypes.beforeunload;
-import def.js.StringTypes.hashchange;
-import def.js.StringTypes.message;
-import def.js.StringTypes.offline;
-import def.js.StringTypes.online;
-import def.js.StringTypes.orientationchange;
-import def.js.StringTypes.pagehide;
-import def.js.StringTypes.pageshow;
-import def.js.StringTypes.popstate;
-import def.js.StringTypes.resize;
-import def.js.StringTypes.storage;
-import def.js.StringTypes.unload;
+import jsweet.util.StringTypes;
+import jsweet.util.StringTypes.MSContentZoom;
+import jsweet.util.StringTypes.afterprint;
+import jsweet.util.StringTypes.beforeprint;
+import jsweet.util.StringTypes.beforeunload;
+import jsweet.util.StringTypes.hashchange;
+import jsweet.util.StringTypes.message;
+import jsweet.util.StringTypes.offline;
+import jsweet.util.StringTypes.online;
+import jsweet.util.StringTypes.orientationchange;
+import jsweet.util.StringTypes.pagehide;
+import jsweet.util.StringTypes.pageshow;
+import jsweet.util.StringTypes.popstate;
+import jsweet.util.StringTypes.resize;
+import jsweet.util.StringTypes.storage;
+import jsweet.util.StringTypes.unload;
 
 public class HTMLBodyElement extends HTMLElement {
     public java.lang.Object aLink;
@@ -51,44 +51,44 @@ public class HTMLBodyElement extends HTMLElement {
     native public void addEventListenerListenerMSManipulationEventAny(MSContentZoom type, java.util.function.Function<MSManipulationEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
     @jsweet.lang.Name("addEventListener")
     native public void addEventListenerListenerMSPointerEventAny(MSContentZoom type, java.util.function.Function<MSPointerEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
-    native public void addEventListener(def.js.StringTypes.afterprint type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(jsweet.util.StringTypes.afterprint type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
     @jsweet.lang.Name("addEventListener")
     native public void addEventListenerListenerAriaRequestEventAny(MSContentZoom type, java.util.function.Function<AriaRequestEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
-    native public void addEventListener(def.js.StringTypes.beforeprint type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
-    native public void addEventListener(def.js.StringTypes.beforeunload type, java.util.function.Function<BeforeUnloadEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(jsweet.util.StringTypes.beforeprint type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(jsweet.util.StringTypes.beforeunload type, java.util.function.Function<BeforeUnloadEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
     @jsweet.lang.Name("addEventListener")
     native public void addEventListenerListenerCommandEventAny(MSContentZoom type, java.util.function.Function<CommandEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
     @jsweet.lang.Name("addEventListener")
     native public void addEventListenerListenerErrorEventAny(MSContentZoom type, java.util.function.Function<ErrorEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
     @jsweet.lang.Name("addEventListener")
     native public void addEventListenerListenerFocusEventAny(MSContentZoom type, java.util.function.Function<FocusEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
-    native public void addEventListener(def.js.StringTypes.hashchange type, java.util.function.Function<HashChangeEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(jsweet.util.StringTypes.hashchange type, java.util.function.Function<HashChangeEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
     @jsweet.lang.Name("addEventListener")
     native public void addEventListenerListenerKeyboardEventAny(MSContentZoom type, java.util.function.Function<KeyboardEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
-    native public void addEventListener(def.js.StringTypes.message type, java.util.function.Function<MessageEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(jsweet.util.StringTypes.message type, java.util.function.Function<MessageEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
     @jsweet.lang.Name("addEventListener")
     native public void addEventListenerListenerMouseEventAny(MSContentZoom type, java.util.function.Function<MouseEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
     @jsweet.lang.Name("addEventListener")
     native public void addEventListenerListenerMouseWheelEventAny(MSContentZoom type, java.util.function.Function<MouseWheelEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
-    native public void addEventListener(def.js.StringTypes.offline type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
-    native public void addEventListener(def.js.StringTypes.online type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
-    native public void addEventListener(def.js.StringTypes.orientationchange type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
-    native public void addEventListener(def.js.StringTypes.pagehide type, java.util.function.Function<PageTransitionEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
-    native public void addEventListener(def.js.StringTypes.pageshow type, java.util.function.Function<PageTransitionEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(jsweet.util.StringTypes.offline type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(jsweet.util.StringTypes.online type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(jsweet.util.StringTypes.orientationchange type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(jsweet.util.StringTypes.pagehide type, java.util.function.Function<PageTransitionEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(jsweet.util.StringTypes.pageshow type, java.util.function.Function<PageTransitionEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
     @jsweet.lang.Name("addEventListener")
     native public void addEventListenerListenerDragEventAny(MSContentZoom type, java.util.function.Function<DragEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
     @jsweet.lang.Name("addEventListener")
     native public void addEventListenerListenerPointerEventAny(MSContentZoom type, java.util.function.Function<PointerEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
-    native public void addEventListener(def.js.StringTypes.popstate type, java.util.function.Function<PopStateEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(jsweet.util.StringTypes.popstate type, java.util.function.Function<PopStateEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
     @jsweet.lang.Name("addEventListener")
     native public void addEventListenerListenerProgressEventAny(MSContentZoom type, java.util.function.Function<ProgressEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
-    native public void addEventListener(def.js.StringTypes.resize type, java.util.function.Function<UIEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(jsweet.util.StringTypes.resize type, java.util.function.Function<UIEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
     @jsweet.lang.Name("addEventListener")
     native public void addEventListenerListenerUIEventAny(MSContentZoom type, java.util.function.Function<UIEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
-    native public void addEventListener(def.js.StringTypes.storage type, java.util.function.Function<StorageEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(jsweet.util.StringTypes.storage type, java.util.function.Function<StorageEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
     @jsweet.lang.Name("addEventListener")
     native public void addEventListenerListenerTouchEventAny(MSContentZoom type, java.util.function.Function<TouchEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
-    native public void addEventListener(def.js.StringTypes.unload type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(jsweet.util.StringTypes.unload type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
     @jsweet.lang.Name("addEventListener")
     native public void addEventListenerListenerEventAny(MSContentZoom type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
     @jsweet.lang.Name("addEventListener")
@@ -102,44 +102,44 @@ public class HTMLBodyElement extends HTMLElement {
     native public void addEventListenerListenerMSManipulationEventAny(MSContentZoom type, java.util.function.Function<MSManipulationEvent,java.lang.Object> listener);
     @jsweet.lang.Name("addEventListener")
     native public void addEventListenerListenerMSPointerEventAny(MSContentZoom type, java.util.function.Function<MSPointerEvent,java.lang.Object> listener);
-    native public void addEventListener(def.js.StringTypes.afterprint type, java.util.function.Function<Event,java.lang.Object> listener);
+    native public void addEventListener(jsweet.util.StringTypes.afterprint type, java.util.function.Function<Event,java.lang.Object> listener);
     @jsweet.lang.Name("addEventListener")
     native public void addEventListenerListenerAriaRequestEventAny(MSContentZoom type, java.util.function.Function<AriaRequestEvent,java.lang.Object> listener);
-    native public void addEventListener(def.js.StringTypes.beforeprint type, java.util.function.Function<Event,java.lang.Object> listener);
-    native public void addEventListener(def.js.StringTypes.beforeunload type, java.util.function.Function<BeforeUnloadEvent,java.lang.Object> listener);
+    native public void addEventListener(jsweet.util.StringTypes.beforeprint type, java.util.function.Function<Event,java.lang.Object> listener);
+    native public void addEventListener(jsweet.util.StringTypes.beforeunload type, java.util.function.Function<BeforeUnloadEvent,java.lang.Object> listener);
     @jsweet.lang.Name("addEventListener")
     native public void addEventListenerListenerCommandEventAny(MSContentZoom type, java.util.function.Function<CommandEvent,java.lang.Object> listener);
     @jsweet.lang.Name("addEventListener")
     native public void addEventListenerListenerErrorEventAny(MSContentZoom type, java.util.function.Function<ErrorEvent,java.lang.Object> listener);
     @jsweet.lang.Name("addEventListener")
     native public void addEventListenerListenerFocusEventAny(MSContentZoom type, java.util.function.Function<FocusEvent,java.lang.Object> listener);
-    native public void addEventListener(def.js.StringTypes.hashchange type, java.util.function.Function<HashChangeEvent,java.lang.Object> listener);
+    native public void addEventListener(jsweet.util.StringTypes.hashchange type, java.util.function.Function<HashChangeEvent,java.lang.Object> listener);
     @jsweet.lang.Name("addEventListener")
     native public void addEventListenerListenerKeyboardEventAny(MSContentZoom type, java.util.function.Function<KeyboardEvent,java.lang.Object> listener);
-    native public void addEventListener(def.js.StringTypes.message type, java.util.function.Function<MessageEvent,java.lang.Object> listener);
+    native public void addEventListener(jsweet.util.StringTypes.message type, java.util.function.Function<MessageEvent,java.lang.Object> listener);
     @jsweet.lang.Name("addEventListener")
     native public void addEventListenerListenerMouseEventAny(MSContentZoom type, java.util.function.Function<MouseEvent,java.lang.Object> listener);
     @jsweet.lang.Name("addEventListener")
     native public void addEventListenerListenerMouseWheelEventAny(MSContentZoom type, java.util.function.Function<MouseWheelEvent,java.lang.Object> listener);
-    native public void addEventListener(def.js.StringTypes.offline type, java.util.function.Function<Event,java.lang.Object> listener);
-    native public void addEventListener(def.js.StringTypes.online type, java.util.function.Function<Event,java.lang.Object> listener);
-    native public void addEventListener(def.js.StringTypes.orientationchange type, java.util.function.Function<Event,java.lang.Object> listener);
-    native public void addEventListener(def.js.StringTypes.pagehide type, java.util.function.Function<PageTransitionEvent,java.lang.Object> listener);
-    native public void addEventListener(def.js.StringTypes.pageshow type, java.util.function.Function<PageTransitionEvent,java.lang.Object> listener);
+    native public void addEventListener(jsweet.util.StringTypes.offline type, java.util.function.Function<Event,java.lang.Object> listener);
+    native public void addEventListener(jsweet.util.StringTypes.online type, java.util.function.Function<Event,java.lang.Object> listener);
+    native public void addEventListener(jsweet.util.StringTypes.orientationchange type, java.util.function.Function<Event,java.lang.Object> listener);
+    native public void addEventListener(jsweet.util.StringTypes.pagehide type, java.util.function.Function<PageTransitionEvent,java.lang.Object> listener);
+    native public void addEventListener(jsweet.util.StringTypes.pageshow type, java.util.function.Function<PageTransitionEvent,java.lang.Object> listener);
     @jsweet.lang.Name("addEventListener")
     native public void addEventListenerListenerDragEventAny(MSContentZoom type, java.util.function.Function<DragEvent,java.lang.Object> listener);
     @jsweet.lang.Name("addEventListener")
     native public void addEventListenerListenerPointerEventAny(MSContentZoom type, java.util.function.Function<PointerEvent,java.lang.Object> listener);
-    native public void addEventListener(def.js.StringTypes.popstate type, java.util.function.Function<PopStateEvent,java.lang.Object> listener);
+    native public void addEventListener(jsweet.util.StringTypes.popstate type, java.util.function.Function<PopStateEvent,java.lang.Object> listener);
     @jsweet.lang.Name("addEventListener")
     native public void addEventListenerListenerProgressEventAny(MSContentZoom type, java.util.function.Function<ProgressEvent,java.lang.Object> listener);
-    native public void addEventListener(def.js.StringTypes.resize type, java.util.function.Function<UIEvent,java.lang.Object> listener);
+    native public void addEventListener(jsweet.util.StringTypes.resize type, java.util.function.Function<UIEvent,java.lang.Object> listener);
     @jsweet.lang.Name("addEventListener")
     native public void addEventListenerListenerUIEventAny(MSContentZoom type, java.util.function.Function<UIEvent,java.lang.Object> listener);
-    native public void addEventListener(def.js.StringTypes.storage type, java.util.function.Function<StorageEvent,java.lang.Object> listener);
+    native public void addEventListener(jsweet.util.StringTypes.storage type, java.util.function.Function<StorageEvent,java.lang.Object> listener);
     @jsweet.lang.Name("addEventListener")
     native public void addEventListenerListenerTouchEventAny(MSContentZoom type, java.util.function.Function<TouchEvent,java.lang.Object> listener);
-    native public void addEventListener(def.js.StringTypes.unload type, java.util.function.Function<Event,java.lang.Object> listener);
+    native public void addEventListener(jsweet.util.StringTypes.unload type, java.util.function.Function<Event,java.lang.Object> listener);
     @jsweet.lang.Name("addEventListener")
     native public void addEventListenerListenerEventAny(MSContentZoom type, java.util.function.Function<Event,java.lang.Object> listener);
     @jsweet.lang.Name("addEventListener")

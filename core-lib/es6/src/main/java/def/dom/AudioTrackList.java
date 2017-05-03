@@ -1,9 +1,9 @@
 package def.dom;
 
-import def.js.StringTypes;
-import def.js.StringTypes.addtrack;
-import def.js.StringTypes.change;
-import def.js.StringTypes.removetrack;
+import jsweet.util.StringTypes;
+import jsweet.util.StringTypes.addtrack;
+import jsweet.util.StringTypes.change;
+import jsweet.util.StringTypes.removetrack;
 
 @jsweet.lang.SyntacticIterable
 public class AudioTrackList {
@@ -13,16 +13,16 @@ public class AudioTrackList {
     public java.util.function.Function<TrackEvent,java.lang.Object> onremovetrack;
     native public AudioTrack getTrackById(java.lang.String id);
     native public AudioTrack item(double index);
-    native public void addEventListener(def.js.StringTypes.addtrack type, java.util.function.Function<TrackEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
-    native public void addEventListener(def.js.StringTypes.change type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
-    native public void addEventListener(def.js.StringTypes.removetrack type, java.util.function.Function<TrackEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(jsweet.util.StringTypes.addtrack type, java.util.function.Function<TrackEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(jsweet.util.StringTypes.change type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(jsweet.util.StringTypes.removetrack type, java.util.function.Function<TrackEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
     native public void addEventListener(java.lang.String type, EventListener listener, java.lang.Boolean useCapture);
     native public AudioTrack $get(double index);
     public static AudioTrackList prototype;
     public AudioTrackList(){}
-    native public void addEventListener(def.js.StringTypes.addtrack type, java.util.function.Function<TrackEvent,java.lang.Object> listener);
-    native public void addEventListener(def.js.StringTypes.change type, java.util.function.Function<Event,java.lang.Object> listener);
-    native public void addEventListener(def.js.StringTypes.removetrack type, java.util.function.Function<TrackEvent,java.lang.Object> listener);
+    native public void addEventListener(jsweet.util.StringTypes.addtrack type, java.util.function.Function<TrackEvent,java.lang.Object> listener);
+    native public void addEventListener(jsweet.util.StringTypes.change type, java.util.function.Function<Event,java.lang.Object> listener);
+    native public void addEventListener(jsweet.util.StringTypes.removetrack type, java.util.function.Function<TrackEvent,java.lang.Object> listener);
     native public void addEventListener(java.lang.String type, EventListener listener);
     native public void addEventListener(java.lang.String type, EventListenerObject listener, java.lang.Boolean useCapture);
     native public void addEventListener(java.lang.String type, EventListenerObject listener);

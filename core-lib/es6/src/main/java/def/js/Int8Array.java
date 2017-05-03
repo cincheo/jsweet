@@ -215,14 +215,6 @@ public class Int8Array extends Iterable<java.lang.Double> {
       * @param end The index of the end of the array.
       */
     native public Int8Array subarray(double begin, double end);
-    /**
-      * Converts a number to a string by using the current locale. 
-      */
-    native public java.lang.String toLocaleString();
-    /**
-      * Returns a string representation of an array.
-      */
-    native public java.lang.String toString();
     /** 
       * Returns an list of values in the array
       */

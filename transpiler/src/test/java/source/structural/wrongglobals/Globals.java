@@ -1,6 +1,6 @@
 package source.structural.wrongglobals;
 
-import static jsweet.util.Lang.$get;
+import static jsweet.util.Lang.object;
 
 public class Globals extends SuperClass {
 
@@ -13,7 +13,7 @@ public class Globals extends SuperClass {
 	public boolean b = true;
 
 	public static void staticM() {
-		$get(B, "p");
+		object(B).$get("p");
 	}
 	
 	public static boolean B = true;

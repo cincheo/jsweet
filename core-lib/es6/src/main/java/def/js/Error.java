@@ -1,5 +1,6 @@
 package def.js;
-public class Error extends def.js.Object {
+@SuppressWarnings("serial")
+public class Error extends RuntimeException {
     public java.lang.String name;
     public java.lang.String message;
     public Error(java.lang.String message){}

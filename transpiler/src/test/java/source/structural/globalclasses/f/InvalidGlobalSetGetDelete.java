@@ -16,9 +16,9 @@
  */
 package source.structural.globalclasses.f;
 
-import static jsweet.util.Lang.$delete;
-import static jsweet.util.Lang.$get;
-import static jsweet.util.Lang.$set;
+import static jsweet.util.Globals.$delete;
+import static jsweet.util.Globals.$get;
+import static jsweet.util.Globals.$set;
 
 @SuppressWarnings("all")
 class Globals  {

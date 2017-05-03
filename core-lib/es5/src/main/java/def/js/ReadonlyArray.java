@@ -5,12 +5,8 @@ public abstract class ReadonlyArray<T> extends def.js.Object implements Iterable
     /**
       * Gets the length of the array. This is a number one higher than the highest element defined in an array.
       */
-    public final double length=0;
-    /**
-      * Returns a string representation of an array.
-      */
-    native public java.lang.String toString();
-    native public java.lang.String toLocaleString();
+    public final int length=0;
+    native public String toLocaleString();
     /**
       * Combines two or more arrays.
       * @param items Additional items to add to the end of array1.
@@ -20,30 +16,35 @@ public abstract class ReadonlyArray<T> extends def.js.Object implements Iterable
       * Combines two or more arrays.
       * @param items Additional items to add to the end of array1.
       */
-    native public T[] concat(@SuppressWarnings("unchecked") T... items);
+    native public Array<T> concat(@SuppressWarnings("unchecked") T... items);
     /**
       * Adds all the elements of an array separated by the specified separator string.
       * @param separator A string used to separate one element of an array from the next in the resulting String. If omitted, the array elements are separated with a comma.
       */
-    native public java.lang.String join(java.lang.String separator);
+    native public String join(java.lang.String separator);
+    /**
+     * Adds all the elements of an array separated by the specified separator string.
+     * @param separator A string used to separate one element of an array from the next in the resulting String. If omitted, the array elements are separated with a comma.
+     */
+   native public String join(String separator);
     /**
       * Returns a section of an array.
       * @param start The beginning of the specified portion of the array.
       * @param end The end of the specified portion of the array.
       */
-    native public T[] slice(double start, double end);
+    native public Array<T> slice(double start, double end);
     /**
       * Returns the index of the first occurrence of a value in an array.
       * @param searchElement The value to locate in the array.
       * @param fromIndex The array index at which to begin the search. If fromIndex is omitted, the search starts at index 0.
       */
-    native public double indexOf(T searchElement, double fromIndex);
+    native public int indexOf(T searchElement, double fromIndex);
     /**
       * Returns the index of the last occurrence of a specified value in an array.
       * @param searchElement The value to locate in the array.
       * @param fromIndex The array index at which to begin the search. If fromIndex is omitted, the search starts at the last index in the array.
       */
-    native public double lastIndexOf(T searchElement, double fromIndex);
+    native public int lastIndexOf(T searchElement, double fromIndex);
     /**
       * Determines whether all the members of an array satisfy the specified test.
       * @param callbackfn A function that accepts up to three arguments. The every method calls the callbackfn function for each element in array1 until the callbackfn returns false, or until the end of the array.

@@ -61,13 +61,13 @@ public class Overload {
         }
         def.js.String dateFormatted = string(format);
 
-        dateFormatted = string(dateFormatted.replace("yyyy", formatNumber(date.getFullYear(), 4)));
-        dateFormatted = string(dateFormatted.replace("MM", formatNumber(date.getMonth() + 1, 2)));
-        dateFormatted = string(dateFormatted.replace("dd", formatNumber(date.getDate(), 2)));
-        dateFormatted = string(dateFormatted.replace("hh", formatNumber(date.getHours(), 2)));
-        dateFormatted = string(dateFormatted.replace("mm", formatNumber(date.getMinutes(), 2)));
-        dateFormatted = string(dateFormatted.replace("ss", formatNumber(date.getSeconds(), 2)));
-        dateFormatted = string(dateFormatted.replace("SSS", formatNumber(date.getMilliseconds(), 3)));
+        dateFormatted = dateFormatted.replace("yyyy", formatNumber(date.getFullYear(), 4));
+        dateFormatted = dateFormatted.replace("MM", formatNumber(date.getMonth() + 1, 2));
+        dateFormatted = dateFormatted.replace("dd", formatNumber(date.getDate(), 2));
+        dateFormatted = dateFormatted.replace("hh", formatNumber(date.getHours(), 2));
+        dateFormatted = dateFormatted.replace("mm", formatNumber(date.getMinutes(), 2));
+        dateFormatted = dateFormatted.replace("ss", formatNumber(date.getSeconds(), 2));
+        dateFormatted = dateFormatted.replace("SSS", formatNumber(date.getMilliseconds(), 3));
 
         return string(dateFormatted);
     }

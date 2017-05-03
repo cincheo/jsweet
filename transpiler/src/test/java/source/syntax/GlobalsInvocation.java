@@ -20,6 +20,7 @@ import static jsweet.util.Lang.string;
 import static source.syntax.Globals.toTitleCase;
 
 import def.js.RegExp;
+import def.js.String;
 
 public class GlobalsInvocation {
 
@@ -27,7 +28,7 @@ public class GlobalsInvocation {
 	String lastName;
 
 	public String getFullName() {
-		return toTitleCase(firstName + " " + lastName);
+		return toTitleCase(string(firstName + " " + lastName));
 	}
 	
 	public void m() {
@@ -44,9 +45,8 @@ class Globals {
 	 * A global method.
 	 */
 	public static String toTitleCase(String str) {
-		return string(str).replace(new RegExp("/\\w\\S*/g"), (tok, i) -> {
-			def.js.String txt = string(tok);
-			return string(txt.charAt(0)).toUpperCase() + string(txt.substr(1)).toLowerCase();
+		return str.replace(new RegExp("/\\w\\S*/g"), (tok, i) -> {
+			return tok.charAt(0).toUpperCase().concat(tok.substr(1).toLowerCase());
 		});
 	}
 	public static void m() {};

@@ -76,12 +76,14 @@ import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.JSweetTranspiler;
 import org.jsweet.transpiler.Java2TypeScriptTranslator;
+import org.jsweet.transpiler.Java2TypeScriptTranslator.ComparisonMode;
 import org.jsweet.transpiler.TypeChecker;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.ForeachLoopElement;
 import org.jsweet.transpiler.model.IdentifierElement;
 import org.jsweet.transpiler.model.ImportElement;
 import org.jsweet.transpiler.model.InvocationElement;
+import org.jsweet.transpiler.model.LiteralElement;
 import org.jsweet.transpiler.model.MethodInvocationElement;
 import org.jsweet.transpiler.model.NewClassElement;
 import org.jsweet.transpiler.model.VariableAccessElement;
@@ -467,6 +469,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 										.print(varName).print("+'" + JSweetTranspiler.EXPORTED_VAR_END + "') }");
 					}
 					return true;
+
 				case "array":
 				case "function":
 				case "string":
@@ -476,11 +479,13 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 				case "object":
 					printCastMethodInvocation(invocationElement);
 					return true;
+
 				case "any":
 					print("(<any>");
 					printCastMethodInvocation(invocationElement);
 					print(")");
 					return true;
+
 				case "union":
 					getPrinter().typeChecker.checkUnionTypeAssignment(context.types, getPrinter().getParent(),
 							((MethodInvocationElementSupport) invocationElement).getTree());
@@ -488,25 +493,68 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 					printCastMethodInvocation(invocationElement);
 					print(")");
 					return true;
+
 				case "typeof":
 					print("typeof ").print(invocationElement.getArgument(0));
 					return true;
+
 				case "equalsStrict":
 					print("(").print(invocationElement.getArgument(0)).print(" === ")
 							.print(invocationElement.getArgument(1)).print(")");
 					return true;
+
 				case "notEqualsStrict":
 					print("(").print(invocationElement.getArgument(0)).print(" !== ")
 							.print(invocationElement.getArgument(1)).print(")");
 					return true;
+
 				case "equalsLoose":
 					print("(").print(invocationElement.getArgument(0)).print(" == ")
 							.print(invocationElement.getArgument(1)).print(")");
 					return true;
+
 				case "notEqualsLoose":
 					print("(").print(invocationElement.getArgument(0)).print(" != ")
 							.print(invocationElement.getArgument(1)).print(")");
 					return true;
+
+				case "$strict":
+					getPrinter().enterComparisonMode(ComparisonMode.STRICT);
+					print(invocationElement.getArgument(0));
+					getPrinter().exitComparisonMode();
+					return true;
+
+				case "$loose":
+					getPrinter().enterComparisonMode(ComparisonMode.LOOSE);
+					print(invocationElement.getArgument(0));
+					getPrinter().exitComparisonMode();
+					return true;
+					
+				case "$insert":
+					if (invocationElement.getArgument(0) instanceof LiteralElement) {
+						print(((LiteralElement) invocationElement.getArgument(0)).getValue().toString());
+						return true;
+					} else {
+						report(invocationElement, JSweetProblem.MISUSED_INSERT_MACRO,
+								invocationElement.getMethodName());
+					}
+
+				case "$template":
+					if (invocationElement.getArgumentCount() == 1) {
+						if (invocationElement.getArgument(0) instanceof LiteralElement) {
+							print("`" + ((LiteralElement) invocationElement.getArgument(0)).getValue().toString()
+									+ "`");
+							return true;
+						} else {
+							if (invocationElement.getArgument(1) instanceof LiteralElement) {
+								print(invocationElement.getArgument(0)).print(
+										"`" + ((LiteralElement) invocationElement.getArgument(1)).getValue().toString()
+												+ "`");
+								return true;
+							}
+						}
+					}
+					report(invocationElement, JSweetProblem.MISUSED_INSERT_MACRO, invocationElement.getMethodName());
 
 				case "$map":
 					if (invocationElement.getArgumentCount() % 2 != 0) {
@@ -537,6 +585,10 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 						}
 					}
 					print("}");
+					return true;
+
+				case "$array":
+					print("[").printArgList(invocationElement.getArguments()).print("]");
 					return true;
 
 				case "$apply":
@@ -621,7 +673,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 
 							boolean sameIndexType = types().isSameType(getterIndexType, invokedIndexType);
 
-							if (sameIndexType && !types().isAssignable(invokedValueType, getterType)) {
+							if (sameIndexType && !types().isAssignable(invokedValueType, types().erasure(getterType))) {
 								report(invocationElement.getArgument(1), JSweetProblem.INDEXED_SET_TYPE_MISMATCH,
 										getterType);
 							}
@@ -1276,6 +1328,12 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 				return true;
 			}
 		} else {
+			if (JSweetConfig.UTIL_CLASSNAME.equals(variableAccess.getTargetElement().toString())) {
+				if ("$this".equals(variableAccess.getVariableName())) {
+					print("this");
+					return true;
+				}
+			}
 			JCIdent identifier = (JCIdent) ((VariableAccessElementSupport) variableAccess).getTree();
 			if (context.hasAnnotationType(identifier.sym, ANNOTATION_STRING_TYPE)) {
 				print("\"");

@@ -21,6 +21,7 @@ public class RegExp extends def.js.Object {
     public double lastIndex;
     native public RegExp compile();
     public RegExp(java.lang.String pattern, java.lang.String flags){}
+    public RegExp(String pattern, String flags){}
     native public static RegExp applyStatic(java.lang.String pattern, java.lang.String flags);
     public static final RegExp prototype=null;
     public static java.lang.String $1;

@@ -17,16 +17,33 @@
 package org.jsweet.test.transpiler;
 
 import org.jsweet.transpiler.ModuleKind;
+import org.junit.Assert;
 import org.junit.Test;
 
 import source.decorator.SimpleDecorator;
 
+/**
+ * Tests for decorators in JSweet.
+ * 
+ * @author Renaud Pawlak
+ */
 public class DecoratorTests extends AbstractTest {
 
 	@Test
 	public void testSimpleDecorator() {
-		transpile(ModuleKind.none, logHandler -> {
+		eval(ModuleKind.none, (logHandler, r) -> {
 			logHandler.assertNoProblems();
+			// TODO: with node.js, the set handler is not invoked... (but it
+			// works with Chrome)
+			Assert.assertTrue(r.get("trace").equals(//
+					"Set: name => null,Set: name => remo,Get: name => remo,"
+							+ "Call: saySomething(\"I love playing\",\"halo\") => \"remo jansen says: I love playing halo\","
+							+ "Set: name => Remo,Get: name => Remo")
+					// case when the platform does not invoke the set handler
+					|| r.get("trace").equals(//
+							"Get: name => remo,"
+									+ "Call: saySomething(\"I love playing\",\"halo\") => \"remo jansen says: I love playing halo\","
+									+ "Get: name => Remo"));
 		}, getSourceFile(SimpleDecorator.class));
 	}
 
