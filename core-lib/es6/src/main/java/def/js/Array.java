@@ -394,6 +394,8 @@ public class Array<T> extends Iterable<T> implements java.lang.Iterable<T> {
 
 	native public T $get(int n);
 
+	native public T $set(int n, T value);
+	
 	public Array(int arrayLength) {
 	}
 

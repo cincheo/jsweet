@@ -379,6 +379,8 @@ public class Array<T> extends def.js.Object implements Iterable<T> {
 
 	native public T $get(int n);
 
+	native public T $set(int n, T value);
+	
 	public Array(int arrayLength) {
 	}
 
