@@ -21,7 +21,7 @@ public final class Globals extends def.js.Object {
 	/**
 	 * The JavaScript <code>undefined</code> global property.
 	 */
-	public static final Object undefined = null;
+	public static java.lang.Object undefined;
 	
 	/**
 	 * Accesses the current method arguments (<code>arguments</code> implicit

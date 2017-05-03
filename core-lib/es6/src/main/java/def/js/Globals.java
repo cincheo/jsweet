@@ -21,7 +21,7 @@ public final class Globals {
 	/**
 	 * The JavaScript <code>undefined</code> global property.
 	 */
-	public static final Object undefined = null;
+	public static final java.lang.Object undefined = null;
 	
 	/**
 	 * Accesses the current method arguments (<code>arguments</code> implicit
