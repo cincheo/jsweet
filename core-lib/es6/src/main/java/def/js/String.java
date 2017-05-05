@@ -17,7 +17,7 @@ public class String extends Iterable<String> {
 	 *            The zero-based index of the desired character. If there is no
 	 *            character at the specified index, NaN is returned.
 	 */
-	native public double charCodeAt(int index);
+	native public int charCodeAt(int index);
 
 	/**
 	 * Returns a string that contains the concatenation of two or more strings.
@@ -73,7 +73,7 @@ public class String extends Iterable<String> {
 	 * @param that
 	 *            String to compare to target string
 	 */
-	native public double localeCompare(java.lang.String that);
+	native public int localeCompare(java.lang.String that);
 
 	/**
 	 * Determines whether two strings are equivalent in the current locale.
@@ -81,7 +81,7 @@ public class String extends Iterable<String> {
 	 * @param that
 	 *            String to compare to target string
 	 */
-	native public double localeCompare(String that);
+	native public int localeCompare(String that);
 
 	/**
 	 * Matches a string with a regular expression, and returns an array
