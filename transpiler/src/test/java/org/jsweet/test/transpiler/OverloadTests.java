@@ -35,6 +35,7 @@ import source.overload.OverloadWithAbstractClass;
 import source.overload.OverloadWithEnums;
 import source.overload.OverloadWithInterfaces;
 import source.overload.OverloadWithStaticAndInstanceMethods;
+import source.overload.OverloadWithSuperclass;
 import source.overload.WithAmbients;
 import source.overload.WrongOverload;
 import source.overload.WrongOverloadConstructorWithParamNameCollision;
@@ -60,7 +61,15 @@ public class OverloadTests extends AbstractTest {
 			assertEquals("s22", result.<String> get("res3"));
 		}, getSourceFile(Overload.class));
 	}
+	
+	@Test
+	public void testOverloadWithSuperclass() {
+		eval((logHandler, result) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(OverloadWithSuperclass.class));
+	}
 
+	
 	@Test
 	public void testWrongOverload() {
 		eval((logHandler, r) -> {

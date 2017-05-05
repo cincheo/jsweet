@@ -54,9 +54,9 @@ public class ObjectMaps {
 
 		trace.push("" + m.containsKey(new MyKey("2")));
 
-		trace.push("[" + m.keySet() + "]");
+		trace.push("" + m.keySet());
 
-		trace.push("[" + m.values() + "]");
+		trace.push("" + m.values());
 
 		m.remove(new MyKey("1"));
 
@@ -67,7 +67,7 @@ public class ObjectMaps {
 		trace.push(Collections.singletonMap(new MyKey("b"), "2").get(new MyKey("b")));
 
 		m.clear();
-		trace.push("[" + m.values() + "]");
+		trace.push("" + m.values());
 
 		trace.push("-" + m.get(new MyKey("undefinedKey")) + "-");
 		

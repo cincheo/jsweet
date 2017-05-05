@@ -62,12 +62,14 @@ import org.jsweet.transpiler.model.ExtendedElementFactory;
 import org.jsweet.transpiler.model.MethodInvocationElement;
 import org.jsweet.transpiler.model.support.ArrayAccessElementSupport;
 import org.jsweet.transpiler.model.support.AssignmentElementSupport;
+import org.jsweet.transpiler.model.support.BinaryOperatorElementSupport;
 import org.jsweet.transpiler.model.support.CaseElementSupport;
 import org.jsweet.transpiler.model.support.ExtendedElementSupport;
 import org.jsweet.transpiler.model.support.ForeachLoopElementSupport;
 import org.jsweet.transpiler.model.support.ImportElementSupport;
 import org.jsweet.transpiler.model.support.MethodInvocationElementSupport;
 import org.jsweet.transpiler.model.support.NewClassElementSupport;
+import org.jsweet.transpiler.model.support.UnaryOperatorElementSupport;
 import org.jsweet.transpiler.util.AbstractTreePrinter;
 import org.jsweet.transpiler.util.JSDoc;
 import org.jsweet.transpiler.util.Util;
@@ -3629,8 +3631,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 								} else if (s instanceof JCExpressionStatement
 										&& ((JCExpressionStatement) s).expr instanceof JCMethodInvocation) {
 									JCMethodInvocation invocation = (JCMethodInvocation) ((JCExpressionStatement) s).expr;
-									MethodInvocationElement invocationElement = (MethodInvocationElement)ExtendedElementFactory.INSTANCE.create(invocation);
-									if (invocationElement.getMethodName().equals(JSweetConfig.INDEXED_SET_FUCTION_NAME)) {
+									MethodInvocationElement invocationElement = (MethodInvocationElement) ExtendedElementFactory.INSTANCE
+											.create(invocation);
+									if (invocationElement.getMethodName()
+											.equals(JSweetConfig.INDEXED_SET_FUCTION_NAME)) {
 										if (invocation.getArguments().size() == 3) {
 											if ("this".equals(invocation.getArguments().get(0).toString())) {
 												printIndent().print(invocation.args.tail.head).print(": ")
@@ -3735,7 +3739,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							} else if (s instanceof JCExpressionStatement
 									&& ((JCExpressionStatement) s).expr instanceof JCMethodInvocation) {
 								JCMethodInvocation invocation = (JCMethodInvocation) ((JCExpressionStatement) s).expr;
-								MethodInvocationElement invocationElement = (MethodInvocationElement)ExtendedElementFactory.INSTANCE.create(invocation);
+								MethodInvocationElement invocationElement = (MethodInvocationElement) ExtendedElementFactory.INSTANCE
+										.create(invocation);
 								if (invocationElement.getMethodName().equals(JSweetConfig.INDEXED_SET_FUCTION_NAME)) {
 									if (invocation.getArguments().size() == 3) {
 										if ("this".equals(invocation.getArguments().get(0).toString())) {
@@ -3975,83 +3980,86 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	@Override
 	public void visitBinary(JCBinary binary) {
-		boolean closeParen = false;
-		boolean truncate = false;
-		if (Util.isIntegral(binary.type) && binary.getKind() == Kind.DIVIDE) {
-			if (binary.type.getKind() == TypeKind.LONG) {
-				print("Math.floor(");
+		if (!getAdapter().substituteBinaryOperator(new BinaryOperatorElementSupport(binary))) {
+			boolean closeParen = false;
+			boolean truncate = false;
+			if (Util.isIntegral(binary.type) && binary.getKind() == Kind.DIVIDE) {
+				if (binary.type.getKind() == TypeKind.LONG) {
+					print("Math.floor(");
+					closeParen = true;
+				} else {
+					print("(");
+					truncate = true;
+				}
+			}
+			if (binary.type.getKind() == TypeKind.FLOAT) {
+				print("(<any>Math).fround(");
 				closeParen = true;
+			}
+			boolean charWrapping = Util.isArithmeticOrLogicalOperator(binary.getKind())
+					|| Util.isComparisonOperator(binary.getKind());
+			boolean actualCharWrapping = false;
+			if (charWrapping && binary.lhs.type.isPrimitive() && context.symtab.charType.tsym == binary.lhs.type.tsym
+					&& !(binary.rhs.type.tsym == context.symtab.stringType.tsym)) {
+				actualCharWrapping = true;
+				if (binary.lhs instanceof JCLiteral) {
+					print(binary.lhs).print(".charCodeAt(0)");
+				} else {
+					print("(c => c.charCodeAt==null?<any>c:c.charCodeAt(0))(").print(binary.lhs).print(")");
+				}
 			} else {
-				print("(");
-				truncate = true;
+				print(binary.lhs);
 			}
-		}
-		if (binary.type.getKind() == TypeKind.FLOAT) {
-			print("(<any>Math).fround(");
-			closeParen = true;
-		}
-		boolean charWrapping = Util.isArithmeticOrLogicalOperator(binary.getKind())
-				|| Util.isComparisonOperator(binary.getKind());
-		boolean actualCharWrapping = false;
-		if (charWrapping && binary.lhs.type.isPrimitive() && context.symtab.charType.tsym == binary.lhs.type.tsym
-				&& !(binary.rhs.type.tsym == context.symtab.stringType.tsym)) {
-			actualCharWrapping = true;
-			if (binary.lhs instanceof JCLiteral) {
-				print(binary.lhs).print(".charCodeAt(0)");
-			} else {
-				print("(c => c.charCodeAt==null?<any>c:c.charCodeAt(0))(").print(binary.lhs).print(")");
+			String op = binary.operator.name.toString();
+			if (binary.lhs.type.getKind() == TypeKind.BOOLEAN) {
+				if ("|".equals(op)) {
+					op = "||";
+				} else if ("&".equals(op)) {
+					op = "&&";
+				} else if ("^".equals(op)) {
+					op = "!==";
+				}
 			}
-		} else {
-			print(binary.lhs);
-		}
-		String op = binary.operator.name.toString();
-		if (binary.lhs.type.getKind() == TypeKind.BOOLEAN) {
-			if ("|".equals(op)) {
-				op = "||";
-			} else if ("&".equals(op)) {
-				op = "&&";
-			} else if ("^".equals(op)) {
-				op = "!==";
+			if ("==".equals(op) || "!=".equals(op)) {
+				if (charWrapping && binary.rhs.type.isPrimitive()
+						&& context.symtab.charType.tsym == binary.rhs.type.tsym
+						&& !(binary.lhs.type.tsym == context.symtab.stringType.tsym)) {
+					actualCharWrapping = true;
+				}
 			}
-		}
-		if ("==".equals(op) || "!=".equals(op)) {
+
+			if (!actualCharWrapping && ("==".equals(op) || "!=".equals(op))) {
+				switch (getComparisonMode()) {
+				case FORCE_STRICT:
+					op += "=";
+					break;
+				case STRICT:
+					if (!(Util.isNullLiteral(binary.lhs) || Util.isNullLiteral(binary.rhs))) {
+						op += "=";
+					}
+					break;
+				default:
+					break;
+				}
+			}
+
+			space().print(op).space();
 			if (charWrapping && binary.rhs.type.isPrimitive() && context.symtab.charType.tsym == binary.rhs.type.tsym
 					&& !(binary.lhs.type.tsym == context.symtab.stringType.tsym)) {
-				actualCharWrapping = true;
-			}
-		}
-
-		if (!actualCharWrapping && ("==".equals(op) || "!=".equals(op))) {
-			switch (getComparisonMode()) {
-			case FORCE_STRICT:
-				op += "=";
-				break;
-			case STRICT:
-				if (!(Util.isNullLiteral(binary.lhs) || Util.isNullLiteral(binary.rhs))) {
-					op += "=";
+				if (binary.rhs instanceof JCLiteral) {
+					print(binary.rhs).print(".charCodeAt(0)");
+				} else {
+					print("(c => c.charCodeAt==null?<any>c:c.charCodeAt(0))(").print(binary.rhs).print(")");
 				}
-				break;
-			default:
-				break;
-			}
-		}
-
-		space().print(op).space();
-		if (charWrapping && binary.rhs.type.isPrimitive() && context.symtab.charType.tsym == binary.rhs.type.tsym
-				&& !(binary.lhs.type.tsym == context.symtab.stringType.tsym)) {
-			if (binary.rhs instanceof JCLiteral) {
-				print(binary.rhs).print(".charCodeAt(0)");
 			} else {
-				print("(c => c.charCodeAt==null?<any>c:c.charCodeAt(0))(").print(binary.rhs).print(")");
+				print(binary.rhs);
 			}
-		} else {
-			print(binary.rhs);
-		}
-		if (closeParen) {
-			print(")");
-		}
-		if (truncate) {
-			print("|0)");
+			if (closeParen) {
+				print(")");
+			}
+			if (truncate) {
+				print("|0)");
+			}
 		}
 	}
 
@@ -4265,52 +4273,54 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	@Override
 	public void visitUnary(JCUnary unary) {
-		if (getContext().options.isSupportSaticLazyInitialization()) {
-			if (!inRollback) {
-				JCStatement statement = null;
-				VarSymbol[] staticInitializedField = { null };
-				switch (unary.getTag()) {
-				case POSTDEC:
-				case POSTINC:
-				case PREDEC:
-				case PREINC:
-					staticInitializedAssignment = (staticInitializedField[0] = getStaticInitializedField(
-							unary.arg)) != null;
-					if (staticInitializedAssignment) {
-						statement = getParent(JCStatement.class);
+		if (!getAdapter().substituteUnaryOperator(new UnaryOperatorElementSupport(unary))) {
+			if (getContext().options.isSupportSaticLazyInitialization()) {
+				if (!inRollback) {
+					JCStatement statement = null;
+					VarSymbol[] staticInitializedField = { null };
+					switch (unary.getTag()) {
+					case POSTDEC:
+					case POSTINC:
+					case PREDEC:
+					case PREINC:
+						staticInitializedAssignment = (staticInitializedField[0] = getStaticInitializedField(
+								unary.arg)) != null;
+						if (staticInitializedAssignment) {
+							statement = getParent(JCStatement.class);
+						}
+					default:
 					}
-				default:
+					if (statement != null) {
+						rollback(statement, tree -> {
+							print(context.getRootRelativeName(null, staticInitializedField[0].getEnclosingElement()))
+									.print(".").print(staticInitializedField[0].getSimpleName().toString()
+											+ STATIC_INITIALIZATION_SUFFIX + "();")
+									.println().printIndent();
+							inRollback = true;
+							scan(tree);
+						});
+					}
+				} else {
+					inRollback = false;
 				}
-				if (statement != null) {
-					rollback(statement, tree -> {
-						print(context.getRootRelativeName(null, staticInitializedField[0].getEnclosingElement()))
-								.print(".").print(staticInitializedField[0].getSimpleName().toString()
-										+ STATIC_INITIALIZATION_SUFFIX + "();")
-								.println().printIndent();
-						inRollback = true;
-						scan(tree);
-					});
-				}
-			} else {
-				inRollback = false;
 			}
-		}
-		switch (unary.getTag()) {
-		case POS:
-			print("+").print(unary.arg);
-			break;
-		case NEG:
-			print("-").print(unary.arg);
-			break;
-		case POSTDEC:
-		case POSTINC:
-			print(unary.arg);
-			print(unary.operator.name.toString());
-			break;
-		default:
-			print(unary.operator.name.toString());
-			print(unary.arg);
-			break;
+			switch (unary.getTag()) {
+			case POS:
+				print("+").print(unary.arg);
+				break;
+			case NEG:
+				print("-").print(unary.arg);
+				break;
+			case POSTDEC:
+			case POSTINC:
+				print(unary.arg);
+				print(unary.operator.name.toString());
+				break;
+			default:
+				print(unary.operator.name.toString());
+				print(unary.arg);
+				break;
+			}
 		}
 	}
 

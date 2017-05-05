@@ -93,14 +93,16 @@ public class AmbientTests extends AbstractTest {
 		eval(ModuleKind.none, false, (logHandler, result) -> {
 			Assert.assertTrue("test was not executed", result.get("baseExecuted"));
 			Assert.assertTrue("extension was not executed", result.get("extensionExecuted"));
-		}, libJs, getSourceFile(LibAccessSubModule.class), getSourceFile(Base.class), getSourceFile(Extension.class), getSourceFile(C.class));
+		}, libJs, getSourceFile(LibAccessSubModule.class), getSourceFile(Base.class), getSourceFile(Extension.class),
+				getSourceFile(C.class));
 	}
 
 	@Test
 	public void testGlobalsAccess() {
 		transpile(logHandler -> {
 			logHandler.assertNoProblems();
-		}, getSourceFile(GlobalsAccess.class), getSourceFile(Globals.class));
+		}, getSourceFile(GlobalsAccess.class), getSourceFile(Globals.class),
+				getSourceFile(source.ambient.globals.Globals.class));
 	}
 
 	@Test

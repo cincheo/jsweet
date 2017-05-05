@@ -40,9 +40,9 @@ public class Maps {
 
 		trace.push("" + m.containsKey("2"));
 
-		trace.push("[" + m.keySet() + "]");
+		trace.push(m.keySet().toString());
 
-		trace.push("[" + m.values() + "]");
+		trace.push("" + m.values());
 
 		m.remove("1");
 
@@ -53,7 +53,7 @@ public class Maps {
 		trace.push(Collections.singletonMap("b", "2").get("b"));
 
 		m.clear();
-		trace.push("[" + m.values() + "]");
+		trace.push(m.values().toString());
 
 		trace.push("-" + m.get("undefinedKey") + "-");
 		

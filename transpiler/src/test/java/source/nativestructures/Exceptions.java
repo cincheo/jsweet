@@ -20,6 +20,8 @@ public class Exceptions {
 			trace.push(e1.getMessage());
 		} catch (NumberFormatException e2) {
 			trace.push(e2.getMessage());
+		} catch (TestException3 e3) {
+			trace.push(e3.getMessage());
 		} finally {
 			trace.push("finally");
 		}
@@ -47,7 +49,7 @@ public class Exceptions {
 	public void m3() throws TestException {
 		throw new TestException("test3");
 	}
-	
+
 }
 
 class TestException extends Exception {
@@ -61,6 +63,14 @@ class TestException extends Exception {
 class TestException2 extends java.lang.Exception {
 
 	public TestException2(String msg) {
+		super(msg);
+	}
+
+}
+
+class TestException3 extends java.lang.RuntimeException {
+
+	public TestException3(String msg) {
 		super(msg);
 	}
 

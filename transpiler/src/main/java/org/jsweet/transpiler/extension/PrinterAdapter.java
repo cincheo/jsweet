@@ -39,6 +39,7 @@ import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.model.ArrayAccessElement;
 import org.jsweet.transpiler.model.AssignmentElement;
+import org.jsweet.transpiler.model.BinaryOperatorElement;
 import org.jsweet.transpiler.model.CaseElement;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.ForeachLoopElement;
@@ -46,6 +47,7 @@ import org.jsweet.transpiler.model.IdentifierElement;
 import org.jsweet.transpiler.model.ImportElement;
 import org.jsweet.transpiler.model.MethodInvocationElement;
 import org.jsweet.transpiler.model.NewClassElement;
+import org.jsweet.transpiler.model.UnaryOperatorElement;
 import org.jsweet.transpiler.model.Util;
 import org.jsweet.transpiler.model.VariableAccessElement;
 import org.jsweet.transpiler.model.support.ExtendedElementSupport;
@@ -549,6 +551,28 @@ public class PrinterAdapter {
 	 */
 	public boolean substituteArrayAccess(ArrayAccessElement arrayAccess) {
 		return parentAdapter == null ? false : parentAdapter.substituteArrayAccess(arrayAccess);
+	}
+
+	/**
+	 * Substitutes the value of a binary operator.
+	 * 
+	 * @param binaryOperator
+	 *            the binary operator being printed
+	 * @return true if substituted
+	 */
+	public boolean substituteBinaryOperator(BinaryOperatorElement binaryOperator) {
+		return parentAdapter == null ? false : parentAdapter.substituteBinaryOperator(binaryOperator);
+	}
+
+	/**
+	 * Substitutes the value of a unary operator.
+	 * 
+	 * @param unaryOperator
+	 *            the unary operator being printed
+	 * @return true if substituted
+	 */
+	public boolean substituteUnaryOperator(UnaryOperatorElement unaryOperator) {
+		return parentAdapter == null ? false : parentAdapter.substituteUnaryOperator(unaryOperator);
 	}
 
 	/**

@@ -18,8 +18,6 @@ package org.jsweet.test.transpiler;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.File;
-
 import org.jsweet.transpiler.ModuleKind;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -28,6 +26,7 @@ import org.junit.Test;
 import source.api.AccessStaticMethod;
 import source.api.ArrayBuffers;
 import source.api.CastMethods;
+import source.api.Equals;
 import source.api.ErasingJava;
 import source.api.ExpressionBuilderTest;
 import source.api.ExpressionBuilderTest2;
@@ -161,16 +160,28 @@ public class ApiTests extends AbstractTest {
 
 	@Test
 	public void testExpressionBuilder() {
-		transpiler.addJsLibFiles(getJ4TSRuntime());
-		try {
-			eval(ModuleKind.none, (logHandler, r) -> {
-				logHandler.assertNoProblems();
-				Assert.assertEquals(30, (int) r.get("result"));
-				Assert.assertEquals(30, (int) r.get("result2"));
-			}, getSourceFile(ExpressionBuilderTest.class), getSourceFile(ExpressionBuilderTest2.class));
-		} finally {
-			transpiler.clearJsLibFiles();
-		}
+		// evalWithJavaSupport((logHandler, r) -> {
+		// logHandler.assertNoProblems();
+		// Assert.assertEquals(30, (int) r.get("result"));
+		// Assert.assertEquals(30, (int) r.get("result2"));
+		// }, getSourceFile(ExpressionBuilderTest.class),
+		// getSourceFile(ExpressionBuilderTest2.class));
+		eval((logHandler, r) -> {
+			logHandler.assertNoProblems();
+			Assert.assertEquals(30, (int) r.get("result"));
+		}, getSourceFile(ExpressionBuilderTest.class));
+		eval((logHandler, r) -> {
+			logHandler.assertNoProblems();
+			Assert.assertEquals(30, (int) r.get("result2"));
+		}, getSourceFile(ExpressionBuilderTest2.class));
+	}
+
+	@Test
+	public void testEquals() {
+		eval(ModuleKind.none, (logHandler, r) -> {
+			logHandler.assertNoProblems();
+			Assert.assertEquals("false,true,false,true,false,true,false,false,true", r.get("trace"));
+		}, getSourceFile(Equals.class));
 	}
 
 }

@@ -1343,6 +1343,19 @@ public class JSweetContext extends Context {
 		}
 	}
 
+	/**
+	 * Grabs the names of all the superclasses.
+	 */
+	public void grabSuperClassNames(Set<String> superClasses, Element type) {
+		if (type == null) {
+			return;
+		}
+		if (type instanceof ClassSymbol) {
+			superClasses.add(((ClassSymbol) type).getQualifiedName().toString());
+			grabSuperClassNames(superClasses, ((ClassSymbol) type).getSuperclass().tsym);
+		}
+	}
+
 	public void grabMethodsToBeImplemented(List<MethodSymbol> methods, TypeSymbol type) {
 		if (type == null) {
 			return;

@@ -22,6 +22,7 @@ import javax.lang.model.element.VariableElement;
 
 import org.jsweet.transpiler.model.support.ArrayAccessElementSupport;
 import org.jsweet.transpiler.model.support.AssignmentElementSupport;
+import org.jsweet.transpiler.model.support.BinaryOperatorElementSupport;
 import org.jsweet.transpiler.model.support.CaseElementSupport;
 import org.jsweet.transpiler.model.support.ExtendedElementSupport;
 import org.jsweet.transpiler.model.support.ForeachLoopElementSupport;
@@ -31,11 +32,13 @@ import org.jsweet.transpiler.model.support.LiteralElementSupport;
 import org.jsweet.transpiler.model.support.MethodInvocationElementSupport;
 import org.jsweet.transpiler.model.support.NewArrayElementSupport;
 import org.jsweet.transpiler.model.support.NewClassElementSupport;
+import org.jsweet.transpiler.model.support.UnaryOperatorElementSupport;
 import org.jsweet.transpiler.model.support.VariableAccessElementSupport;
 
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCArrayAccess;
 import com.sun.tools.javac.tree.JCTree.JCAssign;
+import com.sun.tools.javac.tree.JCTree.JCBinary;
 import com.sun.tools.javac.tree.JCTree.JCCase;
 import com.sun.tools.javac.tree.JCTree.JCEnhancedForLoop;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
@@ -45,6 +48,7 @@ import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCNewArray;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
+import com.sun.tools.javac.tree.JCTree.JCUnary;
 
 /**
  * A factory to create extended elements. It defines an overloaded create method
@@ -96,6 +100,30 @@ public class ExtendedElementFactory {
 			return new AssignmentElementSupport((JCAssign) tree);
 		case IMPORT:
 			return new ImportElementSupport((JCImport) tree);
+		case AND:
+		case OR:
+		case BITAND:
+		case BITXOR:
+		case DIV:
+		case EQ:
+		case GE:
+		case LE:
+		case LT:
+		case GT:
+		case MINUS:
+		case MOD:
+		case MUL:
+		case NE:
+		case PLUS:
+			return new BinaryOperatorElementSupport((JCBinary) tree);
+		case NEG:
+		case NOT:
+		case POS:
+		case PREDEC:
+		case PREINC:
+		case POSTDEC:
+		case POSTINC:
+			return new UnaryOperatorElementSupport((JCUnary) tree);
 		default:
 			return new ExtendedElementSupport(tree);
 		}

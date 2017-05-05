@@ -7,8 +7,10 @@ import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
@@ -162,7 +164,7 @@ public class Collections implements Cloneable, Serializable {
 		String[] a3 = new String[] { "c", "b", "a" };
 		Arrays.sort(a3, c);
 
-		trace.push("[" + a3 + "]");
+		trace.push("array[" + a3 + "]");
 
 		trace.push("" + java.util.Collections.binarySearch(l, "it"));
 
@@ -186,22 +188,22 @@ public class Collections implements Cloneable, Serializable {
 
 		l3.toArray(array1);
 
-		trace.push("[" + array1 + "]");
+		trace.push("array[" + array1.toString() + "]");
 
 		Arrays.sort(array1, MyComparator);
-		
-		trace.push("[" + array1 + "]");
+
+		trace.push("array[" + array1.toString() + "]");
 
 		java.util.Collections.reverse(l3);
 
-		trace.push("[" + l3 + "]");
-		
+		trace.push("" + l3 + "");
+
 		Stack<String> stack = new Stack<>();
 		stack.push("aa");
 		stack.push("bb");
 		stack.push("cc");
-		
-		trace.push("[" + stack + "]");
+
+		trace.push("" + stack);
 
 		trace.push("" + java.util.Collections.binarySearch(stack, "bb1"));
 
@@ -211,16 +213,16 @@ public class Collections implements Cloneable, Serializable {
 				return o1.compareTo(o2);
 			}
 		}));
-		
+
 		trace.push(stack.peek());
-		
+
 		stack.pop();
-		
-		trace.push("[" + stack + "]");
-		
+
+		trace.push("" + stack);
+
 		Arrays.fill(array1, "a");
-		
-		trace.push("[" + array1 + "]");
+
+		trace.push("array[" + array1 + "]");
 
 		l.toArray(new String[l.size()]);
 
@@ -228,14 +230,42 @@ public class Collections implements Cloneable, Serializable {
 		l.add("a");
 		l.add("b");
 		l.add("c");
-		
+
 		List<String> ll = new ArrayList<>();
 		ll.add("d");
 		ll.add("e");
-		
+
 		l.addAll(1, ll);
-		
-		trace.push("[" + l + "]");
+
+		trace.push("" + l + "");
+
+		Deque<String> dq = new LinkedList<>();
+
+		dq.addLast("a");
+		dq.addLast("b");
+		dq.addFirst("c");
+
+		trace.push("" + dq.isEmpty());
+
+		trace.push("" + dq);
+
+		trace.push(dq.pollFirst());
+
+		trace.push("" + dq);
+
+		trace.push(dq.pollLast());
+
+		trace.push("" + dq);
+
+		trace.push(dq.pollLast());
+
+		trace.push("" + dq.pollLast());
+
+		trace.push("" + dq.isEmpty());
+
+		List<String> lll = null;
+
+		trace.push("" + lll);
 
 		$export("trace", trace.join(","));
 
@@ -245,7 +275,7 @@ public class Collections implements Cloneable, Serializable {
 		public int compare(Object o1, Object o2) {
 			return o2.toString().compareTo(o1.toString());
 		}
-	};	
+	};
 }
 
 class TestClone {
@@ -256,5 +286,3 @@ class TestClone {
 	}
 
 }
-
-

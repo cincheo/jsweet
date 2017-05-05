@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.Enumeration;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -38,9 +39,11 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TimeZone;
@@ -55,8 +58,8 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
 import org.jsweet.transpiler.JSweetContext;
-import org.jsweet.transpiler.Java2TypeScriptTranslator;
 import org.jsweet.transpiler.ModuleKind;
+import org.jsweet.transpiler.model.BinaryOperatorElement;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.ExtendedElementFactory;
 import org.jsweet.transpiler.model.ForeachLoopElement;
@@ -80,6 +83,7 @@ import com.sun.tools.javac.tree.JCTree.JCTypeApply;
 public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 
 	protected Map<String, String> extTypesMapping = new HashMap<>();
+	private final String ERASED_CLASS_HIERARCHY_FIELD = "__classes";
 
 	public RemoveJavaDependenciesAdapter(JSweetContext context) {
 		super(context);
@@ -93,11 +97,16 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 
 	private void init() {
 		addTypeMapping(Class.class.getName(), "Function<>");
+		context.getLangTypeMappings().put(RuntimeException.class.getName(), "Error");
+		context.getBaseThrowables().add(RuntimeException.class.getName());
 
 		extTypesMapping.put(List.class.getName(), "Array");
 		extTypesMapping.put(ArrayList.class.getName(), "Array");
+		extTypesMapping.put(LinkedList.class.getName(), "Array");
 		extTypesMapping.put(Collection.class.getName(), "Array");
 		extTypesMapping.put(Set.class.getName(), "Array");
+		extTypesMapping.put(Deque.class.getName(), "Array");
+		extTypesMapping.put(Queue.class.getName(), "Array");
 		extTypesMapping.put(Stack.class.getName(), "Array");
 		extTypesMapping.put(HashSet.class.getName(), "Array");
 		extTypesMapping.put(TreeSet.class.getName(), "Array");
@@ -195,6 +204,9 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 				break;
 			case "java.util.Collection":
 			case "java.util.List":
+			case "java.util.Queue":
+			case "java.util.Deque":
+			case "java.util.LinkedList":
 			case "java.util.ArrayList":
 			case "java.util.Stack":
 			case "java.util.Vector":
@@ -203,6 +215,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			case "java.util.TreeSet":
 				switch (targetMethodName) {
 				case "add":
+				case "addLast":
 				case "push":
 				case "addElement":
 					printMacroName(targetMethodName);
@@ -257,6 +270,20 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 								.printArgList(invocation.getArgumentTail()).print(", 1))(")
 								.print(invocation.getTargetExpression()).print(")");
 					}
+					return true;
+				case "addFirst":
+					printMacroName(targetMethodName);
+					print(invocation.getTargetExpression()).print(".unshift(").print(invocation.getArgument(0))
+							.print(")");
+					return true;
+				case "poll":
+				case "pollFirst":
+					printMacroName(targetMethodName);
+					print("(a => a.length==0?null:a.shift())(").print(invocation.getTargetExpression()).print(")");
+					return true;
+				case "pollLast":
+					printMacroName(targetMethodName);
+					print("(a => a.length==0?null:a.pop())(").print(invocation.getTargetExpression()).print(")");
 					return true;
 				case "removeElementAt":
 					printMacroName(targetMethodName);
@@ -336,6 +363,10 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 					return true;
 				case "ensureCapacity":
 					printMacroName(targetMethodName);
+					return true;
+				case "toString":
+					printMacroName(targetMethodName);
+					print("('['+").print(invocation.getTargetExpression()).print(".join(', ')+']')");
 					return true;
 				}
 				break;
@@ -901,6 +932,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			print("new Number(").print(newClass.getArgument(0)).print(").valueOf()");
 			return true;
 		case "java.util.ArrayList":
+		case "java.util.LinkedList":
 		case "java.util.Vector":
 		case "java.util.Stack":
 			if (newClass.getArgumentCount() == 0) {
@@ -968,8 +1000,16 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 					}
 				}
 				print(")");
-				print(", '" + Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR + "', { configurable: true, value: '")
-						.print(className).print("'").print(" })");
+				Set<String> classes = new HashSet<>();
+				context.grabSuperClassNames(classes, newClass.getTypeAsElement());
+				print(", '" + ERASED_CLASS_HIERARCHY_FIELD + "', { configurable: true, value: [");
+				for (String c : classes) {
+					print("'" + c + "',");
+				}
+				if (!classes.isEmpty()) {
+					removeLastChar();
+				}
+				print("] })");
 				return true;
 			}
 		}
@@ -1012,9 +1052,15 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			print(" != null && ");
 			print("(");
 			print(exprStr, expr);
-			print("[\"" + Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR + "\"]").print(" == ")
-					.print("\"" + type.tsym.getQualifiedName().toString() + "\"");
+			print("[\"" + ERASED_CLASS_HIERARCHY_FIELD + "\"] && ");
+			print(exprStr, expr);
+			print("[\"" + ERASED_CLASS_HIERARCHY_FIELD + "\"].indexOf(\""
+					+ type.tsym.getQualifiedName().toString() + "\") >= 0");
 			print(")");
+			if(context.getBaseThrowables().contains(typeName)) {
+				print(" || ");
+				return false;
+			}
 			return true;
 		}
 		String mappedType = extTypesMapping.get(typeName);
@@ -1045,6 +1091,28 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		}
 
 		return super.substituteInstanceof(exprStr, expr, type);
+	}
+
+	@Override
+	public boolean substituteBinaryOperator(BinaryOperatorElement binaryOperator) {
+		if ("+".equals(binaryOperator.getOperator())) {
+			if (types().isSameType(util().getType(String.class), binaryOperator.getOperatorType().getReturnType())) {
+				if ("Array".equals(
+						extTypesMapping.get(types().erasure(binaryOperator.getLeftHandSide().getType()).toString()))) {
+					print("/* implicit toString */ (a => a?'['+a.join(', ')+']':'null')(")
+							.print(binaryOperator.getLeftHandSide()).print(") + ")
+							.print(binaryOperator.getRightHandSide());
+					return true;
+				} else if ("Array".equals(
+						extTypesMapping.get(types().erasure(binaryOperator.getRightHandSide().getType()).toString()))) {
+					print(binaryOperator.getLeftHandSide())
+							.print(" + /* implicit toString */ (a => a?'['+a.join(', ')+']':'null')(")
+							.print(binaryOperator.getRightHandSide()).print(")");
+					return true;
+				}
+			}
+		}
+		return super.substituteBinaryOperator(binaryOperator);
 	}
 
 }

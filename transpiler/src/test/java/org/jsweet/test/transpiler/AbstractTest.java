@@ -72,11 +72,6 @@ public class AbstractTest {
 				name + ".d.ts");
 	}
 
-	// TODO: lookup current version
-	protected File getJ4TSRuntime() {
-		return new File(transpiler.getWorkingDirectory() + "/candies/js/j4ts-0.5.0-SNAPSHOT/bundle.js");
-	}
-
 	protected final String getCurrentTestName() {
 		return getClass().getSimpleName() + "." + testNameRule.getMethodName();
 	}

@@ -221,17 +221,14 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 		context.getLangTypeMappings().put(Character.class.getName(), "String");
 		context.getLangTypeMappings().put(Math.class.getName(), "Math");
 		context.getLangTypeMappings().put(Exception.class.getName(), "Error");
-		context.getLangTypeMappings().put(RuntimeException.class.getName(), "Error");
 		context.getLangTypeMappings().put(Throwable.class.getName(), "Error");
 		context.getLangTypeMappings().put(Error.class.getName(), "Error");
-		// context.getLangTypesMapping().put("java.util.Date", "Date");
 
 		for (String s : context.getLangTypeMappings().keySet()) {
 			context.getLangTypesSimpleNames().add(s.substring(s.lastIndexOf('.') + 1));
 		}
 
 		context.getBaseThrowables().add(Throwable.class.getName());
-		context.getBaseThrowables().add(RuntimeException.class.getName());
 		context.getBaseThrowables().add(Error.class.getName());
 		context.getBaseThrowables().add(Exception.class.getName());
 
@@ -1169,9 +1166,9 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 					switch (targetMethodName) {
 					case "equals":
 						printMacroName(targetMethodName);
-						print("((<any>");
-						printTarget(invocationElement.getTargetExpression()).print(") === ")
-								.printArgList(invocationElement.getArguments()).print(")");
+						print("(<any>((o1: any, o2: any) => { if(o1 && o1.equals) { return o1.equals(o2); } else { return o1 === o2; } })(");
+						printTarget(invocationElement.getTargetExpression()).print(",").print(invocationElement.getArgument(0));
+						print("))");
 						return true;
 					}
 				}
@@ -1199,9 +1196,9 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 				if (methSym != null && (Object.class.getName().equals(methSym.getEnclosingElement().toString())
 						|| methSym.getEnclosingElement().isInterface())) {
 					printMacroName(targetMethodName);
-					print("((<any>");
-					printTarget(invocationElement.getTargetExpression()).print(") === ")
-							.printArgList(invocationElement.getArguments()).print(")");
+					print("(<any>((o1: any, o2: any) => { if(o1 && o1.equals) { return o1.equals(o2); } else { return o1 === o2; } })(");
+					printTarget(invocationElement.getTargetExpression()).print(",").print(invocationElement.getArgument(0));
+					print("))");
 					return true;
 				}
 			}

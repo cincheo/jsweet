@@ -32,6 +32,7 @@ import org.jsweet.transpiler.JSweetTranspiler;
 import org.jsweet.transpiler.util.ConsoleTranspilationHandler;
 import org.jsweet.transpiler.util.ErrorCountTranspilationHandler;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.sun.tools.javac.tree.JCTree;
@@ -41,6 +42,7 @@ import source.migration.QuickStart;
 
 public class MigrationTest extends AbstractTest {
 
+	@Ignore
 	@Test
 	public void test1() throws Exception {
 		File dir = Files.createTempDirectory("jsweet").toFile();
