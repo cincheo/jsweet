@@ -57,7 +57,10 @@ import def.js.String;
  * <p>
  * This solution is cleaner than using the {@link Object#$get(String)} function,
  * which is not typed.
+ * 
+ * @deprecated Please use a <code>def.*</code> package for declarations.
  */
+@Deprecated
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE, ElementType.FIELD, ElementType.METHOD })
 @Documented

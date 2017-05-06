@@ -16,7 +16,6 @@
  */
 package jsweet.lang;
 
-import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -57,10 +56,12 @@ import def.js.String;
  * <p>
  * This solution is cleaner than using the {@link Object#$get(String)} function,
  * which is not typed.
+ * 
+ * @deprecated Please use a <code>def.*</code> package for declarations.
  */
+@Deprecated
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE, ElementType.FIELD, ElementType.METHOD })
-@Documented
 public @interface Ambient {
 
 }
