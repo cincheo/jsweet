@@ -302,9 +302,16 @@ public enum JSweetProblem {
 	/**
 	 * Raised when a template literal is not used properly.
 	 */
-	MISUSED_TEMPLATE_MACRO(Severity.ERROR);
+	MISUSED_TEMPLATE_MACRO(Severity.ERROR),
+	/**
+	 * Raised when a mixin does not have the same name as its target.
+	 */
+	WRONG_MIXIN_NAME(Severity.ERROR),
+	/**
+	 * Raised when a mixin targets itself.
+	 */
+	SELF_MIXIN_TARGET(Severity.ERROR);
 
-	
 	private Severity severity;
 
 	/**
@@ -334,11 +341,15 @@ public enum JSweetProblem {
 		case MAPPED_TSC_ERROR:
 			return String.format("%s", params);
 		case NODE_CANNOT_START:
-			return String.format("cannot find Node.js: install first and make sure that the 'node' command is in your execution path", params);
+			return String.format(
+					"cannot find Node.js: install first and make sure that the 'node' command is in your execution path",
+					params);
 		case NODE_OBSOLETE_VERSION:
 			return String.format("Node.js should be upgraded: %s < %s (recommended)", params);
 		case TSC_CANNOT_START:
-			return String.format("cannot find TypeScript compiler: install first and make sure that the 'tsc' command is in your execution path", params);
+			return String.format(
+					"cannot find TypeScript compiler: install first and make sure that the 'tsc' command is in your execution path",
+					params);
 		case JDK_TYPE:
 			return String.format("invalid access to JDK type '%s' from JSweet", params);
 		case JDK_METHOD:
@@ -360,12 +371,16 @@ public enum JSweetProblem {
 		case UNINITIALIZED_FIELD:
 			return String.format("field '%s' is not optional (see @Optional) but has not been initialized", params);
 		case USELESS_OPTIONAL_ANNOTATION:
-			return String.format("useless @Optional field %s (fields are optional by default in classes, use @Interface to define %s as an interface)", params);
-		case JS_KEYWORD_CONFLICT:
-			return String.format("local variable name '%s' is not allowed and is automatically generated to '" + JSweetConfig.JS_KEYWORD_PREFIX + "%s'",
+			return String.format(
+					"useless @Optional field %s (fields are optional by default in classes, use @Interface to define %s as an interface)",
 					params);
+		case JS_KEYWORD_CONFLICT:
+			return String.format("local variable name '%s' is not allowed and is automatically generated to '"
+					+ JSweetConfig.JS_KEYWORD_PREFIX + "%s'", params);
 		case INVALID_METHOD_BODY_IN_INTERFACE:
-			return String.format("method '%s' cannot define a body in interface '%s' (try 'abstract' or 'native' modifiers)", params);
+			return String.format(
+					"method '%s' cannot define a body in interface '%s' (try 'abstract' or 'native' modifiers)",
+					params);
 		case INVALID_PRIVATE_IN_INTERFACE:
 			return String.format("member '%s' cannot be private in interface '%s'", params);
 		case INVALID_FIELD_INITIALIZER_IN_INTERFACE:
@@ -421,16 +436,22 @@ public enum JSweetProblem {
 		case WILDCARD_IMPORT:
 			return String.format("imports cannot use * wildcards: please import a specific element", params);
 		case ENCLOSED_ROOT_PACKAGES:
-			return String.format("invalid package hierarchy: @Root package '%s' cannot be enclosed in @Root package '%s'", params);
+			return String.format(
+					"invalid package hierarchy: @Root package '%s' cannot be enclosed in @Root package '%s'", params);
 		case MULTIPLE_ROOT_PACKAGES_NOT_ALLOWED_WITH_MODULES:
-			return String.format("multipe @Root packages (including the default 'null' package) are not allowed when using modules, found packages: %s",
+			return String.format(
+					"multipe @Root packages (including the default 'null' package) are not allowed when using modules, found packages: %s",
 					params);
 		case CLASS_OUT_OF_ROOT_PACKAGE_SCOPE:
-			return String.format("invalid package hierarchy: type '%s' is declared in a parent of @Root package '%s'", params);
+			return String.format("invalid package hierarchy: type '%s' is declared in a parent of @Root package '%s'",
+					params);
 		case WRONG_USE_OF_AMBIENT:
-			return String.format("wrong use of @Ambient on '%s': only types and globals can be declared as ambients", params);
+			return String.format("wrong use of @Ambient on '%s': only types and globals can be declared as ambients",
+					params);
 		case CANDY_VERSION_DISCREPANCY:
-			return String.format("candy %s:%s was generated for a different version of the transpiler (current:%s, candy:%s)", params);
+			return String.format(
+					"candy %s:%s was generated for a different version of the transpiler (current:%s, candy:%s)",
+					params);
 		case GLOBALS_CAN_ONLY_HAVE_STATIC_MEMBERS:
 			return String.format("globals classes can only define static members", params);
 		case GLOBALS_CLASS_CANNOT_HAVE_SUPERCLASS:
@@ -438,21 +459,31 @@ public enum JSweetProblem {
 		case GLOBALS_CLASS_CANNOT_BE_SUBCLASSED:
 			return String.format("globals classes cannot be subclassed", params);
 		case CANNOT_ACCESS_THIS:
-			return String.format("'this' isn't defined in scope of %s", params);
+			return String.format("'this' isn't defined in scope of '%s'", params);
 		case CANNOT_ACCESS_STATIC_MEMBER_ON_THIS:
 			return String.format("member '%s' is static and cannot be accessed on 'this'", params);
 		case UNTYPED_OBJECT_ODD_PARAMETER_COUNT:
-			return String.format("wrong parameter count: method '$object' expects a list of key/value pairs as parameters", params);
+			return String.format(
+					"wrong parameter count: method '$object' expects a list of key/value pairs as parameters", params);
 		case UNTYPED_OBJECT_WRONG_KEY:
-			return String.format("wrong key: method '$object' expects a list of key/value pairs as parameters, where keys are string literals", params);
+			return String.format(
+					"wrong key: method '$object' expects a list of key/value pairs as parameters, where keys are string literals",
+					params);
 		case CYCLE_IN_STATIC_INITIALIZER_DEPENDENCIES:
 			return String.format("a cycle was detected in static intializers involving '%s'", params);
 		case INTERNAL_TRANSPILER_ERROR:
 			return String.format("internal transpiler error");
 		case MISUSED_INSERT_MACRO:
-			return String.format("the %s macro argument must be a raw string literal");
+			return String.format("the '%s' macro argument must be a raw string literal", params);
 		case MISUSED_TEMPLATE_MACRO:
-			return String.format("the %s macro last argument must be a raw string literal");
+			return String.format("the '%s' macro last argument must be a raw string literal", params);
+		case WRONG_MIXIN_NAME:
+			return String.format("the '%s' mixin must have the same root-relative name as its target ('%s')", params);
+		case SELF_MIXIN_TARGET:
+			return String.format(
+					"the '%s' mixin targets itself but should target another interface/declaration of the same name",
+					params);
+
 		}
 		return null;
 	}

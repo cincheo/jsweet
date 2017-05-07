@@ -75,6 +75,8 @@ import org.jsweet.transpiler.util.JSDoc;
 import org.jsweet.transpiler.util.Util;
 
 import com.sun.source.tree.Tree.Kind;
+import com.sun.tools.javac.code.Attribute;
+import com.sun.tools.javac.code.Attribute.Compound;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
@@ -1184,6 +1186,19 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			String mixin = null;
 			if (context.hasAnnotationType(classdecl.sym, JSweetConfig.ANNOTATION_MIXIN)) {
 				mixin = context.getAnnotationValue(classdecl.sym, JSweetConfig.ANNOTATION_MIXIN, null);
+				for (Compound c : classdecl.sym.getAnnotationMirrors()) {
+					if (JSweetConfig.ANNOTATION_MIXIN.equals(c.type.toString())) {
+						String targetName = getRootRelativeName(((Attribute.Class)c.values.head.snd).classType.tsym);
+						String mixinName = getRootRelativeName(classdecl.sym);
+						if(!mixinName.equals(targetName)) {
+							report(classdecl, JSweetProblem.WRONG_MIXIN_NAME, mixinName, targetName);
+						} else {
+							if(((Attribute.Class)c.values.head.snd).classType.tsym.equals(classdecl.sym)) {
+								report(classdecl, JSweetProblem.SELF_MIXIN_TARGET, mixinName);
+							}
+						}
+					}
+				}
 			}
 
 			boolean extendsInterface = false;

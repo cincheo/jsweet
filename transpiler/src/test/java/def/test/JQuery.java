@@ -8,6 +8,9 @@ public class JQuery extends def.jquery.JQuery {
 
 	public native void modal(String action);
 
-	public native void material_select();
+	public native JQuery material_select();
+	
+	public native JQuery myExtension();
+	
 
 }

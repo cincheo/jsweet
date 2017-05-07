@@ -23,6 +23,7 @@ import org.junit.Test;
 
 import def.test.Globals;
 import def.test.JQuery;
+import def.test2.ExtendedJQuery;
 import source.typing.ArraysOfLambdas;
 import source.typing.ClassTypeAsFunction;
 import source.typing.ClassTypeAsTypeOf;
@@ -31,6 +32,7 @@ import source.typing.CustomStringTypes;
 import source.typing.InvalidIndexedAccesses;
 import source.typing.Lambdas;
 import source.typing.MixinsWithDefs;
+import source.typing.MixinsWithDefsAndOtherName;
 import source.typing.Numbers;
 import source.typing.StringTypesUsage;
 import source.typing.Tuples;
@@ -159,6 +161,15 @@ public class TypingTests extends AbstractTest {
 		transpile(ModuleKind.none, logHandler -> {
 			logHandler.assertNoProblems();
 		}, getSourceFile(MixinsWithDefs.class), getSourceFile(Globals.class), getSourceFile(JQuery.class));
+	}
+
+	@Test
+	public void testWrongMixins() {
+		transpile(ModuleKind.none, logHandler -> {
+			Assert.assertTrue(logHandler.reportedProblems.contains(JSweetProblem.WRONG_MIXIN_NAME)
+					&& logHandler.reportedProblems.contains(JSweetProblem.SELF_MIXIN_TARGET));
+		}, getSourceFile(MixinsWithDefsAndOtherName.class), getSourceFile(def.test2.Globals.class),
+				getSourceFile(ExtendedJQuery.class), getSourceFile(def.test3.JQuery.class));
 	}
 
 }

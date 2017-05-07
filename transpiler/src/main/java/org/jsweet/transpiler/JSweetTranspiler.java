@@ -174,7 +174,7 @@ public class JSweetTranspiler implements JSweetOptions {
 	private boolean interfaceTracking = true;
 	private boolean supportGetClass = true;
 	private boolean supportSaticLazyInitialization = true;
-	private boolean generateDefinitions = false;
+	private boolean generateDefinitions = true;
 	private ArrayList<File> jsLibFiles = new ArrayList<>();
 	private File sourceRoot = null;
 	private boolean ignoreTypeScriptErrors = false;

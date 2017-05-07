@@ -27,20 +27,20 @@ import java.lang.annotation.Target;
  * final generated code (rather than the Java name).
  * 
  * <p>
- * This needs to be used when the name of an element is not a valid Java
- * identifier. By convention, JSweet implements a built-in convention to save
- * the use of @Name annotations:
+ * It can be used when the name of an element is not a valid Java identifier. By
+ * convention, JSweet implements a built-in convention to save the use of @Name
+ * annotations:
  * 
  * <ul>
  * <li>Convention: <code>Keyword</code> in Java transpiles to
- * <code>keyword</code>, when keyword is a Java keyword (such as catch, finaly,
+ * <code>keyword</code>, when keyword is a Java keyword (such as catch, finally,
  * int, long, and so forth)</li>
  * </ul>
  * 
  * @author Renaud Pawlak
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.TYPE, ElementType.CONSTRUCTOR, ElementType.FIELD, ElementType.METHOD, ElementType.PACKAGE })
+@Target({ ElementType.FIELD, ElementType.METHOD, ElementType.PACKAGE })
 @Documented
 public @interface Name {
 
