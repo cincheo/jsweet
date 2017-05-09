@@ -1,15 +1,5 @@
 package def.dom;
 
-import jsweet.util.StringTypes;
-import jsweet.util.StringTypes.abort;
-import jsweet.util.StringTypes.error;
-import jsweet.util.StringTypes.load;
-import jsweet.util.StringTypes.loadend;
-import jsweet.util.StringTypes.loadstart;
-import jsweet.util.StringTypes.progress;
-import jsweet.util.StringTypes.readystatechange;
-import jsweet.util.StringTypes.timeout;
-
 @jsweet.lang.Extends({XMLHttpRequestEventTarget.class})
 public class XMLHttpRequest extends EventTarget {
     public java.lang.String msCaching;
@@ -58,7 +48,15 @@ public class XMLHttpRequest extends EventTarget {
     native public void addEventListener(jsweet.util.StringTypes.loadstart type, java.util.function.Function<Event,java.lang.Object> listener, java.lang.Boolean useCapture);
     native public void addEventListener(jsweet.util.StringTypes.progress type, java.util.function.Function<ProgressEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
     native public void addEventListener(jsweet.util.StringTypes.timeout type, java.util.function.Function<ProgressEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
+    native public void addEventListener(jsweet.util.StringTypes.abort type, Runnable listener, java.lang.Boolean useCapture);
+    native public void addEventListener(jsweet.util.StringTypes.error type, Runnable listener, java.lang.Boolean useCapture);
+    native public void addEventListener(jsweet.util.StringTypes.load type, Runnable listener, java.lang.Boolean useCapture);
+    native public void addEventListener(jsweet.util.StringTypes.loadend type, Runnable listener, java.lang.Boolean useCapture);
+    native public void addEventListener(jsweet.util.StringTypes.loadstart type, Runnable listener, java.lang.Boolean useCapture);
+    native public void addEventListener(jsweet.util.StringTypes.progress type, Runnable listener, java.lang.Boolean useCapture);
+    native public void addEventListener(jsweet.util.StringTypes.timeout type, Runnable listener, java.lang.Boolean useCapture);
     native public void addEventListener(java.lang.String type, EventListener listener, java.lang.Boolean useCapture);
+    native public void addEventListener(java.lang.String type, Runnable listener, java.lang.Boolean useCapture);
     native public void open(java.lang.String method, java.lang.String url, java.lang.Boolean async, java.lang.String user);
     native public void open(java.lang.String method, java.lang.String url, java.lang.Boolean async);
     native public void open(java.lang.String method, java.lang.String url);
@@ -71,7 +69,16 @@ public class XMLHttpRequest extends EventTarget {
     native public void addEventListener(jsweet.util.StringTypes.progress type, java.util.function.Function<ProgressEvent,java.lang.Object> listener);
     native public void addEventListener(jsweet.util.StringTypes.readystatechange type, java.util.function.Function<ProgressEvent,java.lang.Object> listener);
     native public void addEventListener(jsweet.util.StringTypes.timeout type, java.util.function.Function<ProgressEvent,java.lang.Object> listener);
+    native public void addEventListener(jsweet.util.StringTypes.abort type, Runnable listener);
+    native public void addEventListener(jsweet.util.StringTypes.error type, Runnable listener);
+    native public void addEventListener(jsweet.util.StringTypes.load type, Runnable listener);
+    native public void addEventListener(jsweet.util.StringTypes.loadend type, Runnable listener);
+    native public void addEventListener(jsweet.util.StringTypes.loadstart type, Runnable listener);
+    native public void addEventListener(jsweet.util.StringTypes.progress type, Runnable listener);
+    native public void addEventListener(jsweet.util.StringTypes.readystatechange type, Runnable listener);
+    native public void addEventListener(jsweet.util.StringTypes.timeout type, Runnable listener);
     native public void addEventListener(java.lang.String type, EventListener listener);
+    native public void addEventListener(java.lang.String type, Runnable listener);
     native public void addEventListener(java.lang.String type, EventListenerObject listener, java.lang.Boolean useCapture);
     native public void addEventListener(java.lang.String type, EventListenerObject listener);
 }
