@@ -145,8 +145,20 @@ public class String extends Iterable<String> {
 	 * @param replaceValue
 	 *            A function that returns the replacement text.
 	 */
-	native public String replace(String searchValue,
-			java.util.function.BiFunction<String, java.lang.Object, String> replaceValue);
+	native public <T> String replace(String searchValue,
+			java.util.function.BiFunction<String, T, String> replaceValue);
+
+    /**
+     * Replaces text in a string, using a regular expression or search string.
+     * 
+     * @param searchValue
+     *            A String object or string literal that represents the regular
+     *            expression
+     * @param replaceValue
+     *            A function that returns the replacement text.
+     */
+    native public <T> String replace(String searchValue,
+            java.util.function.Supplier<String> replaceValue);
 
 	/**
 	 * Replaces text in a string, using a regular expression or search string.
@@ -157,8 +169,20 @@ public class String extends Iterable<String> {
 	 * @param replaceValue
 	 *            A function that returns the replacement text.
 	 */
-	native public String replace(java.lang.String searchValue,
-			java.util.function.BiFunction<java.lang.String, java.lang.Object, java.lang.String> replaceValue);
+	native public <T> String replace(java.lang.String searchValue,
+			java.util.function.BiFunction<java.lang.String, T, java.lang.String> replaceValue);
+
+    /**
+     * Replaces text in a string, using a regular expression or search string.
+     * 
+     * @param searchValue
+     *            A String object or string literal that represents the regular
+     *            expression
+     * @param replaceValue
+     *            A function that returns the replacement text.
+     */
+    native public <T> String replace(java.lang.String searchValue,
+            java.util.function.Supplier<java.lang.String> replaceValue);
 
 	/**
 	 * Replaces text in a string, using a regular expression or search string.
@@ -184,18 +208,28 @@ public class String extends Iterable<String> {
 	 */
 	native public String replace(RegExp searchValue, String replaceValue);
 
-	/**
-	 * Replaces text in a string, using a regular expression or search string.
-	 * 
-	 * @param searchValue
-	 *            A Regular Expression object containing the regular expression
-	 *            pattern and applicable flags
-	 * @param replaceValue
-	 *            A function that returns the replacement text.
-	 */
-	native public String replace(RegExp searchValue,
-			java.util.function.BiFunction<String, java.lang.Object, String> replaceValue);
+    /**
+     * Replaces text in a string, using a regular expression or search string.
+     * 
+     * @param searchValue
+     *            A Regular Expression object containing the regular expression
+     *            pattern and applicable flags
+     * @param replacer
+     *            A function that returns the replacement text.
+     */
+    native public <T> String replace(RegExp searchValue, java.util.function.BiFunction<String, T, String> replacer);
 
+    /**
+     * Replaces text in a string, using a regular expression or search string.
+     * 
+     * @param searchValue
+     *            A Regular Expression object containing the regular expression
+     *            pattern and applicable flags
+     * @param replacer
+     *            A function that returns the replacement text.
+     */
+    native public <T> String replace(RegExp searchValue, java.util.function.Supplier<String> replacer);
+    
 	/**
 	 * Finds the first substring match in a regular expression search.
 	 * 

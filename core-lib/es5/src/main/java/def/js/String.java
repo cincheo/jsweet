@@ -154,8 +154,19 @@ public class String extends def.js.Object implements Iterable<String> {
 	 * @param replacer
 	 *            A function that returns the replacement text.
 	 */
-	native public String replace(java.lang.String searchValue,
-			java.util.function.BiFunction<String, Object, String> replacer);
+	native public <T> String replace(java.lang.String searchValue,
+			java.util.function.BiFunction<String, T, String> replacer);
+
+    /**
+     * Replaces text in a string, using a regular expression or search string.
+     * 
+     * @param searchValue
+     *            A string that represents the regular expression.
+     * @param replacer
+     *            A function that returns the replacement text.
+     */
+    native public <T> String replace(java.lang.String searchValue,
+            java.util.function.Supplier<String> replacer);
 
 	/**
 	 * Replaces text in a string, using a regular expression or search string.
@@ -165,8 +176,18 @@ public class String extends def.js.Object implements Iterable<String> {
 	 * @param replacer
 	 *            A function that returns the replacement text.
 	 */
-	native public String replace(String searchValue, java.util.function.BiFunction<String, Object, String> replacer);
+	native public <T> String replace(String searchValue, java.util.function.BiFunction<String, T, String> replacer);
 
+    /**
+     * Replaces text in a string, using a regular expression or search string.
+     * 
+     * @param searchValue
+     *            A string that represents the regular expression.
+     * @param replacer
+     *            A function that returns the replacement text.
+     */
+    native public <T> String replace(String searchValue, java.util.function.Supplier<String> replacer);
+	
 	/**
 	 * Replaces text in a string, using a regular expression or search string.
 	 * 
@@ -200,8 +221,19 @@ public class String extends def.js.Object implements Iterable<String> {
 	 * @param replacer
 	 *            A function that returns the replacement text.
 	 */
-	native public String replace(RegExp searchValue, java.util.function.BiFunction<String, Object, String> replacer);
+	native public <T> String replace(RegExp searchValue, java.util.function.BiFunction<String, T, String> replacer);
 
+    /**
+     * Replaces text in a string, using a regular expression or search string.
+     * 
+     * @param searchValue
+     *            A Regular Expression object containing the regular expression
+     *            pattern and applicable flags
+     * @param replacer
+     *            A function that returns the replacement text.
+     */
+    native public <T> String replace(RegExp searchValue, java.util.function.Supplier<String> replacer);
+	
 	/**
 	 * Finds the first substring match in a regular expression search.
 	 * 
