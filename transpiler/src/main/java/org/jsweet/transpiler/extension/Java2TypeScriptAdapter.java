@@ -526,7 +526,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 					print(invocationElement.getArgument(0));
 					getPrinter().exitComparisonMode();
 					return true;
-					
+
 				case "$insert":
 					if (invocationElement.getArgument(0) instanceof LiteralElement) {
 						print(((LiteralElement) invocationElement.getArgument(0)).getValue().toString());
@@ -1167,7 +1167,8 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 					case "equals":
 						printMacroName(targetMethodName);
 						print("(<any>((o1: any, o2: any) => { if(o1 && o1.equals) { return o1.equals(o2); } else { return o1 === o2; } })(");
-						printTarget(invocationElement.getTargetExpression()).print(",").print(invocationElement.getArgument(0));
+						printTarget(invocationElement.getTargetExpression()).print(",")
+								.print(invocationElement.getArgument(0));
 						print("))");
 						return true;
 					}
@@ -1197,7 +1198,8 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 						|| methSym.getEnclosingElement().isInterface())) {
 					printMacroName(targetMethodName);
 					print("(<any>((o1: any, o2: any) => { if(o1 && o1.equals) { return o1.equals(o2); } else { return o1 === o2; } })(");
-					printTarget(invocationElement.getTargetExpression()).print(",").print(invocationElement.getArgument(0));
+					printTarget(invocationElement.getTargetExpression()).print(",")
+							.print(invocationElement.getArgument(0));
 					print("))");
 					return true;
 				}
@@ -1279,6 +1281,15 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 			JCFieldAccess fieldAccess = (JCFieldAccess) ((VariableAccessElementSupport) variableAccess).getTree();
 			String targetFieldName = variableAccess.getVariableName();
 			Element targetType = variableAccess.getTargetElement();
+
+			// automatic static field access target redirection
+			if (variableAccess.getVariable().getModifiers().contains(Modifier.STATIC)) {
+				if (isMappedType(targetType.toString())) {
+					print(getTypeMappingTarget(targetType.toString()) + ".").print(variableAccess.getVariableName());
+					return true;
+				}
+			}
+
 			// translate tuple accesses
 			if (targetFieldName.startsWith("$") && targetFieldName.length() > 1
 					&& Character.isDigit(targetFieldName.charAt(1))) {
