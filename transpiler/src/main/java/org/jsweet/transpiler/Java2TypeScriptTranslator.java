@@ -1188,12 +1188,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				mixin = context.getAnnotationValue(classdecl.sym, JSweetConfig.ANNOTATION_MIXIN, null);
 				for (Compound c : classdecl.sym.getAnnotationMirrors()) {
 					if (JSweetConfig.ANNOTATION_MIXIN.equals(c.type.toString())) {
-						String targetName = getRootRelativeName(((Attribute.Class)c.values.head.snd).classType.tsym);
+						String targetName = getRootRelativeName(((Attribute.Class) c.values.head.snd).classType.tsym);
 						String mixinName = getRootRelativeName(classdecl.sym);
-						if(!mixinName.equals(targetName)) {
+						if (!mixinName.equals(targetName)) {
 							report(classdecl, JSweetProblem.WRONG_MIXIN_NAME, mixinName, targetName);
 						} else {
-							if(((Attribute.Class)c.values.head.snd).classType.tsym.equals(classdecl.sym)) {
+							if (((Attribute.Class) c.values.head.snd).classType.tsym.equals(classdecl.sym)) {
 								report(classdecl, JSweetProblem.SELF_MIXIN_TARGET, mixinName);
 							}
 						}
@@ -4007,7 +4007,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					truncate = true;
 				}
 			}
-			if (binary.type.getKind() == TypeKind.FLOAT) {
+			if (singlePrecisionFloats() && binary.type.getKind() == TypeKind.FLOAT) {
 				print("(<any>Math).fround(");
 				closeParen = true;
 			}
