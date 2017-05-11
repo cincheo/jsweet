@@ -1,9 +1,21 @@
 package source.enums;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class ComplexEnumsWithInterface {
+    private final static Map<Integer, DayOfWeek> ORDINAL_MAP = new HashMap<>();
+
+    public static DayOfWeek fromPersistenceValue(Integer value) {
+        return ORDINAL_MAP.get(value);
+    }    
     public static void main(String[] args) {
 	DayOfWeek day = DayOfWeek.Wednesday;
 	assert day.persistenceValue == 3;
+        for (DayOfWeek c : DayOfWeek.values()) {
+            ORDINAL_MAP.put(c.persistenceValue, c);
+        }
+        assert ORDINAL_MAP.get(1) == DayOfWeek.Monday;
     }
 }
 
