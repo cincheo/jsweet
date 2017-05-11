@@ -1238,7 +1238,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 			}
 
-			if (classdecl.implementing != null && !classdecl.implementing.isEmpty()) {
+			if (classdecl.implementing != null && !classdecl.implementing.isEmpty() && !getScope().enumScope) {
 				List<JCExpression> implementing = new ArrayList<>(classdecl.implementing);
 
 				if (context.hasAnnotationType(classdecl.sym, JSweetConfig.ANNOTATION_SYNTACTIC_ITERABLE)) {
