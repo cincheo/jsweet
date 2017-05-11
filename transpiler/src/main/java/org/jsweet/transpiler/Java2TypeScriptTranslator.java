@@ -2259,9 +2259,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			} else {
 				printIndent().print("this.").print(name).print(" = ");
 			}
-			if (!substituteAssignedExpression(var.type, var.init)) {
-				print(var.init);
-			}
+			substituteAndPrintAssignedExpression(var.type, var.init);
 			print(";").println();
 		} else if (var.init == null) {
 			if (doesMemberNameRequireQuotes(name)) {
@@ -2441,7 +2439,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 	}
 
-	private void printBlockStatements(List<JCStatement> statements) {
+	protected void printBlockStatements(List<JCStatement> statements) {
 		for (JCStatement statement : statements) {
 			if (context.options.isDebugMode()) {
 				JCMethodDecl methodDecl = getParent(JCMethodDecl.class);
