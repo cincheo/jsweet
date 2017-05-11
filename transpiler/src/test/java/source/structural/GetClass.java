@@ -17,6 +17,8 @@ public class GetClass {
 		new Functions().m3();
 		$export("string", s.getClass().getSimpleName());
 		$export("number", l.getClass().getSimpleName());
+		assert o.getClass() == AClass1.class;
+		assert s.getClass() == String.class;
 	}
 
 }

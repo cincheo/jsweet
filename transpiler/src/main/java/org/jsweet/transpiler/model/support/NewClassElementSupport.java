@@ -36,38 +36,43 @@ import com.sun.tools.javac.tree.JCTree.JCNewClass;
  */
 public class NewClassElementSupport extends ExtendedElementSupport implements NewClassElement {
 
-	public NewClassElementSupport(JCNewClass tree) {
-		super(tree);
-	}
+    public NewClassElementSupport(JCNewClass tree) {
+	super(tree);
+    }
 
-	@Override
-	public JCNewClass getTree() {
-		return (JCNewClass) tree;
-	}
+    @Override
+    public JCNewClass getTree() {
+	return (JCNewClass) tree;
+    }
 
-	public List<ExtendedElement> getArguments() {
-		return getTree().args.stream().map(a -> ExtendedElementFactory.INSTANCE.create(a)).collect(Collectors.toList());
-	}
+    public List<ExtendedElement> getArguments() {
+	return getTree().args.stream().map(a -> ExtendedElementFactory.INSTANCE.create(a)).collect(Collectors.toList());
+    }
 
-	@Override
-	public int getArgumentCount() {
-		return getTree().args.size();
-	}
+    @Override
+    public int getArgumentCount() {
+	return getTree().args.size();
+    }
 
-	@Override
-	public List<ExtendedElement> getArgumentTail() {
-		return getTree().args.tail.stream().map(a -> ExtendedElementFactory.INSTANCE.create(a))
-				.collect(Collectors.toList());
-	}
+    @Override
+    public List<ExtendedElement> getArgumentTail() {
+	return getTree().args.tail.stream().map(a -> ExtendedElementFactory.INSTANCE.create(a))
+		.collect(Collectors.toList());
+    }
 
-	@Override
-	public ExtendedElement getArgument(int i) {
-		return ExtendedElementFactory.INSTANCE.create(getTree().args.get(i));
-	}
+    @Override
+    public ExtendedElement getArgument(int i) {
+	return ExtendedElementFactory.INSTANCE.create(getTree().args.get(i));
+    }
 
-	@Override
-	public ExecutableElement getConstructor() {
-		return (ExecutableElement) getTree().constructor;
-	}
-	
+    @Override
+    public ExecutableElement getConstructor() {
+	return (ExecutableElement) getTree().constructor;
+    }
+
+    @Override
+    public ExtendedElement getConstructorAccess() {
+	return ExtendedElementFactory.INSTANCE.create(getTree().clazz);
+    }
+
 }

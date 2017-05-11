@@ -41,6 +41,7 @@ import source.structural.DefaultMethodsConsumer;
 import source.structural.EndsWithGlobals;
 import source.structural.ExtendsClassInSameFile;
 import source.structural.ExtendsObject;
+import source.structural.FunctionalObjects;
 import source.structural.GetClass;
 import source.structural.GlobalsAccess;
 import source.structural.Inheritance;
@@ -50,6 +51,7 @@ import source.structural.InnerClassUse;
 import source.structural.InstanceOf;
 import source.structural.InstanceofForInterfaces;
 import source.structural.InterfaceInheritance;
+import source.structural.JDKInheritance;
 import source.structural.JSNI;
 import source.structural.LocalClasses;
 import source.structural.Name;
@@ -57,10 +59,9 @@ import source.structural.NameClashesWithMethodInvocations;
 import source.structural.NoNameClashesWithFields;
 import source.structural.NoWildcardsInImports;
 import source.structural.ObjectTypes;
+import source.structural.ReplaceAnnotation;
 import source.structural.StaticMembersInInterfaces;
 import source.structural.TwoClassesInSameFile;
-import source.structural.ReplaceAnnotation;
-import source.structural.FunctionalObjects;
 import source.structural.WrongConstructsInInterfaces;
 import source.structural.WrongThisAccessOnStatic;
 import source.structural.globalclasses.Globals;
@@ -432,4 +433,11 @@ public class StructuralTests extends AbstractTest {
 		}, getSourceFile(FunctionalObjects.class));
 	}
 
+	@Test
+	public void testJDKInheritance() {
+		eval((logHandler, r) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(JDKInheritance.class));
+	}
+	
 }

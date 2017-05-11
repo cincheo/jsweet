@@ -41,4 +41,9 @@ public interface Util {
 	 */
 	boolean isIntegral(TypeMirror type);
 	
+	/**
+	 * Tells if the given element is part of the transpiled sources.
+	 */
+	boolean isSourceElement(Element element);
+	
 }

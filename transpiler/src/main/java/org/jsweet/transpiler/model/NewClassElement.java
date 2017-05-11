@@ -32,4 +32,8 @@ public interface NewClassElement extends InvocationElement {
 	 */
 	ExecutableElement getConstructor();
 
+	/**
+	 * Gets the constructor access expression.
+	 */
+	ExtendedElement getConstructorAccess();
 }
