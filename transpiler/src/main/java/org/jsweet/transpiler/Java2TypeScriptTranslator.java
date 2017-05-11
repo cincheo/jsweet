@@ -160,11 +160,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	public static final String ENUM_WRAPPER_CLASS_NAME = "_$name";
 	public static final String ENUM_WRAPPER_CLASS_ORDINAL = "_$ordinal";
 	public static final String VAR_DECL_KEYWORD = "let";
-	public static final String BODY_MARKER = "#BODY#";
-	public static final String BASE_INDENT_MARKER = "#BASEINDENT#";
-	public static final String INDENT_MARKER = "#INDENT#";
-	public static final String METHOD_NAME_MARKER = "#METHODNAME#";
-	public static final String CLASS_NAME_MARKER = "#CLASSNAME#";
+	public static final String BODY_MARKER = "{{body}}";
+	public static final String BASE_INDENT_MARKER = "{{baseIndent}}";
+	public static final String INDENT_MARKER = "{{indent}}";
+	public static final String METHOD_NAME_MARKER = "{{methodName}}";
+	public static final String CLASS_NAME_MARKER = "{{className}}";
 	public static final String GENERATOR_PREFIX = "__generator_";
 
 	protected static Logger logger = Logger.getLogger(Java2TypeScriptTranslator.class);

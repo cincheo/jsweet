@@ -331,7 +331,7 @@ public class StructuralTests extends AbstractTest {
 						context.addAnnotation("@Replace('return (this.i + 2)')",
 								"source.structural.ReplaceAnnotation.m2()");
 						context.addAnnotation(
-								"@Replace('let result = (() => { #BODY# })(); return (result + '#METHODNAME#'.length);')",
+								"@Replace('let result = (() => { {{body}} })(); return (result + '{{methodName}}'.length);')",
 								"source.structural.ReplaceAnnotation.m4()");
 					}
 				};
