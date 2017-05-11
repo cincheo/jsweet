@@ -495,6 +495,10 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 					print("typeof ").print(invocationElement.getArgument(0));
 					return true;
 
+				case "$noarrow":
+					print(invocationElement.getArgument(0));
+					return true;
+					
 				case "equalsStrict":
 					print("(").print(invocationElement.getArgument(0)).print(" === ")
 							.print(invocationElement.getArgument(1)).print(")");

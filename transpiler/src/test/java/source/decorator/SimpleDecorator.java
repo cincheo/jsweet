@@ -46,7 +46,7 @@ class Globals {
 		Function originalMethod = (Function) descriptor.$get("value");
 
 		// editing the descriptor/value parameter
-		descriptor.$set("value", function(() -> {
+		descriptor.$set("value", $noarrow(function(() -> {
 			Array<Object> args = $array();
 			for (int _i = 0; _i < arguments.length; _i++) {
 				array(args)[_i - 0] = arguments[_i];
@@ -58,7 +58,7 @@ class Globals {
 			console.log("Call: " + key + "(" + a + ") => " + r);
 			trace.push("Call: " + key + "(" + a + ") => " + r);
 			return result;
-		}));
+		})));
 
 		// return edited descriptor as opposed to overwriting the descriptor
 		return descriptor;

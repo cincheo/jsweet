@@ -267,6 +267,17 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 	}
 
 	/**
+	 * Returns the parent of the immediate parent in the printer's scanning stack.
+	 */
+	public JCTree getParentOfParent() {
+		if (this.stack.size() >= 3) {
+			return this.stack.get(this.stack.size() - 3);
+		} else {
+			return null;
+		}
+	}
+	
+	/**
 	 * Gets the parent element in the printer's scanning stack.
 	 */
 	public ExtendedElement getParentElement() {

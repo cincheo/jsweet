@@ -4508,7 +4508,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	public void visitLambda(JCLambda lamba) {
 		boolean regularFunction = false;
 		if (getParent() instanceof JCMethodInvocation
-				&& ((JCMethodInvocation) getParent()).meth.toString().endsWith("function")) {
+				&& ((JCMethodInvocation) getParent()).meth.toString().endsWith("function") && getParentOfParent() instanceof JCMethodInvocation
+				&& ((JCMethodInvocation) getParentOfParent()).meth.toString().endsWith("$noarrow")) {
 			MethodInvocationElement invocation = (MethodInvocationElement) ExtendedElementFactory.INSTANCE
 					.create(getParent());
 			if (JSweetConfig.UTIL_CLASSNAME.equals(invocation.getMethod().getEnclosingElement().toString())) {
