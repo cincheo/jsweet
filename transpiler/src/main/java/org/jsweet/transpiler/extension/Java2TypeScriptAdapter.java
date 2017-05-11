@@ -1283,7 +1283,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 			Element targetType = variableAccess.getTargetElement();
 
 			// automatic static field access target redirection
-			if (variableAccess.getVariable().getModifiers().contains(Modifier.STATIC)) {
+			if (!"class".equals(variableAccess.getVariableName()) && variableAccess.getVariable().getModifiers().contains(Modifier.STATIC)) {
 				if (isMappedType(targetType.toString())) {
 					print(getTypeMappingTarget(targetType.toString()) + ".").print(variableAccess.getVariableName());
 					return true;
