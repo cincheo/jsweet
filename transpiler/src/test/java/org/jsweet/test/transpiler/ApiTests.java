@@ -26,6 +26,7 @@ import org.junit.Test;
 import source.api.AccessStaticMethod;
 import source.api.ArrayBuffers;
 import source.api.CastMethods;
+import source.api.Characters;
 import source.api.Equals;
 import source.api.ErasingJava;
 import source.api.ExpressionBuilderTest;
@@ -143,6 +144,13 @@ public class ApiTests extends AbstractTest {
 		}, getSourceFile(Strings.class));
 	}
 
+	@Test
+	public void testCharacters() {
+		eval(ModuleKind.none, (logHandler, r) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(Characters.class));
+	}
+	
 	@Test
 	public void testNumbers() {
 		eval(ModuleKind.none, (logHandler, r) -> {

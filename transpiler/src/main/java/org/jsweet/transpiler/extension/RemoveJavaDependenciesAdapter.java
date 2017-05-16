@@ -229,18 +229,22 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		case "floatToIntBits":
 		case "floatToRawIntBits":
 		    printMacroName(targetMethodName);
-		    print("((f) => { let buf = new ArrayBuffer(4); (new Float32Array(buf))[0]=f; return (new Uint32Array(buf))[0]; })(").printArgList(invocation.getArguments()).print(")");
+		    print("((f) => { let buf = new ArrayBuffer(4); (new Float32Array(buf))[0]=f; return (new Uint32Array(buf))[0]; })(")
+			    .printArgList(invocation.getArguments()).print(")");
 		    return true;
 		case "intBitsToFloat":
-		    print("((v) => { let buf = new ArrayBuffer(4); (new Uint32Array(buf))[0]=v; return (new Float32Array(buf))[0]; })(").printArgList(invocation.getArguments()).print(")");
+		    print("((v) => { let buf = new ArrayBuffer(4); (new Uint32Array(buf))[0]=v; return (new Float32Array(buf))[0]; })(")
+			    .printArgList(invocation.getArguments()).print(")");
 		    return true;
 		case "doubleToLongBits":
 		case "doubleToRawLongBits":
 		    printMacroName(targetMethodName);
-		    print("((f) => { let buf = new ArrayBuffer(4); (new Float32Array(buf))[0]=f; return (new Uint32Array(buf))[0]; })((<any>Math).fround(").printArgList(invocation.getArguments()).print("))");
+		    print("((f) => { let buf = new ArrayBuffer(4); (new Float32Array(buf))[0]=f; return (new Uint32Array(buf))[0]; })((<any>Math).fround(")
+			    .printArgList(invocation.getArguments()).print("))");
 		    return true;
 		case "longBitsToDouble":
-		    print("((v) => { let buf = new ArrayBuffer(4); (new Uint32Array(buf))[0]=v; return (new Float32Array(buf))[0]; })(").printArgList(invocation.getArguments()).print(")");
+		    print("((v) => { let buf = new ArrayBuffer(4); (new Uint32Array(buf))[0]=v; return (new Float32Array(buf))[0]; })(")
+			    .printArgList(invocation.getArguments()).print(")");
 		    return true;
 		case "valueOf":
 		    if (util().isNumber(invocation.getArgument(0).getType())) {
@@ -250,6 +254,46 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			print("parseFloat").print("(").printArgList(invocation.getArguments()).print(")");
 			return true;
 		    }
+		}
+		break;
+	    case "java.lang.Character":
+		switch (targetMethodName) {
+		case "isDigit":
+		    printMacroName(targetMethodName);
+		    print("/\\d/.test(").printArgList(invocation.getArguments()).print("[0])");
+		    return true;
+		case "isLetter":
+		    printMacroName(targetMethodName);
+		    print("/[a-zA-Z]/.test(").printArgList(invocation.getArguments()).print("[0])");
+		    return true;
+		case "isAlphabetic":
+		    printMacroName(targetMethodName);
+		    print("/[a-zA-Z]/.test(").printArgList(invocation.getArguments()).print("[0])");
+		    return true;
+		case "isLetterOrDigit":
+		    printMacroName(targetMethodName);
+		    print("/[a-zA-Z\\d]/.test(").printArgList(invocation.getArguments()).print("[0])");
+		    return true;
+		case "toLowerCase":
+		    printMacroName(targetMethodName);
+		    print(invocation.getArgument(0)).print(".toLowerCase()");
+		    return true;
+		case "toUpperCase":
+		    printMacroName(targetMethodName);
+		    print(invocation.getArgument(0)).print(".toUpperCase()");
+		    return true;
+		case "isLowerCase":
+		    printMacroName(targetMethodName);
+		    print("(s => s.toLowerCase() === s)(").print(invocation.getArgument(0)).print(")");
+		    return true;
+		case "isUpperCase":
+		    printMacroName(targetMethodName);
+		    print("(s => s.toUpperCase() === s)(").print(invocation.getArgument(0)).print(")");
+		    return true;
+		case "charValue":
+		    printMacroName(targetMethodName);
+		    print(invocation.getTargetExpression());
+		    return true;
 		}
 		break;
 	    case "java.util.Collection":

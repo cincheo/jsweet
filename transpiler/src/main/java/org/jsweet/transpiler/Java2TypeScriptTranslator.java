@@ -4023,7 +4023,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	    boolean charWrapping = Util.isArithmeticOrLogicalOperator(binary.getKind())
 		    || Util.isComparisonOperator(binary.getKind());
 	    boolean actualCharWrapping = false;
-	    if (charWrapping && binary.lhs.type.isPrimitive() && context.symtab.charType.tsym == binary.lhs.type.tsym
+	    if (charWrapping
+		    && context.types.isSameType(context.symtab.charType,
+			    context.types.unboxedTypeOrType(binary.lhs.type))
 		    && !(binary.rhs.type.tsym == context.symtab.stringType.tsym)) {
 		actualCharWrapping = true;
 		if (binary.lhs instanceof JCLiteral) {
@@ -4045,8 +4047,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 	    }
 	    if ("==".equals(op) || "!=".equals(op)) {
-		if (charWrapping && binary.rhs.type.isPrimitive()
-			&& context.symtab.charType.tsym == binary.rhs.type.tsym
+		if (charWrapping
+			&& context.types.isSameType(context.symtab.charType,
+				context.types.unboxedTypeOrType(binary.rhs.type))
 			&& !(binary.lhs.type.tsym == context.symtab.stringType.tsym)) {
 		    actualCharWrapping = true;
 		}
@@ -4068,7 +4071,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	    }
 
 	    space().print(op).space();
-	    if (charWrapping && binary.rhs.type.isPrimitive() && context.symtab.charType.tsym == binary.rhs.type.tsym
+	    if (charWrapping
+		    && context.types.isSameType(context.symtab.charType,
+			    context.types.unboxedTypeOrType(binary.rhs.type))
 		    && !(binary.lhs.type.tsym == context.symtab.stringType.tsym)) {
 		if (binary.rhs instanceof JCLiteral) {
 		    print(binary.rhs).print(".charCodeAt(0)");
@@ -4352,7 +4357,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
     public void visitSwitch(JCSwitch switchStatement) {
 	print("switch(");
 	print(switchStatement.selector);
-	if (context.types.isSameType(context.symtab.charType, switchStatement.selector.type)) {
+	if (context.types.isSameType(context.symtab.charType,
+		context.types.unboxedTypeOrType(switchStatement.selector.type))) {
 	    print(".charCodeAt(0)");
 	}
 	print(") {").println();
