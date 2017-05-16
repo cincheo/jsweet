@@ -5,11 +5,11 @@ import jsweet.util.function.Function4;
   * requested number of bytes could not be allocated an exception is raised.
   */
 @jsweet.lang.SyntacticIterable
-public class Uint32Array extends Iterable<java.lang.Double> {
+public class Uint32Array extends Iterable<java.lang.Integer> {
     /**
       * The size in bytes of each element in the array. 
       */
-    public double BYTES_PER_ELEMENT;
+    public int BYTES_PER_ELEMENT;
     /**
       * The ArrayBuffer instance referenced by the array. 
       */
@@ -17,11 +17,11 @@ public class Uint32Array extends Iterable<java.lang.Double> {
     /**
       * The length in bytes of the array.
       */
-    public double byteLength;
+    public int byteLength;
     /**
       * The offset in bytes of the array.
       */
-    public double byteOffset;
+    public int byteOffset;
     /** 
       * Returns the this object after copying a section of the array identified by start and end
       * to the same array starting at position target
@@ -31,7 +31,7 @@ public class Uint32Array extends Iterable<java.lang.Double> {
       * is treated as length+end.
       * @param end If not specified, length of the this object is used as its default value. 
       */
-    native public Uint32Array copyWithin(double target, double start, double end);
+    native public Uint32Array copyWithin(double target, int start, int end);
     /** 
       * Returns an array of key, value pairs for every entry in the array
       */
@@ -53,7 +53,7 @@ public class Uint32Array extends Iterable<java.lang.Double> {
         * @param end index to stop filling the array at. If end is negative, it is treated as 
         * length+end.
         */
-    native public Uint32Array fill(double value, double start, double end);
+    native public Uint32Array fill(int value, int start, int end);
     /**
       * Returns the elements of an array that meet the condition specified in a callback function. 
       * @param callbackfn A function that accepts up to three arguments. The filter method calls 
@@ -96,7 +96,7 @@ public class Uint32Array extends Iterable<java.lang.Double> {
       * @param fromIndex The array index at which to begin the search. If fromIndex is omitted, the
       *  search starts at index 0.
       */
-    native public double indexOf(double searchElement, double fromIndex);
+    native public double indexOf(int searchElement, int fromIndex);
     /**
       * Adds all the elements of an array separated by the specified separator string.
       * @param separator A string used to separate one element of an array from the next in the 
@@ -113,11 +113,11 @@ public class Uint32Array extends Iterable<java.lang.Double> {
       * @param fromIndex The array index at which to begin the search. If fromIndex is omitted, the 
       * search starts at index 0.
       */
-    native public double lastIndexOf(double searchElement, double fromIndex);
+    native public double lastIndexOf(int searchElement, int fromIndex);
     /**
       * The length of the array.
       */
-    public double length;
+    public int length;
     /**
       * Calls a defined callback function on each element of an array, and returns an array that 
       * contains the results.
@@ -180,19 +180,19 @@ public class Uint32Array extends Iterable<java.lang.Double> {
       * @param index The index of the location to set.
       * @param value The value to set.
       */
-    native public void set(double index, double value);
+    native public void set(int index, int value);
     /**
       * Sets a value or an array of values.
       * @param array A typed or untyped array of values to set.
       * @param offset The index in the current array at which the values are to be written.
       */
-    native public void set(Uint32Array array, double offset);
+    native public void set(Uint32Array array, int offset);
     /** 
       * Returns a section of an array.
       * @param start The beginning of the specified portion of the array.
       * @param end The end of the specified portion of the array.
       */
-    native public Uint32Array slice(double start, double end);
+    native public Uint32Array slice(int start, int end);
     /**
       * Determines whether the specified callback function returns true for any element of an array.
       * @param callbackfn A function that accepts up to three arguments. The some method calls the 
@@ -214,17 +214,18 @@ public class Uint32Array extends Iterable<java.lang.Double> {
       * @param begin The index of the beginning of the array.
       * @param end The index of the end of the array.
       */
-    native public Uint32Array subarray(double begin, double end);
+    native public Uint32Array subarray(int begin, int end);
     /** 
       * Returns an list of values in the array
       */
     native public IterableIterator<Double> values();
-    native public java.lang.Double $get(double index);
+    native public java.lang.Double $get(int index);
+    native public void $set(int index, java.lang.Integer value);
     public static Uint32Array prototype;
-    public Uint32Array(double length){}
+    public Uint32Array(int length){}
     public Uint32Array(Uint32Array array){}
     public Uint32Array(double[] array){}
-    public Uint32Array(ArrayBuffer buffer, double byteOffset, double length){}
+    public Uint32Array(ArrayBuffer buffer, int byteOffset, int length){}
     /**
       * Returns a new array from a set of elements.
       * @param items A set of elements to include in the new array object.
@@ -246,7 +247,7 @@ public class Uint32Array extends Iterable<java.lang.Double> {
       * is treated as length+end.
       * @param end If not specified, length of the this object is used as its default value. 
       */
-    native public Uint32Array copyWithin(double target, double start);
+    native public Uint32Array copyWithin(double target, int start);
     /**
       * Determines whether all the members of an array satisfy the specified test.
       * @param callbackfn A function that accepts up to three arguments. The every method calls 
@@ -264,7 +265,7 @@ public class Uint32Array extends Iterable<java.lang.Double> {
         * @param end index to stop filling the array at. If end is negative, it is treated as 
         * length+end.
         */
-    native public Uint32Array fill(double value, double start);
+    native public Uint32Array fill(int value, int start);
     /**
         * Returns the this object after filling the section identified by start and end with value
         * @param value value to fill array section with
@@ -273,7 +274,7 @@ public class Uint32Array extends Iterable<java.lang.Double> {
         * @param end index to stop filling the array at. If end is negative, it is treated as 
         * length+end.
         */
-    native public Uint32Array fill(double value);
+    native public Uint32Array fill(int value);
     /**
       * Returns the elements of an array that meet the condition specified in a callback function. 
       * @param callbackfn A function that accepts up to three arguments. The filter method calls 
@@ -316,7 +317,7 @@ public class Uint32Array extends Iterable<java.lang.Double> {
       * @param fromIndex The array index at which to begin the search. If fromIndex is omitted, the
       *  search starts at index 0.
       */
-    native public double indexOf(double searchElement);
+    native public int indexOf(int searchElement);
     /**
       * Adds all the elements of an array separated by the specified separator string.
       * @param separator A string used to separate one element of an array from the next in the 
@@ -329,7 +330,7 @@ public class Uint32Array extends Iterable<java.lang.Double> {
       * @param fromIndex The array index at which to begin the search. If fromIndex is omitted, the 
       * search starts at index 0.
       */
-    native public double lastIndexOf(double searchElement);
+    native public int lastIndexOf(int searchElement);
     /**
       * Calls a defined callback function on each element of an array, and returns an array that 
       * contains the results.
@@ -372,7 +373,7 @@ public class Uint32Array extends Iterable<java.lang.Double> {
       * @param start The beginning of the specified portion of the array.
       * @param end The end of the specified portion of the array.
       */
-    native public Uint32Array slice(double start);
+    native public Uint32Array slice(int start);
     /** 
       * Returns a section of an array.
       * @param start The beginning of the specified portion of the array.
@@ -400,8 +401,8 @@ public class Uint32Array extends Iterable<java.lang.Double> {
       * @param begin The index of the beginning of the array.
       * @param end The index of the end of the array.
       */
-    native public Uint32Array subarray(double begin);
-    public Uint32Array(ArrayBuffer buffer, double byteOffset){}
+    native public Uint32Array subarray(int begin);
+    public Uint32Array(ArrayBuffer buffer, int byteOffset){}
     public Uint32Array(ArrayBuffer buffer){}
     /**
       * Creates an array from an array-like or iterable object.
@@ -461,7 +462,7 @@ public class Uint32Array extends Iterable<java.lang.Double> {
     native public static Uint32Array from(Double[] arrayLike);
     /** From Iterable, to allow foreach loop (do not use directly). */
     @jsweet.lang.Erased
-    native public java.util.Iterator<java.lang.Double> iterator();
+    native public java.util.Iterator<java.lang.Integer> iterator();
     protected Uint32Array(){}
 }
 

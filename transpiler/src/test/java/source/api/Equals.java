@@ -55,3 +55,28 @@ class MyObject2 {
 	}
 
 }
+
+class MyObject3 {
+
+	MyInterface data;
+
+	public MyObject3(MyInterface data) {
+		this.data = data;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (!(obj instanceof MyObject3)) {
+			return false;
+		}
+		return data.equals(((MyObject3) obj).data);
+	}
+	
+}
+
+
+interface MyInterface {
+
+    void m();
+    
+}

@@ -58,10 +58,10 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
 import org.jsweet.transpiler.JSweetContext;
+import org.jsweet.transpiler.Java2TypeScriptTranslator;
 import org.jsweet.transpiler.ModuleKind;
 import org.jsweet.transpiler.model.BinaryOperatorElement;
 import org.jsweet.transpiler.model.ExtendedElement;
@@ -218,11 +218,29 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		case "parseLong":
 		case "parseShort":
 		case "parseByte":
+		    printMacroName(targetMethodName);
 		    print("parseInt").print("(").printArgList(invocation.getArguments()).print(")");
 		    return true;
 		case "parseFloat":
 		case "parseDouble":
+		    printMacroName(targetMethodName);
 		    print("parseFloat").print("(").printArgList(invocation.getArguments()).print(")");
+		    return true;
+		case "floatToIntBits":
+		case "floatToRawIntBits":
+		    printMacroName(targetMethodName);
+		    print("((f) => { let buf = new ArrayBuffer(4); (new Float32Array(buf))[0]=f; return (new Uint32Array(buf))[0]; })(").printArgList(invocation.getArguments()).print(")");
+		    return true;
+		case "intBitsToFloat":
+		    print("((v) => { let buf = new ArrayBuffer(4); (new Uint32Array(buf))[0]=v; return (new Float32Array(buf))[0]; })(").printArgList(invocation.getArguments()).print(")");
+		    return true;
+		case "doubleToLongBits":
+		case "doubleToRawLongBits":
+		    printMacroName(targetMethodName);
+		    print("((f) => { let buf = new ArrayBuffer(4); (new Float32Array(buf))[0]=f; return (new Uint32Array(buf))[0]; })((<any>Math).fround(").printArgList(invocation.getArguments()).print("))");
+		    return true;
+		case "longBitsToDouble":
+		    print("((v) => { let buf = new ArrayBuffer(4); (new Uint32Array(buf))[0]=v; return (new Float32Array(buf))[0]; })(").printArgList(invocation.getArguments()).print(")");
 		    return true;
 		case "valueOf":
 		    if (util().isNumber(invocation.getArgument(0).getType())) {
@@ -935,8 +953,29 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		    print(invocation.getTargetExpression(), delegate).print("(").printArgList(invocation.getArguments())
 			    .print(")");
 		    return true;
+		case "isInstance":
+		    printMacroName(targetMethodName);
+		    print("((c:any,o:any) => { if(typeof c === 'string') return (o.constructor && o.constructor")
+			    .print("[\"" + Java2TypeScriptTranslator.INTERFACES_FIELD_NAME + "\"] && o.constructor")
+			    .print("[\"" + Java2TypeScriptTranslator.INTERFACES_FIELD_NAME
+				    + "\"].indexOf(c) >= 0) || (o")
+			    .print("[\"" + Java2TypeScriptTranslator.INTERFACES_FIELD_NAME + "\"] && o")
+			    .print("[\"" + Java2TypeScriptTranslator.INTERFACES_FIELD_NAME
+				    + "\"].indexOf(c) >= 0); else if(typeof c === 'function') return (o instanceof c) || (o.constructor && o.constructor === c); })(");
+		    print(invocation.getTargetExpression(), delegate).print(", ")
+			    .printArgList(invocation.getArguments()).print(")");
+		    return true;
 		}
 
+	    case "java.lang.reflect.Array":
+		switch (targetMethodName) {
+		case "newInstance":
+		    printMacroName(targetMethodName);
+		    if (invocation.getArgumentCount() == 2) {
+			print("new Array<any>(").print(invocation.getArgument(1)).print(")");
+			return true;
+		    }
+		}
 	    }
 
 	    switch (targetMethodName) {

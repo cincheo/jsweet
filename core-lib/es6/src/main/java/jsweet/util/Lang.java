@@ -382,7 +382,7 @@ public final class Lang {
     native public static Integer integer(def.js.Number number);
 
     /**
-     * Casts back a JavaScript number to a Java integer.
+     * Casts a JavaScript number to a Java double.
      */
     native public static Double number(def.js.Number number);
 
@@ -702,6 +702,6 @@ public final class Lang {
      * 
      * @see def.js.Globals#eval(String)
      */
-    public static native String $insert(String typescriptString);
+    public static native <T> T $insert(String typescriptString);
 
 }

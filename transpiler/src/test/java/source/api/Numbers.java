@@ -1,6 +1,8 @@
 package source.api;
 
 import static jsweet.util.Lang.$export;
+import static jsweet.util.Lang.number;
+import static jsweet.util.Lang.string;
 
 import def.js.Array;
 
@@ -13,6 +15,14 @@ public class Numbers {
 		Integer i = parseDuration("1:20");
 		assert i == 80;
 
+		float f = Float.intBitsToFloat(Float.floatToIntBits(3.14f));
+		assert f!=3.14f;
+		assert number(f).toFixed(2) == string("3.14");
+		
+		double d = Double.longBitsToDouble(Double.doubleToLongBits(3.14));
+		assert d!=3.14;
+		assert ((double)Math.round(d*100))/100 == 3.14;
+		
 		$export("trace", trace.join(","));
 	}
 

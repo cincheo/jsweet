@@ -4,11 +4,11 @@ import jsweet.util.function.Function4;
   * A typed array of 32-bit unsigned integer values. The contents are initialized to 0. If the 
   * requested number of bytes could not be allocated an exception is raised.
   */
-public class Uint32Array extends def.js.Object implements Iterable<java.lang.Double> {
+public class Uint32Array extends def.js.Object implements Iterable<java.lang.Integer> {
     /**
       * The size in bytes of each element in the array. 
       */
-    public final double BYTES_PER_ELEMENT=0;
+    public final int BYTES_PER_ELEMENT=0;
     /**
       * The ArrayBuffer instance referenced by the array. 
       */
@@ -16,11 +16,11 @@ public class Uint32Array extends def.js.Object implements Iterable<java.lang.Dou
     /**
       * The length in bytes of the array.
       */
-    public final double byteLength=0;
+    public final int byteLength=0;
     /**
       * The offset in bytes of the array.
       */
-    public final double byteOffset=0;
+    public final int byteOffset=0;
     /** 
       * Returns the this object after copying a section of the array identified by start and end
       * to the same array starting at position target
@@ -30,7 +30,7 @@ public class Uint32Array extends def.js.Object implements Iterable<java.lang.Dou
       * is treated as length+end.
       * @param end If not specified, length of the this object is used as its default value. 
       */
-    native public Uint32Array copyWithin(double target, double start, double end);
+    native public Uint32Array copyWithin(double target, int start, int end);
     /**
       * Determines whether all the members of an array satisfy the specified test.
       * @param callbackfn A function that accepts up to three arguments. The every method calls 
@@ -48,7 +48,7 @@ public class Uint32Array extends def.js.Object implements Iterable<java.lang.Dou
         * @param end index to stop filling the array at. If end is negative, it is treated as 
         * length+end.
         */
-    native public Uint32Array fill(double value, double start, double end);
+    native public Uint32Array fill(int value, int start, int end);
     /**
       * Returns the elements of an array that meet the condition specified in a callback function. 
       * @param callbackfn A function that accepts up to three arguments. The filter method calls 
@@ -91,7 +91,7 @@ public class Uint32Array extends def.js.Object implements Iterable<java.lang.Dou
       * @param fromIndex The array index at which to begin the search. If fromIndex is omitted, the
       *  search starts at index 0.
       */
-    native public double indexOf(double searchElement, double fromIndex);
+    native public double indexOf(int searchElement, int fromIndex);
     /**
       * Adds all the elements of an array separated by the specified separator string.
       * @param separator A string used to separate one element of an array from the next in the 
@@ -104,11 +104,11 @@ public class Uint32Array extends def.js.Object implements Iterable<java.lang.Dou
       * @param fromIndex The array index at which to begin the search. If fromIndex is omitted, the 
       * search starts at index 0.
       */
-    native public double lastIndexOf(double searchElement, double fromIndex);
+    native public double lastIndexOf(int searchElement, int fromIndex);
     /**
       * The length of the array.
       */
-    public final double length=0;
+    public final int length=0;
     /**
       * Calls a defined callback function on each element of an array, and returns an array that 
       * contains the results.
@@ -128,7 +128,7 @@ public class Uint32Array extends def.js.Object implements Iterable<java.lang.Dou
       * the accumulation. The first call to the callbackfn function provides this value as an argument
       * instead of an array value.
       */
-    native public double reduce(Function4<Double,Double,Double,Uint32Array,Double> callbackfn, double initialValue);
+    native public double reduce(Function4<Double,Double,Double,Uint32Array,Double> callbackfn, int initialValue);
     /**
       * Calls the specified callback function for all the elements in an array. The return value of 
       * the callback function is the accumulated result, and is provided as an argument in the next 
@@ -150,7 +150,7 @@ public class Uint32Array extends def.js.Object implements Iterable<java.lang.Dou
       * the accumulation. The first call to the callbackfn function provides this value as an 
       * argument instead of an array value.
       */
-    native public double reduceRight(Function4<Double,Double,Double,Uint32Array,Double> callbackfn, double initialValue);
+    native public double reduceRight(Function4<Double,Double,Double,Uint32Array,Double> callbackfn, int initialValue);
     /** 
       * Calls the specified callback function for all the elements in an array, in descending order. 
       * The return value of the callback function is the accumulated result, and is provided as an 
@@ -171,19 +171,19 @@ public class Uint32Array extends def.js.Object implements Iterable<java.lang.Dou
       * @param index The index of the location to set.
       * @param value The value to set.
       */
-    native public void set(double index, double value);
+    native public void set(int index, int value);
     /**
       * Sets a value or an array of values.
       * @param array A typed or untyped array of values to set.
       * @param offset The index in the current array at which the values are to be written.
       */
-    native public void set(ArrayLike<Double> array, double offset);
+    native public void set(ArrayLike<Double> array, int offset);
     /** 
       * Returns a section of an array.
       * @param start The beginning of the specified portion of the array.
       * @param end The end of the specified portion of the array.
       */
-    native public Uint32Array slice(double start, double end);
+    native public Uint32Array slice(int start, int end);
     /**
       * Determines whether the specified callback function returns true for any element of an array.
       * @param callbackfn A function that accepts up to three arguments. The some method calls the 
@@ -205,7 +205,7 @@ public class Uint32Array extends def.js.Object implements Iterable<java.lang.Dou
       * @param begin The index of the beginning of the array.
       * @param end The index of the end of the array.
       */
-    native public Uint32Array subarray(double begin, double end);
+    native public Uint32Array subarray(int begin, int end);
     /**
       * Converts a number to a string by using the current locale. 
       */
@@ -214,11 +214,12 @@ public class Uint32Array extends def.js.Object implements Iterable<java.lang.Dou
       * Returns a string representation of an array.
       */
     native public java.lang.String toString();
-    native public java.lang.Double $get(double index);
+    native public java.lang.Integer $get(int index);
+    native public void $set(int index, java.lang.Integer value);
     public static final Uint32Array prototype=null;
-    public Uint32Array(double length){}
+    public Uint32Array(int length){}
     public Uint32Array(ArrayLike<Double> array){}
-    public Uint32Array(ArrayBuffer buffer, double byteOffset, double length){}
+    public Uint32Array(ArrayBuffer buffer, int byteOffset, int length){}
     /**
       * Returns a new array from a set of elements.
       * @param items A set of elements to include in the new array object.
@@ -240,7 +241,7 @@ public class Uint32Array extends def.js.Object implements Iterable<java.lang.Dou
       * is treated as length+end.
       * @param end If not specified, length of the this object is used as its default value. 
       */
-    native public Uint32Array copyWithin(double target, double start);
+    native public Uint32Array copyWithin(double target, int start);
     /**
       * Determines whether all the members of an array satisfy the specified test.
       * @param callbackfn A function that accepts up to three arguments. The every method calls 
@@ -258,7 +259,7 @@ public class Uint32Array extends def.js.Object implements Iterable<java.lang.Dou
         * @param end index to stop filling the array at. If end is negative, it is treated as 
         * length+end.
         */
-    native public Uint32Array fill(double value, double start);
+    native public Uint32Array fill(int value, int start);
     /**
         * Returns the this object after filling the section identified by start and end with value
         * @param value value to fill array section with
@@ -267,7 +268,7 @@ public class Uint32Array extends def.js.Object implements Iterable<java.lang.Dou
         * @param end index to stop filling the array at. If end is negative, it is treated as 
         * length+end.
         */
-    native public Uint32Array fill(double value);
+    native public Uint32Array fill(int value);
     /**
       * Returns the elements of an array that meet the condition specified in a callback function. 
       * @param callbackfn A function that accepts up to three arguments. The filter method calls 
@@ -310,7 +311,7 @@ public class Uint32Array extends def.js.Object implements Iterable<java.lang.Dou
       * @param fromIndex The array index at which to begin the search. If fromIndex is omitted, the
       *  search starts at index 0.
       */
-    native public double indexOf(double searchElement);
+    native public int indexOf(int searchElement);
     /**
       * Adds all the elements of an array separated by the specified separator string.
       * @param separator A string used to separate one element of an array from the next in the 
@@ -323,7 +324,7 @@ public class Uint32Array extends def.js.Object implements Iterable<java.lang.Dou
       * @param fromIndex The array index at which to begin the search. If fromIndex is omitted, the 
       * search starts at index 0.
       */
-    native public double lastIndexOf(double searchElement);
+    native public int lastIndexOf(int searchElement);
     /**
       * Calls a defined callback function on each element of an array, and returns an array that 
       * contains the results.
@@ -366,7 +367,7 @@ public class Uint32Array extends def.js.Object implements Iterable<java.lang.Dou
       * @param start The beginning of the specified portion of the array.
       * @param end The end of the specified portion of the array.
       */
-    native public Uint32Array slice(double start);
+    native public Uint32Array slice(int start);
     /** 
       * Returns a section of an array.
       * @param start The beginning of the specified portion of the array.
@@ -394,8 +395,8 @@ public class Uint32Array extends def.js.Object implements Iterable<java.lang.Dou
       * @param begin The index of the beginning of the array.
       * @param end The index of the end of the array.
       */
-    native public Uint32Array subarray(double begin);
-    public Uint32Array(ArrayBuffer buffer, double byteOffset){}
+    native public Uint32Array subarray(int begin);
+    public Uint32Array(ArrayBuffer buffer, int byteOffset){}
     public Uint32Array(ArrayBuffer buffer){}
     /**
       * Creates an array from an array-like or iterable object.
@@ -416,7 +417,7 @@ public class Uint32Array extends def.js.Object implements Iterable<java.lang.Dou
       * @param array A typed or untyped array of values to set.
       * @param offset The index in the current array at which the values are to be written.
       */
-    native public void set(Double[] array, double offset);
+    native public void set(Double[] array, int offset);
     public Uint32Array(Double[] array){}
     /**
       * Creates an array from an array-like or iterable object.
@@ -447,7 +448,7 @@ public class Uint32Array extends def.js.Object implements Iterable<java.lang.Dou
     native public static Uint32Array from(Double[] arrayLike);
     /** From Iterable, to allow foreach loop (do not use directly). */
     @jsweet.lang.Erased
-    native public java.util.Iterator<java.lang.Double> iterator();
+    native public java.util.Iterator<java.lang.Integer> iterator();
     protected Uint32Array(){}
 }
 
