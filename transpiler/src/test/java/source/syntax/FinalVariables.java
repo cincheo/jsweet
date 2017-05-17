@@ -23,10 +23,11 @@ import static jsweet.util.StringTypes.div;
 
 import java.util.function.Consumer;
 
+import def.dom.Element;
 import def.dom.HTMLDivElement;
 import def.dom.HTMLElement;
-import def.dom.Node;
 import def.dom.NodeList;
+import def.dom.NodeListOf;
 import def.js.Date;
 import def.js.Math;
 
@@ -44,9 +45,8 @@ public class FinalVariables {
 	}
 
 	void m2(HTMLElement e) {
-		NodeList nodes = document.querySelectorAll("form .form-control");
-		for (Node node : nodes) {
-			HTMLElement element = (HTMLElement) node;
+		NodeListOf<Element> elements = document.querySelectorAll("form .form-control");
+		for (Element element : elements) {
 			element.addEventListener("keyup", (evt) -> {
 				console.log("typing...");
 				// element.classList.add("hit");
