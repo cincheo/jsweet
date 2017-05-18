@@ -198,9 +198,6 @@ public class JSweetCommandLineLauncher {
 				transpiler.setIgnoreAssertions(!jsapArgs.getBoolean("enableAssertions"));
 				transpiler.setGenerateDeclarations(jsapArgs.getBoolean("declaration"));
 				transpiler.setGenerateJsFiles(!jsapArgs.getBoolean("tsOnly"));
-				transpiler.setInterfaceTracking(!jsapArgs.getBoolean("disableJavaAddons"));
-				transpiler.setSupportGetClass(!jsapArgs.getBoolean("disableJavaAddons"));
-				transpiler.setSupportSaticLazyInitialization(!jsapArgs.getBoolean("disableJavaAddons"));
 				transpiler.setGenerateDefinitions(!jsapArgs.getBoolean("ignoreDefinitions"));
 				transpiler.setDeclarationsOutputDir(dtsOutputDir);
 				transpiler.setHeaderFile(jsapArgs.getFile("header"));
@@ -348,13 +345,6 @@ public class JSweetCommandLineLauncher {
 		switchArg = new Switch("tsOnly");
 		switchArg.setLongFlag("tsOnly");
 		switchArg.setHelp("Do not compile the TypeScript output (let an external TypeScript compiler do so).");
-		jsap.registerParameter(switchArg);
-
-		// Do not generate code for extended Java compatibility
-		switchArg = new Switch("disableJavaAddons");
-		switchArg.setLongFlag("disableJavaAddons");
-		switchArg.setHelp(
-				"Disable runtime addons (instanceof, overloading, class name access, static initialization [...] will not be fully supported).");
 		jsap.registerParameter(switchArg);
 
 		// Do not generate d.ts files that correspond to def.* packages

@@ -119,35 +119,6 @@ public interface JSweetOptions {
 	boolean isGenerateTsFiles();
 
 	/**
-	 * If true, JSweet will keep track of implemented interfaces in objects at
-	 * runtime, so that the instanceof operator can work properly with
-	 * interfaces.
-	 * 
-	 * <p>
-	 * If false, instanceof will always return false for an interface. Also, if
-	 * false, method overloading will not work efficiently when the arguments
-	 * are interfaces, leading to 'invalid overload' errors.
-	 * 
-	 * <p>
-	 * Programmers may want to disable the instanceof operator to have lighter
-	 * objects and less polluted JavaScript code. However, they must remain in a
-	 * pure JavaScript use case.
-	 */
-	boolean isInterfaceTracking();
-
-	/**
-	 * If true, JSweet will keep track of the class names in the corresponding
-	 * constructors, so that the object.getClass().getName() can work properly.
-	 */
-	boolean isSupportGetClass();
-
-	/**
-	 * If true, JSweet will implement a lazy initialization mechanism of static
-	 * fields and initializers, to emulate the Java behavior.
-	 */
-	boolean isSupportSaticLazyInitialization();
-
-	/**
 	 * Generated definitions from def.* packages in d.ts files.
 	 */
 	boolean isGenerateDefinitions();

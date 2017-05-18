@@ -83,8 +83,7 @@ public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {
 					context.addFieldNameMapping(var.sym,
 							JSweetConfig.FIELD_METHOD_CLASH_RESOLVER_PREFIX + var.name.toString());
 				}
-				if (getContext().options.isSupportSaticLazyInitialization()
-						&& var.getModifiers().getFlags().contains(Modifier.STATIC)) {
+				if (var.getModifiers().getFlags().contains(Modifier.STATIC)) {
 					if (!(var.getModifiers().getFlags().contains(Modifier.FINAL) && var.init != null
 							&& var.init instanceof JCLiteral)) {
 						lazyInitializedStaticCandidates.add(var);

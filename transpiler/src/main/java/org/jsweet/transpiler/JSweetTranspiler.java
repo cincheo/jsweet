@@ -171,9 +171,6 @@ public class JSweetTranspiler implements JSweetOptions {
 	private boolean ignoreJavaFileNameError = false;
 	private boolean generateDeclarations = false;
 	private File declarationsOutputDir;
-	private boolean interfaceTracking = true;
-	private boolean supportGetClass = true;
-	private boolean supportSaticLazyInitialization = true;
 	private boolean generateDefinitions = true;
 	private ArrayList<File> jsLibFiles = new ArrayList<>();
 	private File sourceRoot = null;
@@ -207,10 +204,8 @@ public class JSweetTranspiler implements JSweetOptions {
 				+ "\necmaTargertVersion=" + ecmaTargetVersion + "\nbundle=" + bundle + "\nencoding=" + encoding
 				+ "\nnoRootDirectories=" + noRootDirectories + "\nignoreAssertions=" + ignoreAssertions
 				+ "\nignoreJavaFileNameError=" + ignoreJavaFileNameError + "\ngenerateDeclarations="
-				+ generateDeclarations + "\ndeclarationsOutputDir=" + declarationsOutputDir + "\ninterfaceTracking="
-				+ interfaceTracking + "\nsupportGetClass=" + supportGetClass + "\nsupportSaticLazyInitialization="
-				+ supportSaticLazyInitialization + "\ngenerateDefinitions=" + generateDefinitions + "\njsLibFiles="
-				+ jsLibFiles;
+				+ generateDeclarations + "\ndeclarationsOutputDir=" + declarationsOutputDir + "\ngenerateDefinitions="
+				+ generateDefinitions + "\njsLibFiles=" + jsLibFiles;
 	}
 
 	/**
@@ -1765,33 +1760,6 @@ public class JSweetTranspiler implements JSweetOptions {
 		translator.exitScope();
 		String tsCode = translator.getResult();
 		return ts2js(handler, tsCode, targetFileName);
-	}
-
-	@Override
-	public boolean isInterfaceTracking() {
-		return interfaceTracking;
-	}
-
-	public void setInterfaceTracking(boolean interfaceTracking) {
-		this.interfaceTracking = interfaceTracking;
-	}
-
-	@Override
-	public boolean isSupportGetClass() {
-		return supportGetClass;
-	}
-
-	public void setSupportGetClass(boolean supportGetClass) {
-		this.supportGetClass = supportGetClass;
-	}
-
-	@Override
-	public boolean isSupportSaticLazyInitialization() {
-		return supportSaticLazyInitialization;
-	}
-
-	public void setSupportSaticLazyInitialization(boolean supportSaticLazyInitialization) {
-		this.supportSaticLazyInitialization = supportSaticLazyInitialization;
 	}
 
 	@Override
