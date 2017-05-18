@@ -434,7 +434,7 @@ public enum JSweetProblem {
 		case PACKAGE_NAME_CONTAINS_KEYWORD:
 			return String.format("a package name cannot contain top-level keyword(s): '%s'", params);
 		case WILDCARD_IMPORT:
-			return String.format("imports cannot use * wildcards: please import a specific element", params);
+			return String.format("imports cannot use * wildcards when using modules: please import a specific element", params);
 		case ENCLOSED_ROOT_PACKAGES:
 			return String.format(
 					"invalid package hierarchy: @Root package '%s' cannot be enclosed in @Root package '%s'", params);

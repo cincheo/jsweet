@@ -598,9 +598,8 @@ public class JSweetContext extends Context {
 	private List<String> usedModules = new ArrayList<>();
 
 	/**
-	 * A flag that indicates if we are building a bundle. In bundle mode, all
-	 * type names are expanded (fully qualified) and static fields will be
-	 * initalized at the end of the bundle.
+	 * A flag that indicates if we are building a bundle. In bundle mode, static
+	 * fields will be initialized at the end of the bundle.
 	 */
 	public boolean bundleMode = false;
 

@@ -36,6 +36,7 @@ import static org.jsweet.JSweetConfig.UTIL_CLASSNAME;
 import static org.jsweet.JSweetConfig.UTIL_PACKAGE;
 import static org.jsweet.JSweetConfig.isJSweetPath;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.function.BooleanSupplier;
@@ -222,6 +223,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 		context.getLangTypeMappings().put(Exception.class.getName(), "Error");
 		context.getLangTypeMappings().put(Throwable.class.getName(), "Error");
 		context.getLangTypeMappings().put(Error.class.getName(), "Error");
+		context.getLangTypeMappings().put(Date.class.getName(), "Date");
 
 		for (String s : context.getLangTypeMappings().keySet()) {
 			context.getLangTypesSimpleNames().add(s.substring(s.lastIndexOf('.') + 1));

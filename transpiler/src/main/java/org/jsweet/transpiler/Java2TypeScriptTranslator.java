@@ -2646,7 +2646,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					report(varDecl, varDecl.name, JSweetProblem.CONSTRUCTOR_MEMBER);
 				}
 			} else {
-				if (context.bundleMode) {
+				if (!context.useModules) {
 					if (context.importedTopPackages.contains(name)) {
 						name = "__var_" + name;
 					}
@@ -2881,7 +2881,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	@Override
 	public void visitImport(JCImport importDecl) {
 		String qualId = importDecl.getQualifiedIdentifier().toString();
-		if (qualId.endsWith("*") && !(qualId.endsWith("." + JSweetConfig.GLOBALS_CLASS_NAME + ".*")
+		if (context.useModules && qualId.endsWith("*") && !(qualId.endsWith("." + JSweetConfig.GLOBALS_CLASS_NAME + ".*")
 				|| qualId.equals(JSweetConfig.UTIL_CLASSNAME + ".*"))) {
 			report(importDecl, JSweetProblem.WILDCARD_IMPORT);
 			return;
@@ -2890,7 +2890,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (adaptedQualId != null && adaptedQualId.contains(".")) {
 			if (importDecl.isStatic() && !qualId.contains("." + JSweetConfig.GLOBALS_CLASS_NAME + ".")
 					&& !qualId.contains("." + JSweetConfig.STRING_TYPES_INTERFACE_NAME + ".")) {
-				if (!context.bundleMode) {
+				if (context.useModules) {
 					print(VAR_DECL_KEYWORD + " ").print(qualId.substring(qualId.lastIndexOf('.') + 1)).print(": any = ")
 							.print(qualId).print(";");
 				}
@@ -2919,7 +2919,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						}
 						context.globalImports.add(name);
 					}
-					if (context.bundleMode) {
+					if (!context.useModules) {
 						// in bundle mode, we do not use imports to minimize
 						// dependencies
 						// (imports create unavoidable dependencies!)
@@ -3182,7 +3182,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						if (vars.containsKey(methSym.getSimpleName().toString())) {
 							report(inv, JSweetProblem.HIDDEN_INVOCATION, methSym.getSimpleName());
 						}
-						if (context.bundleMode && methSym.owner.getSimpleName().toString().equals(GLOBALS_CLASS_NAME)
+						if (!context.useModules && methSym.owner.getSimpleName().toString().equals(GLOBALS_CLASS_NAME)
 								&& methSym.owner.owner != null
 								&& !methSym.owner.owner.getSimpleName().toString().equals(GLOBALS_PACKAGE_NAME)) {
 							String prefix = getRootRelativeName(methSym.owner.owner);
@@ -3467,7 +3467,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 								lazyInitializedStatic = true;
 							}
 							if (!varSym.owner.getQualifiedName().toString().endsWith("." + GLOBALS_CLASS_NAME)) {
-								if (context.bundleMode && !varSym.owner.equals(getParent(JCClassDecl.class).sym)) {
+								if (!context.useModules && !varSym.owner.equals(getParent(JCClassDecl.class).sym)) {
 									String prefix = context.getRootRelativeName(null, varSym.owner);
 									if (!StringUtils.isEmpty(prefix)) {
 										print(context.getRootRelativeName(null, varSym.owner) + ".");
@@ -3478,7 +3478,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 									}
 								}
 							} else {
-								if (context.bundleMode) {
+								if (!context.useModules) {
 									String prefix = context.getRootRelativeName(null, varSym.owner);
 									prefix = prefix.substring(0, prefix.length() - GLOBALS_CLASS_NAME.length());
 									if (!prefix.equals(GLOBALS_PACKAGE_NAME + ".")
@@ -3495,7 +3495,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 										.contains(varSym)) {
 							print("this.");
 						} else {
-							if (context.bundleMode && varSym.owner instanceof MethodSymbol) {
+							if (!context.useModules && varSym.owner instanceof MethodSymbol) {
 								if (context.importedTopPackages.contains(name)) {
 									name = "__var_" + name;
 								}
@@ -3534,7 +3534,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						}
 					}
 				}
-				if (!prefixAdded && context.bundleMode && !clazz.equals(getParent(JCClassDecl.class).sym)) {
+				if (!prefixAdded && !context.useModules && !clazz.equals(getParent(JCClassDecl.class).sym)) {
 					print(getRootRelativeName(clazz));
 				} else {
 					print(name);

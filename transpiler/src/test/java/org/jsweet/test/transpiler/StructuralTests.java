@@ -247,7 +247,10 @@ public class StructuralTests extends AbstractTest {
 
 	@Test
 	public void testWildcardsInImports() {
-		transpile((logHandler) -> {
+		transpile(ModuleKind.none, (logHandler) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(NoWildcardsInImports.class));
+		transpile(ModuleKind.commonjs, (logHandler) -> {
 			logHandler.assertReportedProblems(JSweetProblem.WILDCARD_IMPORT);
 		}, getSourceFile(NoWildcardsInImports.class));
 	}
