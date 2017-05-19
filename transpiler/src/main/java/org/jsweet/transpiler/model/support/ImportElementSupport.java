@@ -47,11 +47,16 @@ public class ImportElementSupport extends ExtendedElementSupport implements Impo
 
 	@Override
 	public TypeElement getImportedType() {
-		if (getTree().isStatic()) {
+		if (getTree().isStatic() || getTree().getQualifiedIdentifier().type == null) {
 			return null;
 		} else {
 			return (TypeElement) getTree().getQualifiedIdentifier().type.tsym;
 		}
+	}
+
+	@Override
+	public boolean isWildcard() {
+		return getTree().toString().endsWith("*");
 	}
 
 }

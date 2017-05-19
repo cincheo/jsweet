@@ -251,7 +251,7 @@ public class StructuralTests extends AbstractTest {
 			logHandler.assertNoProblems();
 		}, getSourceFile(NoWildcardsInImports.class));
 		transpile(ModuleKind.commonjs, (logHandler) -> {
-			logHandler.assertReportedProblems(JSweetProblem.WILDCARD_IMPORT);
+			logHandler.assertReportedProblems(JSweetProblem.WILDCARD_IMPORT, JSweetProblem.WILDCARD_IMPORT);
 		}, getSourceFile(NoWildcardsInImports.class));
 	}
 
@@ -442,5 +442,5 @@ public class StructuralTests extends AbstractTest {
 			logHandler.assertNoProblems();
 		}, getSourceFile(JDKInheritance.class));
 	}
-	
+
 }

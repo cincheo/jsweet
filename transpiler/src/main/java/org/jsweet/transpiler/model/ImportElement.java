@@ -33,7 +33,12 @@ public interface ImportElement extends ExtendedElement {
 	boolean isStatic();
 
 	/**
-	 * Returns the imported type (null if a static import).
+	 * Tells if this import is a wildcard import or not.
+	 */
+	boolean isWildcard();
+	
+	/**
+	 * Returns the imported type (null if a static or wildcard import).
 	 */
 	TypeElement getImportedType();
 	

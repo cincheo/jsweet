@@ -18,6 +18,7 @@ package source.structural;
 
 import static def.dom.Globals.*;
 import def.dom.*;
+import source.structural.*;
 
 public class NoWildcardsInImports {
 
