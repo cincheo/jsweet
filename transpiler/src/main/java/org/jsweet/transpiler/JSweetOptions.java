@@ -19,7 +19,10 @@
 package org.jsweet.transpiler;
 
 import java.io.File;
+import java.util.List;
 import java.util.Map;
+
+import org.jsweet.transpiler.extension.PrinterAdapter;
 
 public interface JSweetOptions {
 
@@ -166,4 +169,19 @@ public interface JSweetOptions {
 	 * The targeted ECMAScript version.
 	 */
 	EcmaScriptComplianceLevel getEcmaTargetVersion();
+
+	/**
+	 * A list of adapter class names (fully qualified) to be used to extend the
+	 * transpiler behavior. As the name suggests, an adapter is an instance of
+	 * {@link PrinterAdapter} that adapts the TypeScript default printer in
+	 * order to tune the generated code. All the adapter classes must be
+	 * accessible within the 'jsweet_extension' directory to be created at the
+	 * root of the transpiled project. The adapter classes can be provided as
+	 * Java class files (*.class) or Java source files (*.java). In the latter
+	 * case, they will be on-the-fly compiled by JSweet.
+	 * 
+	 * @see PrinterAdapter
+	 */
+	List<String> getAdapters();
+
 }

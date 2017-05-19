@@ -182,6 +182,7 @@ public class JSweetTranspiler implements JSweetOptions {
 	private boolean debugMode = false;
 	private boolean skipTypeScriptChecks = false;
 	private boolean disableSingleFloatPrecision = false;
+	private ArrayList<String> adapters = new ArrayList<>();
 
 	/**
 	 * Manually sets the transpiler to use (or not use) a Java runtime.
@@ -255,6 +256,64 @@ public class JSweetTranspiler implements JSweetOptions {
 				Map<String, Object> fromJson = new Gson().fromJson(FileUtils.readFileToString(confFile), Map.class);
 				configuration = fromJson;
 				logger.debug("configuration: " + configuration);
+				// TODO: support all options...
+				// TODO: this will not work because all values will be
+				// overridden by the launcher's default values...
+				// we need to rewrite the plugins to achieve overriding
+				// if(configuration.containsKey("bundle")) {
+				// setBundle(getConfigurationValue("bundle"));
+				// }
+				// if(configuration.containsKey("noRootDirectories")) {
+				// setNoRootDirectories(getConfigurationValue("noRootDirectories"));
+				// }
+				// if(configuration.containsKey("sourceMap")) {
+				// setPreserveSourceLineNumbers(getConfigurationValue("sourceMap"));
+				// }
+				// if(configuration.containsKey("module")) {
+				// setModuleKind(ModuleKind.valueOf(getConfigurationValue("module")));
+				// }
+				// if(configuration.containsKey("encoding")) {
+				// setEncoding(getConfigurationValue("encoding"));
+				// }
+				// if(configuration.containsKey("enableAssertions")) {
+				// setIgnoreAssertions(!(Boolean)getConfigurationValue("enableAssertions"));
+				// }
+				// if(configuration.containsKey("declaration")) {
+				// setGenerateDeclarations(getConfigurationValue("declaration"));
+				// }
+				// if(configuration.containsKey("tsOnly")) {
+				// setGenerateJsFiles(!(Boolean)getConfigurationValue("tsOnly"));
+				// }
+				// if(configuration.containsKey("ignoreDefinitions")) {
+				// setGenerateDefinitions(!(Boolean)getConfigurationValue("ignoreDefinitions"));
+				// }
+				// if(configuration.containsKey("header")) {
+				// setHeaderFile(new
+				// File((String)getConfigurationValue("header")));
+				// }
+				// if(configuration.containsKey("disableSinglePrecisionFloats"))
+				// {
+				// setGenerateDeclarations(getConfigurationValue("disableSinglePrecisionFloats"));
+				// }
+				// if(configuration.containsKey("disableSinglePrecisionFloats"))
+				// {
+				// setGenerateDeclarations(getConfigurationValue("disableSinglePrecisionFloats"));
+				// }
+				// if(configuration.containsKey("targetVersion")) {
+				// setEcmaTargetVersion(EcmaScriptComplianceLevel.valueOf(getConfigurationValue("targetVersion")));
+				// }
+				// if(configuration.containsKey("tsout")) {
+				// setTsOutputDir(new
+				// File((String)getConfigurationValue("tsout")));
+				// }
+				// if(configuration.containsKey("dtsout")) {
+				// setDeclarationsOutputDir(new
+				// File((String)getConfigurationValue("dtsout")));
+				// }
+				// if(configuration.containsKey("jsout")) {
+				// setJsOutputDir(new
+				// File((String)getConfigurationValue("jsout")));
+				// }
 			} catch (Exception e) {
 				logger.warn("error reading configuration file", e);
 			}
@@ -1875,6 +1934,20 @@ public class JSweetTranspiler implements JSweetOptions {
 
 	public void setDisableSinglePrecisionFloats(boolean disableSinglePrecisionFloats) {
 		this.disableSingleFloatPrecision = disableSinglePrecisionFloats;
+	}
+
+	// @SuppressWarnings("unchecked")
+	// private <T> T getConfigurationValue(String key) {
+	// return (T) getConfiguration().get(key);
+	// }
+
+	@Override
+	public java.util.List<String> getAdapters() {
+		return adapters;
+	}
+
+	public void setAdapters(java.util.List<String> adapters) {
+		this.adapters = new ArrayList<>(adapters);
 	}
 
 }

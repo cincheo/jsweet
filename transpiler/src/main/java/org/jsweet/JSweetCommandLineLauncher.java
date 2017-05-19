@@ -203,6 +203,7 @@ public class JSweetCommandLineLauncher {
 				transpiler.setHeaderFile(jsapArgs.getFile("header"));
 				transpiler.setEcmaTargetVersion(esTarget);
 				transpiler.setDisableSinglePrecisionFloats(jsapArgs.getBoolean("disableSinglePrecisionFloats"));
+				// transpiler.setAdapters(Arrays.asList(jsapArgs.getStringArray("adapters")));
 
 				transpiler.transpile(transpilationHandler, SourceFile.toSourceFiles(files));
 			} catch (NoClassDefFoundError error) {
@@ -424,6 +425,24 @@ public class JSweetCommandLineLauncher {
 		optionArg.setStringParser(JSAP.STRING_PARSER);
 		optionArg.setRequired(false);
 		jsap.registerParameter(optionArg);
+
+		// // Adapters
+		// optionArg = new FlaggedOption("adapters");
+		// optionArg.setLongFlag("adapters");
+		// optionArg.setList(true);
+		// optionArg.setStringParser(JSAP.STRING_PARSER);
+		// optionArg.setListSeparator(':');
+		// optionArg.setRequired(false);
+		// optionArg.setHelp(
+		// "A column-separated list of adapter class names (fully qualified) to
+		// be used to extend the transpiler behavior. As the name suggests, an
+		// adapter is an object that adapts the TypeScript default printer in
+		// order to tune the generated code. All the adapter classes must be
+		// accessible within the 'jsweet_extension' directory to be created at
+		// the root of the transpiled project. The adapter classes can be
+		// provided as Java class files (*.class) or Java source files (*.java).
+		// In the latter case, they will be on-the-fly compiled by JSweet.");
+		// jsap.registerParameter(optionArg);
 
 		// Debug
 		switchArg = new Switch("sourceMap");
