@@ -36,7 +36,7 @@ public final class Globals extends def.js.Object {
 	 * @param x
 	 *            A String value that contains valid JavaScript code.
 	 */
-	native public static java.lang.Object eval(java.lang.String x);
+	native public static <T> T eval(java.lang.String x);
 
 	/**
 	 * Evaluates JavaScript code and executes it.
@@ -44,7 +44,7 @@ public final class Globals extends def.js.Object {
 	 * @param x
 	 *            A String value that contains valid JavaScript code.
 	 */
-	native public static java.lang.Object eval(String x);
+	native public static <T> T eval(String x);
 	
 	/**
 	 * Converts A string to an integer.
