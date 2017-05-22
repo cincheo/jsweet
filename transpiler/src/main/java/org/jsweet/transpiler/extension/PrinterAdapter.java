@@ -406,10 +406,10 @@ public class PrinterAdapter {
 	}
 
 	/**
-	 * Print a comma-separated, zero-indexed identifier list.
+	 * Prints a comma-separated, zero-indexed, generated identifier list.
 	 * 
 	 * <p>
-	 * For instance <code>printIdentList("x", 4)</code> will print:
+	 * For instance <code>printIdentifierList("x", 4)</code> will print:
 	 * <code>x0, x1, x2, x3</code>.
 	 * 
 	 * @param prefix
@@ -418,7 +418,7 @@ public class PrinterAdapter {
 	 *            the number of identifiers in the list
 	 * @return this printer adapter
 	 */
-	protected PrinterAdapter printIdentList(String prefix, int count) {
+	public PrinterAdapter printIdentifierList(String prefix, int count) {
 		for (int i = 0; i < count; i++) {
 			print(prefix + i + ", ");
 		}
