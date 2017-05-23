@@ -246,7 +246,7 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 		return print(adaptedIdentifier);
 	}
 
-	public String getQualifiedTypeName(TypeSymbol type, boolean globals) {
+	public String getQualifiedTypeName(TypeSymbol type, boolean globals, boolean ignoreLangTypes) {
 		return getRootRelativeName(type);
 	}
 

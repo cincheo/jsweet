@@ -1374,7 +1374,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				print(prefix + "__static_initializer_" + i + "(); ");
 			}
 			print("} }").println().println();
-			String qualifiedClassName = getQualifiedTypeName(classdecl.sym, globals);
+			String qualifiedClassName = getQualifiedTypeName(classdecl.sym, globals, true);
 			context.addTopFooterStatement(
 					(isBlank(qualifiedClassName) ? "" : qualifiedClassName + ".__static_initialize();"));
 		}
@@ -1676,7 +1676,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 		if (mainMethod != null && mainMethod.getParameters().size() < 2
 				&& mainMethod.sym.getEnclosingElement().equals(classdecl.sym)) {
-			String mainClassName = getQualifiedTypeName(classdecl.sym, globals);
+			String mainClassName = getQualifiedTypeName(classdecl.sym, globals, true);
 			String mainMethodQualifier = mainClassName;
 			if (!isBlank(mainClassName)) {
 				mainMethodQualifier = mainClassName + ".";
@@ -2153,7 +2153,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 								// bug
 								print("return <any>");
 								if (method.sym.isStatic()) {
-									print(getQualifiedTypeName(parent.sym, false).toString());
+									print(getQualifiedTypeName(parent.sym, false, false).toString());
 								} else {
 									print("this");
 								}
@@ -2824,7 +2824,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 				print("return ").print(prefix).print(name).print("; }");
 				if (!globals) {
-					String qualifiedClassName = getQualifiedTypeName(clazz.sym, globals);
+					String qualifiedClassName = getQualifiedTypeName(clazz.sym, globals, true);
 					context.addTopFooterStatement((isBlank(qualifiedClassName) ? "" : qualifiedClassName + ".") + name
 							+ STATIC_INITIALIZATION_SUFFIX + "();");
 				}
@@ -4750,7 +4750,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							|| Object.class.getName().equals(type.tsym.getQualifiedName().toString())) {
 						print(" != null");
 					} else {
-						String qualifiedName = getQualifiedTypeName(type.tsym, false);
+						String qualifiedName = getQualifiedTypeName(type.tsym, false, false);
 						if (qualifiedName.startsWith("{")) {
 							qualifiedName = "Object";
 						}
@@ -4949,10 +4949,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	}
 
 	@Override
-	public String getQualifiedTypeName(TypeSymbol type, boolean globals) {
-		String qualifiedName = super.getQualifiedTypeName(type, globals);
+	public String getQualifiedTypeName(TypeSymbol type, boolean globals, boolean ignoreLangTypes) {
+		String qualifiedName = super.getQualifiedTypeName(type, globals, ignoreLangTypes);
 		String typeName = type.getQualifiedName().toString();
-		if (context.getLangTypeMappings().containsKey(typeName)) {
+		if (!ignoreLangTypes && context.getLangTypeMappings().containsKey(typeName)) {
 			qualifiedName = context.getLangTypeMappings().get(typeName);
 		} else if (context.isMappedType(typeName)) {
 			qualifiedName = context.getTypeMappingTarget(typeName);
