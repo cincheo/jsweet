@@ -51,6 +51,7 @@ import source.structural.InnerClassUse;
 import source.structural.InstanceOf;
 import source.structural.InstanceofForInterfaces;
 import source.structural.InterfaceInheritance;
+import source.structural.InterfaceStaticMethods;
 import source.structural.JDKInheritance;
 import source.structural.JSNI;
 import source.structural.LocalClasses;
@@ -67,6 +68,7 @@ import source.structural.WrongThisAccessOnStatic;
 import source.structural.globalclasses.Globals;
 import source.structural.globalclasses.a.ClassWithStaticMethod;
 import source.structural.globalclasses.a.GlobalsConstructor;
+import source.structural.globalclasses.a.InterfaceWithStaticMethod;
 import source.structural.globalclasses.c.ClassUsingStaticMethod;
 import source.structural.globalclasses.c.GlobalFunctionGetSetDelete;
 import source.structural.globalclasses.d.GlobalFunctionAccessFromMain;
@@ -354,11 +356,23 @@ public class StructuralTests extends AbstractTest {
 	@Test
 	public void testDefaultMethods() {
 		// TODO: make it work with modules
+		// actually we need to completely change the implementation of default
+		// method because they require the source code
 		eval(ModuleKind.none, (logHandler, r) -> {
 			logHandler.assertNoProblems();
 			assertEquals("m,m1,m2-overriden", r.get("trace"));
 		}, getSourceFile(ClassWithStaticMethod.class), getSourceFile(DefaultMethods.class),
 				getSourceFile(DefaultMethodsConsumer.class));
+	}
+
+	@Test
+	public void testInterfaceStaticMethods() {
+		eval((logHandler, r) -> {
+			logHandler.assertNoProblems();
+			assertEquals(true, r.get("m"));
+		}, getSourceFile(InterfaceWithStaticMethod.class),
+				getSourceFile(source.structural.globalclasses.a.AbstractClass.class),
+				getSourceFile(InterfaceStaticMethods.class));
 	}
 
 	@Test

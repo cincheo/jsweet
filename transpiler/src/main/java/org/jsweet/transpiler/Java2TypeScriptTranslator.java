@@ -1739,6 +1739,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	boolean constructor = false;
 
+	private boolean isInterfaceMethod(JCClassDecl parent, JCMethodDecl method) {
+		return context.isInterface(parent.sym) && !method.sym.isStatic();
+	}
+
 	@Override
 	public void visitMethodDef(JCMethodDecl methodDecl) {
 
@@ -1782,7 +1786,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					if (!printCoreMethodDelegate) {
 						if (overload.coreMethod.equals(methodDecl)) {
 							inCoreWrongOverload = true;
-							if (!context.isInterface(parent.sym) && !methodDecl.sym.isConstructor()
+							if (!isInterfaceMethod(parent, methodDecl) && !methodDecl.sym.isConstructor()
 									&& parent.sym.equals(overload.coreMethod.sym.getEnclosingElement())) {
 								printCoreMethodDelegate = true;
 								visitMethodDef(overload.coreMethod);
@@ -1797,7 +1801,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							addCoreMethod = !overload.printed
 									&& overload.coreMethod.sym.getEnclosingElement() != parent.sym
 									&& (!overload.coreMethod.sym.getModifiers().contains(Modifier.ABSTRACT)
-											|| context.isInterface(parent.sym)
+											|| isInterfaceMethod(parent, methodDecl)
 											|| !context.types.isSubtype(parent.sym.type,
 													overload.coreMethod.sym.getEnclosingElement().type));
 							if (!overload.printed && !addCoreMethod && overload.coreMethod.type instanceof MethodType) {
@@ -1807,11 +1811,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							if (addCoreMethod) {
 								visitMethodDef(overload.coreMethod);
 								overload.printed = true;
-								if (!context.isInterface(parent.sym)) {
+								if (!isInterfaceMethod(parent, methodDecl)) {
 									println().println().printIndent();
 								}
 							}
-							if (context.isInterface(parent.sym)) {
+							if (isInterfaceMethod(parent, methodDecl)) {
 								return;
 							}
 						}
@@ -2044,7 +2048,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				substituteAndPrintType(methodDecl.restype);
 			}
 		}
-		if (inCoreWrongOverload && context.isInterface(parent.sym)) {
+		if (inCoreWrongOverload && isInterfaceMethod(parent, methodDecl)) {
 			print(";");
 			return;
 		}
@@ -2108,7 +2112,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					for (i = 0; i < overload.methods.size(); i++) {
 						JCMethodDecl method = overload.methods.get(i);
 						if (context.isInterface((ClassSymbol) method.sym.getEnclosingElement())
-								&& !method.getModifiers().getFlags().contains(Modifier.DEFAULT)) {
+								&& !method.getModifiers().getFlags().contains(Modifier.DEFAULT)
+								&& !method.getModifiers().getFlags().contains(Modifier.STATIC)) {
 							continue;
 						}
 						if (!Util.isParent(parent.sym, (ClassSymbol) method.sym.getEnclosingElement())) {
@@ -2881,8 +2886,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	@Override
 	public void visitImport(JCImport importDecl) {
 		String qualId = importDecl.getQualifiedIdentifier().toString();
-		if (context.useModules && qualId.endsWith("*") && !(qualId.endsWith("." + JSweetConfig.GLOBALS_CLASS_NAME + ".*")
-				|| qualId.equals(JSweetConfig.UTIL_CLASSNAME + ".*"))) {
+		if (context.useModules && qualId.endsWith("*")
+				&& !(qualId.endsWith("." + JSweetConfig.GLOBALS_CLASS_NAME + ".*")
+						|| qualId.equals(JSweetConfig.UTIL_CLASSNAME + ".*"))) {
 			report(importDecl, JSweetProblem.WILDCARD_IMPORT);
 			return;
 		}

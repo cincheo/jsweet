@@ -1362,7 +1362,7 @@ public class JSweetContext extends Context {
 		if (isInterface(type)) {
 			for (Symbol s : type.getEnclosedElements()) {
 				if (s instanceof MethodSymbol) {
-					if (!Util.isOverridingBuiltInJavaObjectMethod((MethodSymbol) s)) {
+					if (!s.isStatic() && !Util.isOverridingBuiltInJavaObjectMethod((MethodSymbol) s)) {
 						methods.add((MethodSymbol) s);
 					}
 				}
