@@ -3938,7 +3938,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	@Override
 	public void visitIndexed(JCArrayAccess arrayAccess) {
 		if (!getAdapter().substituteArrayAccess(new ArrayAccessElementSupport(arrayAccess))) {
-			print(arrayAccess.indexed).print("[").print(arrayAccess.index).print("]");
+			print(arrayAccess.indexed).print("[")
+					.substituteAndPrintAssignedExpression(context.symtab.intType, arrayAccess.index).print("]");
 		}
 	}
 
