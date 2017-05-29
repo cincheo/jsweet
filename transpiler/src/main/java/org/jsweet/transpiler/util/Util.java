@@ -35,6 +35,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -1114,6 +1115,47 @@ public class Util {
 			return true;
 		}
 		return false;
+	}
+
+	/**
+	 * Gets the inheritance-based sorted class declarations.
+	 * 
+	 * <p>
+	 * This method aims at overcoming TypeScrit limitation that forces a parent
+	 * class to be declared before its child class (it is not the case in Java).
+	 * So far this is a partial implementation that should cover most cases...
+	 * for a 100% coverage we would need a much more complicated implementation
+	 * that is probably not worth it.
+	 */
+	public static List<JCClassDecl> getSortedClassDeclarations(List<JCTree> decls) {
+//		return (List<JCClassDecl>)(Object)decls;
+		List<JCClassDecl> classDecls = decls.stream().filter(d -> d instanceof JCClassDecl).map(d -> (JCClassDecl) d)
+				.collect(Collectors.toList());
+
+		DirectedGraph<JCClassDecl> defs = new DirectedGraph<>();
+		List<ClassSymbol> symbols = classDecls.stream().map(d -> ((JCClassDecl) d).sym).collect(Collectors.toList());
+		defs.add(classDecls.toArray(new JCClassDecl[0]));
+		for (int i = 0; i < symbols.size(); i++) {
+			int superClassIndex = indexOfSuperclass(symbols, symbols.get(i)); // symbols.indexOf(symbols.get(i).getSuperclass().tsym);
+			if (superClassIndex >= 0) {
+				defs.addEdge(classDecls.get(superClassIndex), classDecls.get(i));
+			}
+		}
+		// we assume no cycles are possible
+		return defs.topologicalSort(null);
+	}
+
+	private static int indexOfSuperclass(List<ClassSymbol> symbols, ClassSymbol clazz) {
+		int superClassIndex = symbols.indexOf(clazz.getSuperclass().tsym);
+		// looks up also if any inner class extends a class in the list
+		if (superClassIndex < 0) {
+			for (Symbol s : clazz.getEnclosedElements()) {
+				if (s instanceof ClassSymbol) {
+					return indexOfSuperclass(symbols, ((ClassSymbol) s));
+				}
+			}
+		}
+		return superClassIndex;
 	}
 
 }

@@ -45,6 +45,7 @@ import source.structural.FunctionalObjects;
 import source.structural.GetClass;
 import source.structural.GlobalsAccess;
 import source.structural.Inheritance;
+import source.structural.InheritanceOrderInSameFile;
 import source.structural.InnerClass;
 import source.structural.InnerClassNotStatic;
 import source.structural.InnerClassUse;
@@ -174,6 +175,13 @@ public class StructuralTests extends AbstractTest {
 		}, getSourceFile(Inheritance.class));
 	}
 
+	@Test
+	public void testInheritanceOrderInSameFile() {
+		eval((logHandler, r) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(InheritanceOrderInSameFile.class));
+	}
+	
 	@Test
 	public void testWrongConstructsInInterfaces() {
 		transpile(logHandler -> {

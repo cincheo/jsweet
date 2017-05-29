@@ -717,6 +717,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 
 		for (JCTree def : topLevel.defs) {
+			if (!(def instanceof JCClassDecl)) {
+				print(def);
+			}
+		}
+
+		for (JCTree def : Util.getSortedClassDeclarations(topLevel.defs)) {
 			mainMethod = null;
 
 			printIndent();
@@ -1545,7 +1551,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		// ======================
 		// print valid inner classes
 		boolean nameSpace = false;
-		for (JCTree def : classdecl.defs) {
+		for (JCTree def : Util.getSortedClassDeclarations(classdecl.defs)) {
 			if (def instanceof JCClassDecl) {
 				JCClassDecl cdef = (JCClassDecl) def;
 				if (context.isIgnored(cdef)) {
