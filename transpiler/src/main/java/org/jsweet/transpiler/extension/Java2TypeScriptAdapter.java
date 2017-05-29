@@ -405,10 +405,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 		if (targetType != null && targetType.getKind() == ElementKind.ENUM
 				&& (invocationElement.getTargetExpression() != null
 						&& !"this".equals(invocationElement.getTargetExpression().toString()))) {
-			// TODO: enum type simple name will not be valid when uses as fully
-			// qualified name (not imported)
-			String relTarget = context.useModules ? targetType.getSimpleName().toString()
-					: getRootRelativeName((Symbol) targetType);
+			String relTarget = getRootRelativeName((Symbol) targetType);
 			switch (targetMethodName) {
 			case "name":
 				print(relTarget).print("[").print(invocationElement.getTargetExpression()).print("]");
@@ -1303,8 +1300,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 			// enum objects wrapping
 			if (targetType != null && targetType.getKind() == ElementKind.ENUM && !fieldAccess.sym.isEnum()
 					&& !"this".equals(fieldAccess.selected.toString()) && !"class".equals(targetFieldName)) {
-				String relTarget = context.useModules ? targetType.getSimpleName().toString()
-						: getRootRelativeName((Symbol) targetType);
+				String relTarget = getRootRelativeName((Symbol) targetType);
 				getPrinter().print(relTarget)
 						.print("[\"" + Java2TypeScriptTranslator.ENUM_WRAPPER_CLASS_WRAPPERS + "\"][")
 						.print(fieldAccess.selected).print("].").print(fieldAccess.name.toString());

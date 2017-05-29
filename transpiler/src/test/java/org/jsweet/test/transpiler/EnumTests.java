@@ -75,7 +75,7 @@ public class EnumTests extends AbstractTest {
     public void testComplexEnums() {
 	eval((logHandler, r) -> {
 	    assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-	    Assert.assertEquals(">static,2,--2--,ratio_2_1_5,true,true,true,true", r.get("trace"));
+	    Assert.assertEquals(">static,2,--2--,ratio_2_1_5,true,true,true,true,2,2", r.get("trace"));
 	}, getSourceFile(ComplexEnums.class));
     }
 

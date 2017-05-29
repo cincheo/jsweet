@@ -1514,7 +1514,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (!classdecl.sym.isAnonymous()) {
 					println().printIndent().print(classdecl.sym.getSimpleName().toString())
 							.print("[\"" + CLASS_NAME_IN_CONSTRUCTOR + "\"] = ")
-							.print("\"" + context.getRootRelativeName(null, classdecl.sym) + "\";");
+							.print("\"" + classdecl.sym.getQualifiedName().toString() + "\";");
 				}
 				Set<String> interfaces = new HashSet<>();
 				context.grabSupportedInterfaceNames(interfaces, classdecl.sym);
@@ -2990,14 +2990,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							if (varSym.isStatic() && varSym.owner.isInterface()
 									&& varSym.owner != Util.getSymbol(fieldAccess.selected)) {
 								accessSubstituted = true;
-								if (context.useModules) {
-									// TODO: we assume it has been imported, but
-									// it is clearly not always the case (to be
-									// tested)
-									print(varSym.owner.getSimpleName().toString()).print(".");
-								} else {
-									print(context.getRootRelativeName(null, varSym.owner)).print(".");
-								}
+								print(getRootRelativeName(varSym.owner)).print(".");
 							}
 						}
 						if (!accessSubstituted) {
@@ -4396,11 +4389,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						}
 					}
 				} else {
-					if (context.useModules) {
-						print(caseStatement.pat.type.tsym.getSimpleName() + "." + caseStatement.pat);
-					} else {
-						print(getRootRelativeName(caseStatement.pat.type.tsym) + "." + caseStatement.pat);
-					}
+					print(getRootRelativeName(caseStatement.pat.type.tsym) + "." + caseStatement.pat);
 				}
 			}
 		} else {

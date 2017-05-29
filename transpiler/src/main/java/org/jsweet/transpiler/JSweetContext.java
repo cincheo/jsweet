@@ -1057,6 +1057,10 @@ public class JSweetContext extends Context {
 	}
 
 	private void getRootRelativeName(Map<Symbol, String> nameMapping, StringBuilder sb, Symbol symbol) {
+		if (useModules && symbol instanceof PackageSymbol
+				&& !symbol.toString().startsWith(JSweetConfig.LIBS_PACKAGE + ".")) {
+			return;
+		}
 		if (!isRootPackage(symbol)) {
 			if (sb.length() > 0 && !"".equals(symbol.toString())) {
 				sb.insert(0, ".");
