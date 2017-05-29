@@ -1009,6 +1009,12 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 					print(invocation.getTargetExpression(), delegate).print(", ")
 							.printArgList(invocation.getArguments()).print(")");
 					return true;
+				case "isPrimitive":
+					// primitive class types are never used in JSweet, so it will always return false
+					printMacroName(targetMethodName);
+					print("(").print(invocation.getTargetExpression()).print(" === <any>'__erasedPrimitiveType__'")
+							.print(")");
+					return true;
 				}
 
 			case "java.lang.reflect.Array":
@@ -1059,7 +1065,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 					return true;
 				}
 				break;
-		    case "java.lang.Boolean":
+			case "java.lang.Boolean":
 				switch (variableAccess.getVariableName()) {
 				case "TRUE":
 					print("true");
@@ -1069,7 +1075,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 					return true;
 				}
 			}
-			
+
 		}
 		return super.substituteVariableAccess(variableAccess);
 	}

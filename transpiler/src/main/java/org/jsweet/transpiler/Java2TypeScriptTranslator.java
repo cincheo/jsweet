@@ -2967,17 +2967,21 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							.getRootRelativeJavaName(((Type.ClassType) fieldAccess.type).typarams_field.head.tsym))
 							.print("\"");
 				} else {
-					if (context.isMappedType(fieldAccess.selected.type.tsym.toString())) {
-						String target = context.getTypeMappingTarget(fieldAccess.selected.type.tsym.toString());
+					String name = fieldAccess.selected.type.tsym.toString();
+					if (context.isMappedType(name)) {
+						String target = context.getTypeMappingTarget(name);
 						if (CONSTRUCTOR_TYPE_MAPPING.containsKey(target)) {
-							print(mapConstructorType(
-									context.getTypeMappingTarget(fieldAccess.selected.type.tsym.toString())));
+							print(mapConstructorType(target));
 						} else {
 							print("\"").print(context.getRootRelativeJavaName(
 									((Type.ClassType) fieldAccess.type).typarams_field.head.tsym)).print("\"");
 						}
 					} else {
-						print(fieldAccess.selected);
+						if (CONSTRUCTOR_TYPE_MAPPING.containsKey(name)) {
+							print(mapConstructorType(name));
+						} else {
+							print(fieldAccess.selected);
+						}
 					}
 				}
 			} else if ("this".equals(fieldAccess.name.toString()) && getScope().innerClassNotStatic) {
