@@ -25,6 +25,7 @@ import org.junit.Test;
 
 import source.api.AccessStaticMethod;
 import source.api.ArrayBuffers;
+import source.api.Booleans;
 import source.api.CastMethods;
 import source.api.Characters;
 import source.api.Equals;
@@ -158,6 +159,13 @@ public class ApiTests extends AbstractTest {
 		}, getSourceFile(Numbers.class));
 	}
 
+	@Test
+	public void testBooleans() {
+		eval(ModuleKind.none, (logHandler, r) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(Booleans.class));
+	}
+	
 	@Test
 	public void testArrayBuffers() {
 		eval(ModuleKind.none, (logHandler, r) -> {
