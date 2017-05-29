@@ -29,7 +29,9 @@ import org.jsweet.transpiler.util.AbstractTreeScanner;
 import org.jsweet.transpiler.util.Util;
 
 import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
+import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
@@ -76,12 +78,23 @@ public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {
 				if (getCompilationUnit().docComments.hasComment(var)) {
 					context.docComments.put(var.sym, getCompilationUnit().docComments.getCommentText(var));
 				}
+				VarSymbol clashingField = null;
+				if (var.sym.isPrivate()) {
+					clashingField = Util.findFieldDeclaration((ClassSymbol) classdecl.sym.getSuperclass().tsym,
+							var.name);
+					if (clashingField != null) {
+						context.addFieldNameMapping(var.sym, JSweetConfig.FIELD_METHOD_CLASH_RESOLVER_PREFIX
+								+ classdecl.sym.toString().replace(".", "_") + "_" + var.name.toString());
+					}
+				}
 
-				MethodSymbol m = Util.findMethodDeclarationInType(context.types, classdecl.sym, var.name.toString(),
-						null);
-				if (m != null) {
-					context.addFieldNameMapping(var.sym,
-							JSweetConfig.FIELD_METHOD_CLASH_RESOLVER_PREFIX + var.name.toString());
+				if (clashingField == null) {
+					MethodSymbol m = Util.findMethodDeclarationInType(context.types, classdecl.sym, var.name.toString(),
+							null);
+					if (m != null) {
+						context.addFieldNameMapping(var.sym,
+								JSweetConfig.FIELD_METHOD_CLASH_RESOLVER_PREFIX + var.name.toString());
+					}
 				}
 				if (var.getModifiers().getFlags().contains(Modifier.STATIC)) {
 					if (!(var.getModifiers().getFlags().contains(Modifier.FINAL) && var.init != null

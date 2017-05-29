@@ -60,6 +60,7 @@ import source.structural.NameClashesWithMethodInvocations;
 import source.structural.NoNameClashesWithFields;
 import source.structural.NoWildcardsInImports;
 import source.structural.ObjectTypes;
+import source.structural.PrivateFieldNameClashes;
 import source.structural.ReplaceAnnotation;
 import source.structural.StaticMembersInInterfaces;
 import source.structural.TwoClassesInSameFile;
@@ -95,6 +96,13 @@ public class StructuralTests extends AbstractTest {
 			logHandler.assertReportedProblems(JSweetProblem.HIDDEN_INVOCATION, JSweetProblem.HIDDEN_INVOCATION,
 					JSweetProblem.HIDDEN_INVOCATION);
 		}, getSourceFile(NameClashesWithMethodInvocations.class));
+	}
+
+	@Test
+	public void testPrivateFieldNameClashes() {
+		transpile(logHandler -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(PrivateFieldNameClashes.class));
 	}
 
 	@Test
