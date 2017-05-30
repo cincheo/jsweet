@@ -3563,7 +3563,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						if (!getCompilationUnit().getImports().stream()
 								.map(i -> i.qualid.type == null ? null : i.qualid.type.tsym)
 								.anyMatch(t -> t == clazz)) {
-							print(clazz.getEnclosingElement().getSimpleName() + ".");
+							print(getClassName(clazz.getEnclosingElement()) + ".");
 							prefixAdded = true;
 						}
 					}
@@ -4468,8 +4468,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			} else {
 				print("<");
 				substituteAndPrintType(cast.clazz).print(">");
-				// Java always allows casting when an interface is involved (that's weak!!)
-				if(cast.expr.type.tsym.isInterface() || cast.type.tsym.isInterface()) {
+				// Java always allows casting when an interface is involved
+				// (that's weak!!)
+				if (cast.expr.type.tsym.isInterface() || cast.type.tsym.isInterface()) {
 					print("<any>");
 				}
 			}
