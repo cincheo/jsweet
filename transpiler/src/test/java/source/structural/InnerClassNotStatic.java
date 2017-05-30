@@ -82,6 +82,18 @@ public class InnerClassNotStatic {
 		}
 	}
 
+	public class InnerClass3 {
+		public InnerClass3(int i) {
+		}
+	}
+	
+	public class InnerClass4 extends InnerClass3 {
+
+		public InnerClass4() {
+			super(getI());
+		}
+	}
+
 	public interface I {
 	}
 
