@@ -133,7 +133,7 @@ public class NativeStructuresTests extends AbstractTest {
 	public void testStrings() {
 		eval((logHandler, result) -> {
 			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-			assertEquals(">,0", result.get("trace"));
+			assertEquals(">,0,ABC,abc,abcd,AB,b", result.get("trace"));
 		}, getSourceFile(Strings.class));
 	}
 

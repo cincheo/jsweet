@@ -1010,7 +1010,8 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 							.printArgList(invocation.getArguments()).print(")");
 					return true;
 				case "isPrimitive":
-					// primitive class types are never used in JSweet, so it will always return false
+					// primitive class types are never used in JSweet, so it
+					// will always return false
 					printMacroName(targetMethodName);
 					print("(").print(invocation.getTargetExpression()).print(" === <any>'__erasedPrimitiveType__'")
 							.print(")");
@@ -1133,6 +1134,32 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		case "java.util.LinkedHashMap":
 			print("{}");
 			substitute = true;
+			break;
+		case "java.lang.String":
+			ExtendedElement firstArgument = newClass.getArgument(0);
+			if (firstArgument.getType() instanceof ArrayType) {
+				if (util().isIntegral(((ArrayType) firstArgument.getType()).getComponentType())) {
+					print("String.fromCharCode.apply(null, ").print(firstArgument).print(")");
+					if (newClass.getArgumentCount() >= 3 && util().isIntegral(newClass.getArgument(1).getType())
+							&& util().isIntegral(newClass.getArgument(2).getType())) {
+						print(".substr(").print(newClass.getArgument(1)).print(", ").print(newClass.getArgument(2))
+								.print(")");
+					}
+					return true;
+				} else {
+					print(firstArgument).print(".join('')");
+					if (newClass.getArgumentCount() >= 3 && util().isIntegral(newClass.getArgument(1).getType())
+							&& util().isIntegral(newClass.getArgument(2).getType())) {
+						print(".substr(").print(newClass.getArgument(1)).print(", ").print(newClass.getArgument(2))
+								.print(")");
+					}
+					return true;
+				}
+			} else if (StringBuffer.class.getName().equals(firstArgument.getTypeAsElement().toString())
+					|| StringBuilder.class.getName().equals(firstArgument.getTypeAsElement().toString())) {
+				print(firstArgument).print(".str");
+				return true;
+			}
 			break;
 		case "java.lang.StringBuffer":
 		case "java.lang.StringBuilder":

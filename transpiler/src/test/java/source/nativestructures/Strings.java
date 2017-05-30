@@ -11,6 +11,15 @@ public class Strings {
 	public static void main(String[] args) {
 		trace.push(">");
 		trace.push("" + "a".indexOf(0x61));
+		byte[] bytes = { 65, 66, 67 };
+		char[] chars = { 'a', 'b', 'c' };
+		trace.push(new String(bytes));
+		trace.push(new String(chars));
+		StringBuffer sb = new StringBuffer();
+		sb.append("abcd");
+		trace.push(new String(sb));
+		trace.push(new String(bytes, 0, 2));
+		trace.push(new String(chars, 1, 1));
 		$export("trace", trace.join(","));
 	}
 
