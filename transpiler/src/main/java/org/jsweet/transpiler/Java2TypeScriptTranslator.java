@@ -1092,13 +1092,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	}
 
 	private String getClassName(Symbol clazz) {
-		if(context.hasClassNameMapping(clazz)) {
+		if (context.hasClassNameMapping(clazz)) {
 			return context.getClassNameMapping(clazz);
 		} else {
 			return clazz.getSimpleName().toString();
 		}
 	}
-	
+
 	@Override
 	public void visitClassDef(JCClassDecl classdecl) {
 		if (context.isIgnored(classdecl)) {
@@ -1106,7 +1106,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			return;
 		}
 		String name = classdecl.getSimpleName().toString();
-		if(context.hasClassNameMapping(classdecl.sym)) {
+		if (context.hasClassNameMapping(classdecl.sym)) {
 			name = context.getClassNameMapping(classdecl.sym);
 		}
 		if (!scope.isEmpty() && getScope().anonymousClasses.contains(classdecl)) {
@@ -3030,8 +3030,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				} else {
 					fieldName = getIdentifier(fieldAccess.sym);
 				}
-				if(fieldAccess.sym instanceof ClassSymbol) {
-					if(context.hasClassNameMapping(fieldAccess.sym)) {
+				if (fieldAccess.sym instanceof ClassSymbol) {
+					if (context.hasClassNameMapping(fieldAccess.sym)) {
 						fieldName = context.getClassNameMapping(fieldAccess.sym);
 					}
 				}
@@ -3571,7 +3571,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (!prefixAdded && !context.useModules && !clazz.equals(getParent(JCClassDecl.class).sym)) {
 					print(getRootRelativeName(clazz));
 				} else {
-					if(context.hasClassNameMapping(ident.sym)) {
+					if (context.hasClassNameMapping(ident.sym)) {
 						print(context.getClassNameMapping(ident.sym));
 					} else {
 						print(name);
@@ -4468,6 +4468,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			} else {
 				print("<");
 				substituteAndPrintType(cast.clazz).print(">");
+				// Java always allows casting when an interface is involved (that's weak!!)
+				if(cast.expr.type.tsym.isInterface() || cast.type.tsym.isInterface()) {
+					print("<any>");
+				}
 			}
 		}
 		print(cast.expr);
