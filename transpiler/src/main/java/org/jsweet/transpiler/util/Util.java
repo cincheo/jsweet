@@ -509,6 +509,9 @@ public class Util {
 	 * Finds the field in the given type that matches the given name.
 	 */
 	public static VarSymbol findFieldDeclaration(ClassSymbol classSymbol, Name name) {
+		if (classSymbol == null) {
+			return null;
+		}
 		Iterator<Symbol> it = classSymbol.members_field.getElementsByName(name, (symbol) -> {
 			return symbol instanceof VarSymbol;
 		}).iterator();
@@ -1128,7 +1131,7 @@ public class Util {
 	 * that is probably not worth it.
 	 */
 	public static List<JCClassDecl> getSortedClassDeclarations(List<JCTree> decls) {
-//		return (List<JCClassDecl>)(Object)decls;
+		// return (List<JCClassDecl>)(Object)decls;
 		List<JCClassDecl> classDecls = decls.stream().filter(d -> d instanceof JCClassDecl).map(d -> (JCClassDecl) d)
 				.collect(Collectors.toList());
 

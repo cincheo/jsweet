@@ -1,7 +1,6 @@
 package source.structural;
 
 public class PrivateFieldNameClashes {
-
 }
 
 abstract class Parent {
@@ -9,7 +8,7 @@ abstract class Parent {
 }
 
 class Child extends Parent {
-	private Buffer buffer;
+	Buffer buffer;
 }
 
 interface Buffer {

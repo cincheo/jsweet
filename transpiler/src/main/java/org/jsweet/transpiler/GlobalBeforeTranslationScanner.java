@@ -78,17 +78,18 @@ public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {
 				if (getCompilationUnit().docComments.hasComment(var)) {
 					context.docComments.put(var.sym, getCompilationUnit().docComments.getCommentText(var));
 				}
-				VarSymbol clashingField = null;
-				if (var.sym.isPrivate()) {
+
+				if (!context.hasFieldNameMapping(var.sym)) {
+					VarSymbol clashingField = null;
 					clashingField = Util.findFieldDeclaration((ClassSymbol) classdecl.sym.getSuperclass().tsym,
 							var.name);
 					if (clashingField != null) {
-						context.addFieldNameMapping(var.sym, JSweetConfig.FIELD_METHOD_CLASH_RESOLVER_PREFIX
-								+ classdecl.sym.toString().replace(".", "_") + "_" + var.name.toString());
+						if (clashingField.isPrivate() && !context.hasFieldNameMapping(clashingField)) {
+							context.addFieldNameMapping(var.sym, JSweetConfig.FIELD_METHOD_CLASH_RESOLVER_PREFIX
+									+ classdecl.sym.toString().replace(".", "_") + "_" + var.name.toString());
+						}
 					}
-				}
 
-				if (clashingField == null) {
 					MethodSymbol m = Util.findMethodDeclarationInType(context.types, classdecl.sym, var.name.toString(),
 							null);
 					if (m != null) {

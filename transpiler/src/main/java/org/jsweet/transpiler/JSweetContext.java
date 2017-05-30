@@ -911,6 +911,16 @@ public class JSweetContext extends Context {
 	}
 
 	/**
+	 * Tells if the given field has a field name mapping.
+	 * 
+	 * @see #addFieldNameMapping(VarSymbol, String)
+	 * @see #getFieldNameMapping(Symbol)
+	 */
+	public boolean hasFieldNameMapping(Symbol field) {
+		return fieldNameMapping.containsKey(field);
+	}
+
+	/**
 	 * Tells JSweet to ignore wildcard bounds. For instance if ignored:
 	 * 
 	 * <pre>
