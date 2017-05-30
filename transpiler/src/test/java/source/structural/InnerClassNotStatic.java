@@ -30,6 +30,12 @@ public class InnerClassNotStatic {
 		i = InnerClassNotStatic.ActionType.DELETE;
 		i = InnerClassNotStatic.ActionType.UPDATE;
 		trace.push("" + i);
+		System.out.println(new Container1().getString());
+		System.out.println(new Container2().getInt());
+		System.out.println(new Container2().getString());
+		assert new Container1().getString() == "abc";
+		assert new Container2().getInt() == 2;
+		assert new Container2().getString() == "abc";
 		$export("trace", trace.join(","));
 	}
 
@@ -86,7 +92,7 @@ public class InnerClassNotStatic {
 		public InnerClass3(int i) {
 		}
 	}
-	
+
 	public class InnerClass4 extends InnerClass3 {
 
 		public InnerClass4() {
@@ -116,4 +122,30 @@ class Use {
 	void m2(InnerClassNotStatic.InnerClass1 c) {
 
 	}
+}
+
+class Container1 {
+
+	public String getString() {
+		Inner i = new Inner();
+		return i.buffer;
+	}
+
+	private final class Inner {
+		private String buffer = "abc";
+	}
+
+}
+
+class Container2 extends Container1 {
+
+	public int getInt() {
+		Inner i = new Inner();
+		return i.buffer;
+	}
+
+	private final class Inner {
+		private int buffer = 2;
+	}
+
 }

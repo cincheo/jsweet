@@ -1091,6 +1091,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	}
 
+	private String getClassName(Symbol clazz) {
+		if(context.hasClassNameMapping(clazz)) {
+			return context.getClassNameMapping(clazz);
+		} else {
+			return clazz.getSimpleName().toString();
+		}
+	}
+	
 	@Override
 	public void visitClassDef(JCClassDecl classdecl) {
 		if (context.isIgnored(classdecl)) {
@@ -1098,6 +1106,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			return;
 		}
 		String name = classdecl.getSimpleName().toString();
+		if(context.hasClassNameMapping(classdecl.sym)) {
+			name = context.getClassNameMapping(classdecl.sym);
+		}
 		if (!scope.isEmpty() && getScope().anonymousClasses.contains(classdecl)) {
 			name = getScope().name + ANONYMOUS_PREFIX + getScope().anonymousClasses.indexOf(classdecl);
 		}
@@ -1520,7 +1531,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			if (!getScope().interfaceScope && !getScope().declareClassScope && !getScope().enumScope
 					&& !(getScope().enumWrapperClassScope && classdecl.sym.isAnonymous())) {
 				if (!classdecl.sym.isAnonymous()) {
-					println().printIndent().print(classdecl.sym.getSimpleName().toString())
+					println().printIndent().print(getClassName(classdecl.sym))
 							.print("[\"" + CLASS_NAME_IN_CONSTRUCTOR + "\"] = ")
 							.print("\"" + classdecl.sym.getQualifiedName().toString() + "\";");
 				}
@@ -3019,6 +3030,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				} else {
 					fieldName = getIdentifier(fieldAccess.sym);
 				}
+				if(fieldAccess.sym instanceof ClassSymbol) {
+					if(context.hasClassNameMapping(fieldAccess.sym)) {
+						fieldName = context.getClassNameMapping(fieldAccess.sym);
+					}
+				}
 				if (doesMemberNameRequireQuotes(fieldName)) {
 					if (getLastPrintedChar() == '.') {
 						removeLastChar();
@@ -3555,7 +3571,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (!prefixAdded && !context.useModules && !clazz.equals(getParent(JCClassDecl.class).sym)) {
 					print(getRootRelativeName(clazz));
 				} else {
-					print(name);
+					if(context.hasClassNameMapping(ident.sym)) {
+						print(context.getClassNameMapping(ident.sym));
+					} else {
+						print(name);
+					}
 				}
 			} else {
 				if (doesMemberNameRequireQuotes(name)) {

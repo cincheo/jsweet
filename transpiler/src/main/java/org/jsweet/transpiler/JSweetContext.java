@@ -920,6 +920,32 @@ public class JSweetContext extends Context {
 		return fieldNameMapping.containsKey(field);
 	}
 
+	private Map<ClassSymbol, String> classNameMapping = new HashMap<>();
+
+	/**
+	 * Adds a name mapping to a class (rename it to avoid name clashes).
+	 */
+	public void addClassNameMapping(ClassSymbol clazz, String name) {
+		classNameMapping.put(clazz, name);
+	}
+
+	/**
+	 * Gets a class name mapping if any (null otherwise).
+	 */
+	public String getClassNameMapping(Symbol clazz) {
+		return classNameMapping.get(clazz);
+	}
+
+	/**
+	 * Tells if the given class has a class name mapping.
+	 * 
+	 * @see #addClassNameMapping(ClassSymbol, String)
+	 * @see #getClassNameMapping(Symbol)
+	 */
+	public boolean hasClassNameMapping(Symbol clazz) {
+		return classNameMapping.containsKey(clazz);
+	}
+
 	/**
 	 * Tells JSweet to ignore wildcard bounds. For instance if ignored:
 	 * 

@@ -32,6 +32,7 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
+import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
@@ -72,6 +73,19 @@ public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {
 		if (getCompilationUnit().docComments.hasComment(classdecl)) {
 			context.docComments.put(classdecl.sym, getCompilationUnit().docComments.getCommentText(classdecl));
 		}
+		if (classdecl.sym.getEnclosingElement() instanceof ClassSymbol) {
+			Type superClass = ((ClassSymbol) classdecl.sym.getEnclosingElement()).getSuperclass();
+			if (superClass != null && superClass.tsym != null) {
+				ClassSymbol clashingInnerClass = Util.findInnerClassDeclaration((ClassSymbol) superClass.tsym,
+						classdecl.name.toString());
+				if (clashingInnerClass != null && !context.hasClassNameMapping(clashingInnerClass)) {
+					context.addClassNameMapping(classdecl.sym,
+							"__" + classdecl.sym.getEnclosingElement().getQualifiedName().toString().replace('.', '_')
+									+ "_" + clashingInnerClass.getSimpleName());
+				}
+			}
+		}
+
 		for (JCTree def : classdecl.defs) {
 			if (def instanceof JCVariableDecl) {
 				JCVariableDecl var = (JCVariableDecl) def;

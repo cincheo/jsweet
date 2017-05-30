@@ -1161,4 +1161,23 @@ public class Util {
 		return superClassIndex;
 	}
 
+	/**
+	 * Finds the first inner class declaration of the given name in the given
+	 * class hierarchy.
+	 */
+	public static ClassSymbol findInnerClassDeclaration(ClassSymbol clazz, String name) {
+		if (clazz == null) {
+			return null;
+		}
+		for (Symbol s : clazz.getEnclosedElements()) {
+			if (s instanceof ClassSymbol && s.getSimpleName().toString().equals(name)) {
+				return (ClassSymbol) s;
+			}
+		}
+		if (clazz.getSuperclass() != null) {
+			return findInnerClassDeclaration((ClassSymbol) clazz.getSuperclass().tsym, name);
+		}
+		return null;
+	}
+
 }
