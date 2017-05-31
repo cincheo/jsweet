@@ -1560,11 +1560,47 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			println().println().printIndent();
 			visitClassDef(classdecl);
 		}
+		
+		boolean nameSpace = false;
 
+		if (getScope().interfaceScope) {
+			// print static members of interfaces
+			for (JCTree def : classdecl.defs) {
+				if ((def instanceof JCMethodDecl && ((JCMethodDecl) def).sym.isStatic())
+						|| (def instanceof JCVariableDecl && ((JCVariableDecl) def).sym.isStatic())) {
+					if (def instanceof JCVariableDecl && context.hasAnnotationType(((JCVariableDecl) def).sym,
+							ANNOTATION_STRING_TYPE, JSweetConfig.ANNOTATION_ERASED)) {
+						continue;
+					}
+					if (!nameSpace) {
+						nameSpace = true;
+						println().println().printIndent();
+
+						if (getIndent() != 0 || context.useModules) {
+							print("export ");
+						} else {
+							if (isDefinitionScope) {
+								print("declare ");
+							}
+						}
+
+						print("namespace ").print(classdecl.getSimpleName().toString()).print(" {").startIndent();
+					}
+					println().println().printIndent().print(def);
+					if (def instanceof JCVariableDecl) {
+						print(";");
+					}
+				}
+			}
+			if (nameSpace) {
+				println().endIndent().printIndent().print("}").println();
+			}
+		}
+		
+		nameSpace = false;
 		// inner, anonymous and local classes in a namespace
 		// ======================
 		// print valid inner classes
-		boolean nameSpace = false;
 		for (JCTree def : Util.getSortedClassDeclarations(classdecl.defs)) {
 			if (def instanceof JCClassDecl) {
 				JCClassDecl cdef = (JCClassDecl) def;
@@ -1657,41 +1693,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 			removeLastChars(2);
 			print("];").println();
-		}
-
-		if (getScope().interfaceScope) {
-			// print static members of interfaces
-			nameSpace = false;
-			for (JCTree def : classdecl.defs) {
-				if ((def instanceof JCMethodDecl && ((JCMethodDecl) def).sym.isStatic())
-						|| (def instanceof JCVariableDecl && ((JCVariableDecl) def).sym.isStatic())) {
-					if (def instanceof JCVariableDecl && context.hasAnnotationType(((JCVariableDecl) def).sym,
-							ANNOTATION_STRING_TYPE, JSweetConfig.ANNOTATION_ERASED)) {
-						continue;
-					}
-					if (!nameSpace) {
-						nameSpace = true;
-						println().println().printIndent();
-
-						if (getIndent() != 0 || context.useModules) {
-							print("export ");
-						} else {
-							if (isDefinitionScope) {
-								print("declare ");
-							}
-						}
-
-						print("namespace ").print(classdecl.getSimpleName().toString()).print(" {").startIndent();
-					}
-					println().println().printIndent().print(def);
-					if (def instanceof JCVariableDecl) {
-						print(";");
-					}
-				}
-			}
-			if (nameSpace) {
-				println().endIndent().printIndent().print("}").println();
-			}
 		}
 
 		if (mainMethod != null && mainMethod.getParameters().size() < 2

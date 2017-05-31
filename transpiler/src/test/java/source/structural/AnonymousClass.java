@@ -20,6 +20,13 @@ import static jsweet.util.Lang.$export;
 
 import def.js.Array;
 
+interface Predicate{    
+    void work();    
+    public static final Predicate TRUE = new Predicate() {
+        public void work() {}
+    };    
+}
+
 class AClass<T> {
 	String s;
 
@@ -146,3 +153,4 @@ public class AnonymousClass<E> {
 	}
 
 }
+
