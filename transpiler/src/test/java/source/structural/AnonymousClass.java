@@ -20,6 +20,16 @@ import static jsweet.util.Lang.$export;
 
 import def.js.Array;
 
+class PassingArgument {
+    public static Object create(String text1) {
+    	String text2 = "abc";
+        return new Object() {
+            public String toString() {
+                return text1 + text2;
+            }
+        };
+    }
+}
 interface Predicate{    
     void work();    
     public static final Predicate TRUE = new Predicate() {

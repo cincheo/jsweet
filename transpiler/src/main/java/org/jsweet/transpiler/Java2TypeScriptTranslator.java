@@ -1457,7 +1457,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				&& !(getScope().interfaceScope || getScope().enumScope || getScope().declareClassScope)) {
 			Set<String> interfaces = new HashSet<>();
 			context.grabSupportedInterfaceNames(interfaces, classdecl.sym);
-			if (!interfaces.isEmpty() || getScope().innerClassNotStatic || hasUninitializedFields) {
+			if (!interfaces.isEmpty() || getScope().innerClass || getScope().innerClassNotStatic || hasUninitializedFields) {
 				printIndent().print("constructor(");
 				boolean hasArgs = false;
 				if (getScope().innerClassNotStatic) {
