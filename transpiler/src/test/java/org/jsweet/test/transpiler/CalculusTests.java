@@ -96,7 +96,7 @@ public class CalculusTests extends AbstractTest {
 
 	@Test
 	public void testOperators() {
-		transpile(ModuleKind.none, (logHandler) -> {
+		eval(ModuleKind.none, (logHandler, r) -> {
 			logHandler.assertNoProblems();
 		}, getSourceFile(Operators.class));
 	}

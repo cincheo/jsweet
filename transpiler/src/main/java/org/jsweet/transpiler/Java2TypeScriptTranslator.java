@@ -1457,7 +1457,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				&& !(getScope().interfaceScope || getScope().enumScope || getScope().declareClassScope)) {
 			Set<String> interfaces = new HashSet<>();
 			context.grabSupportedInterfaceNames(interfaces, classdecl.sym);
-			if (!interfaces.isEmpty() || getScope().innerClass || getScope().innerClassNotStatic || hasUninitializedFields) {
+			if (!interfaces.isEmpty() || getScope().innerClass || getScope().innerClassNotStatic
+					|| hasUninitializedFields) {
 				printIndent().print("constructor(");
 				boolean hasArgs = false;
 				if (getScope().innerClassNotStatic) {
@@ -1560,7 +1561,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			println().println().printIndent();
 			visitClassDef(classdecl);
 		}
-		
+
 		boolean nameSpace = false;
 
 		if (getScope().interfaceScope) {
@@ -1596,7 +1597,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				println().endIndent().printIndent().print("}").println();
 			}
 		}
-		
+
 		nameSpace = false;
 		// inner, anonymous and local classes in a namespace
 		// ======================
@@ -4082,7 +4083,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				print(binary.lhs);
 			}
 			String op = binary.operator.name.toString();
-			if (binary.lhs.type.getKind() == TypeKind.BOOLEAN) {
+			if (context.types.isSameType(context.symtab.booleanType,
+					context.types.unboxedTypeOrType(binary.lhs.type))) {
 				if ("|".equals(op)) {
 					op = "||";
 				} else if ("&".equals(op)) {
@@ -4203,11 +4205,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	@Override
 	public void visitAssignop(JCAssignOp assignOp) {
 		boolean expand = staticInitializedAssignment = (getStaticInitializedField(assignOp.lhs) != null);
-		boolean expandChar = assignOp.lhs.type.getKind() == TypeKind.CHAR;
+		boolean expandChar = context.types.isSameType(context.symtab.charType,
+				context.types.unboxedTypeOrType(assignOp.lhs.type));
 		print(assignOp.lhs);
 		staticInitializedAssignment = false;
 		String op = assignOp.operator.name.toString();
-		if (assignOp.lhs.type.getKind() == TypeKind.BOOLEAN) {
+		if (context.types.isSameType(context.symtab.booleanType, context.types.unboxedTypeOrType(assignOp.lhs.type))) {
 			if ("|".equals(op)) {
 				print(" = ").print(assignOp.lhs).print(" || ").print(assignOp.rhs);
 				return;
