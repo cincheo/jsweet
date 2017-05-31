@@ -362,7 +362,7 @@ public class JSweetTranspiler implements JSweetOptions {
 
 		logger.info("creating transpiler version " + JSweetConfig.getVersionNumber() + " (build date: "
 				+ JSweetConfig.getBuildDate() + ")");
-		logger.info("curent dir: " + new File(".").getAbsolutePath());
+		logger.info("current dir: " + new File(".").getAbsolutePath());
 		logger.info("tsOut: " + tsOutputDir + (tsOutputDir == null ? "" : " - " + tsOutputDir.getAbsolutePath()));
 		logger.info("jsOut: " + jsOutputDir + (jsOutputDir == null ? "" : " - " + jsOutputDir.getAbsolutePath()));
 		logger.info("candyJsOut: " + extractedCandiesJavascriptDir);

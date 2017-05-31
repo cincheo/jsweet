@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.jsweet.transpiler.EcmaScriptComplianceLevel;
 import org.jsweet.transpiler.JSweetFactory;
 import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.JSweetTranspiler;
@@ -46,7 +47,6 @@ import com.martiansoftware.jsap.JSAPResult;
 import com.martiansoftware.jsap.Switch;
 import com.martiansoftware.jsap.stringparsers.EnumeratedStringParser;
 import com.martiansoftware.jsap.stringparsers.FileStringParser;
-import org.jsweet.transpiler.EcmaScriptComplianceLevel;
 
 /**
  * The command line launcher for the JSweet transpiler.
@@ -90,153 +90,18 @@ public class JSweetCommandLineLauncher {
 
 			JSweetConfig.initClassPath(jsapArgs.getString("jdkHome"));
 
-			String classPath = jsapArgs.getString("classpath");
-			logger.info("classpath: " + classPath);
-
-			ErrorCountTranspilationHandler transpilationHandler = new ErrorCountTranspilationHandler(
-					new ConsoleTranspilationHandler());
-
-			EcmaScriptComplianceLevel esTarget = getEcmaTargetVersion(jsapArgs.getString("targetVersion"));
-			logger.info(esTarget.toString());
-
-			try {
-
-				File tsOutputDir = jsapArgs.getFile("tsout");
-				tsOutputDir.mkdirs();
-				logger.info("ts output dir: " + tsOutputDir);
-
-				File jsOutputDir = null;
-				if (jsapArgs.getFile("jsout") != null) {
-					jsOutputDir = jsapArgs.getFile("jsout");
-					jsOutputDir.mkdirs();
-				}
-				logger.info("js output dir: " + jsOutputDir);
-
-				File dtsOutputDir = null;
-				if (jsapArgs.getFile("dtsout") != null) {
-					dtsOutputDir = jsapArgs.getFile("dtsout");
-				}
-
-				File candiesJsOutputDir = null;
-				if (jsapArgs.getFile("candiesJsOut") != null) {
-					candiesJsOutputDir = jsapArgs.getFile("candiesJsOut");
-				}
-
-				File sourceRootDir = null;
-				if (jsapArgs.getFile("sourceRoot") != null) {
-					sourceRootDir = jsapArgs.getFile("sourceRoot");
-				}
-
-				List<File> inputDirList = Arrays.asList(jsapArgs.getFileArray("input"));
-				logger.info("input dir: " + inputDirList);
-
-				String[] included = jsapArgs.getStringArray("includes");
-				String[] excluded = jsapArgs.getStringArray("excludes");
-
-				List<Pattern> includedPatterns = included == null ? null
-						: Arrays.asList(included).stream().map(s -> toPattern(s)).collect(Collectors.toList());
-				List<Pattern> excludedPatterns = excluded == null ? null
-						: Arrays.asList(excluded).stream().map(s -> toPattern(s)).collect(Collectors.toList());
-
-				logger.info("included: " + includedPatterns);
-				logger.info("excluded: " + excludedPatterns);
-
-				LinkedList<File> files = new LinkedList<File>();
-
-				for (File inputDir : inputDirList) {
-					Util.addFiles(f -> {
-						String path = inputDir.toURI().relativize(f.toURI()).getPath();
-						if (path.endsWith(".java")) {
-							if (includedPatterns == null || includedPatterns.isEmpty() || includedPatterns != null
-									&& includedPatterns.stream().anyMatch(p -> p.matcher(path).matches())) {
-								if (excludedPatterns != null && !excludedPatterns.isEmpty()
-										&& excludedPatterns.stream().anyMatch(p -> p.matcher(path).matches())) {
-									return false;
-								}
-								return true;
-							}
-						}
-						return false;
-					}, inputDir, files);
-				}
-
-				JSweetFactory factory = null;
-				String factoryClassName = jsapArgs.getString("factoryClassName");
-
-				if (factoryClassName != null) {
-					try {
-						factory = (JSweetFactory) Thread.currentThread().getContextClassLoader()
-								.loadClass(factoryClassName).newInstance();
-					} catch (Exception e) {
-						try {
-							// try forName just in case
-							factory = (JSweetFactory) Class.forName(factoryClassName).newInstance();
-						} catch (Exception e2) {
-							throw new RuntimeException(
-									"cannot find or instantiate factory class: " + factoryClassName
-											+ " (make sure the class is in the plugin's classpath and that it defines an empty public constructor)",
-									e2);
-						}
-					}
-				}
-
-				if (factory == null) {
-					factory = new JSweetFactory();
-				}
-
-				JSweetTranspiler transpiler = new JSweetTranspiler(factory, jsapArgs.getFile("workingDir"), tsOutputDir,
-						jsOutputDir, candiesJsOutputDir, classPath);
-
-				transpiler.setBundle(jsapArgs.getBoolean("bundle"));
-				transpiler.setNoRootDirectories(jsapArgs.getBoolean("noRootDirectories"));
-				transpiler.setPreserveSourceLineNumbers(jsapArgs.getBoolean("sourceMap"));
-				if (sourceRootDir != null) {
-					transpiler.setSourceRoot(sourceRootDir);
-				}
-				transpiler.setModuleKind(ModuleKind.valueOf(jsapArgs.getString("module")));
-				transpiler.setEncoding(jsapArgs.getString("encoding"));
-				transpiler.setIgnoreAssertions(!jsapArgs.getBoolean("enableAssertions"));
-				transpiler.setGenerateDeclarations(jsapArgs.getBoolean("declaration"));
-				transpiler.setGenerateJsFiles(!jsapArgs.getBoolean("tsOnly"));
-				transpiler.setGenerateDefinitions(!jsapArgs.getBoolean("ignoreDefinitions"));
-				transpiler.setDeclarationsOutputDir(dtsOutputDir);
-				transpiler.setHeaderFile(jsapArgs.getFile("header"));
-				transpiler.setEcmaTargetVersion(esTarget);
-				transpiler.setDisableSinglePrecisionFloats(jsapArgs.getBoolean("disableSinglePrecisionFloats"));
-				// transpiler.setAdapters(Arrays.asList(jsapArgs.getStringArray("adapters")));
-
-				transpiler.transpile(transpilationHandler, SourceFile.toSourceFiles(files));
-			} catch (NoClassDefFoundError error) {
-				transpilationHandler.report(JSweetProblem.JAVA_COMPILER_NOT_FOUND, null,
-						JSweetProblem.JAVA_COMPILER_NOT_FOUND.getMessage());
-			}
-
-			errorCount = transpilationHandler.getErrorCount();
-			if (errorCount > 0) {
-				OUTPUT_LOGGER.info("transpilation failed with " + errorCount + " error(s) and "
-						+ transpilationHandler.getWarningCount() + " warning(s)");
+			JSweetTranspilationTask launcher = new JSweetTranspilationTask(jsapArgs);
+			if (jsapArgs.getBoolean("watch")) {
+				new JSweetFileWatcher(new JSweetTranspilationTask(jsapArgs)).execute();
 			} else {
-				if (transpilationHandler.getWarningCount() > 0) {
-					OUTPUT_LOGGER.info(
-							"transpilation completed with " + transpilationHandler.getWarningCount() + " warning(s)");
-				} else {
-					OUTPUT_LOGGER.info("transpilation successfully completed with no errors and no warnings");
-				}
+				launcher.run();
 			}
+
 		} catch (Throwable t) {
 			t.printStackTrace();
 			System.exit(1);
 		}
 		System.exit(errorCount > 0 ? 1 : 0);
-	}
-
-	private static EcmaScriptComplianceLevel getEcmaTargetVersion(String targetVersion) throws Exception {
-		try {
-			EcmaScriptComplianceLevel ecmaScriptComplianceLevel = EcmaScriptComplianceLevel.valueOf(targetVersion);
-			return ecmaScriptComplianceLevel;
-		} catch (IllegalArgumentException e) {
-			throw new Exception("Invalid EcmaScript target version: " + targetVersion);
-		}
 	}
 
 	private static JSAP defineArgs() throws JSAPException {
@@ -250,6 +115,14 @@ public class JSweetCommandLineLauncher {
 		switchArg.setShortFlag('h');
 		switchArg.setLongFlag("help");
 		switchArg.setDefault("false");
+		jsap.registerParameter(switchArg);
+
+		// Watch
+		switchArg = new Switch("watch");
+		switchArg.setShortFlag('w');
+		switchArg.setLongFlag("watch");
+		switchArg.setDefault("false");
+		switchArg.setHelp("Start a process that watches the input directories for changes and re-run transpilation on-the-fly.");
 		jsap.registerParameter(switchArg);
 
 		// Verbose
@@ -511,6 +384,169 @@ public class JSweetCommandLineLauncher {
 	private static void printUsage(JSAP jsapSpec) {
 		System.out.println("Command line options:");
 		System.out.println(jsapSpec.getHelp());
+	}
+
+	private static class JSweetTranspilationTask implements TranspilationTask {
+
+		private JSAPResult jsapArgs;
+		private List<File> inputDirList;
+		LinkedList<File> files;
+
+		public JSweetTranspilationTask(JSAPResult jsapArgs) {
+			this.jsapArgs = jsapArgs;
+			inputDirList = Arrays.asList(jsapArgs.getFileArray("input"));
+			logger.info("input dir: " + inputDirList);
+
+			String[] included = jsapArgs.getStringArray("includes");
+			String[] excluded = jsapArgs.getStringArray("excludes");
+
+			List<Pattern> includedPatterns = included == null ? null
+					: Arrays.asList(included).stream().map(s -> toPattern(s)).collect(Collectors.toList());
+			List<Pattern> excludedPatterns = excluded == null ? null
+					: Arrays.asList(excluded).stream().map(s -> toPattern(s)).collect(Collectors.toList());
+
+			logger.info("included: " + includedPatterns);
+			logger.info("excluded: " + excludedPatterns);
+
+			files = new LinkedList<File>();
+
+			for (File inputDir : inputDirList) {
+				Util.addFiles(f -> {
+					String path = inputDir.toURI().relativize(f.toURI()).getPath();
+					if (path.endsWith(".java")) {
+						if (includedPatterns == null || includedPatterns.isEmpty() || includedPatterns != null
+								&& includedPatterns.stream().anyMatch(p -> p.matcher(path).matches())) {
+							if (excludedPatterns != null && !excludedPatterns.isEmpty()
+									&& excludedPatterns.stream().anyMatch(p -> p.matcher(path).matches())) {
+								return false;
+							}
+							return true;
+						}
+					}
+					return false;
+				}, inputDir, files);
+			}
+		}
+
+		@Override
+		public List<File> getInputDirList() {
+			return inputDirList;
+		}
+
+		@Override
+		public void run() throws Exception {
+			String classPath = jsapArgs.getString("classpath");
+			logger.info("classpath: " + classPath);
+
+			ErrorCountTranspilationHandler transpilationHandler = new ErrorCountTranspilationHandler(
+					new ConsoleTranspilationHandler());
+
+			EcmaScriptComplianceLevel esTarget = getEcmaTargetVersion(jsapArgs.getString("targetVersion"));
+			logger.info(esTarget.toString());
+
+			try {
+
+				File tsOutputDir = jsapArgs.getFile("tsout");
+				tsOutputDir.mkdirs();
+				logger.info("ts output dir: " + tsOutputDir);
+
+				File jsOutputDir = null;
+				if (jsapArgs.getFile("jsout") != null) {
+					jsOutputDir = jsapArgs.getFile("jsout");
+					jsOutputDir.mkdirs();
+				}
+				logger.info("js output dir: " + jsOutputDir);
+
+				File dtsOutputDir = null;
+				if (jsapArgs.getFile("dtsout") != null) {
+					dtsOutputDir = jsapArgs.getFile("dtsout");
+				}
+
+				File candiesJsOutputDir = null;
+				if (jsapArgs.getFile("candiesJsOut") != null) {
+					candiesJsOutputDir = jsapArgs.getFile("candiesJsOut");
+				}
+
+				File sourceRootDir = null;
+				if (jsapArgs.getFile("sourceRoot") != null) {
+					sourceRootDir = jsapArgs.getFile("sourceRoot");
+				}
+
+				JSweetFactory factory = null;
+				String factoryClassName = jsapArgs.getString("factoryClassName");
+
+				if (factoryClassName != null) {
+					try {
+						factory = (JSweetFactory) Thread.currentThread().getContextClassLoader()
+								.loadClass(factoryClassName).newInstance();
+					} catch (Exception e) {
+						try {
+							// try forName just in case
+							factory = (JSweetFactory) Class.forName(factoryClassName).newInstance();
+						} catch (Exception e2) {
+							throw new RuntimeException(
+									"cannot find or instantiate factory class: " + factoryClassName
+											+ " (make sure the class is in the plugin's classpath and that it defines an empty public constructor)",
+									e2);
+						}
+					}
+				}
+
+				if (factory == null) {
+					factory = new JSweetFactory();
+				}
+
+				JSweetTranspiler transpiler = new JSweetTranspiler(factory, jsapArgs.getFile("workingDir"), tsOutputDir,
+						jsOutputDir, candiesJsOutputDir, classPath);
+
+				transpiler.setBundle(jsapArgs.getBoolean("bundle"));
+				transpiler.setNoRootDirectories(jsapArgs.getBoolean("noRootDirectories"));
+				transpiler.setPreserveSourceLineNumbers(jsapArgs.getBoolean("sourceMap"));
+				if (sourceRootDir != null) {
+					transpiler.setSourceRoot(sourceRootDir);
+				}
+				transpiler.setModuleKind(ModuleKind.valueOf(jsapArgs.getString("module")));
+				transpiler.setEncoding(jsapArgs.getString("encoding"));
+				transpiler.setIgnoreAssertions(!jsapArgs.getBoolean("enableAssertions"));
+				transpiler.setGenerateDeclarations(jsapArgs.getBoolean("declaration"));
+				transpiler.setGenerateJsFiles(!jsapArgs.getBoolean("tsOnly"));
+				transpiler.setGenerateDefinitions(!jsapArgs.getBoolean("ignoreDefinitions"));
+				transpiler.setDeclarationsOutputDir(dtsOutputDir);
+				transpiler.setHeaderFile(jsapArgs.getFile("header"));
+				transpiler.setEcmaTargetVersion(esTarget);
+				transpiler.setDisableSinglePrecisionFloats(jsapArgs.getBoolean("disableSinglePrecisionFloats"));
+				// transpiler.setAdapters(Arrays.asList(jsapArgs.getStringArray("adapters")));
+
+				transpiler.transpile(transpilationHandler, SourceFile.toSourceFiles(files));
+			} catch (NoClassDefFoundError error) {
+				transpilationHandler.report(JSweetProblem.JAVA_COMPILER_NOT_FOUND, null,
+						JSweetProblem.JAVA_COMPILER_NOT_FOUND.getMessage());
+			}
+
+			errorCount = transpilationHandler.getErrorCount();
+			if (errorCount > 0) {
+				OUTPUT_LOGGER.info("transpilation failed with " + errorCount + " error(s) and "
+						+ transpilationHandler.getWarningCount() + " warning(s)");
+			} else {
+				if (transpilationHandler.getWarningCount() > 0) {
+					OUTPUT_LOGGER.info(
+							"transpilation completed with " + transpilationHandler.getWarningCount() + " warning(s)");
+				} else {
+					OUTPUT_LOGGER.info("transpilation successfully completed with no errors and no warnings");
+				}
+			}
+
+		}
+
+		private static EcmaScriptComplianceLevel getEcmaTargetVersion(String targetVersion) throws Exception {
+			try {
+				EcmaScriptComplianceLevel ecmaScriptComplianceLevel = EcmaScriptComplianceLevel.valueOf(targetVersion);
+				return ecmaScriptComplianceLevel;
+			} catch (IllegalArgumentException e) {
+				throw new Exception("Invalid EcmaScript target version: " + targetVersion);
+			}
+		}
+
 	}
 
 }
