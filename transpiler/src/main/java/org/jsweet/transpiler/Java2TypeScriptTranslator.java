@@ -47,6 +47,7 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -2957,6 +2958,29 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	}
 
+	private void printInnerClassAccess(String accessedElementName, ElementKind kind) {
+		print("this.");
+		JCClassDecl parent = getParent(JCClassDecl.class);
+		int level = 0;
+		boolean foundInParent = false;
+		while (getScope(level++).innerClassNotStatic) {
+			parent = getParent(JCClassDecl.class, parent);
+			if (parent != null
+					&& Util.findFirstDeclarationInClassAndSuperClasses(parent.sym, accessedElementName, kind) != null) {
+				foundInParent = true;
+				break;
+			}
+		}
+		if (foundInParent && level > 0) {
+			if (getScope().constructor) {
+				removeLastChars(5);
+			}
+			for (int i = 0; i < level; i++) {
+				print(PARENT_CLASS_FIELD_NAME + ".");
+			}
+		}
+	}
+
 	@Override
 	public void visitSelect(JCFieldAccess fieldAccess) {
 		if (!getAdapter().substitute(ExtendedElementFactory.INSTANCE.create(fieldAccess))) {
@@ -2996,11 +3020,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						}
 					}
 				}
-			} else if ("this".equals(fieldAccess.name.toString()) && getScope().innerClassNotStatic) {
-				if (!getScope().constructor) {
-					print("this.");
-				}
-				print(PARENT_CLASS_FIELD_NAME);
 			} else if ("this".equals(fieldAccess.name.toString())) {
 				print("this");
 			} else {
@@ -3008,6 +3027,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (!selected.equals(GLOBALS_CLASS_NAME)) {
 					if (selected.equals("super") && (fieldAccess.sym instanceof VarSymbol)) {
 						print("this.");
+					} else if (getScope().innerClassNotStatic
+							&& ("this".equals(selected) || selected.endsWith(".this"))) {
+						printInnerClassAccess(fieldAccess.name.toString(), ElementKind.FIELD);
 					} else {
 						boolean accessSubstituted = false;
 						if (fieldAccess.sym instanceof VarSymbol) {
@@ -3298,7 +3320,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						if (methSym != null && inv.meth instanceof JCFieldAccess) {
 							JCExpression selected = ((JCFieldAccess) inv.meth).selected;
 							if (!GLOBALS_CLASS_NAME.equals(selected.type.tsym.getSimpleName().toString())) {
-								print(selected).print(".");
+								if (getScope().innerClassNotStatic && ("this".equals(selected.toString())
+										|| selected.toString().endsWith(".this"))) {
+									printInnerClassAccess(methSym.name.toString(), methSym.getKind());
+								} else {
+									print(selected).print(".");
+								}
 							} else {
 								if (context.useModules) {
 									if (!((ClassSymbol) selected.type.tsym).sourcefile.getName()
@@ -3477,25 +3504,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							name = getIdentifier(varSym);
 						}
 						if (!varSym.getModifiers().contains(Modifier.STATIC)) {
-							print("this.");
-							JCClassDecl parent = getParent(JCClassDecl.class);
-							int level = 0;
-							boolean foundInParent = false;
-							while (getScope(level++).innerClassNotStatic) {
-								parent = getParent(JCClassDecl.class, parent);
-								if (parent != null && varSym.owner == parent.sym) {
-									foundInParent = true;
-									break;
-								}
-							}
-							if (foundInParent && level > 0) {
-								if (getScope().constructor) {
-									removeLastChars(5);
-								}
-								for (int i = 0; i < level; i++) {
-									print(PARENT_CLASS_FIELD_NAME + ".");
-								}
-							}
+							printInnerClassAccess(varSym.name.toString(), ElementKind.FIELD);
 						} else {
 							if (context.lazyInitializedStatics.contains(varSym)) {
 								lazyInitializedStatic = true;

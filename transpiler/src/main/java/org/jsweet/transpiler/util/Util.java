@@ -385,7 +385,7 @@ public class Util {
 	}
 
 	/**
-	 * Find field declaration (of any kind) matching the given name.
+	 * Find first declaration (of any kind) matching the given name.
 	 */
 	public static Symbol findFirstDeclarationInType(Element typeSymbol, String name) {
 		if (typeSymbol == null) {
@@ -399,6 +399,29 @@ public class Util {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Find first declaration (of any kind) matching the given name.
+	 */
+	public static Symbol findFirstDeclarationInClassAndSuperClasses(TypeSymbol typeSymbol, String name,
+			ElementKind kind) {
+		if (typeSymbol == null) {
+			return null;
+		}
+		if (typeSymbol.getEnclosedElements() != null) {
+			for (Element element : typeSymbol.getEnclosedElements()) {
+				if (name.equals(element.getSimpleName().toString()) && element.getKind() == kind) {
+					return (Symbol) element;
+				}
+			}
+		}
+		if (typeSymbol instanceof ClassSymbol) {
+			return findFirstDeclarationInClassAndSuperClasses(((ClassSymbol) typeSymbol).getSuperclass().tsym, name,
+					kind);
+		} else {
+			return null;
+		}
 	}
 
 	/**

@@ -76,13 +76,18 @@ public class InnerClassNotStatic {
 	}
 
 	public class InnerClass2 {
+		int j = 3;
 		public void m() {
 			trace.push("" + i + getI() + "b");
 			new InnerOfInnerClass().m();
 		}
 
 		public final class InnerOfInnerClass {
+			int k = 4;
 			public void m() {
+				assert InnerClassNotStatic.this.i == 2;
+				assert InnerClass2.this.j == 3;
+				assert this.k == 4;
 				trace.push("" + i + getI() + "c");
 			}
 		}
@@ -124,6 +129,9 @@ class Use {
 	}
 }
 
+// Test extending classes defining inner classes of the same name.
+// TypeScript checks that the 2 classes are compatible... so JSweet needs to
+// rename the classes to avoid clashes.
 class Container1 {
 
 	public String getString() {
@@ -148,4 +156,17 @@ class Container2 extends Container1 {
 		private int buffer = 2;
 	}
 
+}
+
+// Test accessing a protected field of a parent class.
+abstract class AbstractDoc {
+	protected String name = "doc";
+}
+
+class DefaultDoc extends AbstractDoc {
+	private class SubClass {
+		public String getName() {
+			return name;
+		}
+	}
 }
