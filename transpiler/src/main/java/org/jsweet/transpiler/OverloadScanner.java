@@ -366,11 +366,10 @@ public class OverloadScanner extends AbstractTreeScanner {
 					}
 				}
 			}
-			// scan inner classes
-			if (member instanceof JCClassDecl) {
-				scan(member);
-			}
 		}
+		// scan all AST because of anonymous classes that may appear everywhere
+		// (including in field initializers)
+		super.visitClassDef(classdecl);
 	}
 
 	@Override
