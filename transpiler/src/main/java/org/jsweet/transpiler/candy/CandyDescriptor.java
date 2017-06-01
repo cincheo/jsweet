@@ -29,6 +29,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -43,6 +44,8 @@ import com.google.gson.GsonBuilder;
  * @author Louis Grignon
  */
 public class CandyDescriptor {
+	public static final String UNKNOWN = "unknown";
+
 	public final String name;
 	public final String version;
 	public final long lastUpdateTimestamp;
@@ -93,7 +96,8 @@ public class CandyDescriptor {
 				&& StringUtils.equals(jsOutputDirPath, other.jsOutputDirPath);
 	}
 
-	private final static Pattern MODEL_VERSION_PATTERN = Pattern.compile("[\\<]groupId[\\>]org[.]jsweet[.]candies[.](.*)[\\<]/groupId[\\>]");
+	private final static Pattern MODEL_VERSION_PATTERN = Pattern
+			.compile("[\\<]groupId[\\>]org[.]jsweet[.]candies[.](.*)[\\<]/groupId[\\>]");
 	private final static Pattern ARTIFACT_ID_PATTERN = Pattern.compile("[\\<]artifactId[\\>](.*)[\\<]/artifactId[\\>]");
 	private final static Pattern VERSION_PATTERN = Pattern.compile("[\\<]version[\\>](.*)[\\<]/version[\\>]");
 
@@ -108,31 +112,35 @@ public class CandyDescriptor {
 				pomEntry = current;
 			}
 		}
+		String modelVersion = UNKNOWN;
+		String name = UNKNOWN;
+		String version = UNKNOWN;
 
-		String pomContent = IOUtils.toString(jarFile.getInputStream(pomEntry));
+		if (pomEntry != null) {
+			String pomContent = IOUtils.toString(jarFile.getInputStream(pomEntry));
 
-		// take only general part
-		int dependenciesIndex = pomContent.indexOf("<dependencies>");
-		String pomGeneralPart = dependenciesIndex > 0 ? pomContent.substring(0, dependenciesIndex) : pomContent;
+			// take only general part
+			int dependenciesIndex = pomContent.indexOf("<dependencies>");
+			String pomGeneralPart = dependenciesIndex > 0 ? pomContent.substring(0, dependenciesIndex) : pomContent;
 
-		// extract candy model version from <groupId></groupId>
-		Matcher matcher = MODEL_VERSION_PATTERN.matcher(pomGeneralPart);
-		String modelVersion = "unknown";
-		if (matcher.find()) {
-			modelVersion = matcher.group(1);
-		}
+			// extract candy model version from <groupId></groupId>
+			Matcher matcher = MODEL_VERSION_PATTERN.matcher(pomGeneralPart);
+			if (matcher.find()) {
+				modelVersion = matcher.group(1);
+			}
 
-		// extract name from <artifactId></artifactId>
-		matcher = ARTIFACT_ID_PATTERN.matcher(pomGeneralPart);
-		String name = "unknown";
-		if (matcher.find()) {
-			name = matcher.group(1);
-		}
+			// extract name from <artifactId></artifactId>
+			matcher = ARTIFACT_ID_PATTERN.matcher(pomGeneralPart);
+			if (matcher.find()) {
+				name = matcher.group(1);
+			}
 
-		matcher = VERSION_PATTERN.matcher(pomGeneralPart);
-		String version = "unknown";
-		if (matcher.find()) {
-			version = matcher.group(1);
+			matcher = VERSION_PATTERN.matcher(pomGeneralPart);
+			if (matcher.find()) {
+				version = matcher.group(1);
+			}
+		} else {
+			name = FilenameUtils.getBaseName(jarFile.getName());
 		}
 
 		long lastUpdateTimestamp = jarFile.getEntry("META-INF/MANIFEST.MF").getTime();
@@ -149,7 +157,7 @@ public class CandyDescriptor {
 			transpilerVersion = (String) metadata.get("transpilerVersion");
 		}
 
-		String jsDirPath = "META-INF/resources/webjars/" + name + "/" + version;
+		String jsDirPath = "META-INF/resources/webjars/" + (UNKNOWN.equals(version) ? "" : name + "/" + version);
 		ZipEntry jsDirEntry = jarFile.getEntry(jsDirPath);
 		List<String> jsFilesPaths = new LinkedList<>();
 		if (jsDirEntry != null) {
