@@ -4057,6 +4057,16 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	@Override
 	public void visitBinary(JCBinary binary) {
 		if (!getAdapter().substituteBinaryOperator(new BinaryOperatorElementSupport(binary))) {
+			String op = binary.operator.name.toString();
+			boolean forceParens = false;
+			boolean booleanOp = false;
+			if (context.types.isSameType(context.symtab.booleanType,
+					context.types.unboxedTypeOrType(binary.lhs.type))) {
+				booleanOp = true;
+				if ("^".equals(op)) {
+					forceParens = true;
+				}
+			}
 			boolean closeParen = false;
 			boolean truncate = false;
 			if (Util.isIntegral(binary.type) && binary.getKind() == Kind.DIVIDE) {
@@ -4086,11 +4096,15 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					print("(c => c.charCodeAt==null?<any>c:c.charCodeAt(0))(").print(binary.lhs).print(")");
 				}
 			} else {
+				if(forceParens) {
+					print("(");
+				}
 				print(binary.lhs);
+				if(forceParens) {
+					print(")");
+				}
 			}
-			String op = binary.operator.name.toString();
-			if (context.types.isSameType(context.symtab.booleanType,
-					context.types.unboxedTypeOrType(binary.lhs.type))) {
+			if (booleanOp) {
 				if ("|".equals(op)) {
 					op = "||";
 				} else if ("&".equals(op)) {
@@ -4134,7 +4148,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					print("(c => c.charCodeAt==null?<any>c:c.charCodeAt(0))(").print(binary.rhs).print(")");
 				}
 			} else {
+				if(forceParens) {
+					print("(");
+				}
 				print(binary.rhs);
+				if(forceParens) {
+					print(")");
+				}
 			}
 			if (closeParen) {
 				print(")");

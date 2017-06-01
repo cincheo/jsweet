@@ -47,4 +47,8 @@ public class Operators {
 		return x ^ y;
 	}
 
+    public static boolean work(int s1, int s2) {
+        boolean b =  s1==-1 ^ s2==-1 ;
+        return b;
+    }	
 }
