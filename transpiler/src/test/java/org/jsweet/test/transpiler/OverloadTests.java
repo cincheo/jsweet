@@ -23,7 +23,7 @@ import org.jsweet.transpiler.ModuleKind;
 import org.junit.Test;
 
 import def.test.AmbientWithOverload;
-import source.overload.AbstractMethodOverloadInInnerClass;
+import source.overload.AbstractMethodOverloadInAnonymousClass;
 import source.overload.BasicOverride;
 import source.overload.ConstructorOverLoadWithArray;
 import source.overload.ConstructorOverloadWithFieldInitializer;
@@ -258,10 +258,10 @@ public class OverloadTests extends AbstractTest {
 	}
 
 	@Test
-	public void testAbstractMethodOverloadInInnerClass() {
+	public void testAbstractMethodOverloadInAnonymousClass() {
 		transpile(ModuleKind.none, (logHandler) -> {
 			logHandler.assertNoProblems();
-		}, getSourceFile(AbstractMethodOverloadInInnerClass.class));
+		}, getSourceFile(AbstractMethodOverloadInAnonymousClass.class));
 	}
 	
 }
