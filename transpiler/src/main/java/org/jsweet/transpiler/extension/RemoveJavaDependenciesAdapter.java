@@ -1064,6 +1064,9 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 				case "NEGATIVE_INFINITY":
 					print("Number." + variableAccess.getVariableName());
 					return true;
+				case "NaN":
+					print("NaN");
+					return true;
 				}
 				break;
 			case "java.lang.Boolean":
