@@ -44,6 +44,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 import java.util.function.BiFunction;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.lang.model.element.Element;
@@ -161,11 +162,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	public static final String ENUM_WRAPPER_CLASS_NAME = "_$name";
 	public static final String ENUM_WRAPPER_CLASS_ORDINAL = "_$ordinal";
 	public static final String VAR_DECL_KEYWORD = "let";
-	public static final String BODY_MARKER = "{{body}}";
-	public static final String BASE_INDENT_MARKER = "{{baseIndent}}";
-	public static final String INDENT_MARKER = "{{indent}}";
-	public static final String METHOD_NAME_MARKER = "{{methodName}}";
-	public static final String CLASS_NAME_MARKER = "{{className}}";
+	public static final Pattern BODY_MARKER = Pattern.compile("\\{\\{\\s*body\\s*\\}\\}");
+	public static final Pattern BASE_INDENT_MARKER = Pattern.compile("\\{\\{\\s*baseIndent\\s*\\}\\}");
+	public static final Pattern INDENT_MARKER = Pattern.compile("\\{\\{\\s*indent\\s*\\}\\}");
+	public static final Pattern METHOD_NAME_MARKER = Pattern.compile("\\{\\{\\s*methodName\\s*\\}\\}");
+	public static final Pattern CLASS_NAME_MARKER = Pattern.compile("\\{\\{\\s*className\\s*\\}\\}");
 	public static final String GENERATOR_PREFIX = "__generator_";
 
 	protected static Logger logger = Logger.getLogger(Java2TypeScriptTranslator.class);
@@ -2202,7 +2203,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 								JSweetConfig.ANNOTATION_REPLACE, null);
 					}
 					int position = getCurrentPosition();
-					if (replacedBody == null || replacedBody.contains(BODY_MARKER)) {
+					if (replacedBody == null || BODY_MARKER.matcher(replacedBody).find()) {
 						enter(methodDecl.getBody());
 						if (!methodDecl.getBody().stats.isEmpty()
 								&& methodDecl.getBody().stats.head.toString().startsWith("super(")) {
@@ -2221,10 +2222,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						if (replacedBody != null) {
 							String orgBody = getOutput().substring(position);
 							removeLastChars(getCurrentPosition() - position);
-							replacedBody = replacedBody.replace(BODY_MARKER, orgBody)
-									.replace(BASE_INDENT_MARKER, getIndentString()).replace(INDENT_MARKER, INDENT)
-									.replace(METHOD_NAME_MARKER, methodDecl.getName().toString())
-									.replace(CLASS_NAME_MARKER, parent.sym.getQualifiedName().toString());
+							replacedBody = BODY_MARKER.matcher(replacedBody).replaceAll(orgBody);
+							replacedBody = BASE_INDENT_MARKER.matcher(replacedBody).replaceAll(getIndentString());
+							replacedBody = INDENT_MARKER.matcher(replacedBody).replaceAll(INDENT);
+							replacedBody = METHOD_NAME_MARKER.matcher(replacedBody)
+									.replaceAll(methodDecl.getName().toString());
+							replacedBody = CLASS_NAME_MARKER.matcher(replacedBody)
+									.replaceAll(parent.sym.getQualifiedName().toString());
 						}
 					}
 					if (replacedBody != null) {
@@ -2379,7 +2383,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				replacedBody = (String) context.getAnnotationValue(method.sym, JSweetConfig.ANNOTATION_REPLACE, null);
 			}
 			int position = getCurrentPosition();
-			if (replacedBody == null || replacedBody.contains(BODY_MARKER)) {
+			if (replacedBody == null || BODY_MARKER.matcher(replacedBody).find()) {
 				enter(method.getBody());
 				com.sun.tools.javac.util.List<JCStatement> stats = skipFirst ? method.getBody().stats.tail
 						: method.getBody().stats;
@@ -2416,10 +2420,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					printIndent();
 					String orgBody = getOutput().substring(position);
 					removeLastChars(getCurrentPosition() - position);
-					replacedBody = replacedBody.replace(BODY_MARKER, orgBody)
-							.replace(BASE_INDENT_MARKER, getIndentString()).replace(INDENT_MARKER, INDENT)
-							.replace(METHOD_NAME_MARKER, method.getName().toString())
-							.replace(CLASS_NAME_MARKER, method.sym.getEnclosingElement().getQualifiedName().toString());
+					replacedBody = BODY_MARKER.matcher(replacedBody).replaceAll(orgBody);
+					replacedBody = BASE_INDENT_MARKER.matcher(replacedBody).replaceAll(getIndentString());
+					replacedBody = INDENT_MARKER.matcher(replacedBody).replaceAll(INDENT);
+					replacedBody = METHOD_NAME_MARKER.matcher(replacedBody).replaceAll(method.getName().toString());
+					replacedBody = CLASS_NAME_MARKER.matcher(replacedBody)
+							.replaceAll(method.sym.getEnclosingElement().getQualifiedName().toString());
 				}
 			}
 			if (replacedBody != null) {
