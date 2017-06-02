@@ -1204,9 +1204,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						.get(getScope(1).anonymousClasses.indexOf(classdecl));
 				printAnonymousClassTypeArgs(newClass);
 			}
-			String mixin = null;
+			Type mixin = null;
 			if (context.hasAnnotationType(classdecl.sym, JSweetConfig.ANNOTATION_MIXIN)) {
-				mixin = context.getAnnotationValue(classdecl.sym, JSweetConfig.ANNOTATION_MIXIN, String.class, null);
+				mixin = context.getAnnotationValue(classdecl.sym, JSweetConfig.ANNOTATION_MIXIN, Type.class, null);
 				for (Compound c : classdecl.sym.getAnnotationMirrors()) {
 					if (JSweetConfig.ANNOTATION_MIXIN.equals(c.type.toString())) {
 						String targetName = getRootRelativeName(((Attribute.Class) c.values.head.snd).classType.tsym);
@@ -1235,8 +1235,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (!removeIterable && !JSweetConfig.isJDKReplacementMode()
 						&& !(JSweetConfig.OBJECT_CLASSNAME.equals(classdecl.extending.type.toString())
 								|| Object.class.getName().equals(classdecl.extending.type.toString()))
-						&& !(mixin != null && mixin.equals(classdecl.extending.type.toString())) && !(getAdapter()
-								.eraseSuperClass(classdecl.sym, (ClassSymbol) classdecl.extending.type.tsym))) {
+						&& !(mixin != null && context.types.isSameType(mixin, classdecl.extending.type))
+						&& !(getAdapter().eraseSuperClass(classdecl.sym,
+								(ClassSymbol) classdecl.extending.type.tsym))) {
 					if (!getScope().interfaceScope && context.isInterface(classdecl.extending.type.tsym)) {
 						extendsInterface = true;
 						print(" implements ");

@@ -312,6 +312,17 @@ public class PrinterAdapter {
 	 * To change the behavior of this method in a composable way, use
 	 * {@link #addAnnotation(Class, String...)} or
 	 * {@link #addAnnotationManager(AnnotationManager)}.
+	 * 
+	 * @param element
+	 *            the element holding the annotation
+	 * @param annotationType
+	 *            the fully qualified name of the value property type
+	 * @param propertyClass
+	 *            the expected class of the property (String.class,
+	 *            TypeMirror.class, Number.class, and arrays such as
+	 *            String[].class...)
+	 * @param defaultValue
+	 *            the default value if the property is not found
 	 */
 	public final <T> T getAnnotationValue(Element element, String annotationType, Class<T> propertyClass,
 			T defaultValue) {
@@ -322,6 +333,20 @@ public class PrinterAdapter {
 	/**
 	 * Gets the first value of the given property for the given annotation type
 	 * if found on the given element.
+	 * 
+	 * @param element
+	 *            the element holding the annotation
+	 * @param annotationType
+	 *            the fully qualified name of the value property type
+	 * @param propertyName
+	 *            the name of the property in the annotation (<code>null</code>
+	 *            will look up the <code>value</code> property)
+	 * @param propertyClass
+	 *            the expected class of the property (String.class,
+	 *            TypeMirror.class, Number.class, and arrays such as
+	 *            String[].class...)
+	 * @param defaultValue
+	 *            the default value if the property is not found
 	 */
 	public final <T> T getAnnotationValue(Element element, String annotationType, String propertyName,
 			Class<T> propertyClass, T defaultValue) {

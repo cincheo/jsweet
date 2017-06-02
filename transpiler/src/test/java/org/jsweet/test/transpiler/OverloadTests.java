@@ -27,6 +27,7 @@ import source.overload.AbstractMethodOverloadInAnonymousClass;
 import source.overload.BasicOverride;
 import source.overload.ConstructorOverLoadWithArray;
 import source.overload.ConstructorOverloadWithFieldInitializer;
+import source.overload.Graph;
 import source.overload.InterfaceInheritance;
 import source.overload.LocalVariablesNameCollision;
 import source.overload.NonPublicRootMethod;
@@ -76,7 +77,7 @@ public class OverloadTests extends AbstractTest {
 		eval((logHandler, r) -> {
 			logHandler.assertNoProblems();
 			assertEquals("1,2,3,4,5,6,7", r.get("trace"));
-		}, getSourceFile(WrongOverload.class));
+		}, getSourceFile(WrongOverload.class), getSourceFile(Graph.class));
 	}
 
 	@Test
