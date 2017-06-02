@@ -27,7 +27,6 @@ import source.overload.AbstractMethodOverloadInAnonymousClass;
 import source.overload.BasicOverride;
 import source.overload.ConstructorOverLoadWithArray;
 import source.overload.ConstructorOverloadWithFieldInitializer;
-import source.overload.Graph;
 import source.overload.InterfaceInheritance;
 import source.overload.LocalVariablesNameCollision;
 import source.overload.NonPublicRootMethod;
@@ -63,7 +62,7 @@ public class OverloadTests extends AbstractTest {
 			assertEquals("s22", result.<String> get("res3"));
 		}, getSourceFile(Overload.class));
 	}
-	
+
 	@Test
 	public void testOverloadWithSuperclass() {
 		eval((logHandler, result) -> {
@@ -71,13 +70,12 @@ public class OverloadTests extends AbstractTest {
 		}, getSourceFile(OverloadWithSuperclass.class));
 	}
 
-	
 	@Test
 	public void testWrongOverload() {
 		eval((logHandler, r) -> {
 			logHandler.assertNoProblems();
 			assertEquals("1,2,3,4,5,6,7", r.get("trace"));
-		}, getSourceFile(WrongOverload.class), getSourceFile(Graph.class));
+		}, getSourceFile(WrongOverload.class));
 	}
 
 	@Test
@@ -264,5 +262,5 @@ public class OverloadTests extends AbstractTest {
 			logHandler.assertNoProblems();
 		}, getSourceFile(AbstractMethodOverloadInAnonymousClass.class));
 	}
-	
+
 }
