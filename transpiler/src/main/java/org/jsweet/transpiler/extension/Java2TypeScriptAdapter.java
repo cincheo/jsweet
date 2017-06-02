@@ -1285,7 +1285,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 
 			if (hasAnnotationType(variableAccess.getVariable(), ANNOTATION_STRING_TYPE)) {
 				print("\"");
-				print(getAnnotationValue(variableAccess.getVariable(), ANNOTATION_STRING_TYPE,
+				print(getAnnotationValue(variableAccess.getVariable(), ANNOTATION_STRING_TYPE, String.class,
 						variableAccess.getVariableName()));
 				print("\"");
 				return true;
@@ -1324,8 +1324,8 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 			JCIdent identifier = (JCIdent) ((VariableAccessElementSupport) variableAccess).getTree();
 			if (context.hasAnnotationType(identifier.sym, ANNOTATION_STRING_TYPE)) {
 				print("\"");
-				getPrinter().print(
-						context.getAnnotationValue(identifier.sym, ANNOTATION_STRING_TYPE, identifier.toString()));
+				getPrinter().print((String) context.getAnnotationValue(identifier.sym, ANNOTATION_STRING_TYPE,
+						String.class, identifier.toString()));
 				print("\"");
 				return true;
 			}

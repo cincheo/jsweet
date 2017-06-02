@@ -21,10 +21,10 @@ public class AddPrefixToNonPublicMembersAdapter extends PrinterAdapter {
 			}
 
 			@Override
-			public String getAnnotationValue(Element element, String annotationType, String propertyName,
-					String defaultValue) {
+			public <T> T getAnnotationValue(Element element, String annotationType, String propertyName,
+					Class<T> propertyClass, T defaultValue) {
 				if ("jsweet.lang.Name".equals(annotationType) && isNonPublicMember(element)) {
-					return "__" + element.getSimpleName();
+					return propertyClass.cast("__" + element.getSimpleName());
 				} else {
 					return null;
 				}

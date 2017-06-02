@@ -313,18 +313,20 @@ public class PrinterAdapter {
 	 * {@link #addAnnotation(Class, String...)} or
 	 * {@link #addAnnotationManager(AnnotationManager)}.
 	 */
-	public final String getAnnotationValue(Element element, String annotationType, String defaultValue) {
-		return getAnnotationValue((com.sun.tools.javac.code.Symbol) element, annotationType, null, defaultValue);
+	public final <T> T getAnnotationValue(Element element, String annotationType, Class<T> propertyClass,
+			T defaultValue) {
+		return getAnnotationValue((com.sun.tools.javac.code.Symbol) element, annotationType, null, propertyClass,
+				defaultValue);
 	}
 
 	/**
 	 * Gets the first value of the given property for the given annotation type
 	 * if found on the given element.
 	 */
-	public final String getAnnotationValue(Element element, String annotationType, String propertyName,
-			String defaultValue) {
+	public final <T> T getAnnotationValue(Element element, String annotationType, String propertyName,
+			Class<T> propertyClass, T defaultValue) {
 		return context.getAnnotationValue((com.sun.tools.javac.code.Symbol) element, annotationType, propertyName,
-				defaultValue);
+				propertyClass, defaultValue);
 	}
 
 	/**

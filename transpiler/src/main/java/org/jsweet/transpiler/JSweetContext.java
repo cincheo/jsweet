@@ -23,6 +23,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 import java.io.File;
 import java.io.PrintStream;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Array;
 import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
@@ -55,6 +56,7 @@ import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.util.DirectedGraph;
 import org.jsweet.transpiler.util.Util;
 
+import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.Attribute.Compound;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
@@ -737,7 +739,7 @@ public class JSweetContext extends Context {
 	public String getExportedElementName(Symbol exportedElement) {
 		String name = exportedNames.get(exportedElement);
 		String forcedName = getAnnotationValue(exportedElement, JSweetConfig.ANNOTATION_MODULE, "exportedElement",
-				null);
+				String.class, null);
 		if (StringUtils.isNotBlank(forcedName)) {
 			name = forcedName;
 		}
@@ -1084,7 +1086,7 @@ public class JSweetContext extends Context {
 	public String getActualName(Symbol symbol) {
 		String name = symbol.getSimpleName().toString();
 		if (hasAnnotationType(symbol, JSweetConfig.ANNOTATION_NAME)) {
-			String originalName = getAnnotationValue(symbol, JSweetConfig.ANNOTATION_NAME, null);
+			String originalName = getAnnotationValue(symbol, JSweetConfig.ANNOTATION_NAME, String.class, null);
 			if (!isBlank(originalName)) {
 				name = originalName;
 			}
@@ -1108,7 +1110,7 @@ public class JSweetContext extends Context {
 				name = nameMapping.get(symbol);
 			} else {
 				if (hasAnnotationType(symbol, JSweetConfig.ANNOTATION_NAME)) {
-					String originalName = getAnnotationValue(symbol, JSweetConfig.ANNOTATION_NAME, null);
+					String originalName = getAnnotationValue(symbol, JSweetConfig.ANNOTATION_NAME, String.class, null);
 					if (!isBlank(originalName)) {
 						name = originalName;
 					}
@@ -1233,17 +1235,19 @@ public class JSweetContext extends Context {
 	 * Gets the first value of the 'value' property for the given annotation
 	 * type if found on the given symbol.
 	 */
-	public final String getAnnotationValue(Symbol symbol, String annotationType, String defaultValue) {
-		return getAnnotationValue(symbol, annotationType, null, defaultValue);
+	public final <T> T getAnnotationValue(Symbol symbol, String annotationType, Class<T> propertyClass,
+			T defaultValue) {
+		return getAnnotationValue(symbol, annotationType, null, propertyClass, defaultValue);
 	}
 
 	/**
 	 * Gets the first value of the given property for the given annotation type
 	 * if found on the given symbol.
 	 */
-	public String getAnnotationValue(Symbol symbol, String annotationType, String propertyName, String defaultValue) {
+	public <T> T getAnnotationValue(Symbol symbol, String annotationType, String propertyName, Class<T> propertyClass,
+			T defaultValue) {
 		for (AnnotationManager annotationIntrospector : annotationManagers) {
-			String value = annotationIntrospector.getAnnotationValue(symbol, annotationType, propertyName,
+			T value = annotationIntrospector.getAnnotationValue(symbol, annotationType, propertyName, propertyClass,
 					defaultValue);
 			if (value != null) {
 				return value;
@@ -1273,13 +1277,13 @@ public class JSweetContext extends Context {
 								if (filterDescriptor.parameter == null) {
 									return defaultValue;
 								} else if (filterDescriptor.parameter.startsWith("'")) {
-									return filterDescriptor.parameter.substring(1,
+									return (T) filterDescriptor.parameter.substring(1,
 											filterDescriptor.parameter.length() - 1);
 								} else if (filterDescriptor.parameter.endsWith(".class")) {
-									return filterDescriptor.parameter.substring(0,
+									return (T) filterDescriptor.parameter.substring(0,
 											filterDescriptor.parameter.length() - 6);
 								} else {
-									return filterDescriptor.parameter;
+									return (T) filterDescriptor.parameter;
 								}
 							}
 						}
@@ -1289,11 +1293,11 @@ public class JSweetContext extends Context {
 		}
 
 		AnnotationMirror anno = getAnnotation(symbol, annotationType);
-		String val = defaultValue;
+		T val = defaultValue;
 		if (anno != null) {
-			Object firstVal = getFirstAnnotationValue(anno, propertyName, null);
+			T firstVal = getFirstAnnotationValue(anno, propertyName, propertyClass, null);
 			if (firstVal != null) {
-				val = "" + firstVal;
+				val = firstVal;
 			}
 		}
 		return val;
@@ -1302,12 +1306,22 @@ public class JSweetContext extends Context {
 	/**
 	 * Gets the first value of the 'value' property.
 	 */
-	private static Object getFirstAnnotationValue(AnnotationMirror annotation, String propertyName,
-			Object defaultValue) {
+	@SuppressWarnings("unchecked")
+	private static <T> T getFirstAnnotationValue(AnnotationMirror annotation, String propertyName,
+			Class<T> propertyClass, T defaultValue) {
 		for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> valueEntry : annotation
 				.getElementValues().entrySet()) {
 			if (propertyName == null || propertyName.equals(valueEntry.getKey().getSimpleName().toString())) {
-				return valueEntry.getValue().getValue();
+				if (propertyClass.isArray()) {
+					List<Object> l = (List<Object>) valueEntry.getValue().getValue();
+					Object array = Array.newInstance(propertyClass.getComponentType(), l.size());
+					for (int i = 0; i < l.size(); i++) {
+						Array.set(array, i, ((Attribute) l.get(i)).getValue());
+					}
+					return (T) array;
+				} else {
+					return (T) valueEntry.getValue().getValue();
+				}
 			}
 		}
 		return defaultValue;

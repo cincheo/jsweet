@@ -91,12 +91,15 @@ public abstract class AnnotationManager {
 	 * @param propertyName
 	 *            the annotation's property name (if null, the value property is
 	 *            looked up)
+	 * @param propertyClass
+	 *            the annotation's property class
 	 * @param defaultValue
 	 *            the default value to be returned if not found
 	 * @return the annotation property value (null if the annotation is not
 	 *         managed)
 	 */
-	public String getAnnotationValue(Element element, String annotationType, String propertyName, String defaultValue) {
+	public <T extends Object> T getAnnotationValue(Element element, String annotationType, String propertyName,
+			Class<T> propertyClass, T defaultValue) {
 		return null;
 	}
 
