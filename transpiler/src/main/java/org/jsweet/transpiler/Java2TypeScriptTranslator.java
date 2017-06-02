@@ -3286,7 +3286,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				applyVarargs = false;
 			}
 
-			String targetVarName = null;
 			if (anonymous) {
 				if (inv.meth instanceof JCFieldAccess) {
 					JCExpression selected = ((JCFieldAccess) inv.meth).selected;
@@ -3295,11 +3294,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			} else {
 				// method with name
 				if (inv.meth instanceof JCFieldAccess && applyVarargs && !targetIsThisOrStaticImported && !isStatic) {
-					targetVarName = "this['__jswref_" + (applyTargetRefCounter++) + "']";
-					print("(");
-					print(targetVarName + " = ");
-					print(((JCFieldAccess) inv.meth).selected);
-					print(")");
+					print("(o => o");
 
 					String accessedMemberName;
 					if (keywordHandled) {
@@ -3408,11 +3403,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				String contextVar = "null";
 				if (targetIsThisOrStaticImported) {
 					contextVar = "this";
-				} else if (targetVarName != null) {
-					contextVar = targetVarName;
+				} else if (inv.meth instanceof JCFieldAccess && !targetIsThisOrStaticImported && !isStatic) {
+					contextVar = "o";
 				}
 
 				print(contextVar + ", ");
+
 				if (inv.args.size() > 1) {
 					print("[");
 				}
@@ -3466,6 +3462,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 				if (inv.args.size() > 1) {
 					print(")");
+				}
+				if (inv.meth instanceof JCFieldAccess && !targetIsThisOrStaticImported && !isStatic) {
+					print("))(").print(((JCFieldAccess) inv.meth).selected);
 				}
 			}
 
@@ -4096,11 +4095,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					print("(c => c.charCodeAt==null?<any>c:c.charCodeAt(0))(").print(binary.lhs).print(")");
 				}
 			} else {
-				if(forceParens) {
+				if (forceParens) {
 					print("(");
 				}
 				print(binary.lhs);
-				if(forceParens) {
+				if (forceParens) {
 					print(")");
 				}
 			}
@@ -4148,11 +4147,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					print("(c => c.charCodeAt==null?<any>c:c.charCodeAt(0))(").print(binary.rhs).print(")");
 				}
 			} else {
-				if(forceParens) {
+				if (forceParens) {
 					print("(");
 				}
 				print(binary.rhs);
-				if(forceParens) {
+				if (forceParens) {
 					print(")");
 				}
 			}
