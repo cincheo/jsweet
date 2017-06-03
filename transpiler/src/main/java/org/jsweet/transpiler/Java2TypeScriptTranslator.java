@@ -1336,6 +1336,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			for (Type t : implementedInterfaces) {
 				context.grabMethodsToBeImplemented(methods, t.tsym);
 			}
+			methods.sort((m1, m2) -> m1.getSimpleName().compareTo(m2.getSimpleName()));
 			Map<Name, String> signatures = new HashMap<>();
 			for (MethodSymbol meth : methods) {
 				if (meth.type instanceof MethodType) {

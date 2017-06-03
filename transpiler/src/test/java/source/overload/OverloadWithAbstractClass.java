@@ -28,3 +28,38 @@ public class OverloadWithAbstractClass {
 		test.draw(0, 0);
 	}
 }
+
+interface Graph {
+
+	String getEdges();
+
+	Object createVertex();
+
+	String getEdges(String name);
+
+}
+
+abstract class AbstractGraph implements Graph {
+}
+
+class MyGraph extends AbstractGraph {
+
+	@Override
+	public Object createVertex() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getEdges() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getEdges(String name) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+}
