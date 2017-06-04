@@ -195,16 +195,16 @@ public class PrinterAdapter {
 			if (mapped != null) {
 				stringBuilder.append(mapped);
 			} else {
-				print(element.getSimpleName().toString());
+				stringBuilder.append(element.getSimpleName().toString());
 			}
 			if (!declaredType.getTypeArguments().isEmpty()) {
-				print("<");
+				stringBuilder.append("<");
 				for (TypeMirror arg : declaredType.getTypeArguments()) {
 					buildMappedType(stringBuilder, arg);
-					print(", ");
+					stringBuilder.append(", ");
 				}
-				getPrinter().removeLastChars(2);
-				print(">");
+				stringBuilder.delete(stringBuilder.length() - 2, stringBuilder.length());
+				stringBuilder.append(">");
 			}
 			break;
 		case ARRAY:

@@ -1,11 +1,16 @@
 package org.jsweet.test.transpiler;
 
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetFactory;
 import org.jsweet.transpiler.ModuleKind;
 import org.jsweet.transpiler.extension.Java2TypeScriptAdapter;
+import org.jsweet.transpiler.extension.RemoveJavaDependenciesAdapter;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -25,7 +30,7 @@ class TestFactory extends JSweetFactory {
 
 }
 
-class TestAdapter extends Java2TypeScriptAdapter {
+class TestAdapter extends RemoveJavaDependenciesAdapter {
 
 	public TestAdapter(JSweetContext context) {
 		super(context);
@@ -34,6 +39,20 @@ class TestAdapter extends Java2TypeScriptAdapter {
 		context.addAnnotation("@Name('_f4')", "**.f4(..)");
 		context.addAnnotation("@Name('_f6')", "**.f6");
 		context.addAnnotation("@Name('_f8')", "**.f8(..)");
+	}
+
+	@Override
+	public void afterType(TypeElement type) {
+		if ("AnnotationTest".equals(type.getSimpleName().toString())) {
+			printIndent().print("class Dummy {").println().startIndent();
+			for (Element e : type.getEnclosedElements()) {
+				if (e instanceof VariableElement) {
+					printIndent().print(e.getSimpleName()).print(": ").print(getMappedType(e.asType())).print(";")
+							.println();
+				}
+			}
+			endIndent().printIndent().print("}").println();
+		}
 	}
 
 }

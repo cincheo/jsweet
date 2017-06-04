@@ -1,5 +1,7 @@
 package source.extension;
 
+import java.util.List;
+
 import jsweet.lang.Name;
 
 class Superclass {
@@ -43,5 +45,7 @@ public class AnnotationTest extends Superclass {
 	String f8() {
 		return "";
 	}
+	
+	List<?> testGenerics;
 	
 }
