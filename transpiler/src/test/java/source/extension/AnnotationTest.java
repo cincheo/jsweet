@@ -1,6 +1,7 @@
 package source.extension;
 
 import java.util.List;
+import java.util.Map;
 
 import jsweet.lang.Name;
 
@@ -47,5 +48,6 @@ public class AnnotationTest extends Superclass {
 	}
 	
 	List<?> testGenerics;
+	Map<String, ?> testGenerics2;
 	
 }

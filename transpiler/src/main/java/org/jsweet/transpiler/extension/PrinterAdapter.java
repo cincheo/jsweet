@@ -197,7 +197,7 @@ public class PrinterAdapter {
 			} else {
 				stringBuilder.append(element.getSimpleName().toString());
 			}
-			if (!declaredType.getTypeArguments().isEmpty()) {
+			if (!"any".equals(mapped) && !declaredType.getTypeArguments().isEmpty()) {
 				stringBuilder.append("<");
 				for (TypeMirror arg : declaredType.getTypeArguments()) {
 					buildMappedType(stringBuilder, arg);
