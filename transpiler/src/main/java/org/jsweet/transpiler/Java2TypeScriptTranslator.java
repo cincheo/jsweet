@@ -2927,7 +2927,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					&& !qualId.contains("." + JSweetConfig.STRING_TYPES_INTERFACE_NAME + ".")) {
 				if (context.useModules) {
 					print(VAR_DECL_KEYWORD + " ").print(qualId.substring(qualId.lastIndexOf('.') + 1)).print(": any = ")
-							.print(qualId).print(";");
+							.print(qualId).print(";").println();
 				}
 			} else {
 				String[] namePath;
@@ -2940,7 +2940,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (context.useModules) {
 					if (!adaptedQualId.startsWith(GLOBALS_PACKAGE_NAME)) {
 						if (!context.getImportedNames(compilationUnit.getSourceFile().getName()).contains(name)) {
-							print("import ").print(name).print(" = ").print(adaptedQualId).print(";");
+							print("import ").print(name).print(" = ").print(adaptedQualId).print(";").println();
 							context.registerImportedName(compilationUnit.getSourceFile().getName(), null, name);
 						}
 					}
@@ -2960,7 +2960,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						// (imports create unavoidable dependencies!)
 						context.importedTopPackages.add(namePath[0]);
 					} else {
-						print("import ").print(name).print(" = ").print(adaptedQualId).print(";");
+						print("import ").print(name).print(" = ").print(adaptedQualId).print(";").println();
 					}
 				}
 			}
