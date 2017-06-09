@@ -224,6 +224,7 @@ public class AbstractTest {
 			SourceFile.touch(files);
 			initOutputDir();
 			res = transpiler.eval(logHandler, files);
+			logger.trace(getCurrentTestName() + " -- result=" + res.getExecutionTrace());
 			if (assertions != null) {
 				assertions.accept(logHandler, res);
 			}

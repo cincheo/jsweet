@@ -25,7 +25,7 @@ public class Maps {
 	}
 
 	public static void main(String[] args) {
-		Map<String, String> m = new HashMap<>();
+		HashMap<String, String> m = new HashMap<>();
 
 		m.put(key1(), "a");
 		m.put("2", "b");
@@ -44,16 +44,21 @@ public class Maps {
 
 		trace.push("" + m.values());
 
+		Map<String, String> m2 = (Map) m.clone();
+		
 		m.remove("1");
 
 		trace.push("" + m.size());
 		trace.push("" + (m.get("1") == null));
+		
+		trace.push("size2=" + m2.size());
 
 		trace.push(Collections.singletonMap(key2(), "1").get("a"));
 		trace.push(Collections.singletonMap("b", "2").get("b"));
 
 		m.clear();
 		trace.push(m.values().toString());
+		trace.push("empty=" + m.isEmpty());
 
 		trace.push("-" + m.get("undefinedKey") + "-");
 		
