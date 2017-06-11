@@ -55,7 +55,7 @@ public class SyntaxTests extends AbstractTest {
 	@Test
 	public void testReferences() {
 		eval((logHandler, r) -> {
-			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+			logHandler.assertNoProblems();
 			Assert.assertEquals("foo", r.get("s"));
 			Assert.assertEquals((Number) 5, r.get("i"));
 		}, getSourceFile(References.class));
@@ -74,15 +74,16 @@ public class SyntaxTests extends AbstractTest {
 
 	@Test
 	public void testStatementsWithNoBlocks() {
-		transpile((logHandler) -> {
-			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+		eval((logHandler, result) -> {
+			logHandler.assertNoProblems();
+			assertEquals("aa,bb,0,1,2", result.get("trace"));
 		}, getSourceFile(StatementsWithNoBlocks.class));
 	}
 
 	@Test
 	public void testQualifiedNames() {
 		transpile((logHandler) -> {
-			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+			logHandler.assertNoProblems();
 		}, getSourceFile(QualifiedNames.class));
 	}
 
@@ -98,7 +99,7 @@ public class SyntaxTests extends AbstractTest {
 	@Test
 	public void testGlobalsInvocation() {
 		transpile((logHandler) -> {
-			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+			logHandler.assertNoProblems();
 		}, getSourceFile(GlobalsInvocation.class));
 	}
 
@@ -106,14 +107,14 @@ public class SyntaxTests extends AbstractTest {
 	public void testSpecialFunctions() {
 		System.setProperty("jsweet.forceDeprecatedApplySupport", "true");
 		transpile((logHandler) -> {
-			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+			logHandler.assertNoProblems();
 		}, getSourceFile(SpecialFunctions.class));
 	}
 
 	@Test
 	public void testDeprecatedApply() {
 		transpile((logHandler) -> {
-			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+			logHandler.assertNoProblems();
 		}, getSourceFile(SpecialFunctions.class));
 	}
 
@@ -136,14 +137,14 @@ public class SyntaxTests extends AbstractTest {
 		try {
 			TestTranspilationHandler logHandler = new TestTranspilationHandler();
 			EvaluationResult r = transpiler.eval("Java", logHandler, getSourceFile(FinalVariablesRuntime.class));
-			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+			logHandler.assertNoProblems();
 			Assert.assertEquals("Wrong behavior output trace", "11223344", r.get("out").toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail("Exception occured while running test");
 		}
 		eval((logHandler, r) -> {
-			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+			logHandler.assertNoProblems();
 			Assert.assertEquals("Wrong behavior output trace", "11223344", r.get("out").toString());
 		}, getSourceFile(FinalVariablesRuntime.class));
 
@@ -162,7 +163,7 @@ public class SyntaxTests extends AbstractTest {
 	@Test
 	public void testValidIndexedAccesses() {
 		eval((logHandler, r) -> {
-			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+			logHandler.assertNoProblems();
 
 			assertEquals("value", r.get("field1"));
 			assertNull(r.get("field2"));
@@ -220,7 +221,7 @@ public class SyntaxTests extends AbstractTest {
 	@Test
 	public void testLambdasWithInterfaces() {
 		eval((logHandler, r) -> {
-			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+			logHandler.assertNoProblems();
 			assertEquals("ok1,ok2,ok3,ok4,ok5", r.get("trace"));
 		}, getSourceFile(LambdasWithInterfaces.class));
 	}
@@ -228,7 +229,7 @@ public class SyntaxTests extends AbstractTest {
 	@Test
 	public void testCasts() {
 		transpile((logHandler) -> {
-			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+			logHandler.assertNoProblems();
 		}, getSourceFile(Casts.class));
 	}
 
