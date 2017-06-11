@@ -4282,7 +4282,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	public void visitForLoop(JCForLoop forLoop) {
 		print("for(").printArgList(null, forLoop.init).print("; ").print(forLoop.cond).print("; ")
 				.printArgList(null, forLoop.step).print(") ");
-		print(forLoop.body);
+		print(forLoop.body).print(";");
 	}
 
 	@Override

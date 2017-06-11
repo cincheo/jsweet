@@ -63,6 +63,16 @@ public class StatementsWithNoBlocks {
 		
 	}
 	
+	 public static void hash(byte[] m, byte[] h) {
+        long[] t = new long[] {0,1};
+        for (; t[0] < m.length; t[1] =1)
+            block();
+        System.arraycopy(m, (int) t[0], new byte[64], 0, m.length - (int)t[0]);
+    }
+    
+    private static void block() {
+    }
+	
 	public static void main(String[] args) {
 		m1();
 		m2();
