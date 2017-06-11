@@ -109,6 +109,7 @@ import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCImport;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
+import com.sun.tools.javac.tree.JCTree.JCTypeApply;
 import com.sun.tools.javac.tree.JCTree.Tag;
 
 /**
@@ -1347,7 +1348,15 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 		}
 
 		if (isMappedType(className)) {
-			print("<").print(getTypeMappingTarget(className)).print(">");
+
+			print("<").print(getTypeMappingTarget(className));
+			if (newClass.clazz instanceof JCTypeApply) {
+				List<JCExpression> typeArgs = ((JCTypeApply) newClass.clazz).arguments;
+				if (typeArgs.size() > 0) {
+					getPrinter().print("<").printTypeArgList(typeArgs).print(">");
+				}
+			}
+			print(">");
 		}
 		// macros
 		if (newClass.clazz.type.equals(context.symtab.stringType)) {

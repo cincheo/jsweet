@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Deque;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -266,6 +267,11 @@ public class Collections implements Cloneable, Serializable {
 		List<String> lll = null;
 
 		trace.push("" + lll);
+		
+		Set<Integer> set = new HashSet<Integer>();
+		set.add(5);
+		set.add(6);
+		Set<Integer> set2 = null;
 
 		$export("trace", trace.join(","));
 
