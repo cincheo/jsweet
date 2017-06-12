@@ -59,7 +59,7 @@ public class JSweetFileWatcher {
 
 	public String watcherSensitivity;
 
-	private TranspilationThread transpilatorThread;
+	private TranspilationThread transpilationThread;
 
 	private static final SensitivityWatchEventModifier SENSITIVITY_WATCH_EVENT_MODIFIER = SensitivityWatchEventModifier.HIGH;
 
@@ -77,8 +77,8 @@ public class JSweetFileWatcher {
 
 		logger.info("starting file watcher... ");
 
-		transpilatorThread = new TranspilationThread();
-		transpilatorThread.start();
+		transpilationThread = new TranspilationThread();
+		transpilationThread.start();
 
 		initialize();
 	}
@@ -104,8 +104,6 @@ public class JSweetFileWatcher {
 				}
 
 				logger.info("done registering source paths");
-
-				logger.info("");
 
 				logger.info("listening for file change... ");
 

@@ -410,35 +410,6 @@ public class JSweetCommandLineLauncher {
 			inputDirList = Arrays.asList(jsapArgs.getFileArray("input"));
 			logger.info("input dirs: " + inputDirList);
 
-			String[] included = jsapArgs.getStringArray("includes");
-			String[] excluded = jsapArgs.getStringArray("excludes");
-
-			List<Pattern> includedPatterns = included == null ? null
-					: Arrays.asList(included).stream().map(s -> toPattern(s)).collect(Collectors.toList());
-			List<Pattern> excludedPatterns = excluded == null ? null
-					: Arrays.asList(excluded).stream().map(s -> toPattern(s)).collect(Collectors.toList());
-
-			logger.info("included: " + includedPatterns);
-			logger.info("excluded: " + excludedPatterns);
-
-			javaInputFiles = new LinkedList<File>();
-
-			for (File inputDir : inputDirList) {
-				Util.addFiles(f -> {
-					String path = inputDir.toURI().relativize(f.toURI()).getPath();
-					if (path.endsWith(".java")) {
-						if (includedPatterns == null || includedPatterns.isEmpty() || includedPatterns != null
-								&& includedPatterns.stream().anyMatch(p -> p.matcher(path).matches())) {
-							if (excludedPatterns != null && !excludedPatterns.isEmpty()
-									&& excludedPatterns.stream().anyMatch(p -> p.matcher(path).matches())) {
-								return false;
-							}
-							return true;
-						}
-					}
-					return false;
-				}, inputDir, javaInputFiles);
-			}
 		}
 
 		@Override
@@ -459,6 +430,36 @@ public class JSweetCommandLineLauncher {
 
 			try {
 
+				String[] included = jsapArgs.getStringArray("includes");
+				String[] excluded = jsapArgs.getStringArray("excludes");
+
+				List<Pattern> includedPatterns = included == null ? null
+						: Arrays.asList(included).stream().map(s -> toPattern(s)).collect(Collectors.toList());
+				List<Pattern> excludedPatterns = excluded == null ? null
+						: Arrays.asList(excluded).stream().map(s -> toPattern(s)).collect(Collectors.toList());
+
+				logger.info("included: " + includedPatterns);
+				logger.info("excluded: " + excludedPatterns);
+
+				javaInputFiles = new LinkedList<File>();
+
+				for (File inputDir : inputDirList) {
+					Util.addFiles(f -> {
+						String path = inputDir.toURI().relativize(f.toURI()).getPath();
+						if (path.endsWith(".java")) {
+							if (includedPatterns == null || includedPatterns.isEmpty() || includedPatterns != null
+									&& includedPatterns.stream().anyMatch(p -> p.matcher(path).matches())) {
+								if (excludedPatterns != null && !excludedPatterns.isEmpty()
+										&& excludedPatterns.stream().anyMatch(p -> p.matcher(path).matches())) {
+									return false;
+								}
+								return true;
+							}
+						}
+						return false;
+					}, inputDir, javaInputFiles);
+				}
+				
 				File tsOutputDir = jsapArgs.getFile("tsout");
 				tsOutputDir.mkdirs();
 				logger.info("ts output dir: " + tsOutputDir);
