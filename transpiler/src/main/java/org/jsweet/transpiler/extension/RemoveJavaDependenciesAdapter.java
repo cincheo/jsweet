@@ -26,6 +26,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.lang.ref.WeakReference;
+import java.nio.charset.Charset;
 import java.text.Collator;
 import java.util.AbstractList;
 import java.util.AbstractMap;
@@ -34,6 +35,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Deque;
+import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.EventObject;
 import java.util.GregorianCalendar;
@@ -112,6 +114,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		extTypesMapping.put(LinkedList.class.getName(), "Array");
 		extTypesMapping.put(Collection.class.getName(), "Array");
 		extTypesMapping.put(Set.class.getName(), "Array");
+		extTypesMapping.put(EnumSet.class.getName(), "Array");
 		extTypesMapping.put(Deque.class.getName(), "Array");
 		extTypesMapping.put(Queue.class.getName(), "Array");
 		extTypesMapping.put(Stack.class.getName(), "Array");
@@ -139,6 +142,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		extTypesMapping.put(GregorianCalendar.class.getName(), "Date");
 		extTypesMapping.put(TimeZone.class.getName(), "string");
 		extTypesMapping.put(Locale.class.getName(), "string");
+		extTypesMapping.put(Charset.class.getName(), "string");
 		extTypesMapping.put(Reader.class.getName(), "{ str: string, cursor: number }");
 		extTypesMapping.put(StringReader.class.getName(), "{ str: string, cursor: number }");
 		extTypesMapping.put(InputStream.class.getName(), "{ str: string, cursor: number }");
@@ -234,6 +238,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			case "java.util.Stack":
 			case "java.util.Vector":
 			case "java.util.Set":
+			case "java.util.EnumSet":
 			case "java.util.HashSet":
 			case "java.util.TreeSet":
 				if (substituteMethodInvocationOnArray(invocation, targetMethodName, targetClassName, delegate)) {
@@ -410,6 +415,13 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 				case "getInstance":
 					printMacroName(targetMethodName);
 					print("((o1, o2) => o1.toString().localeCompare(o2.toString()))");
+					return true;
+				}
+				break;
+			case "java.nio.charset.Charset":
+				switch (targetMethodName) {
+				case "forName":
+					print(invocation.getArgument(0));
 					return true;
 				}
 				break;
@@ -1024,6 +1036,11 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			printMacroName(targetMethodName);
 			print("('['+");
 			print(invocation.getTargetExpression(), delegate).print(".join(', ')+']')");
+			return true;
+		case "allOf":
+			print("function() { " + Java2TypeScriptTranslator.VAR_DECL_KEYWORD + " result: number[] = []; for("
+					+ Java2TypeScriptTranslator.VAR_DECL_KEYWORD + " val in ").print(invocation.getArgument(0))
+							.print(") { if(!isNaN(<any>val)) { result.push(parseInt(val,10)); } } return result; }()");
 			return true;
 		}
 
