@@ -90,11 +90,10 @@ public class JSweetCommandLineLauncher {
 
 			JSweetConfig.initClassPath(jsapArgs.getString("jdkHome"));
 
-			JSweetTranspilationTask launcher = new JSweetTranspilationTask(jsapArgs);
+			JSweetTranspilationTask transpilationTask = new JSweetTranspilationTask(jsapArgs);
+			transpilationTask.run();
 			if (jsapArgs.getBoolean("watch")) {
-				new JSweetFileWatcher(new JSweetTranspilationTask(jsapArgs)).execute();
-			} else {
-				launcher.run();
+				new JSweetFileWatcher(transpilationTask).execute();
 			}
 
 		} catch (Throwable t) {
@@ -459,7 +458,7 @@ public class JSweetCommandLineLauncher {
 						return false;
 					}, inputDir, javaInputFiles);
 				}
-				
+
 				File tsOutputDir = jsapArgs.getFile("tsout");
 				tsOutputDir.mkdirs();
 				logger.info("ts output dir: " + tsOutputDir);
