@@ -1304,7 +1304,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			print(" {").println().startIndent();
 		}
 
-		if (getScope().innerClassNotStatic && !getScope().interfaceScope && !getScope().enumScope) {
+		if (getScope().innerClassNotStatic && !getScope().interfaceScope && !getScope().enumScope
+				&& !getScope().enumWrapperClassScope) {
 			printIndent().print("public " + PARENT_CLASS_FIELD_NAME + ": any;").println();
 		}
 
@@ -2040,16 +2041,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			getScope().eraseVariableTypes = true;
 		}
 		boolean paramPrinted = false;
-		if (getScope().innerClassNotStatic && methodDecl.sym.isConstructor()) {
+		if (getScope().innerClassNotStatic && methodDecl.sym.isConstructor() && !getScope().enumWrapperClassScope) {
 			print(PARENT_CLASS_FIELD_NAME + ": any, ");
 			paramPrinted = true;
 		}
 		if (getScope().constructor && getScope().enumWrapperClassScope) {
 			print((isAnonymousClass() ? "" : "protected ") + ENUM_WRAPPER_CLASS_ORDINAL + " : number, ");
-			print((isAnonymousClass() ? "" : "protected ") + ENUM_WRAPPER_CLASS_NAME + " : string");
-			if (!methodDecl.getParameters().isEmpty()) {
-				print(", ");
-			}
+			print((isAnonymousClass() ? "" : "protected ") + ENUM_WRAPPER_CLASS_NAME + " : string, ");
+			paramPrinted = true;
 		}
 		int i = 0;
 		for (JCVariableDecl param : methodDecl.getParameters()) {
@@ -2312,7 +2311,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	protected void printInstanceInitialization(JCClassDecl clazz, MethodSymbol method) {
 		if (method == null || method.isConstructor()) {
 			getScope().hasDeclaredConstructor = true;
-			if (getScope().innerClassNotStatic) {
+			if (getScope().innerClassNotStatic && !getScope().enumWrapperClassScope) {
 				printIndent().print("this." + PARENT_CLASS_FIELD_NAME + " = " + PARENT_CLASS_FIELD_NAME + ";")
 						.println();
 			}
