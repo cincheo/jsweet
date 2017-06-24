@@ -68,6 +68,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
 import org.apache.commons.lang3.StringUtils;
@@ -1256,6 +1257,12 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 
 	@Override
 	public boolean substituteVariableAccess(VariableAccessElement variableAccess) {
+		if (variableAccess.getTypeAsElement().getKind() == ElementKind.ENUM
+				&& "this".equals(variableAccess.getVariableName())) {
+			print("this.").print(Java2TypeScriptTranslator.ENUM_WRAPPER_CLASS_ORDINAL);
+			return true;
+		}
+
 		if (variableAccess.getTargetExpression() != null) {
 			JCFieldAccess fieldAccess = (JCFieldAccess) ((VariableAccessElementSupport) variableAccess).getTree();
 			String targetFieldName = variableAccess.getVariableName();

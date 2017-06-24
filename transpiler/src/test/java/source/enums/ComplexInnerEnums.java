@@ -6,12 +6,17 @@ public abstract class ComplexInnerEnums {
 		ALL, VERTICAL, HORIZONTAL;
 
 		public boolean horizontal() {
-			return this.ordinal() == ALL.ordinal() || this.ordinal() == HORIZONTAL.ordinal();
+			return this.ordinal() == ALL.ordinal() || this.ordinal() == Axis.HORIZONTAL.ordinal();
 		}
 
 		public boolean vertical() {
-			return this.ordinal() == ALL.ordinal() || this.ordinal() == Axis.VERTICAL.ordinal();
+			return this == ALL || this == Axis.VERTICAL;
 		}
+
+		public boolean other() {
+			return !this.vertical() && !horizontal();
+		}
+
 	}
 
 	private String icon;
