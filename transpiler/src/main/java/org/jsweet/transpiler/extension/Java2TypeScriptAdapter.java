@@ -1258,7 +1258,9 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 	@Override
 	public boolean substituteVariableAccess(VariableAccessElement variableAccess) {
 		if (variableAccess.getTypeAsElement().getKind() == ElementKind.ENUM
-				&& "this".equals(variableAccess.getVariableName())) {
+				&& "this".equals(variableAccess.getVariableName())
+				&& !(getParentElement() instanceof VariableAccessElement
+						|| getParentElement() instanceof MethodInvocationElement)) {
 			print("this.").print(Java2TypeScriptTranslator.ENUM_WRAPPER_CLASS_ORDINAL);
 			return true;
 		}
