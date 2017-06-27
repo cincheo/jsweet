@@ -1498,23 +1498,23 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (classdecl.extending != null && !getScope().removedSuperclass
 						&& !context.isInterface(classdecl.extending.type.tsym)) {
 					printIndent().print("super(");
+					boolean hasArg = false;
 					if (getScope().innerClassNotStatic) {
 						TypeSymbol s = classdecl.extending.type.tsym;
-						boolean hasArg = false;
 						if (s.getEnclosingElement() instanceof ClassSymbol && !s.isStatic()) {
 							print(PARENT_CLASS_FIELD_NAME);
 							hasArg = true;
 						}
-						if (anonymousClassIndex != -1) {
-							for (int i = 0; i < getScope(1).anonymousClassesConstructors.get(anonymousClassIndex).args
-									.length(); i++) {
-								if (hasArg) {
-									print(", ");
-								} else {
-									hasArg = true;
-								}
-								print("__arg" + i);
+					}
+					if (anonymousClassIndex != -1) {
+						for (int i = 0; i < getScope(1).anonymousClassesConstructors.get(anonymousClassIndex).args
+								.length(); i++) {
+							if (hasArg) {
+								print(", ");
+							} else {
+								hasArg = true;
 							}
+							print("__arg" + i);
 						}
 					}
 					print(");").println();
@@ -4328,9 +4328,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	@Override
 	public void visitLabelled(JCLabeledStatement labelledStatement) {
 		JCTree parent = getParent(JCMethodDecl.class);
-		if(parent==null) {
+		if (parent == null) {
 			parent = getParent(JCBlock.class);
-			while(parent!=null && getParent(JCBlock.class, parent)!=null) {
+			while (parent != null && getParent(JCBlock.class, parent) != null) {
 				parent = getParent(JCBlock.class, parent);
 			}
 		}

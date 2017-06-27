@@ -1463,8 +1463,9 @@ public class JSweetContext extends Context {
 					// no variables in maps
 					return true;
 				}
-				if (def instanceof JCMethodDecl && !((JCMethodDecl) def).sym.isConstructor()) {
-					// no regular methods in maps
+				if (def instanceof JCMethodDecl && !(((JCMethodDecl) def).sym.isConstructor()
+						&& ((JCMethodDecl) def).sym.getParameters().isEmpty())) {
+					// no regular methods or non-empty constructors in maps
 					return true;
 				}
 				if (def instanceof JCBlock) {

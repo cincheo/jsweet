@@ -21,20 +21,23 @@ import static jsweet.util.Lang.$export;
 import def.js.Array;
 
 class PassingArgument {
-    public static Object create(String text1) {
-    	String text2 = "abc";
-        return new Object() {
-            public String toString() {
-                return text1 + text2;
-            }
-        };
-    }
+	public static Object create(String text1) {
+		String text2 = "abc";
+		return new Object() {
+			public String toString() {
+				return text1 + text2;
+			}
+		};
+	}
 }
-interface Predicate{    
-    void work();    
-    public static final Predicate TRUE = new Predicate() {
-        public void work() {}
-    };    
+
+interface Predicate {
+	void work();
+
+	public static final Predicate TRUE = new Predicate() {
+		public void work() {
+		}
+	};
 }
 
 class AClass<T> {
@@ -164,3 +167,44 @@ public class AnonymousClass<E> {
 
 }
 
+abstract class Executor {
+
+	public Executor(Class operationClass, Class firstGeomClass, Class secondGeomClass, boolean canInvert) {
+	}
+
+	public static final Executor POINT_LINE = new Executor(String.class, String.class, Integer.class, true) {
+		void m() {
+
+		}
+	};
+
+	public void test() {
+		Executor POINT_LINE = new Executor(String.class, String.class, Integer.class, true) {
+			void m() {
+
+			}
+		};
+	}
+
+	public static void testStatic() {
+		Executor POINT_LINE = new Executor(String.class, String.class, Integer.class, true) {
+			void m() {
+
+			}
+		};
+	}
+
+	public static final Executor POINT_LINE2 = new Executor(String.class, String.class, Integer.class, true) {
+	};
+
+	public void test2() {
+		Executor POINT_LINE = new Executor(String.class, String.class, Integer.class, true) {
+		};
+	}
+
+	public static void testStatic2() {
+		Executor POINT_LINE = new Executor(String.class, String.class, Integer.class, true) {
+		};
+	}
+
+}
