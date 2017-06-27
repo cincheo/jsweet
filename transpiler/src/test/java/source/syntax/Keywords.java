@@ -47,6 +47,8 @@ public class Keywords {
 	}
 
 	void var(String s, int i) {
+		int eval = 4;
+		eval = eval + i;
 	}
 
 	void f(String in) {
