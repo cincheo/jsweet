@@ -25,6 +25,7 @@ import def.test.Globals;
 import def.test.JQuery;
 import def.test2.ExtendedJQuery;
 import source.typing.ArraysOfLambdas;
+import source.typing.ClassType;
 import source.typing.ClassTypeAsFunction;
 import source.typing.ClassTypeAsTypeOf;
 import source.typing.CustomLambdas;
@@ -80,6 +81,13 @@ public class TypingTests extends AbstractTest {
 		}, getSourceFile(ClassTypeAsFunction.class));
 	}
 
+	@Test
+	public void testClassType() {
+		transpile(ModuleKind.none, logHandler -> {
+			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+		}, getSourceFile(ClassType.class));
+	}
+	
 	@Test
 	public void testArraysOfLambdas() {
 		transpile(ModuleKind.none, logHandler -> {

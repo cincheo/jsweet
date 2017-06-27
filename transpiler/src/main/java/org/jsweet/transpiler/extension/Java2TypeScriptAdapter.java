@@ -199,7 +199,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 		addTypeMapping("byte", "number");
 		addTypeMapping("short", "number");
 		addTypeMapping("char", "string");
-		addTypeMapping("Class", "Function");
+		addTypeMapping("Class", "any");
 		addTypeMapping(LANG_PACKAGE + ".Object", "Object");
 		addTypeMapping(LANG_PACKAGE + ".Boolean", "boolean");
 		addTypeMapping(LANG_PACKAGE + ".String", "string");

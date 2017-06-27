@@ -104,7 +104,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 	}
 
 	private void init() {
-		addTypeMapping(Class.class.getName(), "Function<>");
+		addTypeMapping(Class.class.getName(), "any");
 		context.getLangTypeMappings().put(RuntimeException.class.getName(), "Error");
 		context.getBaseThrowables().add(RuntimeException.class.getName());
 
