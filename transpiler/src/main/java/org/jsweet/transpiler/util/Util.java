@@ -417,8 +417,18 @@ public class Util {
 			}
 		}
 		if (typeSymbol instanceof ClassSymbol) {
-			return findFirstDeclarationInClassAndSuperClasses(((ClassSymbol) typeSymbol).getSuperclass().tsym, name,
+			Symbol s = findFirstDeclarationInClassAndSuperClasses(((ClassSymbol) typeSymbol).getSuperclass().tsym, name,
 					kind);
+			if (s == null && kind == ElementKind.METHOD) {
+				// also looks up in interfaces for methods
+				for (Type type : ((ClassSymbol) typeSymbol).getInterfaces()) {
+					s = findFirstDeclarationInClassAndSuperClasses(type.tsym, name, kind);
+					if (s != null) {
+						break;
+					}
+				}
+			}
+			return s;
 		} else {
 			return null;
 		}

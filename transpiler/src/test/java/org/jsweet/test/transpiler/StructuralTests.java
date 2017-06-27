@@ -49,6 +49,7 @@ import source.structural.InheritanceOrderInSameFile;
 import source.structural.InnerClass;
 import source.structural.InnerClassNotStatic;
 import source.structural.InnerClassUse;
+import source.structural.InnerClassWithAbstractClassAndInterface;
 import source.structural.InstanceOf;
 import source.structural.InstanceofForInterfaces;
 import source.structural.InterfaceInheritance;
@@ -133,6 +134,13 @@ public class StructuralTests extends AbstractTest {
 	}
 
 	@Test
+	public void testInnerClassWithAbstractClassAndInterface() {
+		transpile(logHandler -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(InnerClassWithAbstractClassAndInterface.class));
+	}
+
+	@Test
 	public void testInnerClassUse() {
 		transpile(TestTranspilationHandler::assertNoProblems, getSourceFile(InnerClass.class),
 				getSourceFile(Wrapping.class), getSourceFile(InnerClassUse.class));
@@ -181,7 +189,7 @@ public class StructuralTests extends AbstractTest {
 			logHandler.assertNoProblems();
 		}, getSourceFile(InheritanceOrderInSameFile.class));
 	}
-	
+
 	@Test
 	public void testWrongConstructsInInterfaces() {
 		transpile(logHandler -> {
