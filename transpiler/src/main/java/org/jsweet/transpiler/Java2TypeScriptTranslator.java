@@ -2325,7 +2325,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					JCBlock block = (JCBlock) member;
 					if (!block.isStatic()) {
 						printIndent().print("(() => {").startIndent().println();
+						stack.push(block);
 						printBlockStatements(block.stats);
+						stack.pop();
 						endIndent().printIndent().print("})();").println();
 					}
 				}
@@ -4325,7 +4327,35 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	@Override
 	public void visitLabelled(JCLabeledStatement labelledStatement) {
-		print(labelledStatement.label.toString()).print(": ");
+		JCTree parent = getParent(JCMethodDecl.class);
+		if(parent==null) {
+			parent = getParent(JCBlock.class);
+			while(parent!=null && getParent(JCBlock.class, parent)!=null) {
+				parent = getParent(JCBlock.class, parent);
+			}
+		}
+		boolean[] used = { false };
+		new TreeScanner() {
+			public void visitBreak(JCBreak b) {
+				if (b.label != null && labelledStatement.label.equals(b.label)) {
+					used[0] = true;
+				}
+			}
+
+			public void visitContinue(JCContinue c) {
+				if (c.label != null && labelledStatement.label.equals(c.label)) {
+					used[0] = true;
+				}
+			}
+		}.scan(parent);
+		if (!used[0]) {
+			print("/*");
+		}
+		print(labelledStatement.label.toString()).print(":");
+		if (!used[0]) {
+			print("*/");
+		}
+		print(" ");
 		print(labelledStatement.body);
 	}
 

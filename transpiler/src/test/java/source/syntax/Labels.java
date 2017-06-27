@@ -19,13 +19,67 @@ package source.syntax;
 public class Labels {
 
 	void m() {
-		a: for (int i = 0; i < 100; i++) {
+		int i = 0;
+		a: for (i = 0; i < 100; i++) {
 			if (i == 50) {
 				break a;
 			} else {
 				continue a;
 			}
 		}
-		System.out.println("a");
+		assert i == 50;
+		System.out.println(i);
 	}
+	
+	void unused() {
+		b: 
+			for(int i=0;i<10;i++) {
+				
+			}
+	}
+
+	{
+		c: 
+			for(int i=0;i<10;i++) {
+				
+			}
+	}
+	
+	{
+		int i = 0;
+		a: for (i = 0; i < 100; i++) {
+			if (i == 50) {
+				break a;
+			} else {
+				continue a;
+			}
+		}
+		assert i == 50;
+		System.out.println(i);
+	}
+
+	static {
+		c: 
+			for(int i=0;i<10;i++) {
+				
+			}
+	}
+	
+	static {
+		int i = 0;
+		a: for (i = 0; i < 100; i++) {
+			if (i == 50) {
+				break a;
+			} else {
+				continue a;
+			}
+		}
+		assert i == 50;
+		System.out.println(i);
+	}
+	
+	public static void main(String[] args) {
+		new Labels().m();
+	}
+
 }

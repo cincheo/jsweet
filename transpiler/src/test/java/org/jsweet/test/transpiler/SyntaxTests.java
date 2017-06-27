@@ -120,7 +120,7 @@ public class SyntaxTests extends AbstractTest {
 
 	@Test
 	public void testLabels() {
-		transpile((logHandler) -> {
+		eval((logHandler, r) -> {
 			logHandler.assertNoProblems();
 		}, getSourceFile(Labels.class));
 	}
