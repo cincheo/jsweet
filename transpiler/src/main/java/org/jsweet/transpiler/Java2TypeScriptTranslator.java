@@ -2259,7 +2259,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (!getScope().innerClass) {
 					if (!getScope().interfaceScope) {
 						if (!(inOverload && overload.coreMethod.equals(methodDecl) || getScope().hasInnerClass)) {
-							print("private ");
+							print("/*private*/ ");
 						}
 					} else {
 						if (!(inOverload && overload.coreMethod.equals(methodDecl))) {

@@ -207,4 +207,14 @@ abstract class Executor {
 		};
 	}
 
+    public static final Object TRIANGLE_BBOX = new Object(){
+        protected void execute() {
+             project("");
+        }
+    };
+
+    private static String project(String str){
+        return "test";
+    }	
+	
 }
