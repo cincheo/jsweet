@@ -26,6 +26,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.text.Collator;
 import java.util.AbstractList;
@@ -148,6 +149,9 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		extTypesMapping.put(InputStream.class.getName(), "{ str: string, cursor: number }");
 		extTypesMapping.put(InputStreamReader.class.getName(), "{ str: string, cursor: number }");
 		extTypesMapping.put(BufferedReader.class.getName(), "{ str: string, cursor: number }");
+
+		extTypesMapping.put(Method.class.getName(), "{ owner: any, name: string, fn : Function }");
+
 		addTypeMappings(extTypesMapping);
 		addTypeMapping(
 				(typeTree,
@@ -520,6 +524,33 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 					printMacroName(targetMethodName);
 					print("(").print(invocation.getTargetExpression()).print(" === <any>'__erasedPrimitiveType__'")
 							.print(")");
+					return true;
+				case "getMethods":
+				case "getDeclaredMethods":
+					printMacroName(targetMethodName);
+					print("(c => { let m = []; for (let p in c.prototype) if(c.prototype.hasOwnProperty(p) && typeof c.prototype[p] == 'function') m.push({owner:c,name:p,fn:c.prototype[p]}); return m; })(")
+							.print(invocation.getTargetExpression()).print(")");
+					return true;
+
+				}
+
+			case "java.lang.reflect.Method":
+				switch (targetMethodName) {
+				case "getName":
+					printMacroName(targetMethodName);
+					print(invocation.getTargetExpression()).print(".name");
+					return true;
+				case "invoke":
+					printMacroName(targetMethodName);
+					print(invocation.getTargetExpression()).print(".fn.apply(").print(invocation.getArgument(0));
+					if (invocation.getArgumentCount() > 1) {
+						print(", [").printArgList(invocation.getArgumentTail()).print("]");
+					}
+					print(")");
+					return true;
+				case "getDeclaringClass":
+					printMacroName(targetMethodName);
+					print(invocation.getTargetExpression()).print(".owner");
 					return true;
 				}
 
