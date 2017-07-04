@@ -533,7 +533,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 					return true;
 				}
 				break;
-				
+
 			case "java.lang.reflect.Method":
 				switch (targetMethodName) {
 				case "getName":
@@ -916,7 +916,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			case "java.util.Set":
 			case "java.util.HashSet":
 			case "java.util.TreeSet":
-				print("((s, e) => { if(s.indexOf(e)==-1) s.push(e); })(");
+				print("((s, e) => { if(s.indexOf(e)==-1) { s.push(e); return true; } else { return false; } })(");
 				print(invocation.getTargetExpression(), delegate).print(", ").print(invocation.getArgument(0))
 						.print(")");
 				break;
@@ -925,8 +925,9 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 					print(invocation.getTargetExpression(), delegate).print(".splice(").print(invocation.getArgument(0))
 							.print(", 0, ").print(invocation.getArgument(1)).print(")");
 				} else {
+					print("(");
 					print(invocation.getTargetExpression(), delegate).print(".push(")
-							.printArgList(invocation.getArguments()).print(")");
+							.printArgList(invocation.getArguments()).print(")>0)");
 				}
 			}
 			return true;
@@ -1072,6 +1073,11 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			print("function() { " + Java2TypeScriptTranslator.VAR_DECL_KEYWORD + " result: number[] = []; for("
 					+ Java2TypeScriptTranslator.VAR_DECL_KEYWORD + " val in ").print(invocation.getArgument(0))
 							.print(") { if(!isNaN(<any>val)) { result.push(parseInt(val,10)); } } return result; }()");
+			return true;
+		case "equals":
+			printMacroName(targetMethodName);
+			print("((a1, a2) => { if(a1==null && a2==null) return true; if(a1==null || a2==null) return false; if(a1.length != a2.length) return false; for(let i = 0; i < a1.length; i++) { if(<any>a1[i] != <any>a2[i]) return false; } return true; })(");
+			print(invocation.getTargetExpression(), delegate).print(", ").printArgList(invocation.getArguments()).print(")");
 			return true;
 		}
 

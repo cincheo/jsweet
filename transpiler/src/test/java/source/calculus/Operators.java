@@ -1,10 +1,27 @@
 package source.calculus;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+
 public class Operators {
 
+	static boolean expr1 =false;
+	static boolean expr2 =false;
+	
+	static boolean expr1() {
+		expr1 = true;
+		return expr1;
+	}
+
+	static boolean expr2() {
+		expr2 = true;
+		return expr2;
+	}
+	
 	public static void main(String[] args) {
 		boolean b1 = true;
-		boolean b2 = false;
+		boolean b2 = !b1;
 
 		boolean b3 = b1 | b2;
 		assert b3;
@@ -25,11 +42,40 @@ public class Operators {
 		assert !xor(true, true);
 
 		testWithObjects();
+		
+		Operators op = new Operators();
+		assert op.m(Arrays.asList("a", "b"));
+		
+		assert op.c.size() == 2;
+		assert op.c.equals(Arrays.asList("a", "b"));
+		
+		assert expr1() || expr2();
+		assert expr1;
+		assert !expr2;
+		assert expr1() | expr2();
+		assert expr1;
+		assert expr2;
+		
+	}
+
+	Collection<String> c = new ArrayList<String>();
+	
+	public boolean add(String e) {
+		return c.add(e);
+		//return true;
+	}
+
+	public boolean m(Collection<String> c) {
+		boolean changed = false;
+		for (String e : c) {
+			changed |= add(e);
+		}
+		return changed;
 	}
 
 	public static void testWithObjects() {
 		Boolean b1 = true;
-		Boolean b2 = false;
+		Boolean b2 = !b1;
 
 		Boolean b3 = b1 | b2;
 		assert b3;
@@ -47,8 +93,8 @@ public class Operators {
 		return x ^ y;
 	}
 
-    public static boolean work(int s1, int s2) {
-        boolean b =  s1==-1 ^ s2==-1 ;
-        return b;
-    }	
+	public static boolean work(int s1, int s2) {
+		boolean b = s1 == -1 ^ s2 == -1;
+		return b;
+	}
 }

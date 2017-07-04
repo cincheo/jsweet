@@ -3652,6 +3652,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if ("^".equals(op)) {
 					forceParens = true;
 				}
+				if ("|".equals(op) || "&".equals(op)) {
+					print("((lhs, rhs) => lhs " + op + op + " rhs)(").print(binary.lhs).print(", ").print(binary.rhs)
+							.print(")");
+					return;
+				}
 			}
 			boolean closeParen = false;
 			boolean truncate = false;
@@ -3824,10 +3829,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		String op = assignOp.operator.name.toString();
 		if (context.types.isSameType(context.symtab.booleanType, context.types.unboxedTypeOrType(assignOp.lhs.type))) {
 			if ("|".equals(op)) {
-				print(" = ").print(assignOp.lhs).print(" || ").print(assignOp.rhs);
+				print(" = ").print(assignOp.rhs).print(" || ").print(assignOp.lhs);
 				return;
 			} else if ("&".equals(op)) {
-				print(" = ").print(assignOp.lhs).print(" && ").print(assignOp.rhs);
+				print(" = ").print(assignOp.rhs).print(" && ").print(assignOp.lhs);
 				return;
 			}
 		}
