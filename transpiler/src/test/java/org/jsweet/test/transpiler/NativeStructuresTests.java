@@ -3,11 +3,13 @@ package org.jsweet.test.transpiler;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import source.nativestructures.Collections;
 import source.nativestructures.Dates;
 import source.nativestructures.Exceptions;
+import source.nativestructures.ExtendsJDK;
 import source.nativestructures.Input;
 import source.nativestructures.Maps;
 import source.nativestructures.NativeArrays;
@@ -145,5 +147,15 @@ public class NativeStructuresTests extends AbstractTest {
 			assertEquals(">,0,ABC,abc,abcd,AB,b", result.get("trace"));
 		}, getSourceFile(Strings.class));
 	}
+	
+	@Ignore
+	@Test
+	public void testExtendsJDK() {
+		// TODO: fix extension with non-static inner classes
+		eval((logHandler, result) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(ExtendsJDK.class));
+	}
+
 
 }

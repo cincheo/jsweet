@@ -394,7 +394,7 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	 *            the assigned expression
 	 * @return true if the expression what subtituted
 	 */
-	abstract protected boolean substituteAssignedExpression(Type assignedType, JCExpression expression);
+	abstract public boolean substituteAssignedExpression(Type assignedType, JCExpression expression);
 
 	/**
 	 * Prints an invocation argument list, with type assignment.
@@ -422,7 +422,7 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 
 	public abstract AbstractTreePrinter printConstructorArgList(JCNewClass newClass, boolean localClass);
 
-	protected abstract AbstractTreePrinter substituteAndPrintType(JCTree typeTree);
+	public abstract AbstractTreePrinter substituteAndPrintType(JCTree typeTree);
 
 	/**
 	 * Prints a comma-separated list of variable names (no types).
