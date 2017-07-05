@@ -91,6 +91,9 @@ public class CalculusTests extends AbstractTest {
 			Assert.assertEquals(Math.abs(-1) + Math.abs(-1), (int) r.get("2"), 0.00001);
 			Assert.assertEquals(Math.cbrt(2), (double) r.get("3"), 0.00001);
 			Assert.assertEquals(Math.cbrt(2), (double) r.get("4"), 0.00001);
+			Assert.assertEquals(Math.cbrt(2), (double) r.get("4"), 0.00001);
+			Assert.assertTrue(Math.ulp(956.294) == 1.1368683772161603E-13);
+			Assert.assertTrue(Math.ulp(123.1) == 1.4210854715202004E-14);
 		}, getSourceFile(MathApi.class));
 	}
 

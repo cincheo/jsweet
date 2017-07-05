@@ -553,6 +553,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 					print(invocation.getTargetExpression()).print(".owner");
 					return true;
 				}
+				break;
 
 			case "java.lang.reflect.Array":
 				switch (targetMethodName) {
@@ -562,6 +563,16 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 						print("new Array<any>(").print(invocation.getArgument(1)).print(")");
 						return true;
 					}
+				}
+				break;
+
+			case "java.lang.Math":
+				switch (targetMethodName) {
+				case "ulp":
+					printMacroName(targetMethodName);
+					print("((x) => { let buffer = new ArrayBuffer(8); let dataView = new DataView(buffer); dataView.setFloat64(0, x); let first = dataView.getUint32(0); let second = dataView.getUint32(4); let rawExponent = first & 0x7ff00000; if (rawExponent == 0x7ff00000) { dataView.setUint32(0,first & 0x7fffffff); } else if (rawExponent == 0) { dataView.setUint32(4,1); dataView.setUint32(0,0); } else if (rawExponent >= (52 << 20) + 0x00100000) { dataView.setUint32(0,rawExponent - (52 << 20)); dataView.setUint32(4,0); } else if (rawExponent >= (33 << 20)) { dataView.setUint32(0,1 << ((rawExponent - (33 << 20))  >>> 20 )); dataView.setUint32(4,0); } else { dataView.setUint32(4,1 << ((rawExponent - 0x00100000)  >>> 20)); dataView.setUint32(0,0); } return dataView.getFloat64(0); })(")
+							.printArgList(invocation.getArguments()).print(")");
+					return true;
 				}
 			}
 
@@ -1077,7 +1088,8 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		case "equals":
 			printMacroName(targetMethodName);
 			print("((a1, a2) => { if(a1==null && a2==null) return true; if(a1==null || a2==null) return false; if(a1.length != a2.length) return false; for(let i = 0; i < a1.length; i++) { if(<any>a1[i] != <any>a2[i]) return false; } return true; })(");
-			print(invocation.getTargetExpression(), delegate).print(", ").printArgList(invocation.getArguments()).print(")");
+			print(invocation.getTargetExpression(), delegate).print(", ").printArgList(invocation.getArguments())
+					.print(")");
 			return true;
 		}
 
