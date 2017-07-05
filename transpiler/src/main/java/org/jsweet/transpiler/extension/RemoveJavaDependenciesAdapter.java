@@ -214,7 +214,8 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			delegate = true;
 		}
 
-		if (targetClassName != null && targetExpression != null) {
+		if (targetClassName != null
+				&& (targetExpression != null || invocation.getMethod().getModifiers().contains(Modifier.STATIC))) {
 			switch (targetClassName) {
 
 			case "java.lang.Float":
@@ -571,6 +572,12 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 				case "ulp":
 					printMacroName(targetMethodName);
 					print("((x) => { let buffer = new ArrayBuffer(8); let dataView = new DataView(buffer); dataView.setFloat64(0, x); let first = dataView.getUint32(0); let second = dataView.getUint32(4); let rawExponent = first & 0x7ff00000; if (rawExponent == 0x7ff00000) { dataView.setUint32(0,first & 0x7fffffff); } else if (rawExponent == 0) { dataView.setUint32(4,1); dataView.setUint32(0,0); } else if (rawExponent >= (52 << 20) + 0x00100000) { dataView.setUint32(0,rawExponent - (52 << 20)); dataView.setUint32(4,0); } else if (rawExponent >= (33 << 20)) { dataView.setUint32(0,1 << ((rawExponent - (33 << 20))  >>> 20 )); dataView.setUint32(4,0); } else { dataView.setUint32(4,1 << ((rawExponent - 0x00100000)  >>> 20)); dataView.setUint32(0,0); } return dataView.getFloat64(0); })(")
+							.printArgList(invocation.getArguments()).print(")");
+					return true;
+				case "IEEEremainder":
+					printMacroName(targetMethodName);
+					// credits: Ray Cromwell
+					print("((f1, f2) => { let r = Math.abs(f1 % f2); if (isNaN(r) || r == f2 || r <= Math.abs(f2) / 2.0) { return r; } else { return (f1 > 0 ? 1 : -1) * (r - f2); } })(")
 							.printArgList(invocation.getArguments()).print(")");
 					return true;
 				}
