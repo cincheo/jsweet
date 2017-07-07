@@ -1162,7 +1162,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				report(classdecl, JSweetProblem.GLOBALS_CLASS_CANNOT_BE_SUBCLASSED);
 				return;
 			}
-			printDocComment(classdecl, false);
+			if (!(classdecl.getKind() == Kind.ENUM && scope.size() > 1 && getScope(1).isComplexEnum)) {
+				printDocComment(classdecl, false);
+			} else {
+				print("/** @ignore */").println().printIndent();
+			}
 			print(classdecl.mods);
 			if (!isTopLevelScope() || context.useModules || isAnonymousClass() || isInnerClass() || isLocalClass()) {
 				print("export ");

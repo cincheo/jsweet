@@ -25,7 +25,7 @@ public class ComplexEnums {
 
 		$export("trace", ">" + trace.join(","));
 	}
-	
+
 	static class A {
 		static int i = 2;
 	}
@@ -53,6 +53,9 @@ public class ComplexEnums {
 	}
 }
 
+/** 
+ * JavaDoc test 
+ */
 enum MyComplexEnum {
 	FREE_RATIO(null), VIEW_3D_RATIO(null), RATIO_4_3(4f / 3), RATIO_3_2(1.5f), RATIO_16_9(16f / 9), RATIO_2_1(
 			2f / 1f), SQUARE_RATIO(1f);

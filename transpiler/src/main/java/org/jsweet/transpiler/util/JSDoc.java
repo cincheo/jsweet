@@ -178,6 +178,14 @@ public class JSDoc {
 					commentText = replaceLinks(context, commentText);
 					List<String> commentLines = new ArrayList<>(Arrays.asList(commentText.split("\n")));
 					applyForMethod(context, mainConstructor, commentLines);
+					JCClassDecl clazz = (JCClassDecl) element;
+					if (clazz.sym.isEnum()) {
+						commentLines.add(" @enum");
+					}
+					if (clazz.extending != null) {
+						commentLines
+								.add(" @extends " + getMappedDocType(context, clazz.extending, clazz.extending.type));
+					}
 					return String.join("\n", commentLines);
 				}
 			}
@@ -203,6 +211,7 @@ public class JSDoc {
 			if (clazz.extending != null) {
 				commentLines.add(" @extends " + getMappedDocType(context, clazz.extending, clazz.extending.type));
 			}
+			commentLines.add(" @class");
 		}
 
 		return String.join("\n", commentLines);
