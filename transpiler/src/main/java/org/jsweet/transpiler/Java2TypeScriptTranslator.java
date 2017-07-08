@@ -491,9 +491,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						if (qualified.sym != null) {
 							// regular import case (qualified.sym is a package)
 							if (context.hasAnnotationType(qualified.sym, JSweetConfig.ANNOTATION_MODULE)) {
+								String targetName = createImportAliasFromFieldAccess (qualified);
 								String actualName = context.getAnnotationValue(qualified.sym,
 										JSweetConfig.ANNOTATION_MODULE, String.class, null);
-								useModule(true, null, importDecl, qualified.name.toString(), actualName,
+								useModule(true, null, importDecl, targetName, actualName,
 										((PackageSymbol) qualified.sym));
 							}
 						} else {
@@ -506,10 +507,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 											if (qualified.name.equals(importedMember.getSimpleName())) {
 												if (context.hasAnnotationType(importedMember,
 														JSweetConfig.ANNOTATION_MODULE)) {
+													String targetName = createImportAliasFromSymbol (importedMember);
 													String actualName = context.getAnnotationValue(importedMember,
 															JSweetConfig.ANNOTATION_MODULE, String.class, null);
 													useModule(true, null, importDecl,
-															importedMember.getSimpleName().toString(), actualName,
+															targetName, actualName,
 															importedMember);
 													break;
 												}
@@ -746,7 +748,39 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 		globalModule = false;
 
+	}	
+	
+	
+	private String createImportAliasFromFieldAccess (JCFieldAccess access) {
+		String name = extractNameFromAnnotatedSymbol (access.sym);
+		if (name != null) {
+			return name;
+		} else {
+			return access.name.toString ();
+		}
 	}
+
+
+	private String createImportAliasFromSymbol (Symbol symbol) {
+		String name = extractNameFromAnnotatedSymbol (symbol);
+		if (name != null) {
+			return name;
+		} else {
+			return symbol.getSimpleName ().toString ();
+		}
+	}
+
+
+	private String extractNameFromAnnotatedSymbol (Symbol symbol) {
+		if (context.hasAnnotationType (symbol, JSweetConfig.ANNOTATION_NAME)) {
+			return context.getAnnotationValue (
+					symbol, JSweetConfig.ANNOTATION_NAME,
+					String.class, null);
+		} else {
+			return null;
+		}
+	}
+	
 
 	private void printDocComment(JCTree element, boolean indent) {
 		if (compilationUnit != null && compilationUnit.docComments != null) {
