@@ -310,7 +310,7 @@ public class JSweetContext extends Context {
 	 * <li>all the methods in the x.y.z.A class: x.y.z.A.*(..)</li>
 	 * <li>all the methods taking 2 arguments in the x.y.z.A class:
 	 * x.y.z.A.*(*,*)</li>
-	 * <li>all fields call aField in all the classes: **.aField</li>
+	 * <li>all fields called aField in all the classes: **.aField</li>
 	 * </ul>
 	 * 
 	 * @param annotationType
