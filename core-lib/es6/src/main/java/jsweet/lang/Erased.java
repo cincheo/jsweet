@@ -26,11 +26,6 @@ import java.lang.annotation.Target;
  * This annotation type is used on elements that should be erased at generation
  * time (casts and constructor invocations are removed).
  * 
- * <p>
- * This is mainly used for Java type disambiguation when the API defines two
- * methods that have the same erasure. Most programmers will not have to use it
- * directly.
- * 
  * @author Renaud Pawlak
  */
 @Retention(RetentionPolicy.RUNTIME)

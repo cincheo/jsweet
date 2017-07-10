@@ -2,7 +2,7 @@ package def.js;
 /**
   * Creates a new function.
   */
-public class Function extends def.js.Object {
+public class Function extends def.js.Object implements FunctionalObject {
     /**
       * Calls the function, substituting the specified object for the this value of the function, and the specified array for the arguments of the function.
       * @param thisArg The object to be used as the this object.
@@ -40,5 +40,8 @@ public class Function extends def.js.Object {
     native public java.lang.Object apply(java.lang.Object thisArg);
     native public java.lang.Object caller(java.lang.Object... args);
     protected Function(){}
+    
+    @Override
+    native public <R> R $apply(Object... arguments);
 }
 

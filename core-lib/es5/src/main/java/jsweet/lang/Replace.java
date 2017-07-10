@@ -32,8 +32,7 @@ import java.lang.annotation.Target;
  * 
  * <p>
  * The replacing code can contain variables substituted using a mustache-like
- * convention ({{variableName}}). Note that no space is allowed between the
- * variable name and the mustaches. Here is the list of supported variables:
+ * convention ({{variableName}}). Here is the list of supported variables:
  * 
  * <ul>
  * <li>{{className}}: the current class.</li>
