@@ -78,7 +78,7 @@ More with the [live sandbox](http://www.jsweet.org/jsweet-live-sandbox/).
 - Extensive support of Java constructs and semantics added since [version 1.1.0](https://github.com/cincheo/jsweet/releases/tag/v1.1.0) (inner classes, anonymous classes, final fields, method overloading, instanceof operator, static initializers, ...).
 - *Over 1000 JavaScript libraries*, frameworks and plugins to write Web and Mobile HTML5 applications (JQuery, Underscore, Angular, Backbone, Cordova, Node.js, and much [more](http://www.jsweet.org/candies-snapshots/)).
 - A [Maven repository](http://repository.jsweet.org/artifactory) containing all the available libraries in Maven artifacts (a.k.a. candies).
-- Support for Java basic APIs as the [J4TS](https://github.com/cincheo/j4ts) candy (forked from the GWT's JRE emulation).
+- Support for Java basic APIs as the [J4TS](https://github.com/j4ts/j4ts) candy (forked from the GWT's JRE emulation).
 - An [Eclipse plugin](https://github.com/cincheo/jsweet-eclipse-plugin) for easy installation and use.
 - A [Maven plugin](https://github.com/lgrignon/jsweet-maven-plugin) to use JSweet from any other IDE or from the command line.
 - A debug mode to enable Java code debugging within your favorite browser.
@@ -132,7 +132,7 @@ This repository is organized in sub-projects. Each sub-project has its own build
 
 * [JSweet transpiler](https://github.com/cincheo/jsweet/tree/master/transpiler): the Java to TypeScript/JavaScript compiler.
 * [JSweet core candy](https://github.com/cincheo/jsweet/tree/master/core-lib): the core APIs (JavaScript language, JavaScript DOM, and JSweet language utilities).
-* [JDK runtime](https://github.com/cincheo/jsweet/tree/master/j4ts): a fork from GWT's JRE emulation to implement main JDK APIs in JSweet/TypeScript/JavaScript.
+* [JDK runtime](https://github.com/j4ts/j4ts): a fork from GWT's JRE emulation to implement main JDK APIs in JSweet/TypeScript/JavaScript.
 * [JSweet candy generator](https://github.com/cincheo/jsweet/tree/master/candy-generator): a tool to generate Java APIs from TypeScript definition files, and package them as JSweet candies.
 * [JSweet documentation](https://github.com/cincheo/jsweet/tree/master/doc): JSweet documentation.
 
