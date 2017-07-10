@@ -270,7 +270,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 				case "java.lang.Math":
 					return null;
 				}
-				String name = getPrinter().getRootRelativeName(fa.selected.type.tsym, context.useModules);
+				String name = getPrinter().getRootRelativeName(fa.selected.type.tsym, false);
 				String methodName = fa.name.toString();
 
 				// function is a top-level global function (no need to import)
