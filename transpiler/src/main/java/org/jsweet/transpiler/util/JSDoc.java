@@ -75,6 +75,9 @@ public class JSDoc {
 	 * @return the JSDoc type
 	 */
 	public static String getMappedDocType(JSweetContext context, JCTree typeTree, Type type) {
+		if (context.isInterface(type.tsym)) {
+			return "*";
+		}
 		String qualifiedName = type.toString();
 		if (typeTree instanceof JCTypeApply) {
 			return getMappedDocType(context, ((JCTypeApply) typeTree).clazz, ((JCTypeApply) typeTree).clazz.type);
@@ -174,7 +177,10 @@ public class JSDoc {
 			if (mainConstructor != null) {
 				Comment comment = compilationUnit.docComments.getComment(mainConstructor);
 				if (comment != null) {
+					// replace the class comment with the main constructor's
 					commentText = comment.getText();
+				}
+				if (commentText != null) {
 					commentText = replaceLinks(context, commentText);
 					List<String> commentLines = new ArrayList<>(Arrays.asList(commentText.split("\n")));
 					applyForMethod(context, mainConstructor, commentLines);
@@ -190,11 +196,19 @@ public class JSDoc {
 				}
 			}
 		}
+		List<String> commentLines = null;
 		if (commentText == null) {
-			return null;
+			if (element instanceof JCMethodDecl
+					&& context.hasAnnotationType(((JCMethodDecl) element).sym, Override.class.getName())) {
+				commentText = "";
+				commentLines = new ArrayList<>();
+				applyForMethod(context, (JCMethodDecl) element, commentLines);
+			} else {
+				return null;
+			}
 		}
 		commentText = replaceLinks(context, commentText);
-		List<String> commentLines = new ArrayList<>(Arrays.asList(commentText.split("\n")));
+		commentLines = new ArrayList<>(Arrays.asList(commentText.split("\n")));
 		if (element instanceof JCMethodDecl) {
 			JCMethodDecl method = (JCMethodDecl) element;
 			if (!method.sym.isConstructor()) {

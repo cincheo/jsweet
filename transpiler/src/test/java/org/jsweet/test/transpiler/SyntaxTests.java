@@ -193,6 +193,13 @@ public class SyntaxTests extends AbstractTest {
 				assertTrue(generatedCode.contains("@param {string} s1 string 1"));
 				assertTrue(generatedCode.contains("A constructor for C"));
 				assertFalse(generatedCode.contains("A class comment to be erased"));
+				assertTrue(generatedCode.contains("A class comment to be used"));
+				assertTrue(generatedCode.contains("@param {string} sToBeDocumented"));
+				assertTrue(generatedCode.contains("@param {string} base1"));
+				assertTrue(generatedCode.contains("@param {number} base2"));
+				assertFalse(generatedCode.contains("Sub overload."));
+				assertTrue(generatedCode.contains("Main overload."));
+				assertTrue(generatedCode.contains("@param {*} i is an interface"));
 			} catch (Exception e) {
 				e.printStackTrace();
 				fail(e.getMessage());

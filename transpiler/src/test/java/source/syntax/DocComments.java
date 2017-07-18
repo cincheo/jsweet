@@ -37,10 +37,78 @@ class CommentedC {
 	public CommentedC(String s) {
 	}
 }
+/**
+ * A class comment to be used.
+ */
+class CommentedC2 {
+	public CommentedC2(String sToBeDocumented) {
+	}
+
+	/**
+	 * Sub overload.
+	 * @param i
+	 */
+	public void overload(int i) {
+		
+	}
+
+	/**
+	 * Main overload.
+	 * @param s
+	 * @param j
+	 */
+	public void overload(String s, int j) {
+		
+	}
+	
+}
 
 /**
  * An enum test.
  */
 enum E { 
 	
+}
+
+abstract class Base {
+	abstract int m(String base1, int base2);
+}
+
+class TestOverride extends Base {
+
+	@Override
+	int m(String base1, int base2) {
+		return 0;
+	}
+
+	/**
+	 * Use interface.
+	 * @param i is an interface
+	 */
+	void useInterface(I i) {
+		
+	}
+}
+
+interface I {
+	
+}
+
+
+/**
+ * Class comment.
+ */
+class ConstructorOverride<T> {
+
+	/**
+	 * C1 comment.
+	 */
+	public ConstructorOverride(Object o) {
+	}
+	
+	/**
+	 * C2 comment.
+	 */
+	public ConstructorOverride(Object o, T t) {
+	}
 }
