@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import def.js.Array;
 
@@ -61,6 +62,16 @@ public class Maps {
 		trace.push("empty=" + m.isEmpty());
 
 		trace.push("-" + m.get("undefinedKey") + "-");
+		
+		Map<String, String> tm = new TreeMap<>();
+
+		tm.put(key1(), "a");
+		tm.put("2", "b");
+		
+		for(Entry<String, String> e : tm.entrySet()) {
+			trace.push("" + e.getKey());
+			trace.push("" + e.getValue());
+		}
 		
 		$export("trace", trace.join(","));
 

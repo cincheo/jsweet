@@ -267,7 +267,7 @@ public class Collections implements Cloneable, Serializable {
 		List<String> lll = null;
 
 		trace.push("" + lll);
-		
+
 		Set<Integer> set = new HashSet<Integer>();
 		set.add(5);
 		set.add(6);
@@ -275,7 +275,7 @@ public class Collections implements Cloneable, Serializable {
 
 		List<String> list = Arrays.asList("a", "b", "c", "d", "e", "f");
 		List<String> list2 = Arrays.asList("d", "e", "f", "g");
-		
+
 		list.removeAll(list2);
 		trace.push("" + list);
 
@@ -283,7 +283,7 @@ public class Collections implements Cloneable, Serializable {
 
 		list.retainAll(list2);
 		trace.push("" + list);
-		
+
 		list = Arrays.asList("a", "b", "c", "d", "e", "f");
 
 		trace.push("" + list.containsAll(list2));
@@ -291,7 +291,13 @@ public class Collections implements Cloneable, Serializable {
 		list = Arrays.asList("a", "b", "c", "d", "e", "f", "g");
 
 		trace.push("" + list.containsAll(list2));
-		
+
+		trace.push("" + java.util.Collections.disjoint(list, list2));
+
+		list2 = Arrays.asList("h", "i");
+
+		trace.push("" + java.util.Collections.disjoint(list, list2));
+
 		$export("trace", trace.join(","));
 
 	}

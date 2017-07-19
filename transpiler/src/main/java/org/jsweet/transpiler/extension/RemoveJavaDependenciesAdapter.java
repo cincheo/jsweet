@@ -54,6 +54,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TimeZone;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Vector;
 import java.util.WeakHashMap;
@@ -128,6 +129,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		extTypesMapping.put(Properties.class.getName(), "any");
 		extTypesMapping.put(AbstractMap.class.getName(), "any");
 		extTypesMapping.put(HashMap.class.getName(), "any");
+		extTypesMapping.put(TreeMap.class.getName(), "any");
 		extTypesMapping.put(WeakHashMap.class.getName(), "any");
 		extTypesMapping.put(LinkedHashMap.class.getName(), "any");
 		extTypesMapping.put(Hashtable.class.getName(), "any");
@@ -256,6 +258,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			case "java.util.Map":
 			case "java.util.AbstractMap":
 			case "java.util.HashMap":
+			case "java.util.TreeMap":
 			case "java.util.Hashtable":
 			case "java.util.WeakHashMap":
 			case "java.util.LinkedHashMap":
@@ -337,6 +340,11 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 				case "reverse":
 					printMacroName(targetMethodName);
 					print(invocation.getArgument(0)).print(".reverse()");
+					return true;
+				case "disjoint":
+					printMacroName(targetMethodName);
+					print("((c1, c2) => { for(let i=0;i<c1.length;i++) { if(c2.indexOf(c1[i])>=0) return false; } return true; } )(")
+							.printArgList(invocation.getArguments()).print(")");
 					return true;
 				}
 				break;
@@ -987,18 +995,18 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			return true;
 		case "removeAll":
 			printMacroName(targetMethodName);
-				print("((a, r) => { let b=false; for(let i=0;i<r.length;i++) { let ndx=a.indexOf(r[i]); if(ndx>=0) { a.splice(ndx, 1); b=true; } } return b; })(");
-				print(invocation.getTargetExpression(), delegate).print(",").print(invocation.getArgument(0)).print(")");
+			print("((a, r) => { let b=false; for(let i=0;i<r.length;i++) { let ndx=a.indexOf(r[i]); if(ndx>=0) { a.splice(ndx, 1); b=true; } } return b; })(");
+			print(invocation.getTargetExpression(), delegate).print(",").print(invocation.getArgument(0)).print(")");
 			return true;
 		case "containsAll":
 			printMacroName(targetMethodName);
-				print("((a, r) => { for(let i=0;i<r.length;i++) { if(a.indexOf(r[i])<0) return false; } return true; } )(");
-				print(invocation.getTargetExpression(), delegate).print(",").print(invocation.getArgument(0)).print(")");
+			print("((a, r) => { for(let i=0;i<r.length;i++) { if(a.indexOf(r[i])<0) return false; } return true; } )(");
+			print(invocation.getTargetExpression(), delegate).print(",").print(invocation.getArgument(0)).print(")");
 			return true;
 		case "retainAll":
 			printMacroName(targetMethodName);
-				print("((a, r) => { let b=false; for(let i=0;i<a.length;i++) { let ndx=r.indexOf(a[i]); if(ndx<0) { a.splice(i, 1); i--; b=true; } } return b; })(");
-				print(invocation.getTargetExpression(), delegate).print(",").print(invocation.getArgument(0)).print(")");
+			print("((a, r) => { let b=false; for(let i=0;i<a.length;i++) { let ndx=r.indexOf(a[i]); if(ndx<0) { a.splice(i, 1); i--; b=true; } } return b; })(");
+			print(invocation.getTargetExpression(), delegate).print(",").print(invocation.getArgument(0)).print(")");
 			return true;
 		case "addFirst":
 			printMacroName(targetMethodName);
@@ -1035,6 +1043,12 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			printMacroName(targetMethodName);
 			print(invocation.getTargetExpression(), delegate).print("[").printArgList(invocation.getArguments())
 					.print("]");
+			return true;
+		case "set":
+			printMacroName(targetMethodName);
+			print("(");
+			print(invocation.getTargetExpression(), delegate).print("[").print(invocation.getArgument(0)).print("] = ")
+					.print(invocation.getArgument(1)).print(")");
 			return true;
 		case "clear":
 			printMacroName(targetMethodName);
@@ -1297,6 +1311,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			substitute = true;
 			break;
 		case "java.util.HashMap":
+		case "java.util.TreeMap":
 		case "java.util.Hashtable":
 		case "java.util.WeakHashMap":
 		case "java.util.LinkedHashMap":

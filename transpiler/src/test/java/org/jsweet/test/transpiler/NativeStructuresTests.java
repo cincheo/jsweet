@@ -33,8 +33,8 @@ public class NativeStructuresTests extends AbstractTest {
 					+ "true,true,it,true,1,array[a,b,c],0,false,true,array[a,b,c],array[c,b,a],[c, b, a],[aa, bb, cc],-3,-3,cc,[aa, bb],array[a,a,a],[a, d, e, b, c],"
 			// queues
 					+ "false,[c, a, b],c,[a, b],b,[a],a,null,true,null,"
-			// removeAll, retainAll, containsAll
-					+ "[a, b, c],[d, e, f],false,true", result.get("trace"));
+			// removeAll, retainAll, containsAll, disjoint
+					+ "[a, b, c],[d, e, f],false,true,false,true", result.get("trace"));
 		}, getSourceFile(Collections.class));
 	}
 
@@ -74,7 +74,7 @@ public class NativeStructuresTests extends AbstractTest {
 	public void testMaps() {
 		eval((logHandler, result) -> {
 			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-			assertEquals("1,a,2,b,2,a,true,[1, 2],[a, b],1,true,size2=2,1,2,[],empty=true,-null-", result.get("trace"));
+			assertEquals("1,a,2,b,2,a,true,[1, 2],[a, b],1,true,size2=2,1,2,[],empty=true,-null-,1,a,2,b", result.get("trace"));
 		}, getSourceFile(Maps.class));
 	}
 
