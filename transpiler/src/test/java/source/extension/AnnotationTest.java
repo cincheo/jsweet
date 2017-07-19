@@ -20,6 +20,9 @@ class Superclass {
 
 public class AnnotationTest extends Superclass {
 
+	public AnnotationTest(String s, int i) {
+	}
+	
 	public void toBeErased() {
 		// this will not be transpiled because the method will be erased
 		javax.activity.InvalidActivityException exception = null;

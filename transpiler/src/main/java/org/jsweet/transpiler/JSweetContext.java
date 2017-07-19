@@ -207,14 +207,17 @@ public class JSweetContext extends Context {
 	}
 
 	private static String toRegexp(String pattern) {
+		boolean argsEnv = false;
 		StringBuilder sb = new StringBuilder(pattern);
 		for (int i = 0; i < sb.length(); i++) {
 			char c = sb.charAt(i);
 			switch (c) {
 			case '(':
+				argsEnv = true;
 				sb.insert(i++, '\\');
 				break;
 			case ')':
+				argsEnv = false;
 				sb.insert(i++, '\\');
 				break;
 			case '.':
@@ -233,8 +236,13 @@ public class JSweetContext extends Context {
 					sb.insert(i++, ".*");
 				} else {
 					sb.deleteCharAt(i);
-					sb.insert(i, "[^.,]*");
-					i += 5;
+					if (argsEnv) {
+						sb.insert(i, "[^,]*");
+						i += 4;
+					} else {
+						sb.insert(i, "[^.]*");
+						i += 4;
+					}
 				}
 				break;
 			}
