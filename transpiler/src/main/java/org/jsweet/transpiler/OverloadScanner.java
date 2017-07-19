@@ -62,8 +62,8 @@ import com.sun.tools.javac.tree.JCTree.JCStatement;
  */
 public class OverloadScanner extends AbstractTreeScanner {
 
-	Types types;
-	int pass = 1;
+	private Types types;
+	private int pass = 1;
 
 	/**
 	 * Gathers methods overloading each other.
