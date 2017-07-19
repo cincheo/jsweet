@@ -273,6 +273,25 @@ public class Collections implements Cloneable, Serializable {
 		set.add(6);
 		Set<Integer> set2 = null;
 
+		List<String> list = Arrays.asList("a", "b", "c", "d", "e", "f");
+		List<String> list2 = Arrays.asList("d", "e", "f", "g");
+		
+		list.removeAll(list2);
+		trace.push("" + list);
+
+		list = Arrays.asList("a", "b", "c", "d", "e", "f");
+
+		list.retainAll(list2);
+		trace.push("" + list);
+		
+		list = Arrays.asList("a", "b", "c", "d", "e", "f");
+
+		trace.push("" + list.containsAll(list2));
+
+		list = Arrays.asList("a", "b", "c", "d", "e", "f", "g");
+
+		trace.push("" + list.containsAll(list2));
+		
 		$export("trace", trace.join(","));
 
 	}

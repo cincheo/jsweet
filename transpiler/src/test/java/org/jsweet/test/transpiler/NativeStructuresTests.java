@@ -32,7 +32,9 @@ public class NativeStructuresTests extends AbstractTest {
 			assertEquals("1,a,1,b,3,4,d,a,d,0,0,0,a,a,2,a,true,false,3,c,c,a,b,c,a,b,c,b,1,c,b,a,b,c,a,0,"
 					+ "true,true,it,true,1,array[a,b,c],0,false,true,array[a,b,c],array[c,b,a],[c, b, a],[aa, bb, cc],-3,-3,cc,[aa, bb],array[a,a,a],[a, d, e, b, c],"
 			// queues
-					+ "false,[c, a, b],c,[a, b],b,[a],a,null,true,null", result.get("trace"));
+					+ "false,[c, a, b],c,[a, b],b,[a],a,null,true,null,"
+			// removeAll, retainAll, containsAll
+					+ "[a, b, c],[d, e, f],false,true", result.get("trace"));
 		}, getSourceFile(Collections.class));
 	}
 
@@ -80,7 +82,9 @@ public class NativeStructuresTests extends AbstractTest {
 	public void testProperties() {
 		eval((logHandler, result) -> {
 			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-			assertEquals("1,a,2,b,2,a,true,[1, 2],[1, 2],isEmpty=false,[a, b],1,true,1,2,size=1,unknown=null,size=2,[],size=0,isEmpty=true,size2=2,isEmpty2=false,-null-", result.get("trace"));
+			assertEquals(
+					"1,a,2,b,2,a,true,[1, 2],[1, 2],isEmpty=false,[a, b],1,true,1,2,size=1,unknown=null,size=2,[],size=0,isEmpty=true,size2=2,isEmpty2=false,-null-",
+					result.get("trace"));
 		}, getSourceFile(Properties.class));
 	}
 
@@ -147,7 +151,7 @@ public class NativeStructuresTests extends AbstractTest {
 			assertEquals(">,0,ABC,abc,abcd,AB,b", result.get("trace"));
 		}, getSourceFile(Strings.class));
 	}
-	
+
 	@Ignore
 	@Test
 	public void testExtendsJDK() {
@@ -156,6 +160,5 @@ public class NativeStructuresTests extends AbstractTest {
 			logHandler.assertNoProblems();
 		}, getSourceFile(ExtendsJDK.class));
 	}
-
 
 }
