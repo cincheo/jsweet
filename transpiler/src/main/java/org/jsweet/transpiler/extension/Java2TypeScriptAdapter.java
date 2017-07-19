@@ -1001,6 +1001,10 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 					printMacroName(targetMethodName);
 					print(invocationElement.getTargetExpression());
 					return true;
+				case "booleanValue":
+					printMacroName(targetMethodName);
+					print(invocationElement.getTargetExpression());
+					return true;
 				case "compare":
 					if (invocationElement.getArgumentCount() == 2) {
 						printMacroName(targetMethodName);
