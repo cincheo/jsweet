@@ -950,6 +950,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 					return true;
 				}
 				break;
+			case "java.lang.Number":
 			case "java.lang.Float":
 			case "java.lang.Double":
 			case "java.lang.Integer":
@@ -1001,10 +1002,6 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 					printMacroName(targetMethodName);
 					print(invocationElement.getTargetExpression());
 					return true;
-				case "booleanValue":
-					printMacroName(targetMethodName);
-					print(invocationElement.getTargetExpression());
-					return true;
 				case "compare":
 					if (invocationElement.getArgumentCount() == 2) {
 						printMacroName(targetMethodName);
@@ -1019,6 +1016,14 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 						print("(''+(").print(invocationElement.getArgument(0)).print("))");
 						return true;
 					}
+				}
+				break;
+			case "java.lang.Boolean":
+				switch (targetMethodName) {
+				case "booleanValue":
+					printMacroName(targetMethodName);
+					print(invocationElement.getTargetExpression());
+					return true;
 				}
 				break;
 			case "java.lang.Math":
