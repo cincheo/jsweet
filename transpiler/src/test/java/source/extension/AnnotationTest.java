@@ -3,6 +3,7 @@ package source.extension;
 import java.util.List;
 import java.util.Map;
 
+import jsweet.lang.Erased;
 import jsweet.lang.Name;
 
 class Superclass {
@@ -20,9 +21,6 @@ class Superclass {
 
 public class AnnotationTest extends Superclass {
 
-	public AnnotationTest(String s, int i) {
-	}
-	
 	public void toBeErased() {
 		// this will not be transpiled because the method will be erased
 		javax.activity.InvalidActivityException exception = null;
@@ -52,5 +50,22 @@ public class AnnotationTest extends Superclass {
 	
 	List<?> testGenerics;
 	Map<String, ?> testGenerics2;
+	
+}
+
+
+class ReplaceConstructorTest extends Superclass {
+
+	String s;
+	int i;
+	
+	public ReplaceConstructorTest(String s, int i) {
+		this.s = s;
+		this.i = i;
+	}
+
+	public ReplaceConstructorTest(String s) {
+		this.s = s;
+	}
 	
 }

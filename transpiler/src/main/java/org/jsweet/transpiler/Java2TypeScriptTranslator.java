@@ -1935,8 +1935,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			print("}").println().println().printIndent();
 		}
 
-		String[] content = null;
-
 		print(methodDecl.mods);
 
 		if (methodDecl.mods.getFlags().contains(Modifier.NATIVE)) {
@@ -2224,6 +2222,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						}
 					}
 					if (replacedBody != null) {
+						if (methodDecl.sym.isConstructor()) {
+							getScope().hasDeclaredConstructor = true;
+						}
 						printIndent().print(replacedBody).println();
 					}
 					endIndent().printIndent().print("}");
@@ -2419,6 +2420,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 			}
 			if (replacedBody != null) {
+				if (method.sym.isConstructor()) {
+					getScope().hasDeclaredConstructor = true;
+				}
 				printIndent().print(replacedBody).println();
 			}
 		} else {

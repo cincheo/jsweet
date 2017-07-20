@@ -34,7 +34,8 @@ class TestAdapter extends RemoveJavaDependenciesAdapter {
 
 	public TestAdapter(JSweetContext context) {
 		super(context);
-		context.addAnnotation("@Erased", "source.extension.AnnotationTest.AnnotationTest(*,*)");
+		context.addAnnotation("@Replace('super();')", "source.extension.ReplaceConstructorTest.ReplaceConstructorTest(*,*)");
+		context.addAnnotation("@Erased", "source.extension.ReplaceConstructorTest.ReplaceConstructorTest(*)");
 		context.addAnnotation("@Erased", "**.toBeErased(..)");
 		context.addAnnotation("@Name('_f2')", "**.f2");
 		context.addAnnotation("@Name('_f4')", "**.f4(..)");
