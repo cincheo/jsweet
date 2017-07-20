@@ -343,7 +343,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 					return true;
 				case "disjoint":
 					printMacroName(targetMethodName);
-					print("((c1, c2) => { for(let i=0;i<c1.length;i++) { if(c2.indexOf(c1[i])>=0) return false; } return true; } )(")
+					print("((c1, c2) => { for(let i=0;i<c1.length;i++) { if(c2.indexOf(<any>c1[i])>=0) return false; } return true; } )(")
 							.printArgList(invocation.getArguments()).print(")");
 					return true;
 				}
@@ -1000,7 +1000,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			return true;
 		case "containsAll":
 			printMacroName(targetMethodName);
-			print("((a, r) => { for(let i=0;i<r.length;i++) { if(a.indexOf(r[i])<0) return false; } return true; } )(");
+			print("((a, r) => { for(let i=0;i<r.length;i++) { if(a.indexOf(<any>r[i])<0) return false; } return true; } )(");
 			print(invocation.getTargetExpression(), delegate).print(",").print(invocation.getArgument(0)).print(")");
 			return true;
 		case "retainAll":
@@ -1063,8 +1063,8 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		case "contains":
 			printMacroName(targetMethodName);
 			print("(");
-			print(invocation.getTargetExpression(), delegate).print(".indexOf(").print(invocation.getArgument(0))
-					.print(") >= 0)");
+			print(invocation.getTargetExpression(), delegate).print(".indexOf(<any>(").print(invocation.getArgument(0))
+					.print(")) >= 0)");
 			return true;
 		case "toArray":
 			printMacroName(targetMethodName);
