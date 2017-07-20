@@ -55,7 +55,6 @@ import source.structural.InstanceofForInterfaces;
 import source.structural.InterfaceInheritance;
 import source.structural.InterfaceStaticMethods;
 import source.structural.JDKInheritance;
-import source.structural.JSNI;
 import source.structural.LocalClasses;
 import source.structural.Name;
 import source.structural.NameClashesWithMethodInvocations;
@@ -342,13 +341,6 @@ public class StructuralTests extends AbstractTest {
 		eval((logHandler, r) -> {
 			logHandler.assertNoProblems();
 		}, getSourceFile(InstanceOf.class));
-	}
-
-	@Test
-	public void testJSNI() {
-		transpile(ModuleKind.none, logHandler -> {
-			logHandler.assertNoProblems();
-		}, getSourceFile(JSNI.class));
 	}
 
 	@Test
