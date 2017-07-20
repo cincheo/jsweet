@@ -1438,14 +1438,12 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 
 	@Override
 	public boolean eraseSuperClass(TypeElement classdecl, TypeElement superClass) {
-		String name = superClass.getQualifiedName().toString();
-		if (isMappedType(name)) {
-			name = getTypeMappingTarget(name);
-		}
-		return name.startsWith("java.") && !(superClass.asType().equals(context.symtab.throwableType)
-				|| superClass.asType().equals(context.symtab.exceptionType)
-				|| superClass.asType().equals(context.symtab.runtimeExceptionType)
-				|| superClass.asType().equals(context.symtab.errorType)) && !Util.isSourceElement(superClass);
+		return superClass.getQualifiedName().toString().startsWith("java.")
+				&& !(superClass.asType().equals(context.symtab.throwableType)
+						|| superClass.asType().equals(context.symtab.exceptionType)
+						|| superClass.asType().equals(context.symtab.runtimeExceptionType)
+						|| superClass.asType().equals(context.symtab.errorType))
+				&& !Util.isSourceElement(superClass);
 	}
 
 	@Override

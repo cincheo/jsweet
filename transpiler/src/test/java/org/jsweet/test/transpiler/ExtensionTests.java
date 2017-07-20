@@ -36,8 +36,9 @@ class TestAdapter extends RemoveJavaDependenciesAdapter {
 
 	public TestAdapter(JSweetContext context) {
 		super(context);
-	    addTypeMapping(EventObject.class.getName(), "source.extension.EventObject2");
-		context.addAnnotation("@Replace('super();')", "source.extension.ReplaceConstructorTest.ReplaceConstructorTest(*,*)");
+		addTypeMapping(EventObject.class.getName(), "source.extension.EventObject2");
+		context.addAnnotation("@Replace('super();')",
+				"source.extension.ReplaceConstructorTest.ReplaceConstructorTest(*,*)");
 		context.addAnnotation("@Erased", "source.extension.ReplaceConstructorTest.ReplaceConstructorTest(*)");
 		context.addAnnotation("@Erased", "**.toBeErased(..)");
 		context.addAnnotation("@Name('_f2')", "**.f2");
@@ -58,6 +59,15 @@ class TestAdapter extends RemoveJavaDependenciesAdapter {
 			}
 			endIndent().printIndent().print("}").println();
 		}
+	}
+
+	@Override
+	public boolean eraseSuperClass(TypeElement type, TypeElement superClass) {
+		String name = superClass.getQualifiedName().toString();
+		if (EventObject.class.getName().equals(name)) {
+			return false;
+		}
+		return super.eraseSuperClass(type, superClass);
 	}
 
 }
