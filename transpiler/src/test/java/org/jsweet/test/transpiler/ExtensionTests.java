@@ -1,5 +1,7 @@
 package org.jsweet.test.transpiler;
 
+import java.util.EventObject;
+
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -34,6 +36,7 @@ class TestAdapter extends RemoveJavaDependenciesAdapter {
 
 	public TestAdapter(JSweetContext context) {
 		super(context);
+	    addTypeMapping(EventObject.class.getName(), "source.extension.EventObject2");
 		context.addAnnotation("@Replace('super();')", "source.extension.ReplaceConstructorTest.ReplaceConstructorTest(*,*)");
 		context.addAnnotation("@Erased", "source.extension.ReplaceConstructorTest.ReplaceConstructorTest(*)");
 		context.addAnnotation("@Erased", "**.toBeErased(..)");

@@ -1,9 +1,9 @@
 package source.extension;
 
+import java.util.EventObject;
 import java.util.List;
 import java.util.Map;
 
-import jsweet.lang.Erased;
 import jsweet.lang.Name;
 
 class Superclass {
@@ -21,6 +21,10 @@ class Superclass {
 
 public class AnnotationTest extends Superclass {
 
+	public static void main(String[] args) {
+		new ExtendJDK(null).getSource();
+	}
+	
 	public void toBeErased() {
 		// this will not be transpiled because the method will be erased
 		javax.activity.InvalidActivityException exception = null;
@@ -69,3 +73,27 @@ class ReplaceConstructorTest extends Superclass {
 	}
 	
 }
+
+class EventObject2 {
+	
+	Object source;
+	
+	public EventObject2(Object source) {
+		this.source = source;
+	}
+
+	public Object getSource() {
+		return source;
+	}
+}
+
+class ExtendJDK extends EventObject {
+
+	private static final long serialVersionUID = 1L;
+
+	public ExtendJDK(Object source) {
+		super(source);
+	}
+	
+}
+
