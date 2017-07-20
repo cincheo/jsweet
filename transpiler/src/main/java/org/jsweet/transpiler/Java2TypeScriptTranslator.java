@@ -1767,7 +1767,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		print("(");
 		if (method.getParameters() != null && !method.getParameters().isEmpty()) {
 			for (VarSymbol var : method.getParameters()) {
-				print(var.name.toString()).print(": any");
+				print(var.name.toString()).print("?: any");
 				print(", ");
 			}
 			removeLastChars(2);
