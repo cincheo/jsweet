@@ -298,6 +298,20 @@ public class Collections implements Cloneable, Serializable {
 
 		trace.push("" + java.util.Collections.disjoint(list, list2));
 
+		Arrays.sort(newArray, new Comparator<String>() {
+			@Override
+			public int compare(String o1, String o2) {
+				return o2.compareTo(o1);
+			}
+		});
+		
+		java.util.Collections.sort(list2, new Comparator<String>() {
+			@Override
+			public int compare(String o1, String o2) {
+				return o2.compareTo(o1);
+			}
+		});
+		
 		$export("trace", trace.join(","));
 
 	}

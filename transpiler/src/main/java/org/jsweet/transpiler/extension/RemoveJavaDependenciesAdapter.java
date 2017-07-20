@@ -334,8 +334,14 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 					}
 				case "sort":
 					printMacroName(targetMethodName);
-					print(invocation.getArgument(0)).print(".sort(").printArgList(invocation.getArgumentTail())
-							.print(")");
+					if (invocation.getArgumentCount() == 2) {
+						print("((l,c) => { if((<any>c).compare) l.sort((e1,e2)=>(<any>c).compare(e1,e2)); else l.sort(<any>c); })(")
+								.print(invocation.getArgument(0)).print(",").print(invocation.getArgument(1))
+								.print(")");
+					} else {
+						print(invocation.getArgument(0)).print(".sort(").printArgList(invocation.getArgumentTail())
+								.print(")");
+					}
 					return true;
 				case "reverse":
 					printMacroName(targetMethodName);
@@ -389,7 +395,8 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 								.print(".slice(start, end).sort(f)))(").printArgList(invocation.getArguments())
 								.print(")");
 					} else {
-						print(invocation.getArgument(0)).print(".sort(").printArgList(invocation.getArgumentTail())
+						print("((l,c) => { if((<any>c).compare) l.sort((e1,e2)=>(<any>c).compare(e1,e2)); else l.sort(<any>c); })(")
+								.print(invocation.getArgument(0)).print(",").print(invocation.getArgument(1))
 								.print(")");
 					}
 					return true;
@@ -1432,15 +1439,13 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 	@Override
 	public boolean eraseSuperClass(TypeElement classdecl, TypeElement superClass) {
 		String name = superClass.getQualifiedName().toString();
-		if(isMappedType(name)) {
+		if (isMappedType(name)) {
 			name = getTypeMappingTarget(name);
 		}
-		return name.startsWith("java.")
-				&& !(superClass.asType().equals(context.symtab.throwableType)
-						|| superClass.asType().equals(context.symtab.exceptionType)
-						|| superClass.asType().equals(context.symtab.runtimeExceptionType)
-						|| superClass.asType().equals(context.symtab.errorType))
-				&& !Util.isSourceElement(superClass);
+		return name.startsWith("java.") && !(superClass.asType().equals(context.symtab.throwableType)
+				|| superClass.asType().equals(context.symtab.exceptionType)
+				|| superClass.asType().equals(context.symtab.runtimeExceptionType)
+				|| superClass.asType().equals(context.symtab.errorType)) && !Util.isSourceElement(superClass);
 	}
 
 	@Override
