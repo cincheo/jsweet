@@ -242,6 +242,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 		private List<JCClassDecl> localClasses = new ArrayList<>();
 
+		private List<String> generatedMethodNames = new ArrayList<>();
+		
 		// to be accessed in the parent scope
 		private boolean isAnonymousClass = false;
 		// to be accessed in the parent scope
@@ -1366,49 +1368,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			removeLastIndent();
 		}
 
-		if (!getScope().interfaceScope && classdecl.getModifiers().getFlags().contains(Modifier.ABSTRACT)) {
-			List<MethodSymbol> methods = new ArrayList<>();
-			for (Type t : implementedInterfaces) {
-				context.grabMethodsToBeImplemented(methods, t.tsym);
-			}
-			methods.sort((m1, m2) -> m1.getSimpleName().compareTo(m2.getSimpleName()));
-			Map<Name, String> signatures = new HashMap<>();
-			for (MethodSymbol meth : methods) {
-				if (meth.type instanceof MethodType) {
-					MethodSymbol s = Util.findMethodDeclarationInType(getContext().types, classdecl.sym,
-							meth.getSimpleName().toString(), (MethodType) meth.type, true);
-					if (Object.class.getName().equals(s.getEnclosingElement().toString())) {
-						s = null;
-					}
-					boolean printDefaultImplementation = false;
-					if (s != null) {
-						if (!s.getEnclosingElement().equals(classdecl.sym)) {
-							if (!(s.isDefault() || (!context.isInterface((TypeSymbol) s.getEnclosingElement())
-									&& !s.getModifiers().contains(Modifier.ABSTRACT)))) {
-								printDefaultImplementation = true;
-							}
-						}
-					}
-
-					if (printDefaultImplementation) {
-						Overload o = context.getOverload(classdecl.sym, meth);
-						if (o != null && o.methods.size() > 1 && !o.isValid) {
-							if (!meth.type.equals(o.coreMethod.type)) {
-								printDefaultImplementation = false;
-							}
-						}
-					}
-					if (s == null || printDefaultImplementation) {
-						String signature = getContext().types.erasure(meth.type).toString();
-						if (!(signatures.containsKey(meth.name) && signatures.get(meth.name).equals(signature))) {
-							printDefaultImplementation(meth);
-							signatures.put(meth.name, signature);
-						}
-					}
-				}
-			}
-		}
-
 		for (JCTree def : classdecl.defs) {
 			if (def instanceof JCClassDecl) {
 				getScope().hasInnerClass = true;
@@ -1489,6 +1448,54 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 			} else {
 				println().println();
+			}
+		}
+
+		// generate missing abstract methods if abstract class
+		if (!getScope().interfaceScope && classdecl.getModifiers().getFlags().contains(Modifier.ABSTRACT)) {
+			List<MethodSymbol> methods = new ArrayList<>();
+			for (Type t : implementedInterfaces) {
+				context.grabMethodsToBeImplemented(methods, t.tsym);
+			}
+			methods.sort((m1, m2) -> m1.getSimpleName().compareTo(m2.getSimpleName()));
+			Map<Name, String> signatures = new HashMap<>();
+			for (MethodSymbol meth : methods) {
+				if (meth.type instanceof MethodType) {
+					// do not generate default abstract method for already generated methods
+					if(getScope().generatedMethodNames.contains(meth.name.toString())) {
+						continue;
+					}
+					MethodSymbol s = Util.findMethodDeclarationInType(getContext().types, classdecl.sym,
+							meth.getSimpleName().toString(), (MethodType) meth.type, true);
+					if (Object.class.getName().equals(s.getEnclosingElement().toString())) {
+						s = null;
+					}
+					boolean printDefaultImplementation = false;
+					if (s != null) {
+						if (!s.getEnclosingElement().equals(classdecl.sym)) {
+							if (!(s.isDefault() || (!context.isInterface((TypeSymbol) s.getEnclosingElement())
+									&& !s.getModifiers().contains(Modifier.ABSTRACT)))) {
+								printDefaultImplementation = true;
+							}
+						}
+					}
+
+					if (printDefaultImplementation) {
+						Overload o = context.getOverload(classdecl.sym, meth);
+						if (o != null && o.methods.size() > 1 && !o.isValid) {
+							if (!meth.type.equals(o.coreMethod.type)) {
+								printDefaultImplementation = false;
+							}
+						}
+					}
+					if (s == null || printDefaultImplementation) {
+						String signature = getContext().types.erasure(meth.type).toString();
+						if (!(signatures.containsKey(meth.name) && signatures.get(meth.name).equals(signature))) {
+							printDefaultImplementation(meth);
+							signatures.put(meth.name, signature);
+						}
+					}
+				}
 			}
 		}
 
@@ -2025,6 +2032,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				print(getOverloadMethodName(methodDecl.sym));
 			} else {
 				String tsMethodName = getTSMethodName(methodDecl);
+				getScope().generatedMethodNames.add(tsMethodName);
 				if (doesMemberNameRequireQuotes(tsMethodName)) {
 					print("'" + tsMethodName + "'");
 				} else {
