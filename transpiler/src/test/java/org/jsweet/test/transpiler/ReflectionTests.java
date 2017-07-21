@@ -19,6 +19,7 @@ package org.jsweet.test.transpiler;
 import org.junit.Test;
 
 import source.reflection.BasicBeanReflection;
+import source.reflection.FieldAccess;
 
 public class ReflectionTests extends AbstractTest {
 
@@ -29,4 +30,11 @@ public class ReflectionTests extends AbstractTest {
 		}, getSourceFile(BasicBeanReflection.class));
 	}
 
+	@Test
+	public void testFieldAccess() {
+		eval((h, r) -> {
+			h.assertNoProblems();
+		}, getSourceFile(FieldAccess.class));
+	}
+	
 }

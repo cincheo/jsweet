@@ -547,6 +547,20 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 					print("(c => { let m = []; for (let p in c.prototype) if(c.prototype.hasOwnProperty(p) && typeof c.prototype[p] == 'function') m.push({owner:c,name:p,fn:c.prototype[p]}); return m; })(")
 							.print(invocation.getTargetExpression()).print(")");
 					return true;
+				case "getMethod":
+				case "getDeclaredMethod":
+					printMacroName(targetMethodName);
+					print("((c,p) => { if(c.prototype.hasOwnProperty(p) && typeof c.prototype[p] == 'function') return {owner:c,name:p,fn:c.prototype[p]}; else return null; })(")
+							.print(invocation.getTargetExpression()).print(",").print(invocation.getArgument(0))
+							.print(")");
+					return true;
+				case "getField":
+				case "getDeclaredField":
+					printMacroName(targetMethodName);
+					print("((c,p) => { return {owner:c,name:p}; })(")
+							.print(invocation.getTargetExpression()).print(",").print(invocation.getArgument(0))
+							.print(")");
+					return true;
 				}
 				break;
 
@@ -567,6 +581,35 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 				case "getDeclaringClass":
 					printMacroName(targetMethodName);
 					print(invocation.getTargetExpression()).print(".owner");
+					return true;
+				case "setAccessible":
+					// ignore
+					return true;
+				}
+				break;
+
+			case "java.lang.reflect.Field":
+				switch (targetMethodName) {
+				case "getName":
+					printMacroName(targetMethodName);
+					print(invocation.getTargetExpression()).print(".name");
+					return true;
+				case "get":
+					printMacroName(targetMethodName);
+					print(invocation.getArgument(0)).print("[").print(invocation.getTargetExpression()).print(".name")
+							.print("]");
+					return true;
+				case "set":
+					printMacroName(targetMethodName);
+					print("(").print(invocation.getArgument(0)).print("[").print(invocation.getTargetExpression())
+							.print(".name").print("]=").print(invocation.getArgument(1)).print(")");
+					return true;
+				case "getDeclaringClass":
+					printMacroName(targetMethodName);
+					print(invocation.getTargetExpression()).print(".owner");
+					return true;
+				case "setAccessible":
+					// ignore
 					return true;
 				}
 				break;
