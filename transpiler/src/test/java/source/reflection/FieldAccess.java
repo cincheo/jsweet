@@ -9,6 +9,7 @@ public class FieldAccess {
 		C.class.getField("f2").set(c, "def");
 		assert "def".equals(c.getClass().getDeclaredField("f2").get(c));
 		c.getClass().getDeclaredField("f2").setAccessible(true);
+		assert c.f2.equals(C.class.getDeclaredField("f2").get(c));
 		C.class.getField("f3").set(c, "ghi");
 		assert "ghi".equals(c.getClass().getField("f3").get(c));
 	}
@@ -18,6 +19,6 @@ public class FieldAccess {
 class C {
 
 	private String f1 = "abc";
-	private String f2;
+	public String f2;
 
 }
