@@ -1420,9 +1420,29 @@ The package `jsweet.lang` defines various annotation that can be used to tune th
 
     -   `{{indent}}`: substituted with an indentation. Can be used to generate well-formatted code.
 
-#### Examples
+#### Example
 
-TBD
+The following example illustrates the use of the `@Erased` and `@Replace` annotations. Here, the `@Erased` annotation is used to remove the `readObject` method from the generated code, because it does not make sense in JavaScript (it is a Java-serialization specific method). The `@Replace` annotation allows defining a direct TypeScript/JavaScript implementation for the `searchAddress` method.
+
+``` java
+class Person {
+
+  List<String> addresses = new ArrayList<String>();
+
+  @Erased
+  private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+    [...]
+  }
+
+  @Replace("return this.addresses.filter(address => address.match(regex))[0]")
+  public String searchAddress(String regex) {
+          Optional<String> match = addresses.stream().filter(address -> address.matches(regex)).findFirst();
+          return match.isPresent()?match.get():null;
+  }
+}
+```
+
+Using JSweet annotations makes it possible to share classes between Java and JavaScript in a flexible way. Useless methods in JavaScript are erased, and some methods can have different implementation for Java and JavaScript.
 
 ### Centralizing annotations in `jsweetconfig.json`
 
@@ -1479,9 +1499,9 @@ Here is a more complete example with a full `jsweetconfig.json` configuration fi
   "@Root": {
     "include": [ "x.y.z" ]
   },
-  // do not generate any TypeScript code for write/readObject methods
+  // do not generate any TypeScript code for Java-specific methods
   "@Erase": {
-    "include": [ "**.writeObject()", "**.readObject()" ]
+    "include": [ "**.writeObject(..)", "**.readObject(..)", "**.hashCode(..)" ]
   },
   // inject logging in all setters and getters of the x.y.z.A class
   "@Replace('console.info('entering {{methodName}}'); let _result = () => { {{body}} }(); console.info('returning '+result); return result;')": {
@@ -1490,7 +1510,7 @@ Here is a more complete example with a full `jsweetconfig.json` configuration fi
 }
 ```
 
-Note that the annotation are defined with their simple name only. That’s because they are core JSweet annotation (defined in `jsweet.lang`). Non-core annotations can be added the same way, but the programmer must use the fully qualified name.
+Note that annotations are defined with simple names only. That’s because they are core JSweet annotations (defined in `jsweet.lang`). Non-core annotations can be added the same way, but the programmer must use fully qualified names.
 
 ### Programmatic tuning with adapters
 
