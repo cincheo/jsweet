@@ -115,6 +115,18 @@ public class JSweetTranspiler implements JSweetOptions {
 	}
 
 	/**
+	 * Gets the target version from a user-friendly descriptive string.
+	 */
+	public static EcmaScriptComplianceLevel getEcmaTargetVersion(String targetVersion) {
+		try {
+			EcmaScriptComplianceLevel ecmaScriptComplianceLevel = EcmaScriptComplianceLevel.valueOf(targetVersion);
+			return ecmaScriptComplianceLevel;
+		} catch (IllegalArgumentException e) {
+			throw new RuntimeException("Invalid EcmaScript target version: " + targetVersion);
+		}
+	}
+
+	/**
 	 * The constant for the name of the directory that stores temporary files.
 	 */
 	public static final String TMP_WORKING_DIR_NAME = ".jsweet";
@@ -247,6 +259,69 @@ public class JSweetTranspiler implements JSweetOptions {
 
 	private Map<String, Object> configuration;
 
+	@SuppressWarnings("unchecked")
+	private <T> T getConfigurationValue(String key) {
+		return (T) configuration.get(key);
+	}
+
+	/**
+	 * Applies the current configuration map.
+	 */
+	public void applyConfiguration() {
+		if (configuration.containsKey("bundle")) {
+			setBundle(getConfigurationValue("bundle"));
+		}
+		if (configuration.containsKey("noRootDirectories")) {
+			setNoRootDirectories(getConfigurationValue("noRootDirectories"));
+		}
+		if (configuration.containsKey("sourceMap")) {
+			setPreserveSourceLineNumbers(getConfigurationValue("sourceMap"));
+		}
+		if (configuration.containsKey("module")) {
+			setModuleKind(ModuleKind.valueOf(getConfigurationValue("module")));
+		}
+		if (configuration.containsKey("encoding")) {
+			setEncoding(getConfigurationValue("encoding"));
+		}
+		if (configuration.containsKey("enableAssertions")) {
+			setIgnoreAssertions(!(Boolean) getConfigurationValue("enableAssertions"));
+		}
+		if (configuration.containsKey("declaration")) {
+			setGenerateDeclarations(getConfigurationValue("declaration"));
+		}
+		if (configuration.containsKey("tsOnly")) {
+			setGenerateJsFiles(!(Boolean) getConfigurationValue("tsOnly"));
+		}
+		if (configuration.containsKey("ignoreDefinitions")) {
+			setGenerateDefinitions(!(Boolean) getConfigurationValue("ignoreDefinitions"));
+		}
+		if (configuration.containsKey("header")) {
+			setHeaderFile(new File((String) getConfigurationValue("header")));
+		}
+		if (configuration.containsKey("disableSinglePrecisionFloats")) {
+			setGenerateDeclarations(getConfigurationValue("disableSinglePrecisionFloats"));
+		}
+		if (configuration.containsKey("disableSinglePrecisionFloats")) {
+			setGenerateDeclarations(getConfigurationValue("disableSinglePrecisionFloats"));
+		}
+		if (configuration.containsKey("targetVersion")) {
+			setEcmaTargetVersion(JSweetTranspiler.getEcmaTargetVersion(getConfigurationValue("targetVersion")));
+		}
+		if (configuration.containsKey("tsout")) {
+			setTsOutputDir(new File((String) getConfigurationValue("tsout")));
+		}
+		if (configuration.containsKey("dtsout")) {
+			setDeclarationsOutputDir(new File((String) getConfigurationValue("dtsout")));
+		}
+		if (configuration.containsKey("jsout")) {
+			setJsOutputDir(new File((String) getConfigurationValue("jsout")));
+		}
+		if (configuration.containsKey("candiesJsOut")) {
+			setJsOutputDir(new File((String) getConfigurationValue("candiesJsOut")));
+		}
+
+	}
+
 	private void readConfiguration() {
 		File confFile = new File(JSweetConfig.CONFIGURATION_FILE_NAME);
 		if (confFile.exists()) {
@@ -256,64 +331,7 @@ public class JSweetTranspiler implements JSweetOptions {
 				Map<String, Object> fromJson = new Gson().fromJson(FileUtils.readFileToString(confFile), Map.class);
 				configuration = fromJson;
 				logger.debug("configuration: " + configuration);
-				// TODO: support all options...
-				// TODO: this will not work because all values will be
-				// overridden by the launcher's default values...
-				// we need to rewrite the plugins to achieve overriding
-				// if(configuration.containsKey("bundle")) {
-				// setBundle(getConfigurationValue("bundle"));
-				// }
-				// if(configuration.containsKey("noRootDirectories")) {
-				// setNoRootDirectories(getConfigurationValue("noRootDirectories"));
-				// }
-				// if(configuration.containsKey("sourceMap")) {
-				// setPreserveSourceLineNumbers(getConfigurationValue("sourceMap"));
-				// }
-				// if(configuration.containsKey("module")) {
-				// setModuleKind(ModuleKind.valueOf(getConfigurationValue("module")));
-				// }
-				// if(configuration.containsKey("encoding")) {
-				// setEncoding(getConfigurationValue("encoding"));
-				// }
-				// if(configuration.containsKey("enableAssertions")) {
-				// setIgnoreAssertions(!(Boolean)getConfigurationValue("enableAssertions"));
-				// }
-				// if(configuration.containsKey("declaration")) {
-				// setGenerateDeclarations(getConfigurationValue("declaration"));
-				// }
-				// if(configuration.containsKey("tsOnly")) {
-				// setGenerateJsFiles(!(Boolean)getConfigurationValue("tsOnly"));
-				// }
-				// if(configuration.containsKey("ignoreDefinitions")) {
-				// setGenerateDefinitions(!(Boolean)getConfigurationValue("ignoreDefinitions"));
-				// }
-				// if(configuration.containsKey("header")) {
-				// setHeaderFile(new
-				// File((String)getConfigurationValue("header")));
-				// }
-				// if(configuration.containsKey("disableSinglePrecisionFloats"))
-				// {
-				// setGenerateDeclarations(getConfigurationValue("disableSinglePrecisionFloats"));
-				// }
-				// if(configuration.containsKey("disableSinglePrecisionFloats"))
-				// {
-				// setGenerateDeclarations(getConfigurationValue("disableSinglePrecisionFloats"));
-				// }
-				// if(configuration.containsKey("targetVersion")) {
-				// setEcmaTargetVersion(EcmaScriptComplianceLevel.valueOf(getConfigurationValue("targetVersion")));
-				// }
-				// if(configuration.containsKey("tsout")) {
-				// setTsOutputDir(new
-				// File((String)getConfigurationValue("tsout")));
-				// }
-				// if(configuration.containsKey("dtsout")) {
-				// setDeclarationsOutputDir(new
-				// File((String)getConfigurationValue("dtsout")));
-				// }
-				// if(configuration.containsKey("jsout")) {
-				// setJsOutputDir(new
-				// File((String)getConfigurationValue("jsout")));
-				// }
+				applyConfiguration();
 			} catch (Exception e) {
 				logger.warn("error reading configuration file", e);
 			}
@@ -343,6 +361,9 @@ public class JSweetTranspiler implements JSweetOptions {
 			File extractedCandiesJavascriptDir, String classPath) {
 		this.factory = factory;
 		readConfiguration();
+		if(tsOutputDir==null) {
+			tsOutputDir = new File("target/ts");
+		}
 		this.workingDir = workingDir == null ? new File(TMP_WORKING_DIR_NAME).getAbsoluteFile()
 				: workingDir.getAbsoluteFile();
 		this.extractedCandyJavascriptDir = extractedCandiesJavascriptDir;

@@ -424,9 +424,6 @@ public class JSweetCommandLineLauncher {
 			ErrorCountTranspilationHandler transpilationHandler = new ErrorCountTranspilationHandler(
 					new ConsoleTranspilationHandler());
 
-			EcmaScriptComplianceLevel esTarget = getEcmaTargetVersion(jsapArgs.getString("targetVersion"));
-			logger.info(esTarget.toString());
-
 			try {
 
 				String[] included = jsapArgs.getStringArray("includes");
@@ -459,29 +456,32 @@ public class JSweetCommandLineLauncher {
 					}, inputDir, javaInputFiles);
 				}
 
-				File tsOutputDir = jsapArgs.getFile("tsout");
-				tsOutputDir.mkdirs();
+				File tsOutputDir = null;
+				if (jsapArgs.userSpecified("tsout") && jsapArgs.getFile("tsout") != null) {
+					tsOutputDir = jsapArgs.getFile("tsout");
+					tsOutputDir.mkdirs();
+				}
 				logger.info("ts output dir: " + tsOutputDir);
 
 				File jsOutputDir = null;
-				if (jsapArgs.getFile("jsout") != null) {
+				if (jsapArgs.userSpecified("jsout") && jsapArgs.getFile("jsout") != null) {
 					jsOutputDir = jsapArgs.getFile("jsout");
 					jsOutputDir.mkdirs();
 				}
 				logger.info("js output dir: " + jsOutputDir);
 
 				File dtsOutputDir = null;
-				if (jsapArgs.getFile("dtsout") != null) {
+				if (jsapArgs.userSpecified("dtsout") && jsapArgs.getFile("dtsout") != null) {
 					dtsOutputDir = jsapArgs.getFile("dtsout");
 				}
 
 				File candiesJsOutputDir = null;
-				if (jsapArgs.getFile("candiesJsOut") != null) {
+				if (jsapArgs.userSpecified("candiesJsOut") && jsapArgs.getFile("candiesJsOut") != null) {
 					candiesJsOutputDir = jsapArgs.getFile("candiesJsOut");
 				}
 
 				File sourceRootDir = null;
-				if (jsapArgs.getFile("sourceRoot") != null) {
+				if (jsapArgs.userSpecified("sourceRoot") && jsapArgs.getFile("sourceRoot") != null) {
 					sourceRootDir = jsapArgs.getFile("sourceRoot");
 				}
 
@@ -512,22 +512,57 @@ public class JSweetCommandLineLauncher {
 				JSweetTranspiler transpiler = new JSweetTranspiler(factory, jsapArgs.getFile("workingDir"), tsOutputDir,
 						jsOutputDir, candiesJsOutputDir, classPath);
 
-				transpiler.setBundle(jsapArgs.getBoolean("bundle"));
-				transpiler.setNoRootDirectories(jsapArgs.getBoolean("noRootDirectories"));
-				transpiler.setPreserveSourceLineNumbers(jsapArgs.getBoolean("sourceMap"));
+				if (jsapArgs.userSpecified("bundle")) {
+					transpiler.setBundle(jsapArgs.getBoolean("bundle"));
+				}
+				if (jsapArgs.userSpecified("noRootDirectories")) {
+					transpiler.setNoRootDirectories(jsapArgs.getBoolean("noRootDirectories"));
+				}
+				if (jsapArgs.userSpecified("sourceMap")) {
+					transpiler.setPreserveSourceLineNumbers(jsapArgs.getBoolean("sourceMap"));
+				}
 				if (sourceRootDir != null) {
 					transpiler.setSourceRoot(sourceRootDir);
 				}
-				transpiler.setModuleKind(ModuleKind.valueOf(jsapArgs.getString("module")));
-				transpiler.setEncoding(jsapArgs.getString("encoding"));
-				transpiler.setIgnoreAssertions(!jsapArgs.getBoolean("enableAssertions"));
-				transpiler.setGenerateDeclarations(jsapArgs.getBoolean("declaration"));
-				transpiler.setGenerateJsFiles(!jsapArgs.getBoolean("tsOnly"));
-				transpiler.setGenerateDefinitions(!jsapArgs.getBoolean("ignoreDefinitions"));
-				transpiler.setDeclarationsOutputDir(dtsOutputDir);
-				transpiler.setHeaderFile(jsapArgs.getFile("header"));
-				transpiler.setEcmaTargetVersion(esTarget);
-				transpiler.setDisableSinglePrecisionFloats(jsapArgs.getBoolean("disableSinglePrecisionFloats"));
+				if (jsapArgs.userSpecified("module")) {
+					transpiler.setModuleKind(ModuleKind.valueOf(jsapArgs.getString("module")));
+				}
+				if (jsapArgs.userSpecified("encoding")) {
+					transpiler.setEncoding(jsapArgs.getString("encoding"));
+				}
+				if (jsapArgs.userSpecified("enableAssertions")) {
+					transpiler.setIgnoreAssertions(!jsapArgs.getBoolean("enableAssertions"));
+				}
+				if (jsapArgs.userSpecified("declaration")) {
+					transpiler.setGenerateDeclarations(jsapArgs.getBoolean("declaration"));
+				}
+				if (jsapArgs.userSpecified("tsOnly")) {
+					transpiler.setGenerateJsFiles(!jsapArgs.getBoolean("tsOnly"));
+				}
+				if (jsapArgs.userSpecified("ignoreDefinitions")) {
+					transpiler.setGenerateDefinitions(!jsapArgs.getBoolean("ignoreDefinitions"));
+				}
+				if (jsapArgs.userSpecified("dtsOutputDir")) {
+					transpiler.setDeclarationsOutputDir(dtsOutputDir);
+				}
+				if (jsapArgs.userSpecified("header")) {
+					transpiler.setHeaderFile(jsapArgs.getFile("header"));
+				}
+				if (jsapArgs.userSpecified("targetVersion")) {
+					transpiler.setEcmaTargetVersion(
+							JSweetTranspiler.getEcmaTargetVersion(jsapArgs.getString("targetVersion")));
+				}
+				if (jsapArgs.userSpecified("disableSinglePrecisionFloats")) {
+					transpiler.setDisableSinglePrecisionFloats(jsapArgs.getBoolean("disableSinglePrecisionFloats"));
+				}
+
+				if (tsOutputDir != null) {
+					transpiler.setTsOutputDir(tsOutputDir);
+				}
+				if (jsOutputDir != null) {
+					transpiler.setJsOutputDir(jsOutputDir);
+				}
+
 				// transpiler.setAdapters(Arrays.asList(jsapArgs.getStringArray("adapters")));
 
 				List<File> files = Arrays.asList(jsapArgs.getFileArray("defInput"));
@@ -556,15 +591,6 @@ public class JSweetCommandLineLauncher {
 				}
 			}
 
-		}
-
-		private static EcmaScriptComplianceLevel getEcmaTargetVersion(String targetVersion) throws Exception {
-			try {
-				EcmaScriptComplianceLevel ecmaScriptComplianceLevel = EcmaScriptComplianceLevel.valueOf(targetVersion);
-				return ecmaScriptComplianceLevel;
-			} catch (IllegalArgumentException e) {
-				throw new Exception("Invalid EcmaScript target version: " + targetVersion);
-			}
 		}
 
 	}
