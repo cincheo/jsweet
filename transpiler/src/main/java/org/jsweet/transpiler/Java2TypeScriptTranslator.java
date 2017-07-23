@@ -243,7 +243,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		private List<JCClassDecl> localClasses = new ArrayList<>();
 
 		private List<String> generatedMethodNames = new ArrayList<>();
-		
+
 		// to be accessed in the parent scope
 		private boolean isAnonymousClass = false;
 		// to be accessed in the parent scope
@@ -1461,8 +1461,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			Map<Name, String> signatures = new HashMap<>();
 			for (MethodSymbol meth : methods) {
 				if (meth.type instanceof MethodType) {
-					// do not generate default abstract method for already generated methods
-					if(getScope().generatedMethodNames.contains(meth.name.toString())) {
+					// do not generate default abstract method for already
+					// generated methods
+					if (getScope().generatedMethodNames.contains(meth.name.toString())) {
 						continue;
 					}
 					MethodSymbol s = Util.findMethodDeclarationInType(getContext().types, classdecl.sym,
@@ -2809,7 +2810,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 								print("[]");
 							}
 						} else {
-							if (context.hasAnnotationType(varDecl.vartype.type.tsym, ANNOTATION_STRING_TYPE)) {
+							if (context.hasAnnotationType(varDecl.vartype.type.tsym, ANNOTATION_STRING_TYPE)
+									&& !varDecl.vartype.type.tsym.isEnum()) {
 								print("\"");
 								print(context.getAnnotationValue(varDecl.vartype.type.tsym, ANNOTATION_STRING_TYPE,
 										String.class, varDecl.vartype.type.tsym.name.toString()).toString());

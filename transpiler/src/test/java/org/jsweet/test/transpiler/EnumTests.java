@@ -22,6 +22,8 @@ import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetFactory;
 import org.jsweet.transpiler.ModuleKind;
 import org.jsweet.transpiler.extension.Java2TypeScriptAdapter;
+import org.jsweet.transpiler.extension.PrinterAdapter;
+import org.jsweet.transpiler.extension.StringEnumAdapter;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -33,6 +35,7 @@ import source.enums.ComplexEnums;
 import source.enums.EnumInSamePackage;
 import source.enums.Enums;
 import source.enums.ErasedEnum;
+import source.enums.StringEnums;
 import source.enums.other.EnumInOtherPackage;
 
 public class EnumTests extends AbstractTest {
@@ -87,7 +90,7 @@ public class EnumTests extends AbstractTest {
 			logHandler.assertNoProblems();
 		}, getSourceFile(ComplexInnerEnums.class));
 	}
-	
+
 	@Test
 	public void testComplexEnumWithAbstractMethods() {
 		eval((logHandler, r) -> {
@@ -135,6 +138,20 @@ public class EnumTests extends AbstractTest {
 		eval((logHandler, r) -> {
 			logHandler.assertNoProblems();
 		}, getSourceFile(EnumWithStatics.class));
+	}
+
+	@Test
+	public void testStringEnums() {
+		createTranspiler(new JSweetFactory() {
+			@Override
+			public PrinterAdapter createAdapter(JSweetContext context) {
+				return new StringEnumAdapter(super.createAdapter(context));
+			}
+		});
+		eval((logHandler, r) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(StringEnums.class));
+		createTranspiler(new JSweetFactory());
 	}
 
 }

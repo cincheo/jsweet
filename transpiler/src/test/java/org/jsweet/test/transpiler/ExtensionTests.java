@@ -12,13 +12,18 @@ import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetFactory;
 import org.jsweet.transpiler.ModuleKind;
 import org.jsweet.transpiler.extension.Java2TypeScriptAdapter;
+import org.jsweet.transpiler.extension.MapAdapter;
+import org.jsweet.transpiler.extension.PrinterAdapter;
 import org.jsweet.transpiler.extension.RemoveJavaDependenciesAdapter;
+import org.jsweet.transpiler.extension.StringEnumAdapter;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import source.enums.StringEnums;
 import source.extension.AnnotationTest;
+import source.extension.Maps;
 
 class TestFactory extends JSweetFactory {
 
@@ -105,4 +110,19 @@ public class ExtensionTests extends AbstractTest {
 		}, getSourceFile(AnnotationTest.class));
 	}
 
+	@Test
+	public void testMaps() {
+		createTranspiler(new JSweetFactory() {
+			@Override
+			public PrinterAdapter createAdapter(JSweetContext context) {
+				return new MapAdapter(super.createAdapter(context));
+			}
+		});
+		eval((logHandler, r) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(Maps.class));
+		createTranspiler(new JSweetFactory());
+		
+	}
+	
 }

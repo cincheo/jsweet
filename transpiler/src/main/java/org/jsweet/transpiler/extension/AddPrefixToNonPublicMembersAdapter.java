@@ -1,5 +1,23 @@
 package org.jsweet.transpiler.extension;
 
+/* 
+ * JSweet transpiler - http://www.jsweet.org
+ * Copyright (C) 2015 CINCHEO SAS <renaud.pawlak@cincheo.fr>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -7,6 +25,17 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
 import org.jsweet.transpiler.util.Util;
+
+/**
+ * This simple adapter renames non-public members by adding two underscores as a
+ * prefix.
+ * 
+ * <p>
+ * Note that this could be dangerous to use for protected fields if wanting to
+ * access them from subclasses declared in other JSweet projects.
+ * 
+ * @author Renaud Pawlak
+ */
 
 public class AddPrefixToNonPublicMembersAdapter extends PrinterAdapter {
 
