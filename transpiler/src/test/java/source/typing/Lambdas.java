@@ -26,8 +26,23 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
+import def.dom.Event;
+import def.dom.EventListener;
 import def.js.Array;
 import jsweet.util.function.TriFunction;
+
+class BrowserEventListener {
+	public String eventType;
+	public EventListener func;
+	public BrowserEventListener (String eventType, Function<Event,Boolean> theFunc) {
+		this.eventType = eventType;
+		this.func = new EventListener () {
+			public void $apply (Event e) {
+				theFunc.apply(e);
+			}
+		};
+	}
+}
 
 @FunctionalInterface
 interface FI {
