@@ -28,6 +28,7 @@ import source.generics.InferenceWithClassParameter;
 import source.generics.InnerClassNotStatic;
 import source.generics.InstantiationWithGenerics;
 import source.generics.RawTypes;
+import source.generics.SliceOfArrays;
 import source.generics.StaticAnonymousClass;
 import source.generics.Wildcards;
 
@@ -95,6 +96,13 @@ public class GenericsTests extends AbstractTest {
 		transpile(logHandler -> {
 			logHandler.assertNoProblems();
 		} , getSourceFile(InferenceWithClassParameter.class));
+	}
+	
+	@Test
+	public void testSliceOfArrays() {
+		transpile(logHandler -> {
+			logHandler.assertNoProblems();
+		} , getSourceFile(SliceOfArrays.class));
 	}
 	
 }
