@@ -557,9 +557,8 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 				case "getField":
 				case "getDeclaredField":
 					printMacroName(targetMethodName);
-					print("((c,p) => { return {owner:c,name:p}; })(")
-							.print(invocation.getTargetExpression()).print(",").print(invocation.getArgument(0))
-							.print(")");
+					print("((c,p) => { return {owner:c,name:p}; })(").print(invocation.getTargetExpression()).print(",")
+							.print(invocation.getArgument(0)).print(")");
 					return true;
 				}
 				break;
@@ -622,6 +621,19 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 						print("new Array<any>(").print(invocation.getArgument(1)).print(")");
 						return true;
 					}
+				case "getLength":
+					printMacroName(targetMethodName);
+					print(invocation.getArgument(0)).print(".length");
+					return true;
+				case "get":
+					printMacroName(targetMethodName);
+					print(invocation.getArgument(0)).print("[").print(invocation.getArgument(1)).print("]");
+					return true;
+				case "set":
+					printMacroName(targetMethodName);
+					print("(").print(invocation.getArgument(0)).print("[").print(invocation.getArgument(1)).print("]=")
+							.print(invocation.getArgument(1)).print(")");
+					return true;
 				}
 				break;
 

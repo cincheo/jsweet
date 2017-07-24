@@ -18,6 +18,7 @@ package org.jsweet.test.transpiler;
 
 import org.junit.Test;
 
+import source.reflection.ArrayMethods;
 import source.reflection.BasicBeanReflection;
 import source.reflection.FieldAccess;
 
@@ -35,6 +36,13 @@ public class ReflectionTests extends AbstractTest {
 		eval((h, r) -> {
 			h.assertNoProblems();
 		}, getSourceFile(FieldAccess.class));
+	}
+	
+	@Test
+	public void testArrayMethods() {
+		eval((h, r) -> {
+			h.assertNoProblems();
+		}, getSourceFile(ArrayMethods.class));
 	}
 	
 }
