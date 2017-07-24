@@ -41,7 +41,7 @@ public class AddPrefixToNonPublicMembersAdapter extends PrinterAdapter {
 
 	public AddPrefixToNonPublicMembersAdapter(PrinterAdapter parentAdapter) {
 		super(parentAdapter);
-		context.addAnnotationManager(new AnnotationManager() {
+		addAnnotationManager(new AnnotationManager() {
 
 			@Override
 			public Action manageAnnotation(Element element, String annotationType) {

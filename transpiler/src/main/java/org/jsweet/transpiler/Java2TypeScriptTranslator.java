@@ -414,18 +414,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (context.isPackageErased(topLevel.packge)) {
 			return;
 		}
-		boolean noDefs = true;
-		for (JCTree def : topLevel.defs) {
-			if (def instanceof JCClassDecl) {
-				if (!context.isIgnored(((JCClassDecl) def))) {
-					noDefs = false;
-				}
-			}
-		}
-		// do not print the compilation unit at all if no defs are to be printed
-		if (!context.bundleMode && noDefs) {
-			return;
-		}
 
 		isDefinitionScope = topLevel.packge.getQualifiedName().toString().startsWith(JSweetConfig.LIBS_PACKAGE + ".");
 
@@ -443,16 +431,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 		context.importedTopPackages.clear();
 		context.rootPackages.add(rootPackage);
-		// TODO: check relaxing @Root
-		// if (context.useModules && context.rootPackages.size() > 1) {
-		// if (!context.reportedMultipleRootPackages) {
-		// report(topLevel.getPackageName(),
-		// JSweetProblem.MULTIPLE_ROOT_PACKAGES_NOT_ALLOWED_WITH_MODULES,
-		// context.rootPackages.toString());
-		// context.reportedMultipleRootPackages = true;
-		// }
-		// return;
-		// }
 
 		topLevelPackage = context.getTopLevelPackage(topLevel.packge);
 		if (topLevelPackage != null) {

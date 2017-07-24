@@ -3,26 +3,34 @@ package org.jsweet.test.transpiler;
 import java.util.EventObject;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetFactory;
 import org.jsweet.transpiler.ModuleKind;
+import org.jsweet.transpiler.extension.AnnotationManager;
 import org.jsweet.transpiler.extension.Java2TypeScriptAdapter;
 import org.jsweet.transpiler.extension.MapAdapter;
 import org.jsweet.transpiler.extension.PrinterAdapter;
 import org.jsweet.transpiler.extension.RemoveJavaDependenciesAdapter;
-import org.jsweet.transpiler.extension.StringEnumAdapter;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import source.enums.StringEnums;
 import source.extension.AnnotationTest;
+import source.extension.HelloWorldDto;
+import source.extension.HelloWorldService;
 import source.extension.Maps;
 
 class TestFactory extends JSweetFactory {
@@ -77,6 +85,70 @@ class TestAdapter extends RemoveJavaDependenciesAdapter {
 
 }
 
+class JaxRSStubAdapter extends PrinterAdapter {
+
+	public JaxRSStubAdapter(PrinterAdapter parent) {
+		super(parent);
+		// erase service classes (server-side only)
+		addAnnotationManager(new AnnotationManager() {
+			@Override
+			public Action manageAnnotation(Element element, String annotationType) {
+				return JSweetConfig.ANNOTATION_ERASED.equals(annotationType)
+						&& hasAnnotationType(element, Path.class.getName()) ? Action.ADD : Action.VOID;
+			}
+		});
+	}
+
+	@Override
+	public void afterType(TypeElement type) {
+		super.afterType(type);
+		if (hasAnnotationType(type, Path.class.getName())) {
+			println().printIndent();
+			print("class ").print(type.getSimpleName()).print(" {");
+			startIndent();
+			String typePathAnnotationValue = getAnnotationValue(type, Path.class.getName(), String.class, null);
+			String typePath = typePathAnnotationValue != null ? typePathAnnotationValue : "";
+			for (Element e : type.getEnclosedElements()) {
+				if (e instanceof ExecutableElement
+						&& hasAnnotationType(e, GET.class.getName(), PUT.class.getName(), Path.class.getName())) {
+					ExecutableElement method = (ExecutableElement) e;
+					println().printIndent().print(method.getSimpleName().toString()).print("(");
+					for (VariableElement parameter : method.getParameters()) {
+						print(parameter.getSimpleName()).print(" : ").print(getMappedType(parameter.asType()))
+								.print(", ");
+					}
+					print("successHandler : (");
+					if (method.getReturnType().getKind() != TypeKind.VOID) {
+						print("result : ").print(getMappedType(method.getReturnType()));
+					}
+					print(") => void, errorHandler?: () => void").print(") : void");
+					print(" {").println().startIndent().printIndent();
+					String pathAnnotationValue = getAnnotationValue(e, Path.class.getName(), String.class, null);
+					String path = pathAnnotationValue != null ? pathAnnotationValue : "";
+					String httpMethod = "POST";
+					if(hasAnnotationType(e, GET.class.getName())) {
+						httpMethod = "GET";
+					}
+					if(hasAnnotationType(e, POST.class.getName())) {
+						httpMethod = "POST";
+					}
+					String[] consumes = getAnnotationValue(e, "javax.ws.rs.Consumes", String[].class, null);
+					if (consumes == null) {
+						consumes = new String[] { "application/json" };
+					}
+					print("// modify JaxRSStubAdapter to generate an HTTP invocation here").println().printIndent();
+					print("//   - httpMethod: " + httpMethod).println().printIndent();
+					print("//   - path: " + typePath + path).println().printIndent();
+					print("//   - consumes: " + consumes[0]).println().printIndent();
+					println().endIndent().printIndent().print("}");
+				}
+			}
+			println().endIndent().printIndent().print("}");
+		}
+	}
+
+}
+
 public class ExtensionTests extends AbstractTest {
 
 	@BeforeClass
@@ -122,7 +194,22 @@ public class ExtensionTests extends AbstractTest {
 			logHandler.assertNoProblems();
 		}, getSourceFile(Maps.class));
 		createTranspiler(new JSweetFactory());
-		
+
 	}
-	
+
+	@Test
+	public void testJaxRSStubs() {
+		createTranspiler(new JSweetFactory() {
+			@Override
+			public PrinterAdapter createAdapter(JSweetContext context) {
+				return new JaxRSStubAdapter(super.createAdapter(context));
+			}
+		});
+		transpile(logHandler -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(HelloWorldService.class), getSourceFile(HelloWorldDto.class));
+		createTranspiler(new JSweetFactory());
+
+	}
+
 }
