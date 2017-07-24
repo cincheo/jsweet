@@ -78,7 +78,7 @@ Renaud Pawlak\\
 
 This section presents the JSweet language basic concepts. One must keep in mind that JSweet, as a Java-to-JavaScript transpiler, is an extension of Java at compile-time, and executes as JavaScript at runtime. JSweet aims at being a trade-off between Java and JavaScript, by respecting as much as possible the Java semantics, but without loosing interoperability with JavaScript. So, in a way, JSweet can be seen as a fusion between Java and JavaScript, trying to get the best of both worlds in one unique and consistent language. In some cases, it is hard to get the best of both worlds and JSweet makes convenient and practical choices.
 
-Because JSweet is an open JavaScript transpiler, the user can tune the JavaScript generation without much efforts, thus making other choices than default ones to map Java to JavaScript. For example, if the way JSweet implements Java maps does not suit your context or use case, you can program a JSweet extension to override the default strategy. Programming and activating a JSweet extension is fully explained in Section \ref{extension}.
+Because JSweet is an open JavaScript transpiler, the user can tune the JavaScript generation without much efforts, thus making other choices than default ones to map Java to JavaScript. For example, if the way JSweet implements Java maps does not suit your context or use case, you can program a JSweet extension to override the default strategy. Programming and activating a JSweet extension is fully explained in Section \ref{extending-the-transpiler}.
 
 \section{Core types and objects}
 
@@ -95,7 +95,7 @@ JSweet allows the use of Java primitive types (and associated literals).
 \item \texttt{java.lang.String} corresponds to the JavaScript \texttt{string}. (not per say a primitive type, but is immutable and used as the class of string literals in Java)
 \end{itemize}
 
-A direct consequence of that conversion is that it is not always possible in JSweet to safely overload methods with numbers or chars/strings. For instance, the methods \texttt{pow(int, int)} and \texttt{pow(double, double)} may raise overloading issues. With a JSweet context, the transpiler will be able to select the right method, but the JavaScript interoperability may be a problem. In short, since there is no difference between \texttt{n instanceof Integer} and \texttt{n instanceof Double} (it both means \texttt{typeof n === 'number'}) calling \texttt{pow(number, number)} from JavaScript will randomly select one implementation or the other. This should not be always a problem, but in some particular cases, it can raise subtle errors. Note that in these cases, the programmers will be able to tune the JavaScript generation, as it is fully explained in Section \ref{extension}.
+A direct consequence of that conversion is that it is not always possible in JSweet to safely overload methods with numbers or chars/strings. For instance, the methods \texttt{pow(int, int)} and \texttt{pow(double, double)} may raise overloading issues. With a JSweet context, the transpiler will be able to select the right method, but the JavaScript interoperability may be a problem. In short, since there is no difference between \texttt{n instanceof Integer} and \texttt{n instanceof Double} (it both means \texttt{typeof n === 'number'}) calling \texttt{pow(number, number)} from JavaScript will randomly select one implementation or the other. This should not be always a problem, but in some particular cases, it can raise subtle errors. Note that in these cases, the programmers will be able to tune the JavaScript generation, as it is fully explained in Section \ref{extending-the-transpiler}.
 
 \noindent
 Examples of valid statements:
@@ -530,7 +530,7 @@ One must remember that \texttt{Globals} classes and \texttt{global} packages are
 In order to erase packages in the generated code, programmers can also use the \texttt{@Root} annotation, which will be explained in Section \ref{packaging}.
 
 \section{Optional parameters and overloading} 
-\label{optional-parameters}
+\label{optional-parameters-and-overloading}
 
 In JavaScript, parameters can be optional, in the sense that a parameter value does not need to be provided when calling a function. Except for varargs, which are fully supported in JSweet, the general concept of an optional parameter does not exist in Java. To simulate optional parameters, JSweet programmers can use method overloading, which is supported in Java. Here are some examples of supported overloads in JSweet:
 
@@ -1405,7 +1405,7 @@ We provide a quick start project to help you starting with such a use case: \url
 We provide a quick start project to help you starting with such a use case: \url{https://github.com/cincheo/jsweet-candy-js-quickstart}
 
 \chapter{Extending the transpiler}
-\label{extension}
+\label{extending-the-transpiler}
 
 JSweet is an Open Transpiler. It means that it provides ways for programmers to tune/extend how JSweet generates the intermediate TypeScript code. Tuning the transpiler is a solution to avoid repetitive tasks and automatize them. For instance, say you have a legacy Java code that uses the Java API for serializing objects (\texttt{writeObject}/\texttt{readObject}). With JSweet, you can easily erase these methods from your program, so that the generated JavaScript code is free from any Java-specific serialization idioms. As another example, say you have a Java legacy code base that uses a Java API, which is close to (but not exactly) a JavaScript API you want to use in your final JavaScript code. With JSweet, you can write an adapter that will automatically map all the Java calls to the corresponding JavaScript calls. Last but not least, you can tune JSweet to take advantage of some specific APIs depending on the context. For instance, you may use ES6 maps if you know that your targeted browser supports them, or just use an emulation or a simpler implementation in other cases. You may adapt the code to avoid using some canvas or WebGL primitives when knowing they are not well supported for a given mobile browser. An so on... Using an Open Transpiler such as JSweet has many practical applications, which you may or may not have to use, but in any case it is good to be aware of what is possible.
 
@@ -2001,8 +2001,6 @@ public class StringEnumAdapter extends PrinterAdapter {
 }
 \end{lstlisting}
 
-This adapter is provided with JSweet, but is not activated by default. In order to activate it, you need to add it to the default adapter chain.
-
 \subsection{Example 5: an adapter to generate JavaScript JAX-RS proxies/stubs}
 
 It is a common use case to implement a WEB or mobile application with Java on the server and JavaScript on the client. Typically, a JEE/Jackson server will expose a REST API through the JAX-RS specifications, and the HTML5 client will have to invoke this API using \texttt{XMLHttpRequest} or higher level libraries such as jQuery. However, coding the HTTP invocations manually comes with many drawbacks:
@@ -2263,7 +2261,6 @@ So, all you need to do is to modify the code of the adapter to generate the actu
 \end{small}
        
 \chapter*{Appendix 2: packaging and static behavior}
-\label{static_behavior}
 
 This appendix explains some static behavior with regards to packaging.
 

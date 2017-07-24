@@ -19,7 +19,7 @@ Content
     -   [Untyped objects (maps)](#untyped-objects-maps)
     -   [Enums](#enums)
     -   [Globals](#globals)
-    -   [Optional parameters and overloading](#optional-parameters)
+    -   [Optional parameters and overloading](#optional-parameters-and-overloading)
 -   [Bridging to external JavaScript elements](#bridging-to-external-javascript-elements)
     -   [Examples](#examples)
     -   [Rules for writing definitions (a.k.a. bridges)](#rules-for-writing-definitions-a.k.a.-bridges)
@@ -47,12 +47,12 @@ Content
     -   [Packaging with modules](#packaging-with-modules)
     -   [Root packages](#root-packages)
     -   [Packaging a JSweet jar (candy)](#packaging-a-jsweet-jar-candy)
--   [Extending the transpiler](#extension)
+-   [Extending the transpiler](#extending-the-transpiler)
     -   [Core annotations](#core-annotations)
     -   [Centralizing annotations in `jsweetconfig.json`](#centralizing-annotations-in-jsweetconfig.json)
     -   [Programmatic tuning with adapters](#programmatic-tuning-with-adapters)
 -   [Appendix 1: JSweet transpiler options](#appendix-1-jsweet-transpiler-options)
--   [Appendix 2: packaging and static behavior](#static_behavior)
+-   [Appendix 2: packaging and static behavior](#appendix-2-packaging-and-static-behavior)
     -   [When main methods are invoked](#when-main-methods-are-invoked)
     -   [Static and inheritance dependencies](#static-and-inheritance-dependencies)
 
@@ -61,7 +61,7 @@ Basic concepts
 
 This section presents the JSweet language basic concepts. One must keep in mind that JSweet, as a Java-to-JavaScript transpiler, is an extension of Java at compile-time, and executes as JavaScript at runtime. JSweet aims at being a trade-off between Java and JavaScript, by respecting as much as possible the Java semantics, but without loosing interoperability with JavaScript. So, in a way, JSweet can be seen as a fusion between Java and JavaScript, trying to get the best of both worlds in one unique and consistent language. In some cases, it is hard to get the best of both worlds and JSweet makes convenient and practical choices.
 
-Because JSweet is an open JavaScript transpiler, the user can tune the JavaScript generation without much efforts, thus making other choices than default ones to map Java to JavaScript. For example, if the way JSweet implements Java maps does not suit your context or use case, you can program a JSweet extension to override the default strategy. Programming and activating a JSweet extension is fully explained in Section \[extension\].
+Because JSweet is an open JavaScript transpiler, the user can tune the JavaScript generation without much efforts, thus making other choices than default ones to map Java to JavaScript. For example, if the way JSweet implements Java maps does not suit your context or use case, you can program a JSweet extension to override the default strategy. Programming and activating a JSweet extension is fully explained in Section \[extending-the-transpiler\].
 
 ### Core types and objects
 
@@ -79,7 +79,7 @@ JSweet allows the use of Java primitive types (and associated literals).
 
 -   `java.lang.String` corresponds to the JavaScript `string`. (not per say a primitive type, but is immutable and used as the class of string literals in Java)
 
-A direct consequence of that conversion is that it is not always possible in JSweet to safely overload methods with numbers or chars/strings. For instance, the methods `pow(int, int)` and `pow(double, double)` may raise overloading issues. With a JSweet context, the transpiler will be able to select the right method, but the JavaScript interoperability may be a problem. In short, since there is no difference between `n instanceof Integer` and `n instanceof Double` (it both means `typeof n === ’number’`) calling `pow(number, number)` from JavaScript will randomly select one implementation or the other. This should not be always a problem, but in some particular cases, it can raise subtle errors. Note that in these cases, the programmers will be able to tune the JavaScript generation, as it is fully explained in Section \[extension\].
+A direct consequence of that conversion is that it is not always possible in JSweet to safely overload methods with numbers or chars/strings. For instance, the methods `pow(int, int)` and `pow(double, double)` may raise overloading issues. With a JSweet context, the transpiler will be able to select the right method, but the JavaScript interoperability may be a problem. In short, since there is no difference between `n instanceof Integer` and `n instanceof Double` (it both means `typeof n === ’number’`) calling `pow(number, number)` from JavaScript will randomly select one implementation or the other. This should not be always a problem, but in some particular cases, it can raise subtle errors. Note that in these cases, the programmers will be able to tune the JavaScript generation, as it is fully explained in Section \[extending-the-transpiler\].
 
 Examples of valid statements:
 
@@ -1980,8 +1980,6 @@ public class StringEnumAdapter extends PrinterAdapter {
     }
 }
 ```
-
-This adapter is provided with JSweet, but is not activated by default. In order to activate it, you need to add it to the default adapter chain.
 
 #### Example 5: an adapter to generate JavaScript JAX-RS proxies/stubs
 
