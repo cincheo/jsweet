@@ -15,6 +15,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
+import java.util.TreeSet;
 import java.util.Vector;
 
 import def.js.Array;
@@ -311,6 +312,11 @@ public class Collections implements Cloneable, Serializable {
 				return o2.compareTo(o1);
 			}
 		});
+		
+		HashSet<String> aSet = new HashSet<>();		
+		Set<String> aSet2 = new HashSet<>();		
+		Set<String> aSet3 = new TreeSet<>();		
+		List<String> aList = new ArrayList<>();		
 		
 		$export("trace", trace.join(","));
 

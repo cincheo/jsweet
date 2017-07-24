@@ -1360,6 +1360,8 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		case "java.util.LinkedList":
 		case "java.util.Vector":
 		case "java.util.Stack":
+		case "java.util.TreeSet":
+		case "java.util.HashSet":
 			if (newClass.getArgumentCount() == 0) {
 				print("[]");
 			} else {
