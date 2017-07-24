@@ -64,6 +64,7 @@ import source.structural.ObjectTypes;
 import source.structural.PrivateFieldNameClashes;
 import source.structural.ReplaceAnnotation;
 import source.structural.StaticMembersInInterfaces;
+import source.structural.SubAbstract;
 import source.structural.TwoClassesInSameFile;
 import source.structural.WrongConstructsInInterfaces;
 import source.structural.WrongThisAccessOnStatic;
@@ -168,6 +169,13 @@ public class StructuralTests extends AbstractTest {
 		}, getSourceFile(AnonymousClassForLambda.class));
 	}
 
+	@Test
+	public void testSubAbstract() {
+		transpile(logHandler -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(SubAbstract.class));
+	}
+	
 	@Test
 	public void testInheritance() {
 		eval((logHandler, r) -> {

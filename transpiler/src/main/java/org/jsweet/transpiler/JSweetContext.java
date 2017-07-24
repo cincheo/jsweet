@@ -44,6 +44,7 @@ import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -1464,6 +1465,10 @@ public class JSweetContext extends Context {
 			}
 			if (newClass.def.defs.size() > 2) {
 				// a map has a constructor (implicit) and an initializer
+				return true;
+			}
+			if(newClass.clazz.type.tsym.getModifiers().contains(Modifier.ABSTRACT)) {
+				// maps cannot be abstract
 				return true;
 			}
 			for (JCTree def : newClass.def.defs) {
