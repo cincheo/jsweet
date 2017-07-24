@@ -42,5 +42,19 @@ public class SubAbstract {
 		}
 
 	}
-
+	    
+	    private static class Loop {
+	        
+	        private final End start = new End() {
+	            int getIndex() { return 0; }
+	        };
+	        
+	        private abstract class End {
+	            abstract int getIndex();
+	            private Loop getLoop() {
+	                return Loop.this;
+	            }
+	        }
+	    }
+	
 }

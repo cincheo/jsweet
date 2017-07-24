@@ -3022,6 +3022,30 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 			} else if ("this".equals(fieldAccess.name.toString())) {
 				print("this");
+
+				if (getScope().innerClassNotStatic) {
+					JCClassDecl parent = getParent(JCClassDecl.class);
+					int level = 0;
+					boolean foundInParent = false;
+					while (getScope(level++).innerClassNotStatic) {
+						parent = getParent(JCClassDecl.class, parent);
+						if (parent != null && parent.sym.equals(fieldAccess.selected.type.tsym)) {
+							foundInParent = true;
+							break;
+						}
+					}
+					if (foundInParent && level > 0) {
+						print(".");
+						if (getScope().constructor) {
+							removeLastChars(5);
+						}
+						for (int i = 0; i < level; i++) {
+							print(PARENT_CLASS_FIELD_NAME + ".");
+						}
+						removeLastChar();
+					}
+				}
+
 			} else {
 				String selected = fieldAccess.selected.toString();
 				if (!selected.equals(GLOBALS_CLASS_NAME)) {
