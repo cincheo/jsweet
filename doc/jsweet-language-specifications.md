@@ -95,7 +95,7 @@ boolean b = false;
 assert !b;
 ```
 
-The `==` operator behaves like the JavaScript strict equals operator `===` so that it is close to the Java semantics. Similarly, `!=` is mapped to `!==`. There is an exception to that behavior which is when comparing an object to a `null` literal. In that case, JSweet translates to the loose equality operators so that the programmers see no distinction between `null` and `undefined` (which are different in JavaScript but it may be confusing to Java programmers). To control whether JSweet generates strict or loose operators, you can use the following helper methods: `jsweet.util.Lang.$strict` and `jsweet.util.Lang.$loose`. Wrapping a comparison operator in such a macro will force JSweet to generate a strict or loose operator.. For example:
+The `==` operator behaves like the JavaScript strict equals operator `===` so that it is close to the Java semantics. Similarly, `!=` is mapped to `!==`. There is an exception to that behavior which is when comparing an object to a `null` literal. In that case, JSweet translates to the loose equality operators so that the programmers see no distinction between `null` and `undefined` (which are different in JavaScript but it may be confusing to Java programmers). To control whether JSweet generates strict or loose operators, you can use the following helper methods: `jsweet.util.Lang.$strict` and `jsweet.util.Lang.$loose`. Wrapping a comparison operator in such a macro will force JSweet to generate a strict or loose operator. For example:
 
 ``` java
 import static jsweet.util.Lang.$loose;
@@ -112,7 +112,7 @@ By default, JSweet maps core Java objects and methods to JavaScript through the 
 
 With the default behavior, we can point the following limitations:
 
--   Extending a JDK class is in general not possible, except for some particular contexts. If extending a JDK class is required, should should consider to refactor your program, or use the J4TS runtime, which would allow it.
+-   Extending a JDK class is in general not possible, except for some particular contexts. If extending a JDK class is required, should should consider to refactor your program, or use a JavaScript runtime (such as J4TS), which would allow it.
 
 -   The Java reflection API (`java.lang.reflect`) is limited to very basic operations. It is possible to access the classes and the members, but it is not possible to access types. A more complete support of Java reflection would be possible, but it would require a JSweet extension.
 
@@ -1375,7 +1375,7 @@ Here is an example of the `META-INF/candy-metadata.json` file:
 
 ``` java
 {
-   "transpilerVersion": "1.1.0"
+   "transpilerVersion": "2.0.0"
 }
 ```
 
@@ -1442,7 +1442,7 @@ class Person {
 }
 ```
 
-Using JSweet annotations makes it possible to share classes between Java and JavaScript in a flexible way. Useless methods in JavaScript are erased, and some methods can have different implementation for Java and JavaScript.
+Using JSweet annotations makes it possible to share classes between Java and JavaScript in a flexible way. Useless methods in JavaScript are erased, and some methods can have different implementations for Java and JavaScript.
 
 ### Centralizing annotations in `jsweetconfig.json`
 
@@ -1450,7 +1450,7 @@ JSweet supports the definition of annotations within a unique configuration file
 
 1.  Annotations or annotation contents may differ depending on the context. It may be convenient to have different configuration files depending on the context. It is easier to switch a configuration file with another than having to change all the annotations in the program.
 
-2.  Adding annotations to the Java program is convenient to tune the program locally (on a given element). However, in some cases, similar annotations should apply on a set of program elements, in order to automatize global tuning of the program. In that case, it is more convenient to install annotation by using an expression, that will match a set of program element at once. This will mechanism is similar to the *pointcut* mechanism that can be found in Aspect Oriented Software Design. It allows capturing a global modification in a declarative manner.
+2.  Adding annotations to the Java program is convenient to tune the program locally (on a given element). However, in some cases, similar annotations should apply on a set of program elements, in order to automatize global tuning of the program. In that case, it is more convenient to install annotations by using an expression, that will match a set of program elements at once. This mechanism is similar to the *pointcut* mechanism that can be found in Aspect Oriented Software Design. It allows capturing a global modification in a declarative manner.
 
 3.  Using annotations in the Java source code entails a reference to the JSweet API (the `jsweet.lang` package) that may be seen as an unwanted dependency for some programmers who want their Java code to remain as “pure” as possible.
 
@@ -1467,7 +1467,7 @@ Where `<annotation>` is the annotation to be added, with potential parameters, a
 
 A match expression is a sort of simplified regular expression, supporting the following wildcards:
 
-1.  `*` matches any token or token sub-part in the signature of the program element (a token is an identifier part of a signature, for instance `A.m(java.lang.String)` contains the token `A`, `m`, and `java.lang.String`).
+1.  `*` matches any token or token sub-part in the signature of the program element (a token is an identifier part of a signature, for instance `A.m(java.lang.String)` contains the tokens `A`, `m`, and `java.lang.String`).
 
 2.  `**` matches any list of tokens in signature of the program element.
 
@@ -1504,7 +1504,7 @@ Here is a more complete example with a full `jsweetconfig.json` configuration fi
     "include": [ "**.writeObject(..)", "**.readObject(..)", "**.hashCode(..)" ]
   },
   // inject logging in all setters and getters of the x.y.z.A class
-  "@Replace('console.info('entering {{methodName}}'); let _result = () => { {{body}} }(); console.info('returning '+result); return result;')": {
+  "@Replace('console.info('entering {{methodName}}'); let _result = () => { {{body}} }(); console.info('returning '+_result); return _result;')": {
     "include": [ "x.y.z.A.set*(*)", "x.y.z.A.get*()", "x.y.z.A.is*()" ]
   }
 }
@@ -1514,9 +1514,627 @@ Note that annotations are defined with simple names only. That’s because they 
 
 ### Programmatic tuning with adapters
 
-Declarative tuning through annotation rapidly hits limitations when tuning the generation for specific purposes (typically when supporting additional Java libraries). Hence, JSweet provides an API so that programmers can extend the way JSweet generates the intermediate TypeScript code. Writing such an adaptation program is similar to writing a regular Java program, except that it applies to other programs. As such, it falls into the category of so-called meta-programs (i.e. programs that work on programs). Since programmers may write extensions that leads to invalid code, that is where it becomes really handy to have an intermediate compilation layer. If the generated code is invalid, the TypeScript to JavaScript compilation will raise errors, thus allowing the programmer to fix their extension code.
+Declarative tuning through annotation rapidly hits limitations when tuning the generation for specific purposes (typically when supporting additional Java libraries). Hence, JSweet provides an API so that programmers can extend the way JSweet generates the intermediate TypeScript code. Writing such an adaptation program is similar to writing a regular Java program, except that it will apply to your programs to transform them. As such, it falls into the category of so-called meta-programs (i.e. programs use other programs as data). Since programmers may write extensions that leads to invalid code, that is where it becomes really handy to have an intermediate compilation layer. If the generated code is invalid, the TypeScript to JavaScript compilation will raise errors, thus allowing the programmer to fix the extension code.
 
-TBD
+#### Introducing the extension API
+
+The extension API is available in the `org.jsweet.transpiler.extension` package. It is based on a factory pattern (`org.jsweet.transpiler.JSweetFactory`) that allows the programmer to adapt all the main components of the transpiler by subclassing them. In practice, most adaptations can be done by creating new printer adapters, as subclasses of `org.jsweet.transpiler.extension.PrinterAdapter`. Adapters are the core extension mechanism because they are chainable and can be composed (it is a sort of decorator pattern). JSweet uses default adapters in a default adaptation chain and tuning JSweet will then consist in adding new adapters to the chain.
+
+An adapter will typically perform three kinds of operations to tune the generated code:
+
+1.  Map Java types to TypeScript ones.
+
+2.  Add annotations to the program either in a declarative way (with global filters) or in a programmatic way (with annotation managers).
+
+3.  Override printing methods defined in `PrinterAdapter` in order to override the TypeScript core that is generated by default. Printing methods take program elements, which are based on the standard `javax.lang.model.element` API. It provides an extension of that API for program elements that are expressions and statements (`org.jsweet.transpiler.extension.model`).
+
+The following template shows the typical sections when programming an adapter. First, an adapter must extend `PrinterAdapter` or any other adapter. It must define a constructor taking the parent adapter, which will be set by JSweet when inserting the adapter in the chain.
+
+``` java
+public class MyAdapter extends PrinterAdapter {
+
+    public BigDecimalAdapter(PrinterAdapter parent) {
+        super(parent);
+        ...
+```
+
+In the constructor, an adapter typically maps Java types to TypeScript types.
+
+``` java
+        // will change the type in variable/parameters declarations
+        addTypeMapping("AJavaType", "ATypeScriptType");
+        // you may want to erase type checking by mapping to 'any'
+        addTypeMapping("AJavaType2", "any");
+        [...]
+```
+
+In the constructor, an adapter can also add annotations in a more flexible way than when using the `jsweetconfig.json` syntax.
+
+``` java
+        // add annotations dynamically to the AST, with global filters
+        addAnnotation("jsweet.lang.Erased", //
+                "**.readObject(..)", //
+                "**.writeObject(..)", //
+                "**.hashCode(..)");
+        // or with annotation managers (see the Javadoc and the example below)      
+        addAnnotationManager(new AnnotationManager() { ... });
+    }
+```
+
+Most importantly, an adapter can override substitution methods for most important AST elements. By overriding these methods, an adapter will change the way JSweet generates the intermediate TypeScript code. To print out code, you can use the `print` method, which is defined in the root `PrinterAdapter` class. For example, the following code will replace all `new AJavaType(...)` with `new ATypeScriptType(...)`.
+
+``` java
+    @Override
+    public boolean substituteNewClass(NewClassElement newClass) {
+        // check if the 'new' applies to the right class 
+        if ("AJavaType".equals(newClass.getTypeAsElement().toString())) {
+            // the 'print' method will generate intermediate TypeScript code
+            print("new ATypeScriptType(")
+                    .printArgList(newClass.getArguments()).print(")");
+            // once some code has been printed, you should return true to break 
+            // the adapter chain, so your code will replace the default one
+            return true;
+        }
+        // if not substituted, delegate to the adapter chain
+        return super.substituteNewClass(newClass);
+    }
+```
+
+Most useful substitution method remains invocation substitution, which is typically used to map a Java API to a similar JavaScript API.
+
+``` java
+    @Override
+    public boolean substituteMethodInvocation(MethodInvocationElement invocation) {
+        // substitute potential method invocation here
+        [...]
+        // delegate to the adapter chain
+        return super.substituteMethodInvocation(invocation);
+    }
+}
+```
+
+Note also a special method to insert code after a Java type has been printed out:
+
+``` java
+    @Override
+    public void afterType(TypeElement type) {
+        super.afterType(type);
+        // insert whatever TypeScript you need here     
+        [...]
+    }
+```
+
+There are many applications to adapters (see the examples below). Besides tuning the code generation and supporting Java APIs at compile-time, adapters can also be used to raise errors when the compiled code does not conform to expected standards depending on the target context. Another very useful use case it to allow the generation of proxies. For instance one can write an adapter that will generate JavaScript stubs to invoke Java services deployed with JAX-RS.
+
+#### Installing and activating adapters
+
+Once you have written an adapter, you need to compile it and add it to the adapter chain. The simplest way to do it with JSweet is to put it in the `jsweet_extension` directory that you need to create at the root of your project JSweet. In that directory, you can directly add Java source files for adapters, that will be compiled by JSweet on the fly. For instance, you may add two custom adapters `CustomAdapter1.java` and `CustomAdapter2.java` in `jsweet_extension/com/mycompany/`.
+
+Then, in order to activate that adapter, you just need to add the `jsweetconfig.json` file at the root of the project and define the `adapters` configuration option, like this:
+
+``` java
+{
+  // JSweet will add the declared adapters at the beginning of the default 
+  // chain... you can add as many adapters as you need
+  adapters: [ "com.mycompany.CustomAdapter1", "com.mycompany.CustomAdapter2" ]
+}
+```
+
+The following sections illustrate the use of JSweet adapters with 5 real-life examples. Most of these adapters are built-in with JSweet (in the `org.jsweet.transpiler.extension` package) and can just be activated by adding them to the adapter chain as explained above. If you want to modify the adapters, just copy-paste the code in the `jsweet_extension` directory and change the names.
+
+#### Example 1: an adapter to rename private fields
+
+This simple adapter renames non-public members by adding two underscores as a prefix. Note that this could be dangerous to use for protected fields if wanting to access them from subclasses declared in other JSweet projects. So you may want to use carefully or to modify the code for your own needs.
+
+This adapter is a good example for demonstrating how to use annotation managers. Annotation managers are used to add (soft) annotations to program elements driven by some Java code (programmatically). Annotation managers are added to the context an will be chained to other existing annotation managers (potentially added by other adapters). An annotation manager must implement the `manageAnnotation` method, that will tell if a given annotation should be added, removed, or left unchanged on a given element. If the annotation has parameters, an annotation manager shall implement the `getAnnotationValue` in order to specify the values.
+
+In this example, the annotation manager adds the `@jsweet.lang.Name` annotation to all non-public elements in order to rename them and add the underscores to the initial name.
+
+``` java
+package org.jsweet.transpiler.extension;
+
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import org.jsweet.transpiler.util.Util;
+
+public class AddPrefixToNonPublicMembersAdapter extends PrinterAdapter {
+
+    public AddPrefixToNonPublicMembersAdapter(PrinterAdapter parentAdapter) {
+        super(parentAdapter);
+        // add a custom annotation manager to the chain
+        context.addAnnotationManager(new AnnotationManager() {
+
+            @Override
+            public Action manageAnnotation(Element element, String annotationType) {
+                // add the @Name annotation to non-public elements          
+                return "jsweet.lang.Name".equals(annotationType) 
+                        && isNonPublicMember(element) ? Action.ADD : Action.VOID;
+            }
+
+            @Override
+            public <T> T getAnnotationValue(Element element, 
+                    String annotationType, String propertyName,
+                    Class<T> propertyClass, T defaultValue) {
+                // set the name of the added @Name annotation (value)
+                if ("jsweet.lang.Name".equals(annotationType) && isNonPublicMember(element)) {
+                    return propertyClass.cast("__" + element.getSimpleName());
+                } else {
+                    return null;
+                }
+            }
+
+            private boolean isNonPublicMember(Element element) {
+                return (element instanceof VariableElement || element instanceof ExecutableElement)
+                        && element.getEnclosingElement() instanceof TypeElement
+                        && !element.getModifiers().contains(Modifier.PUBLIC) 
+                        && Util.isSourceElement(element);
+            }
+        });
+    }
+}
+```
+
+#### Example 2: an adapter to use ES6 Maps
+
+JSweet default implementation of maps it as follows:
+
+-   If the key type is a string, the map is transpiled as a regular JavaScript object, where property names will be the keys.
+
+-   If the key type is an object (any other than a string), the map is transpiled as a list of entries. The implementation is quite inefficient because finding a key requires iterating over the entries to find the right entry key.
+
+In some contexts, you may want to get more efficient map implementations. If you target modern browsers (or expect to have the appropriate polyfill available), you can simply use the `Map` object, which was standardized with ES6. Doing so requires an adapter that performs the following actions:
+
+-   Erase the Java `Map` type and replace it with the JavaScript `Map` type, or actually the `any` type, since you may want to keep the `Object` implementation when keys are strings.
+
+-   Substitute the construction of a map with the corresponding JavaScript construction.
+
+-   Substitute the invocations on Java maps with the corresponding JavaScript invocations.
+
+Note that the following adapter is a partial implementation that shall be extended to support more cases and adapted to your own requirements. Additionally, this implementation generates untyped JavaScript in order to avoid having to have the ES6 API in the compilation path.
+
+``` java
+package org.jsweet.transpiler.extension;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Map;
+import java.util.TreeMap;
+import javax.lang.model.element.Element;
+import org.jsweet.transpiler.model.MethodInvocationElement;
+import org.jsweet.transpiler.model.NewClassElement;
+
+public class MapAdapter extends PrinterAdapter {
+
+    // all the Java types that will be translated to ES6 maps
+    static String[] mapTypes = { 
+        Map.class.getName(), HashMap.class.getName(), 
+        TreeMap.class.getName(), Hashtable.class.getName() };
+
+    public MapAdapter(PrinterAdapter parent) {
+        super(parent);
+        // rewrite all Java map and compatible map implementations types
+        // note that we rewrite to 'any' because we don't want to require the
+        // ES6 API to compile (all subsequent accesses will be untyped)
+        for (String mapType : mapTypes) {
+            addTypeMapping(mapType, "any");
+        }
+    }
+
+    @Override
+    public boolean substituteNewClass(NewClassElement newClass) {
+        String className = newClass.getTypeAsElement().toString();
+        // map the map constructor to the global 'Map' variable (untyped access)
+        if (Arrays.binarySearch(mapTypes, className) >= 0) {
+            // this access is browser/node-compatible
+            print("new (window?window:global)['Map'](")
+                    .printArgList(newClass.getArguments()).print(")");
+            return true;
+        }
+        // delegate to the adapter chain
+        return super.substituteNewClass(newClass);
+    }
+
+    @Override
+    public boolean substituteMethodInvocation(MethodInvocationElement invocation) {
+        if (invocation.getTargetExpression() != null) {
+            Element targetType = invocation.getTargetExpression().getTypeAsElement();
+            if (Arrays.binarySearch(mapTypes, targetType.toString()) >= 0) {
+                // Java Map methods are mapped to their JavaScript equivalent
+                switch (invocation.getMethodName()) {
+                case "put":
+                    printMacroName(invocation.getMethodName());
+                    print(invocation.getTargetExpression()).print(".set(")
+                            .printArgList(invocation.getArguments())
+                            .print(")");
+                    return true;
+                // although 'get' has the same name, we still rewrite it in case
+                // another extension would provide it's own implementation
+                case "get":
+                    printMacroName(invocation.getMethodName());
+                    print(invocation.getTargetExpression()).print(".get(")
+                            .printArgList(invocation.getArguments())
+                            .print(")");
+                    return true;
+                case "containsKey":
+                    printMacroName(invocation.getMethodName());
+                    print(invocation.getTargetExpression()).print(".has(")
+                            .printArgList(invocation.getArguments())
+                            .print(")");
+                    return true;
+                // we use the ES6 'Array.from' method in an untyped way to
+                // transform the iterator in an array
+                case "keySet":
+                    printMacroName(invocation.getMethodName());
+                    print("(<any>Array).from(")
+                            .print(invocation.getTargetExpression()).print(".keys())");
+                    return true;
+                case "values":
+                    printMacroName(invocation.getMethodName());
+                    print("(<any>Array).from(")
+                            .print(invocation.getTargetExpression()).print(".values())");
+                    return true;
+                // in ES6 maps, 'size' is a property, not a method
+                case "size":
+                    printMacroName(invocation.getMethodName());
+                    print(invocation.getTargetExpression()).print(".size");
+                    return true;
+                }
+            }
+
+        }
+        // delegate to the adapter chain
+        return super.substituteMethodInvocation(invocation);
+    }
+}
+```
+
+#### Example 3: an adapter to support Java BigDecimal
+
+Java’s BigDecimal API is a really good API to avoid typical floating point precision issues, especially when working on currencies. This API is not available by default in JavaScript and would be quite difficult to emulate. GWT provides an emulation of the BigDecimal API, which is implemented with Java, but JSweet proposes another way to do it, which consists of mapping the BigDecimal API to an existing JavaScript API called Big.js. Mapping to an existing JS library has several advantages compared to emulating an API:
+
+1.  The implementation is already available in JavaScript, so there is less work emulating the Java library.
+
+2.  The implementation is pure JavaScript and is made specifically for JavaScript. So we can assume that will be more efficient that an emulation, and even more portable.
+
+3.  The generated code is free from any Java APIs, which makes it more JavaScript friendly and more inter-operable with existing JavaScript programs (legacy JavaScript clearly uses Big.js objects, and if not, we can decide to tune the adapter).
+
+The following code shows the adapter that tunes the JavaScript generation to map the Java’s BigDecimal API to the Big JavaScript library. This extension requires the big.js candy to be available in the JSweet classpath: https://github.com/jsweet-candies/candy-bigjs.
+
+``` java
+package org.jsweet.transpiler.extension;
+
+import java.math.BigDecimal;
+import javax.lang.model.element.Element;
+import org.jsweet.transpiler.extension.PrinterAdapter;
+import org.jsweet.transpiler.model.MethodInvocationElement;
+import org.jsweet.transpiler.model.NewClassElement;
+
+public class BigDecimalAdapter extends PrinterAdapter {
+
+    public BigDecimalAdapter(PrinterAdapter parent) {
+        super(parent);
+        // all BigDecimal types are mapped to Big
+        addTypeMapping(BigDecimal.class.getName(), "Big");
+    }
+
+    @Override
+    public boolean substituteNewClass(NewClassElement newClass) {
+        String className = newClass.getTypeAsElement().toString();
+        // map the BigDecimal constructors
+        if (BigDecimal.class.getName().equals(className)) {
+            print("new Big(").printArgList(newClass.getArguments()).print(")");
+            return true;
+        }
+        // delegate to the adapter chain
+        return super.substituteNewClass(newClass);
+    }
+
+    @Override
+    public boolean substituteMethodInvocation(MethodInvocationElement invocation) {
+        if (invocation.getTargetExpression() != null) {
+            Element targetType = invocation.getTargetExpression().getTypeAsElement();
+            if (BigDecimal.class.getName().equals(targetType.toString())) {
+                // BigDecimal methods are mapped to their Big.js equivalent
+                switch (invocation.getMethodName()) {
+                case "multiply":
+                    printMacroName(invocation.getMethodName());
+                    print(invocation.getTargetExpression())
+                            .print(".times(").printArgList(invocation.getArguments())
+                            .print(")");
+                    return true;
+                case "add":
+                    printMacroName(invocation.getMethodName());
+                    print(invocation.getTargetExpression())
+                            .print(".plus(").printArgList(invocation.getArguments())
+                            .print(")");
+                    return true;
+                case "scale":
+                    printMacroName(invocation.getMethodName());
+                    // we assume that we always have a scale of 2, which is a
+                    // good default if we deal with currencies...
+                    // to be changed/implemented further
+                    print("2");
+                    return true;
+                case "setScale":
+                    printMacroName(invocation.getMethodName());
+                    print(invocation.getTargetExpression())
+                            .print(".round(").print(invocation.getArguments().get(0))
+                            .print(")");
+                    return true;
+                case "compareTo":
+                    printMacroName(invocation.getMethodName());
+                    print(invocation.getTargetExpression()).print(".cmp(")
+                            .print(invocation.getArguments().get(0))
+                            .print(")");
+                    return true;
+                case "equals":
+                    printMacroName(invocation.getMethodName());
+                    print(invocation.getTargetExpression()).print(".eq(")
+                            .print(invocation.getArguments().get(0))
+                            .print(")");
+                    return true;
+                }
+            }
+
+        }
+        // delegate to the adapter chain
+        return super.substituteMethodInvocation(invocation);
+    }
+}
+```
+
+#### Example 4: an adapter to map enums to strings
+
+This example tunes the JavaScript generation to remove enums and replace them with strings. It only applies to enums that are annotated with @`jsweet.lang.StringType`.
+
+For instance: `@StringType enum MyEnum { A, B, C }` will be erased and all subsequent accesses to the enum constants will be mapped to simple strings (`MyEnum.A => A, MyEnum.B => B, MyEnum.C => C`). Typically, a method declaration such as `void m(MyEnum e) {...}` will be printed as `void m(e : string) {...}`. And of course, the invocation `xxx.m(MyEnum.A)` will be printed as `xxx.m(A)`.
+
+``` java
+package org.jsweet.transpiler.extension;
+
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import org.jsweet.JSweetConfig;
+import org.jsweet.transpiler.model.CaseElement;
+import org.jsweet.transpiler.model.ExtendedElement;
+import org.jsweet.transpiler.model.MethodInvocationElement;
+import org.jsweet.transpiler.model.VariableAccessElement;
+
+public class StringEnumAdapter extends PrinterAdapter {
+
+    private boolean isStringEnum(Element element) {
+        // note: this function could be improved to exclude enums that have
+        // fields or methods other than the enum constants
+        return element.getKind() == ElementKind.ENUM 
+                && hasAnnotationType(element, JSweetConfig.ANNOTATION_STRING_TYPE);
+    }
+
+    public StringEnumAdapter(PrinterAdapter parent) {
+        super(parent);
+        // eligible enums will be translated to string in JS
+        addTypeMapping((typeTree, name) -> 
+                isStringEnum(typeTree.getTypeAsElement()) ? "string" : null);
+
+        // ignore enum declarations with a programmatic annotation manager
+        addAnnotationManager(new AnnotationManager() {
+            @Override
+            public Action manageAnnotation(Element element, String annotationType) {
+                // add the @Erased annotation to string enums
+                return JSweetConfig.ANNOTATION_ERASED.equals(annotationType) 
+                        && isStringEnum(element) ? Action.ADD : Action.VOID;
+            }
+        });
+
+    }
+
+    @Override
+    public boolean substituteMethodInvocation(MethodInvocationElement invocation) {
+        if (invocation.getTargetExpression() != null) {
+            Element targetType = invocation.getTargetExpression().getTypeAsElement();
+            // enum API must be erased and use plain strings instead
+            if (isStringEnum(targetType)) {
+                switch (invocation.getMethodName()) {
+                case "name":
+                    printMacroName(invocation.getMethodName());
+                    print(invocation.getTargetExpression());
+                    return true;
+                case "valueOf":
+                    printMacroName(invocation.getMethodName());
+                    print(invocation.getArgument(0));
+                    return true;
+                case "equals":
+                    printMacroName(invocation.getMethodName());
+                    print("(").print(invocation.getTargetExpression()).print(" == ")
+                            .print(invocation.getArguments().get(0)).print(")");
+                    return true;
+                }
+            }
+        }
+        return super.substituteMethodInvocation(invocation);
+    }
+
+    @Override
+    public boolean substituteVariableAccess(VariableAccessElement variableAccess) {
+        // accessing an enum field is replaced by a simple string value
+        // (MyEnum.A => "A")
+        if (isStringEnum(variableAccess.getTargetElement())) {
+            print("\"" + variableAccess.getVariableName() + "\"");
+            return true;
+        }
+        return super.substituteVariableAccess(variableAccess);
+    }
+
+    @Override
+    public boolean substituteCaseStatementPattern(CaseElement caseStatement, 
+            ExtendedElement pattern) {
+        // map enums to strings in case statements
+        if (isStringEnum(pattern.getTypeAsElement())) {
+            print("\"" + pattern + "\"");
+            return true;
+        }
+        return super.substituteCaseStatementPattern(caseStatement, pattern);
+    }
+}
+```
+
+This adapter is provided with JSweet, but is not activated by default. In order to activate it, you need to add it to the default adapter chain.
+
+#### Example 5: an adapter to generate JavaScript JAX-RS proxies/stubs
+
+It is a common use case to implement a WEB or mobile application with Java on the server and JavaScript on the client. Typically, a JEE/Jackson server will expose a REST API through the JAX-RS specifications, and the HTML5 client will have to invoke this API using `XMLHttpRequest` or higher level libraries such as jQuery. However, coding the HTTP invocations manually comes with many drawbacks:
+
+-   It requires the use of specific API (XHR, jQuery), which is not easy for all programmers and may imply different programming styles that would make the code more difficult to read and maintain.
+
+-   It requires the programmers to handle manually the serialization/deserialization, while it can be done automatically trough the use of annotation-driven generative programming.
+
+-   It leads to unchecked invocations, which means that it is easy for the programmer to make an error in the name of the service/path/parameters, and in the expected DTOs. No refactoring and content-assist is available.
+
+With a JSweet adapter, using the `afterType` method it is easy to automatically generate a TypeScript stub that is well-typed and performs the required operations for invoking the REST service, simply by using the service API and the JAX-RS annotations. This type of tooling falls in the category of so-called Generative Programming.
+
+The following code is only a partial implementation of an adapter that would introspect the program’s model and generate the appropriate stubs in TypeScript. It is not meant to be operational, so you need to modify to fit your own use case.
+
+``` java
+class JaxRSStubAdapter extends PrinterAdapter {
+
+    public JaxRSStubAdapter(PrinterAdapter parent) {
+        super(parent);
+        // erase service classes (server-side only)
+        addAnnotationManager(new AnnotationManager() {
+            @Override
+            public Action manageAnnotation(Element element, String annotationType) {
+                return JSweetConfig.ANNOTATION_ERASED.equals(annotationType)
+                        && hasAnnotationType(element, Path.class.getName()) ? 
+                        Action.ADD : Action.VOID;
+            }
+        });
+    }
+
+    @Override
+    public void afterType(TypeElement type) {
+        super.afterType(type);
+        if (hasAnnotationType(type, Path.class.getName())) {
+            // actually generates the JAX-RS stub
+            println().printIndent();
+            print("class ").print(type.getSimpleName()).print(" {");
+            startIndent();
+            String typePathAnnotationValue = getAnnotationValue(type, 
+                    Path.class.getName(), String.class, null);
+            String typePath = typePathAnnotationValue != null ? typePathAnnotationValue : "";
+            for (Element e : type.getEnclosedElements()) {
+                if (e instanceof ExecutableElement
+                        && hasAnnotationType(e, GET.class.getName(), 
+                                PUT.class.getName(), Path.class.getName())) {
+                    ExecutableElement method = (ExecutableElement) e;
+                    println().printIndent().print(method.getSimpleName().toString())
+                            .print("(");
+                    for (VariableElement parameter : method.getParameters()) {
+                        print(parameter.getSimpleName())
+                                .print(" : ").print(getMappedType(parameter.asType()))
+                                .print(", ");
+                    }
+                    print("successHandler : (");
+                    if (method.getReturnType().getKind() != TypeKind.VOID) {
+                        print("result : ").print(getMappedType(method.getReturnType()));
+                    }
+                    print(") => void, errorHandler?: () => void").print(") : void");
+                    print(" {").println().startIndent().printIndent();
+                    String pathAnnotationValue = getAnnotationValue(e, Path.class.getName(), 
+                            String.class, null);
+                    String path = pathAnnotationValue != null ? pathAnnotationValue : "";
+                    String httpMethod = "POST";
+                    if(hasAnnotationType(e, GET.class.getName())) {
+                        httpMethod = "GET";
+                    }
+                    if(hasAnnotationType(e, POST.class.getName())) {
+                        httpMethod = "POST";
+                    }
+                    String[] consumes = getAnnotationValue(e, "javax.ws.rs.Consumes", 
+                            String[].class, null);
+                    if (consumes == null) {
+                        consumes = new String[] { "application/json" };
+                    }
+                    // actual code to be done
+                    print("// modify JaxRSStubAdapter to generate an HTTP invocation here")
+                            .println().printIndent();
+                    print("//   - httpMethod: " + httpMethod).println().printIndent();
+                    print("//   - path: " + typePath + path).println().printIndent();
+                    print("//   - consumes: " + consumes[0]);
+                    println().endIndent().printIndent().print("}");
+                }
+            }
+            println().endIndent().printIndent().print("}");
+        }
+    }
+}
+```
+
+As an example, let us consider the following JAX-RS service.
+
+``` java
+@Path("/hello")
+public class HelloWorldService {
+    @GET
+    @Path("/{param}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public HelloWorldDto getMsg(@PathParam("param") String msg) {
+        String output = "service says : " + msg;
+        return new HelloWorldDto(output);
+    }
+}
+```
+
+Using the following DTO:
+
+``` java
+public class HelloWorldDto {
+    private String msg;
+    public HelloWorldDto(String msg) {
+        super();
+        this.msg = msg;
+    }
+    public String getMsg() {
+        return msg;
+    }
+    public void setMsg(String msg) {
+        this.msg = msg;
+    }
+}
+```
+
+If you apply JSweet enhanced with `JaxRSStubAdapter`, you will get the following TypeScript code (and corresponding JavaScript):
+
+``` java
+export class HelloWorldDto {
+    /*private*/ msg : string;
+    public constructor(msg : string) {
+        this.msg = msg;
+    }
+    public getMsg() : string {
+        return this.msg;
+    }
+    public setMsg(msg : string) {
+        this.msg = msg;
+    }
+}
+HelloWorldDto["__class"] = "HelloWorldDto";
+
+class HelloWorldService {
+    getMsg(msg : string, 
+            successHandler : (result : HelloWorldDto) => void, 
+            errorHandler?: () => void) : void {
+        // modify JaxRSStubAdapter to generate an HTTP invocation here
+        //   - httpMethod: GET
+        //   - path: /hello/{param}
+        //   - consumes: application/json
+    }
+}
+```
+
+So, all you need to do is to modify the code of the adapter to generate the actual invocation code in place of the comment. Once it is done, you can use the generated JavaScript code as a bundle to access your service in a well-typed way. Moreover, you can use JSweet to generate the TypeScript definitions of your services and DTOs, so that your TypeScript client are well-typed (see the JSweet’s `declaration` option).
 
 Appendix 1: JSweet transpiler options
 -------------------------------------
