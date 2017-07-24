@@ -20,6 +20,7 @@ import source.nativestructures.ObjectMaps;
 import source.nativestructures.OverloadWithNative;
 import source.nativestructures.Properties;
 import source.nativestructures.Reflect;
+import source.nativestructures.Sets;
 import source.nativestructures.Strings;
 import source.nativestructures.WeakReferences;
 
@@ -36,6 +37,13 @@ public class NativeStructuresTests extends AbstractTest {
 			// removeAll, retainAll, containsAll, disjoint
 					+ "[a, b, c],[d, e, f],false,true,false,true", result.get("trace"));
 		}, getSourceFile(Collections.class));
+	}
+
+	@Test
+	public void testSets() {
+		eval((logHandler, result) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(Sets.class));
 	}
 
 	@Test
@@ -74,7 +82,8 @@ public class NativeStructuresTests extends AbstractTest {
 	public void testMaps() {
 		eval((logHandler, result) -> {
 			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-			assertEquals("1,a,2,b,2,a,true,[1, 2],[a, b],1,true,size2=2,1,2,[],empty=true,-null-,1,a,2,b", result.get("trace"));
+			assertEquals("1,a,2,b,2,a,true,[1, 2],[a, b],1,true,size2=2,1,2,[],empty=true,-null-,1,a,2,b",
+					result.get("trace"));
 		}, getSourceFile(Maps.class));
 	}
 
