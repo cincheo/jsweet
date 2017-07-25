@@ -1,5 +1,6 @@
 package org.jsweet.test.transpiler;
 
+import java.io.IOException;
 import java.util.EventObject;
 
 import javax.lang.model.element.Element;
@@ -18,6 +19,7 @@ import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetFactory;
 import org.jsweet.transpiler.ModuleKind;
+import org.jsweet.transpiler.SourceFile;
 import org.jsweet.transpiler.extension.AnnotationManager;
 import org.jsweet.transpiler.extension.Java2TypeScriptAdapter;
 import org.jsweet.transpiler.extension.MapAdapter;
@@ -85,6 +87,13 @@ class TestAdapter extends RemoveJavaDependenciesAdapter {
 
 }
 
+class HelloWorldAdapter extends PrinterAdapter {
+	public HelloWorldAdapter(PrinterAdapter parent) {
+		super(parent);
+		addTypeMapping(java.util.Date.class.getName(), "string");
+	}
+}
+
 class JaxRSStubAdapter extends PrinterAdapter {
 
 	public JaxRSStubAdapter(PrinterAdapter parent) {
@@ -126,10 +135,10 @@ class JaxRSStubAdapter extends PrinterAdapter {
 					String pathAnnotationValue = getAnnotationValue(e, Path.class.getName(), String.class, null);
 					String path = pathAnnotationValue != null ? pathAnnotationValue : "";
 					String httpMethod = "POST";
-					if(hasAnnotationType(e, GET.class.getName())) {
+					if (hasAnnotationType(e, GET.class.getName())) {
 						httpMethod = "GET";
 					}
-					if(hasAnnotationType(e, POST.class.getName())) {
+					if (hasAnnotationType(e, POST.class.getName())) {
 						httpMethod = "POST";
 					}
 					String[] consumes = getAnnotationValue(e, "javax.ws.rs.Consumes", String[].class, null);
@@ -210,6 +219,25 @@ public class ExtensionTests extends AbstractTest {
 		}, getSourceFile(HelloWorldService.class), getSourceFile(HelloWorldDto.class));
 		createTranspiler(new JSweetFactory());
 
+	}
+
+	@Test
+	public void testHelloWorldAdapter() throws IOException {
+		createTranspiler(new JSweetFactory() {
+			@Override
+			public PrinterAdapter createAdapter(JSweetContext context) {
+				return new HelloWorldAdapter(super.createAdapter(context));
+			}
+		});
+		SourceFile f = getSourceFile(HelloWorldDto.class);
+		transpile(logHandler -> {
+			logHandler.assertNoProblems();
+		}, f);
+		String generatedCode = FileUtils.readFileToString(f.getTsFile());
+		Assert.assertTrue(generatedCode.contains("date : string"));
+		Assert.assertFalse(generatedCode.contains("date : Date"));
+		
+		createTranspiler(new JSweetFactory());
 	}
 
 }
