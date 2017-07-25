@@ -59,6 +59,10 @@ public class JSDoc {
 	 */
 	public static final Pattern paramPattern = Pattern.compile("(\\s*@param\\s+)(\\w+)(.*)");
 	/**
+	 * A regexp that matches JavaDoc <code>@author</code> expressions.
+	 */
+	public static final Pattern authorPattern = Pattern.compile("(\\s*@author\\s+)(\\w+)(.*)");
+	/**
 	 * A regexp that matches JavaDoc <code>@return</code> expression.
 	 */
 	public static final Pattern returnPattern = Pattern.compile("(\\s*@return\\s+)(.*)");
@@ -168,11 +172,10 @@ public class JSDoc {
 			JCMethodDecl mainConstructor = null;
 			for (JCTree member : ((JCClassDecl) element).defs) {
 				if (member instanceof JCMethodDecl) {
-					if (((JCMethodDecl) member).sym.isConstructor()) {
-						if (mainConstructor == null
-								|| (((JCMethodDecl) member).getModifiers().getFlags().contains(Modifier.PUBLIC)
-										&& mainConstructor.getParameters().size() < ((JCMethodDecl) member)
-												.getParameters().size())) {
+					if (((JCMethodDecl) member).sym.isConstructor()
+							&& ((JCMethodDecl) member).getModifiers().getFlags().contains(Modifier.PUBLIC)) {
+						if (mainConstructor == null || mainConstructor.getParameters().size() < ((JCMethodDecl) member)
+								.getParameters().size()) {
 							mainConstructor = ((JCMethodDecl) member);
 						}
 					}
@@ -180,9 +183,18 @@ public class JSDoc {
 			}
 			if (mainConstructor != null) {
 				Comment comment = compilationUnit.docComments.getComment(mainConstructor);
+				String author = null;
 				if (comment != null) {
+					List<String> commentLines = new ArrayList<>(Arrays.asList(commentText.split("\n")));
 					// replace the class comment with the main constructor's
 					commentText = comment.getText();
+					// gets the author for further insertion
+					for (String line : commentLines) {
+						if (authorPattern.matcher(line).matches()) {
+							author = line;
+							break;
+						}
+					}
 				}
 				if (commentText != null) {
 					commentText = replaceLinks(context, commentText);
@@ -195,6 +207,9 @@ public class JSDoc {
 					if (clazz.extending != null) {
 						commentLines
 								.add(" @extends " + getMappedDocType(context, clazz.extending, clazz.extending.type));
+					}
+					if (author != null) {
+						commentLines.add(author);
 					}
 					return String.join("\n", commentLines);
 				}
