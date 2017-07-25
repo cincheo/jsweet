@@ -160,7 +160,7 @@ public class JSweetCommandLineLauncher {
 		optionArg.setListSeparator(':');
 		optionArg.setRequired(true);
 		optionArg.setHelp(
-				"An input directory (or column-separated input directories) containing Java files to be transpiled. Java files will be recursively looked up in sub-diredctories. Inclusion and exlusion patterns can be defined with the 'includes' and 'excludes' options.");
+				"An input directory (or column-separated input directories) containing Java files to be transpiled. Java files will be recursively looked up in sub-directories. Inclusion and exclusion patterns can be defined with the 'includes' and 'excludes' options.");
 		jsap.registerParameter(optionArg);
 
 		// Included files
