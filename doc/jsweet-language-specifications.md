@@ -51,6 +51,7 @@ Content
     -   [Core annotations](#core-annotations)
     -   [Centralizing annotations in `jsweetconfig.json`](#centralizing-annotations-in-jsweetconfig.json)
     -   [Programmatic tuning with adapters](#programmatic-tuning-with-adapters)
+    -   [Extension examples](#extension-examples)
 -   [Appendix 1: JSweet transpiler options](#appendix-1-jsweet-transpiler-options)
 -   [Appendix 2: packaging and static behavior](#appendix-2-packaging-and-static-behavior)
     -   [When main methods are invoked](#when-main-methods-are-invoked)
@@ -1539,7 +1540,7 @@ The following template shows the typical sections when programming an adapter. F
 ``` java
 public class MyAdapter extends PrinterAdapter {
 
-    public BigDecimalAdapter(PrinterAdapter parent) {
+    public MyAdapter(PrinterAdapter parent) {
         super(parent);
         ...
 ```
@@ -1625,6 +1626,95 @@ Then, in order to activate that adapter, you just need to add the `jsweetconfig.
   adapters: [ "com.mycompany.CustomAdapter1", "com.mycompany.CustomAdapter2" ]
 }
 ```
+
+#### Hello world adapter
+
+Here, we will step through how to tune the JSweet generation to generate strings in place of dates when finding `java.util.Date` types in the Java program.
+
+First, create the `HelloWorldAdapter.java` file in the `jsweet_extension` directory at the root of your project. Copy and paste the following code in that file:
+
+``` java
+class HelloWorldAdapter extends PrinterAdapter {
+    public HelloWorldAdapter(PrinterAdapter parent) {
+        super(parent);
+        addTypeMapping(java.util.Date.class.getName(), "string");
+    }
+}
+```
+
+Second, in the project’s root directory, create the `jsweetconfig.json` file with the following configuration:
+
+``` java
+{
+  adapters: [ "HelloWorldAdapter" ]
+}
+```
+
+Done. Now you can just try this extension on the following simple Java DTO:
+
+``` java
+package source.extension;
+import java.util.Date;
+/**
+ * A Hello World DTO.
+ * 
+ * @author Renaud Pawlak
+ */
+public class HelloWorldDto {
+    private Date date;
+    /**
+     * Gets the date.
+     */
+    public Date getDate() {
+        return date;
+    }
+    /**
+     * Sets the date.
+     */
+    public void setDate(Date date) {
+        this.date = date;
+    }
+}
+```
+
+The generated code should look like:
+
+``` java
+/* Generated from Java with JSweet 2.XXX - http://www.jsweet.org */
+namespace source.extension {
+    /**
+     * A Hello World DTO.
+     * 
+     * @author Renaud Pawlak
+     * @class
+     */
+    export class HelloWorldDto {
+        /*private*/ date : string;
+        public constructor() {
+            this.date = null;
+        }
+        /**
+         * Gets the date.
+         * @return {string}
+         */
+        public getDate() : string {
+            return this.date;
+        }
+        /**
+         * Sets the date.
+         * @param {string} date
+         */
+        public setDate(date : string) {
+            this.date = date;
+        }
+    }
+    HelloWorldDto["__class"] = "source.extension.HelloWorldDto";
+}
+```
+
+Note that all the date types have been translated to strings as expected. By the way, note also the JSDoc support, which makes JSweet a powerful tool to create well-document JavaScript APIs from Java (note that doc comments are also tunable in adapters!).
+
+### Extension examples
 
 The following sections illustrate the use of JSweet adapters with 5 real-life examples. Most of these adapters are built-in with JSweet (in the `org.jsweet.transpiler.extension` package) and can just be activated by adding them to the adapter chain as explained above. If you want to modify the adapters, just copy-paste the code in the `jsweet_extension` directory and change the names.
 
