@@ -1713,7 +1713,7 @@ namespace source.extension {
 }
 ```
 
-Note that all the date types have been translated to strings as expected. By the way, note also the JSDoc support, which makes JSweet a powerful tool to create well-document JavaScript APIs from Java (note that doc comments are also tunable in adapters!).
+Note that all the date types have been translated to strings as expected. By the way, note also the JSDoc support, which makes JSweet a powerful tool to create well-documented JavaScript APIs from Java (doc comments are also tunable in adapters!).
 
 ### Extension examples
 
