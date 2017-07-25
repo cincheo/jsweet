@@ -185,7 +185,8 @@ public class JSDoc {
 				Comment comment = compilationUnit.docComments.getComment(mainConstructor);
 				String author = null;
 				if (comment != null) {
-					List<String> commentLines = new ArrayList<>(Arrays.asList(commentText.split("\n")));
+					List<String> commentLines = comment.getText() != null
+							? new ArrayList<>(Arrays.asList(comment.getText().split("\n"))) : null;
 					// replace the class comment with the main constructor's
 					commentText = comment.getText();
 					// gets the author for further insertion
