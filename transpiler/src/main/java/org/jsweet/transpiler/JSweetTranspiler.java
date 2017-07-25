@@ -179,7 +179,7 @@ public class JSweetTranspiler implements JSweetOptions {
 	private boolean bundle = false;
 	private String encoding = null;
 	private boolean noRootDirectories = false;
-	private boolean ignoreAssertions = false;
+	private boolean ignoreAssertions = true;
 	private boolean ignoreJavaFileNameError = false;
 	private boolean generateDeclarations = false;
 	private File declarationsOutputDir;

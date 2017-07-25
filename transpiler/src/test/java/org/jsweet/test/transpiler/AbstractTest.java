@@ -111,6 +111,7 @@ public class AbstractTest {
 		transpiler.setEcmaTargetVersion(EcmaScriptComplianceLevel.ES5);
 		transpiler.setEncoding("UTF-8");
 		transpiler.setSkipTypeScriptChecks(true);
+		transpiler.setIgnoreAssertions(false);
 		// transpiler.setPreserveSourceLineNumbers(true);
 	}
 
