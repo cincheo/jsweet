@@ -27,6 +27,8 @@ import java.util.function.BiFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.lang.model.element.Modifier;
+
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.support.ExtendedElementSupport;
@@ -167,8 +169,10 @@ public class JSDoc {
 			for (JCTree member : ((JCClassDecl) element).defs) {
 				if (member instanceof JCMethodDecl) {
 					if (((JCMethodDecl) member).sym.isConstructor()) {
-						if (mainConstructor == null || mainConstructor.getParameters().size() < ((JCMethodDecl) member)
-								.getParameters().size()) {
+						if (mainConstructor == null
+								|| (((JCMethodDecl) member).getModifiers().getFlags().contains(Modifier.PUBLIC)
+										&& mainConstructor.getParameters().size() < ((JCMethodDecl) member)
+												.getParameters().size())) {
 							mainConstructor = ((JCMethodDecl) member);
 						}
 					}
