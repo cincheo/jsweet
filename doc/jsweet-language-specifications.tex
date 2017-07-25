@@ -1648,6 +1648,7 @@ Here, we will step through how to tune the JSweet generation to generate strings
 First, create the \texttt{HelloWorldAdapter.java} file in the \texttt{jsweet\_extension} directory at the root of your project. Copy and paste the following code in that file:
 
 \begin{lstlisting}[language=Java]
+import org.jsweet.transpiler.extension.PrinterAdapter;
 public class HelloWorldAdapter extends PrinterAdapter {
 	public HelloWorldAdapter(PrinterAdapter parent) {
 		super(parent);
