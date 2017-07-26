@@ -22,8 +22,11 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.regex.Pattern;
+
 import org.apache.commons.io.FileUtils;
 import org.jsweet.transpiler.JSweetProblem;
+import org.jsweet.transpiler.ModuleKind;
 import org.jsweet.transpiler.SourceFile;
 import org.jsweet.transpiler.util.EvaluationResult;
 import org.junit.Assert;
@@ -200,6 +203,18 @@ public class SyntaxTests extends AbstractTest {
 				assertFalse(generatedCode.contains("Sub overload."));
 				assertTrue(generatedCode.contains("Main overload."));
 				assertTrue(generatedCode.contains("@param {*} i is an interface"));
+				assertTrue(generatedCode.contains("@param {number[]} aList"));
+				if (transpiler.getModuleKind() == ModuleKind.commonjs) {
+					assertTrue(Pattern.compile("\\* @property \\{E\\} XX_B\\s*\\* Test enum").matcher(generatedCode)
+							.find());
+					assertTrue(generatedCode.contains("* @property {E} XX_C"));
+				} else {
+					assertTrue(Pattern.compile("\\* @property \\{source\\.syntax\\.E\\} XX_B\\s*\\* Test enum")
+							.matcher(generatedCode).find());
+					assertTrue(generatedCode.contains("* @property {source.syntax.E} XX_C"));
+				}
+				assertTrue(generatedCode.contains("@author Renaud Pawlak"));
+				assertTrue(generatedCode.contains("@author Notto Beerased"));
 			} catch (Exception e) {
 				e.printStackTrace();
 				fail(e.getMessage());

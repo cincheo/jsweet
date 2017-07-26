@@ -755,7 +755,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 	}
 
-	private void printDocComment(JCTree element, boolean indent) {
+	private void printDocComment(JCTree element) {
+		printDocComment(element, false);
+	}
+
+	private void printDocComment(JCTree element, boolean newline) {
 		if (compilationUnit != null && compilationUnit.docComments != null) {
 			Comment comment = compilationUnit.docComments.getComment(element);
 			String commentText = JSDoc.adaptDocComment(context, getCompilationUnit(), element,
@@ -778,8 +782,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				lines.addAll(Arrays.asList(commentText.split("\n")));
 			}
 			if (!lines.isEmpty()) {
-				if (indent) {
-					printIndent();
+				if (newline) {
+					println().printIndent();
 				}
 				print("/**").println();
 				for (String line : lines) {
@@ -787,9 +791,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 				removeLastChar();
 				println().printIndent().print(" ").print("*/").println();
-				if (!indent) {
-					printIndent();
-				}
+				printIndent();
 			}
 		}
 	}
@@ -1170,7 +1172,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				return;
 			}
 			if (!(classdecl.getKind() == Kind.ENUM && scope.size() > 1 && getScope(1).isComplexEnum)) {
-				printDocComment(classdecl, false);
+				printDocComment(classdecl);
 			} else {
 				print("/** @ignore */").println().printIndent();
 			}
@@ -1960,7 +1962,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		boolean globals = parent == null ? false : JSweetConfig.GLOBALS_CLASS_NAME.equals(parent.name.toString());
 		globals = globals || (getScope().interfaceScope && methodDecl.mods.getFlags().contains(Modifier.STATIC));
 		if (!(inOverload && !inCoreWrongOverload)) {
-			printDocComment(methodDecl, false);
+			printDocComment(methodDecl);
 		}
 		if (parent == null) {
 			print("function ");
@@ -2634,6 +2636,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 
 		if (getScope().enumScope) {
+			// we print the doc comment for information, but
+			// TypeScript-generated cannot be recognized by JSDoc... so this
+			// comment will be ignored and shall be inserted in the enum
+			// document with a @property annotation
+			printDocComment(varDecl, true);
 			print(varDecl.name.toString());
 			if (varDecl.init instanceof JCNewClass) {
 				JCNewClass newClass = (JCNewClass) varDecl.init;
@@ -2692,7 +2699,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					|| getScope().interfaceScope && varDecl.sym.isStatic()));
 
 			if (parent instanceof JCClassDecl) {
-				printDocComment(varDecl, false);
+				printDocComment(varDecl);
 			}
 
 			print(varDecl.mods);

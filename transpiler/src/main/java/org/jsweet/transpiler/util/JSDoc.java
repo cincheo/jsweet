@@ -81,12 +81,9 @@ public class JSDoc {
 	 * @return the JSDoc type
 	 */
 	public static String getMappedDocType(JSweetContext context, JCTree typeTree, Type type) {
-		if (context.isInterface(type.tsym)) {
-			return "*";
-		}
 		String qualifiedName = type.toString();
 		if (typeTree instanceof JCTypeApply) {
-			return getMappedDocType(context, ((JCTypeApply) typeTree).clazz, ((JCTypeApply) typeTree).clazz.type);
+			qualifiedName = ((JCTypeApply) typeTree).clazz.type.toString();
 		}
 		if (type instanceof TypeVar) {
 			TypeVar typeVar = (TypeVar) typeTree.type;
@@ -115,6 +112,16 @@ public class JSDoc {
 		}
 		if (!isMapped && !type.isPrimitiveOrVoid()) {
 			qualifiedName = context.getRootRelativeName(null, type.tsym);
+		}
+		if ("Array".equals(qualifiedName) && typeTree instanceof JCTypeApply) {
+			return getMappedDocType(context, ((JCTypeApply) typeTree).arguments.head,
+					((JCTypeApply) typeTree).arguments.head.type) + "[]";
+		}
+		if (typeTree instanceof JCTypeApply) {
+			return getMappedDocType(context, ((JCTypeApply) typeTree).clazz, ((JCTypeApply) typeTree).clazz.type);
+		}
+		if (!isMapped && context.isInterface(type.tsym)) {
+			return "*";
 		}
 		return "any".equals(qualifiedName) ? "*" : qualifiedName;
 	}
@@ -185,15 +192,17 @@ public class JSDoc {
 				Comment comment = compilationUnit.docComments.getComment(mainConstructor);
 				String author = null;
 				if (comment != null) {
-					List<String> commentLines = comment.getText() != null
-							? new ArrayList<>(Arrays.asList(comment.getText().split("\n"))) : null;
+					List<String> commentLines = commentText == null ? null
+							: new ArrayList<>(Arrays.asList(commentText.split("\n")));
 					// replace the class comment with the main constructor's
 					commentText = comment.getText();
 					// gets the author for further insertion
-					for (String line : commentLines) {
-						if (authorPattern.matcher(line).matches()) {
-							author = line;
-							break;
+					if (commentLines != null) {
+						for (String line : commentLines) {
+							if (authorPattern.matcher(line).matches()) {
+								author = line;
+								break;
+							}
 						}
 					}
 				}
@@ -223,9 +232,10 @@ public class JSDoc {
 				commentText = "";
 				commentLines = new ArrayList<>();
 				applyForMethod(context, (JCMethodDecl) element, commentLines);
-			} else {
-				return null;
 			}
+		}
+		if (commentText == null) {
+			return null;
 		}
 		commentText = replaceLinks(context, commentText);
 		commentLines = new ArrayList<>(Arrays.asList(commentText.split("\n")));
@@ -241,6 +251,24 @@ public class JSDoc {
 			JCClassDecl clazz = (JCClassDecl) element;
 			if (clazz.sym.isEnum()) {
 				commentLines.add(" @enum");
+				for(JCTree def : clazz.defs) {
+					if(def instanceof JCVariableDecl) {
+						JCVariableDecl var = (JCVariableDecl) def;
+						if (var.sym.getModifiers() != null && var.sym.getModifiers().contains(Modifier.PUBLIC)
+								&& var.sym.getModifiers().contains(Modifier.STATIC)) {
+							commentLines.add("@property {" + getMappedDocType(context, var.getType(), var.getType().type) + "} "
+									+ var.getName().toString());
+							Comment varComment = compilationUnit.docComments.getComment(var);
+							if(varComment!=null) {
+								String text = varComment.getText();
+								if(text != null) {
+									text = replaceLinks(context, text);
+									commentLines.addAll(new ArrayList<>(Arrays.asList(text.split("\n"))));
+								}
+							}
+						}
+					}
+				}
 			}
 			if (clazz.extending != null) {
 				commentLines.add(" @extends " + getMappedDocType(context, clazz.extending, clazz.extending.type));

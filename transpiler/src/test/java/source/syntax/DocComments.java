@@ -1,5 +1,7 @@
 package source.syntax;
 
+import java.util.List;
+
 /**
  * This is a test of comment.
  * 
@@ -20,6 +22,12 @@ public class DocComments {
 		return "";
 	}
 
+
+	/**
+	 * Use lists.
+	 */
+	public List<String> m2(List<Integer> aList) { return null; }
+	
 	/**
 	 * This is a constant field.
 	 */
@@ -29,6 +37,7 @@ public class DocComments {
 
 /**
  * A class comment to be erased.
+ * @author Notto Beerased
  */
 class CommentedC {
 	/**
@@ -67,7 +76,7 @@ class CommentedC2 {
  * An enum test.
  */
 enum E { 
-	
+	XX_A, /** Test enum */ XX_B, XX_C
 }
 
 abstract class Base {
