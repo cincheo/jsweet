@@ -2092,7 +2092,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				print(";");
 			}
 		} else {
-			if (getScope().interfaceScope) {
+			if (!getScope().declareClassScope && getScope().interfaceScope) {
 				if (!methodDecl.mods.getFlags().contains(Modifier.STATIC)) {
 					report(methodDecl, methodDecl.name, JSweetProblem.INVALID_METHOD_BODY_IN_INTERFACE, methodDecl.name,
 							parent == null ? "<no class>" : parent.name);
