@@ -1723,7 +1723,7 @@ The following sections illustrate the use of JSweet adapters with 5 real-life ex
 
 This simple adapter renames non-public members by adding two underscores as a prefix. Note that this could be dangerous to use for protected fields if wanting to access them from subclasses declared in other JSweet projects. So you may want to use carefully or to modify the code for your own needs.
 
-This adapter is a good example for demonstrating how to use annotation managers. Annotation managers are used to add (soft) annotations to program elements driven by some Java code (programmatically). Annotation managers are added to the context an will be chained to other existing annotation managers (potentially added by other adapters). An annotation manager must implement the `manageAnnotation` method, that will tell if a given annotation should be added, removed, or left unchanged on a given element. If the annotation has parameters, an annotation manager shall implement the `getAnnotationValue` in order to specify the values.
+This adapter is a good example for demonstrating how to use annotation managers. Annotation managers are used to add (soft) annotations to program elements driven by some Java code (programmatically). Annotation managers are added to the context and will be chained to other existing annotation managers (potentially added by other adapters). An annotation manager must implement the `manageAnnotation` method, that will tell if a given annotation should be added, removed, or left unchanged on a given element. If the annotation has parameters, an annotation manager shall implement the `getAnnotationValue` in order to specify the values.
 
 In this example, the annotation manager adds the `@jsweet.lang.Name` annotation to all non-public elements in order to rename them and add the underscores to the initial name.
 
@@ -1742,7 +1742,7 @@ public class AddPrefixToNonPublicMembersAdapter extends PrinterAdapter {
     public AddPrefixToNonPublicMembersAdapter(PrinterAdapter parentAdapter) {
         super(parentAdapter);
         // add a custom annotation manager to the chain
-        context.addAnnotationManager(new AnnotationManager() {
+        addAnnotationManager(new AnnotationManager() {
 
             @Override
             public Action manageAnnotation(Element element, String annotationType) {
@@ -1776,9 +1776,9 @@ public class AddPrefixToNonPublicMembersAdapter extends PrinterAdapter {
 
 #### Example 2: an adapter to use ES6 Maps
 
-JSweet default implementation of maps it as follows:
+JSweet default implementation of maps behaves as follows:
 
--   If the key type is a string, the map is transpiled as a regular JavaScript object, where property names will be the keys.
+-   If the key type is a string, the map is transpiled to a regular JavaScript object, where property names will be the keys.
 
 -   If the key type is an object (any other than a string), the map is transpiled as a list of entries. The implementation is quite inefficient because finding a key requires iterating over the entries to find the right entry key.
 
@@ -1827,7 +1827,7 @@ public class MapAdapter extends PrinterAdapter {
         // map the map constructor to the global 'Map' variable (untyped access)
         if (Arrays.binarySearch(mapTypes, className) >= 0) {
             // this access is browser/node-compatible
-            print("new (window?window:global)['Map'](")
+            print("new (typeof window == 'undefined'?global:window)['Map'](")
                     .printArgList(newClass.getArguments()).print(")");
             return true;
         }
@@ -2080,9 +2080,9 @@ public class StringEnumAdapter extends PrinterAdapter {
 
 #### Example 5: an adapter to generate JavaScript JAX-RS proxies/stubs
 
-It is a common use case to implement a WEB or mobile application with Java on the server and JavaScript on the client. Typically, a JEE/Jackson server will expose a REST API through the JAX-RS specifications, and the HTML5 client will have to invoke this API using `XMLHttpRequest` or higher level libraries such as jQuery. However, coding the HTTP invocations manually comes with many drawbacks:
+It is a common use case to implement a WEB or mobile application with Java on the server and JavaScript on the client. Typically, a JEE/Jackson server will expose a REST API through the JAX-RS specifications, and the HTML5 client will have to invoke this API using `XMLHttpRequest` or higher-level libraries such as jQuery. However, manually coding the HTTP invocations comes with many drawbacks:
 
--   It requires the use of specific API (XHR, jQuery), which is not easy for all programmers and may imply different programming styles that would make the code more difficult to read and maintain.
+-   It requires the use of specific APIs (XHR, jQuery), which is not easy for all programmers and may imply different programming styles that would make the code more difficult to read and maintain.
 
 -   It requires the programmers to handle manually the serialization/deserialization, while it can be done automatically trough the use of annotation-driven generative programming.
 
@@ -2093,6 +2093,16 @@ With a JSweet adapter, using the `afterType` method it is easy to automatically 
 The following code is only a partial implementation of an adapter that would introspect the program’s model and generate the appropriate stubs in TypeScript. It is not meant to be operational, so you need to modify to fit your own use case.
 
 ``` java
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+
 class JaxRSStubAdapter extends PrinterAdapter {
 
     public JaxRSStubAdapter(PrinterAdapter parent) {
@@ -2167,6 +2177,14 @@ class JaxRSStubAdapter extends PrinterAdapter {
 }
 ```
 
+NOTE: for compilation, you need the JAX-RS API in your classpath.
+
+    <dependency>
+        <groupId>javax.ws.rs</groupId>
+        <artifactId>javax.ws.rs-api</artifactId>
+        <version>2.1-m07</version>
+    </dependency>
+
 As an example, let us consider the following JAX-RS service.
 
 ``` java
@@ -2236,6 +2254,10 @@ Appendix 1: JSweet transpiler options
 
       [-h|--help]
 
+      [-w|--watch]
+            Start a process that watches the input directories for changes and
+            re-run transpilation on-the-fly.
+
       [-v|--verbose]
             Turn on all levels of logging.
 
@@ -2248,8 +2270,24 @@ Appendix 1: JSweet transpiler options
             set, the transpiler will try to use the JAVA_HOME environment variable.
             Note that the expected JDK version is greater or equals to version 8.
 
-      (-i|--input) <input>
-            An input dir containing Java files to be transpiled.
+      (-i|--input) input1:input2:...:inputN 
+            An input directory (or column-separated input directories) containing
+            Java files to be transpiled. Java files will be recursively looked up in
+            sub-directories. Inclusion and exclusion patterns can be defined with
+            the 'includes' and 'excludes' options.
+
+      [--includes includes1:includes2:...:includesN ]
+            A column-separated list of expressions matching files to be included
+            (relatively to the input directory).
+
+      [--excludes excludes1:excludes2:...:excludesN ]
+            A column-separated list of expressions matching files to be excluded
+            (relatively to the input directory).
+
+      [(-d|--defInput) defInput1:defInput2:...:defInputN ]
+            An input directory (or column-separated input directories) containing
+            TypeScript definition files (*.d.ts) to be used for transpilation.
+            Definition files will be recursively looked up in sub-diredctories.
 
       [--noRootDirectories]
             Skip the root directories (i.e. packages annotated with
@@ -2263,25 +2301,26 @@ Appendix 1: JSweet transpiler options
             Specify where to place generated JavaScript files (ignored if jsFile is
             specified). (default: js)
 
+      [--disableSinglePrecisionFloats]
+            By default, for a target version >=ES5, JSweet will force Java floats to
+            be mapped to JavaScript numbers that will be constrained with ES5
+            Math.fround function. If this option is true, then the calls to
+            Math.fround are erased and the generated program will use the JavaScript
+            default precision (double precision).
+
       [--tsOnly]
-            Tells the transpiler to not compile the TypeScript output (let an
-            external TypeScript compiler do so).
+            Do not compile the TypeScript output (let an external TypeScript
+            compiler do so).
 
-      [--disableJavaAddons]
-            Tells the transpiler disable runtime addons (instanceof, overloading,
-            class name access, static initialization [...] will not be fully
-            supported).
-
-      [--definitions]
-            Tells the transpiler to generate definitions from def.* packages in d.ts
-            definition files. The output directory is given by the tsout option.
-            This option can be used to create candies for existing JavaScript
-            libraries and must not be confused with the 'declaration' option, that
-            generates the definitions along with a program written in JSweet.
+      [--ignoreDefinitions]
+            Ignore definitions from def.* packages, so that they are not generated
+            in d.ts definition files. If this option is not set, the transpiler
+            generates d.ts definition files in the directory given by the tsout
+            option.
 
       [--declaration]
-            Tells the transpiler to generate the d.ts files along with the js files,
-            so that other programs can use them to compile.
+            Generate the d.ts files along with the js files, so that other programs
+            can use them to compile.
 
       [--dtsout <dtsout>]
             Specify where to place generated d.ts files when the declaration option
@@ -2293,8 +2332,8 @@ Appendix 1: JSweet transpiler options
             (default: js/candies)
 
       [--sourceRoot <sourceRoot>]
-            Specifies the location where debugger should locate Java files instead
-            of source locations. Use this flag if the sources will be located at
+            Specify the location where debugger should locate Java files instead of
+            source locations. Use this flag if the sources will be located at
             run-time in a different location than that at design-time. The location
             specified will be embedded in the sourceMap to direct the debugger where
             the source files will be located.
@@ -2307,29 +2346,34 @@ Appendix 1: JSweet transpiler options
             The module kind (none, commonjs, amd, system or umd). (default: none)
 
       [-b|--bundle]
-            Bundle up the generated files and used modules to bundle files, which
-            can be used in the browser. Bundles contain all the dependencies and are
-            thus standalone. There is one bundle generated per entry (a Java 'main'
-            method) in the program. By default, bundles are generated in the entry
-            directory, but the output directory can be set by using the
-            --bundlesDirectory option. NOTE: bundles will be generated only when
-            choosing the commonjs module kind.
+            Bundle up all the generated code in a single file, which can be used in
+            the browser. The bundle files are called 'bundle.ts', 'bundle.d.ts', or
+            'bundle.js' depending on the kind of generated code. NOTE: bundles are
+            not compatible with any module kind other than 'none'.
 
-      [--bundlesDirectory <bundlesDirectory>]
-            Generate all the bundles (see option --bundle) within the given
-            directory.
+      [(-f|--factoryClassName) <factoryClassName>]
+            Use the given factory to tune the default transpiler behavior.
 
       [--sourceMap]
-            Set the transpiler to generate source map files for the Java files, so
-            that it is possible to debug them in the browser. This feature is not
-            available yet when using the --module option. Currently, when this
-            option is on, the generated TypeScript file is not pretty printed in a
-            programmer-friendly way (disable it in order to generate readable
-            TypeScript code).
+            Generate source map files for the Java files, so that it is possible to
+            debug Java files directly with a debugger that supports source maps
+            (most JavaScript debuggers).
 
-      [--ignoreAssertions]
-            Set the transpiler to ignore 'assert' statements, i.e. no code is
-            generated for assertions.
+      [--enableAssertions]
+            Java 'assert' statements are transpiled as runtime JavaScript checks.
+
+      [--header <header>]
+            A file that contains a header to be written at the beginning of each
+            generated file. If left unspecified, JSweet will generate a default
+            header.
+
+      [--workingDir <workingDir>]
+            The directory JSweet uses to store temporary files such as extracted
+            candies. JSweet uses '.jsweet' if left unspecified.
+
+      [--targetVersion <targetVersion>]
+            The EcmaScript target (JavaScript) version. Possible values: [ES3, ES5,
+            ES6] (default: ES3)
 
 Appendix 2: packaging and static behavior
 -----------------------------------------
