@@ -181,6 +181,11 @@
 		</profile>
 	</profiles>
 	<dependencies>
+        <dependency>
+            <groupId>org.cincheo</groupId>
+            <artifactId>file-visitor</artifactId>
+            <version>1.0.0</version>
+        </dependency>
 		<dependency>
 			<groupId>com.martiansoftware</groupId>
 			<artifactId>jsap</artifactId>
