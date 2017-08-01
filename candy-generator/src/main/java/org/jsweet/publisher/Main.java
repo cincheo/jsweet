@@ -11,7 +11,10 @@ public class Main {
 	public static String MAVEN_CMD = "/usr/local/bin/mvn";
 
 	public static void main(String[] args) {
-		File f = new File("/Users/renaudpawlak/git/candies");
+		if (args.length < 3) {
+			System.out.println("usage: <candiesRootDir> <candiesVersion> <transpilerVersion>");
+		}
+		File f = new File(args[0]);
 		if (f.exists()) {
 			// FileVisitor[] fileVisitors = new FileVisitor[] {
 			// /*new UpdateFileVisitor(), */new RemoveExtFileVisitor(), new
@@ -20,7 +23,7 @@ public class Main {
 			// UpdateVersion("20170726", "rc1") };
 			// FileVisitor[] fileVisitors = new FileVisitor[] { new MvnDeploy()
 			// };
-			FileVisitor.scan(f, new UpdateVersion("20170726", "rc1"));
+			FileVisitor.scan(f, new UpdateVersion(args[1], args[2]));
 		}
 	}
 
