@@ -33,6 +33,12 @@ public class MvnDeploy implements FileVisitor {
 		    System.out.println(out);
 		}, (p1) -> {
 		    count++;
+			ProcessUtil.runCommand(Main.MAVEN_CMD, file.getParentFile(), false, (out) -> {
+				System.out.println(out);
+			}, (p2) -> {
+			}, () -> {
+				System.out.println("ERROR: cannot generate javadoc");
+			}, "javadoc:javadoc");
 		}, () -> {
 		    errorCount++;
 		    System.out.println("ERROR: cannot deploy");
