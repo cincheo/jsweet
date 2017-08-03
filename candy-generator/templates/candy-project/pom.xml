@@ -56,6 +56,7 @@ ${{DEPENDENCIES}}
 				<configuration>
 					<source>1.8</source>
 					<target>1.8</target>
+					<encoding>UTF8</encoding>
 					<fork>true</fork>
 				</configuration>
 			</plugin>
@@ -70,6 +71,7 @@ ${{DEPENDENCIES}}
 					<outDir>src/main/resources/META-INF/resources/typings/${project.artifactId}/${project.version}/sources</outDir>
 					<tsOut>src/main/resources/META-INF/resources/typings/${project.artifactId}/${project.version}/sources</tsOut>
 					<targetVersion>ES6</targetVersion>
+                    <encoding>UTF8</encoding>
 				</configuration>
 				<executions>
 					<execution>
