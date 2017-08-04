@@ -97,7 +97,7 @@ ${{DEPENDENCIES}}
 								<mkdir dir="dist/"></mkdir>
 								
 								<copy
-									file="src/main/resources/src/typings/${project.artifactId}/${project.version}/bundle.d.ts"
+									file="src/main/resources/META-INF/resources/typings/${project.artifactId}/${project.version}/bundle.d.ts"
 									tofile="dist/${project.artifactId}.d.ts" verbose="true"
 									failonerror="false" />
 							</target>
