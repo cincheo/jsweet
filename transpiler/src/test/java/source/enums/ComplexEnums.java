@@ -26,11 +26,11 @@ public class ComplexEnums {
 		$export("trace", ">" + trace.join(","));
 	}
 
-	static class A {
-		static int i = 2;
+	public static class A {
+		public static int i = 2;
 	}
 
-	static enum InnerEnum {
+	public static enum InnerEnum {
 
 		E1(0x0),
 
