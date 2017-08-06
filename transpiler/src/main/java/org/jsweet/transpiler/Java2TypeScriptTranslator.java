@@ -4976,6 +4976,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (assignedType == null) {
 			return false;
 		}
+		if (assignedType.isInterface() && expression.type.tsym.isEnum()) {
+			String relTarget = getRootRelativeName((Symbol) expression.type.tsym);
+			print(relTarget).print("[\"" + Java2TypeScriptTranslator.ENUM_WRAPPER_CLASS_WRAPPERS + "\"][")
+					.print(expression).print("]");
+			return true;
+		}
 		if (expression instanceof JCConditional) {
 			rootConditionalAssignedTypes.push(assignedType);
 			return false;

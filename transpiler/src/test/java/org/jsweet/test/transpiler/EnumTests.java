@@ -34,6 +34,7 @@ import source.enums.ComplexInnerEnums;
 import source.enums.EnumInSamePackage;
 import source.enums.EnumWithStatics;
 import source.enums.Enums;
+import source.enums.EnumsImplementingInterfaces;
 import source.enums.ErasedEnum;
 import source.enums.MyComplexEnum2;
 import source.enums.StringEnums;
@@ -91,10 +92,11 @@ public class EnumTests extends AbstractTest {
 		eval((logHandler, r) -> {
 			logHandler.assertNoProblems();
 			Assert.assertEquals(">2,--2--,ratio_2_1_5,true,true,true,true", r.get("trace2"));
-			//Assert.assertEquals(">static,2,--2--,ratio_2_1_5,true,true,true,true,2,2", r.get("trace2"));
+			// Assert.assertEquals(">static,2,--2--,ratio_2_1_5,true,true,true,true,2,2",
+			// r.get("trace2"));
 		}, getSourceFile(MyComplexEnum2.class), getSourceFile(ComplexEnumsAccess.class));
 	}
-	
+
 	@Test
 	public void testComplexInnerEnums() {
 		eval((logHandler, r) -> {
@@ -163,6 +165,13 @@ public class EnumTests extends AbstractTest {
 			logHandler.assertNoProblems();
 		}, getSourceFile(StringEnums.class));
 		createTranspiler(new JSweetFactory());
+	}
+
+	@Test
+	public void testEnumsImplementingInterfaces() {
+		eval((logHandler, r) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(EnumsImplementingInterfaces.class));
 	}
 
 }
