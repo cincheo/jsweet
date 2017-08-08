@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 
 import org.jsweet.JSweetConfig;
@@ -84,6 +85,16 @@ public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {
 									+ "_" + clashingInnerClass.getSimpleName());
 				}
 			}
+		} else {
+			if (classdecl.sym.getKind() == ElementKind.ANNOTATION_TYPE
+					&& context.hasAnnotationType(classdecl.sym, JSweetConfig.ANNOTATION_DECORATOR)) {
+				context.registerDecoratorAnnotation(classdecl);
+			}
+		}
+
+		boolean globals = false;
+		if (JSweetConfig.GLOBALS_CLASS_NAME.equals(classdecl.name.toString())) {
+			globals = true;
 		}
 
 		for (JCTree def : classdecl.defs) {
@@ -120,6 +131,11 @@ public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {
 			} else if (def instanceof JCBlock) {
 				if (((JCBlock) def).isStatic()) {
 					context.countStaticInitializer(classdecl.sym);
+				}
+			}
+			if (globals && def instanceof JCMethodDecl) {
+				if (((JCMethodDecl) def).sym.isStatic()) {
+					context.registerGlobalMethod(classdecl, (JCMethodDecl) def);
 				}
 			}
 		}

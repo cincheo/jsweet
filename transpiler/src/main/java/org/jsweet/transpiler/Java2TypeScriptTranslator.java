@@ -253,6 +253,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 		private boolean constructor = false;
 
+		private boolean decoratorScope = false;
+
 	}
 
 	private Stack<ClassScope> scope = new Stack<>();
@@ -1123,6 +1125,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (context.hasClassNameMapping(classdecl.sym)) {
 			name = context.getClassNameMapping(classdecl.sym);
 		}
+
 		if (!scope.isEmpty() && getScope().anonymousClasses.contains(classdecl)) {
 			name = getScope().name + ANONYMOUS_PREFIX + getScope().anonymousClasses.indexOf(classdecl);
 		}
@@ -1157,6 +1160,31 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		getScope().removedSuperclass = false;
 		getScope().enumScope = false;
 		getScope().enumWrapperClassScope = false;
+
+		if (getScope().declareClassScope) {
+			if (context.hasAnnotationType(classdecl.sym, JSweetConfig.ANNOTATION_DECORATOR)) {
+				print("function ").print(name).print("(...args: any[]);").println();
+				exitScope();
+				return;
+			}
+		} else {
+			if (context.lookupDecoratorAnnotation(classdecl.sym.getQualifiedName().toString()) != null) {
+				JCTree[] globalDecoratorFunction = context
+						.lookupGlobalMethod(classdecl.sym.getQualifiedName().toString());
+				if (globalDecoratorFunction == null) {
+					report(classdecl, JSweetProblem.CANNOT_FIND_GLOBAL_DECORATOR_FUNCTION,
+							classdecl.sym.getQualifiedName());
+				} else {
+					getScope().decoratorScope = true;
+					enter(globalDecoratorFunction[0]);
+					print(globalDecoratorFunction[1]);
+					exit();
+					getScope().decoratorScope = false;
+				}
+				exitScope();
+				return;
+			}
+		}
 
 		HashSet<Entry<JCClassDecl, JCMethodDecl>> defaultMethods = null;
 		boolean globals = JSweetConfig.GLOBALS_CLASS_NAME.equals(classdecl.name.toString());
@@ -1973,6 +2001,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			if (getScope().constructor) {
 				report(methodDecl, methodDecl.name, JSweetProblem.GLOBAL_CONSTRUCTOR_DEF);
 				return;
+			}
+			if (context.lookupDecoratorAnnotation((parent.sym.getQualifiedName() + "." + methodDecl.name)
+					.replace(JSweetConfig.GLOBALS_CLASS_NAME + ".", "")) != null) {
+				if (!getScope().decoratorScope) {
+					return;
+				}
 			}
 
 			if (!methodDecl.mods.getFlags().contains(Modifier.STATIC)) {
@@ -4964,6 +4998,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			print(" } ");
 			isAnnotationScope = false;
 			print(")");
+		} else if (getParentOfParent() instanceof JCClassDecl) {
+			print("()");
 		}
 		println().printIndent();
 	}

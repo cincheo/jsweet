@@ -16,11 +16,17 @@
  */
 package org.jsweet.test.transpiler;
 
+import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.ModuleKind;
 import org.junit.Assert;
 import org.junit.Test;
 
+import def.decorator.MyDecorator;
+import source.decorator.Decorated;
+import source.decorator.DecoratedWithDef;
 import source.decorator.SimpleDecorator;
+import source.decorator.other.Globals;
+import source.decorator.other.MyOtherDecorator;
 
 /**
  * Tests for decorators in JSweet.
@@ -47,4 +53,25 @@ public class DecoratorTests extends AbstractTest {
 		}, getSourceFile(SimpleDecorator.class));
 	}
 
+	@Test
+	public void testDecorated() {
+		transpile(logHandler -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(Decorated.class), getSourceFile(MyOtherDecorator.class), getSourceFile(Globals.class));
+	}
+
+	@Test
+	public void testWrongDecorated() {
+		transpile(logHandler -> {
+			logHandler.assertReportedProblems(JSweetProblem.CANNOT_FIND_GLOBAL_DECORATOR_FUNCTION);
+		}, getSourceFile(Decorated.class), getSourceFile(MyOtherDecorator.class));
+	}
+
+	@Test
+	public void testDecoratedWithDef() {
+		transpile(logHandler -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(DecoratedWithDef.class), getSourceFile(MyDecorator.class));
+	}
+	
 }

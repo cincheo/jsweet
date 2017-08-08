@@ -120,6 +120,49 @@ public class JSweetContext extends Context {
 	protected Set<String> langTypesSimpleNames = new HashSet<String>();
 	protected Set<String> baseThrowables = new HashSet<String>();
 
+	private Map<String, JCTree[]> globalMethods = new HashMap<>();
+	private Map<String, JCClassDecl> decoratorAnnotations = new HashMap<>();
+
+	/**
+	 * Registers a global method in the context.
+	 * 
+	 * @see #lookupGlobalMethod(String)
+	 */
+	public void registerGlobalMethod(JCClassDecl owner, JCMethodDecl method) {
+		String name = method.sym.getEnclosingElement().getQualifiedName().toString();
+		name += "." + method.name;
+		name = name.replace(JSweetConfig.GLOBALS_CLASS_NAME + ".", "");
+		globalMethods.put(name, new JCTree[] { owner, method });
+	}
+
+	/**
+	 * Looks up a registered method from its fully qualified name.
+	 * 
+	 * @param fullyQualifiedName
+	 *            fully qualified owning type name + "." + method name
+	 * @return an array containing the class and method AST objects of any
+	 *         matching method (in theory several methods could match because of
+	 *         overloading but we ignore it here)
+	 * @see #registerGlobalMethod(JCMethodDecl)
+	 */
+	public JCTree[] lookupGlobalMethod(String fullyQualifiedName) {
+		return globalMethods.get(fullyQualifiedName);
+	}
+
+	/**
+	 * Registers a decorator annotation in the context.
+	 */
+	public void registerDecoratorAnnotation(JCClassDecl annotationDeclaration) {
+		decoratorAnnotations.put(annotationDeclaration.sym.getQualifiedName().toString(), annotationDeclaration);
+	}
+
+	/**
+	 * Registers a decorator annotation in the context.
+	 */
+	public JCClassDecl lookupDecoratorAnnotation(String fullyQualifiedName) {
+		return decoratorAnnotations.get(fullyQualifiedName);
+	}
+
 	/**
 	 * Adds a type mapping in the context.
 	 * 
@@ -1467,7 +1510,7 @@ public class JSweetContext extends Context {
 				// a map has a constructor (implicit) and an initializer
 				return true;
 			}
-			if(newClass.clazz.type.tsym.getModifiers().contains(Modifier.ABSTRACT)) {
+			if (newClass.clazz.type.tsym.getModifiers().contains(Modifier.ABSTRACT)) {
 				// maps cannot be abstract
 				return true;
 			}
@@ -1634,7 +1677,8 @@ public class JSweetContext extends Context {
 			// erased types are ignored
 			return true;
 		}
-		if (classdecl.type.tsym.getKind() == ElementKind.ANNOTATION_TYPE) {
+		if (classdecl.type.tsym.getKind() == ElementKind.ANNOTATION_TYPE
+				&& !hasAnnotationType(classdecl.sym, JSweetConfig.ANNOTATION_DECORATOR)) {
 			// annotation types are ignored
 			return true;
 		}

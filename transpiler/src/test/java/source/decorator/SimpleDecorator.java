@@ -1,3 +1,10 @@
+/*
+ * Some examples borrowed/translated from
+ * https://gist.github.com/remojansen/16c661a7afd68e22ac6e.
+ * 
+ * @author Renaud Pawlak
+ * @author https://gist.github.com/remojansen
+ */
 package source.decorator;
 
 import static def.js.Globals.arguments;
@@ -13,13 +20,31 @@ import def.js.JSON;
 import def.js.PropertyDescriptor;
 import jsweet.lang.Decorator;
 
-/**
- * Some examples borrowed/translated from
- * https://gist.github.com/remojansen/16c661a7afd68e22ac6e.
- * 
- * @author Renaud Pawlak
- * @author https://gist.github.com/remojansen
+/*
+ * Decorators must first be declared as Java annotations (annotated with @Decorator).
+ * Then, each decorator must provide an implementation as a global function (of the same name).
  */
+
+@Decorator
+@Target(ElementType.TYPE)
+@interface MyAnnotation {
+	String f1();
+
+	String f2();
+
+	Class<?>[] classes();
+}
+
+@Decorator
+@Target(ElementType.METHOD)
+@interface logMethod {
+}
+
+@Decorator
+@Target(ElementType.FIELD)
+@interface logProperty {
+}
+
 class Globals {
 
 	static Array<String> trace = new Array<>();
@@ -33,6 +58,9 @@ class Globals {
 		$export("trace", trace.join(","));
 	}
 
+	/*
+	 * Follows the decorators implementations as global functions.
+	 */
 	public static Object MyAnnotation(Object object) {
 		// nothing
 		return null;
@@ -64,7 +92,7 @@ class Globals {
 		return descriptor;
 	}
 
-	public static void logProperty(Object target, String key) {
+	public static Object logProperty(Object target, String key) {
 
 		// property value
 		Object[] _val = { $this.$get(key) };
@@ -95,32 +123,14 @@ class Globals {
 				}
 			});
 		}
+		
+		return null;
 	}
 }
 
 @MyAnnotation(f1 = "X", f2 = "Y", classes = { SimpleDecorator.class })
 public class SimpleDecorator {
 
-}
-
-@Decorator
-@Target(ElementType.TYPE)
-@interface MyAnnotation {
-	String f1();
-
-	String f2();
-
-	Class<?>[] classes();
-}
-
-@Decorator
-@Target(ElementType.METHOD)
-@interface logMethod {
-}
-
-@Decorator
-@Target(ElementType.FIELD)
-@interface logProperty {
 }
 
 class Person {

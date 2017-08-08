@@ -361,7 +361,7 @@ public class JSweetTranspiler implements JSweetOptions {
 			File extractedCandiesJavascriptDir, String classPath) {
 		this.factory = factory;
 		readConfiguration();
-		if(tsOutputDir==null) {
+		if (tsOutputDir == null) {
 			tsOutputDir = new File("target/ts");
 		}
 		this.workingDir = workingDir == null ? new File(TMP_WORKING_DIR_NAME).getAbsoluteFile()
@@ -1292,8 +1292,14 @@ public class JSweetTranspiler implements JSweetOptions {
 			}
 		}
 
+		if (moduleKind == ModuleKind.commonjs) {
+			args.add("--moduleResolution");
+			args.add("classic");
+		}
+		
 		if (ecmaTargetVersion.ordinal() >= EcmaScriptComplianceLevel.ES5.ordinal()) {
 			args.add("--experimentalDecorators");
+			args.add("--emitDecoratorMetadata");
 		}
 
 		if (isTscWatchMode()) {
@@ -1330,18 +1336,14 @@ public class JSweetTranspiler implements JSweetOptions {
 			}
 		}
 
+		System.out.println(args);
+
 		for (File dir : tsDefDirs) {
 			LinkedList<File> tsDefFiles = new LinkedList<>();
 			Util.addFiles(".d.ts", dir, tsDefFiles);
 			for (File f : tsDefFiles) {
 				args.add(relativizeTsFile(f).toString());
 			}
-		}
-
-		LinkedList<File> tsDefFiles = new LinkedList<>();
-		Util.addFiles(".d.ts", tsOutputDir, tsDefFiles);
-		for (File f : tsDefFiles) {
-			args.add(relativizeTsFile(f).toString());
 		}
 
 		try {

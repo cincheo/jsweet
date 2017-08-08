@@ -310,7 +310,12 @@ public enum JSweetProblem {
 	/**
 	 * Raised when a mixin targets itself.
 	 */
-	SELF_MIXIN_TARGET(Severity.ERROR);
+	SELF_MIXIN_TARGET(Severity.ERROR),
+	/**
+	 * Raised when a decorator annotation does not declare any associated
+	 * function.
+	 */
+	CANNOT_FIND_GLOBAL_DECORATOR_FUNCTION(Severity.ERROR);
 
 	private Severity severity;
 
@@ -434,7 +439,8 @@ public enum JSweetProblem {
 		case PACKAGE_NAME_CONTAINS_KEYWORD:
 			return String.format("a package name cannot contain top-level keyword(s): '%s'", params);
 		case WILDCARD_IMPORT:
-			return String.format("imports cannot use * wildcards when using modules: please import a specific element", params);
+			return String.format("imports cannot use * wildcards when using modules: please import a specific element",
+					params);
 		case ENCLOSED_ROOT_PACKAGES:
 			return String.format(
 					"invalid package hierarchy: @Root package '%s' cannot be enclosed in @Root package '%s'", params);
@@ -483,7 +489,10 @@ public enum JSweetProblem {
 			return String.format(
 					"the '%s' mixin targets itself but should target another interface/declaration of the same name",
 					params);
-
+		case CANNOT_FIND_GLOBAL_DECORATOR_FUNCTION:
+			return String.format(
+					"the '%s' decorator annotation should be implemented in a global function of the same name, but this function cannot be found",
+					params);
 		}
 		return null;
 	}
