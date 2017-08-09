@@ -68,9 +68,8 @@ ${{DEPENDENCIES}}
 				<configuration>
 					<verbose>true</verbose>
 					<bundle>true</bundle>
-					<outDir>src/main/resources/META-INF/resources/typings/${project.artifactId}/${project.version}</outDir>
 					<tsOut>src/main/resources/META-INF/resources/typings/${project.artifactId}/${project.version}</tsOut>
-					<targetVersion>ES6</targetVersion>
+					<targetVersion>ES5</targetVersion>
                     <encoding>UTF-8</encoding>
 				</configuration>
 				<executions>
