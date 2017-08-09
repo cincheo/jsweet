@@ -496,8 +496,9 @@ public class JSweetTranspiler implements JSweetOptions {
 			options.put(Option.ENCODING, encoding);
 		}
 		logger.debug("encoding: " + options.get(Option.ENCODING));
-		logger.debug("classpath: " + options.get(Option.CLASSPATH));
-		logger.debug("bootclasspath: " + options.get(Option.BOOTCLASSPATH));
+		// this is too verbose for Travis...
+		//logger.debug("classpath: " + options.get(Option.CLASSPATH));
+		//logger.debug("bootclasspath: " + options.get(Option.BOOTCLASSPATH));
 		logger.debug("strict mode: " + context.strictMode);
 		options.put(Option.XLINT, "path");
 		JavacFileManager.preRegister(context);
