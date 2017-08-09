@@ -68,8 +68,8 @@ ${{DEPENDENCIES}}
 				<configuration>
 					<verbose>true</verbose>
 					<bundle>true</bundle>
-					<outDir>src/main/resources/META-INF/resources/typings/${project.artifactId}/${project.version}/sources</outDir>
-					<tsOut>src/main/resources/META-INF/resources/typings/${project.artifactId}/${project.version}/sources</tsOut>
+					<outDir>src/main/resources/META-INF/resources/typings/${project.artifactId}/${project.version}</outDir>
+					<tsOut>src/main/resources/META-INF/resources/typings/${project.artifactId}/${project.version}</tsOut>
 					<targetVersion>ES6</targetVersion>
                     <encoding>UTF-8</encoding>
 				</configuration>

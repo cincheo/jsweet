@@ -20,7 +20,6 @@ import static def.js.Globals.eval;
 import static def.dom.Globals.console;
 import static jsweet.util.Lang.any;
 import static jsweet.util.Lang.$strict;
-import static jsweet.util.Globals.equalsLoose;
 import static jsweet.util.Lang.$loose;
 import static jsweet.util.Lang.typeof;
 
@@ -96,7 +95,8 @@ public class InstanceOf {
 		
 		assert $loose(any(2) == any("2"));
 		assert $loose(any(s2) == any(n2));
-		assert equalsLoose(any(s2), any(n2));
+		// deprecated
+		//assert equalsLoose(any(s2), any(n2));
 		assert s != null;
 		assert $strict(s != null);
 		
