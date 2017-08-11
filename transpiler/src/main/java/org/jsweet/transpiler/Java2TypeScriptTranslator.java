@@ -1425,7 +1425,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				continue;
 			}
 			if (def instanceof JCVariableDecl) {
-				if (getScope().enumScope && ((JCVariableDecl) def).type.tsym != classdecl.type.tsym) {
+				if (getScope().enumScope && ((JCVariableDecl) def).sym.getKind() != ElementKind.ENUM_CONSTANT) {
 					getScope().isComplexEnum = true;
 					continue;
 				}
@@ -1719,7 +1719,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					.print("[\"" + ENUM_WRAPPER_CLASS_WRAPPERS + "\"] = [");
 			int index = 0;
 			for (JCTree tree : classdecl.defs) {
-				if (tree instanceof JCVariableDecl && ((JCVariableDecl) tree).type.equals(classdecl.type)) {
+				if (tree instanceof JCVariableDecl
+						&& ((JCVariableDecl) tree).sym.getKind() == ElementKind.ENUM_CONSTANT) {
 					JCVariableDecl varDecl = (JCVariableDecl) tree;
 					// enum fields are not part of the enum auxiliary class but
 					// will initialize the enum values
@@ -2685,7 +2686,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		} else {
 			JCTree parent = getParent();
 
-			if (getScope().enumWrapperClassScope && varDecl.type.equals(parent.type)) {
+			if (getScope().enumWrapperClassScope && varDecl.sym.getKind() == ElementKind.ENUM_CONSTANT) {
 				return;
 			}
 

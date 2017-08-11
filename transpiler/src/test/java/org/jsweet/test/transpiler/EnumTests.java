@@ -32,6 +32,7 @@ import source.enums.ComplexEnums;
 import source.enums.ComplexEnumsWithInterface;
 import source.enums.ComplexInnerEnums;
 import source.enums.EnumInSamePackage;
+import source.enums.EnumWithPropOfSameType;
 import source.enums.EnumWithStatics;
 import source.enums.Enums;
 import source.enums.EnumsImplementingInterfaces;
@@ -174,4 +175,11 @@ public class EnumTests extends AbstractTest {
 		}, getSourceFile(EnumsImplementingInterfaces.class));
 	}
 
+	@Test
+	public void testEnumWithPropOfSameType() {
+		transpile(logHandler -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(EnumWithPropOfSameType.class));
+	}
+	
 }
