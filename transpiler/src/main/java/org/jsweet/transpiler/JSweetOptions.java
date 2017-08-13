@@ -33,8 +33,16 @@ public interface JSweetOptions {
 
 	/**
 	 * Tells if the transpiler generates js.map files for Java debugging.
+	 * 
+	 * @deprecated use {@link #isGenerateSourceMaps()} instead
 	 */
+	@Deprecated
 	boolean isPreserveSourceLineNumbers();
+
+	/**
+	 * Tells if the transpiler generates js.map files for Java debugging.
+	 */
+	boolean isGenerateSourceMaps();
 
 	/**
 	 * Gets the source root for the source map files. Use this option if the

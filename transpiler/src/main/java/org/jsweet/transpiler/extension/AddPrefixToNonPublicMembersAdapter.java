@@ -1,5 +1,3 @@
-package org.jsweet.transpiler.extension;
-
 /* 
  * JSweet transpiler - http://www.jsweet.org
  * Copyright (C) 2015 CINCHEO SAS <renaud.pawlak@cincheo.fr>
@@ -18,6 +16,8 @@ package org.jsweet.transpiler.extension;
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
+package org.jsweet.transpiler.extension;
+
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -39,6 +39,13 @@ import org.jsweet.transpiler.util.Util;
 
 public class AddPrefixToNonPublicMembersAdapter extends PrinterAdapter {
 
+	/**
+	 * Builds the adapter and delegate to the given parent.
+	 * 
+	 * <p>
+	 * This adapter just uses an annotation manager that will install
+	 * <code>@Name</code> annotations when the fields are not public.
+	 */
 	public AddPrefixToNonPublicMembersAdapter(PrinterAdapter parentAdapter) {
 		super(parentAdapter);
 		addAnnotationManager(new AnnotationManager() {

@@ -56,6 +56,22 @@ public class StringEnumAdapter extends PrinterAdapter {
 		return element.getKind() == ElementKind.ENUM && hasAnnotationType(element, JSweetConfig.ANNOTATION_STRING_TYPE);
 	}
 
+	/**
+	 * Default constructor.
+	 * 
+	 * <p>
+	 * Performs the following initializations:
+	 * 
+	 * <ul>
+	 * <li>Type mapping: eligible enum types -&gt; string</li>
+	 * <li>Adds an annotation manager that will add <code>@Erased</code> to all
+	 * eligible enum declarations</li>
+	 * </ul>
+	 * 
+	 * <p>
+	 * An eligible enum type is an enum type that has a <code>@StringType</code>
+	 * annotation.
+	 */
 	public StringEnumAdapter(PrinterAdapter parent) {
 		super(parent);
 		// eligible enums will be translated to string in JS
@@ -73,6 +89,9 @@ public class StringEnumAdapter extends PrinterAdapter {
 
 	}
 
+	/**
+	 * Uses of enum API need to be translated accordingly to strings.
+	 */
 	@Override
 	public boolean substituteMethodInvocation(MethodInvocationElement invocation) {
 		if (invocation.getTargetExpression() != null) {
@@ -99,6 +118,10 @@ public class StringEnumAdapter extends PrinterAdapter {
 		return super.substituteMethodInvocation(invocation);
 	}
 
+	/**
+	 * Accessing an enum field is replaced by a simple string value (
+	 * <code>MyEnum.A</code> =&gt; <code>"A"</code>).
+	 */
 	@Override
 	public boolean substituteVariableAccess(VariableAccessElement variableAccess) {
 		// accessing an enum field is replaced by a simple string value
@@ -110,6 +133,9 @@ public class StringEnumAdapter extends PrinterAdapter {
 		return super.substituteVariableAccess(variableAccess);
 	}
 
+	/**
+	 * Special case for the case statement patter.
+	 */
 	@Override
 	public boolean substituteCaseStatementPattern(CaseElement caseStatement, ExtendedElement pattern) {
 		// map enums to strings in case statements

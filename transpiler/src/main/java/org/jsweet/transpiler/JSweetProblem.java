@@ -29,6 +29,18 @@ import org.jsweet.JSweetConfig;
 public enum JSweetProblem {
 
 	/**
+	 * A user error.
+	 */
+	USER_ERROR(Severity.ERROR),
+	/**
+	 * A user warning.
+	 */
+	USER_WARNING(Severity.WARNING),
+	/**
+	 * A user message.
+	 */
+	USER_MESSAGE(Severity.MESSAGE),
+	/**
 	 * Raised when the JDK is not found (hence tools.jar).
 	 */
 	JAVA_COMPILER_NOT_FOUND(Severity.ERROR),
@@ -335,6 +347,10 @@ public enum JSweetProblem {
 	 */
 	public String getMessage(Object... params) {
 		switch (this) {
+		case USER_ERROR:
+		case USER_WARNING:
+		case USER_MESSAGE:
+			return String.format("%s", params);
 		case JAVA_COMPILER_NOT_FOUND:
 			return String.format(
 					"Java compiler cannot be found: make sure that JAVA_HOME points to a JDK (version>=8) and not a JRE, or sets the transpiler jdkHome option",

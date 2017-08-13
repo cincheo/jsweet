@@ -649,6 +649,11 @@ public class JSweetContext extends Context {
 	 */
 	public SourceFile[] sourceFiles;
 
+	/**
+	 * The compilation units that correspond to the source files.
+	 */
+	public JCCompilationUnit[] compilationUnits;
+
 	private List<String> usedModules = new ArrayList<>();
 
 	/**

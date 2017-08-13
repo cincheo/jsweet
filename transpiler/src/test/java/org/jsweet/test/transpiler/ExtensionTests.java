@@ -18,9 +18,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetFactory;
+import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.ModuleKind;
 import org.jsweet.transpiler.SourceFile;
 import org.jsweet.transpiler.extension.AnnotationManager;
+import org.jsweet.transpiler.extension.DisallowGlobalVariablesAdapter;
 import org.jsweet.transpiler.extension.Java2TypeScriptAdapter;
 import org.jsweet.transpiler.extension.MapAdapter;
 import org.jsweet.transpiler.extension.PrinterAdapter;
@@ -34,6 +36,7 @@ import source.extension.AnnotationTest;
 import source.extension.HelloWorldDto;
 import source.extension.HelloWorldService;
 import source.extension.Maps;
+import source.extension.UseOfGlobalVariable;
 
 class TestFactory extends JSweetFactory {
 
@@ -236,8 +239,23 @@ public class ExtensionTests extends AbstractTest {
 		String generatedCode = FileUtils.readFileToString(f.getTsFile());
 		Assert.assertTrue(generatedCode.contains("date : string"));
 		Assert.assertFalse(generatedCode.contains("date : Date"));
-		
+
 		createTranspiler(new JSweetFactory());
+	}
+
+	@Test
+	public void testDisallowGlobalVariablesAdapter() {
+		createTranspiler(new JSweetFactory() {
+			@Override
+			public PrinterAdapter createAdapter(JSweetContext context) {
+				return new DisallowGlobalVariablesAdapter(super.createAdapter(context));
+			}
+		});
+		transpile(logHandler -> {
+			logHandler.assertReportedProblems(JSweetProblem.USER_ERROR);
+		}, getSourceFile(UseOfGlobalVariable.class));
+		createTranspiler(new JSweetFactory());
+
 	}
 
 }

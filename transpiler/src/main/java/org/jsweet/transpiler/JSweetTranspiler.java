@@ -165,7 +165,7 @@ public class JSweetTranspiler implements JSweetOptions {
 	private JavaCompiler compiler;
 	private Log log;
 	private CandyProcessor candiesProcessor;
-	private boolean generateSourceMap = false;
+	private boolean generateSourceMaps = false;
 	private File workingDir;
 	private File tsOutputDir;
 	private File jsOutputDir;
@@ -497,8 +497,8 @@ public class JSweetTranspiler implements JSweetOptions {
 		}
 		logger.debug("encoding: " + options.get(Option.ENCODING));
 		// this is too verbose for Travis...
-		//logger.debug("classpath: " + options.get(Option.CLASSPATH));
-		//logger.debug("bootclasspath: " + options.get(Option.BOOTCLASSPATH));
+		// logger.debug("classpath: " + options.get(Option.CLASSPATH));
+		// logger.debug("bootclasspath: " + options.get(Option.BOOTCLASSPATH));
 		logger.debug("strict mode: " + context.strictMode);
 		options.put(Option.XLINT, "path");
 		JavacFileManager.preRegister(context);
@@ -799,6 +799,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		logger.info("parsing: " + fileObjects);
 		transpilationHandler.setDisabled(isIgnoreJavaErrors());
 		List<JCCompilationUnit> compilationUnits = compiler.enterTrees(compiler.parseFiles(fileObjects));
+		context.compilationUnits = compilationUnits.toArray(new JCCompilationUnit[compilationUnits.size()]);
 		if (transpilationHandler.getErrorCount() > 0) {
 			logger.warn("errors during parse tree");
 			return null;
@@ -948,7 +949,7 @@ public class JSweetTranspiler implements JSweetOptions {
 			}
 			logger.info("scanning " + cu.sourcefile.getName() + "...");
 			AbstractTreePrinter printer = factory.createTranslator(adapter, transpilationHandler, context, cu,
-					generateSourceMap);
+					generateSourceMaps);
 			printer.print(cu);
 			if (StringUtils.isWhitespace(printer.getResult())) {
 				continue;
@@ -986,7 +987,7 @@ public class JSweetTranspiler implements JSweetOptions {
 			files[i].javaFileLastTranspiled = files[i].getJavaFile().lastModified();
 			printer.sourceMap.shiftOutputPositions(headerLines.length);
 			files[i].setSourceMap(printer.sourceMap);
-			if (generateSourceMap && !generateJsFiles) {
+			if (generateSourceMaps && !generateJsFiles) {
 				generateTypeScriptSourceMapFile(files[i]);
 			}
 			logger.info("created " + outputFilePath);
@@ -1106,7 +1107,7 @@ public class JSweetTranspiler implements JSweetOptions {
 			}
 			logger.info("scanning " + cu.sourcefile.getName() + "...");
 			AbstractTreePrinter printer = factory.createTranslator(adapter, transpilationHandler, context, cu,
-					generateSourceMap);
+					generateSourceMaps);
 			printer.print(cu);
 			printer.sourceMap.shiftOutputPositions(lineCount);
 			files[permutation[i]].setSourceMap(printer.sourceMap);
@@ -1297,7 +1298,7 @@ public class JSweetTranspiler implements JSweetOptions {
 			args.add("--moduleResolution");
 			args.add("classic");
 		}
-		
+
 		if (ecmaTargetVersion.ordinal() >= EcmaScriptComplianceLevel.ES5.ordinal()) {
 			args.add("--experimentalDecorators");
 			args.add("--emitDecoratorMetadata");
@@ -1306,7 +1307,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		if (isTscWatchMode()) {
 			args.add("--watch");
 		}
-		if (isPreserveSourceLineNumbers()) {
+		if (isGenerateSourceMaps()) {
 			args.add("--sourceMap");
 		}
 		if (isGenerateDeclarations()) {
@@ -1450,7 +1451,7 @@ public class JSweetTranspiler implements JSweetOptions {
 						logger.info("js output file: " + outputFile);
 						File mapFile = new File(outputFile.getAbsolutePath() + ".map");
 
-						if (mapFile.exists() && generateSourceMap) {
+						if (mapFile.exists() && generateSourceMaps) {
 
 							SourceMapGeneratorV3 generator = (SourceMapGeneratorV3) SourceMapGeneratorFactory
 									.getInstance(SourceMapFormat.V3);
@@ -1520,18 +1521,35 @@ public class JSweetTranspiler implements JSweetOptions {
 	 * 
 	 * @see org.jsweet.transpiler.JSweetOptions#isPreserveSourceLineNumbers()
 	 */
+	@Deprecated
 	@Override
 	public boolean isPreserveSourceLineNumbers() {
-		return generateSourceMap;
+		return generateSourceMaps;
+	}
+
+	@Override
+	public boolean isGenerateSourceMaps() {
+		return generateSourceMaps;
 	}
 
 	/**
 	 * Sets the flag that tells if the transpiler preserves the generated
 	 * TypeScript source line numbers wrt the Java original source file (allows
 	 * for Java debugging through js.map files).
+	 * 
+	 * @deprecated use {@link #setGenerateSourceMaps(boolean)} instead
 	 */
+	@Deprecated
 	public void setPreserveSourceLineNumbers(boolean preserveSourceLineNumbers) {
-		this.generateSourceMap = preserveSourceLineNumbers;
+		this.generateSourceMaps = preserveSourceLineNumbers;
+	}
+
+	/**
+	 * Sets the flag that tells if the transpiler allows for Java debugging
+	 * through js.map files.
+	 */
+	public void setGenerateSourceMaps(boolean generateSourceMaps) {
+		this.generateSourceMaps = generateSourceMaps;
 	}
 
 	/*

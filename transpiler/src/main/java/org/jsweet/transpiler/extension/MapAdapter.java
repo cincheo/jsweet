@@ -43,9 +43,15 @@ import org.jsweet.transpiler.model.NewClassElement;
  */
 public class MapAdapter extends PrinterAdapter {
 
-	static String[] mapTypes = { Map.class.getName(), HashMap.class.getName(), TreeMap.class.getName(),
+	/**
+	 * Java types that need to be transpiled to ES6 maps.
+	 */
+	protected static String[] mapTypes = { Map.class.getName(), HashMap.class.getName(), TreeMap.class.getName(),
 			Hashtable.class.getName() };
 
+	/**
+	 * Creates the adapter and initialize all type mappings.
+	 */
 	public MapAdapter(PrinterAdapter parent) {
 		super(parent);
 		// rewrite all Java map and compatible map implementations types
@@ -56,19 +62,29 @@ public class MapAdapter extends PrinterAdapter {
 		}
 	}
 
+	/**
+	 * When one of the types in {@link #mapTypes} is found, instantiates an ES6
+	 * map. Delegate to the parent otherwise.
+	 */
 	@Override
 	public boolean substituteNewClass(NewClassElement newClass) {
 		String className = newClass.getTypeAsElement().toString();
 		// map the map constructor to the global 'Map' variable (untyped access)
 		if (Arrays.binarySearch(mapTypes, className) >= 0) {
 			// this access is browser/node-compatible
-			print("new (typeof window == 'undefined'?global:window)['Map'](").printArgList(newClass.getArguments()).print(")");
+			print("new (typeof window == 'undefined'?global:window)['Map'](").printArgList(newClass.getArguments())
+					.print(")");
 			return true;
 		}
 		// delegate to the adapter chain
 		return super.substituteNewClass(newClass);
 	}
 
+	/**
+	 * This where the actual API bridge is implemented. Each well-known Java map
+	 * method invocation is translated to the corresponding ES6 map method
+	 * invocation.
+	 */
 	@Override
 	public boolean substituteMethodInvocation(MethodInvocationElement invocation) {
 		if (invocation.getTargetExpression() != null) {

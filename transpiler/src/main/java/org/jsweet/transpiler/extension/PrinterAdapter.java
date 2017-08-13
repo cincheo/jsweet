@@ -564,7 +564,7 @@ public class PrinterAdapter {
 	/**
 	 * Reports a problem during the printing phase.
 	 * 
-	 * @param tree
+	 * @param element
 	 *            the code where the problem occurred
 	 * @param problem
 	 *            the reported problem
@@ -578,7 +578,7 @@ public class PrinterAdapter {
 	/**
 	 * Reports a problem during the printing phase.
 	 * 
-	 * @param tree
+	 * @param element
 	 *            the code where the problem occurred
 	 * @param name
 	 *            the name of the element if any
@@ -590,6 +590,37 @@ public class PrinterAdapter {
 	protected void report(ExtendedElement element, Name name, JSweetProblem problem, Object... params) {
 		printer.report(((ExtendedElementSupport) element).getTree(), (com.sun.tools.javac.util.Name) name, problem,
 				params);
+	}
+
+	/**
+	 * Reports a problem during the printing phase.
+	 * 
+	 * @param element
+	 *            the code where the problem occurred
+	 * @param problem
+	 *            the reported problem
+	 * @param params
+	 *            the parameters if any
+	 */
+	protected void report(Element element, JSweetProblem problem, Object... params) {
+		printer.report(org.jsweet.transpiler.util.Util.lookupTree(context, element), problem, params);
+	}
+
+	/**
+	 * Reports a problem during the printing phase.
+	 * 
+	 * @param element
+	 *            the code where the problem occurred
+	 * @param name
+	 *            the name of the element if any
+	 * @param problem
+	 *            the reported problem
+	 * @param params
+	 *            the parameters if any
+	 */
+	protected void report(Element element, Name name, JSweetProblem problem, Object... params) {
+		printer.report(org.jsweet.transpiler.util.Util.lookupTree(context, element),
+				(com.sun.tools.javac.util.Name) name, problem, params);
 	}
 
 	/**

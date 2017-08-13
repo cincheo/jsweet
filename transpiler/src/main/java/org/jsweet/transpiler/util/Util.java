@@ -40,6 +40,7 @@ import java.util.stream.Collectors;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.JavaFileManager;
@@ -118,6 +119,73 @@ public class Util {
 			}
 		}
 		return isSourceElement(element.getEnclosingElement());
+	}
+
+	/**
+	 * Gets the tree that corresponds to the given element (this is a slow
+	 * implementation - do not use intensively).
+	 * 
+	 * @param context
+	 *            the transpiler's context
+	 * @param element
+	 *            the element to lookup
+	 * @return the javac AST that corresponds to that element
+	 */
+	public static JCTree lookupTree(JSweetContext context, Element element) {
+		if (element == null || element instanceof PackageSymbol) {
+			return null;
+		}
+		Element rootClass = getRootClassElement(element);
+		if (rootClass instanceof ClassSymbol) {
+			ClassSymbol clazz = (ClassSymbol) rootClass;
+			// hack to know if it is a source file or a class file
+			if (clazz.sourcefile != null
+					&& clazz.sourcefile.getClass().getName().equals("com.sun.tools.javac.file.RegularFileObject")) {
+				JCTree[] result = { null };
+				for (int i = 0; i < context.sourceFiles.length; i++) {
+					if (new File(clazz.sourcefile.getName()).equals(context.sourceFiles[i].getJavaFile())) {
+						JCCompilationUnit cu = context.compilationUnits[i];
+						new TreeScanner() {
+							public void visitClassDef(JCClassDecl tree) {
+								if (tree.sym == element) {
+									result[0] = tree;
+								} else {
+									super.visitClassDef(tree);
+								}
+							}
+
+							public void visitMethodDef(JCMethodDecl tree) {
+								if (tree.sym == element) {
+									result[0] = tree;
+								}
+							}
+
+							public void visitVarDef(JCVariableDecl tree) {
+								if (tree.sym == element) {
+									result[0] = tree;
+								} else {
+									super.visitVarDef(tree);
+								}
+							}
+						}.scan(cu);
+						return result[0];
+					}
+				}
+			}
+		}
+		return null;
+	}
+
+	private static Element getRootClassElement(Element element) {
+		if (element == null) {
+			return null;
+		}
+		if (element instanceof ClassSymbol
+				&& (element.getEnclosingElement() == null || element.getEnclosingElement() instanceof PackageElement)) {
+			return element;
+		} else {
+			return getRootClassElement(element.getEnclosingElement());
+		}
 	}
 
 	/**
