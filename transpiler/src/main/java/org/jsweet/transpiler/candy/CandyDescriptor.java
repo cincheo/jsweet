@@ -19,7 +19,6 @@
 package org.jsweet.transpiler.candy;
 
 import java.io.IOException;
-import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -34,153 +33,132 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import java.io.InputStream;
+import java.util.Optional;
+import java.util.Properties;
 
 /**
  * A candy descriptor for the candies store.
- * 
+ *
  * @see CandyStore
- * 
+ *
  * @author Louis Grignon
+ * @author Johann Sorel
  */
 public class CandyDescriptor {
-	public static final String UNKNOWN = "unknown";
 
-	public final String name;
-	public final String version;
-	public final long lastUpdateTimestamp;
-	public final String modelVersion;
-	public final String transpilerVersion;
-	public final String jsOutputDirPath;
-	public final String jsDirPath;
-	public final List<String> jsFilesPaths;
+    public static final String UNKNOWN = "unknown";
+    private final static Pattern MODEL_VERSION_PATTERN = Pattern
+            .compile("[\\<]groupId[\\>]org[.]jsweet[.]candies[.](.*)[\\<]/groupId[\\>]");
+    private final static Gson GSON = new Gson(); //todo : is this class really thread safe ?
 
-	public CandyDescriptor( //
-			String name, //
-			String version, //
-			long lastUpdateTimestamp, //
-			String modelVersion, //
-			String transpilerVersion, //
-			String jsOutputDirPath, //
-			String jsDirPath, //
-			List<String> jsFilesPaths) {
-		this.name = name;
-		this.version = version;
-		this.lastUpdateTimestamp = lastUpdateTimestamp;
-		this.modelVersion = modelVersion;
-		this.transpilerVersion = transpilerVersion;
-		this.jsOutputDirPath = jsOutputDirPath;
-		this.jsDirPath = jsDirPath;
-		this.jsFilesPaths = jsFilesPaths;
-	}
+    public final String name;
+    public final String version;
+    public final long lastUpdateTimestamp;
+    public final String modelVersion;
+    public final String transpilerVersion;
+    public final String jsOutputDirPath;
+    public final String jsDirPath;
+    public final List<String> jsFilesPaths;
 
-	public boolean hasJsFiles() {
-		return jsFilesPaths.size() > 0;
-	}
+    public CandyDescriptor(String name, String version, long lastUpdateTimestamp,
+            String modelVersion, String transpilerVersion, String jsOutputDirPath, 
+            String jsDirPath, List<String> jsFilesPaths) {
+        this.name = name;
+        this.version = version;
+        this.lastUpdateTimestamp = lastUpdateTimestamp;
+        this.modelVersion = modelVersion;
+        this.transpilerVersion = transpilerVersion;
+        this.jsOutputDirPath = jsOutputDirPath;
+        this.jsDirPath = jsDirPath;
+        this.jsFilesPaths = jsFilesPaths;
+    }
 
-	@Override
-	public int hashCode() {
-		return name.hashCode();
-	}
+    public boolean hasJsFiles() {
+        return jsFilesPaths.size() > 0;
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (!(obj instanceof CandyDescriptor)) {
-			return false;
-		}
+    @Override
+    public int hashCode() {
+        return name.hashCode();
+    }
 
-		CandyDescriptor other = (CandyDescriptor) obj;
-		return name.equals(other.name) //
-				&& version.equals(other.version) //
-				&& lastUpdateTimestamp == other.lastUpdateTimestamp //
-				&& StringUtils.equals(jsOutputDirPath, other.jsOutputDirPath);
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof CandyDescriptor)) {
+            return false;
+        }
 
-	private final static Pattern MODEL_VERSION_PATTERN = Pattern
-			.compile("[\\<]groupId[\\>]org[.]jsweet[.]candies[.](.*)[\\<]/groupId[\\>]");
-	private final static Pattern ARTIFACT_ID_PATTERN = Pattern.compile("[\\<]artifactId[\\>](.*)[\\<]/artifactId[\\>]");
-	private final static Pattern VERSION_PATTERN = Pattern.compile("[\\<]version[\\>](.*)[\\<]/version[\\>]");
+        CandyDescriptor other = (CandyDescriptor) obj;
+        return name.equals(other.name) //
+                && version.equals(other.version) //
+                && lastUpdateTimestamp == other.lastUpdateTimestamp //
+                && StringUtils.equals(jsOutputDirPath, other.jsOutputDirPath);
+    }
 
-	private final static Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    public static CandyDescriptor fromCandyJar(JarFile jarFile, String jsOutputDirPath) throws IOException {
+        
+        final Optional<JarEntry> pomXmlEntry = jarFile.stream().filter((JarEntry t) -> t.getName().endsWith("pom.xml")).findFirst();
+        final Optional<JarEntry> pomPropertiesEntry = jarFile.stream().filter((JarEntry t) -> t.getName().endsWith("pom.properties")).findFirst();
+        final ZipEntry metadataEntry = jarFile.getEntry("META-INF/candy-metadata.json");
+        final long lastUpdateTimestamp = jarFile.getEntry("META-INF/MANIFEST.MF").getTime();
 
-	public static CandyDescriptor fromCandyJar(JarFile jarFile, String jsOutputDirPath) throws IOException {
-		JarEntry pomEntry = null;
-		Enumeration<JarEntry> entries = jarFile.entries();
-		while (entries.hasMoreElements()) {
-			JarEntry current = entries.nextElement();
-			if (current.getName().endsWith("pom.xml")) {
-				pomEntry = current;
-			}
-		}
-		String modelVersion = UNKNOWN;
-		String name = UNKNOWN;
-		String version = UNKNOWN;
+        
+        String modelVersion = UNKNOWN;
+        String name = FilenameUtils.getBaseName(jarFile.getName());
+        String version = UNKNOWN;
+        String transpilerVersion = null;
 
-		if (pomEntry != null) {
-			String pomContent = IOUtils.toString(jarFile.getInputStream(pomEntry));
+        if (pomPropertiesEntry.isPresent()) {
+            final Properties props = new Properties();
+            try (InputStream in = jarFile.getInputStream(pomPropertiesEntry.get())) {
+                props.load(in);
+            }
+            name = props.getProperty("artifactId");
+            version = props.getProperty("version");
+        }
+        
+        if (pomXmlEntry.isPresent()) {
+            final String pomContent;
+            try (InputStream in = jarFile.getInputStream(pomXmlEntry.get())) {
+                pomContent = IOUtils.toString(in);
+            }
+            
+            // take only general part
+            final int dependenciesIndex = pomContent.indexOf("<dependencies>");
+            final String pomGeneralPart = dependenciesIndex > 0 ? pomContent.substring(0, dependenciesIndex) : pomContent;
 
-			// take only general part
-			int dependenciesIndex = pomContent.indexOf("<dependencies>");
-			String pomGeneralPart = dependenciesIndex > 0 ? pomContent.substring(0, dependenciesIndex) : pomContent;
+            // extract candy model version from <groupId></groupId>
+            final Matcher matcher = MODEL_VERSION_PATTERN.matcher(pomGeneralPart);
+            if (matcher.find()) {
+                modelVersion = matcher.group(1);
+            }
+        }
 
-			// extract candy model version from <groupId></groupId>
-			Matcher matcher = MODEL_VERSION_PATTERN.matcher(pomGeneralPart);
-			if (matcher.find()) {
-				modelVersion = matcher.group(1);
-			}
+        if (metadataEntry != null) {
+            final String metadataContent = IOUtils.toString(jarFile.getInputStream(metadataEntry));
+            @SuppressWarnings("unchecked")
+            final Map<String, ?> metadata = GSON.fromJson(metadataContent, Map.class);
+            transpilerVersion = (String) metadata.get("transpilerVersion");
+        }
 
-			// extract name from <artifactId></artifactId>
-			matcher = ARTIFACT_ID_PATTERN.matcher(pomGeneralPart);
-			if (matcher.find()) {
-				name = matcher.group(1);
-			}
+        final String jsDirPath = "META-INF/resources/webjars/" + (UNKNOWN.equals(version) ? "" : name + "/" + version);
+        System.out.println("SEARCHING JS IN : "+jsDirPath);
+        final ZipEntry jsDirEntry = jarFile.getEntry(jsDirPath);
+        final List<String> jsFilesPaths = new LinkedList<>();
+        if (jsDirEntry != null) {
+            // collects js files
+            jarFile.stream().map(JarEntry::getName)
+                    .filter((String t) -> t.startsWith(jsDirPath) && t.endsWith(".js"))
+                    .forEach(jsFilesPaths::add);
+        }
 
-			matcher = VERSION_PATTERN.matcher(pomGeneralPart);
-			if (matcher.find()) {
-				version = matcher.group(1);
-			}
-		} else {
-			name = FilenameUtils.getBaseName(jarFile.getName());
-		}
+        return new CandyDescriptor(name,version,lastUpdateTimestamp,modelVersion,
+                transpilerVersion,jsOutputDirPath,jsDirPath,jsFilesPaths);
+    }
 
-		long lastUpdateTimestamp = jarFile.getEntry("META-INF/MANIFEST.MF").getTime();
-
-		String transpilerVersion = null;
-
-		ZipEntry metadataEntry = jarFile.getEntry("META-INF/candy-metadata.json");
-		if (metadataEntry != null) {
-			String metadataContent = IOUtils.toString(jarFile.getInputStream(metadataEntry));
-
-			@SuppressWarnings("unchecked")
-			Map<String, ?> metadata = gson.fromJson(metadataContent, Map.class);
-
-			transpilerVersion = (String) metadata.get("transpilerVersion");
-		}
-
-		String jsDirPath = "META-INF/resources/webjars/" + (UNKNOWN.equals(version) ? "" : name + "/" + version);
-		ZipEntry jsDirEntry = jarFile.getEntry(jsDirPath);
-		List<String> jsFilesPaths = new LinkedList<>();
-		if (jsDirEntry != null) {
-			// collects js files
-			jarFile.stream() //
-					.filter(entry -> entry.getName().startsWith(jsDirPath) && entry.getName().endsWith(".js")) //
-					.map(entry -> entry.getName()) //
-					.forEach(jsFilesPaths::add);
-		}
-
-		return new CandyDescriptor( //
-				name, //
-				version, //
-				lastUpdateTimestamp, //
-				modelVersion, //
-				transpilerVersion, //
-				jsOutputDirPath, //
-				jsDirPath, //
-				jsFilesPaths);
-	}
-
-	@Override
-	public String toString() {
-		return "(" + name + "-" + version + ",t=" + lastUpdateTimestamp + ")";
-	}
+    @Override
+    public String toString() {
+        return "(" + name + "-" + version + ",t=" + lastUpdateTimestamp + ")";
+    }
 }
