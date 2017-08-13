@@ -1395,7 +1395,7 @@ We provide a quick start project to help you starting with such a use case: <htt
 Extending the transpiler
 ------------------------
 
-JSweet is an Open Transpiler. It means that it provides ways for programmers to tune/extend how JSweet generates the intermediate TypeScript code. Tuning the transpiler is a solution to avoid repetitive tasks and automatize them.
+JSweet is an Open Transpiler from Java to TypeScript. It means that it provides ways for programmers to tune/extend how JSweet generates the intermediate TypeScript code. Tuning the transpiler is a solution to avoid repetitive tasks and automatize them.
 
 For instance, say you have a legacy Java code that uses the Java API for serializing objects (`writeObject`/`readObject`). With JSweet, you can easily erase these methods from your program, so that the generated JavaScript code is free from any Java-specific serialization idioms.
 
@@ -2248,6 +2248,52 @@ class HelloWorldService {
 ```
 
 So, all you need to do is to modify the code of the adapter to generate the actual invocation code in place of the comment. Once it is done, you can use the generated JavaScript code as a bundle to access your service in a well-typed way. Moreover, you can use JSweet to generate the TypeScript definitions of your services and DTOs, so that your TypeScript client are well-typed (see the JSweet’s `declaration` option).
+
+#### Example 6: an adapter to disallow global variables
+
+This is a quite special adapter since it does not really generate any code, but it reports errors when the source code does not conform to certain coding standards. Here, we implement a simple constraint that reports errors when the user tries to declare global variables (i.e. in JSweet non-final static field declared in a `Globals` class).
+
+``` java
+package org.jsweet.transpiler.extension;
+
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+
+import org.jsweet.transpiler.JSweetProblem;
+
+public class DisallowGlobalVariablesAdapter extends PrinterAdapter {
+
+    public DisallowGlobalVariablesAdapter(PrinterAdapter parentAdapter) {
+        super(parentAdapter);
+    }
+
+    @Override
+    public void afterType(TypeElement type) {
+        // we only check for static variables that are in a Globals class but
+        // this could be generalized to any static variable
+        if (!type.getQualifiedName().toString().startsWith("def.")
+                && type.getSimpleName().toString().equals("Globals")) {
+            for (Element member : type.getEnclosedElements()) {
+                if (member.getKind() == ElementKind.FIELD) {
+                    VariableElement field = (VariableElement) member;
+                    // only non-final static variable have side effect
+                    if (field.getModifiers().contains(Modifier.STATIC)
+                            && !field.getModifiers().contains(Modifier.FINAL)) {
+                        report(field, JSweetProblem.USER_ERROR, "global variables are not allowed");
+                    }
+                }
+            }
+        }
+        super.afterType(type);
+    }
+
+}
+```
+
+This adapter falls into the category of static analysis, which can be useful (along with code generation) to check that the input complies to the expected coding guidelines. It would be easy to enhance this adapter to add check on any static fields. A nice feature would be to disable the check when the field is annotated with a specific annotation (for instance `@AllowSideEffect`).
 
 Appendix 1: JSweet transpiler options
 -------------------------------------
