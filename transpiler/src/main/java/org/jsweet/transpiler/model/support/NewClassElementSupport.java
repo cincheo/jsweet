@@ -30,7 +30,7 @@ import org.jsweet.transpiler.model.NewClassElement;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
 
 /**
- * An AST node for a Java new class expression.
+ * See {@link NewClassElement}.
  * 
  * @author Renaud Pawlak
  */

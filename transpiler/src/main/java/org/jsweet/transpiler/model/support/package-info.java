@@ -17,13 +17,9 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 /**
- * This package contains a extension of the Java model ({@link javax.lang.model}
- * ) to cover Java expressions and statements.
- * 
- * <p>
- * It wraps the javac tree API. It shall be used by the adapters in order to use
- * a stable and public API.
+ * This package contains the default implementation for the
+ * {@link org.jsweet.transpiler.model} package.
  * 
  * @author Renaud Pawlak
  */
-package org.jsweet.transpiler.model;
+package org.jsweet.transpiler.model.support;

@@ -21,7 +21,6 @@ package org.jsweet.transpiler.model.support;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 
-import org.jsweet.transpiler.extension.PrinterAdapter;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.util.Util;
 
@@ -30,15 +29,9 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 
 /**
- * The root class for AST nodes that represent Java program elements that are
- * not accessible through the {@link Element} API.
- * 
- * <p>
- * This class wraps Javac tree nodes to allow the JSweet printer adapters to use
- * an API with is independent from the Javac API.
+ * See {@link ExtendedElement}.
  * 
  * @author Renaud Pawlak
- * @see PrinterAdapter
  */
 public class ExtendedElementSupport implements ExtendedElement {
 

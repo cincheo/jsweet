@@ -25,7 +25,7 @@ import org.jsweet.transpiler.model.IdentifierElement;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 
 /**
- * An AST node for a Java identifier.
+ * See {@link IdentifierElement}.
  * 
  * @author Renaud Pawlak
  */

@@ -33,7 +33,7 @@ import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 
 /**
- * An AST node for a Java method invocation.
+ * See {@link MethodInvocationElement}.
  * 
  * @author Renaud Pawlak
  */

@@ -26,6 +26,11 @@ import org.jsweet.transpiler.model.UnaryOperatorElement;
 
 import com.sun.tools.javac.tree.JCTree.JCUnary;
 
+/**
+ * See {@link UnaryOperatorElement}.
+ * 
+ * @author Renaud Pawlak
+ */
 public class UnaryOperatorElementSupport extends ExtendedElementSupport implements UnaryOperatorElement {
 
 	public UnaryOperatorElementSupport(JCUnary tree) {

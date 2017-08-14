@@ -23,7 +23,7 @@ import org.jsweet.transpiler.model.CaseElement;
 import com.sun.tools.javac.tree.JCTree.JCCase;
 
 /**
- * An AST node for the Java case statement.
+ * See {@link CaseElement}.
  * 
  * @author Renaud Pawlak
  */

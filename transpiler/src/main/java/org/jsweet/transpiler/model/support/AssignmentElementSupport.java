@@ -26,7 +26,7 @@ import org.jsweet.transpiler.model.VariableAccessElement;
 import com.sun.tools.javac.tree.JCTree.JCAssign;
 
 /**
- * Interface support.
+ * See {@link AssignmentElement}.
  * 
  * @author Renaud Pawlak
  */

@@ -30,7 +30,7 @@ import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 
 /**
- * An AST node for a Java field access expression.
+ * See {@link VariableAccessElement}.
  * 
  * @author Renaud Pawlak
  */
@@ -41,8 +41,8 @@ public class VariableAccessElementSupport extends ExtendedElementSupport impleme
 	}
 
 	public ExtendedElement getTargetExpression() {
-		if(tree instanceof JCFieldAccess) {
-			return ExtendedElementFactory.INSTANCE.create(((JCFieldAccess)tree).selected);
+		if (tree instanceof JCFieldAccess) {
+			return ExtendedElementFactory.INSTANCE.create(((JCFieldAccess) tree).selected);
 		} else {
 			return null;
 		}
@@ -50,10 +50,10 @@ public class VariableAccessElementSupport extends ExtendedElementSupport impleme
 
 	@Override
 	public VariableElement getVariable() {
-		if(tree instanceof JCFieldAccess) {
-			return (VariableElement)((JCFieldAccess)tree).sym;
+		if (tree instanceof JCFieldAccess) {
+			return (VariableElement) ((JCFieldAccess) tree).sym;
 		} else {
-			return (VariableElement)((JCIdent)tree).sym;
+			return (VariableElement) ((JCIdent) tree).sym;
 		}
 	}
 
@@ -61,26 +61,24 @@ public class VariableAccessElementSupport extends ExtendedElementSupport impleme
 	public Element getTargetElement() {
 		return getVariable().getEnclosingElement();
 	}
-	
-//	@Override
-//	public Element getReferencedElement() {
-//		return getTree().sym;
-//	}
+
+	// @Override
+	// public Element getReferencedElement() {
+	// return getTree().sym;
+	// }
 
 	@Override
 	public String getVariableName() {
-		if(tree instanceof JCFieldAccess) {
-			return ((JCFieldAccess)tree).name.toString();
+		if (tree instanceof JCFieldAccess) {
+			return ((JCFieldAccess) tree).name.toString();
 		} else {
 			return tree.toString();
 		}
 	}
 
-	
-	
-//	@Override
-//	public Element getTargetElement() {
-//		return getTree().selected.type.tsym;
-//	}
+	// @Override
+	// public Element getTargetElement() {
+	// return getTree().selected.type.tsym;
+	// }
 
 }

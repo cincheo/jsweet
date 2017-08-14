@@ -27,7 +27,7 @@ import org.jsweet.transpiler.model.ForeachLoopElement;
 import com.sun.tools.javac.tree.JCTree.JCEnhancedForLoop;
 
 /**
- * Interface support.
+ * See {@link ForeachLoopElement}.
  * 
  * @author Renaud Pawlak
  */

@@ -23,7 +23,7 @@ import org.jsweet.transpiler.model.LiteralElement;
 import com.sun.tools.javac.tree.JCTree.JCLiteral;
 
 /**
- * An AST node for a Java literal.
+ * See {@link LiteralElement}.
  * 
  * @author Renaud Pawlak
  */

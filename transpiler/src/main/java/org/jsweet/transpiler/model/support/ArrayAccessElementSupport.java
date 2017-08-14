@@ -25,7 +25,7 @@ import org.jsweet.transpiler.model.ExtendedElementFactory;
 import com.sun.tools.javac.tree.JCTree.JCArrayAccess;
 
 /**
- * Interface support.
+ * See {@link ArrayAccessElement}.
  * 
  * @author Renaud Pawlak
  */

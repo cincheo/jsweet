@@ -26,6 +26,11 @@ import org.jsweet.transpiler.model.ExtendedElementFactory;
 
 import com.sun.tools.javac.tree.JCTree.JCBinary;
 
+/**
+ * See {@link BinaryOperatorElement}.
+ * 
+ * @author Renaud Pawlak
+ */
 public class BinaryOperatorElementSupport extends ExtendedElementSupport implements BinaryOperatorElement {
 
 	public BinaryOperatorElementSupport(JCBinary tree) {

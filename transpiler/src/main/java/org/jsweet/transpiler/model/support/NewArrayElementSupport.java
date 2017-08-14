@@ -28,7 +28,7 @@ import org.jsweet.transpiler.model.NewArrayElement;
 import com.sun.tools.javac.tree.JCTree.JCNewArray;
 
 /**
- * Interface support.
+ * See {@link NewArrayElement}.
  * 
  * @author Renaud Pawlak
  */

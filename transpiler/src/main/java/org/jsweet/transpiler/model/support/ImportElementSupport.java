@@ -25,7 +25,7 @@ import org.jsweet.transpiler.model.ImportElement;
 import com.sun.tools.javac.tree.JCTree.JCImport;
 
 /**
- * Interface support.
+ * See {@link ImportElement}.
  * 
  * @author Renaud Pawlak
  */
