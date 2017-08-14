@@ -189,7 +189,7 @@ SpecialKeywordEnding = {WhiteSpaceChar}+ [\'\"\[A-Za-z0-9_$/]
   {LineTerminator}      { /*System.err.println("LF");*/  return symbol(sym.LF); }
   {WhiteSpaceChar}      { /* ignore */ }
   //{WhiteSpace}        { /* ignore */ }
-  [﻿] { /* ignore */ }
+  [] { /* ignore */ }
 }
 
 <STRING> {
