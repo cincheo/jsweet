@@ -51,6 +51,132 @@ import com.martiansoftware.jsap.stringparsers.FileStringParser;
 /**
  * The command line launcher for the JSweet transpiler.
  *
+ * <pre>
+ Command line options:
+  [-h|--help]
+
+  [-w|--watch]
+        Start a process that watches the input directories for changes and
+        re-run transpilation on-the-fly.
+
+  [-v|--verbose]
+        Turn on all levels of logging.
+
+  [--encoding <encoding>]
+        Force the Java compiler to use a specific encoding (UTF-8, UTF-16, ...).
+        (default: UTF-8)
+
+  [--jdkHome <jdkHome>]
+        Set the JDK home directory to be used to find the Java compiler. If not
+        set, the transpiler will try to use the JAVA_HOME environment variable.
+        Note that the expected JDK version is greater or equals to version 8.
+
+  (-i|--input) input1:input2:...:inputN 
+        An input directory (or column-separated input directories) containing
+        Java files to be transpiled. Java files will be recursively looked up in
+        sub-directories. Inclusion and exclusion patterns can be defined with
+        the 'includes' and 'excludes' options.
+
+  [--includes includes1:includes2:...:includesN ]
+        A column-separated list of expressions matching files to be included
+        (relatively to the input directory).
+
+  [--excludes excludes1:excludes2:...:excludesN ]
+        A column-separated list of expressions matching files to be excluded
+        (relatively to the input directory).
+
+  [(-d|--defInput) defInput1:defInput2:...:defInputN ]
+        An input directory (or column-separated input directories) containing
+        TypeScript definition files (*.d.ts) to be used for transpilation.
+        Definition files will be recursively looked up in sub-diredctories.
+
+  [--noRootDirectories]
+        Skip the root directories (i.e. packages annotated with
+        &#64;jsweet.lang.Root) so that the generated file hierarchy starts at the
+        root directories rather than including the entire directory structure.
+
+  [--tsout <tsout>]
+        Specify where to place generated TypeScript files. (default: .ts)
+
+  [(-o|--jsout) <jsout>]
+        Specify where to place generated JavaScript files (ignored if jsFile is
+        specified). (default: js)
+
+  [--disableSinglePrecisionFloats]
+        By default, for a target version >=ES5, JSweet will force Java floats to
+        be mapped to JavaScript numbers that will be constrained with ES5
+        Math.fround function. If this option is true, then the calls to
+        Math.fround are erased and the generated program will use the JavaScript
+        default precision (double precision).
+
+  [--tsOnly]
+        Do not compile the TypeScript output (let an external TypeScript
+        compiler do so).
+
+  [--ignoreDefinitions]
+        Ignore definitions from def.* packages, so that they are not generated
+        in d.ts definition files. If this option is not set, the transpiler
+        generates d.ts definition files in the directory given by the tsout
+        option.
+
+  [--declaration]
+        Generate the d.ts files along with the js files, so that other programs
+        can use them to compile.
+
+  [--dtsout <dtsout>]
+        Specify where to place generated d.ts files when the declaration option
+        is set (by default, d.ts files are generated in the JavaScript output
+        directory - next to the corresponding js files).
+
+  [--candiesJsOut <candiesJsOut>]
+        Specify where to place extracted JavaScript files from candies.
+        (default: js/candies)
+
+  [--sourceRoot <sourceRoot>]
+        Specify the location where debugger should locate Java files instead of
+        source locations. Use this flag if the sources will be located at
+        run-time in a different location than that at design-time. The location
+        specified will be embedded in the sourceMap to direct the debugger where
+        the source files will be located.
+
+  [--classpath <classpath>]
+        The JSweet transpilation classpath (candy jars). This classpath should
+        at least contain the core candy.
+
+  [(-m|--module) <module>]
+        The module kind (none, commonjs, amd, system or umd). (default: none)
+
+  [-b|--bundle]
+        Bundle up all the generated code in a single file, which can be used in
+        the browser. The bundle files are called 'bundle.ts', 'bundle.d.ts', or
+        'bundle.js' depending on the kind of generated code. NOTE: bundles are
+        not compatible with any module kind other than 'none'.
+
+  [(-f|--factoryClassName) <factoryClassName>]
+        Use the given factory to tune the default transpiler behavior.
+
+  [--sourceMap]
+        Generate source map files for the Java files, so that it is possible to
+        debug Java files directly with a debugger that supports source maps
+        (most JavaScript debuggers).
+
+  [--enableAssertions]
+        Java 'assert' statements are transpiled as runtime JavaScript checks.
+
+  [--header <header>]
+        A file that contains a header to be written at the beginning of each
+        generated file. If left unspecified, JSweet will generate a default
+        header.
+
+  [--workingDir <workingDir>]
+        The directory JSweet uses to store temporary files such as extracted
+        candies. JSweet uses '.jsweet' if left unspecified.
+
+  [--targetVersion <targetVersion>]
+        The EcmaScript target (JavaScript) version. Possible values: [ES3, ES5,
+        ES6] (default: ES3)
+ * </pre>
+ * 
  * @author Renaud Pawlak
  */
 public class JSweetCommandLineLauncher {
@@ -64,6 +190,9 @@ public class JSweetCommandLineLauncher {
 			expression += "*";
 		}
 		return Pattern.compile(expression.replace(".", "\\.").replace("*", ".*"));
+	}
+
+	private JSweetCommandLineLauncher() {
 	}
 
 	/**
@@ -519,7 +648,7 @@ public class JSweetCommandLineLauncher {
 					transpiler.setNoRootDirectories(jsapArgs.getBoolean("noRootDirectories"));
 				}
 				if (jsapArgs.userSpecified("sourceMap")) {
-					transpiler.setPreserveSourceLineNumbers(jsapArgs.getBoolean("sourceMap"));
+					transpiler.setGenerateSourceMaps(jsapArgs.getBoolean("sourceMap"));
 				}
 				if (sourceRootDir != null) {
 					transpiler.setSourceRoot(sourceRootDir);

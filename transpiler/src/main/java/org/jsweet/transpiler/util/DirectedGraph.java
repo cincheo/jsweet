@@ -58,9 +58,13 @@ import java.util.stream.Collectors;
  * </pre>
  * 
  * <p>
- * Prints out: <code>[11, 10, 8, 7, 2, 3, 5, 9]</code> (5 is always after 3,
- * because of the edge built by the comparator, however, the remainder is in
- * random order).
+ * Prints out: <code>[7, 3, 11, 8, 2, 9, 10, 5]</code> (5 is pushed to the end
+ * because it is after 3). Note that the elements that are already in the right
+ * order remain unchanged.
+ * 
+ * <p>
+ * The sorting method is deterministic, i.e. it always gives the same result and
+ * tries to minimize necessary changes.
  * 
  * @author Renaud Pawlak
  * 
@@ -349,14 +353,48 @@ public class DirectedGraph<T> implements Collection<T> {
 		return s.toString();
 	}
 
+	/**
+	 * An object representing the nodes of the graph.
+	 * 
+	 * <p>
+	 * It stores elements and remembers edges.
+	 * 
+	 * @author Renaud Pawlak
+	 *
+	 * @param <T>
+	 *            the type of object hold in the graph
+	 */
 	public static class Node<T> {
 		private DirectedGraph<T> graph;
+		/**
+		 * The actual element (data) hold by this node.
+		 */
 		public final T element;
+		/**
+		 * The edges entering this node.
+		 */
 		public final LinkedHashSet<Edge<T>> inEdges;
+		/**
+		 * Information used for sorting only.
+		 */
 		public final LinkedHashSet<Edge<T>> usedInEdges;
+		/**
+		 * The edges leaving from this node.
+		 */
 		public final LinkedHashSet<Edge<T>> outEdges;
+		/**
+		 * Information used for sorting only.
+		 */
 		public final LinkedHashSet<Edge<T>> usedOutEdges;
 
+		/**
+		 * Creates a new node for the given graph and holding the given element.
+		 * 
+		 * @param graph
+		 *            the graph this node belongs to
+		 * @param element
+		 *            the element hold by this node
+		 */
 		public Node(DirectedGraph<T> graph, T element) {
 			this.graph = graph;
 			this.element = element;
@@ -366,6 +404,10 @@ public class DirectedGraph<T> implements Collection<T> {
 			usedOutEdges = new LinkedHashSet<Edge<T>>();
 		}
 
+		/**
+		 * Adds an edge starting from this node and going to a node holding the
+		 * given element.
+		 */
 		public void addEdge(T destinationElement) {
 			Node<T> node = graph.nodes.get(destinationElement);
 			if (node == null) {
@@ -377,6 +419,10 @@ public class DirectedGraph<T> implements Collection<T> {
 			node.inEdges.add(e);
 		}
 
+		/**
+		 * Adds edges starting from this node and going to nodes holding the
+		 * given elements.
+		 */
 		@SuppressWarnings("unchecked")
 		public void addEdges(T... destinationElements) {
 			for (T destinationElement : destinationElements) {
@@ -384,18 +430,27 @@ public class DirectedGraph<T> implements Collection<T> {
 			}
 		}
 
+		/**
+		 * Used for sorting only.
+		 */
 		public void useInEdge(Edge<T> edge) {
 			if (inEdges.remove(edge)) {
 				usedInEdges.add(edge);
 			}
 		}
 
+		/**
+		 * Used for sorting only.
+		 */
 		public void useOutEdge(Edge<T> edge) {
 			if (outEdges.remove(edge)) {
 				usedOutEdges.add(edge);
 			}
 		}
 
+		/**
+		 * Clears sorting info.
+		 */
 		public void resetEdges() {
 			inEdges.addAll(usedInEdges);
 			usedInEdges.clear();
@@ -409,10 +464,32 @@ public class DirectedGraph<T> implements Collection<T> {
 		}
 	}
 
+	/**
+	 * A generic object representing an edge in the graph.
+	 * 
+	 * @author Renaud Pawlak
+	 *
+	 * @param <T>
+	 *            the type of the objects being stored in the graph
+	 */
 	public static class Edge<T> {
+		/**
+		 * The node this edge starts from
+		 */
 		public final Node<T> from;
+		/**
+		 * The node this edge goes to
+		 */
 		public final Node<T> to;
 
+		/**
+		 * Creates a new edge.
+		 * 
+		 * @param from
+		 *            the start node
+		 * @param to
+		 *            the end node
+		 */
 		public Edge(Node<T> from, Node<T> to) {
 			this.from = from;
 			this.to = to;
@@ -520,7 +597,8 @@ public class DirectedGraph<T> implements Collection<T> {
 		path.peek().outEdges.stream().map(e -> e.to).forEach(node -> {
 			if (nodes.contains(node)) {
 				if (path.contains(node)) {
-					System.out.println("cycle: " + path.stream().map(n -> toString.apply(n.element)).collect(Collectors.toList()));
+					System.out.println(
+							"cycle: " + path.stream().map(n -> toString.apply(n.element)).collect(Collectors.toList()));
 				} else {
 					path.push(node);
 					dumpCycles(nodes, path, toString);
@@ -531,6 +609,9 @@ public class DirectedGraph<T> implements Collection<T> {
 		;
 	}
 
+	/**
+	 * Just for testing.
+	 */
 	public static void main(String[] args) {
 		DirectedGraph<Integer> g = new DirectedGraph<Integer>();
 		g.add(7, 5, 3, 11, 8, 2, 9, 10);

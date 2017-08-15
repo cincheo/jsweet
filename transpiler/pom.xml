@@ -128,6 +128,7 @@
 					<sourcepath>src/main/java</sourcepath>
 					<encoding>${project.build.sourceEncoding}</encoding>
 					<skip>${skipJavadoc}</skip>
+                    <excludePackageNames>org.jsweet.transpiler.model.support</excludePackageNames>
 					<fixTags>all</fixTags>
 					<failOnError>false</failOnError>
 					<!-- leave these options unchanged to place the Javadoc at the right place for jsweet.org -->

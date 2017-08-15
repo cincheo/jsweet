@@ -36,10 +36,19 @@ import com.sun.tools.javac.util.JavacMessages;
  */
 public class JSweetDiagnosticHandler extends BasicDiagnosticFormatter {
 
+	/**
+	 * The transpilation message/warning/error handler.
+	 */
 	protected TranspilationHandler transpilationHandler;
+	/**
+	 * The transpilation context.
+	 */
 	protected JSweetContext context;
-	protected final static Logger logger = Logger.getLogger(JSweetTranspiler.class);
+	private final static Logger logger = Logger.getLogger(JSweetTranspiler.class);
 
+	/**
+	 * Creates a new diagnostic handler.
+	 */
 	public JSweetDiagnosticHandler(TranspilationHandler transpilationHandler, JSweetContext context) {
 		super(JavacMessages.instance(context));
 		this.context = context;

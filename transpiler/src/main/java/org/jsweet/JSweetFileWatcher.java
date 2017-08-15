@@ -57,8 +57,6 @@ public class JSweetFileWatcher {
 
 	private static final Logger logger = Logger.getLogger(JSweetFileWatcher.class);
 
-	public String watcherSensitivity;
-
 	private TranspilationThread transpilationThread;
 
 	private static final SensitivityWatchEventModifier SENSITIVITY_WATCH_EVENT_MODIFIER = SensitivityWatchEventModifier.HIGH;
@@ -67,12 +65,26 @@ public class JSweetFileWatcher {
 
 	private static LinkedList<String> __RandomKeysTrigger = new LinkedList<>();
 
+	/**
+	 * Holds the JSweet transpilation task, which is going to be executed when a
+	 * watched file changes.
+	 */
 	protected TranspilationTask transpilationTask;
 
+	/**
+	 * Creates a new watcher with a JSweet transpilation task, which is going to
+	 * be executed when a watched file changes.
+	 * 
+	 * @param transpilationTask
+	 *            the task to be executed when a file changes
+	 */
 	public JSweetFileWatcher(TranspilationTask transpilationTask) {
 		this.transpilationTask = transpilationTask;
 	}
 
+	/**
+	 * Starts this watcher.
+	 */
 	public void execute() {
 
 		logger.info("starting file watcher... ");
@@ -192,7 +204,7 @@ public class JSweetFileWatcher {
 		/* */
 	}
 
-	public static class RegisteringFileTreeScanner extends SimpleFileVisitor<Path> {
+	private static class RegisteringFileTreeScanner extends SimpleFileVisitor<Path> {
 
 		private List<Path> directories;
 		private WatchService watchService;

@@ -27,6 +27,10 @@ import org.apache.log4j.Logger;
  */
 public interface TranspilationHandler {
 
+	/**
+	 * This is the global output logger that should be used to print out
+	 * messages, warnings and errors to the console.
+	 */
 	Logger OUTPUT_LOGGER = Logger.getLogger("output");
 
 	/**
@@ -40,7 +44,7 @@ public interface TranspilationHandler {
 	 * @param message
 	 *            the reported message
 	 */
-	public void report(JSweetProblem problem, SourcePosition sourcePosition, String message);
+	void report(JSweetProblem problem, SourcePosition sourcePosition, String message);
 
 	/**
 	 * This method is invoked when the tranpilation process ends.
@@ -55,6 +59,6 @@ public interface TranspilationHandler {
 	 *            the files that were transpiled (can be different from
 	 *            <code>transpiler.getWatchedFiles()</code> in a non-full pass)
 	 */
-	public void onCompleted(JSweetTranspiler transpiler, boolean fullPass, SourceFile[] files);
+	void onCompleted(JSweetTranspiler transpiler, boolean fullPass, SourceFile[] files);
 
 }

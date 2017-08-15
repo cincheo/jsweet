@@ -47,6 +47,7 @@ import com.sun.tools.javac.tree.JCTree.JCWildcard;
  * This AST scanner performs global analysis and fills up the context with
  * information that will be used by the translator.
  * 
+ * @see JSweetContext
  * @author Renaud Pawlak
  */
 public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {

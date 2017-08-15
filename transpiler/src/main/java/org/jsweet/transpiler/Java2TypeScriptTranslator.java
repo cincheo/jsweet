@@ -152,35 +152,125 @@ import com.sun.tools.javac.util.Name;
  */
 public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
+	/**
+	 * The name of the field where the parent class is stored in the generated
+	 * TypeScript code.
+	 */
 	public static final String PARENT_CLASS_FIELD_NAME = "__parent";
+	/**
+	 * The name of the field where the implemented interface names are stored in
+	 * the generated TypeScript code (for <code>instanceof</code> operator).
+	 */
 	public static final String INTERFACES_FIELD_NAME = "__interfaces";
+	/**
+	 * The suffix added to static field initialization methods (for Java
+	 * semantics).
+	 */
 	public static final String STATIC_INITIALIZATION_SUFFIX = "_$LI$";
+	/**
+	 * The name of the field where the class name is stored in the class
+	 * constructor.
+	 */
 	public static final String CLASS_NAME_IN_CONSTRUCTOR = "__class";
+	/**
+	 * A prefix/separator for anonymous classes.
+	 */
 	public static final String ANONYMOUS_PREFIX = "$";
+	/**
+	 * A suffix for name of classes that wrap regular TypeScript enums.
+	 */
 	public static final String ENUM_WRAPPER_CLASS_SUFFIX = "_$WRAPPER";
+	/**
+	 * The name of the variable that contains the enum wrapper instances.
+	 */
 	public static final String ENUM_WRAPPER_CLASS_WRAPPERS = "_$wrappers";
+	/**
+	 * The field name for storing the enum's name.
+	 */
 	public static final String ENUM_WRAPPER_CLASS_NAME = "_$name";
+	/**
+	 * The field name for storing the enum's ordinal.
+	 */
 	public static final String ENUM_WRAPPER_CLASS_ORDINAL = "_$ordinal";
+	/**
+	 * The default keyword for declaring variables.
+	 */
 	public static final String VAR_DECL_KEYWORD = "let";
+	/**
+	 * A regular expression for matching body markers in <code>@Replace</code>
+	 * expression.
+	 */
 	public static final Pattern BODY_MARKER = Pattern.compile("\\{\\{\\s*body\\s*\\}\\}");
+	/**
+	 * A regular expression for matching base indent markers in
+	 * <code>@Replace</code> expression.
+	 */
 	public static final Pattern BASE_INDENT_MARKER = Pattern.compile("\\{\\{\\s*baseIndent\\s*\\}\\}");
+	/**
+	 * A regular expression for matching indent markers in <code>@Replace</code>
+	 * expression.
+	 */
 	public static final Pattern INDENT_MARKER = Pattern.compile("\\{\\{\\s*indent\\s*\\}\\}");
+	/**
+	 * A regular expression for matching method name markers in
+	 * <code>@Replace</code> expression.
+	 */
 	public static final Pattern METHOD_NAME_MARKER = Pattern.compile("\\{\\{\\s*methodName\\s*\\}\\}");
+	/**
+	 * A regular expression for matching class name markers in
+	 * <code>@Replace</code> expression.
+	 */
 	public static final Pattern CLASS_NAME_MARKER = Pattern.compile("\\{\\{\\s*className\\s*\\}\\}");
+	/**
+	 * A prefix for generators.
+	 */
 	public static final String GENERATOR_PREFIX = "__generator_";
 
+	/**
+	 * A logger for internal messages.
+	 */
 	protected static Logger logger = Logger.getLogger(Java2TypeScriptTranslator.class);
 
-	public enum ComparisonMode {
-		FORCE_STRICT, STRICT, LOOSE;
+	/**
+	 * A state flag indicating the comparison mode to be used by this printer
+	 * for printing comparison operators.
+	 * 
+	 * @author Renaud Pawlak
+	 */
+	public static enum ComparisonMode {
+		/**
+		 * Forces the strict comparison operators (===, >==, <==), even for null
+		 * literals.
+		 */
+		FORCE_STRICT,
+		/**
+		 * Uses the strict comparison operators (===, >==, <==), except for null
+		 * literals, where loose operators are used to match better the Java
+		 * semantics. This is the default behavior.
+		 */
+		STRICT,
+		/**
+		 * Uses the loose comparison operators (==, >=, <=).
+		 */
+		LOOSE;
 	}
 
 	private final Stack<ComparisonMode> comparisonModeStack = new Stack<>();
 
+	/**
+	 * Selects a comparison mode for subsequently printed comparison operators.
+	 * 
+	 * @see #exitComparisonMode()
+	 */
 	public void enterComparisonMode(ComparisonMode comparisonMode) {
 		comparisonModeStack.push(comparisonMode);
 	}
 
+	/**
+	 * Exits a comparison mode and go back to the previous one.
+	 * 
+	 * @see #enterComparisonMode(ComparisonMode)
+	 */
 	public void exitComparisonMode() {
 		comparisonModeStack.pop();
 	}
@@ -275,10 +365,20 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		return scope.get(scope.size() - 1 - i);
 	}
 
+	/**
+	 * Enters a new class scope.
+	 * 
+	 * @see #exitScope()
+	 */
 	public void enterScope() {
 		scope.push(new ClassScope());
 	}
 
+	/**
+	 * Exits a class scope.
+	 * 
+	 * @see #enterScope()
+	 */
 	public void exitScope() {
 		scope.pop();
 	}
@@ -410,6 +510,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		return checkRootPackageParent(topLevel, rootPackage, (PackageSymbol) parentPackage.owner);
 	}
 
+	/**
+	 * Prints a compilation unit tree.
+	 */
 	@Override
 	public void visitTopLevel(JCCompilationUnit topLevel) {
 
@@ -1820,6 +1923,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		return context.isInterface(parent.sym) && !method.sym.isStatic();
 	}
 
+	/**
+	 * Prints a method tree.
+	 */
 	@Override
 	public void visitMethodDef(JCMethodDecl methodDecl) {
 
@@ -2604,6 +2710,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		removeLastChars(4);
 	}
 
+	/**
+	 * Prints a block tree.
+	 */
 	@Override
 	public void visitBlock(JCBlock block) {
 		JCTree parent = getParent();
@@ -2659,6 +2768,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						&& var.getEnclosingElement().equals(var.type.tsym));
 	}
 
+	/**
+	 * Prints a variable declaration tree.
+	 */
 	@Override
 	public void visitVarDef(JCVariableDecl varDecl) {
 		if (context.hasAnnotationType(varDecl.sym, JSweetConfig.ANNOTATION_ERASED)) {
@@ -2937,6 +3049,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		return false;
 	}
 
+	/**
+	 * Prints a parenthesis tree.
+	 */
 	@Override
 	public void visitParens(JCParens parens) {
 		print("(");
@@ -2944,6 +3059,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		print(")");
 	}
 
+	/**
+	 * Prints an <code>import</code> tree.
+	 */
 	@Override
 	public void visitImport(JCImport importDecl) {
 		String qualId = importDecl.getQualifiedIdentifier().toString();
@@ -3023,6 +3141,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 	}
 
+	/**
+	 * Prints a field access tree.
+	 */
 	@Override
 	public void visitSelect(JCFieldAccess fieldAccess) {
 		if (!getAdapter().substitute(ExtendedElementFactory.INSTANCE.create(fieldAccess))) {
@@ -3142,6 +3263,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 	}
 
+	/**
+	 * Prints an invocation tree.
+	 */
 	@Override
 	public void visitApply(JCMethodInvocation inv) {
 
@@ -3164,6 +3288,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	}
 
+	/**
+	 * Prints a method invocation tree (default behavior).
+	 */
 	public void printDefaultMethodInvocation(JCMethodInvocation inv) {
 		String meth = inv.meth.toString();
 		String methName = meth.substring(meth.lastIndexOf('.') + 1);
@@ -3542,6 +3669,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		return null;
 	}
 
+	/**
+	 * Prints an identifier.
+	 */
 	@Override
 	public void visitIdent(JCIdent ident) {
 		String name = ident.toString();
@@ -3678,6 +3808,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 	}
 
+	/**
+	 * Prints a type apply (<code>T<P1,...PN></code>) tree.
+	 */
 	@Override
 	public void visitTypeApply(JCTypeApply typeApply) {
 		substituteAndPrintType(typeApply);
@@ -3707,6 +3840,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		return anonymousClassIndex;
 	}
 
+	/**
+	 * Prints a new-class expression tree.
+	 */
 	@Override
 	public void visitNewClass(JCNewClass newClass) {
 		ClassSymbol clazz = ((ClassSymbol) newClass.clazz.type.tsym);
@@ -3915,6 +4051,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	}
 
+	/**
+	 * Prints a new-class expression tree (default behavior).
+	 */
 	public void printDefaultNewClass(JCNewClass newClass) {
 		String mappedType = context.getTypeMappingTarget(newClass.clazz.type.toString());
 		if (typeChecker.checkType(newClass, null, newClass.clazz)) {
@@ -4029,6 +4168,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		return this;
 	}
 
+	/**
+	 * Prints a literal.
+	 */
 	@Override
 	public void visitLiteral(JCLiteral literal) {
 		String s = literal.toString();
@@ -4048,6 +4190,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		print(s);
 	}
 
+	/**
+	 * Prints an array access tree.
+	 */
 	@Override
 	public void visitIndexed(JCArrayAccess arrayAccess) {
 		if (!getAdapter().substituteArrayAccess(new ArrayAccessElementSupport(arrayAccess))) {
@@ -4056,6 +4201,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 	}
 
+	/**
+	 * Prints a foreach loop tree.
+	 */
 	@Override
 	public void visitForeachLoop(JCEnhancedForLoop foreachLoop) {
 		String indexVarName = "index" + Util.getId();
@@ -4097,6 +4245,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 	}
 
+	/**
+	 * Prints a type identifier tree.
+	 */
 	@Override
 	public void visitTypeIdent(JCPrimitiveTypeTree type) {
 		switch (type.typetag) {
@@ -4118,6 +4269,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				&& context.options.getEcmaTargetVersion().higherThan(EcmaScriptComplianceLevel.ES3);
 	}
 
+	/**
+	 * Prints a binary operator tree.
+	 */
 	@Override
 	public void visitBinary(JCBinary binary) {
 		if (!getAdapter().substituteBinaryOperator(new BinaryOperatorElementSupport(binary))) {
@@ -4234,6 +4388,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 	}
 
+	/**
+	 * Prints an <code>if</code> tree.
+	 */
 	@Override
 	public void visitIf(JCIf ifStatement) {
 		print("if").print(ifStatement.cond).print(" ");
@@ -4254,6 +4411,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 	}
 
+	/**
+	 * Prints a <code>return</code> tree.
+	 */
 	@Override
 	public void visitReturn(JCReturn returnStatement) {
 		print("return");
@@ -4297,6 +4457,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 	}
 
+	/**
+	 * Prints an assignment operator tree (<code>+=, -=, *=, ...</code>).
+	 */
 	@Override
 	public void visitAssignop(JCAssignOp assignOp) {
 		boolean expand = staticInitializedAssignment = (getStaticInitializedField(assignOp.lhs) != null);
@@ -4328,6 +4491,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		print(assignOp.rhs);
 	}
 
+	/**
+	 * Prints a <code>condition?trueExpr:falseExpr</code> tree.
+	 */
 	@Override
 	public void visitConditional(JCConditional conditional) {
 		print(conditional.cond);
@@ -4348,6 +4514,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 	}
 
+	/**
+	 * Prints a <code>for</code> loop tree.
+	 */
 	@Override
 	public void visitForLoop(JCForLoop forLoop) {
 		print("for(").printArgList(null, forLoop.init).print("; ").print(forLoop.cond).print("; ")
@@ -4355,6 +4524,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		print(forLoop.body).print(";");
 	}
 
+	/**
+	 * Prints a <code>continue</code> tree.
+	 */
 	@Override
 	public void visitContinue(JCContinue continueStatement) {
 		print("continue");
@@ -4363,6 +4535,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 	}
 
+	/**
+	 * Prints a <code>break</code> tree.
+	 */
 	@Override
 	public void visitBreak(JCBreak breakStatement) {
 		print("break");
@@ -4371,6 +4546,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 	}
 
+	/**
+	 * Prints a labeled statement tree.
+	 */
 	@Override
 	public void visitLabelled(JCLabeledStatement labelledStatement) {
 		JCTree parent = getParent(JCMethodDecl.class);
@@ -4405,11 +4583,17 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		print(labelledStatement.body);
 	}
 
+	/**
+	 * Prints an array type tree.
+	 */
 	@Override
 	public void visitTypeArray(JCArrayTypeTree arrayType) {
 		print(arrayType.elemtype).print("[]");
 	}
 
+	/**
+	 * Prints a new array tree.
+	 */
 	@Override
 	public void visitNewArray(JCNewArray newArray) {
 		if (newArray.elemtype != null) {
@@ -4469,8 +4653,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 	}
 
-	boolean inRollback = false;
+	protected boolean inRollback = false;
 
+	/**
+	 * Prints a unary operator tree.
+	 */
 	@Override
 	public void visitUnary(JCUnary unary) {
 		if (!getAdapter().substituteUnaryOperator(new UnaryOperatorElementSupport(unary))) {
@@ -4522,6 +4709,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 	}
 
+	/**
+	 * Prints a <code>switch</code> tree.
+	 */
 	@Override
 	public void visitSwitch(JCSwitch switchStatement) {
 		print("switch(");
@@ -4541,6 +4731,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	protected void printCaseStatementPattern(JCExpression pattern) {
 	}
 
+	/**
+	 * Prints a <code>case</code> tree.
+	 */
 	@Override
 	public void visitCase(JCCase caseStatement) {
 		if (caseStatement.pat != null) {
@@ -4583,6 +4776,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		endIndent();
 	}
 
+	/**
+	 * Prints a type cast tree.
+	 */
 	@Override
 	public void visitTypeCast(JCTypeCast cast) {
 		if (substituteAssignedExpression(cast.type, cast.expr)) {
@@ -4621,6 +4817,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 	}
 
+	/**
+	 * Prints a <code>do - while</code> loop tree.
+	 */
 	@Override
 	public void visitDoLoop(JCDoWhileLoop doWhileLoop) {
 		print("do ");
@@ -4632,12 +4831,18 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		print(" while(").print(doWhileLoop.cond).print(")");
 	}
 
+	/**
+	 * Prints a <code>while</code> loop tree.
+	 */
 	@Override
 	public void visitWhileLoop(JCWhileLoop whileLoop) {
 		print("while(").print(whileLoop.cond).print(") ");
 		print(whileLoop.body);
 	}
 
+	/**
+	 * Prints a variable assignment tree.
+	 */
 	@Override
 	public void visitAssign(JCAssign assign) {
 		if (!getAdapter().substituteAssignment(new AssignmentElementSupport(assign))) {
@@ -4650,6 +4855,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 	}
 
+	/**
+	 * Prints a <code>try</code> tree.
+	 */
 	@Override
 	public void visitTry(JCTry tryStatement) {
 		if (tryStatement.resources != null && !tryStatement.resources.isEmpty()) {
@@ -4685,12 +4893,18 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 	}
 
+	/**
+	 * Prints a <code>catch</code> tree.
+	 */
 	@Override
 	public void visitCatch(JCCatch catcher) {
 		print(" catch(").print(catcher.param.name.toString()).print(") ");
 		print(catcher.body);
 	}
 
+	/**
+	 * Prints a lambda expression tree.
+	 */
 	@Override
 	public void visitLambda(JCLambda lamba) {
 		boolean regularFunction = false;
@@ -4751,6 +4965,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 	}
 
+	/**
+	 * Prints a reference tree.
+	 */
 	@Override
 	public void visitReference(JCMemberReference memberReference) {
 		if (memberReference.sym instanceof MethodSymbol) {
@@ -4810,6 +5027,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	}
 
+	/**
+	 * Prints a type parameter tree.
+	 */
 	@Override
 	public void visitTypeParameter(JCTypeParameter typeParameter) {
 		print(typeParameter.name.toString());
@@ -4822,6 +5042,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 	}
 
+	/** Prints a <code>synchronized</code> tree. */
 	@Override
 	public void visitSynchronized(JCSynchronized sync) {
 		report(sync, JSweetProblem.SYNCHRONIZATION);
@@ -4830,6 +5051,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 	}
 
+	/**
+	 * Prints either a string, or the tree if the the string is null.
+	 * 
+	 * @param exprStr
+	 *            a string to be printed as is if not null
+	 * @param expr
+	 *            a tree to be printed if exprStr is null
+	 */
 	public void print(String exprStr, JCTree expr) {
 		if (exprStr == null) {
 			print(expr);
@@ -4962,16 +5191,25 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 	}
 
+	/**
+	 * Prints an <code>instanceof</code> tree.
+	 */
 	@Override
 	public void visitTypeTest(JCInstanceOf instanceOf) {
 		printInstanceOf(null, instanceOf.expr, instanceOf.clazz.type);
 	}
 
+	/**
+	 * Prints an throw statement tree.
+	 */
 	@Override
 	public void visitThrow(JCThrow throwStatement) {
 		print("throw ").print(throwStatement.expr);
 	}
 
+	/**
+	 * Prints an assert tree.
+	 */
 	@Override
 	public void visitAssert(JCAssert assertion) {
 		if (!context.options.isIgnoreAssertions()) {
@@ -4981,6 +5219,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 	}
 
+	/**
+	 * Prints an annotation tree.
+	 */
 	@Override
 	public void visitAnnotation(JCAnnotation annotation) {
 		if (!context.hasAnnotationType(annotation.type.tsym, JSweetConfig.ANNOTATION_DECORATOR)) {
@@ -5126,6 +5367,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 	}
 
+	/**
+	 * Gets the qualified name for a given type symbol.
+	 */
 	@Override
 	public String getQualifiedTypeName(TypeSymbol type, boolean globals, boolean ignoreLangTypes) {
 		String qualifiedName = super.getQualifiedTypeName(type, globals, ignoreLangTypes);

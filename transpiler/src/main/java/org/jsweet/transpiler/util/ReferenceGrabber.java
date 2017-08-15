@@ -39,12 +39,18 @@ public class ReferenceGrabber extends TreeScanner {
 	 */
 	public Set<TypeSymbol> referencedTypes = new HashSet<>();
 
+	/**
+	 * Grab references on the given new-class tree.
+	 */
 	@Override
 	public void visitNewClass(JCNewClass newClass) {
 		add(newClass.clazz.type.tsym);
 		super.visitNewClass(newClass);
 	}
 
+	/**
+	 * Grab references on the given field-access tree.
+	 */
 	@Override
 	public void visitSelect(JCFieldAccess fieldAccess) {
 		if (fieldAccess.selected.type != null && (fieldAccess.selected.type.tsym instanceof ClassSymbol)) {

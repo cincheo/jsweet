@@ -20,6 +20,9 @@ import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
  */
 public class JSweetFactory {
 
+	/**
+	 * A logger to be used for internal messages.
+	 */
 	protected final static Logger logger = Logger.getLogger(JSweetFactory.class);
 
 	/**

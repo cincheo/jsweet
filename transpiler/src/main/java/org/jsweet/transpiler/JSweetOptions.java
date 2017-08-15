@@ -24,6 +24,11 @@ import java.util.Map;
 
 import org.jsweet.transpiler.extension.PrinterAdapter;
 
+/**
+ * This interface holds all the JSweet transpiler configuration and options.
+ * 
+ * @author Renaud Pawlak
+ */
 public interface JSweetOptions {
 
 	/**

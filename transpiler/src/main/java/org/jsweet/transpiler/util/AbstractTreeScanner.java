@@ -60,10 +60,32 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 
 	private TranspilationHandler logHandler;
 
+	/**
+	 * Report a JSweet problem on the given program element (tree).
+	 * 
+	 * @param tree
+	 *            the program element causing the problem
+	 * @param problem
+	 *            the problem to be reported
+	 * @param params
+	 *            problem arguments
+	 */
 	public void report(JCTree tree, JSweetProblem problem, Object... params) {
 		report(tree, null, problem, params);
 	}
 
+	/**
+	 * Report a JSweet problem on the given named program element (tree).
+	 * 
+	 * @param tree
+	 *            the program element causing the problem
+	 * @param name
+	 *            the name of that program element
+	 * @param problem
+	 *            the problem to be reported
+	 * @param params
+	 *            problem arguments
+	 */
 	public void report(JCTree tree, Name name, JSweetProblem problem, Object... params) {
 		if (logHandler == null) {
 			System.err.println(problem.getMessage(params));
@@ -88,30 +110,60 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 		}
 	}
 
+	/**
+	 * The scanning stack.
+	 */
 	protected Stack<JCTree> stack = new Stack<JCTree>();
 
+	/**
+	 * A map holding static import statements.
+	 */
 	protected Map<String, JCImport> staticImports = new HashMap<>();
 
+	/**
+	 * Gets the map of static imports in the current compilation unit.
+	 * 
+	 * @see #getCompilationUnit()
+	 */
 	public Map<String, JCImport> getStaticImports() {
 		return staticImports;
 	}
 
+	/**
+	 * Holds the compilation being currently scanned.
+	 */
 	protected JCCompilationUnit compilationUnit;
 
+	/**
+	 * Gets the currently scanned compilation unit.
+	 */
 	public JCCompilationUnit getCompilationUnit() {
 		return compilationUnit;
 	}
 
+	/**
+	 * The transpiler context.
+	 */
 	protected JSweetContext context;
 
+	/**
+	 * Gets the transpiler context.
+	 */
 	public JSweetContext getContext() {
 		return context;
 	}
 
+	/**
+	 * The javac diagnostic source object (useful to get line information for
+	 * instance).
+	 */
 	protected DiagnosticSource diagnosticSource;
 
 	private Entry<String, String[]> sourceCache;
 
+	/**
+	 * Gets the Java source code for the given compilation unit.
+	 */
 	protected String[] getGetSource(JCCompilationUnit compilationUnit) {
 		if (sourceCache != null && sourceCache.getKey().equals(compilationUnit.getSourceFile().getName())) {
 			return sourceCache.getValue();
@@ -126,6 +178,16 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 		}
 	}
 
+	/**
+	 * Creates a new scanner.
+	 * 
+	 * @param logHandler
+	 *            the handler for reporting messages
+	 * @param context
+	 *            the JSweet transpilation context
+	 * @param compilationUnit
+	 *            the compilation to be scanned
+	 */
 	public AbstractTreeScanner(TranspilationHandler logHandler, JSweetContext context,
 			JCCompilationUnit compilationUnit) {
 		this.logHandler = logHandler;
@@ -136,6 +198,9 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 		this.setCompilationUnit(compilationUnit);
 	}
 
+	/**
+	 * Sets the compilation unit to be scanned.
+	 */
 	protected final void setCompilationUnit(JCCompilationUnit compilationUnit) {
 		if (compilationUnit != null) {
 			this.compilationUnit = compilationUnit;
@@ -151,10 +216,16 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 		}
 	}
 
+	/**
+	 * Generically scan an extended element.
+	 */
 	public void scan(ExtendedElement element) {
 		scan(((ExtendedElementSupport) element).getTree());
 	}
 
+	/**
+	 * Scans a program tree.
+	 */
 	@Override
 	public void scan(JCTree tree) {
 		if (tree == null) {
@@ -181,6 +252,13 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 		}
 	}
 
+	/**
+	 * Pretty prints the current scanning trace.
+	 * 
+	 * <p>
+	 * This is useful for reporting internal errors and give information about
+	 * what happened to the user.
+	 */
 	protected void dumpStackTrace() {
 		System.err.println("dumping transpiler's strack trace:");
 		for (int i = stack.size() - 1; i >= 0; i--) {
@@ -267,7 +345,10 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 	}
 
 	/**
-	 * Returns the parent of the immediate parent in the printer's scanning stack.
+	 * Returns the parent of the immediate parent in the printer's scanning
+	 * stack.
+	 * 
+	 * @see #getStack()
 	 */
 	public JCTree getParentOfParent() {
 		if (this.stack.size() >= 3) {
@@ -276,14 +357,24 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 			return null;
 		}
 	}
-	
+
 	/**
 	 * Gets the parent element in the printer's scanning stack.
+	 * 
+	 * @see #getStack()
 	 */
 	public ExtendedElement getParentElement() {
 		return ExtendedElementFactory.INSTANCE.create(getParent());
 	}
 
+	/**
+	 * Gets the first parent in the scanning stack matching the given type.
+	 * 
+	 * @param type
+	 *            the type to search for
+	 * @return the first matching tree
+	 * @see #getStack()
+	 */
 	@SuppressWarnings("unchecked")
 	public <T extends JCTree> T getParent(Class<T> type) {
 		for (int i = this.stack.size() - 2; i >= 0; i--) {
@@ -294,6 +385,15 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 		return null;
 	}
 
+	/**
+	 * Gets the parent element matching the given type within the scanning
+	 * stack.
+	 * 
+	 * @param type
+	 *            the element type being search for
+	 * @return the first matching element
+	 * @see #getStack()
+	 */
 	@SuppressWarnings("unchecked")
 	public <T extends Element> T getParentElement(Class<T> type) {
 		for (int i = this.stack.size() - 2; i >= 0; i--) {
@@ -309,6 +409,15 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 		return null;
 	}
 
+	/**
+	 * Gets the first tree in the scanning stack that matched one of the given
+	 * tree types.
+	 * 
+	 * @param types
+	 *            the tree types to be checked
+	 * @return the first matching tree
+	 * @see #getStack()
+	 */
 	public JCTree getFirstParent(Class<?>... types) {
 		for (int i = this.stack.size() - 2; i >= 0; i--) {
 			for (Class<?> type : types) {
@@ -320,6 +429,17 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 		return null;
 	}
 
+	/**
+	 * Gets the first parent matching the given type, looking up from the given
+	 * tree in the scanning stack.
+	 * 
+	 * @param type
+	 *            the type to search for
+	 * @param from
+	 *            the tree to start the search from
+	 * @return the first matching parent in the scanning stack
+	 * @see #getStack()
+	 */
 	@SuppressWarnings("unchecked")
 	public <T extends JCTree> T getParent(Class<T> type, JCTree from) {
 		for (int i = this.stack.size() - 1; i >= 0; i--) {

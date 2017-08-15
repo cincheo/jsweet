@@ -63,6 +63,9 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 		return positionStack;
 	}
 
+	/**
+	 * The constant string for indentation.
+	 */
 	protected static final String INDENT = "    ";
 
 	private StringBuilder out = new StringBuilder();
@@ -71,6 +74,7 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 
 	private PrinterAdapter adapter;
 
+	/** A type checker instance. */
 	public TypeChecker typeChecker;
 
 	private int currentLine = 1;
@@ -79,6 +83,9 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 
 	private boolean fillSourceMap = true;
 
+	/**
+	 * The object storing source map information while printing.
+	 */
 	public SourceMap sourceMap = new SourceMap();
 
 	/**

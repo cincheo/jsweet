@@ -33,12 +33,19 @@ import org.jsweet.transpiler.TranspilationHandler;
  */
 public class ConsoleTranspilationHandler implements TranspilationHandler {
 
+	/**
+	 * Creates a transpilation handled reporting to the console.
+	 */
+	public ConsoleTranspilationHandler() {
+	}
+
 	@Override
 	public void report(JSweetProblem problem, SourcePosition sourcePosition, String message) {
 		if (sourcePosition == null || sourcePosition.getFile() == null) {
 			log(problem.getSeverity(), message);
 		} else {
-			log(problem.getSeverity(), message + " at " + sourcePosition.getFile() + "(" + sourcePosition.getStartLine() + ")");
+			log(problem.getSeverity(),
+					message + " at " + sourcePosition.getFile() + "(" + sourcePosition.getStartLine() + ")");
 		}
 	}
 
@@ -55,9 +62,9 @@ public class ConsoleTranspilationHandler implements TranspilationHandler {
 			break;
 		}
 	}
-	
+
 	@Override
 	public void onCompleted(JSweetTranspiler transpiler, boolean fullPass, SourceFile[] files) {
 	}
-	
+
 }

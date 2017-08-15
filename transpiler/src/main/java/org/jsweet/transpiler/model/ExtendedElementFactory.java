@@ -58,13 +58,32 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
  */
 public class ExtendedElementFactory {
 
+	/**
+	 * The default factory instance.
+	 */
 	public final static ExtendedElementFactory INSTANCE = new ExtendedElementFactory();
 
+	/**
+	 * Gets the javac tree from the given element.
+	 * 
+	 * @param element
+	 *            the extended element to get the tree from.
+	 * @return the corresponding javac tree
+	 */
 	@SuppressWarnings("unchecked")
 	public static <T extends JCTree> T toTree(ExtendedElement element) {
 		return (T) ((ExtendedElementSupport) element).getTree();
 	}
 
+	/**
+	 * Creates an extended element out of a javac tree.
+	 * 
+	 * <p>
+	 * Note that if the tree instance cannot be mapped to a specific extended
+	 * element, a generic extended element is returned. The returned extended
+	 * element can be mapped back to a javac tree using the
+	 * {@link #toTree(ExtendedElement)} method.
+	 */
 	public ExtendedElement create(JCTree tree) {
 		if (tree == null) {
 			return null;

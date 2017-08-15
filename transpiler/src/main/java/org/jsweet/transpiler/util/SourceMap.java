@@ -47,14 +47,23 @@ public class SourceMap {
 			this.outputPosition = outputPosition;
 		}
 
+		/**
+		 * The position in the input file.
+		 */
 		public final Position getInputPosition() {
 			return inputPosition;
 		}
 
+		/**
+		 * The position in the output file.
+		 */
 		public final Position getOutputPosition() {
 			return outputPosition;
 		}
 
+		/**
+		 * Sets the position in the ouput file.
+		 */
 		public final void setOutputPosition(Position position) {
 			this.outputPosition = position;
 		}
@@ -126,8 +135,10 @@ public class SourceMap {
 		if (entries != null) {
 			Entry[] e = entries.toArray(new Entry[0]);
 			for (int i = 0; i < entries.size(); i++) {
-				if (i == e.length - 1 || (e[i].getOutputPosition().getLine() == outputLine || e[i + 1].getOutputPosition().getLine() > outputLine)) {
-					while (i + 1 < e.length && e[i + 1].getOutputPosition().getLine() == outputLine && e[i].getOutputPosition().getColumn() < outputColumn) {
+				if (i == e.length - 1 || (e[i].getOutputPosition().getLine() == outputLine
+						|| e[i + 1].getOutputPosition().getLine() > outputLine)) {
+					while (i + 1 < e.length && e[i + 1].getOutputPosition().getLine() == outputLine
+							&& e[i].getOutputPosition().getColumn() < outputColumn) {
 						i++;
 					}
 					return e[i].getInputPosition();
@@ -142,7 +153,8 @@ public class SourceMap {
 	 */
 	public final void shiftOutputPositions(int lineOffset) {
 		for (Entry entry : entries) {
-			entry.setOutputPosition(new Position(entry.getOutputPosition().getLine() + lineOffset, entry.getOutputPosition().getColumn()));
+			entry.setOutputPosition(new Position(entry.getOutputPosition().getLine() + lineOffset,
+					entry.getOutputPosition().getColumn()));
 		}
 		minOutputLine += lineOffset;
 		maxOutputLine += lineOffset;
@@ -158,12 +170,19 @@ public class SourceMap {
 		return sb.toString();
 	}
 
+	/**
+	 * Gets all the sorted entries in this source map agains the given
+	 * comparator.
+	 */
 	public List<Entry> getSortedEntries(Comparator<Entry> comparator) {
 		List<Entry> list = new ArrayList<Entry>(entries);
 		list.sort(comparator);
 		return list;
 	}
 
+	/**
+	 * Removes the last inserted entry from this source map.
+	 */
 	public void removeLastInsertedEntry() {
 		if (entries.isEmpty()) {
 			return;

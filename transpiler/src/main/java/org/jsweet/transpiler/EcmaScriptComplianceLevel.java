@@ -23,7 +23,18 @@ package org.jsweet.transpiler;
  */
 public enum EcmaScriptComplianceLevel implements Comparable<EcmaScriptComplianceLevel> {
 
-	ES3, ES5, ES6;
+	/**
+	 * EcmaScript 3.
+	 */
+	ES3, 
+	/**
+	 * EcmaScript 5.
+	 */
+	ES5, 
+	/**
+	 * EcmaScript 6.
+	 */
+	ES6;
 
 	/**
 	 * Compares two compliance levels.
