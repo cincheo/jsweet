@@ -17,21 +17,21 @@ class Sub extends AbstractSub {
 	}
 
 	@Override
-	public E getOperator() {
+	public E m() {
 		return E.A;
 	}
 }
 
 abstract class AbstractSub extends Root {
-	protected final List<Root> clauses;
+	protected final List<Root> roots;
 
 	AbstractSub(final Root... params) {
 		super();
-		this.clauses = Arrays.asList(params);
+		this.roots = Arrays.asList(params);
 	}
 
 }
 
 abstract class Root {
-	abstract E getOperator();
+	abstract E m();
 }
