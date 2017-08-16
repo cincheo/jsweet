@@ -3438,6 +3438,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 
 		if (anonymous) {
+			applyVarargs = false;
 			if (inv.meth instanceof JCFieldAccess) {
 				JCExpression selected = ((JCFieldAccess) inv.meth).selected;
 				print(selected);

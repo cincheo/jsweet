@@ -43,6 +43,7 @@ import source.syntax.GlobalsInvocation;
 import source.syntax.IndexedAccessInStaticScope;
 import source.syntax.Keywords;
 import source.syntax.Labels;
+import source.syntax.LambdaExpression;
 import source.syntax.LambdasWithInterfaces;
 import source.syntax.Literals;
 import source.syntax.Looping;
@@ -260,4 +261,11 @@ public class SyntaxTests extends AbstractTest {
 		transpile(logHandler -> logHandler.assertNoProblems(), getSourceFile(SuperInvocation.class));
 	}
 
+	@Test
+	public void testLambdaExpression() {
+		transpile((logHandler) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(LambdaExpression.class));
+	}
+	
 }
