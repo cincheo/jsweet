@@ -50,6 +50,7 @@ import java.util.stream.Collectors;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
@@ -3305,7 +3306,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 
 		boolean anonymous = isAnonymousMethod(methName);
-		boolean targetIsThisOrStaticImported = meth.equals(methName) || meth.equals("this." + methName);
+		boolean targetIsThisOrStaticImported = /*
+												 * !"super".equals(methName) &&
+												 */ (meth.equals(methName) || meth.equals("this." + methName));
 
 		MethodType type = inv.meth.type instanceof MethodType ? (MethodType) inv.meth.type : null;
 		MethodSymbol methSym = null;
@@ -3586,11 +3589,25 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 		}
 
+		if ("super".equals(methName)) {
+			JCClassDecl p = getParent(JCClassDecl.class);
+			methSym = p == null ? null : Util.findMethodDeclarationInType(context.types, p.sym, "this", type);
+		}
 		for (int i = 0; i < argsLength; i++) {
 			JCExpression arg = inv.args.get(i);
 			if (inv.meth.type != null) {
+				// varargs transmission with TS ... notation
 				List<Type> argTypes = ((MethodType) inv.meth.type).argtypes;
 				Type paramType = i < argTypes.size() ? argTypes.get(i) : argTypes.get(argTypes.size() - 1);
+				if (i == argsLength - 1 && !applyVarargs && methSym != null && methSym.isVarArgs()) {
+					if (arg instanceof JCIdent && ((JCIdent) arg).sym instanceof VarSymbol) {
+						VarSymbol var = (VarSymbol) ((JCIdent) arg).sym;
+						if (var.owner instanceof MethodSymbol && ((MethodSymbol) var.owner).isVarArgs()
+								&& ((MethodSymbol) var.owner).getParameters().last() == var) {
+							print("...");
+						}
+					}
+				}
 				if (!substituteAssignedExpression(paramType, arg)) {
 					print(arg);
 				}

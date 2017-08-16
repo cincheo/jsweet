@@ -25,6 +25,7 @@ import org.junit.Test;
 import source.varargs.VarargsCalledWithArray;
 import source.varargs.VarargsOnAnonymous;
 import source.varargs.VarargsOnApi;
+import source.varargs.VarargsOnConstructor;
 import source.varargs.VarargsOnField;
 import source.varargs.VarargsOnGetter;
 import source.varargs.VarargsOnNew;
@@ -35,7 +36,7 @@ public class VarargsTests extends AbstractTest {
 	@Test
 	@Ignore
 	public void testVarargsOnAnonymous() {
-		eval(ModuleKind.none,(ctx, res) -> {
+		eval(ModuleKind.none, (ctx, res) -> {
 			assertEquals("3", res.get("argsLength").toString());
 			assertEquals("called", res.get("firstArg"));
 		}, getSourceFile(VarargsOnAnonymous.class));
@@ -47,7 +48,7 @@ public class VarargsTests extends AbstractTest {
 			assertEquals("1", res.get("index").toString());
 			assertEquals("3", res.get("argsLength").toString());
 			assertEquals("called", res.get("firstArg"));
-		} , getSourceFile(VarargsOnNew.class));
+		}, getSourceFile(VarargsOnNew.class));
 	}
 
 	@Test
@@ -55,7 +56,7 @@ public class VarargsTests extends AbstractTest {
 		eval((logHandler, res) -> {
 			assertEquals("2", res.get("argsLength").toString());
 			assertEquals("field", res.get("firstArg"));
-		} , getSourceFile(VarargsOnField.class));
+		}, getSourceFile(VarargsOnField.class));
 	}
 
 	@Test
@@ -64,7 +65,7 @@ public class VarargsTests extends AbstractTest {
 			assertEquals(2, res.<Number> get("index"));
 			assertEquals(2, res.<Number> get("argsLength"));
 			assertEquals("on", res.get("firstArg"));
-		} , getSourceFile(VarargsOnGetter.class));
+		}, getSourceFile(VarargsOnGetter.class));
 	}
 
 	@Test
@@ -72,7 +73,7 @@ public class VarargsTests extends AbstractTest {
 		eval((logHandler, res) -> {
 			assertEquals("3", res.get("argsLength").toString());
 			assertEquals("array", res.get("firstArg"));
-		} , getSourceFile(VarargsCalledWithArray.class));
+		}, getSourceFile(VarargsCalledWithArray.class));
 	}
 
 	@Test
@@ -80,7 +81,7 @@ public class VarargsTests extends AbstractTest {
 		eval((logHandler, res) -> {
 			assertEquals(1, res.<Number> get("out"));
 			assertEquals(2, res.<Number> get("d2"));
-		} , getSourceFile(VarargsOnApi.class));
+		}, getSourceFile(VarargsOnApi.class));
 	}
 
 	@Test
@@ -88,7 +89,7 @@ public class VarargsTests extends AbstractTest {
 		eval((logHandler, res) -> {
 			assertEquals("3", res.get("argsLength").toString());
 			assertEquals("static", res.get("firstArg"));
-		} , getSourceFile(VarargsOnStaticMethod.class));
+		}, getSourceFile(VarargsOnStaticMethod.class));
 	}
 
 	@Test
@@ -97,6 +98,14 @@ public class VarargsTests extends AbstractTest {
 			assertEquals("1", res.get("shouldBe1").toString());
 			assertEquals("2", res.get("argsLength").toString());
 			assertEquals("transmitted", res.get("firstArg"));
-		} , getSourceFile(VarargsTransmission.class));
+		}, getSourceFile(VarargsTransmission.class));
 	}
+
+	@Test
+	public void testVarargsOnConstructor() {
+		transpile(logHandler -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(VarargsOnConstructor.class));
+	}
+
 }
