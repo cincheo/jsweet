@@ -58,6 +58,14 @@ public class NativeStringBuilder {
 
 		trace.push(""+sb3);
 		
+		StringBuilder result = new StringBuilder();
+		final String variableName = "qqqq";
+		result.append(":").append(variableName);
+		trace.push(result.toString());
+
+		result.insert(1, "aaaa");
+		trace.push(result.toString());
+		
 		$export("trace", trace.join(","));
 
 	}

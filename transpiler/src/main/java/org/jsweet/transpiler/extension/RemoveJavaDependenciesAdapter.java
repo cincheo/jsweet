@@ -674,13 +674,20 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		case "append":
 			printMacroName(targetMethodName);
 			if (invocation.getArgumentCount() == 1) {
-				print("(sb => sb.str = sb.str.concat(<any>").printArgList(invocation.getArguments()).print("))(");
+				print("(sb => { sb.str = sb.str.concat(<any>").printArgList(invocation.getArguments())
+						.print("); return sb; })(");
 				print(invocation.getTargetExpression(), delegate).print(")");
 			} else {
-				print("(sb => sb.str = sb.str.concat((<any>").print(invocation.getArgument(0)).print(").substr(")
-						.printArgList(invocation.getArgumentTail()).print(")))(");
+				print("(sb => { sb.str = sb.str.concat((<any>").print(invocation.getArgument(0)).print(").substr(")
+						.printArgList(invocation.getArgumentTail()).print(")); return sb; })(");
 				print(invocation.getTargetExpression(), delegate).print(")");
 			}
+			return true;
+		case "insert":
+			printMacroName(targetMethodName);
+			print("((sb, index, c) => { sb.str = sb.str.substr(0, index) + c + sb.str.substr(index); return sb; })(");
+			print(invocation.getTargetExpression(), delegate).print(", ").printArgList(invocation.getArguments())
+					.print(")");
 			return true;
 		case "setCharAt":
 			printMacroName(targetMethodName);
@@ -690,13 +697,13 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			return true;
 		case "deleteCharAt":
 			printMacroName(targetMethodName);
-			print("((sb, index) => sb.str = sb.str.substr(0, index) + sb.str.substr(index + 1))(");
+			print("((sb, index) => { sb.str = sb.str.substr(0, index) + sb.str.substr(index + 1); return sb; })(");
 			print(invocation.getTargetExpression(), delegate).print(", ").printArgList(invocation.getArguments())
 					.print(")");
 			return true;
 		case "delete":
 			printMacroName(targetMethodName);
-			print("((sb, i1, i2) => sb.str = sb.str.substr(0, i1) + sb.str.substr(i2))(");
+			print("((sb, i1, i2) => { sb.str = sb.str.substr(0, i1) + sb.str.substr(i2); return sb; })(");
 			print(invocation.getTargetExpression(), delegate).print(", ").printArgList(invocation.getArguments())
 					.print(")");
 			return true;
