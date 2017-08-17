@@ -362,6 +362,7 @@ public class StructuralTests extends AbstractTest {
 			assertEquals(3, (int) r.get("test2"));
 			assertEquals(1, (int) r.get("test3"));
 			assertEquals(3, (int) r.get("test4"));
+			assertEquals(3, (int) r.get("test5"));
 		}, getSourceFile(ReplaceAnnotation.class));
 		createTranspiler(new JSweetFactory());
 	}

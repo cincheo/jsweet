@@ -217,7 +217,7 @@
 		<dependency>
 			<groupId>org.jsweet</groupId>
 			<artifactId>jsweet-core</artifactId>
-			<version>5-20170726</version>
+			<version>5-SNAPSHOT</version>
 			<scope>test</scope>
 			<optional>true</optional>
 		</dependency>

@@ -23,8 +23,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * This annotation allows the programmer to substitute a method body
- * implementation by a TypeScript implementation.
+ * This annotation allows the programmer to substitute a method or constructor
+ * body implementation by a TypeScript implementation.
  * 
  * <p>
  * The annotation's value contains TypeScript which is generated as is by the
@@ -50,7 +50,7 @@ import java.lang.annotation.Target;
  * @author Renaud Pawlak
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
+@Target({ ElementType.METHOD, ElementType.CONSTRUCTOR })
 @Documented
 public @interface Replace {
 
