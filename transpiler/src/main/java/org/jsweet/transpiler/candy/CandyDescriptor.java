@@ -143,7 +143,6 @@ public class CandyDescriptor {
         }
 
         final String jsDirPath = "META-INF/resources/webjars/" + (UNKNOWN.equals(version) ? "" : name + "/" + version);
-        System.out.println("SEARCHING JS IN : "+jsDirPath);
         final ZipEntry jsDirEntry = jarFile.getEntry(jsDirPath);
         final List<String> jsFilesPaths = new LinkedList<>();
         if (jsDirEntry != null) {
