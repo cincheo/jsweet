@@ -673,8 +673,27 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					}
 				}
 
+				Stack<Overload> overloadStack = new Stack<>();
+
 				@Override
 				public void scan(JCTree t) {
+					// grab the types in overloaded method because they may use
+					// other types necessary for the instanceof implementation
+					// (see #342)
+					if (t instanceof JCMethodDecl) {
+						JCMethodDecl method = (JCMethodDecl) t;
+						if (context.isInvalidOverload(method.sym)) {
+							Overload overload = context.getOverload((ClassSymbol) method.sym.getEnclosingElement(),
+									method.sym);
+							if (!overloadStack.contains(overload)) {
+								overloadStack.push(overload);
+								for (JCTree overloadedMethod : overload.methods) {
+									this.scan(overloadedMethod);
+								}
+								overloadStack.pop();
+							}
+						}
+					}
 					if (t != null && t.type != null && t.type.tsym instanceof ClassSymbol) {
 						if (!(t instanceof JCTypeApply)) {
 							checkType(t.type.tsym);

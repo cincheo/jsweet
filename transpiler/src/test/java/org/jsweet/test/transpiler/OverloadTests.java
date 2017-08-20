@@ -50,6 +50,11 @@ import source.overload.WrongOverloadWithSpecialParameters;
 import source.overload.WrongOverloads;
 import source.overload.WrongOverloadsWithDefaultMethods;
 import source.overload.WrongOverloadsWithNonCoreMethod;
+import source.overload.visitor.A1;
+import source.overload.visitor.A2;
+import source.overload.visitor.A3;
+import source.overload.visitor.F;
+import source.overload.visitor.F1;
 
 public class OverloadTests extends AbstractTest {
 
@@ -263,4 +268,12 @@ public class OverloadTests extends AbstractTest {
 		}, getSourceFile(AbstractMethodOverloadInAnonymousClass.class));
 	}
 
+	@Test
+	public void testVisitor() {
+		transpile((logHandler) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(A1.class), getSourceFile(A2.class), getSourceFile(A3.class), getSourceFile(F1.class), getSourceFile(F.class));
+	}
+	
+	
 }
