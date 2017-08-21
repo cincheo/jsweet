@@ -530,19 +530,22 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			if (importedModule.equals(compilationUnit.sourcefile.getName())) {
 				return null;
 			}
-			String pathToImportedClass = Util
-					.getRelativePath(new File(compilationUnit.sourcefile.getName()).getParent(), importedModule);
-			pathToImportedClass = pathToImportedClass.substring(0, pathToImportedClass.length() - 5);
-			if (!pathToImportedClass.startsWith(".")) {
-				pathToImportedClass = "./" + pathToImportedClass;
-			}
-
 			Symbol symbol = importedClass.getEnclosingElement();
 			while (!(symbol instanceof PackageSymbol)) {
 				importedName = symbol.getSimpleName().toString();
 				symbol = symbol.getEnclosingElement();
 			}
+			while (importedClass.getEnclosingElement() instanceof ClassSymbol) {
+				importedClass = (ClassSymbol) importedClass.getEnclosingElement();
+			}
+
 			if (symbol != null) {
+				String pathToImportedClass = Util.getRelativePath(compilationUnit.packge.toString().replace('.', '/'),
+						importedClass.toString().replace('.', '/'));
+				if (!pathToImportedClass.startsWith(".")) {
+					pathToImportedClass = "./" + pathToImportedClass;
+				}
+
 				return new RequireInfo((PackageSymbol) symbol, importedName, pathToImportedClass.replace('\\', '/'));
 			}
 		}

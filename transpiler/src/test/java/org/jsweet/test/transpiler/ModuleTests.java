@@ -117,4 +117,13 @@ public class ModuleTests extends AbstractTest {
 		}, getSourceFile(Outer.class), getSourceFile(InnerClassAccess.class));
 	}
 
+	@Test
+	public void testRequireWithMultipleSourceFolders() {
+		transpile(logHandler -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(2, "t.b.C1"), getSourceFile(3, "t.T1"));
+	}
+
+	
+	
 }
