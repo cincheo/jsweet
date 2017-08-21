@@ -50,7 +50,6 @@ import java.util.stream.Collectors;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
@@ -511,6 +510,45 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		return checkRootPackageParent(topLevel, rootPackage, (PackageSymbol) parentPackage.owner);
 	}
 
+	private class RequireInfo {
+		public RequireInfo(PackageSymbol targetPackage, String importedName, String pathToImportedClass) {
+			super();
+			this.targetPackage = targetPackage;
+			this.importedName = importedName;
+			this.pathToImportedClass = pathToImportedClass;
+		}
+
+		public PackageSymbol targetPackage;
+		public String importedName;
+		public String pathToImportedClass;
+	}
+
+	private RequireInfo getRequireInfo(String importedName, ClassSymbol importedClass) {
+		if (Util.isSourceElement(importedClass)
+				&& !importedClass.getQualifiedName().toString().startsWith(JSweetConfig.LIBS_PACKAGE + ".")) {
+			String importedModule = importedClass.sourcefile.getName();
+			if (importedModule.equals(compilationUnit.sourcefile.getName())) {
+				return null;
+			}
+			String pathToImportedClass = Util
+					.getRelativePath(new File(compilationUnit.sourcefile.getName()).getParent(), importedModule);
+			pathToImportedClass = pathToImportedClass.substring(0, pathToImportedClass.length() - 5);
+			if (!pathToImportedClass.startsWith(".")) {
+				pathToImportedClass = "./" + pathToImportedClass;
+			}
+
+			Symbol symbol = importedClass.getEnclosingElement();
+			while (!(symbol instanceof PackageSymbol)) {
+				importedName = symbol.getSimpleName().toString();
+				symbol = symbol.getEnclosingElement();
+			}
+			if (symbol != null) {
+				return new RequireInfo((PackageSymbol) symbol, importedName, pathToImportedClass.replace('\\', '/'));
+			}
+		}
+		return null;
+	}
+
 	/**
 	 * Prints a compilation unit tree.
 	 */
@@ -629,28 +667,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 				if (qualified.sym instanceof ClassSymbol) {
 					ClassSymbol importedClass = (ClassSymbol) qualified.sym;
-					if (Util.isSourceElement(importedClass) && !importedClass.getQualifiedName().toString()
-							.startsWith(JSweetConfig.LIBS_PACKAGE + ".")) {
-						String importedModule = importedClass.sourcefile.getName();
-						if (importedModule.equals(compilationUnit.sourcefile.getName())) {
-							continue;
-						}
-						String pathToImportedClass = Util.getRelativePath(
-								new File(compilationUnit.sourcefile.getName()).getParent(), importedModule);
-						pathToImportedClass = pathToImportedClass.substring(0, pathToImportedClass.length() - 5);
-						if (!pathToImportedClass.startsWith(".")) {
-							pathToImportedClass = "./" + pathToImportedClass;
-						}
-
-						Symbol symbol = qualified.sym.getEnclosingElement();
-						while (!(symbol instanceof PackageSymbol)) {
-							importedName = symbol.getSimpleName().toString();
-							symbol = symbol.getEnclosingElement();
-						}
-						if (symbol != null) {
-							useModule(false, (PackageSymbol) symbol, importDecl, importedName,
-									pathToImportedClass.replace('\\', '/'), null);
-						}
+					RequireInfo requireInfo = getRequireInfo(importedName, importedClass);
+					if (requireInfo != null) {
+						useModule(false, requireInfo.targetPackage, importDecl, requireInfo.importedName,
+								requireInfo.pathToImportedClass, null);
 					}
 				}
 			}
@@ -661,14 +681,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 				private void checkType(TypeSymbol type) {
 					if (type instanceof ClassSymbol) {
-						if (type.getEnclosingElement().equals(compilationUnit.packge)) {
-							String importedModule = ((ClassSymbol) type).sourcefile.getName();
-							if (!importedModule.equals(compilationUnit.sourcefile.getName())) {
-								importedModule = "./" + new File(importedModule).getName();
-								importedModule = importedModule.substring(0, importedModule.length() - 5);
-								useModule(false, (PackageSymbol) type.getEnclosingElement(), null,
-										type.getSimpleName().toString(), importedModule, null);
-							}
+						RequireInfo requireInfo = getRequireInfo(type.getSimpleName().toString(), (ClassSymbol) type);
+						if (requireInfo != null) {
+							useModule(false, requireInfo.targetPackage, null, requireInfo.importedName,
+									requireInfo.pathToImportedClass, null);
 						}
 					}
 				}
@@ -687,7 +703,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 									method.sym);
 							if (!overloadStack.contains(overload)) {
 								overloadStack.push(overload);
-								for (JCTree overloadedMethod : overload.methods) {
+								for (JCMethodDecl overloadedMethod : overload.methods) {
 									this.scan(overloadedMethod);
 								}
 								overloadStack.pop();

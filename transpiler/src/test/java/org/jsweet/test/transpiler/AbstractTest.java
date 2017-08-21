@@ -46,8 +46,6 @@ public class AbstractTest {
 
 	protected static final String TEST_DIRECTORY_NAME = "src/test/java";
 
-	protected static final String JSWEET_TEST_DIRECTORY_NAME = "src/test/jsweet";
-
 	protected static final Logger staticLogger = Logger.getLogger(AbstractTest.class);
 
 	protected final Logger logger = Logger.getLogger(getClass());
@@ -112,7 +110,7 @@ public class AbstractTest {
 		transpiler.setEncoding("UTF-8");
 		transpiler.setSkipTypeScriptChecks(true);
 		transpiler.setIgnoreAssertions(false);
-		// transpiler.setPreserveSourceLineNumbers(true);
+		transpiler.setGenerateSourceMaps(false);
 	}
 
 	@BeforeClass
@@ -146,8 +144,9 @@ public class AbstractTest {
 		return new SourceFile(new File(TEST_DIRECTORY_NAME + "/" + mainClass.getName().replace(".", "/") + ".java"));
 	}
 
-	protected SourceFile getJSweetSourceFile(String className) {
-		return new SourceFile(new File(JSWEET_TEST_DIRECTORY_NAME + "/" + className.replace(".", "/") + ".java"));
+	protected SourceFile getSourceFile(int testDirIndex, String className) {
+		return new SourceFile(
+				new File(TEST_DIRECTORY_NAME + testDirIndex + "/" + className.replace(".", "/") + ".java"));
 	}
 
 	protected void transpile(Consumer<TestTranspilationHandler> assertions, SourceFile... files) {

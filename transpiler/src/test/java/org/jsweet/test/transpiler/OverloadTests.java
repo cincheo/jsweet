@@ -272,8 +272,17 @@ public class OverloadTests extends AbstractTest {
 	public void testVisitor() {
 		transpile((logHandler) -> {
 			logHandler.assertNoProblems();
-		}, getSourceFile(A1.class), getSourceFile(A2.class), getSourceFile(A3.class), getSourceFile(F1.class), getSourceFile(F.class));
+		}, getSourceFile(A1.class), getSourceFile(A2.class), getSourceFile(A3.class), getSourceFile(F1.class),
+				getSourceFile(F.class));
 	}
-	
-	
+
+	@Test
+	public void testVisitor2() {
+		transpile((logHandler) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(source.overload.visitor2.b.A1.class), getSourceFile(source.overload.visitor2.c.A2.class),
+				getSourceFile(source.overload.visitor2.c.A3.class), getSourceFile(source.overload.visitor2.a.F1.class),
+				getSourceFile(source.overload.visitor2.a.F.class));
+	}
+
 }
