@@ -124,6 +124,12 @@ public class ModuleTests extends AbstractTest {
 		}, getSourceFile(2, "t.b.C1"), getSourceFile(3, "t.T1"));
 	}
 
+	@Test
+	public void testRequireFromDifferentRootPackages() {
+		transpile(logHandler -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(2, "t.b.C1"), getSourceFile(3, "u.T1"));
+	}
 	
 	
 }
