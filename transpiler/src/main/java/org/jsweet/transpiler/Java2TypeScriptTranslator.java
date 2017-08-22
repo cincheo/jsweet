@@ -540,8 +540,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 
 			if (symbol != null) {
-				String pathToImportedClass = Util.getRelativePath(compilationUnit.packge.toString().replace('.', '/'),
-						importedClass.toString().replace('.', '/'));
+				// @ represents a common root in case there is no common root package
+				// => pathToImportedClass cannot be null because of the common @ root
+				String pathToImportedClass = Util.getRelativePath(
+						"@/" + compilationUnit.packge.toString().replace('.', '/'),
+						"@/" + importedClass.toString().replace('.', '/'));
 				if (!pathToImportedClass.startsWith(".")) {
 					pathToImportedClass = "./" + pathToImportedClass;
 				}
