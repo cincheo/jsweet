@@ -36,6 +36,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 
 import org.jsweet.transpiler.JSweetContext;
+import org.jsweet.transpiler.JSweetOptions;
 import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.model.ArrayAccessElement;
 import org.jsweet.transpiler.model.AssignmentElement;
@@ -921,6 +922,31 @@ public class PrinterAdapter {
 	 */
 	public final boolean isAmbientDeclaration(Element element) {
 		return context.isAmbientDeclaration((com.sun.tools.javac.code.Symbol) element);
+	}
+
+	/**
+	 * Gets the transpiler options.
+	 */
+	public final JSweetOptions getTranspilerOptions() {
+		return context.options;
+	}
+
+	/**
+	 * This method adds a header to the currently printed file. This header can
+	 * be TypeScript code, but use with caution since it may raise compilation
+	 * errors.
+	 * 
+	 * <p>
+	 * Several headers can be added to the same file. Note that a new line will
+	 * be automatically added at the end of the last header (if any), but not
+	 * between each header.
+	 * 
+	 * @param header
+	 *            any string that will be printed at the beginning of the file
+	 *            (only when not in bundle mode)
+	 */
+	public final void addHeader(String header) {
+		context.addHeader(header);
 	}
 
 }

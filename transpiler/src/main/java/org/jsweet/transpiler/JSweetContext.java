@@ -903,6 +903,37 @@ public class JSweetContext extends Context {
 		footerStatements.add(0, footerStatement);
 	}
 
+	private List<String> headers = new LinkedList<String>();
+
+	/**
+	 * Gets and clears the headers.
+	 */
+	public String poolHeaders() {
+		StringBuilder sb = new StringBuilder();
+		if (!headers.isEmpty()) {
+			for (String header : headers) {
+				sb.append(header);
+			}
+			sb.append("\n");
+		}
+		headers.clear();
+		return sb.toString();
+	}
+
+	/**
+	 * Adds a header.
+	 */
+	public void addHeader(String header) {
+		headers.add(header);
+	}
+
+	/**
+	 * Adds a header statement at the first position.
+	 */
+	public void addTopHeader(String header) {
+		headers.add(0, header);
+	}
+
 	private Map<String, String> globalsMapping = new HashMap<>();
 
 	/**

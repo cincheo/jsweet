@@ -94,6 +94,7 @@ class HelloWorldAdapter extends PrinterAdapter {
 	public HelloWorldAdapter(PrinterAdapter parent) {
 		super(parent);
 		addTypeMapping(java.util.Date.class.getName(), "string");
+		addHeader("/* this is a header comment */");
 	}
 }
 
@@ -237,6 +238,7 @@ public class ExtensionTests extends AbstractTest {
 			logHandler.assertNoProblems();
 		}, f);
 		String generatedCode = FileUtils.readFileToString(f.getTsFile());
+		Assert.assertTrue(generatedCode.contains("this is a header comment"));
 		Assert.assertTrue(generatedCode.contains("date : string"));
 		Assert.assertFalse(generatedCode.contains("date : Date"));
 

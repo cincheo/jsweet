@@ -100,14 +100,16 @@ import com.sun.tools.javac.util.Options;
  * Instantiate this class to transpile Java to TypeScript (phase 1), and
  * TypeScript to JavaScript (phase 2).
  * 
- * <p>There are 2 phases in JSweet transpilation:
+ * <p>
+ * There are 2 phases in JSweet transpilation:
  *
  * <ol>
  * <li>Java to TypeScript</li>
  * <li>TypeScript to JavaScript</li>
  * </ol>
  *
- * <p>In phase 1, JSweet delegates to Javac and applies the
+ * <p>
+ * In phase 1, JSweet delegates to Javac and applies the
  * {@link Java2TypeScriptTranslator} AST visitor to print out the TypeScript
  * code. Before printing out the code, the transpiler first applies AST
  * visitors: {@link GlobalBeforeTranslationScanner},
@@ -116,7 +118,8 @@ import com.sun.tools.javac.util.Options;
  * that this generation is fully customizable with the
  * {@link org.jsweet.transpiler.extension} API.
  *
- * <p>In phase 2, JSweet delegates to tsc (TypeScript). TypeScript needs to have a
+ * <p>
+ * In phase 2, JSweet delegates to tsc (TypeScript). TypeScript needs to have a
  * TypeScript typing definition for all external classes. Existing JSweet
  * candies (http://www.jsweet.org/jsweet-candies/) are Maven artifacts that come
  * both with the compiled Java implementation/definition in a Jar, and the
@@ -996,10 +999,13 @@ public class JSweetTranspiler implements JSweetOptions {
 			outputFile.getParentFile().mkdirs();
 			String outputFilePath = outputFile.getPath();
 			PrintWriter out = new PrintWriter(outputFilePath);
+			String headers = context.poolHeaders();
+			int headersLineCount = StringUtils.countMatches(headers, "\n");
 			try {
 				for (String line : headerLines) {
 					out.println(line);
 				}
+				out.print(headers);
 				out.println(printer.getResult());
 				out.print(context.getGlobalsMappingString());
 				out.print(context.poolFooterStatements());
@@ -1008,7 +1014,7 @@ public class JSweetTranspiler implements JSweetOptions {
 			}
 			files[i].tsFile = outputFile;
 			files[i].javaFileLastTranspiled = files[i].getJavaFile().lastModified();
-			printer.sourceMap.shiftOutputPositions(headerLines.length);
+			printer.sourceMap.shiftOutputPositions(headerLines.length + headersLineCount);
 			files[i].setSourceMap(printer.sourceMap);
 			if (generateSourceMaps && !generateJsFiles) {
 				generateTypeScriptSourceMapFile(files[i]);
