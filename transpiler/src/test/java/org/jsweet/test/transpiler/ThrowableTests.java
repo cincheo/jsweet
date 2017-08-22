@@ -21,6 +21,7 @@ import org.jsweet.transpiler.ModuleKind;
 import org.junit.Assert;
 import org.junit.Test;
 
+import source.throwable.ExtendedThrowables;
 import source.throwable.InvalidTryCatchTest;
 import source.throwable.MultipleTryCatchTest;
 import source.throwable.Throwables;
@@ -75,4 +76,11 @@ public class ThrowableTests extends AbstractTest {
 		}, getSourceFile(Throwables.class));
 	}
 
+	@Test
+	public void testExtendedThrowables() {
+		eval((handler, result) -> {
+			handler.assertNoProblems();
+		}, getSourceFile(ExtendedThrowables.class));
+	}
+	
 }

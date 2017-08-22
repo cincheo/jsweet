@@ -540,8 +540,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 
 			if (symbol != null) {
-				// @ represents a common root in case there is no common root package
-				// => pathToImportedClass cannot be null because of the common @ root
+				// '@' represents a common root in case there is no common root
+				// package => pathToImportedClass cannot be null because of the
+				// common '@' root
 				String pathToImportedClass = Util.getRelativePath(
 						"@/" + compilationUnit.packge.toString().replace('.', '/'),
 						"@/" + importedClass.toString().replace('.', '/'));
@@ -2470,6 +2471,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	protected void printInstanceInitialization(JCClassDecl clazz, MethodSymbol method) {
 		if (method == null || method.isConstructor()) {
 			getScope().hasDeclaredConstructor = true;
+			// this workaround will not work on all browsers (see
+			// https://github.com/Microsoft/TypeScript-wiki/blob/master/Breaking-Changes.md#extending-built-ins-like-error-array-and-map-may-no-longer-work)
+			if (context.types.isAssignable(clazz.sym.type, context.symtab.throwableType)) {
+				printIndent().print("(<any>Object).setPrototypeOf(this, " + getClassName(clazz.sym) + ".prototype);")
+						.println();
+			}
 			if (getScope().innerClassNotStatic && !getScope().enumWrapperClassScope) {
 				printIndent().print("this." + PARENT_CLASS_FIELD_NAME + " = " + PARENT_CLASS_FIELD_NAME + ";")
 						.println();

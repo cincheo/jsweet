@@ -787,7 +787,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 			case "getMessage":
 				if (targetType instanceof TypeElement) {
 					if (types().isAssignable(targetType.asType(), util().getType(Throwable.class))) {
-						print(invocationElement.getTargetExpression()).print(".message");
+						printTarget(invocationElement.getTargetExpression()).print(".message");
 						return true;
 					}
 				}
