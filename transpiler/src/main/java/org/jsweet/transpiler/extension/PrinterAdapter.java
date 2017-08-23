@@ -932,21 +932,39 @@ public class PrinterAdapter {
 	}
 
 	/**
-	 * This method adds a header to the currently printed file. This header can
+	 * This method sets a header to the currently printed file. This header can
 	 * be TypeScript code, but use with caution since it may raise compilation
 	 * errors.
 	 * 
 	 * <p>
 	 * Several headers can be added to the same file. Note that a new line will
 	 * be automatically added at the end of the last header (if any), but not
-	 * between each header.
+	 * between each header. Headers will be printer in the order they have been
+	 * added to the file. Headers are reset for each new file.
 	 * 
+	 * @param key
+	 *            a key to identify the header (see {@link #getHeader(String)})
 	 * @param header
 	 *            any string that will be printed at the beginning of the file
 	 *            (only when not in bundle mode)
+	 * 
+	 * @see #getHeader(String)
 	 */
-	public final void addHeader(String header) {
-		context.addHeader(header);
+	public final void addHeader(String key, String header) {
+		context.addHeader(key, header);
+	}
+
+	/**
+	 * Gets the header associated to the given key (null if non-existing key).
+	 * 
+	 * @param key
+	 *            the header's key as set by {@link #addHeader(String, String)}
+	 * @return the associated header (null if non-existing key)
+	 * 
+	 * @see #addHeader(String, String)
+	 */
+	public final String getHeader(String key) {
+		return context.getHeader(key);
 	}
 
 }

@@ -94,7 +94,10 @@ class HelloWorldAdapter extends PrinterAdapter {
 	public HelloWorldAdapter(PrinterAdapter parent) {
 		super(parent);
 		addTypeMapping(java.util.Date.class.getName(), "string");
-		addHeader("/* this is a header comment */");
+		addHeader("comment", "/* this is a header comment */");
+		if (getHeader("comment") == null) {
+			throw new RuntimeException("header not added");
+		}
 	}
 }
 

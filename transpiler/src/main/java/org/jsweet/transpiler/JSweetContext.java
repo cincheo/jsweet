@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -903,7 +904,7 @@ public class JSweetContext extends Context {
 		footerStatements.add(0, footerStatement);
 	}
 
-	private List<String> headers = new LinkedList<String>();
+	private Map<String, String> headers = new LinkedHashMap<String,String>();
 
 	/**
 	 * Gets and clears the headers.
@@ -911,7 +912,7 @@ public class JSweetContext extends Context {
 	public String poolHeaders() {
 		StringBuilder sb = new StringBuilder();
 		if (!headers.isEmpty()) {
-			for (String header : headers) {
+			for (String header : headers.values()) {
 				sb.append(header);
 			}
 			sb.append("\n");
@@ -921,19 +922,23 @@ public class JSweetContext extends Context {
 	}
 
 	/**
-	 * Adds a header.
+	 * Sets a header (associated to a key).
+	 * 
+	 * @see #getHeader(String)
 	 */
-	public void addHeader(String header) {
-		headers.add(header);
+	public void addHeader(String key, String header) {
+		headers.put(key, header);
 	}
 
 	/**
-	 * Adds a header statement at the first position.
+	 * Returns a header for the given key (null if never set).
+	 * 
+	 * @see #addHeader(String, String)
 	 */
-	public void addTopHeader(String header) {
-		headers.add(0, header);
+	public String getHeader(String key) {
+		return headers.get(key);
 	}
-
+	
 	private Map<String, String> globalsMapping = new HashMap<>();
 
 	/**
