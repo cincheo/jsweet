@@ -431,7 +431,7 @@ public class JSweetTranspiler implements JSweetOptions {
 
 	public void initNode(TranspilationHandler transpilationHandler) throws Exception {
 		ProcessUtil.initNode();
-		logger.debug("extra path: " + ProcessUtil.EXTRA_PATH);
+		
 		File initFile = new File(workingDir, ".node-init");
 		boolean initialized = initFile.exists();
 		if (!initialized) {

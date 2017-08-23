@@ -48,12 +48,18 @@ public class ProcessUtil {
 		if (!initialized) {
 			// hack for OSX Eclipse's path issue
 			if (!System.getenv("PATH").contains("/usr/local/bin") && new File("/usr/local/bin/node").exists()) {
-				ProcessUtil.EXTRA_PATH = "/usr/local/bin";
+				addExtraPath("/usr/local/bin");
 				ProcessUtil.NODE_COMMAND = "/usr/local/bin/node";
 				ProcessUtil.NPM_COMMAND = "/usr/local/bin/npm";
 			}
 			initialized = true;
 		}
+
+		logger.debug("extra path: " + ProcessUtil.EXTRA_PATH);
+	}
+
+	public static void addExtraPath(String extraPath) {
+		ProcessUtil.EXTRA_PATH += extraPath + File.pathSeparator;
 	}
 
 	/**
@@ -83,7 +89,7 @@ public class ProcessUtil {
 	 * environments. Typically Eclipse on Mac OSX misses the /usr/local/bin
 	 * path, which is required to run node.
 	 */
-	public static String EXTRA_PATH;
+	private static String EXTRA_PATH = "";
 
 	/**
 	 * Gets the full path of a command installed with npm.
@@ -117,7 +123,8 @@ public class ProcessUtil {
 	 * @return the process that was created to execute the command (exited at
 	 *         this point)
 	 */
-	public static Process runCommand(String command, Consumer<String> stdoutConsumer, Runnable errorHandler, String... args) {
+	public static Process runCommand(String command, Consumer<String> stdoutConsumer, Runnable errorHandler,
+			String... args) {
 		return runCommand(command, null, false, stdoutConsumer, null, errorHandler, args);
 	}
 
@@ -137,8 +144,8 @@ public class ProcessUtil {
 	 * @return the process that was created to execute the command (can be still
 	 *         running at this point)
 	 */
-	public static Process runAsyncCommand(String command, Consumer<String> stdoutConsumer, Consumer<Process> endConsumer, Runnable errorHandler,
-			String... args) {
+	public static Process runAsyncCommand(String command, Consumer<String> stdoutConsumer,
+			Consumer<Process> endConsumer, Runnable errorHandler, String... args) {
 		return runCommand(command, null, true, stdoutConsumer, endConsumer, errorHandler, args);
 	}
 
@@ -163,8 +170,8 @@ public class ProcessUtil {
 	 * @return the process that was created to execute the command (can be still
 	 *         running at this point if <code>async</code> is <code>true</code>)
 	 */
-	public static Process runCommand(String command, File directory, boolean async, Consumer<String> stdoutConsumer, Consumer<Process> endConsumer,
-			Runnable errorHandler, String... args) {
+	public static Process runCommand(String command, File directory, boolean async, Consumer<String> stdoutConsumer,
+			Consumer<Process> endConsumer, Runnable errorHandler, String... args) {
 
 		String[] cmd;
 		if (System.getProperty("os.name").startsWith("Windows")) {
@@ -191,7 +198,8 @@ public class ProcessUtil {
 				processBuilder.directory(directory);
 			}
 			if (!StringUtils.isBlank(EXTRA_PATH)) {
-				processBuilder.environment().put("PATH", processBuilder.environment().get("PATH") + File.pathSeparator + EXTRA_PATH);
+				processBuilder.environment().put("PATH",
+						processBuilder.environment().get("PATH") + File.pathSeparator + EXTRA_PATH);
 			}
 
 			process[0] = processBuilder.start();
@@ -201,7 +209,8 @@ public class ProcessUtil {
 				@Override
 				public void run() {
 					try {
-						try (BufferedReader in = new BufferedReader(new InputStreamReader(process[0].getInputStream(), "UTF-8"))) {
+						try (BufferedReader in = new BufferedReader(
+								new InputStreamReader(process[0].getInputStream(), "UTF-8"))) {
 							String line;
 							while ((line = in.readLine()) != null) {
 								if (stdoutConsumer != null) {
@@ -261,8 +270,8 @@ public class ProcessUtil {
 			runCommand(NPM_COMMAND, USER_HOME_DIR, false, null, null, null, "install", "--prefix", NPM_DIR.getPath(),
 					version == null ? nodePackageName : nodePackageName + "@" + version, "-g");
 		} else {
-			runCommand(NPM_COMMAND, USER_HOME_DIR, false, null, null, null, "install", version == null ? nodePackageName : nodePackageName + "@" + version,
-					"--save");
+			runCommand(NPM_COMMAND, USER_HOME_DIR, false, null, null, null, "install",
+					version == null ? nodePackageName : nodePackageName + "@" + version, "--save");
 		}
 	}
 
@@ -298,7 +307,8 @@ public class ProcessUtil {
 		logger.debug("uninstalling " + nodePackageName + " with npm");
 		initNode();
 		if (global) {
-			runCommand(NPM_COMMAND, USER_HOME_DIR, false, null, null, null, "uninstall", "--prefix", NPM_DIR.getPath(), nodePackageName, "-g");
+			runCommand(NPM_COMMAND, USER_HOME_DIR, false, null, null, null, "uninstall", "--prefix", NPM_DIR.getPath(),
+					nodePackageName, "-g");
 		} else {
 			runCommand(NPM_COMMAND, USER_HOME_DIR, false, null, null, null, "uninstall", nodePackageName);
 		}
