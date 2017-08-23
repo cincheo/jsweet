@@ -673,6 +673,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					qualified = (JCFieldAccess) qualified.selected;
 				}
 				if (qualified.sym instanceof ClassSymbol) {
+					if(!JSweetConfig.GLOBALS_CLASS_NAME.equals(qualified.sym.getSimpleName().toString())) {
+						importedName = qualified.name.toString();
+					}
 					ClassSymbol importedClass = (ClassSymbol) qualified.sym;
 					RequireInfo requireInfo = getRequireInfo(importedName, importedClass);
 					if (requireInfo != null) {
@@ -3126,7 +3129,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					&& !qualId.contains("." + JSweetConfig.STRING_TYPES_INTERFACE_NAME + ".")) {
 				if (context.useModules) {
 					print(VAR_DECL_KEYWORD + " ").print(qualId.substring(qualId.lastIndexOf('.') + 1)).print(": any = ")
-							.print(qualId).print(";").println();
+							.print(adaptedQualId).print(";").println();
 				}
 			} else {
 				String[] namePath;

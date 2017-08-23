@@ -50,6 +50,7 @@ import source.require.a.b.B2;
 import source.require.b.ClassImport;
 import source.require.b.ClassImportImplicitRequire;
 import source.require.b.GlobalsImport;
+import source.require.t.k.A1;
 
 public class ModuleTests extends AbstractTest {
 
@@ -131,5 +132,11 @@ public class ModuleTests extends AbstractTest {
 		}, getSourceFile(2, "t.b.C1"), getSourceFile(3, "u.T1"));
 	}
 	
+	@Test
+	public void testRequireStaticMethod() {
+		transpile(logHandler -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(A1.class), getSourceFile(source.require.t.B1.class));
+	}
 	
 }
