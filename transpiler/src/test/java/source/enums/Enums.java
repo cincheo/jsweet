@@ -28,6 +28,7 @@ public class Enums {
 
 	public static void main(String[] args) {
 		MyEnum e = MyEnum.A;
+		assert e.equals(MyEnum.A);
 		EnumInSamePackage e2 = EnumInSamePackage.V1;
 		EnumInOtherPackage e3 = EnumInOtherPackage.V1;
 		$export("value", e);

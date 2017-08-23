@@ -409,13 +409,16 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 			String relTarget = getRootRelativeName((Symbol) targetType);
 			switch (targetMethodName) {
 			case "name":
+				printMacroName("Enum."+targetMethodName);
 				print(relTarget).print("[").print(invocationElement.getTargetExpression()).print("]");
 				return true;
 			case "ordinal":
+				printMacroName("Enum."+targetMethodName);
 				print(relTarget).print("[").print(relTarget).print("[").print(invocationElement.getTargetExpression())
 						.print("]").print("]");
 				return true;
 			case "valueOf":
+				printMacroName("Enum."+targetMethodName);
 				if (invocationElement.getArgumentCount() == 1) {
 					print("<any>").print(invocationElement.getTargetExpression()).print("[")
 							.print(invocationElement.getArgument(0)).print("]");
@@ -423,9 +426,15 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 				}
 				break;
 			case "values":
+				printMacroName("Enum."+targetMethodName);
 				print("function() { " + VAR_DECL_KEYWORD + " result: number[] = []; for(" + VAR_DECL_KEYWORD
 						+ " val in ").print(relTarget).print(
 								") { if(!isNaN(<any>val)) { result.push(parseInt(val,10)); } } return result; }()");
+				return true;
+			case "equals":
+				printMacroName("Enum."+targetMethodName);
+				print("(<any>(").print(invocationElement.getTargetExpression()).print(") === <any>(")
+						.print(invocationElement.getArgument(0)).print("))");
 				return true;
 			}
 			// enum objets wrapping

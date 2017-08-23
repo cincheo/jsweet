@@ -10,6 +10,8 @@ public class ComplexEnums {
 
 	public static void main(String[] args) {
 		MyComplexEnum.aStaticMethod();
+		assert !MyComplexEnum.RATIO_16_9.equals(MyComplexEnum.RATIO_2_1);
+		assert MyComplexEnum.RATIO_16_9.equals(MyComplexEnum.RATIO_16_9);
 		trace.push("" + MyComplexEnum.RATIO_2_1.getValue());
 		trace.push("" + MyComplexEnum.RATIO_2_1.str);
 		trace.push("" + MyComplexEnum.RATIO_2_1.otherName);
