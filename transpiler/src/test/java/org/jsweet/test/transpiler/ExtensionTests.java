@@ -27,11 +27,14 @@ import org.jsweet.transpiler.extension.Java2TypeScriptAdapter;
 import org.jsweet.transpiler.extension.MapAdapter;
 import org.jsweet.transpiler.extension.PrinterAdapter;
 import org.jsweet.transpiler.extension.RemoveJavaDependenciesAdapter;
+import org.jsweet.transpiler.model.ImportElement;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import source.extension.A1;
+import source.extension.A2;
 import source.extension.AnnotationTest;
 import source.extension.HelloWorldDto;
 import source.extension.HelloWorldService;
@@ -259,6 +262,95 @@ public class ExtensionTests extends AbstractTest {
 		transpile(logHandler -> {
 			logHandler.assertReportedProblems(JSweetProblem.USER_ERROR);
 		}, getSourceFile(UseOfGlobalVariable.class));
+		createTranspiler(new JSweetFactory());
+
+	}
+
+	@Test
+	public void testErasedImportAdapter() {
+		createTranspiler(new JSweetFactory() {
+			@Override
+			public PrinterAdapter createAdapter(JSweetContext context) {
+				return new PrinterAdapter(super.createAdapter(context)) {
+					{
+						addAnnotation("@Erased", A2.class.getName());
+						addAnnotation("@Erased", A1.class.getName() + ".main(..)");
+					}
+				};
+			}
+		});
+		eval((logHandler, result) -> {
+			logHandler.assertNoProblems();
+			try {
+				String generatedCode = FileUtils
+						.readFileToString(transpiler.getContext().sourceFiles[1].getTsFile());
+				Assert.assertFalse(generatedCode.contains("A2"));
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		}, getSourceFile(A2.class), getSourceFile(A1.class));
+		createTranspiler(new JSweetFactory());
+
+	}
+
+	@Test
+	public void testRemoveImportAdapter() {
+		createTranspiler(new JSweetFactory() {
+			@Override
+			public PrinterAdapter createAdapter(JSweetContext context) {
+				return new PrinterAdapter(super.createAdapter(context)) {
+					{
+						addAnnotation("@Replace('')", A1.class.getName() + ".main(..)");
+					}
+				};
+			}
+		});
+		eval((logHandler, result) -> {
+			logHandler.assertNoProblems();
+			if (transpiler.getContext().options.getModuleKind() == ModuleKind.commonjs) {
+				try {
+					String generatedCode = FileUtils
+							.readFileToString(transpiler.getContext().sourceFiles[1].getTsFile());
+					Assert.assertTrue(generatedCode.contains("A2"));
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+			}
+		}, getSourceFile(A2.class), getSourceFile(A1.class));
+
+		createTranspiler(new JSweetFactory() {
+			@Override
+			public PrinterAdapter createAdapter(JSweetContext context) {
+				return new PrinterAdapter(super.createAdapter(context)) {
+					{
+						addAnnotation("@Replace('')", A1.class.getName() + ".main(..)");
+					}
+
+					@Override
+					public String needsImport(ImportElement importElement, String qualifiedName) {
+						if (qualifiedName.startsWith(A2.class.getName())) {
+							// remove the import
+							return null;
+						} else {
+							return super.needsImport(importElement, qualifiedName);
+						}
+					}
+				};
+			}
+		});
+		eval((logHandler, result) -> {
+			logHandler.assertNoProblems();
+			if (transpiler.getContext().options.getModuleKind() == ModuleKind.commonjs) {
+				try {
+					String generatedCode = FileUtils
+							.readFileToString(transpiler.getContext().sourceFiles[1].getTsFile());
+					// it is still there because it is used in the main function body
+					Assert.assertTrue(generatedCode.contains("A2"));
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+			}
+		}, getSourceFile(A2.class), getSourceFile(A1.class));
 		createTranspiler(new JSweetFactory());
 
 	}

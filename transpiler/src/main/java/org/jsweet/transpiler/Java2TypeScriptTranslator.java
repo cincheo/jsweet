@@ -539,7 +539,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				importedClass = (ClassSymbol) importedClass.getEnclosingElement();
 			}
 
-			if (symbol != null) {
+			if (symbol != null && !context.hasAnnotationType(importedClass, JSweetConfig.ANNOTATION_ERASED)) {
 				// '@' represents a common root in case there is no common root
 				// package => pathToImportedClass cannot be null because of the
 				// common '@' root
@@ -673,14 +673,19 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					qualified = (JCFieldAccess) qualified.selected;
 				}
 				if (qualified.sym instanceof ClassSymbol) {
-					if(!JSweetConfig.GLOBALS_CLASS_NAME.equals(qualified.sym.getSimpleName().toString())) {
+					boolean globals = JSweetConfig.GLOBALS_CLASS_NAME.equals(qualified.sym.getSimpleName().toString());
+					if (!globals) {
 						importedName = qualified.name.toString();
 					}
 					ClassSymbol importedClass = (ClassSymbol) qualified.sym;
-					RequireInfo requireInfo = getRequireInfo(importedName, importedClass);
-					if (requireInfo != null) {
-						useModule(false, requireInfo.targetPackage, importDecl, requireInfo.importedName,
-								requireInfo.pathToImportedClass, null);
+					String qualId = importDecl.getQualifiedIdentifier().toString();
+					String adaptedQualId = getAdapter().needsImport(new ImportElementSupport(importDecl), qualId);
+					if (globals || adaptedQualId != null) {
+						RequireInfo requireInfo = getRequireInfo(importedName, importedClass);
+						if (requireInfo != null) {
+							useModule(false, requireInfo.targetPackage, importDecl, requireInfo.importedName,
+									requireInfo.pathToImportedClass, null);
+						}
 					}
 				}
 			}
@@ -703,6 +708,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 				@Override
 				public void scan(JCTree t) {
+					if(t instanceof JCImport) {
+						return;
+					}
 					// grab the types in overloaded method because they may use
 					// other types necessary for the instanceof implementation
 					// (see #342)
