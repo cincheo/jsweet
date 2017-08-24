@@ -3125,13 +3125,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 		String adaptedQualId = getAdapter().needsImport(new ImportElementSupport(importDecl), qualId);
 		if (adaptedQualId != null && adaptedQualId.contains(".")) {
-			if (importDecl.isStatic() && !qualId.contains("." + JSweetConfig.GLOBALS_CLASS_NAME + ".")
-					&& !qualId.contains("." + JSweetConfig.STRING_TYPES_INTERFACE_NAME + ".")) {
-				if (context.useModules) {
-					print(VAR_DECL_KEYWORD + " ").print(qualId.substring(qualId.lastIndexOf('.') + 1)).print(": any = ")
-							.print(adaptedQualId).print(";").println();
-				}
-			} else {
+			if (!(importDecl.isStatic() && !qualId.contains("." + JSweetConfig.GLOBALS_CLASS_NAME + ".")
+					&& !qualId.contains("." + JSweetConfig.STRING_TYPES_INTERFACE_NAME + "."))) {
 				String[] namePath;
 				if (context.useModules && importDecl.isStatic()) {
 					namePath = qualId.split("\\.");
