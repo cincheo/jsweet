@@ -99,13 +99,17 @@ public interface JSweetOptions {
 	 * Constant string for the 'moduleResolution' option.
 	 */
 	String moduleResolution = "moduleResolution";
-
+	/**
+	 * Constant string for the 'extraSystemPath' option.
+	 */
+	String extraSystemPath = "extraSystemPath";
+	
 	/**
 	 * All the supported options.
 	 */
 	String[] options = { bundle, noRootDirectories, sourceMap, module, encoding, enableAssertions, declaration, tsOnly,
 			ignoreDefinitions, header, disableSinglePrecisionFloats, targetVersion, tsout, dtsout, jsout, candiesJsOut,
-			moduleResolution };
+			moduleResolution, extraSystemPath };
 
 	/**
 	 * Returns the configuration from the configuration file.

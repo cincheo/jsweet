@@ -40,6 +40,7 @@ import org.jsweet.transpiler.ModuleResolution;
 import org.jsweet.transpiler.SourceFile;
 import org.jsweet.transpiler.util.ConsoleTranspilationHandler;
 import org.jsweet.transpiler.util.ErrorCountTranspilationHandler;
+import org.jsweet.transpiler.util.ProcessUtil;
 import org.jsweet.transpiler.util.Util;
 
 import com.martiansoftware.jsap.FlaggedOption;
@@ -94,7 +95,7 @@ import com.martiansoftware.jsap.stringparsers.FileStringParser;
 
   [--noRootDirectories]
         Skip the root directories (i.e. packages annotated with
-        &#64;jsweet.lang.Root) so that the generated file hierarchy starts at the
+        @jsweet.lang.Root) so that the generated file hierarchy starts at the
         root directories rather than including the entire directory structure.
 
   [--tsout <tsout>]
@@ -146,7 +147,11 @@ import com.martiansoftware.jsap.stringparsers.FileStringParser;
         at least contain the core candy.
 
   [(-m|--module) <module>]
-        The module kind (none, commonjs, amd, system or umd). (default: none)
+        The module kind (none, commonjs, amd, system, umd, es2015). (default:
+        none)
+
+  [--moduleResolution <moduleResolution>]
+        The module resolution strategy (classic, node). (default: classic)
 
   [-b|--bundle]
         Bundle up all the generated code in a single file, which can be used in
@@ -177,6 +182,9 @@ import com.martiansoftware.jsap.stringparsers.FileStringParser;
   [--targetVersion <targetVersion>]
         The EcmaScript target (JavaScript) version. Possible values: [ES3, ES5,
         ES6] (default: ES3)
+
+  [--extraSystemPath <extraSystemPath>]
+        Allows an extra path to be added to the system path.
  * </pre>
  * 
  * @author Renaud Pawlak
@@ -510,6 +518,14 @@ public class JSweetCommandLineLauncher {
 		optionArg.setRequired(false);
 		jsap.registerParameter(optionArg);
 
+		// Extra system path
+		optionArg = new FlaggedOption(JSweetOptions.extraSystemPath);
+		optionArg.setLongFlag(JSweetOptions.extraSystemPath);
+		optionArg.setHelp("Allows an extra path to be added to the system path.");
+		optionArg.setStringParser(FileStringParser.getParser());
+		optionArg.setRequired(false);
+		jsap.registerParameter(optionArg);
+
 		return jsap;
 	}
 
@@ -698,6 +714,9 @@ public class JSweetCommandLineLauncher {
 				}
 				if (jsapArgs.userSpecified("disableSinglePrecisionFloats")) {
 					transpiler.setDisableSinglePrecisionFloats(jsapArgs.getBoolean("disableSinglePrecisionFloats"));
+				}
+				if (jsapArgs.userSpecified(JSweetOptions.extraSystemPath)) {
+					ProcessUtil.addExtraPath(jsapArgs.getString(JSweetOptions.extraSystemPath));
 				}
 
 				if (tsOutputDir != null) {

@@ -352,7 +352,9 @@ public class JSweetTranspiler implements JSweetOptions {
 		if (configuration.containsKey(JSweetOptions.moduleResolution)) {
 			setModuleResolution(getConfigurationValue(JSweetOptions.moduleResolution));
 		}
-
+		if (configuration.containsKey(JSweetOptions.extraSystemPath)) {
+			ProcessUtil.addExtraPath(extraSystemPath);
+		}
 	}
 
 	private void readConfiguration() {
