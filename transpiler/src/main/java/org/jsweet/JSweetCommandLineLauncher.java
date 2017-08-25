@@ -184,7 +184,7 @@ import com.martiansoftware.jsap.stringparsers.FileStringParser;
         ES6] (default: ES3)
 
   [--extraSystemPath <extraSystemPath>]
-        Allows an extra path to be added to the system path.
+        Allow an extra path to be added to the system path.
  * </pre>
  * 
  * @author Renaud Pawlak
@@ -521,7 +521,7 @@ public class JSweetCommandLineLauncher {
 		// Extra system path
 		optionArg = new FlaggedOption(JSweetOptions.extraSystemPath);
 		optionArg.setLongFlag(JSweetOptions.extraSystemPath);
-		optionArg.setHelp("Allows an extra path to be added to the system path.");
+		optionArg.setHelp("Allow an extra path to be added to the system path.");
 		optionArg.setStringParser(FileStringParser.getParser());
 		optionArg.setRequired(false);
 		jsap.registerParameter(optionArg);
