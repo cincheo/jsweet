@@ -32,9 +32,11 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.jsweet.transpiler.EcmaScriptComplianceLevel;
 import org.jsweet.transpiler.JSweetFactory;
+import org.jsweet.transpiler.JSweetOptions;
 import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.JSweetTranspiler;
 import org.jsweet.transpiler.ModuleKind;
+import org.jsweet.transpiler.ModuleResolution;
 import org.jsweet.transpiler.SourceFile;
 import org.jsweet.transpiler.util.ConsoleTranspilationHandler;
 import org.jsweet.transpiler.util.ErrorCountTranspilationHandler;
@@ -417,8 +419,17 @@ public class JSweetCommandLineLauncher {
 		optionArg.setLongFlag("module");
 		optionArg.setShortFlag('m');
 		optionArg.setDefault("none");
-		optionArg.setHelp("The module kind (none, commonjs, amd, system or umd).");
-		optionArg.setStringParser(EnumeratedStringParser.getParser("none;commonjs;amd;system;umd"));
+		optionArg.setHelp("The module kind (none, commonjs, amd, system, umd, es2015).");
+		optionArg.setStringParser(EnumeratedStringParser.getParser("none;commonjs;amd;system;umd;es2015"));
+		optionArg.setRequired(false);
+		jsap.registerParameter(optionArg);
+
+		// Module resolution
+		optionArg = new FlaggedOption(JSweetOptions.moduleResolution);
+		optionArg.setLongFlag(JSweetOptions.moduleResolution);
+		optionArg.setDefault(ModuleResolution.classic.name());
+		optionArg.setHelp("The module resolution strategy (classic, node).");
+		optionArg.setStringParser(EnumeratedStringParser.getParser("classic;node"));
 		optionArg.setRequired(false);
 		jsap.registerParameter(optionArg);
 
@@ -655,6 +666,10 @@ public class JSweetCommandLineLauncher {
 				}
 				if (jsapArgs.userSpecified("module")) {
 					transpiler.setModuleKind(ModuleKind.valueOf(jsapArgs.getString("module")));
+				}
+				if (jsapArgs.userSpecified(JSweetOptions.moduleResolution)) {
+					transpiler.setModuleResolution(
+							ModuleResolution.valueOf(jsapArgs.getString(JSweetOptions.moduleResolution)));
 				}
 				if (jsapArgs.userSpecified("encoding")) {
 					transpiler.setEncoding(jsapArgs.getString("encoding"));

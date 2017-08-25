@@ -32,6 +32,82 @@ import org.jsweet.transpiler.extension.PrinterAdapter;
 public interface JSweetOptions {
 
 	/**
+	 * Constant string for the 'bundle' option.
+	 */
+	String bundle = "bundle";
+	/**
+	 * Constant string for the 'noRootDirectories' option.
+	 */
+	String noRootDirectories = "noRootDirectories";
+	/**
+	 * Constant string for the 'sourceMap' option.
+	 */
+	String sourceMap = "sourceMap";
+	/**
+	 * Constant string for the 'module' option.
+	 */
+	String module = "module";
+	/**
+	 * Constant string for the 'encoding' option.
+	 */
+	String encoding = "bundle";
+	/**
+	 * Constant string for the 'enableAssertions' option.
+	 */
+	String enableAssertions = "enableAssertions";
+	/**
+	 * Constant string for the 'declaration' option.
+	 */
+	String declaration = "declaration";
+	/**
+	 * Constant string for the 'tsOnly' option.
+	 */
+	String tsOnly = "tsOnly";
+	/**
+	 * Constant string for the 'ignoreDefinitions' option.
+	 */
+	String ignoreDefinitions = "ignoreDefinitions";
+	/**
+	 * Constant string for the 'header' option.
+	 */
+	String header = "header";
+	/**
+	 * Constant string for the 'disableSinglePrecisionFloats' option.
+	 */
+	String disableSinglePrecisionFloats = "disableSinglePrecisionFloats";
+	/**
+	 * Constant string for the 'targetVersion' option.
+	 */
+	String targetVersion = "targetVersion";
+	/**
+	 * Constant string for the 'tsout' option.
+	 */
+	String tsout = "tsout";
+	/**
+	 * Constant string for the 'dtsout' option.
+	 */
+	String dtsout = "dtsout";
+	/**
+	 * Constant string for the 'jsout' option.
+	 */
+	String jsout = "jsout";
+	/**
+	 * Constant string for the 'candiesJsOut' option.
+	 */
+	String candiesJsOut = "candiesJsOut";
+	/**
+	 * Constant string for the 'moduleResolution' option.
+	 */
+	String moduleResolution = "moduleResolution";
+
+	/**
+	 * All the supported options.
+	 */
+	String[] options = { bundle, noRootDirectories, sourceMap, module, encoding, enableAssertions, declaration, tsOnly,
+			ignoreDefinitions, header, disableSinglePrecisionFloats, targetVersion, tsout, dtsout, jsout, candiesJsOut,
+			moduleResolution };
+
+	/**
 	 * Returns the configuration from the configuration file.
 	 */
 	Map<String, Object> getConfiguration();
@@ -196,5 +272,15 @@ public interface JSweetOptions {
 	 * @see PrinterAdapter
 	 */
 	List<String> getAdapters();
+
+	/**
+	 * Determines how modules get resolved. Either "Node" for Node.js/io.js
+	 * style resolution, or "Classic". See Tsc's <a href=
+	 * "https://www.typescriptlang.org/docs/handbook/module-resolution.html">
+	 * Module Resolution documentation</a> for more details.
+	 * 
+	 * @return the current module resolution strategy
+	 */
+	ModuleResolution getModuleResolution();
 
 }

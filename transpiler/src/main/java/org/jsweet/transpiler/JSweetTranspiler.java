@@ -201,6 +201,7 @@ public class JSweetTranspiler implements JSweetOptions {
 	private boolean tscWatchMode = false;
 	private File[] tsDefDirs = {};
 	private ModuleKind moduleKind = ModuleKind.none;
+	private ModuleResolution moduleResolution = ModuleResolution.classic;
 	private EcmaScriptComplianceLevel ecmaTargetVersion = EcmaScriptComplianceLevel.ES3;
 	private boolean bundle = false;
 	private String encoding = null;
@@ -294,56 +295,62 @@ public class JSweetTranspiler implements JSweetOptions {
 	 * Applies the current configuration map.
 	 */
 	public void applyConfiguration() {
-		if (configuration.containsKey("bundle")) {
-			setBundle(getConfigurationValue("bundle"));
+		for (String key : configuration.keySet()) {
+			if (!ArrayUtils.contains(JSweetOptions.options, key)) {
+				logger.error("unsupported option: " + key);
+			}
 		}
-		if (configuration.containsKey("noRootDirectories")) {
-			setNoRootDirectories(getConfigurationValue("noRootDirectories"));
+		if (configuration.containsKey(JSweetOptions.bundle)) {
+			setBundle(getConfigurationValue(JSweetOptions.bundle));
 		}
-		if (configuration.containsKey("sourceMap")) {
-			setPreserveSourceLineNumbers(getConfigurationValue("sourceMap"));
+		if (configuration.containsKey(JSweetOptions.noRootDirectories)) {
+			setNoRootDirectories(getConfigurationValue(JSweetOptions.noRootDirectories));
 		}
-		if (configuration.containsKey("module")) {
-			setModuleKind(ModuleKind.valueOf(getConfigurationValue("module")));
+		if (configuration.containsKey(JSweetOptions.sourceMap)) {
+			setGenerateSourceMaps(getConfigurationValue(JSweetOptions.sourceMap));
 		}
-		if (configuration.containsKey("encoding")) {
-			setEncoding(getConfigurationValue("encoding"));
+		if (configuration.containsKey(JSweetOptions.module)) {
+			setModuleKind(ModuleKind.valueOf(getConfigurationValue(JSweetOptions.module)));
 		}
-		if (configuration.containsKey("enableAssertions")) {
-			setIgnoreAssertions(!(Boolean) getConfigurationValue("enableAssertions"));
+		if (configuration.containsKey(JSweetOptions.encoding)) {
+			setEncoding(getConfigurationValue(JSweetOptions.encoding));
 		}
-		if (configuration.containsKey("declaration")) {
-			setGenerateDeclarations(getConfigurationValue("declaration"));
+		if (configuration.containsKey(JSweetOptions.enableAssertions)) {
+			setIgnoreAssertions(!(Boolean) getConfigurationValue(JSweetOptions.enableAssertions));
 		}
-		if (configuration.containsKey("tsOnly")) {
-			setGenerateJsFiles(!(Boolean) getConfigurationValue("tsOnly"));
+		if (configuration.containsKey(JSweetOptions.declaration)) {
+			setGenerateDeclarations(getConfigurationValue(JSweetOptions.declaration));
 		}
-		if (configuration.containsKey("ignoreDefinitions")) {
-			setGenerateDefinitions(!(Boolean) getConfigurationValue("ignoreDefinitions"));
+		if (configuration.containsKey(JSweetOptions.tsOnly)) {
+			setGenerateJsFiles(!(Boolean) getConfigurationValue(JSweetOptions.tsOnly));
 		}
-		if (configuration.containsKey("header")) {
-			setHeaderFile(new File((String) getConfigurationValue("header")));
+		if (configuration.containsKey(JSweetOptions.ignoreDefinitions)) {
+			setGenerateDefinitions(!(Boolean) getConfigurationValue(JSweetOptions.ignoreDefinitions));
 		}
-		if (configuration.containsKey("disableSinglePrecisionFloats")) {
-			setGenerateDeclarations(getConfigurationValue("disableSinglePrecisionFloats"));
+		if (configuration.containsKey(JSweetOptions.header)) {
+			setHeaderFile(new File((String) getConfigurationValue(JSweetOptions.header)));
 		}
-		if (configuration.containsKey("disableSinglePrecisionFloats")) {
-			setGenerateDeclarations(getConfigurationValue("disableSinglePrecisionFloats"));
+		if (configuration.containsKey(JSweetOptions.disableSinglePrecisionFloats)) {
+			setDisableSinglePrecisionFloats(getConfigurationValue(JSweetOptions.disableSinglePrecisionFloats));
 		}
-		if (configuration.containsKey("targetVersion")) {
-			setEcmaTargetVersion(JSweetTranspiler.getEcmaTargetVersion(getConfigurationValue("targetVersion")));
+		if (configuration.containsKey(JSweetOptions.targetVersion)) {
+			setEcmaTargetVersion(
+					JSweetTranspiler.getEcmaTargetVersion(getConfigurationValue(JSweetOptions.targetVersion)));
 		}
-		if (configuration.containsKey("tsout")) {
-			setTsOutputDir(new File((String) getConfigurationValue("tsout")));
+		if (configuration.containsKey(JSweetOptions.tsout)) {
+			setTsOutputDir(new File((String) getConfigurationValue(JSweetOptions.tsout)));
 		}
-		if (configuration.containsKey("dtsout")) {
-			setDeclarationsOutputDir(new File((String) getConfigurationValue("dtsout")));
+		if (configuration.containsKey(JSweetOptions.dtsout)) {
+			setDeclarationsOutputDir(new File((String) getConfigurationValue(JSweetOptions.dtsout)));
 		}
-		if (configuration.containsKey("jsout")) {
-			setJsOutputDir(new File((String) getConfigurationValue("jsout")));
+		if (configuration.containsKey(JSweetOptions.jsout)) {
+			setJsOutputDir(new File((String) getConfigurationValue(JSweetOptions.jsout)));
 		}
-		if (configuration.containsKey("candiesJsOut")) {
-			setJsOutputDir(new File((String) getConfigurationValue("candiesJsOut")));
+		if (configuration.containsKey(JSweetOptions.candiesJsOut)) {
+			setJsOutputDir(new File((String) getConfigurationValue(JSweetOptions.candiesJsOut)));
+		}
+		if (configuration.containsKey(JSweetOptions.moduleResolution)) {
+			setModuleResolution(getConfigurationValue(JSweetOptions.moduleResolution));
 		}
 
 	}
@@ -431,7 +438,7 @@ public class JSweetTranspiler implements JSweetOptions {
 
 	public void initNode(TranspilationHandler transpilationHandler) throws Exception {
 		ProcessUtil.initNode();
-		
+
 		File initFile = new File(workingDir, ".node-init");
 		boolean initialized = initFile.exists();
 		if (!initialized) {
@@ -1323,10 +1330,8 @@ public class JSweetTranspiler implements JSweetOptions {
 			}
 		}
 
-		if (moduleKind == ModuleKind.commonjs) {
-			args.add("--moduleResolution");
-			args.add("classic");
-		}
+		args.add("--moduleResolution");
+		args.add(getModuleResolution().toString());
 
 		if (ecmaTargetVersion.ordinal() >= EcmaScriptComplianceLevel.ES5.ordinal()) {
 			args.add("--experimentalDecorators");
@@ -1725,6 +1730,19 @@ public class JSweetTranspiler implements JSweetOptions {
 	 */
 	public void setModuleKind(ModuleKind moduleKind) {
 		this.moduleKind = moduleKind;
+	}
+
+	@Override
+	public ModuleResolution getModuleResolution() {
+		return moduleResolution;
+	}
+
+	/**
+	 * Sets the module strategy when transpiling to code using JavaScript
+	 * modules.
+	 */
+	public void setModuleResolution(ModuleResolution moduleResolution) {
+		this.moduleResolution = moduleResolution;
 	}
 
 	/**
