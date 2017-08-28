@@ -2514,7 +2514,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	private void printInlinedMethod(Overload overload, JCMethodDecl method, List<? extends JCTree> args) {
 		print("{").println().startIndent();
-		printIndent().print(VAR_DECL_KEYWORD + " __args = Array.prototype.slice.call(arguments);").println();
+		if(getScope().innerClassNotStatic && getScope().constructor) {
+			// the __parent added parameter is not part of the actual arguments
+			printIndent().print(VAR_DECL_KEYWORD + " __args = Array.prototype.slice.call(arguments, [1]);").println();
+		} else {
+			printIndent().print(VAR_DECL_KEYWORD + " __args = Array.prototype.slice.call(arguments);").println();
+		}
 		for (int j = 0; j < method.getParameters().size(); j++) {
 			if (args.get(j) instanceof JCVariableDecl) {
 				if (method.getParameters().get(j).name.equals(((JCVariableDecl) args.get(j)).name)) {

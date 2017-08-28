@@ -39,6 +39,8 @@ import source.overload.OverloadWithStaticAndInstanceMethods;
 import source.overload.OverloadWithSuperclass;
 import source.overload.WithAmbients;
 import source.overload.WrongOverload;
+import source.overload.WrongOverloadConstructor;
+import source.overload.WrongOverloadConstructor2;
 import source.overload.WrongOverloadConstructorWithParamNameCollision;
 import source.overload.WrongOverloadConstructorWithVarargs;
 import source.overload.WrongOverloadFrom2Interfaces;
@@ -283,6 +285,22 @@ public class OverloadTests extends AbstractTest {
 		}, getSourceFile(source.overload.visitor2.b.A1.class), getSourceFile(source.overload.visitor2.c.A2.class),
 				getSourceFile(source.overload.visitor2.c.A3.class), getSourceFile(source.overload.visitor2.a.F1.class),
 				getSourceFile(source.overload.visitor2.a.F.class));
+	}
+
+	@Test
+	public void testWrongOverloadConstructor() {
+		eval(ModuleKind.none, (logHandler, r) -> {
+			logHandler.assertNoProblems();
+			assertEquals("1.1(24,7):1.2(6):1.3(true):2.1(24,7):2.2(6):2.3(true):3.1(24,7):3.2(6):3.3(true)",
+					r.get("trace"));
+		}, getSourceFile(WrongOverloadConstructor.class));
+	}
+
+	@Test
+	public void testWrongOverloadConstructor2() {
+		eval(ModuleKind.none, (logHandler, r) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(WrongOverloadConstructor2.class));
 	}
 
 }

@@ -25,6 +25,7 @@ import java.util.Map;
 
 import javax.lang.model.element.Modifier;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.util.AbstractTreeScanner;
 import org.jsweet.transpiler.util.Util;
@@ -99,6 +100,8 @@ public class OverloadScanner extends AbstractTreeScanner {
 		 */
 		public boolean printed = false;
 
+		private List<String> parameterNames = new ArrayList<>();
+
 		@Override
 		public String toString() {
 			StringBuilder sb = new StringBuilder(
@@ -116,6 +119,46 @@ public class OverloadScanner extends AbstractTreeScanner {
 		 */
 		public int getSmallerParameterCount() {
 			return methods.get(methods.size() - 1).getParameters().size();
+		}
+
+		/**
+		 * Gets the parameter name at the given index for an invalid overload.
+		 * 
+		 * @param index
+		 *            the parameter's index
+		 * @return a unique parameter name that reflects the overloaded
+		 *         parameter
+		 */
+		public String getParameterName(int index) {
+			return parameterNames.get(index);
+		}
+
+		private void initParameterNames() {
+			if (isValid) {
+				for (int index = 0; index < coreMethod.getParameters().length(); index++) {
+					parameterNames.add(coreMethod.getParameters().get(index).name.toString());
+				}
+			} else {
+				for (int index = 0; index < coreMethod.getParameters().length(); index++) {
+					List<String> names = new ArrayList<>();
+					for (JCMethodDecl method : methods) {
+						if (method.getParameters().length() > index) {
+							if (!names.contains(method.getParameters().get(index).name.toString())) {
+								names.add(method.getParameters().get(index).name.toString());
+							}
+						}
+					}
+					String parameterName = names.get(0);
+					for (int i = 1; i < names.size(); i++) {
+						parameterName += "Or" + StringUtils.capitalize(names.get(i));
+					}
+					int count = 2;
+					while (parameterNames.contains(parameterName)) {
+						parameterName = parameterName + (count++);
+					}
+					parameterNames.add(parameterName);
+				}
+			}
 		}
 
 		/**
@@ -248,6 +291,8 @@ public class OverloadScanner extends AbstractTreeScanner {
 					}
 				}
 			}
+			// call if used (for better naming in future releases)
+			// initParameterNames();
 		}
 
 		private static boolean hasMethodType(Types types, Overload overload, JCMethodDecl method) {
