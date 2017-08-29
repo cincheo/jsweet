@@ -20,11 +20,12 @@
  * This package contains the candies processing implementation.
  * 
  * <p>
- * The candies processor extract the candies found in the classpath. It then
- * merges the bytecode of classes that are declared as mixins. Candies jar files
- * contains the sources (for Javadoc), bytecode (for Java compiling), and the
- * original TypeScript source code for compiling with <code>tsc</code>.
+ * The candies processor extract the TypeScript definition files from the
+ * candies found in the classpath. JSweet will use the generated definitions for
+ * the phase 2 or the transpilation (TypeScript -> JavaScript) and ensure that
+ * the generated TypeScript is well-typed.
  * 
  * @author Louis Grignon
+ * @author Johann Sorel
  */
 package org.jsweet.transpiler.candy;
