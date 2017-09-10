@@ -1507,7 +1507,7 @@ Here is a more complete example with a full `jsweetconfig.json` configuration fi
     "include": [ "x.y.z" ]
   },
   // do not generate any TypeScript code for Java-specific methods
-  "@Erase": {
+  "@Erased": {
     "include": [ "**.writeObject(..)", "**.readObject(..)", "**.hashCode(..)" ]
   },
   // inject logging in all setters and getters of the x.y.z.A class

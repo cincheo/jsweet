@@ -493,4 +493,38 @@ public class TranspilerTests extends AbstractTest {
 		transpiler.setHeaderFile(null);
 	}
 
+	@Test
+	public void testConfigurationFile() {
+		SourceFile f = getSourceFile(CanvasDrawing.class);
+		File configurationFile = new File(f.getJavaFile().getParentFile(), "configuration-nobundle.json");
+		createTranspiler(configurationFile, new JSweetFactory());
+		assertTrue(transpiler.getHeaderFile().getPath().endsWith("header.txt"));
+		assertFalse(transpiler.isBundle());
+		transpile(logHandler -> {
+			logHandler.assertNoProblems();
+			try {
+				String generatedCode = FileUtils.readFileToString(f.getTsFile());
+				assertTrue(generatedCode.startsWith("// This is a test header..."));
+			} catch (Exception e) {
+				e.printStackTrace();
+				fail(e.getMessage());
+			}
+		}, f);
+		configurationFile = new File(f.getJavaFile().getParentFile(), "configuration-bundle.json");
+		createTranspiler(configurationFile, new JSweetFactory());
+		assertTrue(transpiler.getHeaderFile().getPath().endsWith("header.txt"));
+		assertTrue(transpiler.isBundle());
+		transpile(ModuleKind.none, logHandler -> {
+			logHandler.assertNoProblems();
+			try {
+				String generatedCode = FileUtils.readFileToString(f.getTsFile());
+				assertTrue(generatedCode.startsWith("// This is a test header..."));
+			} catch (Exception e) {
+				e.printStackTrace();
+				fail(e.getMessage());
+			}
+		}, f);
+		createTranspiler(new JSweetFactory());
+	}
+
 }

@@ -104,7 +104,11 @@ public class AbstractTest {
 	protected static final String TMPOUT_DIR = "tempOut";
 
 	protected static void createTranspiler(JSweetFactory factory) {
-		transpiler = new JSweetTranspiler(factory, new File(TMPOUT_DIR), null,
+		createTranspiler(null, factory);
+	}
+
+	protected static void createTranspiler(File configurationFile, JSweetFactory factory) {
+		transpiler = new JSweetTranspiler(configurationFile, factory, null, new File(TMPOUT_DIR), null,
 				new File(JSweetTranspiler.TMP_WORKING_DIR_NAME + "/candies/js"), System.getProperty("java.class.path"));
 		transpiler.setEcmaTargetVersion(EcmaScriptComplianceLevel.ES5);
 		transpiler.setEncoding("UTF-8");

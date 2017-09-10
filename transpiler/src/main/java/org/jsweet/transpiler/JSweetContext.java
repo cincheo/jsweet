@@ -904,7 +904,7 @@ public class JSweetContext extends Context {
 		footerStatements.add(0, footerStatement);
 	}
 
-	private Map<String, String> headers = new LinkedHashMap<String,String>();
+	private Map<String, String> headers = new LinkedHashMap<String, String>();
 
 	/**
 	 * Gets and clears the headers.
@@ -938,7 +938,7 @@ public class JSweetContext extends Context {
 	public String getHeader(String key) {
 		return headers.get(key);
 	}
-	
+
 	private Map<String, String> globalsMapping = new HashMap<>();
 
 	/**
@@ -1148,6 +1148,9 @@ public class JSweetContext extends Context {
 				Collection<AnnotationFilterDescriptor> filterDescriptors = annotationFilters.get(annotationType);
 				if (filterDescriptors != null) {
 					for (AnnotationFilterDescriptor filterDescriptor : filterDescriptors) {
+						if (filterDescriptor.inclusionPatterns == null) {
+							logger.error("no inclusion patterns found for annotation filter: " + annotationType);
+						}
 						for (Pattern include : filterDescriptor.inclusionPatterns) {
 							if (include.matcher(signature).matches()) {
 								boolean excluded = false;

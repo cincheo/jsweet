@@ -50,7 +50,7 @@ public interface JSweetOptions {
 	/**
 	 * Constant string for the 'encoding' option.
 	 */
-	String encoding = "bundle";
+	String encoding = "encoding";
 	/**
 	 * Constant string for the 'enableAssertions' option.
 	 */
@@ -103,7 +103,7 @@ public interface JSweetOptions {
 	 * Constant string for the 'extraSystemPath' option.
 	 */
 	String extraSystemPath = "extraSystemPath";
-	
+
 	/**
 	 * All the supported options.
 	 */
@@ -287,4 +287,10 @@ public interface JSweetOptions {
 	 */
 	ModuleResolution getModuleResolution();
 
+	/**
+	 * The configuration file, which is by default the
+	 * <code>jsweetconfig.json</code> file in the current project.
+	 */
+	File getConfigurationFile();
+	
 }

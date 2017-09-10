@@ -213,10 +213,25 @@ public class CandyProcessor {
 		return jarFilesCollector;
 	}
 
+	private String normalizeVersion(String version) {
+		if (version == null) {
+			return null;
+		}
+		String[] v = JSweetConfig.getVersionNumber().split("\\.");
+		if (v.length == 2) {
+			return version;
+		} else if (v.length == 1) {
+			return v[0] + ".0";
+		} else {
+			return v[0] + "." + v[1];
+		}
+	}
+
 	private void checkCandyVersion(CandyDescriptor candy, TranspilationHandler transpilationHandler) {
 
-		String actualTranspilerVersion = JSweetConfig.getVersionNumber().split("-")[0];
-		String candyTranspilerVersion = candy.transpilerVersion == null ? null : candy.transpilerVersion.split("-")[0];
+		String actualTranspilerVersion = normalizeVersion(JSweetConfig.getVersionNumber().split("-")[0]);
+		String candyTranspilerVersion = normalizeVersion(
+				candy.transpilerVersion == null ? null : candy.transpilerVersion.split("-")[0]);
 
 		if (candyTranspilerVersion == null || !candyTranspilerVersion.equals(actualTranspilerVersion)) {
 			transpilationHandler.report(JSweetProblem.CANDY_VERSION_DISCREPANCY, null,

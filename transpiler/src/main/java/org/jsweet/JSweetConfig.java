@@ -450,7 +450,7 @@ public abstract class JSweetConfig {
 	public static final String FIELD_METHOD_CLASH_RESOLVER_PREFIX = "__";
 
 	/**
-	 * The configuration file name.
+	 * The default configuration file name.
 	 */
 	public static final String CONFIGURATION_FILE_NAME = "jsweetconfig.json";
 
