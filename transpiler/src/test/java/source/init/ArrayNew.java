@@ -49,6 +49,23 @@ public class ArrayNew {
 		assert (int) strings3.length == 4;
 		assert strings3.$get(3) == "d";
 
+		boolean[] thing = new boolean[5];
+		for (int i = 0; i < 5; i++) {
+			thing[i] = false;
+			assert thing[i] == false;
+		}
+
+		boolean[] thing2 = new boolean[5];
+		for (int i = 0; i < 5; i++) {
+			assert thing2[i] == false;
+		}
+
+		Wrap w = new Wrap();
+		assert w.b == false;
 	}
 
+}
+
+class Wrap {
+	boolean b; // defaults to false correctly
 }

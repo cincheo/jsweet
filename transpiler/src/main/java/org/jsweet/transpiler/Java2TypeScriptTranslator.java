@@ -708,7 +708,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 				@Override
 				public void scan(JCTree t) {
-					if(t instanceof JCImport) {
+					if (t instanceof JCImport) {
 						return;
 					}
 					// grab the types in overloaded method because they may use
@@ -2514,7 +2514,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	private void printInlinedMethod(Overload overload, JCMethodDecl method, List<? extends JCTree> args) {
 		print("{").println().startIndent();
-		if(getScope().innerClassNotStatic && getScope().constructor) {
+		if (getScope().innerClassNotStatic && getScope().constructor) {
 			// the __parent added parameter is not part of the actual arguments
 			printIndent().print(VAR_DECL_KEYWORD + " __args = Array.prototype.slice.call(arguments, [1]);").println();
 		} else {
@@ -4678,30 +4678,25 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 		if (newArray.dims != null && !newArray.dims.isEmpty()) {
 			if (newArray.dims.size() == 1) {
-				if (Util.isNumber(newArray.elemtype.type)) {
-					if (newArray.dims.head instanceof JCLiteral
-							&& ((int) ((JCLiteral) newArray.dims.head).value) <= 10) {
-						boolean hasElements = false;
-						print("[");
-						for (int i = 0; i < (int) ((JCLiteral) newArray.dims.head).value; i++) {
-							print("0, ");
-							hasElements = true;
-						}
-						if (hasElements) {
-							removeLastChars(2);
-						}
-						print("]");
-					} else {
-						print("(s => { let a=[]; while(s-->0) a.push(0); return a; })(").print(newArray.dims.head)
-								.print(")");
+				if (newArray.dims.head instanceof JCLiteral && ((int) ((JCLiteral) newArray.dims.head).value) <= 10) {
+					boolean hasElements = false;
+					print("[");
+					for (int i = 0; i < (int) ((JCLiteral) newArray.dims.head).value; i++) {
+						print(Util.getTypeInitialValue(newArray.elemtype.type) + ", ");
+						hasElements = true;
 					}
+					if (hasElements) {
+						removeLastChars(2);
+					}
+					print("]");
 				} else {
-					print("new Array(").print(newArray.dims.head).print(")");
+					print("(s => { let a=[]; while(s-->0) a.push(" + Util.getTypeInitialValue(newArray.elemtype.type)
+							+ "); return a; })(").print(newArray.dims.head).print(")");
 				}
 			} else {
 				print("<any> (function(dims) { " + VAR_DECL_KEYWORD
 						+ " allocate = function(dims) { if(dims.length==0) { return "
-						+ (Util.isNumber(newArray.elemtype.type) ? "0" : "undefined") + "; } else { " + VAR_DECL_KEYWORD
+						+ Util.getTypeInitialValue(newArray.elemtype.type) + "; } else { " + VAR_DECL_KEYWORD
 						+ " array = []; for(" + VAR_DECL_KEYWORD
 						+ " i = 0; i < dims[0]; i++) { array.push(allocate(dims.slice(1))); } return array; }}; return allocate(dims);})");
 				print("([");
