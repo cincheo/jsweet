@@ -21,6 +21,10 @@ public class Strings {
 		trace.push(new String(bytes, 0, 2));
 		trace.push(new String(chars, 1, 1));
 		$export("trace", trace.join(","));
+		assert "" == new String();
+		byte[] bytes2 = { 'a', 'b', 'c' };
+		// this one is not really supported and may produce unexpected results at runtime
+		String s = new String(bytes2, 0);
 	}
 
 }
