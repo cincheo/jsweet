@@ -255,60 +255,36 @@ public class Object {
 
 	/**
 	 * Gets the value for the given key. Generates <code>this[key]</code>.
-	 * 
-	 * @see jsweet.util.Lang#$get(java.lang.String)
-	 * @see jsweet.util.Lang#$set(java.lang.String,java.lang.Object)
-	 * @see jsweet.util.Lang#$delete(java.lang.String)
 	 */
 	native public <T> T $get(java.lang.String key);
 
 	/**
 	 * Gets the value for the given key. Generates <code>this[key]</code>.
-	 * 
-	 * @see jsweet.util.Lang#$get(String)
-	 * @see jsweet.util.Lang#$set(String,java.lang.Object)
-	 * @see jsweet.util.Lang#$delete(String)
 	 */
 	native public <T> T $get(String key);
 
 	/**
 	 * Sets the value for the given key. Generates <code>this[key]=value</code>.
-	 * 
-	 * @see jsweet.util.Lang#$get(java.lang.String)
-	 * @see jsweet.util.Lang#$set(java.lang.String,java.lang.Object)
-	 * @see jsweet.util.Lang#$delete(java.lang.String)
 	 */
-	native public void $set(java.lang.String key, java.lang.Object value);
+	native public <T> T $set(java.lang.String key, T value);
 
 	/**
 	 * Sets the value for the given key. Generates <code>this[key]=value</code>.
-	 * 
-	 * @see jsweet.util.Lang#$get(String)
-	 * @see jsweet.util.Lang#$set(String,java.lang.Object)
-	 * @see jsweet.util.Lang#$delete(String)
 	 */
-	native public void $set(String key, java.lang.Object value);
+	native public <T> T $set(String key, T value);
 
 	/**
 	 * Deletes the value of the given key. Generates
 	 * <code>delete this[key]</code>.
-	 * 
-	 * @see jsweet.util.Lang#$get(java.lang.String)
-	 * @see jsweet.util.Lang#$set(java.lang.String,java.lang.Object)
-	 * @see jsweet.util.Lang#$delete(java.lang.String)
 	 */
 	native public boolean $delete(java.lang.String key);
 
 	/**
 	 * Deletes the value of the given key. Generates
 	 * <code>delete this[key]</code>.
-	 * 
-	 * @see jsweet.util.Lang#$get(String)
-	 * @see jsweet.util.Lang#$set(String,java.lang.Object)
-	 * @see jsweet.util.Lang#$delete(String)
 	 */
 	native public boolean $delete(String key);
-	
+
 	/**
 	 * A syntax macro to call super in a constructor, without the regular Java
 	 * constraints (can call super even if not the first statement).
