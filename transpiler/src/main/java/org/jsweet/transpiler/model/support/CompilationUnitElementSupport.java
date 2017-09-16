@@ -18,26 +18,32 @@
  */
 package org.jsweet.transpiler.model.support;
 
-import javax.lang.model.element.Element;
+import javax.lang.model.element.PackageElement;
 
-import org.jsweet.transpiler.model.IdentifierElement;
+import org.jsweet.transpiler.model.CompilationUnitElement;
 
-import com.sun.tools.javac.tree.JCTree.JCIdent;
+import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 
 /**
- * See {@link IdentifierElement}.
+ * See {@link CompilationUnitElement}.
  * 
  * @author Renaud Pawlak
  */
-public class IdentifierElementSupport extends ExtendedElementSupport<JCIdent> implements IdentifierElement {
+public class CompilationUnitElementSupport extends ExtendedElementSupport<JCCompilationUnit> implements CompilationUnitElement {
 
-	public IdentifierElementSupport(JCIdent tree) {
+	public CompilationUnitElementSupport(JCCompilationUnit tree) {
 		super(tree);
 	}
 
 	@Override
-	public Element getReferencedElement() {
-		return getTree().sym;
+	public PackageElement getPackage() {
+		return tree.packge;
 	}
 
+	@Override
+	public String getSourceFilePath() {
+		return tree.sourcefile.getName();
+	}
+	
+	
 }

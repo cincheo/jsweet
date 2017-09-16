@@ -34,7 +34,7 @@ import com.sun.tools.javac.tree.JCTree.JCIdent;
  * 
  * @author Renaud Pawlak
  */
-public class VariableAccessElementSupport extends ExtendedElementSupport implements VariableAccessElement {
+public class VariableAccessElementSupport extends ExtendedElementSupport<JCTree> implements VariableAccessElement {
 
 	public VariableAccessElementSupport(JCTree tree) {
 		super(tree);
@@ -62,11 +62,6 @@ public class VariableAccessElementSupport extends ExtendedElementSupport impleme
 		return getVariable().getEnclosingElement();
 	}
 
-	// @Override
-	// public Element getReferencedElement() {
-	// return getTree().sym;
-	// }
-
 	@Override
 	public String getVariableName() {
 		if (tree instanceof JCFieldAccess) {
@@ -75,10 +70,5 @@ public class VariableAccessElementSupport extends ExtendedElementSupport impleme
 			return tree.toString();
 		}
 	}
-
-	// @Override
-	// public Element getTargetElement() {
-	// return getTree().selected.type.tsym;
-	// }
 
 }

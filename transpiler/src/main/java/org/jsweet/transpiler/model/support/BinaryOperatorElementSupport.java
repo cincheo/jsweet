@@ -31,35 +31,30 @@ import com.sun.tools.javac.tree.JCTree.JCBinary;
  * 
  * @author Renaud Pawlak
  */
-public class BinaryOperatorElementSupport extends ExtendedElementSupport implements BinaryOperatorElement {
+public class BinaryOperatorElementSupport extends ExtendedElementSupport<JCBinary> implements BinaryOperatorElement {
 
 	public BinaryOperatorElementSupport(JCBinary tree) {
 		super(tree);
 	}
 
 	@Override
-	public JCBinary getTree() {
-		return (JCBinary) tree;
-	}
-
-	@Override
 	public String getOperator() {
-		return getTree().operator.getSimpleName().toString();
+		return tree.operator.getSimpleName().toString();
 	}
 
 	@Override
 	public ExecutableType getOperatorType() {
-		return (ExecutableType)getTree().operator.type;
+		return (ExecutableType)tree.operator.type;
 	}
 	
 	@Override
 	public ExtendedElement getLeftHandSide() {
-		return ExtendedElementFactory.INSTANCE.create(getTree().lhs);
+		return ExtendedElementFactory.INSTANCE.create(tree.lhs);
 	}
 
 	@Override
 	public ExtendedElement getRightHandSide() {
-		return ExtendedElementFactory.INSTANCE.create(getTree().rhs);
+		return ExtendedElementFactory.INSTANCE.create(tree.rhs);
 	}
 	
 }

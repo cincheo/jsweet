@@ -45,5 +45,42 @@ public interface Util {
 	 * Tells if the given element is part of the transpiled sources.
 	 */
 	boolean isSourceElement(Element element);
+
+	/**
+	 * Gets the source file path if any.
+	 * 
+	 * @see #isSourceElement(Element)
+	 */
+	String getSourceFilePath(Element element);
+
+	/**
+	 * Gets the relative path that links the two given paths.
+	 * 
+	 * <pre>
+	 * assertEquals("../c", getRelativePath("/a/b", "/a/c"));
+	 * assertEquals("..", getRelativePath("/a/b", "/a"));
+	 * assertEquals("../e", getRelativePath("/a/b/c", "/a/b/e"));
+	 * assertEquals("d", getRelativePath("/a/b/c", "/a/b/c/d"));
+	 * assertEquals("d/e", getRelativePath("/a/b/c", "/a/b/c/d/e"));
+	 * assertEquals("../../../d/e/f", getRelativePath("/a/b/c", "/d/e/f"));
+	 * assertEquals("../..", getRelativePath("/a/b/c", "/a"));
+	 * assertEquals("..", getRelativePath("/a/b/c", "/a/b"));
+	 * </pre>
+	 * 
+	 * <p>
+	 * Thanks to:
+	 * http://mrpmorris.blogspot.com/2007/05/convert-absolute-path-to-relative-
+	 * path.html
+	 * 
+	 * <p>
+	 * Bug fix: Renaud Pawlak
+	 * 
+	 * @param fromPath
+	 *            the path to start from
+	 * @param toPath
+	 *            the path to reach
+	 */
+	String getRelativePath(String fromPath, String toPath);
+	
 	
 }

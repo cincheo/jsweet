@@ -29,15 +29,10 @@ import com.sun.tools.javac.tree.JCTree.JCImport;
  * 
  * @author Renaud Pawlak
  */
-public class ImportElementSupport extends ExtendedElementSupport implements ImportElement {
+public class ImportElementSupport extends ExtendedElementSupport<JCImport> implements ImportElement {
 
 	public ImportElementSupport(JCImport tree) {
 		super(tree);
-	}
-
-	@Override
-	public JCImport getTree() {
-		return (JCImport) tree;
 	}
 
 	@Override

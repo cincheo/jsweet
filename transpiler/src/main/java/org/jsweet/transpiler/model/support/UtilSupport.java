@@ -121,4 +121,15 @@ public class UtilSupport implements Util {
 	public boolean isSourceElement(Element element) {
 		return org.jsweet.transpiler.util.Util.isSourceElement(element);
 	}
+
+	@Override
+	public String getSourceFilePath(Element element) {
+		return org.jsweet.transpiler.util.Util.getSourceFilePath(element);
+	}
+
+	@Override
+	public String getRelativePath(String fromPath, String toPath) {
+		return org.jsweet.transpiler.util.Util.getRelativePath(fromPath, toPath);
+	}
+	
 }

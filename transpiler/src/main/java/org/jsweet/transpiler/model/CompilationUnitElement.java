@@ -16,28 +16,25 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jsweet.transpiler.model.support;
+package org.jsweet.transpiler.model;
 
-import javax.lang.model.element.Element;
-
-import org.jsweet.transpiler.model.IdentifierElement;
-
-import com.sun.tools.javac.tree.JCTree.JCIdent;
+import javax.lang.model.element.PackageElement;
 
 /**
- * See {@link IdentifierElement}.
+ * This element corresponds to a source file that contains the compiled source code.
  * 
  * @author Renaud Pawlak
  */
-public class IdentifierElementSupport extends ExtendedElementSupport<JCIdent> implements IdentifierElement {
+public interface CompilationUnitElement {
 
-	public IdentifierElementSupport(JCIdent tree) {
-		super(tree);
-	}
+	/**
+	 * Gets the path of the source file represented by this compilation unit.
+	 */
+	String getSourceFilePath();
 
-	@Override
-	public Element getReferencedElement() {
-		return getTree().sym;
-	}
+	/**
+	 * Gets the package of this compilation unit.
+	 */
+	PackageElement getPackage();
 
 }

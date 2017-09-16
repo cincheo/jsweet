@@ -31,15 +31,10 @@ import com.sun.tools.javac.tree.JCTree.JCEnhancedForLoop;
  * 
  * @author Renaud Pawlak
  */
-public class ForeachLoopElementSupport extends ExtendedElementSupport implements ForeachLoopElement {
+public class ForeachLoopElementSupport extends ExtendedElementSupport<JCEnhancedForLoop> implements ForeachLoopElement {
 
 	public ForeachLoopElementSupport(JCEnhancedForLoop tree) {
 		super(tree);
-	}
-
-	@Override
-	public JCEnhancedForLoop getTree() {
-		return (JCEnhancedForLoop) tree;
 	}
 
 	@Override

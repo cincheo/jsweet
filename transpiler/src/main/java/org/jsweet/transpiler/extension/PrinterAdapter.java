@@ -29,19 +29,23 @@ import java.util.stream.Collectors;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 
+import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetOptions;
 import org.jsweet.transpiler.JSweetProblem;
+import org.jsweet.transpiler.ModuleImportDescriptor;
 import org.jsweet.transpiler.model.ArrayAccessElement;
 import org.jsweet.transpiler.model.AssignmentElement;
 import org.jsweet.transpiler.model.BinaryOperatorElement;
 import org.jsweet.transpiler.model.CaseElement;
+import org.jsweet.transpiler.model.CompilationUnitElement;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.ForeachLoopElement;
 import org.jsweet.transpiler.model.IdentifierElement;
@@ -55,6 +59,9 @@ import org.jsweet.transpiler.model.support.ExtendedElementSupport;
 import org.jsweet.transpiler.model.support.MethodInvocationElementSupport;
 import org.jsweet.transpiler.model.support.UtilSupport;
 import org.jsweet.transpiler.util.AbstractTreePrinter;
+
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import com.sun.tools.javac.code.Symbol.PackageSymbol;
 
 /**
  * A printer adapter, which can be overridden to change the default printer
@@ -396,7 +403,7 @@ public class PrinterAdapter {
 	 * Prints a generic element by delegating to the printer.
 	 */
 	public PrinterAdapter print(ExtendedElement element) {
-		printer.print(((ExtendedElementSupport) element).getTree());
+		printer.print(((ExtendedElementSupport<?>) element).getTree());
 		return this;
 	}
 
@@ -429,7 +436,7 @@ public class PrinterAdapter {
 	 */
 	public PrinterAdapter printArgList(List<? extends ExtendedElement> args) {
 		printer.printArgList(null,
-				args.stream().map(a -> ((ExtendedElementSupport) a).getTree()).collect(Collectors.toList()));
+				args.stream().map(a -> ((ExtendedElementSupport<?>) a).getTree()).collect(Collectors.toList()));
 		return this;
 	}
 
@@ -573,7 +580,7 @@ public class PrinterAdapter {
 	 *            the parameters if any
 	 */
 	protected void report(ExtendedElement element, JSweetProblem problem, Object... params) {
-		printer.report(((ExtendedElementSupport) element).getTree(), problem, params);
+		printer.report(((ExtendedElementSupport<?>) element).getTree(), problem, params);
 	}
 
 	/**
@@ -589,7 +596,7 @@ public class PrinterAdapter {
 	 *            the parameters if any
 	 */
 	protected void report(ExtendedElement element, Name name, JSweetProblem problem, Object... params) {
-		printer.report(((ExtendedElementSupport) element).getTree(), (com.sun.tools.javac.util.Name) name, problem,
+		printer.report(((ExtendedElementSupport<?>) element).getTree(), (com.sun.tools.javac.util.Name) name, problem,
 				params);
 	}
 
@@ -721,6 +728,55 @@ public class PrinterAdapter {
 				? (importElement.getImportedType() == null ? null
 						: getRootRelativeName(importElement.getImportedType()))
 				: parentAdapter.needsImport(importElement, qualifiedName);
+	}
+
+	/**
+	 * This method implements the default behavior to generate module imports.
+	 * It may be overridden by subclasses to implement specific behaviors.
+	 * 
+	 * @param currentCompilationUnit
+	 *            the currently transpiled compilation unit
+	 * @param importedName
+	 *            the name to be imported
+	 * @param importedClass
+	 *            the class being imported
+	 * @return a {@link ModuleImportDescriptor} instance that will be used to
+	 *         generate the TypeScript import statement
+	 */
+	public ModuleImportDescriptor getModuleImportDescriptor(CompilationUnitElement currentCompilationUnit,
+			String importedName, TypeElement importedClass) {
+		if (util().isSourceElement(importedClass)
+				&& !importedClass.getQualifiedName().toString().startsWith(JSweetConfig.LIBS_PACKAGE + ".")) {
+			String importedModule = util().getSourceFilePath(importedClass);
+			if (importedModule.equals(currentCompilationUnit.getSourceFilePath())) {
+				return null;
+			}
+			Element parent = importedClass.getEnclosingElement();
+			while (!(parent instanceof PackageSymbol)) {
+				importedName = parent.getSimpleName().toString();
+				parent = parent.getEnclosingElement();
+			}
+			while (importedClass.getEnclosingElement() instanceof ClassSymbol) {
+				importedClass = (ClassSymbol) importedClass.getEnclosingElement();
+			}
+
+			if (parent != null && !hasAnnotationType(importedClass, JSweetConfig.ANNOTATION_ERASED)) {
+				// '@' represents a common root in case there is no common root
+				// package => pathToImportedClass cannot be null because of the
+				// common '@' root
+				String pathToImportedClass = util().getRelativePath(
+						"@/" + currentCompilationUnit.getPackage().toString().replace('.', '/'),
+						"@/" + importedClass.toString().replace('.', '/'));
+				if (!pathToImportedClass.startsWith(".")) {
+					pathToImportedClass = "./" + pathToImportedClass;
+				}
+
+				return new ModuleImportDescriptor((PackageElement) parent, importedName,
+						pathToImportedClass.replace('\\', '/'));
+			}
+		}
+		return null;
+
 	}
 
 	/**

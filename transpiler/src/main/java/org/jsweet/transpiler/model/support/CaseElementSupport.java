@@ -27,15 +27,10 @@ import com.sun.tools.javac.tree.JCTree.JCCase;
  * 
  * @author Renaud Pawlak
  */
-public class CaseElementSupport extends ExtendedElementSupport implements CaseElement {
+public class CaseElementSupport extends ExtendedElementSupport<JCCase> implements CaseElement {
 
 	public CaseElementSupport(JCCase tree) {
 		super(tree);
-	}
-
-	@Override
-	public JCCase getTree() {
-		return (JCCase) tree;
 	}
 
 }

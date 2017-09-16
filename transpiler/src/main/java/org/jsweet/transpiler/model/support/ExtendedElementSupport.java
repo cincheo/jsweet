@@ -33,14 +33,14 @@ import com.sun.tools.javac.tree.JCTree.JCExpression;
  * 
  * @author Renaud Pawlak
  */
-public class ExtendedElementSupport implements ExtendedElement {
+public class ExtendedElementSupport<T extends JCTree> implements ExtendedElement {
 
-	protected JCTree tree;
+	protected T tree;
 
 	/**
 	 * Creates an extended element, wrapping the given javac tree node.
 	 */
-	public ExtendedElementSupport(JCTree tree) {
+	public ExtendedElementSupport(T tree) {
 		super();
 		this.tree = tree;
 	}
@@ -48,7 +48,7 @@ public class ExtendedElementSupport implements ExtendedElement {
 	/**
 	 * Returns the wrapped javac tree node.
 	 */
-	public JCTree getTree() {
+	public T getTree() {
 		return tree;
 	}
 

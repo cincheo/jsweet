@@ -24,6 +24,7 @@ import org.jsweet.transpiler.model.support.ArrayAccessElementSupport;
 import org.jsweet.transpiler.model.support.AssignmentElementSupport;
 import org.jsweet.transpiler.model.support.BinaryOperatorElementSupport;
 import org.jsweet.transpiler.model.support.CaseElementSupport;
+import org.jsweet.transpiler.model.support.CompilationUnitElementSupport;
 import org.jsweet.transpiler.model.support.ExtendedElementSupport;
 import org.jsweet.transpiler.model.support.ForeachLoopElementSupport;
 import org.jsweet.transpiler.model.support.IdentifierElementSupport;
@@ -40,6 +41,7 @@ import com.sun.tools.javac.tree.JCTree.JCArrayAccess;
 import com.sun.tools.javac.tree.JCTree.JCAssign;
 import com.sun.tools.javac.tree.JCTree.JCBinary;
 import com.sun.tools.javac.tree.JCTree.JCCase;
+import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCEnhancedForLoop;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
@@ -72,7 +74,7 @@ public class ExtendedElementFactory {
 	 */
 	@SuppressWarnings("unchecked")
 	public static <T extends JCTree> T toTree(ExtendedElement element) {
-		return (T) ((ExtendedElementSupport) element).getTree();
+		return ((ExtendedElementSupport<T>) element).getTree();
 	}
 
 	/**
@@ -95,7 +97,7 @@ public class ExtendedElementFactory {
 			if (((JCFieldAccess) tree).sym instanceof VariableElement) {
 				return new VariableAccessElementSupport(tree);
 			} else {
-				return new ExtendedElementSupport(tree);
+				return new ExtendedElementSupport<>(tree);
 			}
 		case NEWCLASS:
 			return new NewClassElementSupport((JCNewClass) tree);
@@ -119,6 +121,8 @@ public class ExtendedElementFactory {
 			return new AssignmentElementSupport((JCAssign) tree);
 		case IMPORT:
 			return new ImportElementSupport((JCImport) tree);
+		case TOPLEVEL:
+			return new CompilationUnitElementSupport((JCCompilationUnit) tree);
 		case AND:
 		case OR:
 		case BITAND:
@@ -144,7 +148,7 @@ public class ExtendedElementFactory {
 		case POSTINC:
 			return new UnaryOperatorElementSupport((JCUnary) tree);
 		default:
-			return new ExtendedElementSupport(tree);
+			return new ExtendedElementSupport<>(tree);
 		}
 	}
 

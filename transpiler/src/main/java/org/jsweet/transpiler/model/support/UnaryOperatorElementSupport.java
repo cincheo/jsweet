@@ -31,30 +31,25 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
  * 
  * @author Renaud Pawlak
  */
-public class UnaryOperatorElementSupport extends ExtendedElementSupport implements UnaryOperatorElement {
+public class UnaryOperatorElementSupport extends ExtendedElementSupport<JCUnary> implements UnaryOperatorElement {
 
 	public UnaryOperatorElementSupport(JCUnary tree) {
 		super(tree);
 	}
 
 	@Override
-	public JCUnary getTree() {
-		return (JCUnary) tree;
-	}
-
-	@Override
 	public String getOperator() {
-		return getTree().operator.getSimpleName().toString();
+		return tree.operator.getSimpleName().toString();
 	}
 
 	@Override
 	public ExecutableType getOperatorType() {
-		return (ExecutableType) getTree().operator.type;
+		return (ExecutableType) tree.operator.type;
 	}
 
 	@Override
 	public ExtendedElement getArgument() {
-		return ExtendedElementFactory.INSTANCE.create(getTree().arg);
+		return ExtendedElementFactory.INSTANCE.create(tree.arg);
 	}
 
 }

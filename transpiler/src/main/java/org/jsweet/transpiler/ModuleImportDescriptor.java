@@ -16,28 +16,45 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jsweet.transpiler.model.support;
+package org.jsweet.transpiler;
 
-import javax.lang.model.element.Element;
-
-import org.jsweet.transpiler.model.IdentifierElement;
-
-import com.sun.tools.javac.tree.JCTree.JCIdent;
+import javax.lang.model.element.PackageElement;
 
 /**
- * See {@link IdentifierElement}.
+ * This class describes a module import.
  * 
  * @author Renaud Pawlak
  */
-public class IdentifierElementSupport extends ExtendedElementSupport<JCIdent> implements IdentifierElement {
-
-	public IdentifierElementSupport(JCIdent tree) {
-		super(tree);
+public class ModuleImportDescriptor {
+	public ModuleImportDescriptor(PackageElement targetPackage, String importedName, String pathToImportedClass) {
+		super();
+		this.targetPackage = targetPackage;
+		this.importedName = importedName;
+		this.pathToImportedClass = pathToImportedClass;
 	}
 
-	@Override
-	public Element getReferencedElement() {
-		return getTree().sym;
+	private PackageElement targetPackage;
+	private String importedName;
+	private String pathToImportedClass;
+
+	/**
+	 * Gets the package of the element being imported.
+	 */
+	public PackageElement getTargetPackage() {
+		return targetPackage;
 	}
 
+	/**
+	 * Gets the name of the import.
+	 */
+	public String getImportedName() {
+		return importedName;
+	}
+
+	/**
+	 * Gets the path to the imported class.
+	 */
+	public String getPathToImportedClass() {
+		return pathToImportedClass;
+	}
 }

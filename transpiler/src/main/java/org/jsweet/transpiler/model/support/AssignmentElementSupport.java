@@ -30,15 +30,10 @@ import com.sun.tools.javac.tree.JCTree.JCAssign;
  * 
  * @author Renaud Pawlak
  */
-public class AssignmentElementSupport extends ExtendedElementSupport implements AssignmentElement {
+public class AssignmentElementSupport extends ExtendedElementSupport<JCAssign> implements AssignmentElement {
 
 	public AssignmentElementSupport(JCAssign tree) {
 		super(tree);
-	}
-
-	@Override
-	public JCAssign getTree() {
-		return (JCAssign) tree;
 	}
 
 	@Override

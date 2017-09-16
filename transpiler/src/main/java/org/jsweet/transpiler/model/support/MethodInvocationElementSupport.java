@@ -37,44 +37,39 @@ import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
  * 
  * @author Renaud Pawlak
  */
-public class MethodInvocationElementSupport extends ExtendedElementSupport implements MethodInvocationElement {
+public class MethodInvocationElementSupport extends ExtendedElementSupport<JCMethodInvocation> implements MethodInvocationElement {
 
 	public MethodInvocationElementSupport(JCMethodInvocation tree) {
 		super(tree);
 	}
 
-	@Override
-	public JCMethodInvocation getTree() {
-		return (JCMethodInvocation) tree;
-	}
-
 	public List<ExtendedElement> getArguments() {
-		return getTree().args.stream().map(a -> ExtendedElementFactory.INSTANCE.create(a)).collect(Collectors.toList());
+		return tree.args.stream().map(a -> ExtendedElementFactory.INSTANCE.create(a)).collect(Collectors.toList());
 	}
 
 	@Override
 	public int getArgumentCount() {
-		return getTree().args.size();
+		return tree.args.size();
 	}
 
 	@Override
 	public List<ExtendedElement> getArgumentTail() {
-		return getTree().args.tail.stream().map(a -> ExtendedElementFactory.INSTANCE.create(a))
+		return tree.args.tail.stream().map(a -> ExtendedElementFactory.INSTANCE.create(a))
 				.collect(Collectors.toList());
 	}
 
 	@Override
 	public ExtendedElement getArgument(int i) {
-		return ExtendedElementFactory.INSTANCE.create(getTree().args.get(i));
+		return ExtendedElementFactory.INSTANCE.create(tree.args.get(i));
 	}
 
 	@Override
 	public String getMethodName() {
-		JCTree tree = getTree().meth;
-		if (tree instanceof JCIdent) {
-			return tree.toString();
-		} else if (tree instanceof JCFieldAccess) {
-			return ((JCFieldAccess) tree).name.toString();
+		JCTree methTree = tree.meth;
+		if (methTree instanceof JCIdent) {
+			return methTree.toString();
+		} else if (methTree instanceof JCFieldAccess) {
+			return ((JCFieldAccess) methTree).name.toString();
 		} else {
 			return null;
 		}
@@ -82,11 +77,11 @@ public class MethodInvocationElementSupport extends ExtendedElementSupport imple
 
 	@Override
 	public ExecutableElement getMethod() {
-		JCTree tree = getTree().meth;
-		if (tree instanceof JCIdent) {
-			return (ExecutableElement) ((JCIdent) tree).sym;
-		} else if (tree instanceof JCFieldAccess) {
-			return (ExecutableElement) ((JCFieldAccess) tree).sym;
+		JCTree methTree = tree.meth;
+		if (methTree instanceof JCIdent) {
+			return (ExecutableElement) ((JCIdent) methTree).sym;
+		} else if (methTree instanceof JCFieldAccess) {
+			return (ExecutableElement) ((JCFieldAccess) methTree).sym;
 		} else {
 			return null;
 		}
@@ -94,9 +89,9 @@ public class MethodInvocationElementSupport extends ExtendedElementSupport imple
 
 	@Override
 	public ExtendedElement getTargetExpression() {
-		JCTree tree = getTree().meth;
-		if (tree instanceof JCFieldAccess) {
-			return ExtendedElementFactory.INSTANCE.create(((JCFieldAccess) tree).selected);
+		JCTree methTree = tree.meth;
+		if (methTree instanceof JCFieldAccess) {
+			return ExtendedElementFactory.INSTANCE.create(((JCFieldAccess) methTree).selected);
 		} else {
 			return null;
 		}

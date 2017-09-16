@@ -32,29 +32,24 @@ import com.sun.tools.javac.tree.JCTree.JCNewArray;
  * 
  * @author Renaud Pawlak
  */
-public class NewArrayElementSupport extends ExtendedElementSupport implements NewArrayElement {
+public class NewArrayElementSupport extends ExtendedElementSupport<JCNewArray> implements NewArrayElement {
 
 	public NewArrayElementSupport(JCNewArray tree) {
 		super(tree);
 	}
 
-	@Override
-	public JCNewArray getTree() {
-		return (JCNewArray) tree;
-	}
-
 	public List<ExtendedElement> getDimensions() {
-		return getTree().getDimensions().stream().map(a -> ExtendedElementFactory.INSTANCE.create(a)).collect(Collectors.toList());
+		return tree.getDimensions().stream().map(a -> ExtendedElementFactory.INSTANCE.create(a)).collect(Collectors.toList());
 	}
 
 	@Override
 	public int getDimensionCount() {
-		return getTree().getDimensions().size();
+		return tree.getDimensions().size();
 	}
 
 	@Override
 	public ExtendedElement getDimension(int i) {
-		return ExtendedElementFactory.INSTANCE.create(getTree().getDimensions().get(i));
+		return ExtendedElementFactory.INSTANCE.create(tree.getDimensions().get(i));
 	}
 
 	

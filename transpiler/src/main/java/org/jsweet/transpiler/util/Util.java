@@ -122,6 +122,24 @@ public class Util {
 	}
 
 	/**
+	 * Gets the source file path of the given element.
+	 */
+	public static String getSourceFilePath(Element element) {
+		if (element == null || element instanceof PackageSymbol) {
+			return null;
+		}
+		if (element instanceof ClassSymbol) {
+			ClassSymbol clazz = (ClassSymbol) element;
+			// hack to know if it is a source file or a class file
+			if (clazz.sourcefile != null
+					&& clazz.sourcefile.getClass().getName().equals("com.sun.tools.javac.file.RegularFileObject")) {
+				return clazz.sourcefile.getName();
+			}
+		}
+		return getSourceFilePath(element);
+	}
+
+	/**
 	 * Gets the tree that corresponds to the given element (this is a slow
 	 * implementation - do not use intensively).
 	 * 
@@ -367,8 +385,8 @@ public class Util {
 		if (typeSymbol.getEnclosedElements() != null) {
 			for (Element element : typeSymbol.getEnclosedElements()) {
 				if ((element instanceof MethodSymbol) && (methodName.equals(element.getSimpleName().toString())
-						|| ((MethodSymbol) element).getKind() == ElementKind.CONSTRUCTOR
-								&& ("this".equals(methodName) /*|| "super".equals(methodName)*/))) {
+						|| ((MethodSymbol) element).getKind() == ElementKind.CONSTRUCTOR && ("this".equals(
+								methodName) /* || "super".equals(methodName) */))) {
 					MethodSymbol methodSymbol = (MethodSymbol) element;
 					if (methodType == null) {
 						return methodSymbol;

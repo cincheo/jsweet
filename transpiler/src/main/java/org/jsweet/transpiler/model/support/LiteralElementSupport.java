@@ -27,15 +27,10 @@ import com.sun.tools.javac.tree.JCTree.JCLiteral;
  * 
  * @author Renaud Pawlak
  */
-public class LiteralElementSupport extends ExtendedElementSupport implements LiteralElement {
+public class LiteralElementSupport extends ExtendedElementSupport<JCLiteral> implements LiteralElement {
 
 	public LiteralElementSupport(JCLiteral tree) {
 		super(tree);
-	}
-
-	@Override
-	public JCLiteral getTree() {
-		return (JCLiteral) tree;
 	}
 
 	public Object getValue() {

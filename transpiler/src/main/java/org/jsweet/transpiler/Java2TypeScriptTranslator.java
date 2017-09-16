@@ -50,6 +50,8 @@ import java.util.stream.Collectors;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.PackageElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
@@ -66,6 +68,7 @@ import org.jsweet.transpiler.model.support.ArrayAccessElementSupport;
 import org.jsweet.transpiler.model.support.AssignmentElementSupport;
 import org.jsweet.transpiler.model.support.BinaryOperatorElementSupport;
 import org.jsweet.transpiler.model.support.CaseElementSupport;
+import org.jsweet.transpiler.model.support.CompilationUnitElementSupport;
 import org.jsweet.transpiler.model.support.ExtendedElementSupport;
 import org.jsweet.transpiler.model.support.ForeachLoopElementSupport;
 import org.jsweet.transpiler.model.support.ImportElementSupport;
@@ -451,12 +454,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	private PackageSymbol topLevelPackage;
 
-	private void useModule(boolean require, PackageSymbol targetPackage, JCTree sourceTree, String targetName,
+	private void useModule(boolean require, PackageElement targetPackage, JCTree sourceTree, String targetName,
 			String moduleName, Symbol sourceElement) {
 		if (context.useModules) {
-			context.packageDependencies.add(targetPackage);
+			context.packageDependencies.add((PackageSymbol) targetPackage);
 			context.packageDependencies.add(compilationUnit.packge);
-			context.packageDependencies.addEdge(compilationUnit.packge, targetPackage);
+			context.packageDependencies.addEdge(compilationUnit.packge, (PackageSymbol) targetPackage);
 		}
 		context.registerUsedModule(moduleName);
 		Set<String> importedNames = context.getImportedNames(compilationUnit.getSourceFile().getName());
@@ -510,50 +513,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		return checkRootPackageParent(topLevel, rootPackage, (PackageSymbol) parentPackage.owner);
 	}
 
-	private class RequireInfo {
-		public RequireInfo(PackageSymbol targetPackage, String importedName, String pathToImportedClass) {
-			super();
-			this.targetPackage = targetPackage;
-			this.importedName = importedName;
-			this.pathToImportedClass = pathToImportedClass;
-		}
-
-		public PackageSymbol targetPackage;
-		public String importedName;
-		public String pathToImportedClass;
-	}
-
-	private RequireInfo getRequireInfo(String importedName, ClassSymbol importedClass) {
-		if (Util.isSourceElement(importedClass)
-				&& !importedClass.getQualifiedName().toString().startsWith(JSweetConfig.LIBS_PACKAGE + ".")) {
-			String importedModule = importedClass.sourcefile.getName();
-			if (importedModule.equals(compilationUnit.sourcefile.getName())) {
-				return null;
-			}
-			Symbol symbol = importedClass.getEnclosingElement();
-			while (!(symbol instanceof PackageSymbol)) {
-				importedName = symbol.getSimpleName().toString();
-				symbol = symbol.getEnclosingElement();
-			}
-			while (importedClass.getEnclosingElement() instanceof ClassSymbol) {
-				importedClass = (ClassSymbol) importedClass.getEnclosingElement();
-			}
-
-			if (symbol != null && !context.hasAnnotationType(importedClass, JSweetConfig.ANNOTATION_ERASED)) {
-				// '@' represents a common root in case there is no common root
-				// package => pathToImportedClass cannot be null because of the
-				// common '@' root
-				String pathToImportedClass = Util.getRelativePath(
-						"@/" + compilationUnit.packge.toString().replace('.', '/'),
-						"@/" + importedClass.toString().replace('.', '/'));
-				if (!pathToImportedClass.startsWith(".")) {
-					pathToImportedClass = "./" + pathToImportedClass;
-				}
-
-				return new RequireInfo((PackageSymbol) symbol, importedName, pathToImportedClass.replace('\\', '/'));
-			}
-		}
-		return null;
+	private ModuleImportDescriptor getModuleImportDescriptor(String importedName, TypeElement importedClass) {
+		return getAdapter().getModuleImportDescriptor(new CompilationUnitElementSupport(compilationUnit), importedName,
+				importedClass);
 	}
 
 	/**
@@ -681,10 +643,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					String qualId = importDecl.getQualifiedIdentifier().toString();
 					String adaptedQualId = getAdapter().needsImport(new ImportElementSupport(importDecl), qualId);
 					if (globals || adaptedQualId != null) {
-						RequireInfo requireInfo = getRequireInfo(importedName, importedClass);
-						if (requireInfo != null) {
-							useModule(false, requireInfo.targetPackage, importDecl, requireInfo.importedName,
-									requireInfo.pathToImportedClass, null);
+						ModuleImportDescriptor moduleImport = getModuleImportDescriptor(importedName, importedClass);
+						if (moduleImport != null) {
+							useModule(false, moduleImport.getTargetPackage(), importDecl, moduleImport.getImportedName(),
+									moduleImport.getPathToImportedClass(), null);
 						}
 					}
 				}
@@ -696,10 +658,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 				private void checkType(TypeSymbol type) {
 					if (type instanceof ClassSymbol) {
-						RequireInfo requireInfo = getRequireInfo(type.getSimpleName().toString(), (ClassSymbol) type);
-						if (requireInfo != null) {
-							useModule(false, requireInfo.targetPackage, null, requireInfo.importedName,
-									requireInfo.pathToImportedClass, null);
+						ModuleImportDescriptor moduleImport = getModuleImportDescriptor(type.getSimpleName().toString(),
+								(ClassSymbol) type);
+						if (moduleImport != null) {
+							useModule(false, moduleImport.getTargetPackage(), null, moduleImport.getImportedName(),
+									moduleImport.getPathToImportedClass(), null);
 						}
 					}
 				}

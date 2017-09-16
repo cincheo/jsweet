@@ -29,15 +29,10 @@ import com.sun.tools.javac.tree.JCTree.JCArrayAccess;
  * 
  * @author Renaud Pawlak
  */
-public class ArrayAccessElementSupport extends ExtendedElementSupport implements ArrayAccessElement {
+public class ArrayAccessElementSupport extends ExtendedElementSupport<JCArrayAccess> implements ArrayAccessElement {
 
 	public ArrayAccessElementSupport(JCArrayAccess tree) {
 		super(tree);
-	}
-
-	@Override
-	public JCArrayAccess getTree() {
-		return (JCArrayAccess) tree;
 	}
 
 	@Override
