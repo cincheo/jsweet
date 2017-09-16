@@ -2,6 +2,7 @@ package org.jsweet.test.transpiler;
 
 import static org.junit.Assert.assertEquals;
 
+import org.jsweet.transpiler.ModuleKind;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -10,6 +11,7 @@ import source.nativestructures.Collections;
 import source.nativestructures.Dates;
 import source.nativestructures.Exceptions;
 import source.nativestructures.ExtendsJDK;
+import source.nativestructures.ExtendsJDKInterface;
 import source.nativestructures.Input;
 import source.nativestructures.Maps;
 import source.nativestructures.NativeArrays;
@@ -168,6 +170,13 @@ public class NativeStructuresTests extends AbstractTest {
 		eval((logHandler, result) -> {
 			logHandler.assertNoProblems();
 		}, getSourceFile(ExtendsJDK.class));
+	}
+
+	@Test
+	public void testExtendsJDKInterface() {
+		eval(ModuleKind.none, (logHandler, result) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(ExtendsJDKInterface.class));
 	}
 
 }

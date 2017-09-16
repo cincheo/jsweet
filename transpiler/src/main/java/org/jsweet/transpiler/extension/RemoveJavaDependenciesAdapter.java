@@ -47,6 +47,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
@@ -125,6 +126,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		extTypesMapping.put(Vector.class.getName(), "Array");
 		extTypesMapping.put(Enumeration.class.getName(), "any");
 		extTypesMapping.put(Iterator.class.getName(), "any");
+		extTypesMapping.put(ListIterator.class.getName(), "any");
 		extTypesMapping.put(Map.class.getName(), "any");
 		extTypesMapping.put(Properties.class.getName(), "any");
 		extTypesMapping.put(AbstractMap.class.getName(), "any");
@@ -1173,6 +1175,11 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			print(invocation.getTargetExpression(), delegate).print(")");
 			return true;
 		case "iterator":
+			printMacroName(targetMethodName);
+			print("((a) => { var i = 0; return { next: function() { return i<a.length?a[i++]:null; }, hasNext: function() { return i<a.length; }}})(");
+			print(invocation.getTargetExpression(), delegate).print(")");
+			return true;
+		case "listIterator":
 			printMacroName(targetMethodName);
 			print("((a) => { var i = 0; return { next: function() { return i<a.length?a[i++]:null; }, hasNext: function() { return i<a.length; }}})(");
 			print(invocation.getTargetExpression(), delegate).print(")");
