@@ -1056,13 +1056,15 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		case "remove":
 		case "removeElement":
 			printMacroName(targetMethodName);
-			if (Util.isNumber(invocation.getArgument(0).getType())) {
+			if (Util.isNumber(invocation.getArgument(0).getType()) && types()
+					.isSubtype(invocation.getMethod().getEnclosingElement().asType(), util().getType(List.class))) {
 				print(invocation.getTargetExpression(), delegate).print(".splice(")
 						.printArgList(invocation.getArguments()).print(", 1)");
 			} else {
-				print("(a => a.splice(a.indexOf(").print(invocation.getArgument(0)).print(")")
-						.print(invocation.getArgumentCount() == 1 ? "" : ", ")
-						.printArgList(invocation.getArgumentTail()).print(", 1))(");
+				print("(a => { let index = a.indexOf(").print(invocation.getArgument(0))
+						.print("); if(index>=0) { a.splice(index").print(invocation.getArgumentCount() == 1 ? "" : ", ")
+						.printArgList(invocation.getArgumentTail())
+						.print(", 1); return true; } else { return false; }})(");
 				print(invocation.getTargetExpression(), delegate).print(")");
 			}
 			return true;
@@ -1109,7 +1111,8 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			return true;
 		case "size":
 			printMacroName(targetMethodName);
-			print(invocation.getTargetExpression(), delegate).print(".length");
+			print("(<number>");
+			print(invocation.getTargetExpression(), delegate).print(".length)");
 			return true;
 		case "get":
 		case "elementAt":

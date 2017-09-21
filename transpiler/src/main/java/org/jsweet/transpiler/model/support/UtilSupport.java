@@ -93,6 +93,8 @@ public class UtilSupport implements Util {
 			return context.symtab.noSuchFieldErrorType;
 		case "java.lang.Throwable":
 			return context.symtab.throwableType;
+		case "java.util.List":
+			return context.symtab.listType;
 		}
 		return null;
 	}

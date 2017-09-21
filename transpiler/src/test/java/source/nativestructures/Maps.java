@@ -73,6 +73,24 @@ public class Maps {
 			trace.push("" + e.getValue());
 		}
 		
+		Map<String, Integer> m3 = new HashMap<>();
+		m3.put("a", 1);
+		assert m3.size() == 1;
+		m3.remove("a");
+		assert m3.size() == 0;
+		m3.put("b", 2);
+		m3.remove("a");
+		assert m3.size() == 1;
+
+		Map<Integer, Integer> m4 = new HashMap<>();
+		m4.put(1, 1);
+		assert m4.size() == 1;
+		m4.remove(1);
+		assert m4.size() == 0;
+		m4.put(2, 2);
+		m4.remove(1);
+		assert m4.size() == 1;
+		
 		$export("trace", trace.join(","));
 
 	}

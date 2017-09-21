@@ -21,6 +21,25 @@ public class Sets {
 		System.out.println(map.get(s));
 		// TODO: make this work (see #196)
 		// assert "bye".equals(map.get(s));
+
+		Set<String> s3 = new HashSet<>();
+		s3.add("1");
+		assert s3.size() == 1;
+		assert s3.remove("1");
+		assert s3.size() == 0;
+		s3.add("2");
+		assert !s3.remove("1");
+		assert s3.size() == 1;
+
+		Set<Integer> s4 = new HashSet<>();
+		s4.add(1);
+		assert s4.size() == 1;
+		assert s4.remove(1);
+		assert s4.size() == 0;
+		s4.add(2);
+		assert !s4.remove(1);
+		assert s4.size() == 1;
+		
 	}
 
 }
