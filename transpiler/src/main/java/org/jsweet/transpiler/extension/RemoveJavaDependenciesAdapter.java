@@ -240,6 +240,8 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			case "java.util.Collection":
 			case "java.util.List":
 			case "java.util.AbstractList":
+			case "java.util.AbstractSet":
+			case "java.util.AbstractCollection":
 			case "java.util.Queue":
 			case "java.util.Deque":
 			case "java.util.LinkedList":
@@ -1376,6 +1378,10 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		case "java.util.Stack":
 		case "java.util.TreeSet":
 		case "java.util.HashSet":
+		case "java.util.AbstractSet":
+		case "java.util.AbstractCollection":
+		case "java.util.AbstractList":
+		case "java.util.AbstractQueue":
 			if (newClass.getArgumentCount() == 0) {
 				print("[]");
 			} else {

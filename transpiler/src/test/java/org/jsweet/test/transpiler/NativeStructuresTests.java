@@ -11,6 +11,7 @@ import source.nativestructures.Collections;
 import source.nativestructures.Dates;
 import source.nativestructures.Exceptions;
 import source.nativestructures.ExtendsJDK;
+import source.nativestructures.ExtendsJDKAnonymous;
 import source.nativestructures.ExtendsJDKInterface;
 import source.nativestructures.Input;
 import source.nativestructures.Maps;
@@ -179,4 +180,14 @@ public class NativeStructuresTests extends AbstractTest {
 		}, getSourceFile(ExtendsJDKInterface.class));
 	}
 
+	@Ignore
+	@Test
+	public void testExtendsJDKAnonyous() {
+		// TODO: fix extension with non-static inner classes
+		eval((logHandler, result) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(ExtendsJDKAnonymous.class));
+	}
+
+	
 }
