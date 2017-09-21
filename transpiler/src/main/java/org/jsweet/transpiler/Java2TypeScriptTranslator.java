@@ -645,8 +645,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					if (globals || adaptedQualId != null) {
 						ModuleImportDescriptor moduleImport = getModuleImportDescriptor(importedName, importedClass);
 						if (moduleImport != null) {
-							useModule(false, moduleImport.getTargetPackage(), importDecl,
-									moduleImport.getImportedName(), moduleImport.getPathToImportedClass(), null);
+							useModule(false, moduleImport.getTargetPackage(), importDecl, moduleImport.getImportedName(),
+									moduleImport.getPathToImportedClass(), null);
 						}
 					}
 				}
@@ -5249,8 +5249,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	public void visitAssert(JCAssert assertion) {
 		if (!context.options.isIgnoreAssertions()) {
 			String assertCode = assertion.toString().replace("\"", "'");
-			print("if(!(").print(assertion.cond).print(")) throw new Error(\"Assertion error line "
-					+ diagnosticSource.getLineNumber(assertion.getStartPosition()) + ": " + assertCode + "\");");
+			print("if(!(").print(assertion.cond).print(
+					")) throw new Error(\"Assertion error line " + getCurrentLine() + ": " + assertCode + "\");");
 		}
 	}
 
