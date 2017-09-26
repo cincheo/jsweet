@@ -645,8 +645,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					if (globals || adaptedQualId != null) {
 						ModuleImportDescriptor moduleImport = getModuleImportDescriptor(importedName, importedClass);
 						if (moduleImport != null) {
-							useModule(false, moduleImport.getTargetPackage(), importDecl, moduleImport.getImportedName(),
-									moduleImport.getPathToImportedClass(), null);
+							useModule(false, moduleImport.getTargetPackage(), importDecl,
+									moduleImport.getImportedName(), moduleImport.getPathToImportedClass(), null);
 						}
 					}
 				}
@@ -3145,13 +3145,16 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		print("this.");
 		JCClassDecl parent = getParent(JCClassDecl.class);
 		int level = 0;
-		boolean foundInParent = false;
-		while (getScope(level++).innerClassNotStatic) {
-			parent = getParent(JCClassDecl.class, parent);
-			if (parent != null
-					&& Util.findFirstDeclarationInClassAndSuperClasses(parent.sym, accessedElementName, kind) != null) {
-				foundInParent = true;
-				break;
+		boolean foundInParent = Util.findFirstDeclarationInClassAndSuperClasses(parent.sym, accessedElementName,
+				kind) != null;
+		if (!foundInParent) {
+			while (getScope(level++).innerClassNotStatic) {
+				parent = getParent(JCClassDecl.class, parent);
+				if (parent != null && Util.findFirstDeclarationInClassAndSuperClasses(parent.sym, accessedElementName,
+						kind) != null) {
+					foundInParent = true;
+					break;
+				}
 			}
 		}
 		if (foundInParent && level > 0) {

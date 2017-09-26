@@ -44,6 +44,7 @@ import source.structural.GlobalsAccess;
 import source.structural.Inheritance;
 import source.structural.InheritanceOrderInSameFile;
 import source.structural.InnerClass;
+import source.structural.InnerClassFieldClash;
 import source.structural.InnerClassNotStatic;
 import source.structural.InnerClassUse;
 import source.structural.InnerClassWithAbstractClassAndInterface;
@@ -340,6 +341,13 @@ public class StructuralTests extends AbstractTest {
 		}, getSourceFile(InstanceOf.class));
 	}
 
+	@Test
+	public void testInnerClassFieldClash() {
+		eval((logHandler, r) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(InnerClassFieldClash.class));
+	}
+	
 	@Test
 	public void testReplaceAnnotation() {
 		createTranspiler(new JSweetFactory() {
