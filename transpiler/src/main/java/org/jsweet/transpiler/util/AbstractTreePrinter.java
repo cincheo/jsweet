@@ -244,6 +244,13 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 		currentColumn += string.length();
 		return this;
 	}
+	
+	/**
+	 * Outputs a string and new line
+	 */
+	public AbstractTreePrinter println(String string) {
+		return print(string).println();
+	}
 
 	/**
 	 * Outputs an identifier.
