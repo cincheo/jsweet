@@ -1,6 +1,7 @@
 package source.nativestructures;
 
 import static jsweet.util.Lang.$export;
+import static jsweet.util.Lang.any;
 
 import java.io.Serializable;
 import java.text.Collator;
@@ -29,6 +30,17 @@ public class Collections implements Cloneable, Serializable {
 	static Array<String> trace = new Array<>();
 
 	public static void main(String[] args) {
+		
+	    ArrayList<String> values = new ArrayList<String>();
+	    values.add("derp");
+	    String cccc = "wow cool";
+	    values.add(cccc);
+	    assert values.size() == 2;
+	    values.remove(0);
+	    assert values.size() == 1;
+	    values.remove(cccc);
+	    assert values.size() == 0;
+		
 		List<String> l = new ArrayList<String>();
 
 		l.add("a");

@@ -1056,8 +1056,9 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		case "remove":
 		case "removeElement":
 			printMacroName(targetMethodName);
-			if (Util.isNumber(invocation.getArgument(0).getType()) && types()
-					.isSubtype(invocation.getMethod().getEnclosingElement().asType(), util().getType(List.class))) {
+			if (Util.isNumber(invocation.getArgument(0).getType())
+					&& types().isSubtype(types().erasure(invocation.getTargetExpression().getType()),
+							types().erasure(util().getType(List.class)))) {
 				print(invocation.getTargetExpression(), delegate).print(".splice(")
 						.printArgList(invocation.getArguments()).print(", 1)");
 			} else {
