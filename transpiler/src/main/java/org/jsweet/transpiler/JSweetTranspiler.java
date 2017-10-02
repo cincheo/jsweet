@@ -287,6 +287,8 @@ public class JSweetTranspiler implements JSweetOptions {
 
 	private Map<String, Object> configuration;
 
+	private File baseDirectory;
+
 	@SuppressWarnings("unchecked")
 	private <T> T getMapValue(Map<String, Object> map, String key) {
 		return (T) map.get(key);
@@ -369,7 +371,8 @@ public class JSweetTranspiler implements JSweetOptions {
 	 * Reads configuration from current configuration file.
 	 */
 	private void readConfiguration() {
-		File confFile = configurationFile == null ? new File(JSweetConfig.CONFIGURATION_FILE_NAME) : configurationFile;
+		File confFile = configurationFile == null ? new File(baseDirectory, JSweetConfig.CONFIGURATION_FILE_NAME)
+				: configurationFile;
 		if (confFile.exists()) {
 			try {
 				logger.info("configuration file found: " + confFile);
@@ -429,13 +432,44 @@ public class JSweetTranspiler implements JSweetOptions {
 	 */
 	public JSweetTranspiler(File configurationFile, JSweetFactory factory, File workingDir, File tsOutputDir,
 			File jsOutputDir, File extractedCandiesJavascriptDir, String classPath) {
+		this(null, configurationFile, factory, workingDir, tsOutputDir, jsOutputDir, extractedCandiesJavascriptDir,
+				classPath);
+	}
+
+	/**
+	 * Creates a JSweet transpiler.
+	 * 
+	 * @param configurationFile
+	 *            the configurationFile (uses default one if null)
+	 * @param factory
+	 *            the factory used to create the transpiler objects
+	 * @param workingDir
+	 *            the working directory (uses default one if null)
+	 * @param tsOutputDir
+	 *            the directory where TypeScript files are written
+	 * @param jsOutputDir
+	 *            the directory where JavaScript files are written
+	 * @param extractedCandiesJavascriptDir
+	 *            see {@link #getExtractedCandyJavascriptDir()}
+	 * @param classPath
+	 *            the classpath as a string (check out system-specific
+	 *            requirements for Java classpaths)
+	 */
+	public JSweetTranspiler(File baseDirectory, File configurationFile, JSweetFactory factory, File workingDir,
+			File tsOutputDir, File jsOutputDir, File extractedCandiesJavascriptDir, String classPath) {
+		this.baseDirectory = baseDirectory;
+		if (this.baseDirectory == null) {
+			this.baseDirectory = new File(".");
+		}
+		this.baseDirectory.mkdirs();
+
 		this.configurationFile = configurationFile;
 		this.factory = factory;
 		readConfiguration();
 		if (tsOutputDir == null) {
-			tsOutputDir = new File("target/ts");
+			tsOutputDir = new File(baseDirectory, "target/ts");
 		}
-		this.workingDir = workingDir == null ? new File(TMP_WORKING_DIR_NAME).getAbsoluteFile()
+		this.workingDir = workingDir == null ? new File(baseDirectory, TMP_WORKING_DIR_NAME).getAbsoluteFile()
 				: workingDir.getAbsoluteFile();
 		this.extractedCandyJavascriptDir = extractedCandiesJavascriptDir;
 		try {
@@ -455,6 +489,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		logger.info("creating transpiler version " + JSweetConfig.getVersionNumber() + " (build date: "
 				+ JSweetConfig.getBuildDate() + ")");
 		logger.info("current dir: " + new File(".").getAbsolutePath());
+		logger.info("base directory: " + this.baseDirectory.getAbsolutePath());
 		logger.info("tsOut: " + tsOutputDir + (tsOutputDir == null ? "" : " - " + tsOutputDir.getAbsolutePath()));
 		logger.info("jsOut: " + jsOutputDir + (jsOutputDir == null ? "" : " - " + jsOutputDir.getAbsolutePath()));
 		logger.info("candyJsOut: " + extractedCandiesJavascriptDir);
