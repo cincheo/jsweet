@@ -457,10 +457,10 @@ public class JSweetTranspiler implements JSweetOptions {
 	 */
 	public JSweetTranspiler(File baseDirectory, File configurationFile, JSweetFactory factory, File workingDir,
 			File tsOutputDir, File jsOutputDir, File extractedCandiesJavascriptDir, String classPath) {
-		this.baseDirectory = baseDirectory;
-		if (this.baseDirectory == null) {
-			this.baseDirectory = new File(".");
+		if (baseDirectory == null) {
+			baseDirectory = new File(".");
 		}
+		this.baseDirectory = baseDirectory;
 		this.baseDirectory.mkdirs();
 
 		this.configurationFile = configurationFile;
