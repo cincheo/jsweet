@@ -385,7 +385,7 @@ public class JSweetTranspiler implements JSweetOptions {
 				logger.warn("error reading configuration file", e);
 			}
 		} else {
-			logger.info("no configuration file found");
+			logger.info("no configuration file found at " + confFile.getAbsolutePath());
 		}
 	}
 
