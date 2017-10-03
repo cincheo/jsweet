@@ -484,7 +484,7 @@ public class JSweetTranspiler implements JSweetOptions {
 			throw new RuntimeException("cannot locate output dirs", e);
 		}
 		this.classPath = classPath == null ? System.getProperty("java.class.path") : classPath;
-		this.classPath = JSweetConfig.EXTENSION_DIR + File.pathSeparator + this.classPath;
+		this.classPath = baseDirectory.getAbsolutePath() + File.separator + JSweetConfig.EXTENSION_DIR + File.pathSeparator + this.classPath;
 
 		logger.info("creating transpiler version " + JSweetConfig.getVersionNumber() + " (build date: "
 				+ JSweetConfig.getBuildDate() + ")");
