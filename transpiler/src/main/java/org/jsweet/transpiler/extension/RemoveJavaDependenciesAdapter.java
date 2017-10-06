@@ -863,7 +863,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 				return true;
 			case "get":
 				printMacroName(targetMethodName);
-				print("((m,k) => m[k]?m[k]:null)(");
+				print("((m,k) => m[k]===undefined?null:m[k])(");
 				print(invocation.getTargetExpression(), delegate).print(", ").print(invocation.getArgument(0))
 						.print(")");
 				return true;

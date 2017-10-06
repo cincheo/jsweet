@@ -82,6 +82,9 @@ public class Maps {
 		m3.remove("a");
 		assert m3.size() == 1;
 
+		m3.put("c", 0);
+		assert m3.get("c") == 0;
+		
 		Map<Integer, Integer> m4 = new HashMap<>();
 		m4.put(1, 1);
 		assert m4.size() == 1;
@@ -90,6 +93,7 @@ public class Maps {
 		m4.put(2, 2);
 		m4.remove(1);
 		assert m4.size() == 1;
+		
 		
 		$export("trace", trace.join(","));
 
