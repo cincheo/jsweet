@@ -152,16 +152,6 @@
 	</build>
 	<dependencies>
 		<dependency>
-			<groupId>edu.princeton.cup</groupId>
-			<artifactId>java-cup</artifactId>
-			<version>10k</version>
-		</dependency>
-		<dependency>
-			<groupId>de.jflex</groupId>
-			<artifactId>jflex</artifactId>
-			<version>1.3.5</version>
-		</dependency>
-		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
 			<version>3.3.2</version>
