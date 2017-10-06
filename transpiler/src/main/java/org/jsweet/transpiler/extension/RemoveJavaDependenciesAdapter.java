@@ -202,20 +202,10 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		if (targetExpression != null) {
 			targetClassName = targetExpression.getTypeAsElement().toString();
 		}
-
-		boolean delegate = false;
-		String superClassName = ((TypeElement) invocation.getMethod().getEnclosingElement()).getSuperclass().toString();
-		if (superClassName.startsWith("java.") && !excludedJavaSuperTypes.contains(superClassName)
-				&& !superClassName.equals(Object.class.getName())
-				&& !types().isSubtype(invocation.getMethod().getEnclosingElement().asType(),
-						context.symtab.throwableType)
-				&& !util().isSourceElement(
-						types().asElement(((TypeElement) invocation.getMethod().getEnclosingElement()).getSuperclass()))
-				&& targetExpression != null && util().isSourceElement(targetExpression.getTypeAsElement())) {
-			// the target class extends a JDK class
-			targetClassName = types()
-					.asElement(((TypeElement) invocation.getMethod().getEnclosingElement()).getSuperclass()).toString();
-			delegate = true;
+		TypeMirror jdkSuperclass = context.getJdkSuperclass(targetClassName, excludedJavaSuperTypes);
+		boolean delegate = jdkSuperclass != null;
+		if (delegate) {
+			targetClassName = jdkSuperclass.toString();
 		}
 
 		if (targetClassName != null
@@ -1348,19 +1338,11 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 	@Override
 	public boolean substituteNewClass(NewClassElement newClass) {
 		String className = newClass.getTypeAsElement().toString();
-		boolean extendsJava = false;
-		String superClassName = ((TypeElement) newClass.getTypeAsElement()).getSuperclass().toString();
-		if (superClassName.startsWith("java.") && !excludedJavaSuperTypes.contains(superClassName)
-				&& !superClassName.equals(Object.class.getName())
-				&& !types().isSubtype(newClass.getType(), context.symtab.throwableType)
-				&& !util()
-						.isSourceElement(types().asElement(((TypeElement) newClass.getTypeAsElement()).getSuperclass()))
-				&& util().isSourceElement(newClass.getTypeAsElement())) {
-			// the target class extends a JDK class
-			className = types().asElement(((TypeElement) newClass.getTypeAsElement()).getSuperclass()).toString();
-			extendsJava = true;
-		}
+		
+		TypeMirror jdkSuperclass = context.getJdkSuperclass(className, excludedJavaSuperTypes);
+		boolean extendsJava = jdkSuperclass != null;
 		if (extendsJava) {
+			className = jdkSuperclass.toString();
 			print("(() => { let __o : any = new ").print(newClass.getConstructorAccess()).print("(")
 					.printArgList(newClass.getArguments()).print("); __o.__delegate = ");
 		}

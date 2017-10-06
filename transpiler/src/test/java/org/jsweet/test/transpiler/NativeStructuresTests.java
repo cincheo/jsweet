@@ -13,6 +13,7 @@ import source.nativestructures.Exceptions;
 import source.nativestructures.ExtendsJDK;
 import source.nativestructures.ExtendsJDKAnonymous;
 import source.nativestructures.ExtendsJDKInterface;
+import source.nativestructures.ExtendsJDKRegular;
 import source.nativestructures.Input;
 import source.nativestructures.Maps;
 import source.nativestructures.NativeArrays;
@@ -173,6 +174,14 @@ public class NativeStructuresTests extends AbstractTest {
 		}, getSourceFile(ExtendsJDK.class));
 	}
 
+	@Ignore
+	@Test
+	public void testExtendsJDKRegular() {
+		eval((logHandler, result) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(ExtendsJDKRegular.class));
+	}
+	
 	@Test
 	public void testExtendsJDKInterface() {
 		eval(ModuleKind.none, (logHandler, result) -> {

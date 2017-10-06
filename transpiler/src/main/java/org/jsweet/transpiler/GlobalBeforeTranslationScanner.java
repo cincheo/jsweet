@@ -24,6 +24,8 @@ import java.util.Set;
 
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 
 import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.util.AbstractTreeScanner;
@@ -75,6 +77,15 @@ public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {
 		if (getCompilationUnit().docComments.hasComment(classdecl)) {
 			context.docComments.put(classdecl.sym, getCompilationUnit().docComments.getCommentText(classdecl));
 		}
+
+		TypeMirror superClassType = context.modelTypes.erasure(((TypeElement) classdecl.sym).getSuperclass());
+		if (superClassType.toString().startsWith("java.") && !superClassType.toString().equals(Object.class.getName())
+				&& !context.types.isSubtype(classdecl.type, context.symtab.throwableType)
+				&& !Util.isSourceElement(context.modelTypes.asElement(superClassType))) {
+			// the class extends a JDK class
+			context.addJdkSubclass(classdecl.sym.toString(), superClassType);
+		}
+
 		if (classdecl.sym.getEnclosingElement() instanceof ClassSymbol) {
 			Type superClass = ((ClassSymbol) classdecl.sym.getEnclosingElement()).getSuperclass();
 			if (superClass != null && superClass.tsym != null) {

@@ -195,6 +195,7 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 		this.context.symtab = Symtab.instance(context);
 		this.context.names = Names.instance(context);
 		this.context.types = Types.instance(context);
+		this.context.modelTypes = com.sun.tools.javac.model.JavacTypes.instance(context);
 		this.setCompilationUnit(compilationUnit);
 	}
 

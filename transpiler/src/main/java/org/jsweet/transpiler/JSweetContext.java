@@ -46,6 +46,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.type.TypeMirror;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -111,6 +112,38 @@ public class JSweetContext extends Context {
 		public String toString() {
 			return "FILTER" + (parameter == null ? "" : "('" + parameter + "')") + ": INCLUDES=" + inclusionPatterns
 					+ ", EXCLUDES=" + exclusionPatterns;
+		}
+	}
+
+	private Map<String, TypeMirror> jdkSubclasses = new HashMap<>();
+
+	/**
+	 * Maps the name of a class to the JDK type it extends.
+	 */
+	public void addJdkSubclass(String subclassName, TypeMirror extendedJdkClass) {
+		jdkSubclasses.put(subclassName, extendedJdkClass);
+	}
+
+	/**
+	 * Maps the name of a class to the JDK type it extends.
+	 */
+	public Map<String, TypeMirror> getJdkSubclasses() {
+		return jdkSubclasses;
+	}
+	
+	/**
+	 * Gets the JDK type extended by the given subclass, if any.
+	 */
+	public TypeMirror getJdkSuperclass(String subclassName, Set<String> excludedJdkTypes) {
+		TypeMirror jdkType = jdkSubclasses.get(subclassName);
+		if (jdkType == null) {
+			return null;
+		} else {
+			if (!excludedJdkTypes.contains(jdkType.toString())) {
+				return jdkType;
+			} else {
+				return null;
+			}
 		}
 	}
 
@@ -632,6 +665,8 @@ public class JSweetContext extends Context {
 	 * The Java compiler types for fast access.
 	 */
 	public Types types;
+
+	public javax.lang.model.util.Types modelTypes;
 
 	/**
 	 * A flag to tell if the transpiler is in module mode or not.
