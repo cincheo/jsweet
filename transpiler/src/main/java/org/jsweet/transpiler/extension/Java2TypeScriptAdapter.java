@@ -841,8 +841,8 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 				// this macro should use 'includes' in ES6
 				case "contains":
 					printMacroName(targetMethodName);
-					print(invocationElement.getTargetExpression()).print(".indexOf(")
-							.printArgList(invocationElement.getArguments()).print(") != -1");
+					print("(").print(invocationElement.getTargetExpression()).print(".indexOf(")
+							.printArgList(invocationElement.getArguments()).print(") != -1)");
 					return true;
 				case "length":
 					print(invocationElement.getTargetExpression()).print(".length");
