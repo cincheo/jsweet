@@ -2433,11 +2433,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			print(";").println();
 		} else if (var.init == null) {
 			if (doesMemberNameRequireQuotes(name)) {
-				printIndent().print("this['").print(name).print("'] = ").print(Util.getTypeInitialValue(var.type))
-						.print(";").println();
+				printIndent().print("if(").print("this['").print(name).print("']").print("===undefined) ")
+						.print("this['").print(name).print("'] = ").print(Util.getTypeInitialValue(var.type)).print(";")
+						.println();
 			} else {
-				printIndent().print("this.").print(name).print(" = ").print(Util.getTypeInitialValue(var.type))
-						.print(";").println();
+				printIndent().print("if(").print("this.").print(name).print("===undefined) this.").print(name)
+						.print(" = ").print(Util.getTypeInitialValue(var.type)).print(";").println();
 			}
 		}
 	}
@@ -2602,8 +2603,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					if (context.getFieldNameMapping(field.sym) != null) {
 						name = context.getFieldNameMapping(field.sym);
 					}
-					printIndent().print("this.").print(name).print(" = ").print(Util.getTypeInitialValue(field.type))
-							.print(";").println();
+					printIndent().print("if(").print("this.").print(name).print("===undefined) ").print("this.")
+							.print(name).print(" = ").print(Util.getTypeInitialValue(field.type)).print(";").println();
 				}
 			}
 		}

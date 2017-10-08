@@ -38,6 +38,7 @@ import source.structural.DefaultMethodsConsumer;
 import source.structural.EndsWithGlobals;
 import source.structural.ExtendsClassInSameFile;
 import source.structural.ExtendsObject;
+import source.structural.FieldInitialization;
 import source.structural.FunctionalObjects;
 import source.structural.GetClass;
 import source.structural.GlobalsAccess;
@@ -479,4 +480,11 @@ public class StructuralTests extends AbstractTest {
 		}, getSourceFile(JDKInheritance.class));
 	}
 
+	@Test
+	public void testFieldInitialization() {
+		eval((logHandler, r) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(FieldInitialization.class));
+	}
+	
 }

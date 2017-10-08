@@ -186,12 +186,12 @@ public class ExtensionTests extends AbstractTest {
 			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
 			try {
 				String generated = FileUtils.readFileToString(transpiler.getContext().sourceFiles[0].getTsFile());
-				Assert.assertEquals(3, StringUtils.countMatches(generated, "_f1"));
-				Assert.assertEquals(3, StringUtils.countMatches(generated, "_f2"));
+				Assert.assertEquals(4, StringUtils.countMatches(generated, "_f1"));
+				Assert.assertEquals(4, StringUtils.countMatches(generated, "_f2"));
 				Assert.assertEquals(2, StringUtils.countMatches(generated, "_f3"));
 				Assert.assertEquals(2, StringUtils.countMatches(generated, "_f4"));
-				Assert.assertEquals(3, StringUtils.countMatches(generated, "_f5"));
-				Assert.assertEquals(3, StringUtils.countMatches(generated, "_f6"));
+				Assert.assertEquals(4, StringUtils.countMatches(generated, "_f5"));
+				Assert.assertEquals(4, StringUtils.countMatches(generated, "_f6"));
 				Assert.assertEquals(2, StringUtils.countMatches(generated, "_f7"));
 				Assert.assertEquals(2, StringUtils.countMatches(generated, "_f8"));
 			} catch (Exception e) {
