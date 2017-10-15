@@ -93,7 +93,30 @@ public class Maps {
 		m4.put(2, 2);
 		m4.remove(1);
 		assert m4.size() == 1;
-		
+
+		Map<String, Integer> m5 = new HashMap<>();
+		m5.put("a", 1);
+		m5.put("b", 2);
+		assert m5.size() == 2;
+		Map<String, Integer> m6 = new HashMap<>(m5);
+		assert m6.size() == 2;
+		assert m6.containsKey("a");
+		m6.put("c", 3);
+		assert m6.containsKey("c");
+		assert m5.containsKey("a");
+		assert !m5.containsKey("c");
+
+		Map<Integer, Integer> m7 = new HashMap<>();
+		m7.put(1, 1);
+		m7.put(2, 2);
+		assert m7.size() == 2;
+		Map<Integer, Integer> m8 = new HashMap<>(m7);
+		assert m8.size() == 2;
+		assert m8.containsKey(1);
+		m8.put(3, 3);
+		assert m8.containsKey(3);
+		assert m7.containsKey(1);
+		assert !m7.containsKey(3);
 		
 		$export("trace", trace.join(","));
 

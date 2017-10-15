@@ -1338,7 +1338,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 	@Override
 	public boolean substituteNewClass(NewClassElement newClass) {
 		String className = newClass.getTypeAsElement().toString();
-		
+
 		TypeMirror jdkSuperclass = context.getJdkSuperclass(className, excludedJavaSuperTypes);
 		boolean extendsJava = jdkSuperclass != null;
 		if (extendsJava) {
@@ -1385,7 +1385,18 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		case "java.util.Hashtable":
 		case "java.util.WeakHashMap":
 		case "java.util.LinkedHashMap":
-			print("{}");
+			if (newClass.getArgumentCount() == 0) {
+				print("{}");
+			} else {
+				if (((DeclaredType) newClass.getType()).getTypeArguments().size() == 2 && types().isSameType(
+						((DeclaredType) newClass.getType()).getTypeArguments().get(0), util().getType(String.class))) {
+					print("((o) => { let r = {}; for(let p in o) r[p]=o[p]; return r; })(")
+							.print(newClass.getArgument(0)).print(")");
+				} else {
+					print("((o) => { let r = {}; r['entries'] = o.entries!=null?o.entries.slice():null; return r; })(")
+							.print(newClass.getArgument(0)).print(")");
+				}
+			}
 			substitute = true;
 			break;
 		case "java.lang.String":
