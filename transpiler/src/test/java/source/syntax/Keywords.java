@@ -77,6 +77,8 @@ public class Keywords {
 		trace.push("" + var);
 		String constructor = "abc";
 		trace.push(constructor);
+		String delete = "abc";
+		assert delete == "abc";
 	}
 
 }

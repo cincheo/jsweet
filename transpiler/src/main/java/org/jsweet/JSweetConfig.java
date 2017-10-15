@@ -382,6 +382,7 @@ public abstract class JSweetConfig {
 		{
 			add("function");
 			add("var");
+			add("delete");
 			add("typeof");
 			add("in");
 			add("arguments");
