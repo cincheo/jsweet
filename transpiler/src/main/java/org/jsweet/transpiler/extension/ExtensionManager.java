@@ -141,8 +141,8 @@ public class ExtensionManager {
 						"local extensions are not supported in this environment, please use a packaged extension");
 			}
 			URLClassLoader urlClassLoader = (URLClassLoader) PrinterAdapter.class.getClassLoader();
-			Method method = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
-			method.setAccessible(true);
+			Method addURLMethod = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
+			addURLMethod.setAccessible(true);
 			boolean foundExtension = false;
 			for (URL url : urlClassLoader.getURLs()) {
 				if (url.getPath().endsWith("/" + JSweetConfig.EXTENSION_DIR)) {
@@ -151,8 +151,8 @@ public class ExtensionManager {
 				}
 			}
 			if (!foundExtension) {
-				method.invoke(urlClassLoader, new File(JSweetConfig.EXTENSION_DIR).toURI().toURL());
-				logger.debug("updated classpath with: " + new File(JSweetConfig.EXTENSION_DIR).toURI().toURL());
+				addURLMethod.invoke(urlClassLoader, extensionDir.toURI().toURL());
+				logger.debug("updated classpath with: " + extensionDir.toURI().toURL());
 			}
 		} catch (Exception e) {
 			throw new RuntimeException("fail to initalize extension classpath", e);

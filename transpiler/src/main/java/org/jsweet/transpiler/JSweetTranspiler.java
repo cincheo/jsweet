@@ -486,8 +486,9 @@ public class JSweetTranspiler implements JSweetOptions {
 		
 		File extensionDirectory = new File(baseDirectory, JSweetConfig.EXTENSION_DIR);
 		
-		this.classPath = classPath == null ? System.getProperty("java.class.path") : classPath;
-		this.classPath = extensionDirectory.getAbsolutePath() + File.pathSeparator + this.classPath;
+		classPath = classPath == null ? System.getProperty("java.class.path") : classPath;
+		classPath = extensionDirectory.getAbsolutePath() + File.pathSeparator + classPath;
+		this.classPath = classPath;
 
 		logger.info("creating transpiler version " + JSweetConfig.getVersionNumber() + " (build date: "
 				+ JSweetConfig.getBuildDate() + ")");
@@ -497,8 +498,9 @@ public class JSweetTranspiler implements JSweetOptions {
 		logger.info("jsOut: " + jsOutputDir + (jsOutputDir == null ? "" : " - " + jsOutputDir.getAbsolutePath()));
 		logger.info("candyJsOut: " + extractedCandiesJavascriptDir);
 		logger.info("factory: " + factory);
-		logger.debug("compile classpath: " + classPath);
+		logger.debug("compile classpath POUET: " + classPath);
 		logger.debug("runtime classpath: " + System.getProperty("java.class.path"));
+		logger.debug("extension directory: " + extensionDirectory.getAbsolutePath());
 		this.candiesProcessor = new CandyProcessor(this.workingDir, classPath, extractedCandyJavascriptDir);
 
 		new ExtensionManager(extensionDirectory.getAbsolutePath()).checkAndCompileExtension(this.workingDir, classPath);
