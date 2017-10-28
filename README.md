@@ -81,6 +81,7 @@ More with the [live sandbox](http://www.jsweet.org/jsweet-live-sandbox/).
 - Support for Java basic APIs as the [J4TS](https://github.com/j4ts/j4ts) candy (forked from the GWT's JRE emulation).
 - An [Eclipse plugin](https://github.com/cincheo/jsweet-eclipse-plugin) for easy installation and use.
 - A [Maven plugin](https://github.com/lgrignon/jsweet-maven-plugin) to use JSweet from any other IDE or from the command line.
+- A [Gradle plugin](https://github.com/lgrignon/jsweet-gradle-plugin) to integrate JSweet with Gradle-based projects.
 - A debug mode to enable Java code debugging within your favorite browser.
 - A set of nice [WEB/Mobile HTML5 examples](https://github.com/cincheo/jsweet-examples) to get started and get used to JSweet and the most common JavaScript APIs (even more examples in the Examples section). 
 - Support for bundles to run the generated programs in the most simple way.
