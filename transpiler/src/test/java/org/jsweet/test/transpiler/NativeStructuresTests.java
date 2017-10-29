@@ -15,6 +15,7 @@ import source.nativestructures.ExtendsJDKAnonymous;
 import source.nativestructures.ExtendsJDKInterface;
 import source.nativestructures.ExtendsJDKRegular;
 import source.nativestructures.Input;
+import source.nativestructures.Iterators;
 import source.nativestructures.Maps;
 import source.nativestructures.NativeArrays;
 import source.nativestructures.NativeStringBuilder;
@@ -198,5 +199,11 @@ public class NativeStructuresTests extends AbstractTest {
 		}, getSourceFile(ExtendsJDKAnonymous.class));
 	}
 
+	@Test
+	public void testIterators() {
+		eval(ModuleKind.none, (logHandler, result) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(Iterators.class));
+	}
 	
 }
