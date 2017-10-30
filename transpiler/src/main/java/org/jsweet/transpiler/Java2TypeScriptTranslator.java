@@ -476,12 +476,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				boolean fullImport = require || GLOBALS_CLASS_NAME.equals(targetName);
 				if (fullImport) {
 					if (context.useRequireForModules) {
-						print("import " + targetName + " = require(\"" + moduleName + "\"); ").println();
+						context.addHeader("import."+targetName, "import " + targetName + " = require(\"" + moduleName + "\");\n");
 					} else {
-						print("import * as " + targetName + " from '" + moduleName + "'; ").println();
+						context.addHeader("import."+targetName, "import * as " + targetName + " from '" + moduleName + "';\n");
 					}
 				} else {
-					print("import { " + targetName + " } from '" + moduleName + "'; ").println();
+					context.addHeader("import."+targetName, "import { " + targetName + " } from '" + moduleName + "';\n");
 				}
 			}
 			context.registerImportedName(compilationUnit.getSourceFile().getName(), sourceElement, targetName);
@@ -656,13 +656,18 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (context.useModules) {
 			TreeScanner usedTypesScanner = new TreeScanner() {
 
+				private HashSet<String> names = new HashSet<>();
+
 				private void checkType(TypeSymbol type) {
 					if (type instanceof ClassSymbol) {
-						ModuleImportDescriptor moduleImport = getModuleImportDescriptor(type.getSimpleName().toString(),
-								(ClassSymbol) type);
-						if (moduleImport != null) {
-							useModule(false, moduleImport.getTargetPackage(), null, moduleImport.getImportedName(),
-									moduleImport.getPathToImportedClass(), null);
+						String name = type.getSimpleName().toString();
+						if (!names.contains(name)) {
+							names.add(name);
+							ModuleImportDescriptor moduleImport = getModuleImportDescriptor(name, (ClassSymbol) type);
+							if (moduleImport != null) {
+								useModule(false, moduleImport.getTargetPackage(), null, moduleImport.getImportedName(),
+										moduleImport.getPathToImportedClass(), null);
+							}
 						}
 					}
 				}
@@ -677,20 +682,23 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					// grab the types in overloaded method because they may use
 					// other types necessary for the instanceof implementation
 					// (see #342)
-					if (t instanceof JCMethodDecl) {
-						JCMethodDecl method = (JCMethodDecl) t;
-						if (context.isInvalidOverload(method.sym)) {
-							Overload overload = context.getOverload((ClassSymbol) method.sym.getEnclosingElement(),
-									method.sym);
-							if (!overloadStack.contains(overload)) {
-								overloadStack.push(overload);
-								for (JCMethodDecl overloadedMethod : overload.methods) {
-									this.scan(overloadedMethod);
-								}
-								overloadStack.pop();
-							}
-						}
-					}
+					// if (t instanceof JCMethodDecl) {
+					// JCMethodDecl method = (JCMethodDecl) t;
+					// if (context.isInvalidOverload(method.sym)) {
+					// Overload overload = context.getOverload((ClassSymbol)
+					// method.sym.getEnclosingElement(),
+					// method.sym);
+					// System.out.println("overload: "+overload +" /
+					// "+overloadStack.size());
+					// if (!overloadStack.contains(overload)) {
+					// overloadStack.push(overload);
+					// for (JCMethodDecl overloadedMethod : overload.methods) {
+					// this.scan(overloadedMethod);
+					// }
+					// overloadStack.pop();
+					// }
+					// }
+					// }
 					if (t != null && t.type != null && t.type.tsym instanceof ClassSymbol) {
 						if (!(t instanceof JCTypeApply)) {
 							checkType(t.type.tsym);
@@ -2721,12 +2729,24 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		return sb.toString();
 	}
 
+	private void checkType(TypeSymbol type) {
+		if (type instanceof ClassSymbol) {
+			String name = type.getSimpleName().toString();
+			ModuleImportDescriptor moduleImport = getModuleImportDescriptor(name, (ClassSymbol) type);
+			if (moduleImport != null) {
+				useModule(false, moduleImport.getTargetPackage(), null, moduleImport.getImportedName(),
+						moduleImport.getPathToImportedClass(), null);
+			}
+		}
+	}
+
 	private void printMethodParamsTest(Overload overload, JCMethodDecl m) {
 		int i = 0;
 		for (; i < m.getParameters().size(); i++) {
 			print("(");
 			printInstanceOf(avoidJSKeyword(overload.coreMethod.getParameters().get(i).name.toString()), null,
 					m.getParameters().get(i).type);
+			checkType(m.getParameters().get(i).type.tsym);
 			print(" || ")
 					.print(avoidJSKeyword(overload.coreMethod.getParameters().get(i).name.toString()) + " === null")
 					.print(")");

@@ -23,6 +23,38 @@ import org.jsweet.transpiler.ModuleKind;
 import org.junit.Test;
 
 import def.test.AmbientWithOverload;
+import source.genericinterfaceperf.ImplementationA1;
+import source.genericinterfaceperf.ImplementationA10;
+import source.genericinterfaceperf.ImplementationA11;
+import source.genericinterfaceperf.ImplementationA12;
+import source.genericinterfaceperf.ImplementationA13;
+import source.genericinterfaceperf.ImplementationA14;
+import source.genericinterfaceperf.ImplementationA15;
+import source.genericinterfaceperf.ImplementationA2;
+import source.genericinterfaceperf.ImplementationA3;
+import source.genericinterfaceperf.ImplementationA4;
+import source.genericinterfaceperf.ImplementationA5;
+import source.genericinterfaceperf.ImplementationA6;
+import source.genericinterfaceperf.ImplementationA7;
+import source.genericinterfaceperf.ImplementationA8;
+import source.genericinterfaceperf.ImplementationA9;
+import source.genericinterfaceperf.ImplementationB1;
+import source.genericinterfaceperf.ImplementationB10;
+import source.genericinterfaceperf.ImplementationB11;
+import source.genericinterfaceperf.ImplementationB12;
+import source.genericinterfaceperf.ImplementationB13;
+import source.genericinterfaceperf.ImplementationB14;
+import source.genericinterfaceperf.ImplementationB15;
+import source.genericinterfaceperf.ImplementationB2;
+import source.genericinterfaceperf.ImplementationB3;
+import source.genericinterfaceperf.ImplementationB4;
+import source.genericinterfaceperf.ImplementationB5;
+import source.genericinterfaceperf.ImplementationB6;
+import source.genericinterfaceperf.ImplementationB7;
+import source.genericinterfaceperf.ImplementationB8;
+import source.genericinterfaceperf.ImplementationB9;
+import source.genericinterfaceperf.InterfaceA;
+import source.genericinterfaceperf.InterfaceB;
 import source.overload.AbstractMethodOverloadInAnonymousClass;
 import source.overload.BasicOverride;
 import source.overload.ConstructorOverLoadWithArray;
@@ -303,4 +335,42 @@ public class OverloadTests extends AbstractTest {
 		}, getSourceFile(WrongOverloadConstructor2.class));
 	}
 
+	@Test
+	public void testGenericInterfacePerf() {
+		eval(ModuleKind.commonjs, (logHandler, result) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(InterfaceA.class), //
+				getSourceFile(InterfaceB.class), //
+				getSourceFile(ImplementationA1.class), //
+				getSourceFile(ImplementationA2.class), //
+				getSourceFile(ImplementationA3.class), //
+				getSourceFile(ImplementationA4.class), //
+				getSourceFile(ImplementationA5.class), //
+				getSourceFile(ImplementationA6.class), //
+				getSourceFile(ImplementationA7.class), //
+				getSourceFile(ImplementationA8.class), //
+				getSourceFile(ImplementationA9.class), //
+				getSourceFile(ImplementationA10.class), //
+				getSourceFile(ImplementationA11.class), //
+				getSourceFile(ImplementationA12.class), //
+				getSourceFile(ImplementationA13.class), //
+				getSourceFile(ImplementationA14.class), //
+				getSourceFile(ImplementationA15.class), //
+				getSourceFile(ImplementationB1.class), //
+				getSourceFile(ImplementationB2.class), //
+				getSourceFile(ImplementationB3.class), //
+				getSourceFile(ImplementationB4.class), //
+				getSourceFile(ImplementationB5.class), //
+				getSourceFile(ImplementationB6.class), //
+				getSourceFile(ImplementationB7.class), //
+				getSourceFile(ImplementationB8.class), //
+				getSourceFile(ImplementationB9.class), //
+				getSourceFile(ImplementationB10.class), //
+				getSourceFile(ImplementationB11.class), //
+				getSourceFile(ImplementationB12.class), //
+				getSourceFile(ImplementationB13.class), //
+				getSourceFile(ImplementationB14.class), //
+				getSourceFile(ImplementationB15.class));
+	}
+	
 }
