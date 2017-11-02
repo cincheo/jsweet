@@ -544,7 +544,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		if (tscVersionFile.exists()) {
 			v = FileUtils.readFileToString(tscVersionFile);
 		}
-		if (!ProcessUtil.isInstalledWithNpm("tsc") || !TSC_VERSION.equals(v.trim())) {
+		if (!ProcessUtil.isInstalledWithNpm("tsc") || !v.trim().startsWith(TSC_VERSION)) {
 			// this will lead to performances issues if having multiple versions
 			// of JSweet installed
 			if (ProcessUtil.isInstalledWithNpm("tsc")) {
