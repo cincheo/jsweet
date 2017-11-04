@@ -476,12 +476,15 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				boolean fullImport = require || GLOBALS_CLASS_NAME.equals(targetName);
 				if (fullImport) {
 					if (context.useRequireForModules) {
-						context.addHeader("import."+targetName, "import " + targetName + " = require(\"" + moduleName + "\");\n");
+						context.addHeader("import." + targetName,
+								"import " + targetName + " = require(\"" + moduleName + "\");\n");
 					} else {
-						context.addHeader("import."+targetName, "import * as " + targetName + " from '" + moduleName + "';\n");
+						context.addHeader("import." + targetName,
+								"import * as " + targetName + " from '" + moduleName + "';\n");
 					}
 				} else {
-					context.addHeader("import."+targetName, "import { " + targetName + " } from '" + moduleName + "';\n");
+					context.addHeader("import." + targetName,
+							"import { " + targetName + " } from '" + moduleName + "';\n");
 				}
 			}
 			context.registerImportedName(compilationUnit.getSourceFile().getName(), sourceElement, targetName);
@@ -4859,9 +4862,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			} else {
 				print("<");
 				substituteAndPrintType(cast.clazz).print(">");
-				// Java always allows casting when an interface is involved
+				// Java always allows casting when an interface or a type param
+				// is involved
 				// (that's weak!!)
-				if (cast.expr.type.tsym.isInterface() || cast.type.tsym.isInterface()) {
+				if (cast.expr.type.tsym.isInterface() || cast.type.tsym.isInterface()
+						|| cast.clazz.type.getKind() == TypeKind.TYPEVAR) {
 					print("<any>");
 				}
 			}

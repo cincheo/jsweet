@@ -44,6 +44,7 @@ import source.structural.GetClass;
 import source.structural.GlobalsAccess;
 import source.structural.Inheritance;
 import source.structural.InheritanceOrderInSameFile;
+import source.structural.InheritanceWithGenerics;
 import source.structural.InnerClass;
 import source.structural.InnerClassFieldClash;
 import source.structural.InnerClassNotStatic;
@@ -486,5 +487,13 @@ public class StructuralTests extends AbstractTest {
 			logHandler.assertNoProblems();
 		}, getSourceFile(FieldInitialization.class));
 	}
+	
+	@Test
+	public void testInheritanceWithGenerics() {
+		transpile(logHandler -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(InheritanceWithGenerics.class));
+	}
+
 	
 }

@@ -291,7 +291,7 @@
 		<dependency>
 			<groupId>org.jsweet.candies</groupId>
 			<artifactId>threejs</artifactId>
-			<version>75-20170726</version>
+			<version>75-20171101</version>
 			<scope>test</scope>
 			<optional>true</optional>
 		</dependency>
