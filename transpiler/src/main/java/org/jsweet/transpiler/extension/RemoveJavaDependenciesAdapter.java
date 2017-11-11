@@ -1071,7 +1071,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			return true;
 		case "retainAll":
 			printMacroName(targetMethodName);
-			print("((a, r) => { let b=false; for(let i=0;i<a.length;i++) { let ndx=r.indexOf(a[i]); if(ndx<0) { a.splice(i, 1); i--; b=true; } } return b; })(");
+			print("((a, r) => { let b=false; for(let i=0;i<a.length;i++) { let ndx=r.indexOf(a[i]); if(ndx<0) { a.splice(i, 1); i--; b=true; } } return b; })(");
 			print(invocation.getTargetExpression(), delegate).print(",").print(invocation.getArgument(0)).print(")");
 			return true;
 		case "addFirst":
