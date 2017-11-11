@@ -19,6 +19,9 @@ public class Longs {
 
 		$export("c", Long.compare(1, 2));
 
+		assert (long)1.2 == 1;
+		assert (long)-1.2 == -1;
+		
 	}
 
 }
