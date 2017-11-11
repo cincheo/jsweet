@@ -147,6 +147,12 @@ class MyAbstractClass3<T> extends MyAbstractClass<T> implements MyInterface2<T> 
 		WrongOverloadWithInheritance.trace.push("4");
 	}
 
+	/**@Override // TODO results in infinite recursion
+	public void overloaded(boolean arg) {
+		WrongOverloadWithInheritance.trace.push("8-" + arg);
+		super.overloaded(arg);
+	}**/
+
 	@Override
 	public void overloaded3() {
 		WrongOverloadWithInheritance.trace.push("6");
