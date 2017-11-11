@@ -31,6 +31,7 @@ import org.junit.Test;
 import source.structural.AbstractClass;
 import source.structural.AnonymousClass;
 import source.structural.AnonymousClassForLambda;
+import source.structural.AnonymousInInterface;
 import source.structural.AutoImportClassesInSamePackage;
 import source.structural.AutoImportClassesInSamePackageUsed;
 import source.structural.DefaultMethods;
@@ -174,7 +175,7 @@ public class StructuralTests extends AbstractTest {
 			logHandler.assertNoProblems();
 		}, getSourceFile(SubAbstract.class));
 	}
-	
+
 	@Test
 	public void testInheritance() {
 		eval((logHandler, r) -> {
@@ -349,7 +350,7 @@ public class StructuralTests extends AbstractTest {
 			logHandler.assertNoProblems();
 		}, getSourceFile(InnerClassFieldClash.class));
 	}
-	
+
 	@Test
 	public void testReplaceAnnotation() {
 		createTranspiler(new JSweetFactory() {
@@ -487,7 +488,7 @@ public class StructuralTests extends AbstractTest {
 			logHandler.assertNoProblems();
 		}, getSourceFile(FieldInitialization.class));
 	}
-	
+
 	@Test
 	public void testInheritanceWithGenerics() {
 		transpile(logHandler -> {
@@ -495,5 +496,11 @@ public class StructuralTests extends AbstractTest {
 		}, getSourceFile(InheritanceWithGenerics.class));
 	}
 
-	
+	@Test
+	public void testAnonymousInInterface() {
+		eval((logHandler, r) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(AnonymousInInterface.class));
+	}
+
 }
