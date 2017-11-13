@@ -29,21 +29,33 @@ public class Looping {
 	String a = "a", b = "b";
 
 	public static void main(String[] args) {
+		int ii =0, jj=0;
 		for (int i = 0, j = 0; i < 100; i++, j++) {
 			System.out.println(i + j);
+			ii=i;
+			jj = j;
 		}
+		assert ii==99;
+		assert jj==99;
 		int i = 10;
 		do {
 			System.out.println(i);
 		} while (i-- > 0);
+		assert i==0;
+		i=10;
 		do
 			System.out.println(i);
 		while (i-- > 0);
+		assert i==0;
+		i=10;
 		while (i-- > 0) {
 			System.out.println(i);
 		}
+		assert i==0;
+		i=10;
 		while (i-- > 0)
 			System.out.println(i);
+		assert i==0;
 
 	}
 

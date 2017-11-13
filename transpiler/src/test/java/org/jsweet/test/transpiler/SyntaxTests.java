@@ -236,7 +236,7 @@ public class SyntaxTests extends AbstractTest {
 
 	@Test
 	public void testLooping() {
-		transpile((logHandler) -> {
+		eval((logHandler, r) -> {
 			logHandler.assertNoProblems();
 		}, getSourceFile(Looping.class));
 	}
