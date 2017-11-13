@@ -6,10 +6,8 @@ public class Iterators {
 
 	public static void main(String[] args) {
 		Range r = new Range(10, 20);
-		Iterator<Integer> it = r.iterator();
 		int j = 10;
-		while (it.hasNext()) {
-			int i = it.next();
+		for (Integer i : r) {
 			assert i == j++;
 		}
 		assert j == 20;
