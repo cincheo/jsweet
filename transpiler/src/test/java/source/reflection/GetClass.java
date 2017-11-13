@@ -1,4 +1,4 @@
-package source.structural;
+package source.reflection;
 
 import static jsweet.util.Lang.$export;
 

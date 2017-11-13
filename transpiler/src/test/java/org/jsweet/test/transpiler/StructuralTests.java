@@ -41,7 +41,6 @@ import source.structural.ExtendsClassInSameFile;
 import source.structural.ExtendsObject;
 import source.structural.FieldInitialization;
 import source.structural.FunctionalObjects;
-import source.structural.GetClass;
 import source.structural.GlobalsAccess;
 import source.structural.Inheritance;
 import source.structural.InheritanceOrderInSameFile;
@@ -436,25 +435,6 @@ public class StructuralTests extends AbstractTest {
 			logHandler.assertNoProblems();
 			assertEquals(true, r.get("m"));
 		}, getSourceFile(ClassWithStaticMethod.class), getSourceFile(ClassUsingStaticMethod.class));
-	}
-
-	@Test
-	public void testGetClass() {
-		eval((logHandler, r) -> {
-			logHandler.assertNoProblems();
-			assertEquals("source.structural.AClass1", r.get("name1"));
-			assertEquals("source.structural.AClass1", r.get("name2"));
-			assertEquals("source.structural.AClass1", r.get("name3"));
-			assertEquals("source.structural.Functions", r.get("name4"));
-			assertEquals("source.structural.Functions", r.get("name5"));
-			assertEquals("AClass1", r.get("simplename1"));
-			assertEquals("AClass1", r.get("simplename2"));
-			assertEquals("AClass1", r.get("simplename3"));
-			assertEquals("Functions", r.get("simplename4"));
-			assertEquals("Functions", r.get("simplename5"));
-			assertEquals("String", r.get("string"));
-			assertEquals("Number", r.get("number"));
-		}, getSourceFile(GetClass.class));
 	}
 
 	@Test

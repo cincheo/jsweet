@@ -16,11 +16,14 @@
  */
 package org.jsweet.test.transpiler;
 
+import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
 
 import source.reflection.ArrayMethods;
 import source.reflection.BasicBeanReflection;
 import source.reflection.FieldAccess;
+import source.reflection.GetClass;
 
 public class ReflectionTests extends AbstractTest {
 
@@ -43,6 +46,25 @@ public class ReflectionTests extends AbstractTest {
 		eval((h, r) -> {
 			h.assertNoProblems();
 		}, getSourceFile(ArrayMethods.class));
+	}
+	
+	@Test
+	public void testGetClass() {
+		eval((logHandler, r) -> {
+			logHandler.assertNoProblems();
+			assertEquals("source.structural.AClass1", r.get("name1"));
+			assertEquals("source.structural.AClass1", r.get("name2"));
+			assertEquals("source.structural.AClass1", r.get("name3"));
+			assertEquals("source.structural.Functions", r.get("name4"));
+			assertEquals("source.structural.Functions", r.get("name5"));
+			assertEquals("AClass1", r.get("simplename1"));
+			assertEquals("AClass1", r.get("simplename2"));
+			assertEquals("AClass1", r.get("simplename3"));
+			assertEquals("Functions", r.get("simplename4"));
+			assertEquals("Functions", r.get("simplename5"));
+			assertEquals("String", r.get("string"));
+			assertEquals("Number", r.get("number"));
+		}, getSourceFile(GetClass.class));
 	}
 	
 }
