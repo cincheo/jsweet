@@ -41,21 +41,25 @@ public class Looping {
 		do {
 			System.out.println(i);
 		} while (i-- > 0);
-		assert i==0;
+		System.out.println(">"+i);
+		assert i==-1;
 		i=10;
 		do
 			System.out.println(i);
 		while (i-- > 0);
-		assert i==0;
+		System.out.println(">"+i);
+		assert i==-1;
 		i=10;
 		while (i-- > 0) {
 			System.out.println(i);
 		}
-		assert i==0;
+		System.out.println(">"+i);
+		assert i==-1;
 		i=10;
 		while (i-- > 0)
 			System.out.println(i);
-		assert i==0;
+		System.out.println(">"+i);
+		assert i==-1;
 
 	}
 
