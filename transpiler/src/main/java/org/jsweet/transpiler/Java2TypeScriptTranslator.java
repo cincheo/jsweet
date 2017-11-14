@@ -4373,7 +4373,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			boolean truncate = false;
 			if (Util.isIntegral(binary.type) && binary.getKind() == Kind.DIVIDE) {
 				if (binary.type.getKind() == TypeKind.LONG) {
-					print("Math.floor(");
+					print("(n => n<0?Math.ceil(n):Math.floor(n))(");
 					closeParen = true;
 				} else {
 					print("(");
@@ -4860,7 +4860,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 		if (Util.isIntegral(cast.type)) {
 			if (cast.type.getKind() == TypeKind.LONG) {
-				print("Math.floor(");
+				print("(n => n<0?Math.ceil(n):Math.floor(n))(");
 			} else {
 				print("(");
 			}
