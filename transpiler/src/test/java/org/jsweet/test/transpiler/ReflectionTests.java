@@ -52,11 +52,11 @@ public class ReflectionTests extends AbstractTest {
 	public void testGetClass() {
 		eval((logHandler, r) -> {
 			logHandler.assertNoProblems();
-			assertEquals("source.structural.AClass1", r.get("name1"));
-			assertEquals("source.structural.AClass1", r.get("name2"));
-			assertEquals("source.structural.AClass1", r.get("name3"));
-			assertEquals("source.structural.Functions", r.get("name4"));
-			assertEquals("source.structural.Functions", r.get("name5"));
+			assertEquals("source.reflection.AClass1", r.get("name1"));
+			assertEquals("source.reflection.AClass1", r.get("name2"));
+			assertEquals("source.reflection.AClass1", r.get("name3"));
+			assertEquals("source.reflection.Functions", r.get("name4"));
+			assertEquals("source.reflection.Functions", r.get("name5"));
 			assertEquals("AClass1", r.get("simplename1"));
 			assertEquals("AClass1", r.get("simplename2"));
 			assertEquals("AClass1", r.get("simplename3"));

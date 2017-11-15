@@ -13,6 +13,13 @@ public class Iterators {
 			assert i == j++;
 		}
 		assert j == 20;
+		
+		r = new Range(10, 20);
+		j = 10;
+		for (Integer i : r) {
+			assert i == j++;
+		}
+		assert j == 20;		
 	}
 
 }

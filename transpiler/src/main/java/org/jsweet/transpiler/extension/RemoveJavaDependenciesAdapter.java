@@ -79,8 +79,10 @@ import org.jsweet.transpiler.model.MethodInvocationElement;
 import org.jsweet.transpiler.model.NewArrayElement;
 import org.jsweet.transpiler.model.NewClassElement;
 import org.jsweet.transpiler.model.VariableAccessElement;
+import org.jsweet.transpiler.model.support.ForeachLoopElementSupport;
 import org.jsweet.transpiler.util.Util;
 
+import com.sun.tools.javac.tree.JCTree.JCEnhancedForLoop;
 import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCTypeApply;
 
@@ -1512,6 +1514,14 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 
 	@Override
 	public boolean substituteForEachLoop(ForeachLoopElement foreachLoop, boolean targetHasLength, String indexVarName) {
+		JCEnhancedForLoop loop = ((ForeachLoopElementSupport) foreachLoop).getTree();
+		if (!targetHasLength && !isJDKPath(loop.expr.type.toString())
+				&& types().isSubtype(loop.expr.type, types().erasure(util().getType(Iterable.class)))) {
+			printForEachLoop(loop, indexVarName);
+			return true;
+		}
+		// return super.substituteForEachLoop(foreachLoop, targetHasLength,
+		// indexVarName);
 		return false;
 	}
 
