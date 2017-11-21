@@ -50,6 +50,9 @@ import source.require.a.b.B2;
 import source.require.b.ClassImport;
 import source.require.b.ClassImportImplicitRequire;
 import source.require.b.GlobalsImport;
+import source.require.inheritance.Child;
+import source.require.inheritance.GrandChild;
+import source.require.inheritance.Parent;
 import source.require.t.k.A1;
 
 public class ModuleTests extends AbstractTest {
@@ -131,12 +134,20 @@ public class ModuleTests extends AbstractTest {
 			logHandler.assertNoProblems();
 		}, getSourceFile(2, "t.b.C1"), getSourceFile(3, "u.T1"));
 	}
-	
+
 	@Test
 	public void testRequireStaticMethod() {
 		transpile(logHandler -> {
 			logHandler.assertNoProblems();
 		}, getSourceFile(A1.class), getSourceFile(source.require.t.B1.class));
 	}
-	
+
+	@Test
+	public void testRequireStaticFromGrandParent() {
+		eval((logHandler, result) -> {
+			logHandler.assertNoProblems();
+			assertEquals(result.get("mainInvoked"), "value from parent");
+		}, getSourceFile(Parent.class), getSourceFile(Child.class), getSourceFile(GrandChild.class));
+	}
+
 }
