@@ -706,14 +706,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						if (!(t instanceof JCTypeApply)) {
 							checkType(t.type.tsym);
 						}
-						if (t instanceof JCIdent)
-						{
-							JCIdent tIdent = (JCIdent) t;
-							if (!tIdent.name.toString().equals("super") && tIdent.sym != null && tIdent.sym.owner != null && tIdent.sym.owner instanceof ClassSymbol)
-							{
-								checkType((ClassSymbol) tIdent.sym.owner);
-							}
-						}
 					}
 					super.scan(t);
 				}
