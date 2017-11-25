@@ -514,8 +514,8 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 					return true;
 				case "newInstance":
 					printMacroName(targetMethodName);
-					print("new ");
-					print(invocation.getTargetExpression(), delegate).print("(").printArgList(invocation.getArguments())
+					print("new (");
+					print(invocation.getTargetExpression(), delegate).print(")(").printArgList(invocation.getArguments())
 							.print(")");
 					return true;
 				case "isInstance":

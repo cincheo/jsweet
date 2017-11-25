@@ -19,6 +19,17 @@ public class GetClass {
 		$export("number", l.getClass().getSimpleName());
 		assert o.getClass() == AClass1.class;
 		assert s.getClass() == String.class;
+
+		AClass1 inst;
+		try {
+			Class<?> c = Class.forName("source.reflection.AClass1");
+		    inst =  (AClass1) Class.forName("source.reflection.AClass1").newInstance();
+		} catch (Exception ex) {
+			assert false;
+		    throw new RuntimeException(ex.getMessage(), ex);
+		}
+		
+		assert inst instanceof AClass1;
 	}
 
 }
