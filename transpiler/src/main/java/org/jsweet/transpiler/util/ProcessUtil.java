@@ -180,15 +180,16 @@ public class ProcessUtil {
 			} else {
 				cmd = new String[] { "cmd", "/c", command };
 			}
+			cmd = ArrayUtils.addAll(cmd, args);
 		} else {
 			if (nodeCommands.contains(command)) {
 				cmd = new String[] { getNpmPath(command) };
+				cmd = ArrayUtils.addAll(cmd, args);
 			} else {
-				cmd = new String[] { command };
+				String cmdAndArgs = StringUtils.join(ArrayUtils.insert(0, args, command), " ");
+				cmd = new String[] { "/bin/sh", "-c", cmdAndArgs };
 			}
 		}
-		cmd = ArrayUtils.addAll(cmd, args);
-
 		logger.debug("run command: " + StringUtils.join(cmd, " "));
 		Process[] process = { null };
 		try {
