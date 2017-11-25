@@ -1059,6 +1059,8 @@ public class JSweetTranspiler implements JSweetOptions {
 				continue;
 			}
 			logger.info("scanning " + cu.sourcefile.getName() + "...");
+			context.clearHeaders();
+			context.clearFooterStatements();
 			AbstractTreePrinter printer = factory.createTranslator(adapter, transpilationHandler, context, cu,
 					generateSourceMaps);
 			printer.print(cu);
@@ -1084,7 +1086,7 @@ public class JSweetTranspiler implements JSweetOptions {
 			outputFile.getParentFile().mkdirs();
 			String outputFilePath = outputFile.getPath();
 			PrintWriter out = new PrintWriter(outputFilePath);
-			String headers = context.poolHeaders();
+			String headers = context.getHeaders();
 			int headersLineCount = StringUtils.countMatches(headers, "\n");
 			try {
 				for (String line : headerLines) {
@@ -1093,7 +1095,7 @@ public class JSweetTranspiler implements JSweetOptions {
 				out.print(headers);
 				out.println(printer.getResult());
 				out.print(context.getGlobalsMappingString());
-				out.print(context.poolFooterStatements());
+				out.print(context.getFooterStatements());
 			} finally {
 				out.close();
 			}
@@ -1251,7 +1253,8 @@ public class JSweetTranspiler implements JSweetOptions {
 			if (!definitionBundle) {
 				out.print(context.getGlobalsMappingString());
 			}
-			out.print(context.poolFooterStatements());
+			out.print(context.getFooterStatements());
+			context.clearFooterStatements();
 			if (definitionBundle && context.getExportedElements() != null) {
 				for (java.util.Map.Entry<String, java.util.List<Symbol>> exportedElements : context
 						.getExportedElements().entrySet()) {

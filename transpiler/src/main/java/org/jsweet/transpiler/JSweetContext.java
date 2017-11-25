@@ -912,16 +912,22 @@ public class JSweetContext extends Context {
 	private List<String> footerStatements = new LinkedList<String>();
 
 	/**
-	 * Gets and clears the footer statements.
+	 * Clears the footer statements.
 	 */
-	public String poolFooterStatements() {
+	public void clearFooterStatements() {
+		footerStatements.clear();
+	}
+	
+	/**
+	 * Gets the footer statements.
+	 */
+	public String getFooterStatements() {
 		StringBuilder sb = new StringBuilder();
 		for (String footerStatement : footerStatements) {
 			sb.append("\n");
 			sb.append(footerStatement);
 			sb.append("\n");
 		}
-		footerStatements.clear();
 		return sb.toString();
 	}
 
@@ -942,9 +948,16 @@ public class JSweetContext extends Context {
 	private Map<String, String> headers = new LinkedHashMap<String, String>();
 
 	/**
-	 * Gets and clears the headers.
+	 * Clear the headers.
 	 */
-	public String poolHeaders() {
+	public void clearHeaders() {
+		headers.clear();
+	}
+	
+	/**
+	 * Gets the headers.
+	 */
+	public String getHeaders() {
 		StringBuilder sb = new StringBuilder();
 		if (!headers.isEmpty()) {
 			for (String header : headers.values()) {
@@ -952,7 +965,6 @@ public class JSweetContext extends Context {
 			}
 			sb.append("\n");
 		}
-		headers.clear();
 		return sb.toString();
 	}
 
