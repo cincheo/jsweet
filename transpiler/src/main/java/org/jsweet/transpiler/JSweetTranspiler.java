@@ -483,9 +483,9 @@ public class JSweetTranspiler implements JSweetOptions {
 			e.printStackTrace();
 			throw new RuntimeException("cannot locate output dirs", e);
 		}
-		
+
 		File extensionDirectory = new File(baseDirectory, JSweetConfig.EXTENSION_DIR);
-		
+
 		classPath = classPath == null ? System.getProperty("java.class.path") : classPath;
 		classPath = extensionDirectory.getAbsolutePath() + File.pathSeparator + classPath;
 		this.classPath = classPath;
@@ -1051,62 +1051,65 @@ public class JSweetTranspiler implements JSweetOptions {
 		new OverloadScanner(transpilationHandler, context).process(compilationUnits);
 		String[] headerLines = getHeaderLines();
 		for (int i = 0; i < compilationUnits.length(); i++) {
-			JCCompilationUnit cu = compilationUnits.get(i);
-			if (isModuleDefsFile(cu)) {
-				if (context.useModules) {
-					generateModuleDefs(cu);
-				}
-				continue;
-			}
-			logger.info("scanning " + cu.sourcefile.getName() + "...");
-			context.clearHeaders();
-			context.clearFooterStatements();
-			AbstractTreePrinter printer = factory.createTranslator(adapter, transpilationHandler, context, cu,
-					generateSourceMaps);
-			printer.print(cu);
-			if (StringUtils.isWhitespace(printer.getResult())) {
-				continue;
-			}
-			String[] s = cu.getSourceFile().getName().split(File.separator.equals("\\") ? "\\\\" : File.separator);
-			String cuName = s[s.length - 1];
-			s = cuName.split("\\.");
-			cuName = s[0];
-			String javaSourceFileRelativeFullName = (cu.packge.getQualifiedName().toString().replace(".",
-					File.separator) + File.separator + cuName + ".java");
-			files[i].javaSourceDirRelativeFile = new File(javaSourceFileRelativeFullName);
-			files[i].javaSourceDir = new File(cu.getSourceFile().getName().substring(0,
-					cu.getSourceFile().getName().length() - javaSourceFileRelativeFullName.length()));
-			String packageName = isNoRootDirectories() ? context.getRootRelativeJavaName(cu.packge)
-					: cu.packge.getQualifiedName().toString();
-			String outputFileRelativePathNoExt = packageName.replace(".", File.separator) + File.separator + cuName;
-			String outputFileRelativePath = outputFileRelativePathNoExt
-					+ (cu.packge.fullname.toString().startsWith("def.") ? ".d.ts" : ".ts");
-			logger.info("output file: " + outputFileRelativePath);
-			File outputFile = new File(tsOutputDir, outputFileRelativePath);
-			outputFile.getParentFile().mkdirs();
-			String outputFilePath = outputFile.getPath();
-			PrintWriter out = new PrintWriter(outputFilePath);
-			String headers = context.getHeaders();
-			int headersLineCount = StringUtils.countMatches(headers, "\n");
 			try {
-				for (String line : headerLines) {
-					out.println(line);
+				JCCompilationUnit cu = compilationUnits.get(i);
+				if (isModuleDefsFile(cu)) {
+					if (context.useModules) {
+						generateModuleDefs(cu);
+					}
+					continue;
 				}
-				out.print(headers);
-				out.println(printer.getResult());
-				out.print(context.getGlobalsMappingString());
-				out.print(context.getFooterStatements());
+				logger.info("scanning " + cu.sourcefile.getName() + "...");
+				AbstractTreePrinter printer = factory.createTranslator(adapter, transpilationHandler, context, cu,
+						generateSourceMaps);
+				printer.print(cu);
+				if (StringUtils.isWhitespace(printer.getResult())) {
+					continue;
+				}
+				String[] s = cu.getSourceFile().getName().split(File.separator.equals("\\") ? "\\\\" : File.separator);
+				String cuName = s[s.length - 1];
+				s = cuName.split("\\.");
+				cuName = s[0];
+				String javaSourceFileRelativeFullName = (cu.packge.getQualifiedName().toString().replace(".",
+						File.separator) + File.separator + cuName + ".java");
+				files[i].javaSourceDirRelativeFile = new File(javaSourceFileRelativeFullName);
+				files[i].javaSourceDir = new File(cu.getSourceFile().getName().substring(0,
+						cu.getSourceFile().getName().length() - javaSourceFileRelativeFullName.length()));
+				String packageName = isNoRootDirectories() ? context.getRootRelativeJavaName(cu.packge)
+						: cu.packge.getQualifiedName().toString();
+				String outputFileRelativePathNoExt = packageName.replace(".", File.separator) + File.separator + cuName;
+				String outputFileRelativePath = outputFileRelativePathNoExt
+						+ (cu.packge.fullname.toString().startsWith("def.") ? ".d.ts" : ".ts");
+				logger.info("output file: " + outputFileRelativePath);
+				File outputFile = new File(tsOutputDir, outputFileRelativePath);
+				outputFile.getParentFile().mkdirs();
+				String outputFilePath = outputFile.getPath();
+				PrintWriter out = new PrintWriter(outputFilePath);
+				String headers = context.getHeaders();
+				int headersLineCount = StringUtils.countMatches(headers, "\n");
+				try {
+					for (String line : headerLines) {
+						out.println(line);
+					}
+					out.print(headers);
+					out.println(printer.getResult());
+					out.print(context.getGlobalsMappingString());
+					out.print(context.getFooterStatements());
+				} finally {
+					out.close();
+				}
+				files[i].tsFile = outputFile;
+				files[i].javaFileLastTranspiled = files[i].getJavaFile().lastModified();
+				printer.sourceMap.shiftOutputPositions(headerLines.length + headersLineCount);
+				files[i].setSourceMap(printer.sourceMap);
+				if (generateSourceMaps && !generateJsFiles) {
+					generateTypeScriptSourceMapFile(files[i]);
+				}
+				logger.info("created " + outputFilePath);
 			} finally {
-				out.close();
+				context.clearHeaders();
+				context.clearFooterStatements();
 			}
-			files[i].tsFile = outputFile;
-			files[i].javaFileLastTranspiled = files[i].getJavaFile().lastModified();
-			printer.sourceMap.shiftOutputPositions(headerLines.length + headersLineCount);
-			files[i].setSourceMap(printer.sourceMap);
-			if (generateSourceMaps && !generateJsFiles) {
-				generateTypeScriptSourceMapFile(files[i]);
-			}
-			logger.info("created " + outputFilePath);
 		}
 	}
 
