@@ -22,17 +22,20 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.Scanner;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.ModuleKind;
 import org.jsweet.transpiler.SourceFile;
+import org.jsweet.transpiler.util.ConsoleTranspilationHandler;
 import org.jsweet.transpiler.util.EvaluationResult;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import source.ambient.three.Globals;
 import source.syntax.AnnotationQualifiedNames;
 import source.syntax.Casts;
 import source.syntax.DocComments;
@@ -55,6 +58,18 @@ import source.syntax.SuperInvocation;
 import source.syntax.ValidIndexedAccesses;
 
 public class SyntaxTests extends AbstractTest {
+
+	@Test
+	public void mamene() throws Exception {
+		try (Scanner s = new Scanner(System.in)) {
+			while (s.hasNextLine()) {
+				s.nextLine();
+				transpiler.transpile(new ConsoleTranspilationHandler(),
+						new SourceFile[] { getSourceFile(References.class) });
+				System.out.println("ok");
+			}
+		}
+	}
 
 	@Test
 	public void testReferences() {
@@ -227,10 +242,10 @@ public class SyntaxTests extends AbstractTest {
 	public void testLiterals() {
 		eval((logHandler, r) -> {
 			logHandler.assertNoProblems();
-			Assert.assertEquals(1, r.<Number> get("l"));
-			Assert.assertEquals(1, r.<Number> get("f"));
-			Assert.assertEquals("c'est l'été!", r.<String> get("s"));
-			Assert.assertEquals("é", r.<String> get("c"));
+			Assert.assertEquals(1, r.<Number>get("l"));
+			Assert.assertEquals(1, r.<Number>get("f"));
+			Assert.assertEquals("c'est l'été!", r.<String>get("s"));
+			Assert.assertEquals("é", r.<String>get("c"));
 		}, getSourceFile(Literals.class));
 	}
 
@@ -267,5 +282,5 @@ public class SyntaxTests extends AbstractTest {
 			logHandler.assertNoProblems();
 		}, getSourceFile(LambdaExpression.class));
 	}
-	
+
 }

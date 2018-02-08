@@ -21,6 +21,7 @@ package org.jsweet.transpiler;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.jsweet.transpiler.util.Util.toJavaFileObjects;
+import static ts.client.TypeScriptServiceClient.TypeScriptServiceLogConfiguration;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -105,6 +106,7 @@ import ts.client.ITypeScriptServiceClient;
 import ts.client.LoggingInterceptor;
 import ts.client.ScriptKindName;
 import ts.client.TypeScriptServiceClient;
+import ts.client.TypeScriptServiceClient.TypeScriptServiceLogLevel;
 import ts.client.completions.CompletionEntry;
 import ts.client.diagnostics.Diagnostic;
 import ts.client.diagnostics.DiagnosticEvent;
@@ -1448,7 +1450,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		if (jsOutputDir != null) {
 			compilerOptions.setOutDir(jsOutputDir.getAbsolutePath());
 		}
-		
+
 		if (skipTypeScriptChecks) {
 			compilerOptions.setSkipDefaultLibCheck(true);
 		}
@@ -1466,81 +1468,75 @@ public class JSweetTranspiler implements JSweetOptions {
 		}
 
 		try {
-			Collection<String> sourceFilePaths = sourceFiles.stream().map(ts.utils.FileUtils::getPath).collect(toList());
+			Collection<String> sourceFilePaths = sourceFiles.stream().map(ts.utils.FileUtils::getPath)
+					.collect(toList());
 			if (sourceFilePaths.isEmpty()) {
 				throw new RuntimeException("no files to transpile");
 			}
-			
-			logger.info("launching tsserver compilation : \ncompilerOptions=" + compilerOptions + " \nsourcesFilePaths=" + sourceFilePaths);
-ITypeScriptServiceClient client = getTypeScriptServiceClient();
+
+			logger.info("launching tsserver compilation : \ncompilerOptions=" + compilerOptions + " \nsourcesFilePaths="
+					+ sourceFilePaths);
+			ITypeScriptServiceClient client = getTypeScriptServiceClient();
+
+			logger.info("tsserver client built");
 
 			String projectFileName = ts.utils.FileUtils.getPath(getTsOutputDir());
 			String referenceFileName = sourceFilePaths.iterator().next();
-//			ProjectInfo projectInfo = client.projectInfo(projectFileName, projectFileName, false).get();
-//if (projectInfo == null) {
 
-	client.openExternalProject(projectFileName, new ArrayList<>(), compilerOptions);
-//}
-			// Open "sample.ts" in an editor
-//			String fileName = ts.utils.FileUtils.getPath(new File("./ts2/test.ts"));
-//			String fileName2 = ts.utils.FileUtils.getPath(new File("./ts2/test2.ts"));
-//			String fileName3 = ts.utils.FileUtils.getPath(new File("./ts2/lib/lib.ts"));
-//			
-//			compilerOptions.setOutDir("ts2/OUT");
-//			client.openExternalProject("./ts2", asList( //
-//					new ExternalFile(fileName, ScriptKindName.TS, false, null), //
-//					new ExternalFile(fileName2, ScriptKindName.TS, false, null)), compilerOptions);
+			if (lastTsserverProjectOpened == null || lastTsserverProjectOpened.equals(projectFileName)) {
+				logger.info("open external project");
+				client.openExternalProject(projectFileName,
+						sourceFilePaths.stream().map(path -> new ExternalFile(path, ScriptKindName.TS, false, null))
+								.collect(toList()), //
+						compilerOptions);
+				lastTsserverProjectOpened = projectFileName;
+			}
 
-	for (String fileName : sourceFilePaths) {
-		logger.info("!OPEN " + fileName);
-		client.openFile(fileName, null);
-	}
-	
-//			client.openFile(fileName3, null);
+			logger.info("tsserver project opened ");
 
-//			try (Scanner scanner = new Scanner(System.in)) {
-//				while (scanner.hasNextLine()) {
-//					System.out.println("NEXT >> " + scanner.nextLine());
-	for (String fileName : sourceFilePaths) {
-		Boolean result = client.compileOnSaveEmitFile(fileName, true).get(5000, TimeUnit.MILLISECONDS);
-		logger.info(fileName + " >>>> " + result);
-	}
-//					Boolean result = client.compileOnSaveEmitFile(fileName, true).get(5000, TimeUnit.MILLISECONDS);
-//					Boolean result2 = client.compileOnSaveEmitFile(fileName2, true).get(5000, TimeUnit.MILLISECONDS);
-//					Boolean result3 = client.compileOnSaveEmitFile(fileName3, true).get(5000, TimeUnit.MILLISECONDS);
-//
-					ProjectInfo projectInfo = client.projectInfo(null, projectFileName, true).get(5000, TimeUnit.MILLISECONDS);
-					CompletableFuture<java.util.List<DiagnosticEvent>> errors = client.geterrForProject(referenceFileName, 0,
-							projectInfo);
-					displayDiagnostics(errors.get());
+			for (String fileName : sourceFilePaths) {
+				client.updateFile(fileName, null);
+			}
 
-//				}
-//			}
+			for (String fileName : sourceFilePaths) {
+				Boolean result = client.compileOnSaveEmitFile(fileName, true).get(5000, TimeUnit.MILLISECONDS);
+				logger.info(fileName + " >>>> " + result);
+			}
 
-//			client.closeFile(fileName);
-//			client.closeFile(fileName2);
-//			client.dispose();
+			logger.info("tsserver project compiled ");
 
-//					if (isIgnoreTypeScriptErrors()) {
-//						return;
-//					}
-//					SourcePosition position = SourceFile.findOriginPosition(output.position, Arrays.asList(files));
-//					if (position == null) {
-//						transpilationHandler.report(JSweetProblem.INTERNAL_TSC_ERROR, output.position, output.message);
-//					} else {
-//						transpilationHandler.report(JSweetProblem.MAPPED_TSC_ERROR, position, output.message);
-//					}
-//					if (!ignoreTypeScriptErrors && transpilationHandler.getProblemCount() == 0) {
-//						transpilationHandler.report(JSweetProblem.INTERNAL_TSC_ERROR, null, "Unknown tsc error");
-//					}
-					
-//			onTsTranspilationCompleted(false, transpilationHandler, files);
+			ProjectInfo projectInfo = client.projectInfo(referenceFileName, projectFileName, true).get(5000,
+					TimeUnit.MILLISECONDS);
+			CompletableFuture<java.util.List<DiagnosticEvent>> errors = client.geterrForProject(referenceFileName, 0,
+					projectInfo);
+			displayDiagnostics(errors.get());
+
+			// if (isIgnoreTypeScriptErrors()) {
+			// return;
+			// }
+			// SourcePosition position = SourceFile.findOriginPosition(output.position,
+			// Arrays.asList(files));
+			// if (position == null) {
+			// transpilationHandler.report(JSweetProblem.INTERNAL_TSC_ERROR,
+			// output.position, output.message);
+			// } else {
+			// transpilationHandler.report(JSweetProblem.MAPPED_TSC_ERROR, position,
+			// output.message);
+			// }
+			// if (!ignoreTypeScriptErrors && transpilationHandler.getProblemCount() == 0) {
+			// transpilationHandler.report(JSweetProblem.INTERNAL_TSC_ERROR, null, "Unknown
+			// tsc error");
+			// }
+
+			// onTsTranspilationCompleted(false, transpilationHandler, files);
 
 		} catch (Exception e) {
 			logger.error("ts2js transpilation failed", e);
 		}
 	}
-	
+
+	private String lastTsserverProjectOpened;
+
 	private static void displayDiagnostics(java.util.List<DiagnosticEvent> events) {
 		System.out.println("========== DISPLAY DIAGNOSTICS ============");
 		for (DiagnosticEvent event : events) {
@@ -1552,23 +1548,21 @@ ITypeScriptServiceClient client = getTypeScriptServiceClient();
 		}
 		System.out.println("========== END ===========");
 	}
-	
-//	private ProjectInfo typeScriptProjectInfo;
-//	
-//	private ProjectInfo getOrInitTypeScriptProject(ITypeScriptServiceClient client, String name) {
-//		
-//	}
 
 	private ITypeScriptServiceClient typeScriptServiceClient;
 
 	private ITypeScriptServiceClient getTypeScriptServiceClient() {
 		try {
 			if (this.typeScriptServiceClient == null) {
-				TypeScriptServiceClient typeScriptServiceClient = new TypeScriptServiceClient(new File("."),
-						new File("../../typescript.java/typescript-2.1.6/node_modules/typescript/bin/tsserver"), null);
-				typeScriptServiceClient.addInterceptor(LoggingInterceptor.getInstance());
+				TypeScriptServiceClient typeScriptServiceClient = new TypeScriptServiceClient(new File("."), //
+						new File("../../typescript.java/typescript-2.1.6/node_modules/typescript/bin/tsserver"), //
+						null, false, false, null, null, //
+						new TypeScriptServiceLogConfiguration("/tmp/tss.log", TypeScriptServiceLogLevel.verbose));
+				// typeScriptServiceClient.addInterceptor(LoggingInterceptor.getInstance());
 				typeScriptServiceClient.addProcessListener(TraceNodejsProcess.INSTANCE);
 				this.typeScriptServiceClient = typeScriptServiceClient;
+
+				logger.info("creating TypeScriptServiceClient");
 			}
 
 			return this.typeScriptServiceClient;

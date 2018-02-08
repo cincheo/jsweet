@@ -38,6 +38,12 @@ public class References {
 	public static void main(String[] args) {
 		References r = new References();
 		r.m1(r::m);
+		
+		int y = 0;
+		y++;
+		y++;
+		
+		float aaaa;
 	}
 
 	public static <T> Object m(Supplier<T> supplier) {
