@@ -21,7 +21,6 @@ package org.jsweet.transpiler;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.jsweet.transpiler.util.Util.toJavaFileObjects;
-import static ts.client.TypeScriptServiceClient.TypeScriptServiceLogConfiguration;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -43,12 +42,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import ts.internal.client.protocol.OpenExternalProjectRequestArgs.ExternalFile;
-import ts.nodejs.TraceNodejsProcess;
-
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -103,16 +97,16 @@ import com.sun.tools.javac.util.Options;
 
 import ts.TypeScriptException;
 import ts.client.ITypeScriptServiceClient;
-import ts.client.LoggingInterceptor;
 import ts.client.ScriptKindName;
 import ts.client.TypeScriptServiceClient;
+import ts.client.TypeScriptServiceClient.TypeScriptServiceLogConfiguration;
 import ts.client.TypeScriptServiceClient.TypeScriptServiceLogLevel;
-import ts.client.completions.CompletionEntry;
-import ts.client.diagnostics.Diagnostic;
 import ts.client.diagnostics.DiagnosticEvent;
 import ts.client.diagnostics.IDiagnostic;
 import ts.client.projectinfo.ProjectInfo;
 import ts.cmd.tsc.CompilerOptions;
+import ts.internal.client.protocol.OpenExternalProjectRequestArgs.ExternalFile;
+import ts.nodejs.TraceNodejsProcess;
 
 /**
  * The actual JSweet transpiler.
@@ -1500,44 +1494,42 @@ public class JSweetTranspiler implements JSweetOptions {
 
 			for (String fileName : sourceFilePaths) {
 				Boolean result = client.compileOnSaveEmitFile(fileName, true).get(5000, TimeUnit.MILLISECONDS);
-				logger.info(fileName + " >>>> " + result);
+				logger.info("COMPILE >>> " + fileName + " >>>> " + result);
 			}
 
 			logger.info("tsserver project compiled ");
 
 			ProjectInfo projectInfo = client.projectInfo(referenceFileName, projectFileName, true).get(5000,
 					TimeUnit.MILLISECONDS);
-			CompletableFuture<java.util.List<DiagnosticEvent>> errors = client.geterrForProject(referenceFileName, 0,
-					projectInfo);
-			displayDiagnostics(errors.get());
+			Collection<DiagnosticEvent> compilationErrors = client.geterrForProject(referenceFileName, 0, projectInfo)
+					.get();
+			printTsserverDiagnostics(compilationErrors);
 
-			// if (isIgnoreTypeScriptErrors()) {
-			// return;
-			// }
-			// SourcePosition position = SourceFile.findOriginPosition(output.position,
-			// Arrays.asList(files));
-			// if (position == null) {
-			// transpilationHandler.report(JSweetProblem.INTERNAL_TSC_ERROR,
-			// output.position, output.message);
-			// } else {
-			// transpilationHandler.report(JSweetProblem.MAPPED_TSC_ERROR, position,
-			// output.message);
-			// }
-			// if (!ignoreTypeScriptErrors && transpilationHandler.getProblemCount() == 0) {
-			// transpilationHandler.report(JSweetProblem.INTERNAL_TSC_ERROR, null, "Unknown
-			// tsc error");
-			// }
+			if (!isIgnoreTypeScriptErrors()) {
+				for (DiagnosticEvent errorEvent : compilationErrors) {
+					File fileInError = new File(errorEvent.getBody().getFile());
+					for (IDiagnostic error : errorEvent.getBody().getDiagnostics()) {
+						SourcePosition position = new SourcePosition(fileInError, null,
+								new Position(error.getStartLocation().getLine(), error.getStartLocation().getOffset()));
+						transpilationHandler.report(JSweetProblem.MAPPED_TSC_ERROR, position, error.getFullText());
+					}
+				}
+			}
 
-			// onTsTranspilationCompleted(false, transpilationHandler, files);
+			onTsTranspilationCompleted(false, transpilationHandler, files);
 
 		} catch (Exception e) {
 			logger.error("ts2js transpilation failed", e);
+
+			if (!ignoreTypeScriptErrors && transpilationHandler.getProblemCount() == 0) {
+				transpilationHandler.report(JSweetProblem.INTERNAL_TSC_ERROR, null, "Unknown tsc error");
+			}
 		}
 	}
 
 	private String lastTsserverProjectOpened;
 
-	private static void displayDiagnostics(java.util.List<DiagnosticEvent> events) {
+	private static void printTsserverDiagnostics(Collection<DiagnosticEvent> events) {
 		System.out.println("========== DISPLAY DIAGNOSTICS ============");
 		for (DiagnosticEvent event : events) {
 			System.out.println(event.getBody().getFile() + ":: " + event.getEvent());

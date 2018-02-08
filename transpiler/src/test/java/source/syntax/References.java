@@ -29,6 +29,8 @@ public class References {
 		$export("i", i);
 		$export("m", m(MyObject::new));
 		$export("m2", m2(MyObject[]::new));
+		
+		References.this.toString();
 	}
 
 	void m1(BiConsumer<String, Integer> c) {
@@ -38,12 +40,6 @@ public class References {
 	public static void main(String[] args) {
 		References r = new References();
 		r.m1(r::m);
-		
-		int y = 0;
-		y++;
-		y++;
-		
-		float aaaa;
 	}
 
 	public static <T> Object m(Supplier<T> supplier) {

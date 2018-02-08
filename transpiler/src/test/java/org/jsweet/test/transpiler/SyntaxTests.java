@@ -60,12 +60,18 @@ import source.syntax.ValidIndexedAccesses;
 public class SyntaxTests extends AbstractTest {
 
 	@Test
+	// @Ignore
 	public void mamene() throws Exception {
 		try (Scanner s = new Scanner(System.in)) {
 			while (s.hasNextLine()) {
 				s.nextLine();
-				transpiler.transpile(new ConsoleTranspilationHandler(),
-						new SourceFile[] { getSourceFile(References.class) });
+				TestTranspilationHandler handler = new TestTranspilationHandler();
+				transpiler.transpile(handler, new SourceFile[] { getSourceFile(References.class) });
+				
+				
+				System.out.println(handler.getReportedProblems());
+//				handler.assertReportedProblems(JSweetProblem.);
+				
 				System.out.println("ok");
 			}
 		}
