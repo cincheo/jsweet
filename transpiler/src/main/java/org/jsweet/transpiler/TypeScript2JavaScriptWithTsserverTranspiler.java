@@ -40,16 +40,19 @@ public class TypeScript2JavaScriptWithTsserverTranspiler extends TypeScript2Java
 			JSweetOptions options, //
 			boolean ignoreErrors, //
 			OnTsTranspilationCompletedCallback onTsTranspilationCompleted) throws Exception {
-		
+
 		if (options.isTscWatchMode()) {
-			throw new RuntimeException("tsserver implementation doesn't support watch mode - but it is so fast you shouldn't need it :)");
+			throw new RuntimeException(
+					"tsserver implementation doesn't support watch mode - but it is so fast you shouldn't need it :)");
 		}
-		
+
 		logger.debug("ts2js with tsserver: " + tsFiles);
 
 		CompilerOptions compilerOptions = new CompilerOptions();
 		compilerOptions.setTarget(options.getEcmaTargetVersion().name());
-		compilerOptions.setModule(options.getModuleKind().name());
+		if (options.isUsingModules()) {
+			compilerOptions.setModule(options.getModuleKind().name());
+		}
 		compilerOptions.setModuleResolution(options.getModuleResolution().name());
 
 		if (options.getEcmaTargetVersion().ordinal() >= EcmaScriptComplianceLevel.ES5.ordinal()) {
@@ -57,20 +60,13 @@ public class TypeScript2JavaScriptWithTsserverTranspiler extends TypeScript2Java
 			compilerOptions.setEmitDecoratorMetadata(true);
 		}
 
-		if (options.isGenerateSourceMaps()) {
-			compilerOptions.setSourceMap(true);
-		}
-		if (options.isGenerateDeclarations()) {
-			compilerOptions.setDeclaration(true);
-		}
+		compilerOptions.setSourceMap(options.isGenerateSourceMaps());
+		compilerOptions.setDeclaration(options.isGenerateDeclarations());
 		compilerOptions.setRootDir(options.getTsOutputDir().getAbsolutePath());
+		compilerOptions.setSkipDefaultLibCheck(options.isSkipTypeScriptChecks());
 
 		if (options.getJsOutputDir() != null) {
 			compilerOptions.setOutDir(options.getJsOutputDir().getAbsolutePath());
-		}
-
-		if (options.isSkipTypeScriptChecks()) {
-			compilerOptions.setSkipDefaultLibCheck(true);
 		}
 
 		Collection<String> sourceFilePaths = tsFiles.stream().map(ts.utils.FileUtils::getPath).collect(toList());
@@ -81,8 +77,7 @@ public class TypeScript2JavaScriptWithTsserverTranspiler extends TypeScript2Java
 		logger.info("launching tsserver compilation : \ncompilerOptions=" + compilerOptions + " \nsourcesFilePaths="
 				+ sourceFilePaths);
 		ITypeScriptServiceClient client = getTypeScriptServiceClient();
-
-		logger.info("tsserver client built");
+		logger.debug("tsserver client built");
 
 		String projectFileName = ts.utils.FileUtils.getPath(options.getTsOutputDir());
 		String referenceFileName = sourceFilePaths.iterator().next();
@@ -93,7 +88,7 @@ public class TypeScript2JavaScriptWithTsserverTranspiler extends TypeScript2Java
 						.collect(toList()), //
 				compilerOptions);
 
-		logger.info("tsserver project opened ");
+		logger.debug("tsserver project opened: " + projectFileName);
 
 		for (String fileName : sourceFilePaths) {
 			client.updateFile(fileName, null);
@@ -101,17 +96,17 @@ public class TypeScript2JavaScriptWithTsserverTranspiler extends TypeScript2Java
 
 		for (String fileName : sourceFilePaths) {
 			try {
-			Boolean result = client.compileOnSaveEmitFile(fileName, true).get(5000, TimeUnit.MILLISECONDS);
-			logger.info("COMPILE >>> " + fileName + " >>>> " + result);
+				Boolean result = client.compileOnSaveEmitFile(fileName, true).get(5000, TimeUnit.MILLISECONDS);
+				logger.trace("ts compilation [" + fileName + "] result=" + result);
 			} catch (ExecutionException e) {
-				 Throwable actualException = e.getCause();
-				 if (actualException instanceof TypeScriptNoContentAvailableException) {
-					 logger.warn("NO CONTENT FOR " + fileName);
-				 }
+				Throwable actualException = e.getCause();
+				if (actualException instanceof TypeScriptNoContentAvailableException) {
+					logger.warn("ts compilation: no content for " + fileName);
+				}
 			}
 		}
 
-		logger.info("tsserver project compiled ");
+		logger.info("tsserver project compiled: " + projectFileName);
 
 		ProjectInfo projectInfo = client.projectInfo(referenceFileName, projectFileName, true).get(5000,
 				TimeUnit.MILLISECONDS);
@@ -131,6 +126,8 @@ public class TypeScript2JavaScriptWithTsserverTranspiler extends TypeScript2Java
 		}
 
 		client.closeExternalProject(projectFileName);
+
+		onTsTranspilationCompleted.call(false, transpilationHandler, tsSourceFiles);
 
 	}
 
