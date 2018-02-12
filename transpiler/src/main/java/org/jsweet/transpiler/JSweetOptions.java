@@ -292,5 +292,16 @@ public interface JSweetOptions {
 	 * <code>jsweetconfig.json</code> file in the current project.
 	 */
 	File getConfigurationFile();
-	
+
+	/**
+	 * @return true if module is set to somethind else than ModuleKind.none
+	 */
+	boolean isUsingModules();
+
+	boolean isSkipTypeScriptChecks();
+
+	/**
+	 * @return true to enable tsc watch mode
+	 */
+	boolean isTscWatchMode();
 }

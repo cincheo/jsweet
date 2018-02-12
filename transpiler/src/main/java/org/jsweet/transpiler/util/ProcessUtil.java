@@ -92,21 +92,28 @@ public class ProcessUtil {
 	private static String EXTRA_PATH = "";
 
 	/**
-	 * Gets the full path of a command installed with npm.
+	 * Gets the full path of a global package's command installed with npm.
 	 */
-	private static String getNpmPath(String command) {
+	public static String getGlobalNpmPackageExecutablePath(String command) {
 		if (System.getProperty("os.name").startsWith("Windows")) {
 			return NPM_DIR.getPath() + File.separator + command + ".cmd";
 		} else {
 			return NPM_DIR.getPath() + File.separator + "bin" + File.separator + command;
 		}
 	}
+	
+	/**
+	 * Gets the full path of a global package installed with npm.
+	 */
+	public static String getGlobalNpmPackagePath(String packageName) {
+			return NPM_DIR.getPath() + File.separator + "node_modules" + File.separator + packageName;
+	}
 
 	/**
 	 * Tells if this node command is installed.
 	 */
 	public static boolean isInstalledWithNpm(String command) {
-		return new File(getNpmPath(command)).exists();
+		return new File(getGlobalNpmPackageExecutablePath(command)).exists();
 	}
 
 	/**
@@ -176,14 +183,14 @@ public class ProcessUtil {
 		String[] cmd;
 		if (System.getProperty("os.name").startsWith("Windows")) {
 			if (nodeCommands.contains(command)) {
-				cmd = new String[] { getNpmPath(command) };
+				cmd = new String[] { getGlobalNpmPackageExecutablePath(command) };
 			} else {
 				cmd = new String[] { "cmd", "/c", command };
 			}
 			cmd = ArrayUtils.addAll(cmd, args);
 		} else {
 			if (nodeCommands.contains(command)) {
-				cmd = new String[] { getNpmPath(command) };
+				cmd = new String[] { getGlobalNpmPackageExecutablePath(command) };
 				cmd = ArrayUtils.addAll(cmd, args);
 			} else {
 				String cmdAndArgs = StringUtils.join(ArrayUtils.insert(0, args, command), " ");
