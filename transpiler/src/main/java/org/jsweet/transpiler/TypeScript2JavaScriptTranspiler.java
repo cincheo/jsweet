@@ -2,9 +2,11 @@ package org.jsweet.transpiler;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 
 import org.apache.log4j.Logger;
 import org.jsweet.transpiler.util.ErrorCountTranspilationHandler;
+import org.jsweet.transpiler.util.Util;
 
 public abstract class TypeScript2JavaScriptTranspiler {
 
@@ -16,8 +18,8 @@ public abstract class TypeScript2JavaScriptTranspiler {
 
 	public void ts2js( //
 			ErrorCountTranspilationHandler transpilationHandler, //
-			Collection<File> tsFiles, //
 			Collection<SourceFile> tsSourceFiles, //
+			Collection<File> tsDefDirs, //
 			JSweetOptions options, //
 			boolean ignoreErrors, //
 			OnTsTranspilationCompletedCallback onTsTranspilationCompleted) {
@@ -28,6 +30,14 @@ public abstract class TypeScript2JavaScriptTranspiler {
 						&& options.getModuleKind() != ModuleKind.es2015) {
 					throw new RuntimeException("cannot use old fashionned modules with ES>5 target");
 				}
+			}
+			
+			LinkedHashSet<File> tsFiles = new LinkedHashSet<>();
+			for (SourceFile sourceFile : tsSourceFiles) {
+					tsFiles.add(sourceFile.getTsFile());
+			}
+			for (File dir : tsDefDirs) {
+				Util.addFiles(".d.ts", dir, tsFiles);
 			}
 
 			doTranspile(transpilationHandler, tsFiles, tsSourceFiles, options, ignoreErrors,

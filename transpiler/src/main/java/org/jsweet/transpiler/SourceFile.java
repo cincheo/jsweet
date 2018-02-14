@@ -233,8 +233,9 @@ public class SourceFile {
 	/**
 	 * Internally used by {@link JSweetTranspiler}.
 	 */
-	protected void setTsFile(File tsFile) {
+	protected SourceFile setTsFile(File tsFile) {
 		this.tsFile = tsFile;
+		return this;
 	}
 
 	/**

@@ -1012,27 +1012,24 @@ public class JSweetTranspiler implements JSweetOptions {
 	private void ts2js(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] sourceFiles)
 			throws IOException {
 
-		LinkedHashSet<File> tsFiles = new LinkedHashSet<>();
 		LinkedHashSet<SourceFile> tsSourceFiles = new LinkedHashSet<>();
 		File tscRootFile = getOrCreateTscRootFile();
 		if (tscRootFile.exists()) {
-			tsFiles.add(tscRootFile);
+			tsSourceFiles.add(new SourceFile(null).setTsFile(tscRootFile));
 		}
 		for (SourceFile sourceFile : sourceFiles) {
 			if (sourceFile.getTsFile() != null) {
-				tsFiles.add(sourceFile.getTsFile());
 				tsSourceFiles.add(sourceFile);
 			}
 		}
-		for (File dir : tsDefDirs) {
-			Util.addFiles(".d.ts", dir, tsFiles);
-		}
 
+		logger.info("ts2js on " + ts2jsTranspiler + " sourceFiles=" + sourceFiles.length);
 		ts2jsTranspiler.ts2js(transpilationHandler, //
-				tsFiles, //
 				tsSourceFiles, //
+				tsDefDirs, //
 				this, //
-				isIgnoreTypeScriptErrors(), this::onTsTranspilationCompleted);
+				isIgnoreTypeScriptErrors(), //
+				this::onTsTranspilationCompleted);
 	}
 
 	public void setUseTsserver(boolean useTsserver) {
