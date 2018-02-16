@@ -149,11 +149,11 @@ public class TypeScript2JavaScriptWithTsserverTranspiler extends TypeScript2Java
 
 		try {
 			if (typeScriptServiceClient == null) {
-				String typescriptModulePath = ProcessUtil.getGlobalNpmPackagePath("typescript");
-
+				String tsserverPath = ProcessUtil.getGlobalNpmPackageNodeMainFilePath("typescript", "tsserver");
+				
 				TypeScriptServiceClient client = new TypeScriptServiceClient( //
 						new File("."), //
-						new File(typescriptModulePath), //
+						new File(tsserverPath), //
 						null, false, false, null, null, //
 						new TypeScriptServiceLogConfiguration("/tmp/tss.log", TypeScriptServiceLogLevel.verbose));
 				// client.addInterceptor(LoggingInterceptor.getInstance());
