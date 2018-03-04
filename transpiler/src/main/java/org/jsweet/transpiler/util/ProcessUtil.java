@@ -86,15 +86,27 @@ public class ProcessUtil {
 
 	/**
 	 * Some extra paths to be added to the PATH environment variable in some
-	 * environments. Typically Eclipse on Mac OSX misses the /usr/local/bin
-	 * path, which is required to run node.
+	 * environments. Typically Eclipse on Mac OSX misses the /usr/local/bin path,
+	 * which is required to run node.
 	 */
 	private static String EXTRA_PATH = "";
 
 	/**
-	 * Gets the full path of a command installed with npm.
+	 * Gets the full path of a global package's (system) command installed with npm.
 	 */
-	private static String getNpmPath(String command) {
+	public static String getGlobalNpmPackageNodeMainFilePath(String nodeModule, String mainFileName) {
+		if (System.getProperty("os.name").startsWith("Windows")) {
+			return NPM_DIR.getPath() + File.separator + "node_modules" + File.separator + "typescript" + File.separator
+					+ "bin"+ File.separator + mainFileName;
+		} else {
+			return NPM_DIR.getPath() + File.separator + "bin" + File.separator + mainFileName;
+		}
+	}
+
+	/**
+	 * Gets the full path of a global package's JS main file installed with npm.
+	 */
+	public static String getGlobalNpmPackageExecutablePath(String command) {
 		if (System.getProperty("os.name").startsWith("Windows")) {
 			return NPM_DIR.getPath() + File.separator + command + ".cmd";
 		} else {
@@ -103,10 +115,17 @@ public class ProcessUtil {
 	}
 
 	/**
+	 * Gets the full path of a global package installed with npm.
+	 */
+	public static String getGlobalNpmPackagePath(String packageName) {
+		return NPM_DIR.getPath() + File.separator + "node_modules" + File.separator + packageName;
+	}
+
+	/**
 	 * Tells if this node command is installed.
 	 */
 	public static boolean isInstalledWithNpm(String command) {
-		return new File(getNpmPath(command)).exists();
+		return new File(getGlobalNpmPackageExecutablePath(command)).exists();
 	}
 
 	/**
@@ -120,8 +139,8 @@ public class ProcessUtil {
 	 *            upcalled when the command does not terminate successfully
 	 * @param args
 	 *            the command-line arguments
-	 * @return the process that was created to execute the command (exited at
-	 *         this point)
+	 * @return the process that was created to execute the command (exited at this
+	 *         point)
 	 */
 	public static Process runCommand(String command, Consumer<String> stdoutConsumer, Runnable errorHandler,
 			String... args) {
@@ -157,8 +176,8 @@ public class ProcessUtil {
 	 * @param directory
 	 *            the working directory of the created process
 	 * @param async
-	 *            tells if the command should be run asynchronously (in a
-	 *            separate thread)
+	 *            tells if the command should be run asynchronously (in a separate
+	 *            thread)
 	 * @param stdoutConsumer
 	 *            consumes the standard output stream as lines of characters
 	 * @param endConsumer
@@ -176,14 +195,14 @@ public class ProcessUtil {
 		String[] cmd;
 		if (System.getProperty("os.name").startsWith("Windows")) {
 			if (nodeCommands.contains(command)) {
-				cmd = new String[] { getNpmPath(command) };
+				cmd = new String[] { getGlobalNpmPackageExecutablePath(command) };
 			} else {
 				cmd = new String[] { "cmd", "/c", command };
 			}
 			cmd = ArrayUtils.addAll(cmd, args);
 		} else {
 			if (nodeCommands.contains(command)) {
-				cmd = new String[] { getNpmPath(command) };
+				cmd = new String[] { getGlobalNpmPackageExecutablePath(command) };
 				cmd = ArrayUtils.addAll(cmd, args);
 			} else {
 				String cmdAndArgs = StringUtils.join(ArrayUtils.insert(0, args, command), " ");

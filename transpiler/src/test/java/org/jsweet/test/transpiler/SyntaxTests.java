@@ -227,10 +227,10 @@ public class SyntaxTests extends AbstractTest {
 	public void testLiterals() {
 		eval((logHandler, r) -> {
 			logHandler.assertNoProblems();
-			Assert.assertEquals(1, r.<Number> get("l"));
-			Assert.assertEquals(1, r.<Number> get("f"));
-			Assert.assertEquals("c'est l'été!", r.<String> get("s"));
-			Assert.assertEquals("é", r.<String> get("c"));
+			Assert.assertEquals(1, r.<Number>get("l"));
+			Assert.assertEquals(1, r.<Number>get("f"));
+			Assert.assertEquals("c'est l'été!", r.<String>get("s"));
+			Assert.assertEquals("é", r.<String>get("c"));
 		}, getSourceFile(Literals.class));
 	}
 
@@ -267,5 +267,5 @@ public class SyntaxTests extends AbstractTest {
 			logHandler.assertNoProblems();
 		}, getSourceFile(LambdaExpression.class));
 	}
-	
+
 }

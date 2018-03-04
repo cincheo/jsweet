@@ -39,6 +39,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
@@ -131,8 +132,8 @@ public class JSweetTranspiler implements JSweetOptions {
 
 	/**
 	 * The TypeScript version to be installed/used with this version of JSweet
-	 * (WARNING: so far, having multiple JSweet versions for the same user
-	 * account may lead to performance issues - could be fixed if necessary).
+	 * (WARNING: so far, having multiple JSweet versions for the same user account
+	 * may lead to performance issues - could be fixed if necessary).
 	 */
 	public static final String TSC_VERSION = "2.1";
 
@@ -176,15 +177,16 @@ public class JSweetTranspiler implements JSweetOptions {
 	private final static Logger logger = Logger.getLogger(JSweetTranspiler.class);
 
 	/**
-	 * The name of the file generated in the root package to avoid the
-	 * TypeScript compiler to skip empty directories.
+	 * The name of the file generated in the root package to avoid the TypeScript
+	 * compiler to skip empty directories.
+	 * @deprecated Use {@link TypeScript2JavaScriptWithTscTranspiler#TSCROOTFILE} instead
 	 */
-	public final static String TSCROOTFILE = ".tsc-rootfile.ts";
+	public final static String TSCROOTFILE = TypeScript2JavaScriptWithTscTranspiler.TSCROOTFILE;
 
 	private JSweetFactory factory;
 	private PrinterAdapter adapter;
 	private long transpilationStartTimestamp;
-	private ArrayList<File> auxiliaryTsModuleFiles = new ArrayList<>();
+
 	private JSweetContext context;
 	private Options options;
 	private JavaFileManager fileManager;
@@ -199,7 +201,7 @@ public class JSweetTranspiler implements JSweetOptions {
 	private boolean generateTsFiles = true;
 	private boolean generateJsFiles = true;
 	private boolean tscWatchMode = false;
-	private File[] tsDefDirs = {};
+	private final LinkedList<File> tsDefDirs = new LinkedList<>();
 	private ModuleKind moduleKind = ModuleKind.none;
 	private ModuleResolution moduleResolution = ModuleResolution.classic;
 	private EcmaScriptComplianceLevel ecmaTargetVersion = EcmaScriptComplianceLevel.ES3;
@@ -224,13 +226,14 @@ public class JSweetTranspiler implements JSweetOptions {
 	private ArrayList<String> adapters = new ArrayList<>();
 	private File configurationFile;
 
+	private TypeScript2JavaScriptTranspiler ts2jsTranspiler = new TypeScript2JavaScriptWithTscTranspiler();
+
 	/**
 	 * Manually sets the transpiler to use (or not use) a Java runtime.
 	 * 
 	 * <p>
-	 * Calling this method is usually not needed since JSweet auto-detects the
-	 * J4TS candy. Use only to manually force the transpiler in a mode or
-	 * another.
+	 * Calling this method is usually not needed since JSweet auto-detects the J4TS
+	 * candy. Use only to manually force the transpiler in a mode or another.
 	 */
 	public void setUsingJavaRuntime(boolean usingJavaRuntime) {
 		forceJavaRuntime = true;
@@ -241,12 +244,12 @@ public class JSweetTranspiler implements JSweetOptions {
 	public String toString() {
 		return "workingDir=" + workingDir + "\ntsOutputDir=" + tsOutputDir + "\njsOutputDir=" + jsOutputDir
 				+ "\nclassPath=" + classPath + "\ngenerateJsFiles=" + generateJsFiles + "\ntscWatchMode=" + tscWatchMode
-				+ "\ntsDefDirs=" + (tsDefDirs == null ? null : Arrays.asList(tsDefDirs)) + "\nmoduleKind=" + moduleKind
-				+ "\necmaTargertVersion=" + ecmaTargetVersion + "\nbundle=" + bundle + "\nencoding=" + encoding
-				+ "\nnoRootDirectories=" + noRootDirectories + "\nignoreAssertions=" + ignoreAssertions
-				+ "\nignoreJavaFileNameError=" + ignoreJavaFileNameError + "\ngenerateDeclarations="
-				+ generateDeclarations + "\ndeclarationsOutputDir=" + declarationsOutputDir + "\ngenerateDefinitions="
-				+ generateDefinitions + "\njsLibFiles=" + jsLibFiles;
+				+ "\ntsDefDirs=" + tsDefDirs + "\nmoduleKind=" + moduleKind + "\necmaTargertVersion="
+				+ ecmaTargetVersion + "\nbundle=" + bundle + "\nencoding=" + encoding + "\nnoRootDirectories="
+				+ noRootDirectories + "\nignoreAssertions=" + ignoreAssertions + "\nignoreJavaFileNameError="
+				+ ignoreJavaFileNameError + "\ngenerateDeclarations=" + generateDeclarations
+				+ "\ndeclarationsOutputDir=" + declarationsOutputDir + "\ngenerateDefinitions=" + generateDefinitions
+				+ "\njsLibFiles=" + jsLibFiles;
 	}
 
 	/**
@@ -254,8 +257,8 @@ public class JSweetTranspiler implements JSweetOptions {
 	 * 
 	 * <p>
 	 * TypeScript and JavaScript output directories are set to
-	 * <code>System.getProperty("java.io.tmpdir")</code>. The classpath is set
-	 * to <code>System.getProperty("java.class.path")</code>.
+	 * <code>System.getProperty("java.io.tmpdir")</code>. The classpath is set to
+	 * <code>System.getProperty("java.class.path")</code>.
 	 * 
 	 * @param factory
 	 *            the factory used to create the transpiler objects
@@ -277,8 +280,8 @@ public class JSweetTranspiler implements JSweetOptions {
 	 * @param extractedCandiesJavascriptDir
 	 *            see {@link #getExtractedCandyJavascriptDir()}
 	 * @param classPath
-	 *            the classpath as a string (check out system-specific
-	 *            requirements for Java classpathes)
+	 *            the classpath as a string (check out system-specific requirements
+	 *            for Java classpathes)
 	 */
 	public JSweetTranspiler(JSweetFactory factory, File tsOutputDir, File jsOutputDir,
 			File extractedCandiesJavascriptDir, String classPath) {
@@ -403,8 +406,8 @@ public class JSweetTranspiler implements JSweetOptions {
 	 * @param extractedCandiesJavascriptDir
 	 *            see {@link #getExtractedCandyJavascriptDir()}
 	 * @param classPath
-	 *            the classpath as a string (check out system-specific
-	 *            requirements for Java classpaths)
+	 *            the classpath as a string (check out system-specific requirements
+	 *            for Java classpaths)
 	 */
 	public JSweetTranspiler(JSweetFactory factory, File workingDir, File tsOutputDir, File jsOutputDir,
 			File extractedCandiesJavascriptDir, String classPath) {
@@ -427,8 +430,8 @@ public class JSweetTranspiler implements JSweetOptions {
 	 * @param extractedCandiesJavascriptDir
 	 *            see {@link #getExtractedCandyJavascriptDir()}
 	 * @param classPath
-	 *            the classpath as a string (check out system-specific
-	 *            requirements for Java classpaths)
+	 *            the classpath as a string (check out system-specific requirements
+	 *            for Java classpaths)
 	 */
 	public JSweetTranspiler(File configurationFile, JSweetFactory factory, File workingDir, File tsOutputDir,
 			File jsOutputDir, File extractedCandiesJavascriptDir, String classPath) {
@@ -452,8 +455,8 @@ public class JSweetTranspiler implements JSweetOptions {
 	 * @param extractedCandiesJavascriptDir
 	 *            see {@link #getExtractedCandyJavascriptDir()}
 	 * @param classPath
-	 *            the classpath as a string (check out system-specific
-	 *            requirements for Java classpaths)
+	 *            the classpath as a string (check out system-specific requirements
+	 *            for Java classpaths)
 	 */
 	public JSweetTranspiler(File baseDirectory, File configurationFile, JSweetFactory factory, File workingDir,
 			File tsOutputDir, File jsOutputDir, File extractedCandiesJavascriptDir, String classPath) {
@@ -563,19 +566,20 @@ public class JSweetTranspiler implements JSweetOptions {
 	 *            a list of directories to scan for .d.ts files
 	 */
 	public void setTsDefDirs(File... tsDefDirs) {
-		this.tsDefDirs = tsDefDirs;
+		clearTsDefDirs();
+		this.tsDefDirs.addAll(Arrays.asList(tsDefDirs));
 	}
 
 	/**
-	 * Adds a directory that contains TypeScript definition files
-	 * (sub-directories are scanned recursively to find all .d.ts files).
+	 * Adds a directory that contains TypeScript definition files (sub-directories
+	 * are scanned recursively to find all .d.ts files).
 	 * 
 	 * @param tsDefDir
 	 *            a directory to scan for .d.ts files
 	 */
 	public void addTsDefDir(File tsDefDir) {
-		if (!ArrayUtils.contains(tsDefDirs, tsDefDir)) {
-			tsDefDirs = ArrayUtils.add(tsDefDirs, tsDefDir);
+		if (!tsDefDirs.contains(tsDefDir)) {
+			tsDefDirs.add(tsDefDir);
 		}
 	}
 
@@ -584,7 +588,7 @@ public class JSweetTranspiler implements JSweetOptions {
 	 * {@link #addTsDefDir(File)}.
 	 */
 	public void clearTsDefDirs() {
-		tsDefDirs = new File[0];
+		tsDefDirs.clear();
 	}
 
 	private void initJavac(final TranspilationHandler transpilationHandler) {
@@ -705,8 +709,8 @@ public class JSweetTranspiler implements JSweetOptions {
 	/**
 	 * Evaluates the given source files with the given evaluation engine.
 	 * <p>
-	 * If given engine name is "Java", this function looks up for the classes in
-	 * the classpath and run the main methods when found.
+	 * If given engine name is "Java", this function looks up for the classes in the
+	 * classpath and run the main methods when found.
 	 * 
 	 * @param engineName
 	 *            the engine name: either "Java" or any valid and installed
@@ -948,8 +952,8 @@ public class JSweetTranspiler implements JSweetOptions {
 		} catch (IOException ex) {
 			throw new UncheckedIOException(ex);
 		}
-		runTSC(handler, new SourceFile[] { sf }, "--target", ecmaTargetVersion.name(), "--outFile",
-				sf.getJsFile().toString(), sf.getTsFile().toString());
+
+		ts2js(handler, new SourceFile[] { sf });
 		try {
 			return new String(Files.readAllBytes(sf.jsFile.toPath()));
 		} catch (IOException ex) {
@@ -958,9 +962,9 @@ public class JSweetTranspiler implements JSweetOptions {
 	}
 
 	/**
-	 * Transpiles the given Java source files. When the transpiler is in watch
-	 * mode ({@link #setTscWatchMode(boolean)}), the first invocation to this
-	 * method determines the files to be watched by the Tsc process.
+	 * Transpiles the given Java source files. When the transpiler is in watch mode
+	 * ({@link #setTscWatchMode(boolean)}), the first invocation to this method
+	 * determines the files to be watched by the Tsc process.
 	 * 
 	 * @param transpilationHandler
 	 *            the log handler
@@ -985,20 +989,52 @@ public class JSweetTranspiler implements JSweetOptions {
 		ErrorCountTranspilationHandler errorHandler = new ErrorCountTranspilationHandler(transpilationHandler);
 		Collection<SourceFile> jsweetSources = asList(files).stream() //
 				.filter(source -> source.getJavaFile() != null).collect(toList());
-		java2ts(errorHandler, jsweetSources.toArray(new SourceFile[0]));
 
+		long startJava2TsTimeNanos = System.nanoTime();
+		java2ts(errorHandler, jsweetSources.toArray(new SourceFile[0]));
+		long endJava2TsTimeNanos = System.nanoTime();
+
+		long startTs2JsTimeNanos = System.nanoTime();
 		if (errorHandler.getErrorCount() == 0 && generateTsFiles && generateJsFiles) {
-			Collection<SourceFile> tsSources = asList(files).stream() //
-					.filter(source -> source.getTsFile() != null).collect(toList());
-			ts2js(errorHandler, tsSources.toArray(new SourceFile[0]));
+			ts2js(errorHandler, files);
 		}
+		long endTs2JsTimeNanos = System.nanoTime();
 
 		if (!generateJsFiles || !generateTsFiles) {
 			transpilationHandler.onCompleted(this, !isTscWatchMode(), files);
 		}
 
 		logger.info("transpilation process finished in " + (System.currentTimeMillis() - transpilationStartTimestamp)
-				+ " ms");
+				+ " ms \n" //
+				+ "> java2ts: " + ((endJava2TsTimeNanos - startJava2TsTimeNanos) / 1e6) + "ms\n" + "> ts2js: "
+				+ ((endTs2JsTimeNanos - startTs2JsTimeNanos) / 1e6) + "ms\n");
+	}
+
+	private void ts2js(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] sourceFiles)
+			throws IOException {
+
+		LinkedHashSet<SourceFile> tsSourceFiles = new LinkedHashSet<>();
+		for (SourceFile sourceFile : sourceFiles) {
+			if (sourceFile.getTsFile() != null) {
+				tsSourceFiles.add(sourceFile);
+			}
+		}
+
+		logger.info("ts2js on " + ts2jsTranspiler + " sourceFiles=" + sourceFiles.length);
+		ts2jsTranspiler.ts2js(transpilationHandler, //
+				tsSourceFiles, //
+				tsDefDirs, //
+				this, //
+				isIgnoreTypeScriptErrors(), //
+				this::onTsTranspilationCompleted);
+	}
+
+	public void setUseTsserver(boolean useTsserver) {
+		if (useTsserver) {
+			this.ts2jsTranspiler = TypeScript2JavaScriptWithTsserverTranspiler.INSTANCE;
+		} else {
+			this.ts2jsTranspiler = new TypeScript2JavaScriptWithTscTranspiler();
+		}
 	}
 
 	private void java2ts(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files) throws IOException {
@@ -1032,7 +1068,6 @@ public class JSweetTranspiler implements JSweetOptions {
 			}
 		}
 		log.flush();
-		getOrCreateTscRootFile();
 	}
 
 	private void generateModuleDefs(JCCompilationUnit moduleDefs) throws IOException {
@@ -1302,76 +1337,24 @@ public class JSweetTranspiler implements JSweetOptions {
 
 	}
 
-	private File getOrCreateTscRootFile() throws IOException {
-		File tscRootFile = new File(tsOutputDir, TSCROOTFILE);
-
-		if (!tscRootFile.exists()) {
-			FileUtils.write(tscRootFile, "// Root empty file generated by JSweet to avoid tsc behavior, which\n"
-					+ "// does not preserve the entire file hierarchy for empty directories.", false);
-		}
-		return tscRootFile;
-	}
-
-	private static class TscOutput {
-		public SourcePosition position;
-		public String message;
-
-		@Override
-		public String toString() {
-			return message + " - " + position;
-		}
-	}
-
-	private static Pattern errorRE = Pattern.compile("(.*)\\((.*)\\): error TS[0-9]+: (.*)");
-
-	private static TscOutput parseTscOutput(String outputString) {
-		Matcher m = errorRE.matcher(outputString);
-		TscOutput error = new TscOutput();
-		if (m.matches()) {
-			String[] pos = m.group(2).split(",");
-			error.position = new SourcePosition(new File(m.group(1)), null, Integer.parseInt(pos[0]),
-					Integer.parseInt(pos[1]));
-			StringBuilder sb = new StringBuilder(m.group(3));
-			sb.setCharAt(0, Character.toLowerCase(sb.charAt(0)));
-			if (sb.charAt(sb.length() - 1) == '.') {
-				sb.deleteCharAt(sb.length() - 1);
-			}
-			error.message = sb.toString();
-		} else {
-			error.message = outputString;
-		}
-		return error;
-	}
-
-	private Process tsCompilationProcess;
-	private SourceFile[] watchedFiles;
-
 	private File extractedCandyJavascriptDir;
-
-	private Path relativizeTsFile(File file) {
-		try {
-			return getTsOutputDir().getAbsoluteFile().getCanonicalFile().toPath()
-					.relativize(file.getAbsoluteFile().getCanonicalFile().toPath());
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
 
 	/**
 	 * Returns the watched files when the transpiler is in watch mode. See
-	 * {@link #setTscWatchMode(boolean)}. The watched file list corresponds to
-	 * the one given at the first invocation of
-	 * {@link #transpile(TranspilationHandler, SourceFile...)} after the
-	 * transpiler was set to watch mode. All subsequent invocations of
-	 * {@link #transpile(TranspilationHandler, SourceFile...)} will not change
-	 * the initial watched files. In order to change the watch files, invoke
+	 * {@link #setTscWatchMode(boolean)}. The watched file list corresponds to the
+	 * one given at the first invocation of
+	 * {@link #transpile(TranspilationHandler, SourceFile...)} after the transpiler
+	 * was set to watch mode. All subsequent invocations of
+	 * {@link #transpile(TranspilationHandler, SourceFile...)} will not change the
+	 * initial watched files. In order to change the watch files, invoke
 	 * {@link #resetTscWatchMode()} and call
-	 * {@link #transpile(TranspilationHandler, SourceFile...)} with a new file
-	 * list.
+	 * {@link #transpile(TranspilationHandler, SourceFile...)} with a new file list.
 	 */
 	synchronized public SourceFile[] getWatchedFiles() {
-		return watchedFiles;
+		// TODO : watch mode isn't implemented with tsserver transpiler, either we
+		// remove watch mode (only used for tests if I'm right), or provide a dummy
+		// implementation for tsserver
+		return ((TypeScript2JavaScriptWithTscTranspiler) ts2jsTranspiler).getWatchedFiles().toArray(new SourceFile[0]);
 	}
 
 	/**
@@ -1379,153 +1362,41 @@ public class JSweetTranspiler implements JSweetOptions {
 	 * {@link #setTscWatchMode(boolean)}.
 	 */
 	synchronized public SourceFile getWatchedFile(File javaFile) {
-		if (watchedFiles != null) {
-			for (SourceFile f : watchedFiles) {
-				if (f.getJavaFile().getAbsoluteFile().equals(javaFile.getAbsoluteFile())) {
-					return f;
-				}
-			}
-		}
-		return null;
+		// TODO : see #getWatchedFiles()
+		return ((TypeScript2JavaScriptWithTscTranspiler) ts2jsTranspiler).getWatchedFile(javaFile);
 	}
 
-	private void ts2js(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files) throws IOException {
-		if (tsCompilationProcess != null && isTscWatchMode()) {
-			return;
-		}
-		if (isTscWatchMode()) {
-			watchedFiles = files;
-		}
-
-		logger.debug("ts2js: " + Arrays.asList(files));
-		LinkedList<String> args = new LinkedList<>();
-		if (System.getProperty("os.name").startsWith("Windows")) {
-			args.addAll(asList("--target", ecmaTargetVersion.name()));
-		} else {
-			args.addAll(asList("--target", ecmaTargetVersion.name()));
-		}
-
-		if (isUsingModules()) {
-			if (ecmaTargetVersion.higherThan(EcmaScriptComplianceLevel.ES5) && moduleKind != ModuleKind.es2015) {
-				logger.warn("cannot use old fashionned modules with ES>5 target");
-			} else {
-				args.add("--module");
-				args.add(moduleKind.toString());
-			}
-		}
-
-		args.add("--moduleResolution");
-		args.add(getModuleResolution().toString());
-
-		if (ecmaTargetVersion.ordinal() >= EcmaScriptComplianceLevel.ES5.ordinal()) {
-			args.add("--experimentalDecorators");
-			args.add("--emitDecoratorMetadata");
-		}
-
-		if (isTscWatchMode()) {
-			args.add("--watch");
-		}
-		if (isGenerateSourceMaps()) {
-			args.add("--sourceMap");
-		}
-		if (isGenerateDeclarations()) {
-			args.add("--declaration");
-		}
-		args.addAll(asList("--rootDir", tsOutputDir.getAbsolutePath()));
-		// args.addAll(asList("--sourceRoot", tsOutputDir.toString()));
-
-		if (jsOutputDir != null) {
-			args.addAll(asList("--outDir", jsOutputDir.getAbsolutePath()));
-		}
-		File tscRootFile = getOrCreateTscRootFile();
-		if (tscRootFile.exists()) {
-			args.add(relativizeTsFile(tscRootFile).toString());
-		}
-		for (SourceFile sourceFile : files) {
-			String filePath = relativizeTsFile(sourceFile.getTsFile()).toString();
-			if (!args.contains(filePath)) {
-				args.add(filePath);
-			}
-		}
-		// this may not be necessary because tsc seems to add required modules
-		// automatically
-		for (File f : auxiliaryTsModuleFiles) {
-			String filePath = relativizeTsFile(f).toString();
-			if (!args.contains(filePath)) {
-				args.add(filePath);
-			}
-		}
-
-		System.out.println(args);
-
-		for (File dir : tsDefDirs) {
-			LinkedList<File> tsDefFiles = new LinkedList<>();
-			Util.addFiles(".d.ts", dir, tsDefFiles);
-			for (File f : tsDefFiles) {
-				args.add(relativizeTsFile(f).toString());
-			}
-		}
-
-		try {
-			logger.info("launching tsc...");
-			runTSC(transpilationHandler, files, args.toArray(new String[0]));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+	/**
+	 * Tells if this transpiler is using a Tsc watch process to automatically
+	 * regenerate the javascript when one of the source file changes.
+	 */
+	synchronized public boolean isTscWatchMode() {
+		return tscWatchMode;
 	}
 
-	private void runTSC(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files, String... args) {
-		boolean[] fullPass = { true };
-
-		if (skipTypeScriptChecks) {
-			args = ArrayUtils.addAll(args, "--skipDefaultLibCheck", "--skipLibCheck");
+	/**
+	 * Enables or disable this transpiler watch mode. When watch mode is enabled,
+	 * the first invocation to
+	 * {@link #transpile(TranspilationHandler, SourceFile...)} will start the Tsc
+	 * watch process, which regenerates the JavaScript files when one of the input
+	 * file changes.
+	 * 
+	 * @param tscWatchMode
+	 *            true: enables the watch mode (do nothing is already enabled),
+	 *            false: disables the watch mode and stops the current Tsc watching
+	 *            process
+	 * @see #getWatchedFile(File)
+	 */
+	synchronized public void setTscWatchMode(boolean tscWatchMode) {
+		this.tscWatchMode = tscWatchMode;
+		if (!tscWatchMode) {
+			// TODO : see #getWatchedFiles()
+			((TypeScript2JavaScriptWithTscTranspiler) ts2jsTranspiler).stopWatch();
 		}
-
-		tsCompilationProcess = ProcessUtil.runCommand("tsc", getTsOutputDir(), isTscWatchMode(), line -> {
-			logger.info(line);
-			TscOutput output = parseTscOutput(line);
-			if (output.position != null) {
-				if (isIgnoreTypeScriptErrors()) {
-					return;
-				}
-				SourcePosition position = SourceFile.findOriginPosition(output.position, Arrays.asList(files));
-				if (position == null) {
-					transpilationHandler.report(JSweetProblem.INTERNAL_TSC_ERROR, output.position, output.message);
-				} else {
-					transpilationHandler.report(JSweetProblem.MAPPED_TSC_ERROR, position, output.message);
-				}
-			} else {
-				if (output.message.startsWith("message TS6042:")) {
-					onTsTranspilationCompleted(fullPass[0], transpilationHandler, files);
-					fullPass[0] = false;
-				} else {
-					// TODO enhance tsc feedbacks support: some
-					// messages are swallowed here: for instance
-					// error TS1204: Cannot compile modules into
-					// 'commonjs', 'amd', 'system' or 'umd' when
-					// targeting 'ES6' or higher.
-				}
-			}
-		}, process -> {
-			tsCompilationProcess = null;
-			onTsTranspilationCompleted(fullPass[0], transpilationHandler, files);
-			fullPass[0] = false;
-		}, () -> {
-			if (!ignoreTypeScriptErrors && transpilationHandler.getProblemCount() == 0) {
-				transpilationHandler.report(JSweetProblem.INTERNAL_TSC_ERROR, null, "Unknown tsc error");
-			}
-		}, args);
-
-		// tsCompilationProcess.waitFor();
-		// if (tsCompilationProcess != null &&
-		// tsCompilationProcess.exitValue() == 1) {
-		// transpilationHandler.report(JSweetProblem.TSC_CANNOT_START, null,
-		// JSweetProblem.TSC_CANNOT_START.getMessage());
-		// }
 	}
 
 	private void onTsTranspilationCompleted(boolean fullPass, ErrorCountTranspilationHandler handler,
-			SourceFile[] files) {
+			Collection<SourceFile> files) {
 		try {
 			if (isGenerateDeclarations()) {
 				if (getDeclarationsOutputDir() != null) {
@@ -1630,7 +1501,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			handler.onCompleted(this, fullPass, files);
+			handler.onCompleted(this, fullPass, files.toArray(new SourceFile[0]));
 		}
 	}
 
@@ -1651,9 +1522,9 @@ public class JSweetTranspiler implements JSweetOptions {
 	}
 
 	/**
-	 * Sets the flag that tells if the transpiler preserves the generated
-	 * TypeScript source line numbers wrt the Java original source file (allows
-	 * for Java debugging through js.map files).
+	 * Sets the flag that tells if the transpiler preserves the generated TypeScript
+	 * source line numbers wrt the Java original source file (allows for Java
+	 * debugging through js.map files).
 	 * 
 	 * @deprecated use {@link #setGenerateSourceMaps(boolean)} instead
 	 */
@@ -1663,8 +1534,8 @@ public class JSweetTranspiler implements JSweetOptions {
 	}
 
 	/**
-	 * Sets the flag that tells if the transpiler allows for Java debugging
-	 * through js.map files.
+	 * Sets the flag that tells if the transpiler allows for Java debugging through
+	 * js.map files.
 	 */
 	public void setGenerateSourceMaps(boolean generateSourceMaps) {
 		this.generateSourceMaps = generateSourceMaps;
@@ -1720,56 +1591,8 @@ public class JSweetTranspiler implements JSweetOptions {
 	}
 
 	/**
-	 * Tells if this transpiler is using a Tsc watch process to automatically
-	 * regenerate the javascript when one of the source file changes.
-	 */
-	synchronized public boolean isTscWatchMode() {
-		return tscWatchMode;
-	}
-
-	/**
-	 * Enables or disable this transpiler watch mode. When watch mode is
-	 * enabled, the first invocation to
-	 * {@link #transpile(TranspilationHandler, SourceFile...)} will start the
-	 * Tsc watch process, which regenerates the JavaScript files when one of the
-	 * input file changes.
-	 * 
-	 * @param tscWatchMode
-	 *            true: enables the watch mode (do nothing is already enabled),
-	 *            false: disables the watch mode and stops the current Tsc
-	 *            watching process
-	 * @see #getWatchedFile(File)
-	 */
-	synchronized public void setTscWatchMode(boolean tscWatchMode) {
-		this.tscWatchMode = tscWatchMode;
-		if (!tscWatchMode) {
-			if (tsCompilationProcess != null) {
-				tsCompilationProcess.destroyForcibly();
-				while (tsCompilationProcess != null && tsCompilationProcess.isAlive()) {
-					try {
-						Thread.sleep(500);
-					} catch (InterruptedException e) {
-						logger.error(e.getMessage(), e);
-					}
-					logger.error("tsc did not terminate");
-				}
-				try {
-					if (tsCompilationProcess != null) {
-						tsCompilationProcess.waitFor();
-					}
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				tsCompilationProcess = null;
-				watchedFiles = null;
-			}
-		}
-	}
-
-	/**
-	 * Resets the watch mode (clears the watched files and restarts the Tsc
-	 * process on the next invocation of
+	 * Resets the watch mode (clears the watched files and restarts the Tsc process
+	 * on the next invocation of
 	 * {@link #transpile(TranspilationHandler, SourceFile...)}).
 	 */
 	synchronized public void resetTscWatchMode() {
@@ -1822,19 +1645,23 @@ public class JSweetTranspiler implements JSweetOptions {
 	}
 
 	/**
-	 * Sets the module strategy when transpiling to code using JavaScript
-	 * modules.
+	 * Sets the module strategy when transpiling to code using JavaScript modules.
 	 */
 	public void setModuleResolution(ModuleResolution moduleResolution) {
 		this.moduleResolution = moduleResolution;
 	}
 
 	/**
-	 * Tells tsc to skip some checks in order to reduce load time, useful in
-	 * unit tests where transpiler is invoked many times
+	 * Tells tsc to skip some checks in order to reduce load time, useful in unit
+	 * tests where transpiler is invoked many times
 	 */
 	public void setSkipTypeScriptChecks(boolean skipTypeScriptChecks) {
 		this.skipTypeScriptChecks = skipTypeScriptChecks;
+	}
+
+	@Override
+	public boolean isSkipTypeScriptChecks() {
+		return skipTypeScriptChecks;
 	}
 
 	/**
@@ -1891,9 +1718,8 @@ public class JSweetTranspiler implements JSweetOptions {
 
 	/**
 	 * Sets this transpiler to skip the root directories (packages annotated
-	 * with @jsweet.lang.Root) so that the generated file hierarchy starts at
-	 * the root directories rather than including the entire directory
-	 * structure.
+	 * with @jsweet.lang.Root) so that the generated file hierarchy starts at the
+	 * root directories rather than including the entire directory structure.
 	 */
 	public void setNoRootDirectories(boolean noRootDirectories) {
 		this.noRootDirectories = noRootDirectories;
@@ -1910,8 +1736,8 @@ public class JSweetTranspiler implements JSweetOptions {
 	}
 
 	/**
-	 * Sets the transpiler to ignore the 'assert' statements or generate
-	 * appropriate code.
+	 * Sets the transpiler to ignore the 'assert' statements or generate appropriate
+	 * code.
 	 */
 	public void setIgnoreAssertions(boolean ignoreAssertions) {
 		this.ignoreAssertions = ignoreAssertions;

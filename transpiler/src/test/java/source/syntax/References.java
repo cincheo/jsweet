@@ -29,6 +29,8 @@ public class References {
 		$export("i", i);
 		$export("m", m(MyObject::new));
 		$export("m2", m2(MyObject[]::new));
+		
+		References.this.toString();
 	}
 
 	void m1(BiConsumer<String, Integer> c) {
