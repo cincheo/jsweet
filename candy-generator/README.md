@@ -80,7 +80,7 @@ By default, candies will be deployed to [jsweet-candies](https://github.com/jswe
 
 ## How to build
 
-In the project's directory, generate TypeScript parser from syntax files (CUP/JFlex):
+In the candy-generator's directory, generate TypeScript parser from syntax files (CUP/JFlex):
 
 ```bash
 $ mvn generate-sources -P genparser
