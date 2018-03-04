@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
@@ -86,6 +87,7 @@ public class CandyProcessor {
 	private File candiesTsdefsDir;
 	private File candiesJavascriptOutDir;
 	private File workingDir;
+	private List<File> extractedJsFiles = new LinkedList<>();
 
 	/**
 	 * Create a candies processor.
@@ -306,6 +308,7 @@ public class CandyProcessor {
 
 			File out = new File(jsOutputDirectory, relativeJsPath);
 			extractEntry(jarFile, entry, out);
+			extractedJsFiles.add(out);
 		}
 	}
 
@@ -370,4 +373,7 @@ public class CandyProcessor {
 		return false;
 	}
 
+	public List<File> getExtractedJsFiles() {
+		return extractedJsFiles;
+	}
 }
