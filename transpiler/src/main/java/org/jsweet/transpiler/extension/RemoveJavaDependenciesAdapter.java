@@ -395,7 +395,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 								.print(invocation.getArgument(0)).print(",").print(invocation.getArgument(1))
 								.print(")");
 					} else {
-						print("((l) = > {l.sort(); })(").print(invocation.getArgument(0)).print(")");
+						print("((l) => {l.sort(); })(").print(invocation.getArgument(0)).print(")");
 					}
 					return true;
 				}
