@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -46,6 +47,7 @@ import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.log4j.Logger;
 import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.JSweetContext;
 
@@ -89,6 +91,8 @@ import com.sun.tools.javac.util.Name;
  * @author Renaud Pawlak
  */
 public class Util {
+
+	private final static Logger logger = Logger.getLogger(Util.class);
 
 	private Util() {
 	}
@@ -223,8 +227,8 @@ public class Util {
 	 * Recursively adds files to the given list.
 	 * 
 	 * @param filter
-	 *            the filter predicate to apply (only files matching the
-	 *            predicate will be added)
+	 *            the filter predicate to apply (only files matching the predicate
+	 *            will be added)
 	 * @param file
 	 *            the root file/directory to look into recursively
 	 * @param files
@@ -331,8 +335,8 @@ public class Util {
 	}
 
 	/**
-	 * Fills the given map with all the variables beeing accessed within the
-	 * given code tree.
+	 * Fills the given map with all the variables beeing accessed within the given
+	 * code tree.
 	 */
 	public static void fillAllVariableAccesses(final Map<String, VarSymbol> vars, final JCTree tree) {
 		new TreeScanner() {
@@ -353,8 +357,7 @@ public class Util {
 	}
 
 	/**
-	 * Finds the method declaration within the given type, for the given
-	 * invocation.
+	 * Finds the method declaration within the given type, for the given invocation.
 	 */
 	public static MethodSymbol findMethodDeclarationInType(Types types, TypeSymbol typeSymbol,
 			JCMethodInvocation invocation) {
@@ -364,8 +367,7 @@ public class Util {
 	}
 
 	/**
-	 * Finds the method in the given type that matches the given name and
-	 * signature.
+	 * Finds the method in the given type that matches the given name and signature.
 	 */
 	public static MethodSymbol findMethodDeclarationInType(Types types, TypeSymbol typeSymbol, String methodName,
 			MethodType methodType) {
@@ -373,48 +375,84 @@ public class Util {
 	}
 
 	/**
-	 * Finds the method in the given type that matches the given name and
-	 * signature.
+	 * Finds the method in the given type that matches the given name and signature.
 	 */
 	public static MethodSymbol findMethodDeclarationInType(Types types, TypeSymbol typeSymbol, String methodName,
 			MethodType methodType, boolean overrides) {
+
+		// gathers all the potential method matches
+		List<MethodSymbol> candidates = new LinkedList<>();
+		collectMatchingMethodDeclarationsInType(types, typeSymbol, methodName, methodType, overrides, candidates);
+
+		// score them
+		MethodSymbol bestMatch = null;
+		int lastScore = Integer.MIN_VALUE;
+		for (MethodSymbol candidate : candidates) {
+			int currentScore = getCandidateMethodMatchScore(candidate, methodType, types);
+			if (bestMatch == null || currentScore > lastScore) {
+				bestMatch = candidate;
+				lastScore = currentScore;
+			}
+		}
+
+		// return the best match
+		if (logger.isTraceEnabled()) {
+			logger.trace("method declaration match for " + typeSymbol + "." + methodName + " - " + methodType + " : "
+					+ bestMatch + " score=" + lastScore);
+		}
+		return bestMatch;
+	}
+
+	private static int getCandidateMethodMatchScore(MethodSymbol candidate, MethodType methodType, Types types) {
+
+		if (methodType == null || candidate.getParameters().size() != methodType.argtypes.size()) {
+			return -50;
+		}
+		
+		int score = 0;
+		for (int i = 0; i < candidate.getParameters().size(); i++) {
+			Type candidateParamType = candidate.getParameters().get(i).type;
+			Type paramType = methodType.argtypes.get(i);
+
+			if (!candidateParamType.equals(paramType)) {
+				score--;
+			}
+		}
+
+		return score;
+	}
+
+	private static void collectMatchingMethodDeclarationsInType(Types types, TypeSymbol typeSymbol, String methodName,
+			MethodType methodType, boolean overrides, List<MethodSymbol> collector) {
 		if (typeSymbol == null) {
-			return null;
+			return;
 		}
 		if (typeSymbol.getEnclosedElements() != null) {
 			for (Element element : typeSymbol.getEnclosedElements()) {
 				if ((element instanceof MethodSymbol) && (methodName.equals(element.getSimpleName().toString())
-						|| ((MethodSymbol) element).getKind() == ElementKind.CONSTRUCTOR && ("this".equals(
-								methodName) /* || "super".equals(methodName) */))) {
+						|| ((MethodSymbol) element).getKind() == ElementKind.CONSTRUCTOR
+								&& ("this".equals(methodName) /* || "super".equals(methodName) */))) {
 					MethodSymbol methodSymbol = (MethodSymbol) element;
 					if (methodType == null) {
-						return methodSymbol;
-					}
-					if (overrides ? isInvocable(types, methodSymbol.type.asMethodType(), methodType)
+						collector.add(methodSymbol);
+					} else if (overrides ? isInvocable(types, methodSymbol.type.asMethodType(), methodType)
 							: isInvocable(types, methodType, methodSymbol.type.asMethodType())) {
-						return methodSymbol;
+						collector.add(methodSymbol);
 					}
 				}
 			}
 		}
-		MethodSymbol result = null;
 		if (typeSymbol instanceof ClassSymbol && ((ClassSymbol) typeSymbol).getSuperclass() != null) {
 			if (!overrides || !Object.class.getName().equals(((ClassSymbol) typeSymbol).getSuperclass().toString())) {
-				result = findMethodDeclarationInType(types, ((ClassSymbol) typeSymbol).getSuperclass().tsym, methodName,
-						methodType);
+				collectMatchingMethodDeclarationsInType(types, ((ClassSymbol) typeSymbol).getSuperclass().tsym,
+						methodName, methodType, overrides, collector);
 			}
 		}
-		if (result == null) {
-			if (typeSymbol instanceof ClassSymbol && ((ClassSymbol) typeSymbol).getInterfaces() != null) {
-				for (Type t : ((ClassSymbol) typeSymbol).getInterfaces()) {
-					result = findMethodDeclarationInType(types, t.tsym, methodName, methodType);
-					if (result != null) {
-						break;
-					}
-				}
+		if (typeSymbol instanceof ClassSymbol && ((ClassSymbol) typeSymbol).getInterfaces() != null) {
+			for (Type t : ((ClassSymbol) typeSymbol).getInterfaces()) {
+				collectMatchingMethodDeclarationsInType(types, t.tsym, methodName, methodType, overrides, collector);
 			}
 		}
-		return result;
 	}
 
 	/**
@@ -425,7 +463,7 @@ public class Util {
 		if (typeSymbol == null) {
 			return;
 		}
-		if (ignoredTypeNames.contains(typeSymbol.getQualifiedName())) {
+		if (ignoredTypeNames.contains(typeSymbol.getQualifiedName().toString())) {
 			return;
 		}
 		if (typeSymbol.getEnclosedElements() != null) {
@@ -527,7 +565,7 @@ public class Util {
 		if (typeSymbol == null) {
 			return true;
 		}
-		if (ignoredTypeNames.contains(typeSymbol.getQualifiedName())) {
+		if (ignoredTypeNames.contains(typeSymbol.getQualifiedName().toString())) {
 			return true;
 		}
 		if (typeSymbol.getEnclosedElements() != null) {
@@ -571,8 +609,7 @@ public class Util {
 	 * @param types
 	 *            a reference to the types in the compilation scope
 	 * @param from
-	 *            the caller method signature to test (contains the parameter
-	 *            types)
+	 *            the caller method signature to test (contains the parameter types)
 	 * @param target
 	 *            the callee method signature
 	 * @return true if the callee can be invoked by the caller
@@ -610,8 +647,8 @@ public class Util {
 	}
 
 	/**
-	 * Fills the given set with all the default methods found in the current
-	 * type and super interfaces.
+	 * Fills the given set with all the default methods found in the current type
+	 * and super interfaces.
 	 */
 	public static void findDefaultMethodsInType(Set<Entry<JCClassDecl, JCMethodDecl>> defaultMethods,
 			JSweetContext context, ClassSymbol classSymbol) {
@@ -700,11 +737,10 @@ public class Util {
 	private final static Pattern REGEX_CHARS = Pattern.compile("([\\\\*+\\[\\](){}\\$.?\\^|])");
 
 	/**
-	 * This function will escape special characters within a string to ensure
-	 * that the string will not be parsed as a regular expression. This is
-	 * helpful with accepting using input that needs to be used in functions
-	 * that take a regular expression as an argument (such as
-	 * String.replaceAll(), or String.split()).
+	 * This function will escape special characters within a string to ensure that
+	 * the string will not be parsed as a regular expression. This is helpful with
+	 * accepting using input that needs to be used in functions that take a regular
+	 * expression as an argument (such as String.replaceAll(), or String.split()).
 	 * 
 	 * @param regex
 	 *            - argument which we wish to escape.
@@ -860,8 +896,8 @@ public class Util {
 	}
 
 	/**
-	 * Tells if the given directory or any of its sub-directory contains one of
-	 * the given files.
+	 * Tells if the given directory or any of its sub-directory contains one of the
+	 * given files.
 	 * 
 	 * @param dir
 	 *            the directory to look into
@@ -1022,8 +1058,8 @@ public class Util {
 	}
 
 	/**
-	 * Recursively looks up one of the given types in the type hierachy of the
-	 * given class.
+	 * Recursively looks up one of the given types in the type hierachy of the given
+	 * class.
 	 * 
 	 * @return true if one of the given names is found as a superclass or a
 	 *         superinterface
@@ -1178,8 +1214,8 @@ public class Util {
 	}
 
 	/**
-	 * Tells if that variable is a non-static final field initialized with a
-	 * literal value.
+	 * Tells if that variable is a non-static final field initialized with a literal
+	 * value.
 	 */
 	public static boolean isConstantOrNullField(JCVariableDecl var) {
 		return !var.getModifiers().getFlags().contains(Modifier.STATIC) && (var.init == null
@@ -1243,10 +1279,10 @@ public class Util {
 	 * 
 	 * <p>
 	 * This method aims at overcoming TypeScrit limitation that forces a parent
-	 * class to be declared before its child class (it is not the case in Java).
-	 * So far this is a partial implementation that should cover most cases...
-	 * for a 100% coverage we would need a much more complicated implementation
-	 * that is probably not worth it.
+	 * class to be declared before its child class (it is not the case in Java). So
+	 * far this is a partial implementation that should cover most cases... for a
+	 * 100% coverage we would need a much more complicated implementation that is
+	 * probably not worth it.
 	 */
 	public static List<JCClassDecl> getSortedClassDeclarations(List<JCTree> decls) {
 		// return (List<JCClassDecl>)(Object)decls;
@@ -1280,8 +1316,8 @@ public class Util {
 	}
 
 	/**
-	 * Finds the first inner class declaration of the given name in the given
-	 * class hierarchy.
+	 * Finds the first inner class declaration of the given name in the given class
+	 * hierarchy.
 	 */
 	public static ClassSymbol findInnerClassDeclaration(ClassSymbol clazz, String name) {
 		if (clazz == null) {
