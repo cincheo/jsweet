@@ -410,6 +410,11 @@ public class Util {
 		}
 		
 		int score = 0;
+		
+		boolean isAbstract = (candidate.flags() & Flags.ABSTRACT) != 0;
+		if (isAbstract) {
+			score -= 30;
+		}
 		for (int i = 0; i < candidate.getParameters().size(); i++) {
 			Type candidateParamType = candidate.getParameters().get(i).type;
 			Type paramType = methodType.argtypes.get(i);
