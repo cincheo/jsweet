@@ -20,6 +20,14 @@ import static jsweet.util.Lang.$export;
 
 public class StaticInitializer {
 
+	static int a = 100;
+	static int b = -100;
+	public final static String c = "100";
+	public final static int fa = 100;
+	public final static int fb = -100;
+	static int ab = a + b;
+	static int d = 100 + 100;
+	
 	static int n;
 
 	static {

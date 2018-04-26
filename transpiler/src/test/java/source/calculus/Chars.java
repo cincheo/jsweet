@@ -82,6 +82,14 @@ public class Chars {
 		testArray['\n'] = 50;
 		assert testArray[10] == 50;
 		
+		char baseChar = 'X';
+		String concatResult = "test" + baseChar;
+		System.out.println(concatResult);
+		assert concatResult == "testX";
+		
+		int addResult = 2 + baseChar;
+		System.out.println(addResult);
+		assert addResult == 90;
 	}
 
 	public static final int MIN_RADIX = 2;
