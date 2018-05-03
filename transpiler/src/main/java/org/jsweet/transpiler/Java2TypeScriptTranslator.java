@@ -2207,35 +2207,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			inTypeParameters = false;
 		}
 		print("(");
-		if (inCoreWrongOverload) {
-			getScope().eraseVariableTypes = true;
-		}
-		boolean paramPrinted = false;
-		if (getScope().innerClassNotStatic && methodDecl.sym.isConstructor() && !getScope().enumWrapperClassScope) {
-			print(PARENT_CLASS_FIELD_NAME + ": any, ");
-			paramPrinted = true;
-		}
-		if (getScope().constructor && getScope().enumWrapperClassScope) {
-			print((isAnonymousClass() ? "" : "protected ") + ENUM_WRAPPER_CLASS_ORDINAL + " : number, ");
-			print((isAnonymousClass() ? "" : "protected ") + ENUM_WRAPPER_CLASS_NAME + " : string, ");
-			paramPrinted = true;
-		}
-		int i = 0;
-		for (JCVariableDecl param : methodDecl.getParameters()) {
-			print(param);
-			if (inOverload && overload.isValid && overload.defaultValues.get(i) != null) {
-				print(" = ").print(overload.defaultValues.get(i));
-			}
-			print(", ");
-			i++;
-			paramPrinted = true;
-		}
-		if (inCoreWrongOverload) {
-			getScope().eraseVariableTypes = false;
-		}
-		if (paramPrinted) {
-			removeLastChars(2);
-		}
+		printConstructorArgs(methodDecl, overload, inOverload, inCoreWrongOverload);
 		print(")");
 		if (inCoreWrongOverload && !methodDecl.sym.isConstructor()) {
 			print(" : any");
@@ -2279,7 +2251,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					print(" {").println().startIndent().printIndent();
 
 					boolean wasPrinted = false;
-					for (i = 0; i < overload.methods.size(); i++) {
+					for (int i = 0; i < overload.methods.size(); i++) {
 						JCMethodDecl method = overload.methods.get(i);
 						if (context.isInterface((ClassSymbol) method.sym.getEnclosingElement())
 								&& !method.getModifiers().getFlags().contains(Modifier.DEFAULT)
@@ -2388,6 +2360,47 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					endIndent().printIndent().print("}");
 				}
 			}
+		}
+	}
+	
+	protected void printConstructorArgs(JCMethodDecl methodDecl, Overload overload, boolean inOverload,
+			boolean inCoreWrongOverload)
+	{
+		if (inCoreWrongOverload)
+		{
+			getScope().eraseVariableTypes = true;
+		}
+		boolean paramPrinted = false;
+		if (getScope().innerClassNotStatic && methodDecl.sym.isConstructor() && !getScope().enumWrapperClassScope)
+		{
+			print(PARENT_CLASS_FIELD_NAME + ": any, ");
+			paramPrinted = true;
+		}
+		if (getScope().constructor && getScope().enumWrapperClassScope)
+		{
+			print((isAnonymousClass() ? "" : "protected ") + ENUM_WRAPPER_CLASS_ORDINAL + " : number, ");
+			print((isAnonymousClass() ? "" : "protected ") + ENUM_WRAPPER_CLASS_NAME + " : string, ");
+			paramPrinted = true;
+		}
+		int i = 0;
+		for (JCVariableDecl param : methodDecl.getParameters())
+		{
+			print(param);
+			if (inOverload && overload.isValid && overload.defaultValues.get(i) != null)
+			{
+				print(" = ").print(overload.defaultValues.get(i));
+			}
+			print(", ");
+			i++;
+			paramPrinted = true;
+		}
+		if (inCoreWrongOverload)
+		{
+			getScope().eraseVariableTypes = false;
+		}
+		if (paramPrinted)
+		{
+			removeLastChars(2);
 		}
 	}
 
