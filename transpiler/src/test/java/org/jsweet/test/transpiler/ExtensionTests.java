@@ -19,8 +19,11 @@ import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetFactory;
 import org.jsweet.transpiler.JSweetProblem;
+import org.jsweet.transpiler.Java2TypeScriptTranslator;
 import org.jsweet.transpiler.ModuleKind;
 import org.jsweet.transpiler.SourceFile;
+import org.jsweet.transpiler.TranspilationHandler;
+import org.jsweet.transpiler.OverloadScanner.Overload;
 import org.jsweet.transpiler.extension.AnnotationManager;
 import org.jsweet.transpiler.extension.DisallowGlobalVariablesAdapter;
 import org.jsweet.transpiler.extension.Java2TypeScriptAdapter;
@@ -33,9 +36,14 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
+import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
+import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
+
 import source.extension.A1;
 import source.extension.A2;
 import source.extension.AnnotationTest;
+import source.extension.FooArgsDto;
 import source.extension.HelloWorldDto;
 import source.extension.HelloWorldService;
 import source.extension.Maps;
@@ -91,6 +99,104 @@ class TestAdapter extends RemoveJavaDependenciesAdapter {
 		return super.eraseSuperClass(type, superClass);
 	}
 
+}
+
+class TestConstructorFactory extends JSweetFactory{
+	
+	@Override
+	public Java2TypeScriptTranslator createTranslator(PrinterAdapter adapter, TranspilationHandler transpilationHandler,
+			JSweetContext context, JCCompilationUnit compilationUnit, boolean fillSourceMap) {
+		return new TestConstructorTranslator(adapter, transpilationHandler, context, compilationUnit, fillSourceMap);
+	}
+}
+
+class TestConstructorTranslator extends Java2TypeScriptTranslator {
+
+	
+	public TestConstructorTranslator(PrinterAdapter adapter, TranspilationHandler logHandler, JSweetContext context,
+			JCCompilationUnit compilationUnit, boolean fillSourceMap)
+	{
+		super(adapter, logHandler, context, compilationUnit, fillSourceMap);
+		
+	}
+	
+	@Override 
+	protected String printArgumentInterfaces(String name)
+	{
+		String iName = null;
+		if(name != null)
+		{
+			iName = "I" + name;
+			print("interface " + iName + "{");
+			print("}").println();
+		}
+		return iName;
+	}
+
+	@Override
+	protected void printMethodArgs(JCMethodDecl methodDecl, Overload overload, boolean inOverload,
+	boolean inCoreWrongOverload, ClassScope scope)
+	{
+		if(scope.isConstructor())
+		{
+		print("{");
+		}
+//		super.printConstructorArgs(methodDecl, overload, inOverload, true, scope);
+
+		boolean paramPrinted = false;
+		if (scope.isInnerClassNotStatic() && methodDecl.sym.isConstructor() && !scope.isEnumWrapperClassScope())
+		{
+			print(PARENT_CLASS_FIELD_NAME + ": any, ");
+			paramPrinted = true;
+		}
+		if (scope.isConstructor() && scope.isEnumWrapperClassScope())
+		{
+			print((isAnonymousClass() ? "" : "protected ") + ENUM_WRAPPER_CLASS_ORDINAL + " : number, ");
+			print((isAnonymousClass() ? "" : "protected ") + ENUM_WRAPPER_CLASS_NAME + " : string, ");
+			paramPrinted = true;
+		}
+		int i = 0;
+		for (JCVariableDecl param : methodDecl.getParameters())
+		{
+			if(scope.isConstructor())
+			{
+			print(param.getName().toString());
+			}
+			else
+			{
+				print(param);
+			}
+			if (inOverload && overload.isValid && overload.defaultValues.get(i) != null)
+			{
+				print(" = ").print(overload.defaultValues.get(i));
+			}
+			print(", ");
+			i++;
+			paramPrinted = true;
+		}
+
+		if (paramPrinted)
+		{
+			removeLastChars(2);
+		}
+		
+		if(scope.isConstructor())
+		{
+			
+			String iName = getArgumentInterfaceName();
+			if(iName != null)
+			{
+				iName = ":" + iName;
+			}
+			else
+			{
+				iName = "";
+			}			
+		
+			print("} " + iName);
+		}
+	}
+	
 }
 
 class HelloWorldAdapter extends PrinterAdapter {
@@ -240,6 +346,22 @@ public class ExtensionTests extends AbstractTest {
 			}
 		});
 		SourceFile f = getSourceFile(HelloWorldDto.class);
+		transpile(logHandler -> {
+			logHandler.assertNoProblems();
+		}, f);
+		String generatedCode = FileUtils.readFileToString(f.getTsFile());
+		Assert.assertTrue(generatedCode.contains("this is a header comment"));
+		Assert.assertTrue(generatedCode.contains("date : string"));
+		Assert.assertFalse(generatedCode.contains("date : Date"));
+
+		createTranspiler(new JSweetFactory());
+	}
+	
+	@Test
+	public void testConstructorAdapter() throws IOException {
+		createTranspiler( new TestConstructorFactory());
+//		createTranspiler(new JSweetFactory());
+		SourceFile f = getSourceFile(FooArgsDto.class);
 		transpile(logHandler -> {
 			logHandler.assertNoProblems();
 		}, f);

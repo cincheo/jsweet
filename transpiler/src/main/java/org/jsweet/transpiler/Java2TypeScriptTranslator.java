@@ -290,7 +290,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 	}
 
-	private static class ClassScope {
+	public static class ClassScope {
 		private String name;
 
 		private JCMethodDecl mainMethod;
@@ -347,6 +347,146 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		private boolean constructor = false;
 
 		private boolean decoratorScope = false;
+
+		protected String getName()
+		{
+			return name;
+		}
+
+		protected JCMethodDecl getMainMethod()
+		{
+			return mainMethod;
+		}
+
+		protected boolean isInterfaceScope()
+		{
+			return interfaceScope;
+		}
+
+		protected boolean isEnumScope()
+		{
+			return enumScope;
+		}
+
+		protected boolean isComplexEnum()
+		{
+			return isComplexEnum;
+		}
+
+		public boolean isEnumWrapperClassScope()
+		{
+			return enumWrapperClassScope;
+		}
+
+		protected boolean isRemovedSuperclass()
+		{
+			return removedSuperclass;
+		}
+
+		protected boolean isDeclareClassScope()
+		{
+			return declareClassScope;
+		}
+
+		protected boolean isSkipTypeAnnotations()
+		{
+			return skipTypeAnnotations;
+		}
+
+		protected boolean isDefaultMethodScope()
+		{
+			return defaultMethodScope;
+		}
+
+		protected boolean isEraseVariableTypes()
+		{
+			return eraseVariableTypes;
+		}
+
+		protected boolean isHasDeclaredConstructor()
+		{
+			return hasDeclaredConstructor;
+		}
+
+		protected boolean getInnerClass()
+		{
+			return innerClass;
+		}
+
+		public boolean isInnerClassNotStatic()
+		{
+			return innerClassNotStatic;
+		}
+
+		protected boolean isHasInnerClass()
+		{
+			return hasInnerClass;
+		}
+
+		protected List<JCClassDecl> getAnonymousClasses()
+		{
+			return anonymousClasses;
+		}
+
+		protected List<JCNewClass> getAnonymousClassesConstructors()
+		{
+			return anonymousClassesConstructors;
+		}
+
+		protected List<LinkedHashSet<VarSymbol>> getFinalVariables()
+		{
+			return finalVariables;
+		}
+
+		protected boolean isHasConstructorOverloadWithSuperClass()
+		{
+			return hasConstructorOverloadWithSuperClass;
+		}
+
+		protected List<JCVariableDecl> getFieldsWithInitializers()
+		{
+			return fieldsWithInitializers;
+		}
+
+		protected List<String> getInlinedConstructorArgs()
+		{
+			return inlinedConstructorArgs;
+		}
+
+		protected List<JCClassDecl> getLocalClasses()
+		{
+			return localClasses;
+		}
+
+		protected List<String> getGeneratedMethodNames()
+		{
+			return generatedMethodNames;
+		}
+
+		protected boolean isAnonymousClass()
+		{
+			return isAnonymousClass;
+		}
+
+		protected boolean isInnerClass()
+		{
+			return isInnerClass;
+		}
+
+		protected boolean isLocalClass()
+		{
+			return isLocalClass;
+		}
+
+		public boolean isConstructor()
+		{
+			return constructor;
+		}
+
+		protected boolean isDecoratorScope()
+		{
+			return decoratorScope;
+		}
 
 	}
 
@@ -951,7 +1091,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 	}
 
-	private boolean isAnonymousClass() {
+	protected boolean isAnonymousClass() {
 		return scope.size() > 1 && getScope(1).isAnonymousClass;
 	}
 
@@ -972,6 +1112,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 * A flags that indicates that this adapter is not substituting types.
 	 */
 	private boolean disableTypeSubstitution = false;
+	
+	private String argumentInterfaceName = null;
+	
+	public String getArgumentInterfaceName()
+	{
+		return argumentInterfaceName;
+	}
 
 	public final AbstractTreePrinter substituteAndPrintType(JCTree typeTree) {
 		return substituteAndPrintType(typeTree, false, inTypeParameters, true, disableTypeSubstitution);
@@ -1245,6 +1392,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 		return name;
 	}
+	
+	protected String printArgumentInterfaces(String name)
+	{
+		//override this method to add interfaces for method argument lists
+		return null;
+	}
 
 	@Override
 	public void visitClassDef(JCClassDecl classdecl) {
@@ -1336,6 +1489,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				print("/** @ignore */").println().printIndent();
 			}
 			print(classdecl.mods);
+			argumentInterfaceName = printArgumentInterfaces(name);
 			if (!isTopLevelScope() || context.useModules || isAnonymousClass() || isInnerClass() || isLocalClass()) {
 				print("export ");
 			}
@@ -2207,7 +2361,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			inTypeParameters = false;
 		}
 		print("(");
-		printConstructorArgs(methodDecl, overload, inOverload, inCoreWrongOverload);
+		printMethodArgs(methodDecl, overload, inOverload, inCoreWrongOverload, getScope());
 		print(")");
 		if (inCoreWrongOverload && !methodDecl.sym.isConstructor()) {
 			print(" : any");
@@ -2363,20 +2517,20 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 	}
 	
-	protected void printConstructorArgs(JCMethodDecl methodDecl, Overload overload, boolean inOverload,
-			boolean inCoreWrongOverload)
+	protected void printMethodArgs(JCMethodDecl methodDecl, Overload overload, boolean inOverload,
+			boolean inCoreWrongOverload, ClassScope scope)
 	{
 		if (inCoreWrongOverload)
 		{
-			getScope().eraseVariableTypes = true;
+			scope.eraseVariableTypes = true;
 		}
 		boolean paramPrinted = false;
-		if (getScope().innerClassNotStatic && methodDecl.sym.isConstructor() && !getScope().enumWrapperClassScope)
+		if (scope.innerClassNotStatic && methodDecl.sym.isConstructor() && !scope.enumWrapperClassScope)
 		{
 			print(PARENT_CLASS_FIELD_NAME + ": any, ");
 			paramPrinted = true;
 		}
-		if (getScope().constructor && getScope().enumWrapperClassScope)
+		if (scope.constructor && scope.enumWrapperClassScope)
 		{
 			print((isAnonymousClass() ? "" : "protected ") + ENUM_WRAPPER_CLASS_ORDINAL + " : number, ");
 			print((isAnonymousClass() ? "" : "protected ") + ENUM_WRAPPER_CLASS_NAME + " : string, ");
@@ -2396,7 +2550,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 		if (inCoreWrongOverload)
 		{
-			getScope().eraseVariableTypes = false;
+			scope.eraseVariableTypes = false;
 		}
 		if (paramPrinted)
 		{
