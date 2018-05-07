@@ -348,7 +348,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 		private boolean decoratorScope = false;
 
-		protected String getName()
+		public String getName()
 		{
 			return name;
 		}
@@ -401,6 +401,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		protected boolean isEraseVariableTypes()
 		{
 			return eraseVariableTypes;
+		}
+
+		public void setEraseVariableTypes(boolean eraseVariableTypes)
+		{
+			this.eraseVariableTypes = eraseVariableTypes;
 		}
 
 		protected boolean isHasDeclaredConstructor()
@@ -1112,13 +1117,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 * A flags that indicates that this adapter is not substituting types.
 	 */
 	private boolean disableTypeSubstitution = false;
-	
-	private String argumentInterfaceName = null;
-	
-	public String getArgumentInterfaceName()
-	{
-		return argumentInterfaceName;
-	}
 
 	public final AbstractTreePrinter substituteAndPrintType(JCTree typeTree) {
 		return substituteAndPrintType(typeTree, false, inTypeParameters, true, disableTypeSubstitution);
@@ -1392,12 +1390,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 		return name;
 	}
-	
-	protected String printArgumentInterfaces(String name)
-	{
-		//override this method to add interfaces for method argument lists
-		return null;
-	}
 
 	@Override
 	public void visitClassDef(JCClassDecl classdecl) {
@@ -1489,7 +1481,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				print("/** @ignore */").println().printIndent();
 			}
 			print(classdecl.mods);
-			argumentInterfaceName = printArgumentInterfaces(name);
+
 			if (!isTopLevelScope() || context.useModules || isAnonymousClass() || isInnerClass() || isLocalClass()) {
 				print("export ");
 			}
@@ -2522,7 +2514,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	{
 		if (inCoreWrongOverload)
 		{
-			scope.eraseVariableTypes = true;
+			scope.setEraseVariableTypes(true);
 		}
 		boolean paramPrinted = false;
 		if (scope.innerClassNotStatic && methodDecl.sym.isConstructor() && !scope.enumWrapperClassScope)
@@ -2550,7 +2542,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 		if (inCoreWrongOverload)
 		{
-			scope.eraseVariableTypes = false;
+			scope.setEraseVariableTypes(false);
 		}
 		if (paramPrinted)
 		{
@@ -3145,7 +3137,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				print(name);
 			}
 
-			if (!Util.isVarargs(varDecl) && (getScope().eraseVariableTypes || (getScope().interfaceScope
+			if (!Util.isVarargs(varDecl) && (getScope().isEraseVariableTypes() || (getScope().interfaceScope
 					&& context.hasAnnotationType(varDecl.sym, JSweetConfig.ANNOTATION_OPTIONAL)))) {
 				print("?");
 			}
@@ -3155,7 +3147,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					if (confictInDefinitionScope) {
 						print("any");
 					} else {
-						if (getScope().eraseVariableTypes) {
+						if (getScope().isEraseVariableTypes()) {
 							print("any");
 							if (Util.isVarargs(varDecl)) {
 								print("[]");

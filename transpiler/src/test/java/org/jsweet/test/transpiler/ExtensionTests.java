@@ -36,6 +36,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
@@ -101,6 +102,32 @@ class TestAdapter extends RemoveJavaDependenciesAdapter {
 
 }
 
+class TestConstructorAdapter extends Java2TypeScriptAdapter
+{
+
+	public TestConstructorAdapter(JSweetContext context)
+	{
+		super(context);
+
+	}
+	
+//	@Override
+//	public void afterType(TypeElement type)
+//	{
+//		
+//		String name = type.getSimpleName().toString();
+//		String iName = null;
+//		if(name != null)
+//		{
+//			iName = "I" + name;
+//			print("interface " + iName + "{");
+//			print("}").println();
+//		}
+//		
+//	}
+	
+}
+
 class TestConstructorFactory extends JSweetFactory{
 	
 	@Override
@@ -108,6 +135,13 @@ class TestConstructorFactory extends JSweetFactory{
 			JSweetContext context, JCCompilationUnit compilationUnit, boolean fillSourceMap) {
 		return new TestConstructorTranslator(adapter, transpilationHandler, context, compilationUnit, fillSourceMap);
 	}
+
+	
+	@Override
+	public PrinterAdapter createAdapter(JSweetContext context) {
+		return new TestConstructorAdapter(context);
+	}
+
 }
 
 class TestConstructorTranslator extends Java2TypeScriptTranslator {
@@ -119,30 +153,28 @@ class TestConstructorTranslator extends Java2TypeScriptTranslator {
 		super(adapter, logHandler, context, compilationUnit, fillSourceMap);
 		
 	}
-	
-	@Override 
-	protected String printArgumentInterfaces(String name)
-	{
-		String iName = null;
-		if(name != null)
-		{
-			iName = "I" + name;
-			print("interface " + iName + "{");
-			print("}").println();
-		}
-		return iName;
-	}
 
 	@Override
 	protected void printMethodArgs(JCMethodDecl methodDecl, Overload overload, boolean inOverload,
 	boolean inCoreWrongOverload, ClassScope scope)
 	{
-		if(scope.isConstructor())
+		Type parameterClass = null;
+		boolean isWrapped = false;
+		if(this.context.hasAnnotationType(methodDecl.sym, JSweetConfig.LANG_PACKAGE + ".Wrapped"))
+		{
+			parameterClass = this.context.getAnnotationValue(methodDecl.sym, JSweetConfig.LANG_PACKAGE + ".Wrapped", "target", Type.class, null);
+			isWrapped = true;
+		}
+		if(isWrapped)
 		{
 		print("{");
 		}
 //		super.printConstructorArgs(methodDecl, overload, inOverload, true, scope);
 
+		if (inCoreWrongOverload)
+		{
+			scope.setEraseVariableTypes(true);
+		}
 		boolean paramPrinted = false;
 		if (scope.isInnerClassNotStatic() && methodDecl.sym.isConstructor() && !scope.isEnumWrapperClassScope())
 		{
@@ -158,9 +190,9 @@ class TestConstructorTranslator extends Java2TypeScriptTranslator {
 		int i = 0;
 		for (JCVariableDecl param : methodDecl.getParameters())
 		{
-			if(scope.isConstructor())
+			if(isWrapped)
 			{
-			print(param.getName().toString());
+				print(param.getName().toString());
 			}
 			else
 			{
@@ -174,26 +206,33 @@ class TestConstructorTranslator extends Java2TypeScriptTranslator {
 			i++;
 			paramPrinted = true;
 		}
-
+		if (inCoreWrongOverload)
+		{
+			scope.setEraseVariableTypes(false);
+		}
 		if (paramPrinted)
 		{
 			removeLastChars(2);
 		}
 		
-		if(scope.isConstructor())
+		if(isWrapped)
 		{
 			
-			String iName = getArgumentInterfaceName();
-			if(iName != null)
-			{
-				iName = ":" + iName;
-			}
-			else
-			{
-				iName = "";
-			}			
+			String iName = scope.getName() != null ? scope.getName() + "." + parameterClass.getClass() : null;
+//			if(iName != null)
+//			{
+//				iName = ":" + iName;
+//			}
+//			else
+//			{
+//				iName = "";
+//			}			
 		
-			print("} " + iName);
+			print("} ");
+			if(parameterClass != null)
+			{
+				print(":" + parameterClass.tsym.owner.getSimpleName().toString() + "." + parameterClass.tsym.getSimpleName().toString());
+			}
 		}
 	}
 	
@@ -366,9 +405,11 @@ public class ExtensionTests extends AbstractTest {
 			logHandler.assertNoProblems();
 		}, f);
 		String generatedCode = FileUtils.readFileToString(f.getTsFile());
-		Assert.assertTrue(generatedCode.contains("this is a header comment"));
-		Assert.assertTrue(generatedCode.contains("date : string"));
-		Assert.assertFalse(generatedCode.contains("date : Date"));
+		
+		
+		Assert.assertTrue(generatedCode.contains("{msg, date, quantity, items} :FooArgsDto.FooArgsDtoParameter"));
+		Assert.assertTrue(generatedCode.contains("msg : string"));
+		Assert.assertTrue(generatedCode.contains("date : Date"));
 
 		createTranspiler(new JSweetFactory());
 	}
