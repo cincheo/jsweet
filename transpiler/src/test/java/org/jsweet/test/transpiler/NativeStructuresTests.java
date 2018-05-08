@@ -1,5 +1,6 @@
 package org.jsweet.test.transpiler;
 
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 
 import org.jsweet.transpiler.ModuleKind;
@@ -121,8 +122,9 @@ public class NativeStructuresTests extends AbstractTest {
 	@Test
 	public void testSystem() {
 		eval((logHandler, result) -> {
-			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
 			assertEquals("true,true", result.get("trace"));
+			assertTrue(result.get("nanoTime"));
 		}, getSourceFile(NativeSystem.class));
 	}
 

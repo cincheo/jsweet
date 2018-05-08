@@ -78,7 +78,7 @@ public class CalculusTests extends AbstractTest {
 	public void testMathApi() {
 		eval(ModuleKind.none, (logHandler, r) -> {
 			logHandler.assertNoProblems();
-
+			
 			Assert.assertEquals(Math.E, (double) r.get("E"), 0.00001);
 			Assert.assertEquals(Math.PI, (double) r.get("PI"), 0.00001);
 			Assert.assertEquals(Math.abs(-123), (int) r.get("abs_123"), 0.00001);
@@ -88,10 +88,22 @@ public class CalculusTests extends AbstractTest {
 			Assert.assertEquals(Math.signum(-2342), (int) r.get("signum_2342"), 0.00001);
 			Assert.assertEquals(Math.scalb(1.2, 2), (double) r.get("scalb1_2__2"), 0.00001);
 			Assert.assertEquals(Math.toDegrees(0.5), (double) r.get("toDegres0_5"), 0.00001);
+
+			Assert.assertEquals(Math.E, (double) r.get("strict_E"), 0.00001);
+			Assert.assertEquals(Math.PI, (double) r.get("strict_PI"), 0.00001);
+			Assert.assertEquals(Math.abs(-123), (int) r.get("strict_abs_123"), 0.00001);
+			Assert.assertEquals(Math.acos(0.1), (double) r.get("strict_acos0_1"), 0.00001);
+			Assert.assertEquals(Math.floor(3.3), (int) r.get("strict_floor3_3"), 0.00001);
+			Assert.assertEquals(Math.cbrt(2), (double) r.get("strict_cbrt2"), 0.00001);
+			Assert.assertEquals(Math.signum(-2342), (int) r.get("strict_signum_2342"), 0.00001);
+			Assert.assertEquals(Math.scalb(1.2, 2), (double) r.get("strict_scalb1_2__2"), 0.00001);
+			Assert.assertEquals(Math.toDegrees(0.5), (double) r.get("strict_toDegres0_5"), 0.00001);
+
 			Assert.assertEquals(Math.abs(-1) + Math.abs(-1), (int) r.get("2"), 0.00001);
 			Assert.assertEquals(Math.cbrt(2), (double) r.get("3"), 0.00001);
 			Assert.assertEquals(Math.cbrt(2), (double) r.get("4"), 0.00001);
 			Assert.assertEquals(Math.cbrt(2), (double) r.get("4"), 0.00001);
+			
 			Assert.assertTrue(Math.ulp(956.294) == 1.1368683772161603E-13);
 			Assert.assertTrue(Math.ulp(123.1) == 1.4210854715202004E-14);
 		}, getSourceFile(MathApi.class));

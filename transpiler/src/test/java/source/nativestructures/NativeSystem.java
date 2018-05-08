@@ -20,6 +20,13 @@ public class NativeSystem {
 
 		$export("trace", trace.join(","));
 
+		long nano1 = System.nanoTime();
+		System.out.println("nano1="+nano1);
+
+		long nano2 = System.nanoTime();
+		System.out.println("nano2="+nano2);
+		
+		$export("nanoTime", nano2 >= nano1);
 	}
 
 }

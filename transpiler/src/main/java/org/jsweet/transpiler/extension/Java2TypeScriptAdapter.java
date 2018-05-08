@@ -221,6 +221,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 		context.getLangTypeMappings().put(Byte.class.getName(), "Number");
 		context.getLangTypeMappings().put(Character.class.getName(), "String");
 		context.getLangTypeMappings().put(Math.class.getName(), "Math");
+		context.getLangTypeMappings().put(StrictMath.class.getName(), "Math");
 		context.getLangTypeMappings().put(Exception.class.getName(), "Error");
 		context.getLangTypeMappings().put(Throwable.class.getName(), "Error");
 		context.getLangTypeMappings().put(Error.class.getName(), "Error");
@@ -1035,6 +1036,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 					return true;
 				}
 				break;
+			case "java.lang.StrictMath":
 			case "java.lang.Math":
 				switch (targetMethodName) {
 				case "cbrt":

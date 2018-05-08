@@ -23,6 +23,16 @@ public class MathApi {
 		$export("scalb1_2__2", Math.scalb(1.2, 2));
 		$export("toDegres0_5", Math.toDegrees(0.5));
 
+		$export("strict_E", StrictMath.E);
+		$export("strict_PI", StrictMath.PI);
+		$export("strict_abs_123", StrictMath.abs(-123));
+		$export("strict_acos0_1", StrictMath.acos(0.1));
+		$export("strict_floor3_3", StrictMath.floor(3.3));
+		$export("strict_cbrt2", StrictMath.cbrt(2));
+		$export("strict_signum_2342", StrictMath.signum(-2342));
+		$export("strict_scalb1_2__2", StrictMath.scalb(1.2, 2));
+		$export("strict_toDegres0_5", StrictMath.toDegrees(0.5));
+
 		assert Math.ulp(956.294) == 1.1368683772161603E-13;
 		assert Math.ulp(123.1) == 1.4210854715202004E-14;
 		

@@ -174,7 +174,8 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		addTypeMapping((typeTree,
 				name) -> ExtendedElementFactory.toTree(typeTree) instanceof JCTypeApply && WeakReference.class.getName()
 						.equals(ExtendedElementFactory.toTree(typeTree).type.tsym.getQualifiedName().toString())
-								? ((JCTypeApply) ExtendedElementFactory.toTree(typeTree)).arguments.head : null);
+								? ((JCTypeApply) ExtendedElementFactory.toTree(typeTree)).arguments.head
+								: null);
 		excludedJavaSuperTypes.add(EventObject.class.getName());
 	}
 
@@ -410,6 +411,10 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 					printMacroName(targetMethodName);
 					print("Date.now()");
 					return true;
+				case "nanoTime":
+					printMacroName(targetMethodName);
+					print("(Date.now() * 1000000)");
+					return true;
 				}
 				break;
 			case "java.lang.StringBuffer":
@@ -515,8 +520,8 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 				case "newInstance":
 					printMacroName(targetMethodName);
 					print("new (");
-					print(invocation.getTargetExpression(), delegate).print(")(").printArgList(invocation.getArguments())
-							.print(")");
+					print(invocation.getTargetExpression(), delegate).print(")(")
+							.printArgList(invocation.getArguments()).print(")");
 					return true;
 				case "isInstance":
 					printMacroName(targetMethodName);
@@ -634,6 +639,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 				break;
 
 			case "java.lang.Math":
+			case "java.lang.StrictMath":
 				switch (targetMethodName) {
 				case "ulp":
 					printMacroName(targetMethodName);
@@ -662,6 +668,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		}
 
 		return super.substituteMethodInvocation(invocation);
+
 	}
 
 	private boolean substituteMethodInvocationOnStringBuilder(MethodInvocationElement invocation,
