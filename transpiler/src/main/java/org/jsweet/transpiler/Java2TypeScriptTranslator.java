@@ -1294,7 +1294,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 		if (getScope().declareClassScope) {
 			if (context.hasAnnotationType(classdecl.sym, JSweetConfig.ANNOTATION_DECORATOR)) {
-				print("function ").print(name).print("(...args: any[]);").println();
+				print("declare function ").print(name).print("(...args: any[]);").println();
 				exitScope();
 				return;
 			}
