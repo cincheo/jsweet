@@ -115,6 +115,7 @@ public class AbstractTest {
 		transpiler.setSkipTypeScriptChecks(true);
 		transpiler.setIgnoreAssertions(false);
 		transpiler.setGenerateSourceMaps(false);
+		transpiler.setUseTsserver(true);
 	}
 
 	@BeforeClass

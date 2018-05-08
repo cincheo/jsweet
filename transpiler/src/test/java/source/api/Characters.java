@@ -46,7 +46,7 @@ public class Characters {
 		}
 
 		switch (charD) {
-		case (int) 98:
+		case (int) 68:
 			$export("switch_int_cast_int", true);
 			break;
 		}
