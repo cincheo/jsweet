@@ -109,22 +109,7 @@ class TestConstructorAdapter extends Java2TypeScriptAdapter
 	{
 		super(context);
 
-	}
-	
-//	@Override
-//	public void afterType(TypeElement type)
-//	{
-//		
-//		String name = type.getSimpleName().toString();
-//		String iName = null;
-//		if(name != null)
-//		{
-//			iName = "I" + name;
-//			print("interface " + iName + "{");
-//			print("}").println();
-//		}
-//		
-//	}
+	}	
 	
 }
 
