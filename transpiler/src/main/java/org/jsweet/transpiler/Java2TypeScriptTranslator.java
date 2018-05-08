@@ -4813,7 +4813,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						}
 					} else {
 						if (context.types.isSameType(context.symtab.charType, caseStatement.pat.type)) {
-							print("" + ((JCLiteral) caseStatement.pat).value + " /* " + caseStatement.pat + " */");
+							JCLiteral caseLiteral;
+							if (caseStatement.pat instanceof JCTypeCast) {
+								caseLiteral = (JCLiteral) ((JCTypeCast)caseStatement.pat).expr;
+							} else {
+								caseLiteral = (JCLiteral) caseStatement.pat;
+							}
+							print("" + caseLiteral.value + " /* " + caseStatement.pat + " */");
 						} else {
 							print(caseStatement.pat);
 						}

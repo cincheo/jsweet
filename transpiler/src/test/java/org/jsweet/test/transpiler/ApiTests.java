@@ -16,6 +16,7 @@
  */
 package org.jsweet.test.transpiler;
 
+
 import static org.junit.Assert.assertEquals;
 
 import org.jsweet.transpiler.ModuleKind;
@@ -149,6 +150,12 @@ public class ApiTests extends AbstractTest {
 	public void testCharacters() {
 		eval(ModuleKind.none, (logHandler, r) -> {
 			logHandler.assertNoProblems();
+
+			assertEquals(true, r.get("switch_int"));
+			assertEquals(true, r.get("switch_char"));
+			assertEquals(true, r.get("switch_char_cast_int"));
+			assertEquals(true, r.get("switch_char_cast_char"));
+			
 		}, getSourceFile(Characters.class));
 	}
 	
