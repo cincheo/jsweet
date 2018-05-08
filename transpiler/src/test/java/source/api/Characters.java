@@ -32,16 +32,28 @@ public class Characters {
 			$export("switch_char", true);
 			break;
 		}
-		
+
 		switch (charD) {
 		case (char) 68:
 			$export("switch_char_cast_int", true);
 			break;
 		}
-		
+
 		switch (charD) {
 		case (char) 'D':
 			$export("switch_char_cast_char", true);
+			break;
+		}
+
+		switch (charD) {
+		case (int) 98:
+			$export("switch_int_cast_int", true);
+			break;
+		}
+		
+		switch (charD) {
+		case (int) 'D':
+			$export("switch_int_cast_char", true);
 			break;
 		}
 

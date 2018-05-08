@@ -155,6 +155,8 @@ public class ApiTests extends AbstractTest {
 			assertEquals(true, r.get("switch_char"));
 			assertEquals(true, r.get("switch_char_cast_int"));
 			assertEquals(true, r.get("switch_char_cast_char"));
+			assertEquals(true, r.get("switch_int_cast_int"));
+			assertEquals(true, r.get("switch_int_cast_char"));
 			
 		}, getSourceFile(Characters.class));
 	}
