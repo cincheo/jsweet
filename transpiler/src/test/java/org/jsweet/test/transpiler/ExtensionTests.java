@@ -145,16 +145,15 @@ class TestConstructorTranslator extends Java2TypeScriptTranslator {
 	{
 		Type parameterClass = null;
 		boolean isWrapped = false;
-		if(this.context.hasAnnotationType(methodDecl.sym, JSweetConfig.LANG_PACKAGE + ".Wrapped"))
+		if(this.context.hasAnnotationType(methodDecl.sym, "source.extension.Wrapped"))
 		{
-			parameterClass = this.context.getAnnotationValue(methodDecl.sym, JSweetConfig.LANG_PACKAGE + ".Wrapped", "target", Type.class, null);
+			parameterClass = this.context.getAnnotationValue(methodDecl.sym, "source.extension.Wrapped", "target", Type.class, null);
 			isWrapped = true;
 		}
 		if(isWrapped)
 		{
 		print("{");
 		}
-//		super.printConstructorArgs(methodDecl, overload, inOverload, true, scope);
 
 		if (inCoreWrongOverload)
 		{
@@ -201,18 +200,7 @@ class TestConstructorTranslator extends Java2TypeScriptTranslator {
 		}
 		
 		if(isWrapped)
-		{
-			
-			String iName = scope.getName() != null ? scope.getName() + "." + parameterClass.getClass() : null;
-//			if(iName != null)
-//			{
-//				iName = ":" + iName;
-//			}
-//			else
-//			{
-//				iName = "";
-//			}			
-		
+		{					
 			print("} ");
 			if(parameterClass != null)
 			{

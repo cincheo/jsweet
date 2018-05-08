@@ -3,7 +3,6 @@ package source.extension;
 import java.util.Date;
 
 import jsweet.lang.Interface;
-import jsweet.lang.Wrapped;
 
 public class FooArgsDto {
 
