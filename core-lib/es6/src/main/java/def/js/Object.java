@@ -190,6 +190,8 @@ public class Object {
 	 */
 	native public static Array<String> keys(java.lang.Object o);
 
+	native public static def.js.Object assign(def.js.Object target, def.js.Object... sources);
+	
 	/**
 	 * Determines whether an object has a property with the specified name.
 	 * 
