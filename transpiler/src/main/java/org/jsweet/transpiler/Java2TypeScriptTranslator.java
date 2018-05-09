@@ -161,13 +161,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 */
 	public static final String PARENT_CLASS_FIELD_NAME = "__parent";
 	/**
-	 * The name of the field where the implemented interface names are stored in
-	 * the generated TypeScript code (for <code>instanceof</code> operator).
+	 * The name of the field where the implemented interface names are stored in the
+	 * generated TypeScript code (for <code>instanceof</code> operator).
 	 */
 	public static final String INTERFACES_FIELD_NAME = "__interfaces";
 	/**
-	 * The suffix added to static field initialization methods (for Java
-	 * semantics).
+	 * The suffix added to static field initialization methods (for Java semantics).
 	 */
 	public static final String STATIC_INITIALIZATION_SUFFIX = "_$LI$";
 	/**
@@ -220,8 +219,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 */
 	public static final Pattern METHOD_NAME_MARKER = Pattern.compile("\\{\\{\\s*methodName\\s*\\}\\}");
 	/**
-	 * A regular expression for matching class name markers in
-	 * <code>@Replace</code> expression.
+	 * A regular expression for matching class name markers in <code>@Replace</code>
+	 * expression.
 	 */
 	public static final Pattern CLASS_NAME_MARKER = Pattern.compile("\\{\\{\\s*className\\s*\\}\\}");
 	/**
@@ -235,8 +234,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	protected static Logger logger = Logger.getLogger(Java2TypeScriptTranslator.class);
 
 	/**
-	 * A state flag indicating the comparison mode to be used by this printer
-	 * for printing comparison operators.
+	 * A state flag indicating the comparison mode to be used by this printer for
+	 * printing comparison operators.
 	 * 
 	 * @author Renaud Pawlak
 	 */
@@ -248,8 +247,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		FORCE_STRICT,
 		/**
 		 * Uses the strict comparison operators (===, >==, <==), except for null
-		 * literals, where loose operators are used to match better the Java
-		 * semantics. This is the default behavior.
+		 * literals, where loose operators are used to match better the Java semantics.
+		 * This is the default behavior.
 		 */
 		STRICT,
 		/**
@@ -1961,6 +1960,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			// erased elements are ignored
 			return;
 		}
+
 		JCClassDecl parent = (JCClassDecl) getParent();
 
 		if (parent != null && methodDecl.pos == parent.pos && !getScope().enumWrapperClassScope) {
@@ -2127,6 +2127,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (!(inOverload && !inCoreWrongOverload)) {
 			printDocComment(methodDecl);
 		}
+
+		if (context.hasAnnotationType(methodDecl.sym, JSweetConfig.ANNOTATION_ASYNC)) {
+			print(" async ");
+		}
+
 		if (parent == null) {
 			print("function ");
 		} else if (globals) {
@@ -3036,10 +3041,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (varDecl.init != null && !isDefinitionScope) {
 					print("if(" + prefix).print(name).print(" == null) ").print(prefix).print(name).print(" = ");
 					/*
-					 * if (getScope().enumWrapperClassScope) { JCNewClass
-					 * newClass = (JCNewClass) varDecl.init; print("new "
-					 * ).print(clazz.getSimpleName().toString()).print("(")
-					 * .printArgList(null, newClass.args).print(")"); } else {
+					 * if (getScope().enumWrapperClassScope) { JCNewClass newClass = (JCNewClass)
+					 * varDecl.init; print("new "
+					 * ).print(clazz.getSimpleName().toString()).print("(") .printArgList(null,
+					 * newClass.args).print(")"); } else {
 					 */
 					if (!substituteAssignedExpression(varDecl.type, varDecl.init)) {
 						print(varDecl.init);
@@ -4518,7 +4523,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					: null;
 		} else if (expr instanceof JCFieldAccess) {
 			return context.lazyInitializedStatics.contains(((JCFieldAccess) expr).sym)
-					? (VarSymbol) ((JCFieldAccess) expr).sym : null;
+					? (VarSymbol) ((JCFieldAccess) expr).sym
+					: null;
 		} else {
 			return null;
 		}
@@ -4815,7 +4821,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						if (context.types.isSameType(context.symtab.charType, caseStatement.pat.type)) {
 							JCLiteral caseLiteral;
 							if (caseStatement.pat instanceof JCTypeCast) {
-								caseLiteral = (JCLiteral) ((JCTypeCast)caseStatement.pat).expr;
+								caseLiteral = (JCLiteral) ((JCTypeCast) caseStatement.pat).expr;
 							} else {
 								caseLiteral = (JCLiteral) caseStatement.pat;
 							}

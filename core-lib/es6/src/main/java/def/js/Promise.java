@@ -1,5 +1,7 @@
 package def.js;
 
+import java.util.function.BiConsumer;
+
 /**
  * Represents the completion of an asynchronous operation
  */
@@ -26,13 +28,7 @@ public class Promise<T> extends def.js.Object {
       * A reference to the prototype. 
       */
     public static Promise<?> prototype;
-    /**
-     * Creates a new Promise.
-     * @param executor A callback used to initialize the promise. This callback is passed two arguments: 
-     * a resolve callback used resolve the promise with a value or the result of another promise, 
-     * and a reject callback used to reject the promise with a provided reason or error.
-     */
-    public Promise(ExecutorBiConsumer<java.util.function.Consumer<T>,java.util.function.Consumer<java.lang.Object>> executor){}
+    
     /**
      * Creates a Promise that is resolved with an array of results when all of the provided Promises 
      * resolve, or rejected when any Promise is rejected.
@@ -126,6 +122,15 @@ public class Promise<T> extends def.js.Object {
      * and a reject callback used to reject the promise with a provided reason or error.
      */
     public Promise(ExecutorPromiseLikeBiConsumer<java.util.function.Consumer<PromiseLike<T>>,java.util.function.Consumer<java.lang.Object>> executor){}
+    
+    /**
+     * Creates a new Promise.
+     * @param executor A callback used to initialize the promise. This callback is passed two arguments: 
+     * a resolve callback used resolve the promise with a value or the result of another promise, 
+     * and a reject callback used to reject the promise with a provided reason or error.
+     */
+    public Promise(BiConsumer<java.util.function.Consumer<T>,java.util.function.Consumer<java.lang.Object>> executor){}
+    
     /**
      * Creates a Promise that is resolved with an array of results when all of the provided Promises 
      * resolve, or rejected when any Promise is rejected.
@@ -161,12 +166,7 @@ public class Promise<T> extends def.js.Object {
     public interface ExecutorPromiseLikeBiConsumer<T1,T2> {
         public void $apply(T1 p1, T2 p2);
     }
-    /** This functional interface should be used for disambiguating lambdas in function parameters (by casting to this interface).<p>It was automatically generated for functions (taking lambdas) that lead to the same erased signature. */
-    @java.lang.FunctionalInterface()
-    @jsweet.lang.Erased
-    public interface ExecutorBiConsumer<T1,T2> {
-        public void $apply(T1 p1, T2 p2);
-    }
+    
     /** This class was automatically generated for disambiguating erased method signatures. */
     @jsweet.lang.Erased
     public static class IterableT<T> extends def.js.Object {

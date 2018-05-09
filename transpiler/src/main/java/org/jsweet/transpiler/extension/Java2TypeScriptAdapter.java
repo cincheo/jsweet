@@ -492,6 +492,21 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 					print(")");
 					return true;
 
+				case "async":
+					print(" async ");
+					print(invocationElement.getArgument(0));
+					return true;
+
+				case "await":
+					print(" await ");
+					printCastMethodInvocation(invocationElement);
+					return true;
+					
+				case "asyncReturn":
+					print(" ");
+					printCastMethodInvocation(invocationElement);
+					return true;
+
 				case "union":
 					getPrinter().typeChecker.checkUnionTypeAssignment(context.types, getPrinter().getParent(),
 							((MethodInvocationElementSupport) invocationElement).getTree());
@@ -1267,11 +1282,19 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 	}
 
 	protected final void printCastMethodInvocation(InvocationElement invocation) {
-		if (getPrinter().getParent() instanceof JCMethodInvocation) {
+		boolean needsParens =getPrinter().getParent() instanceof JCMethodInvocation;
+		if (needsParens) {
+			// async needs no parens to work
+			JCMethodInvocation parentInvocation = (JCMethodInvocation)getPrinter().getParent();
+			if (parentInvocation.meth instanceof JCIdent) {
+				needsParens = !((JCIdent)parentInvocation.meth).getName().toString().equals("async");
+			}
+		}
+		if (needsParens) {
 			print("(");
 		}
 		print(invocation.getArgument(0));
-		if (getPrinter().getParent() instanceof JCMethodInvocation) {
+		if (needsParens) {
 			print(")");
 		}
 	}
