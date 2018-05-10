@@ -1,9 +1,11 @@
 JSweet Language Specifications
 ==============================
 
-Version: 2.0.x (snapshot)
+Version: 2.x (snapshot)
 
-Author: Renaud Pawlak
+Author          : Renaud Pawlak
+
+Author assistant: Louis Grignon
 
 JSweet JavaDoc API: http://www.jsweet.org/core-api-javadoc/
 

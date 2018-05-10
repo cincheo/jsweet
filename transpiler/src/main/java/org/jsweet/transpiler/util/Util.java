@@ -65,6 +65,7 @@ import com.sun.tools.javac.code.Type.TypeVar;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.file.JavacFileManager;
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCBinary;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCCase;
 import com.sun.tools.javac.tree.JCTree.JCCatch;
@@ -81,6 +82,7 @@ import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
+import com.sun.tools.javac.tree.JCTree.JCUnary;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.TreeScanner;
 import com.sun.tools.javac.util.Name;
@@ -1349,6 +1351,27 @@ public class Util {
 			return findInnerClassDeclaration((ClassSymbol) clazz.getSuperclass().tsym, name);
 		}
 		return null;
+	}
+
+	public static boolean isLiteralExpression(JCExpression expression) {
+		if (expression == null) {
+			return false;
+		}
+		
+		if (expression instanceof JCLiteral) {
+			return true;
+		}
+		
+		if (expression instanceof JCBinary) {
+			return isLiteralExpression(((JCBinary)expression).lhs)
+					&& isLiteralExpression(((JCBinary)expression).rhs);
+		}
+		
+		if (expression instanceof JCUnary) {
+			return isLiteralExpression(((JCUnary)expression).arg);
+		}
+		
+		return false;
 	}
 
 }

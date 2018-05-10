@@ -1,9 +1,5 @@
 package def.dom;
 
-import def.dom.ErrorEvent;
-import jsweet.util.StringTypes;
-import jsweet.util.StringTypes.*;
-
 @jsweet.lang.Extends({GlobalEventHandlers.class,NodeSelector.class,DocumentEvent.class})
 public class Document extends Node {
     /**
@@ -1027,7 +1023,7 @@ public class Document extends Node {
     native public void addEventListener(jsweet.util.StringTypes.wheel type, java.util.function.Function<WheelEvent,java.lang.Object> listener, java.lang.Boolean useCapture);
     native public void addEventListener(java.lang.String type, EventListener listener, java.lang.Boolean useCapture);
     native public Element querySelector(java.lang.String selectors);
-    native public NodeList querySelectorAll(java.lang.String selectors);
+    native public NodeListOf<Element> querySelectorAll(java.lang.String selectors);
     native public AnimationEvent createEvent(jsweet.util.StringTypes.AnimationEvent eventInterface);
     native public AriaRequestEvent createEvent(jsweet.util.StringTypes.AriaRequestEvent eventInterface);
     native public AudioProcessingEvent createEvent(jsweet.util.StringTypes.AudioProcessingEvent eventInterface);

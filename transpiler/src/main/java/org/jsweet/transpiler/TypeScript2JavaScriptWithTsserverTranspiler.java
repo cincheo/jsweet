@@ -23,7 +23,6 @@ import ts.client.diagnostics.IDiagnostic;
 import ts.client.projectinfo.ProjectInfo;
 import ts.cmd.tsc.CompilerOptions;
 import ts.internal.client.protocol.OpenExternalProjectRequestArgs.ExternalFile;
-import ts.nodejs.TraceNodejsProcess;
 
 public class TypeScript2JavaScriptWithTsserverTranspiler extends TypeScript2JavaScriptTranspiler {
 
@@ -132,15 +131,18 @@ public class TypeScript2JavaScriptWithTsserverTranspiler extends TypeScript2Java
 	}
 
 	private void printTsserverDiagnostics(Collection<DiagnosticEvent> events) {
-		System.out.println("========== DISPLAY DIAGNOSTICS ============");
+		String diagReport = "";
 		for (DiagnosticEvent event : events) {
-			System.out.println(event.getBody().getFile() + ":: " + event.getEvent());
-			for (IDiagnostic diag : event.getBody().getDiagnostics()) {
-				System.out.println("  > " + diag.getStartLocation().getLine() + ":"
-						+ diag.getStartLocation().getOffset() + diag.getFullText());
+			if (event.getBody().getDiagnostics().size() > 0) {
+				diagReport += event.getBody().getFile() + ":: " + event.getEvent() + "\n";
+				for (IDiagnostic diag : event.getBody().getDiagnostics()) {
+					diagReport += "  > " + diag.getStartLocation().getLine() + ":" + diag.getStartLocation().getOffset()
+							+ diag.getFullText() + "\n";
+				}
 			}
 		}
-		System.out.println("========== END ===========");
+
+		logger.info("tsserver diagnostics: " + diagReport);
 	}
 
 	private ITypeScriptServiceClient typeScriptServiceClient;
@@ -150,14 +152,14 @@ public class TypeScript2JavaScriptWithTsserverTranspiler extends TypeScript2Java
 		try {
 			if (typeScriptServiceClient == null) {
 				String tsserverPath = ProcessUtil.getGlobalNpmPackageNodeMainFilePath("typescript", "tsserver");
-				
+
 				TypeScriptServiceClient client = new TypeScriptServiceClient( //
 						new File("."), //
 						new File(tsserverPath), //
 						null, false, false, null, null, //
 						new TypeScriptServiceLogConfiguration("/tmp/tss.log", TypeScriptServiceLogLevel.verbose));
 				// client.addInterceptor(LoggingInterceptor.getInstance());
-				client.addProcessListener(TraceNodejsProcess.INSTANCE);
+				// client.addProcessListener(TraceNodejsProcess.INSTANCE);
 				typeScriptServiceClient = client;
 
 				logger.info("creating TypeScriptServiceClient");

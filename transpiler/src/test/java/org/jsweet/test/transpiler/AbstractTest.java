@@ -110,7 +110,7 @@ public class AbstractTest {
 	protected static void createTranspiler(File configurationFile, JSweetFactory factory) {
 		transpiler = new JSweetTranspiler(configurationFile, factory, null, new File(TMPOUT_DIR), null,
 				new File(JSweetTranspiler.TMP_WORKING_DIR_NAME + "/candies/js"), System.getProperty("java.class.path"));
-		transpiler.setEcmaTargetVersion(EcmaScriptComplianceLevel.ES5);
+		transpiler.setEcmaTargetVersion(EcmaScriptComplianceLevel.ES6);
 		transpiler.setEncoding("UTF-8");
 		transpiler.setSkipTypeScriptChecks(true);
 		transpiler.setIgnoreAssertions(false);

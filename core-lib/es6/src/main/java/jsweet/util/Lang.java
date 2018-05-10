@@ -23,6 +23,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import def.js.Promise;
 import jsweet.util.function.Consumer4;
 import jsweet.util.function.Consumer5;
 import jsweet.util.function.Consumer6;
@@ -704,4 +705,9 @@ public final class Lang {
      */
     public static native <T> T $insert(String typescriptString);
 
+    public static native <R> R await(Promise<R> promise);
+    
+    public static native <R> def.js.Function async(def.js.Function function);
+    
+    public static native <T> Promise<T> asyncReturn(T result);
 }

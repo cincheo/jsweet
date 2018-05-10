@@ -11,6 +11,12 @@ To generate the markdown language specifications from the Latex source file with
 > pandoc -r latex -w markdown_github --base-header-level=2 -s --toc --number-sections -B header.md -o jsweet-language-specifications.md jsweet-language-specifications.tex
 ```
 
+Generate PDF version (you will need to install [MikTex](https://miktex.org/howto/install-miktex))
+
+```
+> pandoc --pdf-engine=xelatex -r latex --base-header-level=3 -o jsweet-language-specifications.pdf jsweet-language-specifications.tex
+```
+
 Note that the following command will output the document in HTML:
 
 ```

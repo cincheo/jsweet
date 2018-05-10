@@ -5,7 +5,15 @@ import static jsweet.util.Lang.$export;
 public class Characters {
 
 	public static void main(String[] args) {
+		new Characters().test();
+	}
 
+	final char memberChar = 'c';
+	final int memberCharInt = (int) 'h';
+	final static char memberCharStatic = 'z';
+	final static int memberCharIntStatic = (int) 'w';
+
+	void test() {
 		Character c = 'C';
 		assert Character.isAlphabetic(c.charValue());
 		assert !Character.isDigit(c);
@@ -24,6 +32,18 @@ public class Characters {
 		switch (charD) {
 		case 68:
 			$export("switch_int", true);
+			break;
+		case memberCharStatic:
+			System.out.println("static");
+			break;
+		case memberCharIntStatic:
+			System.out.println("static int");
+			break;
+		case memberCharInt:
+			System.out.println("char ");
+			break;
+		case memberChar:
+			System.out.println("int");
 			break;
 		}
 
@@ -50,13 +70,12 @@ public class Characters {
 			$export("switch_int_cast_int", true);
 			break;
 		}
-		
+
 		switch (charD) {
 		case (int) 'D':
 			$export("switch_int_cast_char", true);
 			break;
 		}
-
 	}
 
 }

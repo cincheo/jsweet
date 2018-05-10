@@ -63,7 +63,10 @@ import com.martiansoftware.jsap.stringparsers.FileStringParser;
         re-run transpilation on-the-fly.
 
   [-v|--verbose]
-        Turn on all levels of logging.
+        Turn on general information logging (INFO LEVEL)
+        
+  [-V|--veryVerbose]
+        Turn on all levels of logging
 
   [--encoding <encoding>]
         Force the Java compiler to use a specific encoding (UTF-8, UTF-16, ...).
@@ -115,7 +118,7 @@ import com.martiansoftware.jsap.stringparsers.FileStringParser;
   [--tsOnly]
         Do not compile the TypeScript output (let an external TypeScript
         compiler do so).
-
+  
   [--ignoreDefinitions]
         Ignore definitions from def.* packages, so that they are not generated
         in d.ts definition files. If this option is not set, the transpiler
@@ -223,7 +226,13 @@ public class JSweetCommandLineLauncher {
 				printUsage(jsapSpec);
 			}
 
+			LogManager.getLogger("org.jsweet").setLevel(Level.WARN);
+			
 			if (jsapArgs.getBoolean("verbose")) {
+				LogManager.getLogger("org.jsweet").setLevel(Level.INFO);
+			}
+			
+			if (jsapArgs.getBoolean("veryVerbose")) {
 				LogManager.getLogger("org.jsweet").setLevel(Level.ALL);
 			}
 
@@ -268,6 +277,13 @@ public class JSweetCommandLineLauncher {
 		switchArg = new Switch("verbose");
 		switchArg.setLongFlag("verbose");
 		switchArg.setShortFlag('v');
+		switchArg.setHelp("Turn on general information logging (INFO LEVEL)");
+		switchArg.setDefault("false");
+		jsap.registerParameter(switchArg);
+
+		switchArg = new Switch("veryVerbose");
+		switchArg.setLongFlag("veryVerbose");
+		switchArg.setShortFlag('V');
 		switchArg.setHelp("Turn on all levels of logging.");
 		switchArg.setDefault("false");
 		jsap.registerParameter(switchArg);

@@ -17,7 +17,7 @@ public class Numbers {
 
 		float f = Float.intBitsToFloat(Float.floatToIntBits(3.14f));
 		assert f!=3.14f;
-		assert number(f).toFixed(2) == string("3.14");
+		assert number(f).toFixed(2) == "3.14";
 		
 		double d = Double.longBitsToDouble(Double.doubleToLongBits(3.14));
 		assert d!=3.14;

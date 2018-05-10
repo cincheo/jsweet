@@ -24,13 +24,6 @@ public abstract class TypeScript2JavaScriptTranspiler {
 			boolean ignoreErrors, //
 			OnTsTranspilationCompletedCallback onTsTranspilationCompleted) {
 		try {
-
-			if (options.isUsingModules()) {
-				if (options.getEcmaTargetVersion().higherThan(EcmaScriptComplianceLevel.ES5)
-						&& options.getModuleKind() != ModuleKind.es2015) {
-					throw new RuntimeException("cannot use old fashionned modules with ES>5 target");
-				}
-			}
 			
 			LinkedHashSet<File> tsFiles = new LinkedHashSet<>();
 			for (SourceFile sourceFile : tsSourceFiles) {

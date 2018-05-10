@@ -2,10 +2,9 @@ package source.generics;
 
 import java.util.function.Consumer;
 
-import def.es6_promise.Promise;
-import def.es6_promise.Promise.CallbackBiConsumer;
 import def.dom.Event;
 import def.dom.XMLHttpRequest;
+import def.js.Promise;
 
 public class AddThisOnGenericMethods<T> {
 
@@ -69,7 +68,7 @@ class Server {
 	}
 
 	<T> Promise<String> get(T t) {
-		return new Promise<String>((CallbackBiConsumer<Consumer<String>, Consumer<Object>>) (c1, c2) -> {
+		return new Promise<String>((Consumer<String> c1, Consumer<Object> c2) -> {
 		});
 	};
 
@@ -85,9 +84,8 @@ class AbstractController<T> {
 class Controller extends AbstractController<String> {
 
 	public void m() {
-		new Server().get("abc").thenOnFulfilledFunction(s -> {
+		new Server().get("abc").then(s -> {
 			fillTable(new String[] { s });
-			return null;
 		});
 	}
 }
