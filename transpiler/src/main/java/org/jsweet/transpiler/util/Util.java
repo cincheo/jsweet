@@ -1000,6 +1000,18 @@ public class Util {
 		case MULTIPLY:
 		case DIVIDE:
 		case AND:
+		case AND_ASSIGNMENT:
+		case OR_ASSIGNMENT:
+		case DIVIDE_ASSIGNMENT:
+		case REMAINDER_ASSIGNMENT:
+		case LEFT_SHIFT_ASSIGNMENT:
+		case RIGHT_SHIFT_ASSIGNMENT:
+		case MINUS_ASSIGNMENT:
+		case MULTIPLY_ASSIGNMENT:
+		case PLUS_ASSIGNMENT:
+		case XOR_ASSIGNMENT:
+		case LEFT_SHIFT:
+		case RIGHT_SHIFT:
 		case OR:
 		case XOR:
 			return true;

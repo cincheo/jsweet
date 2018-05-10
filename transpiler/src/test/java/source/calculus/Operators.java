@@ -1,5 +1,7 @@
 package source.calculus;
 
+import static jsweet.util.Lang.$export;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -56,6 +58,62 @@ public class Operators {
 		assert expr1;
 		assert expr2;
 		
+		testBitwiseShortcut();
+	}
+	
+	private static void testBitwiseShortcut() {
+		long mask = 0;
+		mask |= 1;
+		
+		$export("bitwise_or_assign", mask);
+		
+		mask = mask << 1;
+		$export("bitwise_leftshift", mask);
+		
+		mask <<= 1;
+		$export("bitwise_leftshift_assign", mask);
+		
+		char ch = (char) 3;
+        mask |= (1L << ch);
+		$export("bitwise_leftshift_char", mask);
+		
+		mask |= ch;
+		$export("bitwise_or_assign_char", mask);
+		
+		mask &= ch;
+		$export("bitwise_and_assign_char", mask);
+		
+		mask <<= ch;
+		$export("bitwise_lshift_assign_char", mask);
+
+		mask >>= ch;
+		$export("bitwise_rshift_assign_char", mask);
+		
+		mask /= ch;
+		$export("bitwise_div_assign_char", mask);
+		
+		mask -= ch;
+		$export("bitwise_minus_assign_char", mask);
+		
+		mask %= ch;
+		$export("bitwise_modulo_assign_char", mask);
+		
+		mask *= ch;
+		$export("bitwise_multiply_assign_char", mask);
+		
+		mask += ch;
+		$export("bitwise_plus_assign_char", mask);
+		
+		mask ^= ch;
+		$export("bitwise_xor_assign_char", mask);
+		
+		char cch = 60;
+		cch += 5;
+		$export("bitwise_add_to_char", cch);
+		
+		cch = 'C' / 3;
+		cch *= ch;
+		$export("bitwise_multiply_assign_char_to_char", cch);
 	}
 
 	Collection<String> c = new ArrayList<String>();

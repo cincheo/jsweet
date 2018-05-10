@@ -4535,6 +4535,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		print(assignOp.lhs);
 		staticInitializedAssignment = false;
 		String op = assignOp.operator.name.toString();
+
 		if (context.types.isSameType(context.symtab.booleanType, context.types.unboxedTypeOrType(assignOp.lhs.type))) {
 			if ("|".equals(op)) {
 				print(" = ").print(assignOp.rhs).print(" || ").print(assignOp.lhs);
@@ -4544,18 +4545,30 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				return;
 			}
 		}
+
 		if (expandChar) {
 			print(" = String.fromCharCode(").substituteAndPrintAssignedExpression(context.symtab.intType, assignOp.lhs)
 					.print(" " + op + " ").substituteAndPrintAssignedExpression(context.symtab.intType, assignOp.rhs)
 					.print(")");
 			return;
 		}
+
 		if (expand) {
-			print(" = ").print(assignOp.lhs).print(" " + op + " ").print(assignOp.rhs);
+			print(" = ").print(assignOp.lhs).print(" " + op + " ");
+			if (context.types.isSameType(context.symtab.charType, context.types.unboxedTypeOrType(assignOp.rhs.type))) {
+				substituteAndPrintAssignedExpression(context.symtab.intType, assignOp.rhs);
+			} else {
+				print(assignOp.rhs);
+			}
 			return;
 		}
+		
 		print(" " + op + "= ");
-		print(assignOp.rhs);
+		if (context.types.isSameType(context.symtab.charType, context.types.unboxedTypeOrType(assignOp.rhs.type))) {
+			substituteAndPrintAssignedExpression(context.symtab.intType, assignOp.rhs);
+		} else {
+			print(assignOp.rhs);
+		}
 	}
 
 	/**

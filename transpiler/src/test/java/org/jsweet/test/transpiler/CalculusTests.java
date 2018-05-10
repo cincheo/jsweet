@@ -16,6 +16,7 @@
  */
 package org.jsweet.test.transpiler;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import org.jsweet.transpiler.ModuleKind;
@@ -113,6 +114,29 @@ public class CalculusTests extends AbstractTest {
 	public void testOperators() {
 		eval(ModuleKind.none, (logHandler, r) -> {
 			logHandler.assertNoProblems();
+			
+			assertEquals(1L, r.<Number>get("bitwise_or_assign").longValue());
+			assertEquals(2L, r.<Number>get("bitwise_leftshift").longValue());
+			assertEquals(4L, r.<Number>get("bitwise_leftshift_assign").longValue());
+			System.out.println("last shift: " + r.get("bitwise_leftshift_assign"));
+			
+			assertEquals(12L, r.<Number>get("bitwise_leftshift_char").longValue());
+			
+			assertEquals(15L, r.<Number>get("bitwise_or_assign_char").longValue());
+			
+			assertEquals(3L, r.<Number>get("bitwise_and_assign_char").longValue());
+			assertEquals(24L, r.<Number>get("bitwise_lshift_assign_char").longValue());
+			assertEquals(3L, r.<Number>get("bitwise_rshift_assign_char").longValue());
+			assertEquals(1L, r.<Number>get("bitwise_div_assign_char").longValue());
+			assertEquals(-2L, r.<Number>get("bitwise_minus_assign_char").longValue());
+			assertEquals(-2L, r.<Number>get("bitwise_modulo_assign_char").longValue());
+			assertEquals(-6L, r.<Number>get("bitwise_multiply_assign_char").longValue());
+			assertEquals(-3L, r.<Number>get("bitwise_plus_assign_char").longValue());
+			assertEquals(-2L, r.<Number>get("bitwise_xor_assign_char").longValue());
+			
+			assertEquals("A", r.get("bitwise_add_to_char"));
+			assertEquals("B", r.get("bitwise_multiply_assign_char_to_char"));
+			
 		}, getSourceFile(Operators.class));
 	}
 
