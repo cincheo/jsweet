@@ -1,10 +1,12 @@
 package def.dom;
 
-public class NodeList {
-    public double length;
-    native public Node item(double index);
-    native public Node $get(double index);
-    public static NodeList prototype;
-    public NodeList(){}
-}
+@jsweet.lang.Interface
+public abstract class NodeList {
+	public int length;
 
+	native public Node item(int index);
+
+	native public Node $get(int index);
+
+	public static NodeList prototype;
+}

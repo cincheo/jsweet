@@ -30,7 +30,7 @@ import jsweet.util.Lang;
 	} <br/>
  * </code>
  */
-public class Promise<T> extends def.js.Object {
+public class Promise<T> extends PromiseLike<T> {
 	/**
 	 * Attaches callbacks for the resolution and/or rejection of the Promise.
 	 * 
