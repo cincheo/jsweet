@@ -3,6 +3,7 @@ package def.js;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import jsweet.util.Lang;
 
@@ -123,6 +124,10 @@ public class Promise<T> extends PromiseLike<T> {
 	 * @returns A Promise for the completion of which ever callback is executed.
 	 */
 	native public <TResult> Promise<TResult> then(Function<T, TResult> onfulfilled);
+	
+	native public <TResult> Promise<TResult> then(Supplier<TResult> onfulfilled);
+	
+	native public Promise<Void> then(Runnable onfulfilled);
 
 	native public Promise<Void> then(Consumer<T> onfulfilled);
 
@@ -164,6 +169,9 @@ public class Promise<T> extends PromiseLike<T> {
 	@jsweet.lang.Name("then")
 	native public <TResult> Promise<TResult> thenAsync(Function<T, PromiseLike<TResult>> onfulfilled,
 			Function<java.lang.Object, TResult> onrejected);
+	
+	@jsweet.lang.Name("then")
+	native public <TResult> Promise<TResult> thenAsync(Supplier<PromiseLike<TResult>> onfulfilled);
 
 	@jsweet.lang.Name("then")
 	native public <TResult> Promise<TResult> thenAsync(Function<T, PromiseLike<TResult>> onfulfilled,

@@ -63,10 +63,15 @@
 
 \begin{document}
 
-\title{JSweet Language Specifications\\{\large Version 2.0.x}}
+\title{JSweet Language Specifications\\{\large Version 2.x}}
 \author{%
 Renaud Pawlak\\
 {\normalsize renaud.pawlak@jsweet.org}\\
+{\normalsize http://www.jsweet.org}\\
+}% author
+\author{%
+Louis Grignon\\
+{\normalsize louis.grignon@gmail.com}\\
 {\normalsize http://www.jsweet.org}\\
 }% author
 \date{}
@@ -1056,6 +1061,122 @@ strings.push("d");
 assert strings.length == 4;
 assert strings.$get(3) == "d";
 \end{lstlisting}
+
+\section{Asynchronous programming}
+JSweet supports advanced asynchronous programming beyond the basic callback concepts with the help of the ES2015+ Promise API.
+
+\subsection{Promises}
+It is very simple to define an asynchronous method by declaring a \texttt{Promise} return type. The following method's \texttt{Promise} will be \emph{fulfilled} when millis milliseconds elapsed.
+\begin{lstlisting}[language=Java]
+Promise<Void> delay(int millis) {
+  return new Promise<Void>((Consumer<Void> resolve, Consumer<Object> reject) -> {
+    setTimeout(resolve, millis);
+  });
+}
+\end{lstlisting}
+
+You can then chain synchronous and asynchronous actions to be executed once the promise is fulfilled.
+
+\begin{lstlisting}[language=Java]
+delay(1000)
+  // chain with a synchronous action with "then". Here we just return a constant.
+  .then(() -> {
+    System.out.println("wait complete");
+    return 42;
+  })
+  // chain with an asynchronous action with "thenAsync". Here it is implied that anotherAsyncAction(String) returns a Promise<...>
+  .thenAsync((Integer result) -> {
+    System.out.println("previous task result: " + result); // will print "previous task result: 42"
+    
+    return anotherAsyncAction("param");
+  })
+  // this chained action will be executed once anotherAsyncAction finishes its execution.
+  .then((String result) -> {
+
+    System.out.println("anotherAsyncAction returned " + result);
+  }) 
+  // catch errors during process using this method
+  .Catch(error -> {
+    System.out.println("error is " + error);
+  });
+\end{lstlisting}
+
+This allows a totally type-safe and fluent asynchronous programming model.
+
+\subsection{async/await}
+
+\texttt{Promise}s are really interesting to avoid callback but writing it still requires a lot of boilerplate code. It is better than pure callbacks but less readable and straightforward than linear programming. That's where \texttt{async/await} comes to help.
+
+With the \texttt{await} keyword, you can tell the runtime to wait for a \texttt{Promise} to be fulfilled without having to write a then method. The code after the \texttt{await} "is" the \texttt{then} part. The result is that you can write your asynchronous code with linear programming.
+
+\begin{lstlisting}[language=Java]
+import static jsweet.util.Lang.await;
+
+// wait for the Promise returned by the delay method to be fulfilled
+await(delay(1000));
+
+System.out.println("wait complete");
+\end{lstlisting}
+
+It goes the same for error handling. You can just use the plain old \texttt{try / catch} idiom to handle your exceptions.
+
+\begin{lstlisting}[language=Java]
+import static jsweet.util.Lang.await;
+import def.js.Error;
+
+try {
+  Integer promiseResult = await(getANumber());
+  assert promiseResult == 42;
+} catch(Error e) {
+  System.err.println("something unexpected happened: " + e);
+}
+
+\end{lstlisting}
+
+You have to declare as \texttt{async} every asynchronous method / lambda (i.e. every method which would await something).
+
+\begin{lstlisting}[language=Java]
+import static jsweet.util.Lang.await;
+import static jsweet.util.Lang.async;
+import static jsweet.util.Lang.function;
+
+import jsweet.lang.Async;
+import def.js.Function;
+
+@Async
+Promise<Integer> findAnswer() {
+  await(delay(1000)); // won't compile if the enclosing method isn't @Async
+  return asyncReturn(42); // converts to Promise
+}
+
+@Async
+void askAnswerThenVerifyAndPrintIt() {
+  
+  try {
+
+    Integer answer = await(findAnswer());
+
+    // lambda expressions can be async
+    Function verifyAnswerAsync = async(function(() -> {
+      return await(answerService.verifyAnswer(answer));
+    }))
+
+    Boolean verified = await(verifyAnswerAsync.$apply());
+
+    if (!verified) {
+      throw new Error("cannot verify this answer");
+    }
+
+    console.log("answer found: " + answer);
+
+  } catch (Error e) {
+    console.error(e, "asynchronous process failed");
+  }
+}
+
+\end{lstlisting}
+
+Sweet, isn't it? ;)
 
 \section{Name clashes}
 
