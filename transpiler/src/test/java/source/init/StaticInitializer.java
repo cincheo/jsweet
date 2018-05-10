@@ -27,10 +27,11 @@ public class StaticInitializer {
 	public final static int fb = -100;
 	static int ab = a + b;
 	static int d = 100 + 100;
-	
+
 	public static final double MAX_VALUE = 90.0;
 	public static final double MIN_VALUE = -90.0;
-	
+	public static final double testExpression = 150 + 44 + 1e3 - 90.0;
+
 	static int n;
 
 	static {
@@ -47,5 +48,5 @@ public class StaticInitializer {
 		$export("n", StaticInitializer.n);
 		$export("s", StaticInitializer.s);
 	}
-	
+
 }

@@ -187,7 +187,7 @@ public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {
 		}
 		for (JCVariableDecl var : lazyInitializedStaticCandidates) {
 			if (context.getStaticInitializerCount(var.sym.enclClass()) == 0 && var.init == null
-					|| var.init instanceof JCLiteral) {
+					|| Util.isLiteralExpression(var.init)) {
 				continue;
 			}
 			context.lazyInitializedStatics.add(var.sym);

@@ -21,6 +21,7 @@ package org.jsweet.transpiler;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.jsweet.transpiler.util.Util.toJavaFileObjects;
+import static org.jsweet.transpiler.util.ProcessUtil.isVersionHighEnough;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -526,12 +527,13 @@ public class JSweetTranspiler implements JSweetOptions {
 		File initFile = new File(workingDir, ".node-init");
 		boolean initialized = initFile.exists();
 		if (!initialized) {
-			ProcessUtil.runCommand(ProcessUtil.NODE_COMMAND, line -> {
-				logger.info("node version: " + line);
+			ProcessUtil.runCommand(ProcessUtil.NODE_COMMAND, currentNodeVersion -> {
+				logger.info("node version: " + currentNodeVersion);
 
-				if (line.compareTo(ProcessUtil.NODE_MINIMUM_VERSION) < 0) {
+				if (!isVersionHighEnough(currentNodeVersion, ProcessUtil.NODE_MINIMUM_VERSION)) {
 					transpilationHandler.report(JSweetProblem.NODE_OBSOLETE_VERSION, null,
-							JSweetProblem.NODE_OBSOLETE_VERSION.getMessage(line, ProcessUtil.NODE_MINIMUM_VERSION));
+							JSweetProblem.NODE_OBSOLETE_VERSION.getMessage(currentNodeVersion,
+									ProcessUtil.NODE_MINIMUM_VERSION));
 					// throw new RuntimeException("node.js version is obsolete,
 					// minimum version: " + ProcessUtil.NODE_MINIMUM_VERSION);
 				}

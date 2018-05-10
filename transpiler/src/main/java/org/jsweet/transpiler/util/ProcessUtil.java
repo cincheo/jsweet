@@ -37,7 +37,7 @@ import org.apache.log4j.Logger;
 public class ProcessUtil {
 	private final static Logger logger = Logger.getLogger(ProcessUtil.class);
 
-	public static final String NODE_MINIMUM_VERSION = "v4.4.0";
+	public static final String NODE_MINIMUM_VERSION = "4.4.0";
 
 	private static boolean initialized = false;
 
@@ -332,6 +332,35 @@ public class ProcessUtil {
 		} else {
 			runCommand(NPM_COMMAND, USER_HOME_DIR, false, null, null, null, "uninstall", nodePackageName);
 		}
+	}
+
+	public static boolean isVersionHighEnough(String currentVersion, String minimumVersion) {
+		
+		currentVersion = currentVersion.replace("v", "");
+		minimumVersion = minimumVersion.replace("v", "");
+		
+		String[] currentVersionParts = currentVersion.split("[.]");
+		String[] minimumVersionParts = minimumVersion.split("[.]");
+
+		for (int i = 0; i < currentVersionParts.length; i++) {
+			if (minimumVersionParts.length <= i) {
+				break;
+			}
+			
+			try {
+				int currentVersionPart = Integer.parseInt(currentVersionParts[i]);
+				int minimumVersionPart = Integer.parseInt(minimumVersionParts[i]);
+				if (currentVersionPart > minimumVersionPart) {
+					return true;
+				} else if (currentVersionPart < minimumVersionPart) {
+					return false;
+				}
+			} catch (NumberFormatException e) {
+				logger.error("unexpected version token " + currentVersion + " / " + minimumVersion, e);
+			}
+		}
+		
+		return true;
 	}
 
 }
