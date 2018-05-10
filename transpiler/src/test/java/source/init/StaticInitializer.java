@@ -28,6 +28,9 @@ public class StaticInitializer {
 	static int ab = a + b;
 	static int d = 100 + 100;
 	
+	public static final double MAX_VALUE = 90.0;
+	public static final double MIN_VALUE = -90.0;
+	
 	static int n;
 
 	static {

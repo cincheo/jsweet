@@ -179,7 +179,9 @@ public class JSweetTranspiler implements JSweetOptions {
 	/**
 	 * The name of the file generated in the root package to avoid the TypeScript
 	 * compiler to skip empty directories.
-	 * @deprecated Use {@link TypeScript2JavaScriptWithTscTranspiler#TSCROOTFILE} instead
+	 * 
+	 * @deprecated Use {@link TypeScript2JavaScriptWithTscTranspiler#TSCROOTFILE}
+	 *             instead
 	 */
 	public final static String TSCROOTFILE = TypeScript2JavaScriptWithTscTranspiler.TSCROOTFILE;
 
@@ -832,10 +834,16 @@ public class JSweetTranspiler implements JSweetOptions {
 						FileUtils.write(tmpFile, script + "\n", true);
 					}
 				}
+
+				Set<File> alreadyWrittenScripts = new HashSet<>();
 				for (SourceFile sourceFile : sourceFiles) {
-					String script = FileUtils.readFileToString(sourceFile.getJsFile());
-					FileUtils.write(tmpFile, script + "\n", true);
+					if (!alreadyWrittenScripts.contains(sourceFile.getJsFile())) {
+						String script = FileUtils.readFileToString(sourceFile.getJsFile());
+						FileUtils.write(tmpFile, script + "\n", true);
+						alreadyWrittenScripts.add(sourceFile.getJsFile());
+					}
 				}
+
 				logger.info("[no modules] eval file: " + tmpFile);
 				runProcess = ProcessUtil.runCommand(ProcessUtil.NODE_COMMAND, line -> trace.append(line + "\n"), null,
 						tmpFile.getPath());

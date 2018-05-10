@@ -101,8 +101,7 @@ public class AmbientTests extends AbstractTest {
 	public void testGlobalsAccess() {
 		transpile(logHandler -> {
 			logHandler.assertNoProblems();
-		}, getSourceFile(GlobalsAccess.class), getSourceFile(Globals.class),
-				getSourceFile(source.ambient.globals.Globals.class));
+		}, getSourceFile(GlobalsAccess.class), getSourceFile(Globals.class));
 	}
 
 	@Test

@@ -545,7 +545,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 				case "getMethods":
 				case "getDeclaredMethods":
 					printMacroName(targetMethodName);
-					print("(c => { let m = []; for (let p in c.prototype) if(c.prototype.hasOwnProperty(p) && typeof c.prototype[p] == 'function') m.push({owner:c,name:p,fn:c.prototype[p]}); return m; })(")
+					print("(c => Object.getOwnPropertyNames(c.prototype).filter(n => typeof c.prototype[n] == 'function').map(n => ({owner:c,name:n,fn:c.prototype[n]}) ) )(")
 							.print(invocation.getTargetExpression()).print(")");
 					return true;
 				case "getMethod":

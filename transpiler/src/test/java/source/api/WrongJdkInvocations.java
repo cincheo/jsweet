@@ -20,8 +20,8 @@ import java.io.FileInputStream;
 import java.util.Iterator;
 import java.util.function.Consumer;
 
-import def.es6_promise.Promise;
 import def.js.Array;
+import def.js.Promise;
 
 class CC {
 
@@ -35,12 +35,11 @@ public class WrongJdkInvocations {
 
 	void m2(Promise<String> p, String s2) {
 
-		p.thenOnFulfilledFunction(s -> {
+		p.then(s -> {
 			return s.codePointAt(1);
-		}).catchOnRejectedFunction(o -> {
+		}).Catch(o -> {
 			new Array<String>() //
 					.iterator();
-			return null;
 		});
 
 		Object o = new def.js.Object() {
@@ -114,12 +113,11 @@ class Other3 {
 
 	void m(Promise<String> p, String s2) {
 
-		p.thenOnFulfilledFunction(s -> {
+		p.then(s -> {
 			return s.codePointAt(1);
-		}).catchOnRejectedFunction(o -> {
+		}).Catch(o -> {
 			new Array<String>() //
 					.iterator();
-			return null;
 		});
 
 		Object o = new def.js.Object() {

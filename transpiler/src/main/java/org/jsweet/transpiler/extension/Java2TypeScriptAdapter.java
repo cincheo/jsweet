@@ -493,17 +493,16 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 					return true;
 
 				case "async":
-					print(" async ");
+					print("async ");
 					print(invocationElement.getArgument(0));
 					return true;
 
 				case "await":
-					print(" await ");
+					print("await ");
 					printCastMethodInvocation(invocationElement);
 					return true;
 					
 				case "asyncReturn":
-					print(" ");
 					printCastMethodInvocation(invocationElement);
 					return true;
 

@@ -16,7 +16,8 @@
  */
 package org.jsweet.test.transpiler;
 
-
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 
 import org.jsweet.transpiler.ModuleKind;
@@ -38,6 +39,7 @@ import source.api.J4TSInvocations;
 import source.api.JdkInvocations;
 import source.api.Numbers;
 import source.api.PrimitiveInstantiation;
+import source.api.PromisesAsyncAwait;
 import source.api.QualifiedInstantiation;
 import source.api.Strings;
 import source.api.WrongJdkInvocations;
@@ -82,15 +84,54 @@ public class ApiTests extends AbstractTest {
 	public void testJdkInvocations() {
 		eval((logHandler, result) -> {
 			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-			assertEquals("test", result.<String> get("s1"));
-			assertEquals("m1", result.<String> get("s2"));
-			assertEquals("e", result.<String> get("s3"));
-			assertEquals("testc", result.<String> get("s4"));
-			assertEquals(2, result.<Number> get("i1").intValue());
-			assertEquals(-1, result.<Number> get("i2").intValue());
-			assertEquals(4, result.<Number> get("l").intValue());
-			assertEquals("t1st", result.<String> get("r"));
+			assertEquals("test", result.<String>get("s1"));
+			assertEquals("m1", result.<String>get("s2"));
+			assertEquals("e", result.<String>get("s3"));
+			assertEquals("testc", result.<String>get("s4"));
+			assertEquals(2, result.<Number>get("i1").intValue());
+			assertEquals(-1, result.<Number>get("i2").intValue());
+			assertEquals(4, result.<Number>get("l").intValue());
+			assertEquals("t1st", result.<String>get("r"));
 		}, getSourceFile(JdkInvocations.class));
+	}
+
+	@Test
+	public void testPromisesAsyncAwaits() {
+		eval((logHandler, result) -> {
+			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+
+			// async await style
+			assertNotNull(result.get("t0"));
+			assertNotNull(result.get("t1"));
+			assertNotNull(result.get("t2"));
+
+			long t0 = result.<Number>get("t0").longValue();
+			long t1 = result.<Number>get("t1").longValue();
+			long t2 = result.<Number>get("t2").longValue();
+
+			assertTrue(t1 - t0 >= PromisesAsyncAwait.WAIT_BETWEEN_STEPS_MS);
+			assertTrue(t2 - t1 >= PromisesAsyncAwait.WAIT_BETWEEN_STEPS_MS);
+
+			assertEquals(new Integer(42), result.get("r1"));
+			assertEquals("my answer", result.get("r2"));
+			assertEquals("supermessage", result.get("e"));
+
+			// promise style
+			assertNotNull(result.get("2_t0"));
+			assertNotNull(result.get("2_t1"));
+			assertNotNull(result.get("2_t2"));
+
+			t0 = result.<Number>get("2_t0").longValue();
+			t1 = result.<Number>get("2_t1").longValue();
+			t2 = result.<Number>get("2_t2").longValue();
+
+			assertTrue(t1 - t0 >= PromisesAsyncAwait.WAIT_BETWEEN_STEPS_MS);
+			assertTrue(t2 - t1 >= PromisesAsyncAwait.WAIT_BETWEEN_STEPS_MS);
+
+			assertEquals(new Integer(42), result.get("2_r1"));
+			assertEquals("my answer", result.get("2_r2"));
+			assertEquals("supermessage", result.get("2_e"));
+		}, getSourceFile(PromisesAsyncAwait.class));
 	}
 
 	@Test
@@ -157,10 +198,10 @@ public class ApiTests extends AbstractTest {
 			assertEquals(true, r.get("switch_char_cast_char"));
 			assertEquals(true, r.get("switch_int_cast_int"));
 			assertEquals(true, r.get("switch_int_cast_char"));
-			
+
 		}, getSourceFile(Characters.class));
 	}
-	
+
 	@Test
 	public void testNumbers() {
 		eval(ModuleKind.none, (logHandler, r) -> {
@@ -174,7 +215,7 @@ public class ApiTests extends AbstractTest {
 			logHandler.assertNoProblems();
 		}, getSourceFile(Booleans.class));
 	}
-	
+
 	@Test
 	public void testArrayBuffers() {
 		eval(ModuleKind.none, (logHandler, r) -> {

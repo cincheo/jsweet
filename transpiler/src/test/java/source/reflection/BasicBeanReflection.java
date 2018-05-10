@@ -26,7 +26,7 @@ public class BasicBeanReflection {
 	}
 
 	public static void main(String[] args) throws Exception {
-		assert MyBean.class.getMethods().length == 4;
+		assert MyBean.class.getMethods().length == 5;
 		Method m = getReadMethod(MyBean.class, "B");
 		assert m != null;
 		assert m.getDeclaringClass() == MyBean.class;
