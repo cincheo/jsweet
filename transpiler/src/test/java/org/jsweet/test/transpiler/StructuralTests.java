@@ -66,6 +66,7 @@ import source.structural.ReplaceAnnotation;
 import source.structural.StaticMembersInInterfaces;
 import source.structural.SubAbstract;
 import source.structural.TwoClassesInSameFile;
+import source.structural.WrappedParametersOwner;
 import source.structural.WrongConstructsInInterfaces;
 import source.structural.WrongThisAccessOnStatic;
 import source.structural.globalclasses.Globals;
@@ -89,6 +90,13 @@ public class StructuralTests extends AbstractTest {
 			assertEquals("hello", (String) r.get("v4"));
 			assertEquals("hello", (String) r.get("v5"));
 		}, getSourceFile(NoNameClashesWithFields.class));
+	}
+
+	@Test
+	public void testParametersDtoDestructuring() {
+		eval((logHandler, r) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(WrappedParametersOwner.class));
 	}
 
 	@Test
@@ -179,13 +187,13 @@ public class StructuralTests extends AbstractTest {
 	public void testInheritance() {
 		eval((logHandler, r) -> {
 			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-			assertEquals(true, r.<Boolean> get("X"));
-			assertEquals(true, r.<Boolean> get("Y"));
-			assertEquals("s1", r.<Boolean> get("s1b"));
-			assertEquals("s2", r.<Boolean> get("s2b"));
-			assertEquals(false, r.<Boolean> get("itfo"));
-			assertEquals("s1", r.<Boolean> get("s1o"));
-			assertEquals("s2", r.<Boolean> get("s2o"));
+			assertEquals(true, r.<Boolean>get("X"));
+			assertEquals(true, r.<Boolean>get("Y"));
+			assertEquals("s1", r.<Boolean>get("s1b"));
+			assertEquals("s2", r.<Boolean>get("s2b"));
+			assertEquals(false, r.<Boolean>get("itfo"));
+			assertEquals("s1", r.<Boolean>get("s1o"));
+			assertEquals("s2", r.<Boolean>get("s2o"));
 		}, getSourceFile(Inheritance.class));
 	}
 

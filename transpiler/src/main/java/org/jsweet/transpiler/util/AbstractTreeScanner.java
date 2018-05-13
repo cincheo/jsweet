@@ -220,6 +220,7 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 	/**
 	 * Generically scan an extended element.
 	 */
+	@SuppressWarnings("rawtypes")
 	public void scan(ExtendedElement element) {
 		scan(((ExtendedElementSupport) element).getTree());
 	}

@@ -314,6 +314,10 @@ public abstract class JSweetConfig {
 	 */
 	public static final String ANNOTATION_NO_DEBUG = JSweetConfig.LANG_PACKAGE + ".NoDebug";
 	/**
+	 * Fully-qualified name for the JSweet <code>@WrapParameters</code> annotation (see JSweet core API).
+	 */
+	public static final String ANNOTATION_WRAP_PARAMETERS = JSweetConfig.LANG_PACKAGE + ".WrapParameters";
+	/**
 	 * Fully-qualified name for the built-in Java {@link FunctionalInterface} annotation.
 	 */
 	public static final String ANNOTATION_FUNCTIONAL_INTERFACE = FunctionalInterface.class.getName();

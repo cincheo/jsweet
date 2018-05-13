@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package source.extension;
+package jsweet.lang;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -23,17 +23,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Use this annotation to indicate a method that should have it's parameters wrapped in a parameter object.
- * 
- * 
+ * Use this annotation to indicate a method that should have it's parameters
+ * wrapped in a parameter object.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.METHOD, ElementType.CONSTRUCTOR })
 @Documented
-public @interface Wrapped
-{
-	/**
-	 * The interface that defines the wrapper class to use
-	 */
-	Class<?> target();
+public @interface WrapParameters {
 }
