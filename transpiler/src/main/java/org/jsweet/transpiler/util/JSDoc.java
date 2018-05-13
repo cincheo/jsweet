@@ -96,7 +96,7 @@ public class JSDoc {
 		boolean isMapped = false;
 		if (typeTree != null) {
 			for (BiFunction<ExtendedElement, String, Object> mapping : context.getFunctionalTypeMappings()) {
-				Object mapped = mapping.apply(new ExtendedElementSupport(typeTree), qualifiedName);
+				Object mapped = mapping.apply(new ExtendedElementSupport<JCTree>(typeTree), qualifiedName);
 				if (mapped instanceof String) {
 					isMapped = true;
 					qualifiedName = (String) mapped;

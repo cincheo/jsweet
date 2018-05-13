@@ -25,7 +25,6 @@ import java.util.Map;
 
 import javax.lang.model.element.Modifier;
 
-import org.apache.commons.lang3.StringUtils;
 import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.util.AbstractTreeScanner;
 import org.jsweet.transpiler.util.Util;
@@ -131,34 +130,6 @@ public class OverloadScanner extends AbstractTreeScanner {
 		 */
 		public String getParameterName(int index) {
 			return parameterNames.get(index);
-		}
-
-		private void initParameterNames() {
-			if (isValid) {
-				for (int index = 0; index < coreMethod.getParameters().length(); index++) {
-					parameterNames.add(coreMethod.getParameters().get(index).name.toString());
-				}
-			} else {
-				for (int index = 0; index < coreMethod.getParameters().length(); index++) {
-					List<String> names = new ArrayList<>();
-					for (JCMethodDecl method : methods) {
-						if (method.getParameters().length() > index) {
-							if (!names.contains(method.getParameters().get(index).name.toString())) {
-								names.add(method.getParameters().get(index).name.toString());
-							}
-						}
-					}
-					String parameterName = names.get(0);
-					for (int i = 1; i < names.size(); i++) {
-						parameterName += "Or" + StringUtils.capitalize(names.get(i));
-					}
-					int count = 2;
-					while (parameterNames.contains(parameterName)) {
-						parameterName = parameterName + (count++);
-					}
-					parameterNames.add(parameterName);
-				}
-			}
 		}
 
 		/**

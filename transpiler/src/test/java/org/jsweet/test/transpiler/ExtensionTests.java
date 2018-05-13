@@ -282,8 +282,7 @@ public class ExtensionTests extends AbstractTest {
 		eval((logHandler, result) -> {
 			logHandler.assertNoProblems();
 			try {
-				String generatedCode = FileUtils
-						.readFileToString(transpiler.getContext().sourceFiles[1].getTsFile());
+				String generatedCode = FileUtils.readFileToString(transpiler.getContext().sourceFiles[1].getTsFile());
 				Assert.assertFalse(generatedCode.contains("A2"));
 			} catch (Exception e) {
 				throw new RuntimeException(e);
