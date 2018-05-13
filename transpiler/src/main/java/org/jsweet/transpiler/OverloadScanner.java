@@ -167,6 +167,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 		 */
 		public void calculate(Types types, Symtab symtab) {
 			if (methods.size() < 2) {
+				coreMethod = methods.get(0);
 				return;
 			}
 			methods.sort((m1, m2) -> {
@@ -349,10 +350,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 						}
 					}
 				}
-				if (!overrides) {
-					merge = true;
-					safeAdd(types, this, subm);
-				}
+				merge = merge || !overrides;
 			}
 
 			merge = merge || methods.size() > 1;

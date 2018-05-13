@@ -2309,17 +2309,29 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 											method.sym).coreMethod == method) {
 								print("{").println().startIndent().printIndent();
 
-								String tsMethodAccess = getTSMemberAccess(getTSMethodName(methodDecl), true);
-								print("super" + tsMethodAccess);
-								print("(");
-								for (int j = 0; j < method.getParameters().size(); j++) {
-									print(avoidJSKeyword(overload.coreMethod.getParameters().get(j).name.toString()))
-											.print(", ");
+								if ((method.getBody() == null
+								     || (method.mods.getFlags().contains(Modifier.DEFAULT) && !getScope().defaultMethodScope))
+									&& !getScope().interfaceScope && method.getModifiers().getFlags().contains(Modifier.ABSTRACT))
+								{
+									print(" throw new Error('cannot invoke abstract overloaded method... check your argument(s) type(s)'); ");
 								}
-								if (!method.getParameters().isEmpty()) {
-									removeLastChars(2);
+								else
+								{
+									String tsMethodAccess = getTSMemberAccess(getTSMethodName(methodDecl), true);
+									print("super" + tsMethodAccess);
+									print("(");
+									for (int j = 0; j < method.getParameters().size(); j++)
+									{
+										print(
+										avoidJSKeyword(overload.coreMethod.getParameters().get(j).name.toString()))
+										.print(", ");
+									}
+									if (!method.getParameters().isEmpty())
+									{
+										removeLastChars(2);
+									}
+									print(");");
 								}
-								print(");");
 								println().endIndent().printIndent().print("}");
 							} else {
 								print("{").println().startIndent().printIndent();

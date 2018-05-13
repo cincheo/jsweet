@@ -174,7 +174,7 @@ public class OverloadTests extends AbstractTest {
 	public void testWrongOverloadWithInheritance() {
 		eval((logHandler, r) -> {
 			logHandler.assertNoProblems();
-			assertEquals("0-88,0-99,1-s1,m2,2-99-s2,3-true,m1,4,5-5,5-6,test2,test1", r.get("trace"));
+			assertEquals("0-88,0-99,1-s1,m2,2-99-s2,3-true,m1,4,5-5,5-6,m3,6,7,test2,test1", r.get("trace"));
 		}, getSourceFile(WrongOverloadWithInheritance.class));
 	}
 

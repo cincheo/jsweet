@@ -18,6 +18,7 @@ public class WrongOverloadWithInheritance {
 		o.overloaded(new Date());
 		o.overloaded2();
 		o.overloaded2(6);
+		o.overloaded3(100, new Date());
 		new Test2().o1(null);
 		new Test2().o2(null);
 		$export("trace", trace.join(","));
@@ -62,6 +63,10 @@ abstract class MyAbstractClass<T> implements MyInterface<T> {
 	@Override
 	public void overloaded(boolean arg) {
 		WrongOverloadWithInheritance.trace.push("3-" + arg);
+	}
+
+	public void overloaded3() {
+		WrongOverloadWithInheritance.trace.push("7");
 	}
 
 	@Override
@@ -112,13 +117,13 @@ abstract class MyAbstractClass2<T> implements MyInterface2<T> {
 
 }
 
-class MyFinalClass<T> extends MyAbstractClass<T> implements MyInterface2<T> {
+class MyAbstractClass3<T> extends MyAbstractClass<T> implements MyInterface2<T> {
 
-	public MyFinalClass() {
+	public MyAbstractClass3() {
 		WrongOverloadWithInheritance.trace.push("0-" + 88);
 	}
 
-	public MyFinalClass(int i) {
+	public MyAbstractClass3(int i) {
 		WrongOverloadWithInheritance.trace.push("0-" + i);
 	}
 
@@ -141,6 +146,38 @@ class MyFinalClass<T> extends MyAbstractClass<T> implements MyInterface2<T> {
 		m1();
 		WrongOverloadWithInheritance.trace.push("4");
 	}
+
+	/**@Override // TODO results in infinite recursion
+	public void overloaded(boolean arg) {
+		WrongOverloadWithInheritance.trace.push("8-" + arg);
+		super.overloaded(arg);
+	}**/
+
+	@Override
+	public void overloaded3() {
+		WrongOverloadWithInheritance.trace.push("6");
+		super.overloaded3();
+	}
+}
+
+class MyFinalClass<T> extends MyAbstractClass3<T> {
+
+	public MyFinalClass() {
+	}
+
+	public MyFinalClass(int i) {
+		super(i);
+	}
+
+	public void m3() {
+		WrongOverloadWithInheritance.trace.push("m3");
+	}
+
+	public void overloaded3(int i, Date arg) {
+		m3();
+		super.overloaded3();
+	}
+
 }
 
 class SubClass3 extends MyFinalClass<String> {
