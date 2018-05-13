@@ -3,11 +3,16 @@ package org.jsweet.test.transpiler;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 
+import org.jsweet.transpiler.JSweetContext;
+import org.jsweet.transpiler.JSweetFactory;
 import org.jsweet.transpiler.ModuleKind;
+import org.jsweet.transpiler.extension.PrinterAdapter;
+import org.jsweet.transpiler.extension.RemoveJavaDependenciesAdapter;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import source.nativestructures.ArraysSort;
 import source.nativestructures.Collections;
 import source.nativestructures.Dates;
 import source.nativestructures.Exceptions;
@@ -32,6 +37,20 @@ import source.nativestructures.WeakReferences;
 
 public class NativeStructuresTests extends AbstractTest {
 
+	@Test
+	public void testArraysSort() {
+		createTranspiler(new JSweetFactory() {
+			@Override
+			public PrinterAdapter createAdapter (JSweetContext context) {
+				return new RemoveJavaDependenciesAdapter(super.createAdapter(context));
+			}
+		});
+		eval((logHandler, r) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(ArraysSort.class));
+		createTranspiler(new JSweetFactory());
+	}
+	
 	@Test
 	public void testCollections() {
 		eval((logHandler, result) -> {

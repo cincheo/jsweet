@@ -40,7 +40,6 @@ import source.extension.HelloWorldDto;
 import source.extension.HelloWorldService;
 import source.extension.Maps;
 import source.extension.UseOfGlobalVariable;
-import source.extension.ArraysSort;
 
 class TestFactory extends JSweetFactory {
 
@@ -200,20 +199,6 @@ public class ExtensionTests extends AbstractTest {
 				Assert.fail();
 			}
 		}, getSourceFile(AnnotationTest.class));
-	}
-
-	@Test
-	public void testArraysSort() {
-		createTranspiler(new JSweetFactory() {
-			@Override
-			public PrinterAdapter createAdapter (JSweetContext context) {
-				return new RemoveJavaDependenciesAdapter(super.createAdapter(context));
-			}
-		});
-		eval((logHandler, r) -> {
-			logHandler.assertNoProblems();
-		}, getSourceFile(ArraysSort.class));
-		createTranspiler(new JSweetFactory());
 	}
 
 	@Test
