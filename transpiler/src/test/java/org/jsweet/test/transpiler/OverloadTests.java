@@ -62,6 +62,7 @@ import source.overload.ConstructorOverloadWithFieldInitializer;
 import source.overload.InterfaceInheritance;
 import source.overload.LocalVariablesNameCollision;
 import source.overload.NonPublicRootMethod;
+import source.overload.OverLoadWithClassParam;
 import source.overload.Overload;
 import source.overload.OverloadInInnerClass;
 import source.overload.OverloadWithAbstractClass;
@@ -96,9 +97,9 @@ public class OverloadTests extends AbstractTest {
 	public void testOverload() {
 		eval((logHandler, result) -> {
 			logHandler.assertNoProblems();
-			assertEquals("default1", result.<String> get("res1"));
-			assertEquals("s11", result.<String> get("res2"));
-			assertEquals("s22", result.<String> get("res3"));
+			assertEquals("default1", result.<String>get("res1"));
+			assertEquals("s11", result.<String>get("res2"));
+			assertEquals("s22", result.<String>get("res3"));
 		}, getSourceFile(Overload.class));
 	}
 
@@ -289,6 +290,19 @@ public class OverloadTests extends AbstractTest {
 	}
 
 	@Test
+	public void testOverloadWithClassParam() {
+		eval((logHandler, r) -> {
+			logHandler.assertNoProblems();
+			assertEquals("ctor_overload_class;OverLoadWithClassParam;0;0," //
+					+ "ctor_overload_class;OverLoadWithClassParam;4;0," //
+					+ "ctor_overload_class;OverLoadWithClassParam;10;100," //
+					+ "m_overload_class;OverLoadWithClassParam;0;0," //
+					+ "m_overload_class;OverLoadWithClassParam;4;0," //
+					+ "m_overload_class;OverLoadWithClassParam;10;100", r.get("trace"));
+		}, getSourceFile(OverLoadWithClassParam.class));
+	}
+
+	@Test
 	public void testWithAmbients() {
 		transpile(ModuleKind.none, (logHandler) -> {
 			logHandler.assertNoProblems();
@@ -372,5 +386,5 @@ public class OverloadTests extends AbstractTest {
 				getSourceFile(ImplementationB14.class), //
 				getSourceFile(ImplementationB15.class));
 	}
-	
+
 }
