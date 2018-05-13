@@ -19,8 +19,11 @@ import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetFactory;
 import org.jsweet.transpiler.JSweetProblem;
+import org.jsweet.transpiler.Java2TypeScriptTranslator;
 import org.jsweet.transpiler.ModuleKind;
 import org.jsweet.transpiler.SourceFile;
+import org.jsweet.transpiler.TranspilationHandler;
+import org.jsweet.transpiler.OverloadScanner.Overload;
 import org.jsweet.transpiler.extension.AnnotationManager;
 import org.jsweet.transpiler.extension.DisallowGlobalVariablesAdapter;
 import org.jsweet.transpiler.extension.Java2TypeScriptAdapter;
@@ -33,9 +36,15 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
+import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
+import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
+
 import source.extension.A1;
 import source.extension.A2;
 import source.extension.AnnotationTest;
+import source.extension.FooArgsDto;
 import source.extension.HelloWorldDto;
 import source.extension.HelloWorldService;
 import source.extension.Maps;
@@ -91,6 +100,115 @@ class TestAdapter extends RemoveJavaDependenciesAdapter {
 		return super.eraseSuperClass(type, superClass);
 	}
 
+}
+
+class TestConstructorAdapter extends Java2TypeScriptAdapter
+{
+
+	public TestConstructorAdapter(JSweetContext context)
+	{
+		super(context);
+
+	}	
+	
+}
+
+class TestConstructorFactory extends JSweetFactory{
+	
+	@Override
+	public Java2TypeScriptTranslator createTranslator(PrinterAdapter adapter, TranspilationHandler transpilationHandler,
+			JSweetContext context, JCCompilationUnit compilationUnit, boolean fillSourceMap) {
+		return new TestConstructorTranslator(adapter, transpilationHandler, context, compilationUnit, fillSourceMap);
+	}
+
+	
+	@Override
+	public PrinterAdapter createAdapter(JSweetContext context) {
+		return new TestConstructorAdapter(context);
+	}
+
+}
+
+class TestConstructorTranslator extends Java2TypeScriptTranslator {
+
+	
+	public TestConstructorTranslator(PrinterAdapter adapter, TranspilationHandler logHandler, JSweetContext context,
+			JCCompilationUnit compilationUnit, boolean fillSourceMap)
+	{
+		super(adapter, logHandler, context, compilationUnit, fillSourceMap);
+		
+	}
+
+	@Override
+	protected void printMethodArgs(JCMethodDecl methodDecl, Overload overload, boolean inOverload,
+	boolean inCoreWrongOverload, ClassScope scope)
+	{
+		Type parameterClass = null;
+		boolean isWrapped = false;
+		if(this.context.hasAnnotationType(methodDecl.sym, "source.extension.Wrapped"))
+		{
+			parameterClass = this.context.getAnnotationValue(methodDecl.sym, "source.extension.Wrapped", "target", Type.class, null);
+			isWrapped = true;
+		}
+		if(isWrapped)
+		{
+		print("{");
+		}
+
+		if (inCoreWrongOverload)
+		{
+			scope.setEraseVariableTypes(true);
+		}
+		boolean paramPrinted = false;
+		if (scope.isInnerClassNotStatic() && methodDecl.sym.isConstructor() && !scope.isEnumWrapperClassScope())
+		{
+			print(PARENT_CLASS_FIELD_NAME + ": any, ");
+			paramPrinted = true;
+		}
+		if (scope.isConstructor() && scope.isEnumWrapperClassScope())
+		{
+			print((isAnonymousClass() ? "" : "protected ") + ENUM_WRAPPER_CLASS_ORDINAL + " : number, ");
+			print((isAnonymousClass() ? "" : "protected ") + ENUM_WRAPPER_CLASS_NAME + " : string, ");
+			paramPrinted = true;
+		}
+		int i = 0;
+		for (JCVariableDecl param : methodDecl.getParameters())
+		{
+			if(isWrapped)
+			{
+				print(param.getName().toString());
+			}
+			else
+			{
+				print(param);
+			}
+			if (inOverload && overload.isValid && overload.defaultValues.get(i) != null)
+			{
+				print(" = ").print(overload.defaultValues.get(i));
+			}
+			print(", ");
+			i++;
+			paramPrinted = true;
+		}
+		if (inCoreWrongOverload)
+		{
+			scope.setEraseVariableTypes(false);
+		}
+		if (paramPrinted)
+		{
+			removeLastChars(2);
+		}
+		
+		if(isWrapped)
+		{					
+			print("} ");
+			if(parameterClass != null)
+			{
+				print(":" + parameterClass.tsym.owner.getSimpleName().toString() + "." + parameterClass.tsym.getSimpleName().toString());
+			}
+		}
+	}
+	
 }
 
 class HelloWorldAdapter extends PrinterAdapter {
@@ -247,6 +365,24 @@ public class ExtensionTests extends AbstractTest {
 		Assert.assertTrue(generatedCode.contains("this is a header comment"));
 		Assert.assertTrue(generatedCode.contains("date : string"));
 		Assert.assertFalse(generatedCode.contains("date : Date"));
+
+		createTranspiler(new JSweetFactory());
+	}
+	
+	@Test
+	public void testConstructorAdapter() throws IOException {
+		createTranspiler( new TestConstructorFactory());
+//		createTranspiler(new JSweetFactory());
+		SourceFile f = getSourceFile(FooArgsDto.class);
+		transpile(logHandler -> {
+			logHandler.assertNoProblems();
+		}, f);
+		String generatedCode = FileUtils.readFileToString(f.getTsFile());
+		
+		
+		Assert.assertTrue(generatedCode.contains("{msg, date, quantity, items} :FooArgsDto.FooArgsDtoParameter"));
+		Assert.assertTrue(generatedCode.contains("msg : string"));
+		Assert.assertTrue(generatedCode.contains("date : Date"));
 
 		createTranspiler(new JSweetFactory());
 	}
