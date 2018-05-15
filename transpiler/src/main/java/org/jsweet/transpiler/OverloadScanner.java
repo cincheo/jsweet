@@ -20,8 +20,10 @@ package org.jsweet.transpiler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.lang.model.element.Modifier;
 
@@ -94,8 +96,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 		public Map<Integer, JCTree> defaultValues;
 
 		/**
-		 * A flag to tell if this overload was printed out (used by the
-		 * printer).
+		 * A flag to tell if this overload was printed out (used by the printer).
 		 */
 		public boolean printed = false;
 
@@ -125,16 +126,14 @@ public class OverloadScanner extends AbstractTreeScanner {
 		 * 
 		 * @param index
 		 *            the parameter's index
-		 * @return a unique parameter name that reflects the overloaded
-		 *         parameter
+		 * @return a unique parameter name that reflects the overloaded parameter
 		 */
 		public String getParameterName(int index) {
 			return parameterNames.get(index);
 		}
 
 		/**
-		 * Checks the validity of the overload and calculates the default
-		 * values.
+		 * Checks the validity of the overload and calculates the default values.
 		 */
 		public void calculate(Types types, Symtab symtab) {
 			if (methods.size() < 2) {
@@ -366,24 +365,32 @@ public class OverloadScanner extends AbstractTreeScanner {
 
 		for (JCTree member : classdecl.defs) {
 			if (member instanceof JCMethodDecl) {
-				if (context.hasAnnotationType(((JCMethodDecl) member).sym, JSweetConfig.ANNOTATION_ERASED,
-						JSweetConfig.ANNOTATION_AMBIENT)) {
-					continue;
-				}
-				JCMethodDecl method = (JCMethodDecl) member;
-				Overload overload = context.getOrCreateOverload(clazz, method.sym);
-				if (pass == 1) {
-					overload.methods.add(method);
-				} else {
-					if (!((JCMethodDecl) member).sym.isConstructor()) {
-						inspectSuperTypes(classdecl.sym, overload, method);
-					}
-				}
+				processMethod(classdecl, (JCMethodDecl) member);
 			}
+		}
+
+		HashSet<Entry<JCClassDecl, JCMethodDecl>> defaultMethods = new HashSet<>();
+		Util.findDefaultMethodsInType(defaultMethods, context, classdecl.sym);
+		for (Entry<JCClassDecl, JCMethodDecl> defaultMethodWithEnclosingClass : defaultMethods) {
+			processMethod(classdecl, defaultMethodWithEnclosingClass.getValue());
 		}
 		// scan all AST because of anonymous classes that may appear everywhere
 		// (including in field initializers)
 		super.visitClassDef(classdecl);
+	}
+
+	private void processMethod(JCClassDecl enclosingClassdecl, JCMethodDecl method) {
+		if (context.hasAnnotationType(method.sym, JSweetConfig.ANNOTATION_ERASED, JSweetConfig.ANNOTATION_AMBIENT)) {
+			return;
+		}
+		Overload overload = context.getOrCreateOverload(enclosingClassdecl.sym, method.sym);
+		if (pass == 1) {
+			overload.methods.add(method);
+		} else {
+			if (!method.sym.isConstructor()) {
+				inspectSuperTypes(enclosingClassdecl.sym, overload, method);
+			}
+		}
 	}
 
 	@Override

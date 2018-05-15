@@ -136,8 +136,8 @@ public class CandyProcessor {
 	}
 
 	/**
-	 * Returns the directory that contains the orginal TypeScript source code of
-	 * the processed (merged) candies.
+	 * Returns the directory that contains the orginal TypeScript source code of the
+	 * processed (merged) candies.
 	 */
 	public File getCandiesTsdefsDir() {
 		return candiesTsdefsDir;
@@ -194,6 +194,12 @@ public class CandyProcessor {
 		for (String classPathEntry : classPath.split("[" + System.getProperty("path.separator") + "]")) {
 			if (classPathEntry.endsWith(".jar")) {
 				File jarFile = new File(classPathEntry);
+				if (!jarFile.exists()) {
+					// critical warning, candy not found
+					logger.warn("candy jar file not found: " + jarFile, new Exception());
+					continue;
+				}
+
 				try (JarFile jarFileHandle = new JarFile(jarFile)) {
 					JarEntry candySpecificEntry = jarFileHandle
 							.getJarEntry("META-INF/maven/" + JSweetConfig.MAVEN_CANDIES_GROUP);

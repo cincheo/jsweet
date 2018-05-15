@@ -29,6 +29,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import source.structural.AbstractClass;
+import source.structural.AbstractClassWithOverload;
 import source.structural.AnonymousClass;
 import source.structural.AnonymousClassForLambda;
 import source.structural.AnonymousInInterface;
@@ -227,6 +228,17 @@ public class StructuralTests extends AbstractTest {
 	}
 
 	@Test
+	public void testAbstractClassWithOverload() {
+		eval((logHandler, result) -> {
+			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+
+			assertEquals(68, result.<Number>get("overload_int_called").intValue());
+			assertEquals("68;PARAMSTR", result.get("overload_int_string_called"));
+
+		}, getSourceFile(AbstractClassWithOverload.class));
+	}
+
+	@Test
 	public void testExtendsObject() {
 		transpile(logHandler -> {
 			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
@@ -392,8 +404,13 @@ public class StructuralTests extends AbstractTest {
 		// method because they require the source code
 		eval(ModuleKind.none, (logHandler, r) -> {
 			logHandler.assertNoProblems();
-			assertEquals("m,m1,m2-overriden", r.get("trace"));
-		}, getSourceFile(ClassWithStaticMethod.class), getSourceFile(DefaultMethods.class),
+			assertEquals("m,m1,m2-overriden,FromAbstract_overload_called5;p2,FromAbstract_overload_called15;kako",
+					r.get("FromAbstract_trace"));
+			assertEquals("m,m1,m2-overriden,overload_called5;p2,overload_called15;kako", r.get("trace"));
+
+		}, //
+				getSourceFile(ClassWithStaticMethod.class), //
+				getSourceFile(DefaultMethods.class), //
 				getSourceFile(DefaultMethodsConsumer.class));
 	}
 

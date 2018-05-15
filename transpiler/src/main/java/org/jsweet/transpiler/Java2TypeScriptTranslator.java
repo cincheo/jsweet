@@ -1705,28 +1705,28 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					if (Object.class.getName().equals(s.getEnclosingElement().toString())) {
 						s = null;
 					}
-					boolean printDefaultImplementation = false;
+					boolean printAbstractDeclaration = false;
 					if (s != null) {
 						if (!s.getEnclosingElement().equals(classdecl.sym)) {
 							if (!(s.isDefault() || (!context.isInterface((TypeSymbol) s.getEnclosingElement())
 									&& !s.getModifiers().contains(Modifier.ABSTRACT)))) {
-								printDefaultImplementation = true;
+								printAbstractDeclaration = true;
 							}
 						}
 					}
 
-					if (printDefaultImplementation) {
+					if (printAbstractDeclaration) {
 						Overload o = context.getOverload(classdecl.sym, meth);
 						if (o != null && o.methods.size() > 1 && !o.isValid) {
 							if (!meth.type.equals(o.coreMethod.type)) {
-								printDefaultImplementation = false;
+								printAbstractDeclaration = false;
 							}
 						}
 					}
-					if (s == null || printDefaultImplementation) {
+					if (s == null || printAbstractDeclaration) {
 						String signature = getContext().types.erasure(meth.type).toString();
 						if (!(signatures.containsKey(meth.name) && signatures.get(meth.name).equals(signature))) {
-							printDefaultImplementation(meth);
+							printAbstractMethodDeclaration(meth);
 							signatures.put(meth.name, signature);
 						}
 					}
@@ -1998,7 +1998,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	}
 
-	private void printDefaultImplementation(MethodSymbol method) {
+	private void printAbstractMethodDeclaration(MethodSymbol method) {
 		printIndent().print("public abstract ").print(method.getSimpleName().toString());
 		print("(");
 		if (method.getParameters() != null && !method.getParameters().isEmpty()) {

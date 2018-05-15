@@ -1095,6 +1095,11 @@ public class JSweetTranspiler implements JSweetOptions {
 			List<JCCompilationUnit> compilationUnits) throws IOException {
 		// regular file-to-file generation
 		new OverloadScanner(transpilationHandler, context).process(compilationUnits);
+		
+		if (isVerbose()) {
+			context.dumpOverloads(System.out);
+		}
+		
 		String[] headerLines = getHeaderLines();
 		for (int i = 0; i < compilationUnits.length(); i++) {
 			try {
