@@ -18,6 +18,9 @@ package source.api;
 
 import static jsweet.util.Lang.$export;
 
+import java.util.Objects;
+
+
 public class JdkInvocations {
 
 	String s = "test";
@@ -54,6 +57,15 @@ public class JdkInvocations {
 }
 
 class Other4 extends Object {
+
+	final Integer hashSource = 10;
+
+	@Override
+	public int hashCode() {
+		Objects.requireNonNull(hashSource);
+		return java.util.Objects.hash(hashSource);
+	}
+
 	void m() {
 		toString();
 		this.toString();

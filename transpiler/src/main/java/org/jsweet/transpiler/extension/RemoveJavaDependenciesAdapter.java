@@ -264,140 +264,12 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 				}
 				break;
 			case "java.util.Collections":
-				switch (targetMethodName) {
-				case "emptyList":
-					printMacroName(targetMethodName);
-					print("[]");
-					return true;
-				case "emptySet":
-					printMacroName(targetMethodName);
-					print("[]");
-					return true;
-				case "emptyMap":
-					printMacroName(targetMethodName);
-					print("{}");
-					return true;
-				case "unmodifiableList":
-				case "unmodifiableCollection":
-				case "unmodifiableSet":
-				case "unmodifiableSortedSet":
-					printMacroName(targetMethodName);
-					printArgList(invocation.getArguments()).print(".slice(0)");
-					return true;
-				case "singleton":
-					printMacroName(targetMethodName);
-					print("[").print(invocation.getArgument(0)).print("]");
-					return true;
-				case "singletonList":
-					printMacroName(targetMethodName);
-					print("[").print(invocation.getArgument(0)).print("]");
-					return true;
-				case "singletonMap":
-					printMacroName(targetMethodName);
-					if (types().isSameType(invocation.getArgument(0).getType(), util().getType(String.class))) {
-						if (invocation.getArgument(0) instanceof JCLiteral) {
-							print("{ ").print(invocation.getArgument(0)).print(": ").print(invocation.getArgument(1))
-									.print(" }");
-						} else {
-							print("(k => { let o = {}; o[k] = ").print(invocation.getArgument(1))
-									.print("; return o; })(").print(invocation.getArgument(0)).print(")");
-						}
-					} else {
-						print("(k => { let o = {entries: [{getKey: function() { return this.key }, getValue: function() { return this.value },key:k, value:")
-								.print(invocation.getArgument(1)).print("}]}; return o; })(")
-								.print(invocation.getArgument(0)).print(")");
-					}
-					return true;
-				case "binarySearch":
-					printMacroName(targetMethodName);
-					if (invocation.getArgumentCount() == 3) {
-						print("((l, key, c) => { let comp : any = c; if(typeof c != 'function') { comp = (a,b)=>c.compare(a,b); } let low = 0; let high = l.length-1; while (low <= high) { let mid = (low + high) >>> 1; let midVal = l[mid]; "
-								+ "let cmp = comp(midVal, key); if (cmp < 0) low = mid + 1; else if (cmp > 0) high = mid - 1; else return mid; } "
-								+ "return -(low + 1); })(").printArgList(invocation.getArguments()).print(")");
-						return true;
-					}
-					if (invocation.getArgumentCount() == 2) {
-						if (util().isNumber(invocation.getArgument(1).getType())) {
-							print("((l, key) => { let comp = (a,b)=>a-b; let low = 0; let high = l.length-1; while (low <= high) { let mid = (low + high) >>> 1; let midVal = l[mid]; "
-									+ "let cmp = comp(midVal, key); if (cmp < 0) low = mid + 1; else if (cmp > 0) high = mid - 1; else return mid; } "
-									+ "return -(low + 1); })(").printArgList(invocation.getArguments()).print(")");
-							return true;
-						} else {
-							print("((l, key) => { let comp = (a,b)=>a.localeCompare(b); let low = 0; let high = l.length-1; while (low <= high) { let mid = (low + high) >>> 1; let midVal = l[mid]; "
-									+ "let cmp = comp(midVal, key); if (cmp < 0) low = mid + 1; else if (cmp > 0) high = mid - 1; else return mid; } "
-									+ "return -(low + 1); })(").printArgList(invocation.getArguments()).print(")");
-							return true;
-						}
-					}
-				case "sort":
-					printMacroName(targetMethodName);
-					if (invocation.getArgumentCount() == 2) {
-						print("((l,c) => { if((<any>c).compare) l.sort((e1,e2)=>(<any>c).compare(e1,e2)); else l.sort(<any>c); })(")
-								.print(invocation.getArgument(0)).print(",").print(invocation.getArgument(1))
-								.print(")");
-					} else {
-						print(invocation.getArgument(0)).print(".sort(").printArgList(invocation.getArgumentTail())
-								.print(")");
-					}
-					return true;
-				case "reverse":
-					printMacroName(targetMethodName);
-					print(invocation.getArgument(0)).print(".reverse()");
-					return true;
-				case "disjoint":
-					printMacroName(targetMethodName);
-					print("((c1, c2) => { for(let i=0;i<c1.length;i++) { if(c2.indexOf(<any>c1[i])>=0) return false; } return true; } )(")
-							.printArgList(invocation.getArguments()).print(")");
+				if (substituteMethodInvocationOnCollections(invocation, targetMethodName, targetExpression, delegate)) {
 					return true;
 				}
 				break;
 			case "java.util.Arrays":
-				switch (targetMethodName) {
-				case "asList":
-					printMacroName(targetMethodName);
-					if (invocation.getArgumentCount() == 1
-							&& invocation.getArgument(0).getType() instanceof ArrayType) {
-						printArgList(invocation.getArguments()).print(".slice(0)");
-					} else {
-						print("[").printArgList(invocation.getArguments()).print("]");
-					}
-					return true;
-				case "copyOf":
-					printMacroName(targetMethodName);
-					print(invocation.getArgument(0)).print(".slice(0,").print(invocation.getArgument(1)).print(")");
-					return true;
-				case "fill":
-					printMacroName(targetMethodName);
-					print("((a, v) => { for(let i=0;i<a.length;i++) a[i]=v; })(")
-							.printArgList(invocation.getArguments()).print(")");
-					// ES6 implementation
-					// print(invocation.getArgument(0)).print(".fill(").printArgList(invocation.getArgumentTail())
-					// .print(")");
-					return true;
-				case "equals":
-					printMacroName(targetMethodName);
-					print("((a1, a2) => { if(a1==null && a2==null) return true; if(a1==null || a2==null) return false; if(a1.length != a2.length) return false; for(let i = 0; i < a1.length; i++) { if(<any>a1[i] != <any>a2[i]) return false; } return true; })(")
-							.printArgList(invocation.getArguments()).print(")");
-					return true;
-				case "deepEquals":
-					printMacroName(targetMethodName);
-					print("(JSON.stringify(").print(invocation.getArgument(0)).print(") === JSON.stringify(")
-							.print(invocation.getArgument(1)).print("))");
-					return true;
-				case "sort":
-					printMacroName(targetMethodName);
-					if (invocation.getArgumentCount() > 2) {
-						print("((arr, start, end, f?) => ((arr1, arr2) => arr1.splice.apply(arr1, (<any[]>[start, arr2.length]).concat(arr2)))(")
-								.print(invocation.getArgument(0)).print(", ").print(invocation.getArgument(0))
-								.print(".slice(start, end).sort(f)))(").printArgList(invocation.getArguments())
-								.print(")");
-					} else if (invocation.getArgumentCount() == 2) {
-						print("((l,c) => { if((<any>c).compare) l.sort((e1,e2)=>(<any>c).compare(e1,e2)); else l.sort(<any>c); })(")
-								.print(invocation.getArgument(0)).print(",").print(invocation.getArgument(1))
-								.print(")");
-					} else {
-						print("((l) => {l.sort(); })(").print(invocation.getArgument(0)).print(")");
-					}
+				if (substituteMethodInvocationOnArrays(invocation, targetMethodName, targetExpression, delegate)) {
 					return true;
 				}
 				break;
@@ -416,6 +288,12 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 				case "nanoTime":
 					printMacroName(targetMethodName);
 					print("(Date.now() * 1000000)");
+					return true;
+				}
+				break;
+				
+			case "java.util.Objects":
+				if (substituteMethodInvocationOnObjects(invocation, targetMethodName, delegate)) {
 					return true;
 				}
 				break;
@@ -510,108 +388,19 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 				break;
 
 			case "java.lang.Class":
-				switch (targetMethodName) {
-				case "forName":
-					printMacroName(targetMethodName);
-					if (getContext().options.getModuleKind() != ModuleKind.none) {
-						print("eval(").print(invocation.getArgument(0)).print(".split('.').slice(-1)[0])");
-					} else {
-						print("eval(").print(invocation.getArgument(0)).print(")");
-					}
-					return true;
-				case "newInstance":
-					printMacroName(targetMethodName);
-					print("new (");
-					print(invocation.getTargetExpression(), delegate).print(")(")
-							.printArgList(invocation.getArguments()).print(")");
-					return true;
-				case "isInstance":
-					printMacroName(targetMethodName);
-					print("((c:any,o:any) => { if(typeof c === 'string') return (o.constructor && o.constructor")
-							.print("[\"" + Java2TypeScriptTranslator.INTERFACES_FIELD_NAME + "\"] && o.constructor")
-							.print("[\"" + Java2TypeScriptTranslator.INTERFACES_FIELD_NAME
-									+ "\"].indexOf(c) >= 0) || (o")
-							.print("[\"" + Java2TypeScriptTranslator.INTERFACES_FIELD_NAME + "\"] && o")
-							.print("[\"" + Java2TypeScriptTranslator.INTERFACES_FIELD_NAME
-									+ "\"].indexOf(c) >= 0); else if(typeof c === 'function') return (o instanceof c) || (o.constructor && o.constructor === c); })(");
-					print(invocation.getTargetExpression(), delegate).print(", ")
-							.printArgList(invocation.getArguments()).print(")");
-					return true;
-				case "isPrimitive":
-					// primitive class types are never used in JSweet, so it
-					// will always return false
-					printMacroName(targetMethodName);
-					print("(").print(invocation.getTargetExpression()).print(" === <any>'__erasedPrimitiveType__'")
-							.print(")");
-					return true;
-				case "getMethods":
-				case "getDeclaredMethods":
-					printMacroName(targetMethodName);
-					print("(c => Object.getOwnPropertyNames(c.prototype).filter(n => typeof c.prototype[n] == 'function').map(n => ({owner:c,name:n,fn:c.prototype[n]}) ) )(")
-							.print(invocation.getTargetExpression()).print(")");
-					return true;
-				case "getMethod":
-				case "getDeclaredMethod":
-					printMacroName(targetMethodName);
-					print("((c,p) => { if(c.prototype.hasOwnProperty(p) && typeof c.prototype[p] == 'function') return {owner:c,name:p,fn:c.prototype[p]}; else return null; })(")
-							.print(invocation.getTargetExpression()).print(",").print(invocation.getArgument(0))
-							.print(")");
-					return true;
-				case "getField":
-				case "getDeclaredField":
-					printMacroName(targetMethodName);
-					print("((c,p) => { return {owner:c,name:p}; })(").print(invocation.getTargetExpression()).print(",")
-							.print(invocation.getArgument(0)).print(")");
+				if (substituteMethodInvocationOnClass(invocation, targetMethodName, delegate)) {
 					return true;
 				}
 				break;
 
 			case "java.lang.reflect.Method":
-				switch (targetMethodName) {
-				case "getName":
-					printMacroName(targetMethodName);
-					print(invocation.getTargetExpression()).print(".name");
-					return true;
-				case "invoke":
-					printMacroName(targetMethodName);
-					print(invocation.getTargetExpression()).print(".fn.apply(").print(invocation.getArgument(0));
-					if (invocation.getArgumentCount() > 1) {
-						print(", [").printArgList(invocation.getArgumentTail()).print("]");
-					}
-					print(")");
-					return true;
-				case "getDeclaringClass":
-					printMacroName(targetMethodName);
-					print(invocation.getTargetExpression()).print(".owner");
-					return true;
-				case "setAccessible":
-					// ignore
+				if (substituteMethodInvocationOnMethod(invocation, targetMethodName, delegate)) {
 					return true;
 				}
 				break;
 
 			case "java.lang.reflect.Field":
-				switch (targetMethodName) {
-				case "getName":
-					printMacroName(targetMethodName);
-					print(invocation.getTargetExpression()).print(".name");
-					return true;
-				case "get":
-					printMacroName(targetMethodName);
-					print(invocation.getArgument(0)).print("[").print(invocation.getTargetExpression()).print(".name")
-							.print("]");
-					return true;
-				case "set":
-					printMacroName(targetMethodName);
-					print("(").print(invocation.getArgument(0)).print("[").print(invocation.getTargetExpression())
-							.print(".name").print("]=").print(invocation.getArgument(1)).print(")");
-					return true;
-				case "getDeclaringClass":
-					printMacroName(targetMethodName);
-					print(invocation.getTargetExpression()).print(".owner");
-					return true;
-				case "setAccessible":
-					// ignore
+				if (substituteMethodInvocationOnField(invocation, targetMethodName, delegate)) {
 					return true;
 				}
 				break;
@@ -670,7 +459,273 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		}
 
 		return super.substituteMethodInvocation(invocation);
+	}
 
+	protected boolean substituteMethodInvocationOnObjects(MethodInvocationElement invocation, String targetMethodName,
+			boolean delegate) {
+		switch (targetMethodName) {
+		case "hash":
+			printMacroName(targetMethodName);
+			print("0");
+			return true;
+		case "requireNonNull":
+			printMacroName(targetMethodName);
+			print("if(").print(invocation.getArgument(0)).print("==null){throw new Error('cannot be null')}");
+			return true;
+		}
+		return false;
+	}
+
+	protected boolean substituteMethodInvocationOnField(MethodInvocationElement invocation, String targetMethodName,
+			boolean delegate) {
+		switch (targetMethodName) {
+		case "getName":
+			printMacroName(targetMethodName);
+			print(invocation.getTargetExpression()).print(".name");
+			return true;
+		case "get":
+			printMacroName(targetMethodName);
+			print(invocation.getArgument(0)).print("[").print(invocation.getTargetExpression()).print(".name")
+					.print("]");
+			return true;
+		case "set":
+			printMacroName(targetMethodName);
+			print("(").print(invocation.getArgument(0)).print("[").print(invocation.getTargetExpression())
+					.print(".name").print("]=").print(invocation.getArgument(1)).print(")");
+			return true;
+		case "getDeclaringClass":
+			printMacroName(targetMethodName);
+			print(invocation.getTargetExpression()).print(".owner");
+			return true;
+		case "setAccessible":
+			// ignore
+			return true;
+		}
+		return false;
+	}
+
+	protected boolean substituteMethodInvocationOnMethod(MethodInvocationElement invocation, String targetMethodName,
+			boolean delegate) {
+		switch (targetMethodName) {
+		case "getName":
+			printMacroName(targetMethodName);
+			print(invocation.getTargetExpression()).print(".name");
+			return true;
+		case "invoke":
+			printMacroName(targetMethodName);
+			print(invocation.getTargetExpression()).print(".fn.apply(").print(invocation.getArgument(0));
+			if (invocation.getArgumentCount() > 1) {
+				print(", [").printArgList(invocation.getArgumentTail()).print("]");
+			}
+			print(")");
+			return true;
+		case "getDeclaringClass":
+			printMacroName(targetMethodName);
+			print(invocation.getTargetExpression()).print(".owner");
+			return true;
+		case "setAccessible":
+			// ignore
+			return true;
+		}
+		return false;
+	}
+
+	protected boolean substituteMethodInvocationOnClass(MethodInvocationElement invocation, String targetMethodName,
+			boolean delegate) {
+
+		switch (targetMethodName) {
+		case "forName":
+			printMacroName(targetMethodName);
+			if (getContext().options.getModuleKind() != ModuleKind.none) {
+				print("eval(").print(invocation.getArgument(0)).print(".split('.').slice(-1)[0])");
+			} else {
+				print("eval(").print(invocation.getArgument(0)).print(")");
+			}
+			return true;
+		case "newInstance":
+			printMacroName(targetMethodName);
+			print("new (");
+			print(invocation.getTargetExpression(), delegate).print(")(").printArgList(invocation.getArguments())
+					.print(")");
+			return true;
+		case "isInstance":
+			printMacroName(targetMethodName);
+			print("((c:any,o:any) => { if(typeof c === 'string') return (o.constructor && o.constructor")
+					.print("[\"" + Java2TypeScriptTranslator.INTERFACES_FIELD_NAME + "\"] && o.constructor")
+					.print("[\"" + Java2TypeScriptTranslator.INTERFACES_FIELD_NAME + "\"].indexOf(c) >= 0) || (o")
+					.print("[\"" + Java2TypeScriptTranslator.INTERFACES_FIELD_NAME + "\"] && o")
+					.print("[\"" + Java2TypeScriptTranslator.INTERFACES_FIELD_NAME
+							+ "\"].indexOf(c) >= 0); else if(typeof c === 'function') return (o instanceof c) || (o.constructor && o.constructor === c); })(");
+			print(invocation.getTargetExpression(), delegate).print(", ").printArgList(invocation.getArguments())
+					.print(")");
+			return true;
+		case "isPrimitive":
+			// primitive class types are never used in JSweet, so it
+			// will always return false
+			printMacroName(targetMethodName);
+			print("(").print(invocation.getTargetExpression()).print(" === <any>'__erasedPrimitiveType__'").print(")");
+			return true;
+		case "getMethods":
+		case "getDeclaredMethods":
+			printMacroName(targetMethodName);
+			print("(c => Object.getOwnPropertyNames(c.prototype).filter(n => typeof c.prototype[n] == 'function').map(n => ({owner:c,name:n,fn:c.prototype[n]}) ) )(")
+					.print(invocation.getTargetExpression()).print(")");
+			return true;
+		case "getMethod":
+		case "getDeclaredMethod":
+			printMacroName(targetMethodName);
+			print("((c,p) => { if(c.prototype.hasOwnProperty(p) && typeof c.prototype[p] == 'function') return {owner:c,name:p,fn:c.prototype[p]}; else return null; })(")
+					.print(invocation.getTargetExpression()).print(",").print(invocation.getArgument(0)).print(")");
+			return true;
+		case "getField":
+		case "getDeclaredField":
+			printMacroName(targetMethodName);
+			print("((c,p) => { return {owner:c,name:p}; })(").print(invocation.getTargetExpression()).print(",")
+					.print(invocation.getArgument(0)).print(")");
+			return true;
+		}
+		return false;
+	}
+
+	protected boolean substituteMethodInvocationOnArrays(MethodInvocationElement invocation, String targetMethodName,
+			ExtendedElement targetExpression, boolean delegate) {
+		switch (targetMethodName) {
+		case "asList":
+			printMacroName(targetMethodName);
+			if (invocation.getArgumentCount() == 1 && invocation.getArgument(0).getType() instanceof ArrayType) {
+				printArgList(invocation.getArguments()).print(".slice(0)");
+			} else {
+				print("[").printArgList(invocation.getArguments()).print("]");
+			}
+			return true;
+		case "copyOf":
+			printMacroName(targetMethodName);
+			print(invocation.getArgument(0)).print(".slice(0,").print(invocation.getArgument(1)).print(")");
+			return true;
+		case "fill":
+			printMacroName(targetMethodName);
+			print("((a, v) => { for(let i=0;i<a.length;i++) a[i]=v; })(").printArgList(invocation.getArguments())
+					.print(")");
+			// ES6 implementation
+			// print(invocation.getArgument(0)).print(".fill(").printArgList(invocation.getArgumentTail())
+			// .print(")");
+			return true;
+		case "equals":
+			printMacroName(targetMethodName);
+			print("((a1, a2) => { if(a1==null && a2==null) return true; if(a1==null || a2==null) return false; if(a1.length != a2.length) return false; for(let i = 0; i < a1.length; i++) { if(<any>a1[i] != <any>a2[i]) return false; } return true; })(")
+					.printArgList(invocation.getArguments()).print(")");
+			return true;
+		case "deepEquals":
+			printMacroName(targetMethodName);
+			print("(JSON.stringify(").print(invocation.getArgument(0)).print(") === JSON.stringify(")
+					.print(invocation.getArgument(1)).print("))");
+			return true;
+		case "sort":
+			printMacroName(targetMethodName);
+			if (invocation.getArgumentCount() > 2) {
+				print("((arr, start, end, f?) => ((arr1, arr2) => arr1.splice.apply(arr1, (<any[]>[start, arr2.length]).concat(arr2)))(")
+						.print(invocation.getArgument(0)).print(", ").print(invocation.getArgument(0))
+						.print(".slice(start, end).sort(f)))(").printArgList(invocation.getArguments()).print(")");
+			} else if (invocation.getArgumentCount() == 2) {
+				print("((l,c) => { if((<any>c).compare) l.sort((e1,e2)=>(<any>c).compare(e1,e2)); else l.sort(<any>c); })(")
+						.print(invocation.getArgument(0)).print(",").print(invocation.getArgument(1)).print(")");
+			} else {
+				print("((l) => {l.sort(); })(").print(invocation.getArgument(0)).print(")");
+			}
+			return true;
+		}
+
+		return false;
+	}
+
+	protected boolean substituteMethodInvocationOnCollections(MethodInvocationElement invocation,
+			String targetMethodName, ExtendedElement targetExpression, boolean delegate) {
+		switch (targetMethodName) {
+		case "emptyList":
+			printMacroName(targetMethodName);
+			print("[]");
+			return true;
+		case "emptySet":
+			printMacroName(targetMethodName);
+			print("[]");
+			return true;
+		case "emptyMap":
+			printMacroName(targetMethodName);
+			print("{}");
+			return true;
+		case "unmodifiableList":
+		case "unmodifiableCollection":
+		case "unmodifiableSet":
+		case "unmodifiableSortedSet":
+			printMacroName(targetMethodName);
+			printArgList(invocation.getArguments()).print(".slice(0)");
+			return true;
+		case "singleton":
+			printMacroName(targetMethodName);
+			print("[").print(invocation.getArgument(0)).print("]");
+			return true;
+		case "singletonList":
+			printMacroName(targetMethodName);
+			print("[").print(invocation.getArgument(0)).print("]");
+			return true;
+		case "singletonMap":
+			printMacroName(targetMethodName);
+			if (types().isSameType(invocation.getArgument(0).getType(), util().getType(String.class))) {
+				if (invocation.getArgument(0) instanceof JCLiteral) {
+					print("{ ").print(invocation.getArgument(0)).print(": ").print(invocation.getArgument(1))
+							.print(" }");
+				} else {
+					print("(k => { let o = {}; o[k] = ").print(invocation.getArgument(1)).print("; return o; })(")
+							.print(invocation.getArgument(0)).print(")");
+				}
+			} else {
+				print("(k => { let o = {entries: [{getKey: function() { return this.key }, getValue: function() { return this.value },key:k, value:")
+						.print(invocation.getArgument(1)).print("}]}; return o; })(").print(invocation.getArgument(0))
+						.print(")");
+			}
+			return true;
+		case "binarySearch":
+			printMacroName(targetMethodName);
+			if (invocation.getArgumentCount() == 3) {
+				print("((l, key, c) => { let comp : any = c; if(typeof c != 'function') { comp = (a,b)=>c.compare(a,b); } let low = 0; let high = l.length-1; while (low <= high) { let mid = (low + high) >>> 1; let midVal = l[mid]; "
+						+ "let cmp = comp(midVal, key); if (cmp < 0) low = mid + 1; else if (cmp > 0) high = mid - 1; else return mid; } "
+						+ "return -(low + 1); })(").printArgList(invocation.getArguments()).print(")");
+				return true;
+			}
+			if (invocation.getArgumentCount() == 2) {
+				if (util().isNumber(invocation.getArgument(1).getType())) {
+					print("((l, key) => { let comp = (a,b)=>a-b; let low = 0; let high = l.length-1; while (low <= high) { let mid = (low + high) >>> 1; let midVal = l[mid]; "
+							+ "let cmp = comp(midVal, key); if (cmp < 0) low = mid + 1; else if (cmp > 0) high = mid - 1; else return mid; } "
+							+ "return -(low + 1); })(").printArgList(invocation.getArguments()).print(")");
+					return true;
+				} else {
+					print("((l, key) => { let comp = (a,b)=>a.localeCompare(b); let low = 0; let high = l.length-1; while (low <= high) { let mid = (low + high) >>> 1; let midVal = l[mid]; "
+							+ "let cmp = comp(midVal, key); if (cmp < 0) low = mid + 1; else if (cmp > 0) high = mid - 1; else return mid; } "
+							+ "return -(low + 1); })(").printArgList(invocation.getArguments()).print(")");
+					return true;
+				}
+			}
+		case "sort":
+			printMacroName(targetMethodName);
+			if (invocation.getArgumentCount() == 2) {
+				print("((l,c) => { if((<any>c).compare) l.sort((e1,e2)=>(<any>c).compare(e1,e2)); else l.sort(<any>c); })(")
+						.print(invocation.getArgument(0)).print(",").print(invocation.getArgument(1)).print(")");
+			} else {
+				print(invocation.getArgument(0)).print(".sort(").printArgList(invocation.getArgumentTail()).print(")");
+			}
+			return true;
+		case "reverse":
+			printMacroName(targetMethodName);
+			print(invocation.getArgument(0)).print(".reverse()");
+			return true;
+		case "disjoint":
+			printMacroName(targetMethodName);
+			print("((c1, c2) => { for(let i=0;i<c1.length;i++) { if(c2.indexOf(<any>c1[i])>=0) return false; } return true; } )(")
+					.printArgList(invocation.getArguments()).print(")");
+			return true;
+		}
+
+		return false;
 	}
 
 	private boolean substituteMethodInvocationOnStringBuilder(MethodInvocationElement invocation,
