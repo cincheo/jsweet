@@ -418,8 +418,6 @@ public enum JSweetProblem {
 			return String.format("method '%s' cannot be native", params);
 		case TRY_WITHOUT_CATCH_OR_FINALLY:
 			return String.format("try statement must define at least a catch or a finally clause", params);
-		case UNSUPPORTED_TRY_WITH_RESOURCE:
-			return String.format("try-with-resource statement is not supported", params);
 		case TRY_WITH_MULTIPLE_CATCHES:
 			return String.format("try statement cannot define more than one catch clause", params);
 		case GLOBAL_INDEXER_GET:

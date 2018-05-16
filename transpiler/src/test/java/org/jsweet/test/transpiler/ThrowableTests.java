@@ -54,7 +54,7 @@ public class ThrowableTests extends AbstractTest {
 	@Test
 	public void testInvalidTryCatch() {
 		transpile(ModuleKind.none, logHandler -> {
-			logHandler.assertReportedProblems(JSweetProblem.UNSUPPORTED_TRY_WITH_RESOURCE, JSweetProblem.TRY_WITHOUT_CATCH_OR_FINALLY);
+			logHandler.assertReportedProblems(JSweetProblem.TRY_WITHOUT_CATCH_OR_FINALLY);
 		}, getSourceFile(InvalidTryCatchTest.class));
 	}
 

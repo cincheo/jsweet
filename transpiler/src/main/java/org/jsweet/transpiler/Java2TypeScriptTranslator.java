@@ -5081,10 +5081,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 */
 	@Override
 	public void visitTry(JCTry tryStatement) {
-		if (tryStatement.resources != null && !tryStatement.resources.isEmpty()) {
-			report(tryStatement, JSweetProblem.UNSUPPORTED_TRY_WITH_RESOURCE);
+		boolean resourced = tryStatement.resources != null && !tryStatement.resources.isEmpty();
+		if (resourced) {
+			for (JCTree resource : tryStatement.resources) {
+				print(resource).println(";").printIndent();
+			}
 		}
-		if (tryStatement.catchers.isEmpty() && tryStatement.finalizer == null) {
+		else if (tryStatement.catchers.isEmpty() && tryStatement.finalizer == null) {
 			report(tryStatement, JSweetProblem.TRY_WITHOUT_CATCH_OR_FINALLY);
 		}
 		print("try ").print(tryStatement.body);
@@ -5109,8 +5112,26 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		} else if (tryStatement.catchers.size() == 1) {
 			print(tryStatement.catchers.head);
 		}
-		if (tryStatement.finalizer != null) {
-			print(" finally ").print(tryStatement.finalizer);
+		if (resourced || tryStatement.finalizer != null) {
+			print(" finally {");
+			if (resourced) {
+				// resources are closed in reverse order, before finally block is executed
+				startIndent();
+				for (JCTree resource : tryStatement.resources.reverse()) {
+					if (resource instanceof JCVariableDecl) {
+						println().printIndent().print(((JCVariableDecl) resource).name + ".close();");
+					}
+				}
+				endIndent();
+			}
+			if (tryStatement.finalizer != null) {
+				startIndent();//.printIndent();
+				for (JCStatement statement : tryStatement.finalizer.getStatements()) {
+					println().printIndent().print(statement).print(";");
+				}
+				endIndent();
+			}
+			println().printIndent().print("}"); // closes finally block
 		}
 	}
 
