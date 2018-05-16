@@ -291,7 +291,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 					return true;
 				}
 				break;
-				
+
 			case "java.util.Objects":
 				if (substituteMethodInvocationOnObjects(invocation, targetMethodName, delegate)) {
 					return true;
@@ -918,6 +918,10 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 
 	protected boolean substituteMethodInvocationOnMap(MethodInvocationElement invocation, String targetMethodName,
 			ExtendedElement targetExpression, boolean delegate) {
+		if (targetExpression == null) {
+			return false;
+		}
+
 		if (((DeclaredType) targetExpression.getType()).getTypeArguments().size() == 2 && types().isSameType(
 				((DeclaredType) targetExpression.getType()).getTypeArguments().get(0), util().getType(String.class))) {
 			switch (targetMethodName) {

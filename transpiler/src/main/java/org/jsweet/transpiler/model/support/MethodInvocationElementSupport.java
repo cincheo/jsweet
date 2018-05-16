@@ -90,9 +90,6 @@ public class MethodInvocationElementSupport extends ExtendedElementSupport<JCMet
 	@Override
 	public ExtendedElement getTargetExpression() {
 		JCTree methTree = tree.meth;
-		if (methTree instanceof JCIdent) {
-			return ExtendedElementFactory.INSTANCE.create(((JCIdent) methTree));
-		}
 		if (methTree instanceof JCFieldAccess) {
 			return ExtendedElementFactory.INSTANCE.create(((JCFieldAccess) methTree).selected);
 		} else {
