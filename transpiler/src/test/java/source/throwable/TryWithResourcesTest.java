@@ -12,8 +12,31 @@ public class TryWithResourcesTest {
         }
     }
 
+    void singleResourceWithCatchMethod() throws Exception {
+        try (CloseClass one = new CloseClass()) {
+        }
+        catch (Exception e) {
+        }
+    }
+
+    void singleResourceWithFinallyMethod() throws Exception {
+        try (CloseClass one = new CloseClass()) {
+        }
+        finally {
+        }
+    }
+
+    void singleResourceWithCatchAndFinallyMethod() throws Exception {
+        try (CloseClass one = new CloseClass()) {
+        }
+        catch (Exception e) {
+        }
+        finally {
+        }
+    }
+    
     /* output of this test should be equal to #multipleResourcesMethod */
-    public void tryFinallyMethod() throws Exception {
+    public void regularTryFinallyMethod() throws Exception {
         CloseClass one = new CloseClass();
         CloseClass two = new CloseClass();
         try {
