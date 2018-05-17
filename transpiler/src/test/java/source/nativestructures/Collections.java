@@ -330,6 +330,9 @@ public class Collections implements Cloneable, Serializable {
 		Set<String> aSet3 = new TreeSet<>();		
 		List<String> aList = new ArrayList<>();		
 		
+		List<String> copies = java.util.Collections.nCopies(7, "nyan");
+		trace.push("" + copies);
+		
 		$export("trace", trace.join(","));
 
 	}

@@ -668,6 +668,14 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			printMacroName(targetMethodName);
 			print("[").print(invocation.getArgument(0)).print("]");
 			return true;
+		case "nCopies":
+			printMacroName(targetMethodName);
+			print("((n,v)=>{let c=[];for(let i=0;i<n;i++)c.push(v);return c;})(");
+			print(invocation.getArgument(0));
+			print(",");
+			print(invocation.getArgument(1));
+			print(")");
+			return true;
 		case "singletonMap":
 			printMacroName(targetMethodName);
 			if (types().isSameType(invocation.getArgument(0).getType(), util().getType(String.class))) {

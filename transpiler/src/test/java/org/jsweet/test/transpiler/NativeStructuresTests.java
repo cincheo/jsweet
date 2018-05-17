@@ -60,7 +60,8 @@ public class NativeStructuresTests extends AbstractTest {
 			// queues
 					+ "false,[c, a, b],c,[a, b],b,[a],a,null,true,null,"
 			// removeAll, retainAll, containsAll, disjoint
-					+ "[a, b, c],[d, e, f],false,true,false,true", result.get("trace"));
+					+ "[a, b, c],[d, e, f],false,true,false,true," //
+					+ "[nyan, nyan, nyan, nyan, nyan, nyan, nyan]", result.get("trace"));
 		}, getSourceFile(Collections.class));
 	}
 

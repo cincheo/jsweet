@@ -111,17 +111,25 @@ public class TypeScript2JavaScriptWithTsserverTranspiler extends TypeScript2Java
 				TimeUnit.MILLISECONDS);
 		Collection<DiagnosticEvent> compilationErrors = client.geterrForProject(referenceFileName, 0, projectInfo)
 				.get();
-		printTsserverDiagnostics(compilationErrors);
 
 		if (!ignoreErrors) {
 			for (DiagnosticEvent errorEvent : compilationErrors) {
 				File fileInError = new File(errorEvent.getBody().getFile());
 				for (IDiagnostic error : errorEvent.getBody().getDiagnostics()) {
-					SourcePosition position = new SourcePosition(fileInError, null,
+
+					SourcePosition originalPosition = new SourcePosition(fileInError, null,
 							new Position(error.getStartLocation().getLine(), error.getStartLocation().getOffset()));
-					transpilationHandler.report(JSweetProblem.MAPPED_TSC_ERROR, position, error.getFullText());
+					SourcePosition position = SourceFile.findOriginPosition(originalPosition, tsSourceFiles);
+					if (position == null) {
+						transpilationHandler.report(JSweetProblem.INTERNAL_TSC_ERROR, originalPosition,
+								error.getFullText());
+					} else {
+						transpilationHandler.report(JSweetProblem.MAPPED_TSC_ERROR, position, error.getFullText());
+					}
 				}
 			}
+		} else {
+			printTsserverDiagnostics(compilationErrors);
 		}
 
 		client.closeExternalProject(projectFileName);
