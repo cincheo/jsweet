@@ -26,6 +26,7 @@ import source.throwable.InvalidTryCatchTest;
 import source.throwable.MultipleTryCatchTest;
 import source.throwable.Throwables;
 import source.throwable.TryCatchFinallyTest;
+import source.throwable.TryWithResourcesTest;
 
 public class ThrowableTests extends AbstractTest {
 
@@ -54,8 +55,15 @@ public class ThrowableTests extends AbstractTest {
 	@Test
 	public void testInvalidTryCatch() {
 		transpile(ModuleKind.none, logHandler -> {
-			logHandler.assertReportedProblems(JSweetProblem.UNSUPPORTED_TRY_WITH_RESOURCE, JSweetProblem.TRY_WITHOUT_CATCH_OR_FINALLY);
+			logHandler.assertReportedProblems(JSweetProblem.MAPPED_TSC_ERROR, JSweetProblem.MAPPED_TSC_ERROR, JSweetProblem.MAPPED_TSC_ERROR);
 		}, getSourceFile(InvalidTryCatchTest.class));
+	}
+
+	@Test
+	public void testTryWithResources() {
+		eval(ModuleKind.none, (logHandler, result) -> {
+			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+		}, getSourceFile(TryWithResourcesTest.class));
 	}
 
 	@Test
