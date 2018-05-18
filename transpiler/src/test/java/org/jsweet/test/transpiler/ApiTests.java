@@ -16,9 +16,9 @@
  */
 package org.jsweet.test.transpiler;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
 
 import org.jsweet.transpiler.ModuleKind;
 import org.junit.Assert;
@@ -42,6 +42,7 @@ import source.api.PrimitiveInstantiation;
 import source.api.PromisesAsyncAwait;
 import source.api.QualifiedInstantiation;
 import source.api.Strings;
+import source.api.ThreadLocalFake;
 import source.api.WrongJdkInvocations;
 
 public class ApiTests extends AbstractTest {
@@ -93,6 +94,14 @@ public class ApiTests extends AbstractTest {
 			assertEquals(4, result.<Number>get("l").intValue());
 			assertEquals("t1st", result.<String>get("r"));
 		}, getSourceFile(JdkInvocations.class));
+	}
+
+	@Test
+	public void testThreadLocal() {
+		eval((logHandler, result) -> {
+			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+			assertEquals("coucou", result.get("out"));
+		}, getSourceFile(ThreadLocalFake.class));
 	}
 
 	@Test

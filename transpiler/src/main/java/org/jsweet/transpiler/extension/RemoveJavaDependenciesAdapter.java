@@ -374,7 +374,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 				case "skip":
 					printMacroName(targetMethodName);
 					print(invocation.getTargetExpression(), delegate).print(".cursor+=")
-							.print(invocation.getArgument(0));
+					.print(invocation.getArgument(0));
 					return true;
 				case "reset":
 					printMacroName(targetMethodName);
@@ -383,6 +383,15 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 				case "close":
 					printMacroName(targetMethodName);
 					// ignore but we could flag it and throw an error...
+					return true;
+				}
+				break;
+			case "java.lang.ThreadLocal":
+				switch (targetMethodName) {
+				case "get":
+					printMacroName(targetMethodName);
+					print(invocation.getTargetExpression());
+					print(".initialValue()");
 					return true;
 				}
 				break;
