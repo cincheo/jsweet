@@ -81,15 +81,20 @@ public class Chars {
 		int[] testArray = { 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120 };
 		testArray['\n'] = 50;
 		assert testArray[10] == 50;
-		
+
 		char baseChar = 'X';
 		String concatResult = "test" + baseChar;
 		System.out.println(concatResult);
 		assert concatResult == "testX";
-		
+
 		int addResult = 2 + baseChar;
 		System.out.println(addResult);
 		assert addResult == 90;
+
+		char idxChar = 2;
+		int[] array = { 1, 2, 3 };
+		System.out.println("checkIdx" + array[idxChar]);
+		assert array[idxChar] == 3;
 	}
 
 	public static final int MIN_RADIX = 2;
