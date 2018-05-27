@@ -20,8 +20,8 @@ package org.jsweet.transpiler;
 
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
-import static org.jsweet.transpiler.util.Util.toJavaFileObjects;
 import static org.jsweet.transpiler.util.ProcessUtil.isVersionHighEnough;
+import static org.jsweet.transpiler.util.Util.toJavaFileObjects;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UncheckedIOException;
-import java.lang.reflect.Field;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -38,15 +37,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
@@ -59,6 +57,10 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.candy.CandyProcessor;
+import org.jsweet.transpiler.eval.EvalOptions;
+import org.jsweet.transpiler.eval.JavaEval;
+import org.jsweet.transpiler.eval.JavaScriptEval;
+import org.jsweet.transpiler.eval.JavaScriptEval.JavaScriptRuntime;
 import org.jsweet.transpiler.extension.ExtensionManager;
 import org.jsweet.transpiler.extension.PrinterAdapter;
 import org.jsweet.transpiler.util.AbstractTreePrinter;
@@ -82,15 +84,12 @@ import com.google.debugging.sourcemap.SourceMapping;
 import com.google.debugging.sourcemap.proto.Mapping.OriginalMapping;
 import com.google.gson.Gson;
 import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.PackageSymbol;
 import com.sun.tools.javac.file.JavacFileManager;
 import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.main.Option;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
-import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
-import com.sun.tools.javac.tree.TreeScanner;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.Options;
@@ -173,7 +172,7 @@ public class JSweetTranspiler implements JSweetOptions {
 	 * @see #eval(TranspilationHandler, SourceFile...)
 	 */
 	public static final String EXPORTED_VAR_END = ";";
-	private static Pattern exportedVarRE = Pattern.compile(EXPORTED_VAR_BEGIN + "(\\w*)=(.*)" + EXPORTED_VAR_END);
+	public static Pattern EXPORTED_VAR_REGEXP = Pattern.compile(EXPORTED_VAR_BEGIN + "(\\w*)=(.*)" + EXPORTED_VAR_END);
 
 	private final static Logger logger = Logger.getLogger(JSweetTranspiler.class);
 
@@ -667,50 +666,6 @@ public class JSweetTranspiler implements JSweetOptions {
 		return eval("JavaScript", transpilationHandler, sourceFiles);
 	}
 
-	private static class MainMethodFinder extends TreeScanner {
-		public MethodSymbol mainMethod;
-
-		public void visitMethodDef(JCMethodDecl methodDecl) {
-			MethodSymbol method = methodDecl.sym;
-			if ("main(java.lang.String[])".equals(method.toString())) {
-				if (method.isStatic()) {
-					mainMethod = method;
-					throw new RuntimeException();
-				}
-			}
-		}
-	};
-
-	private void initExportedVarMap() throws Exception {
-		Field f = null;
-		try {
-			f = Thread.currentThread().getContextClassLoader().loadClass(JSweetConfig.UTIL_CLASSNAME)
-					.getDeclaredField("EXPORTED_VARS");
-		} catch (ClassNotFoundException ex) {
-			f = Thread.currentThread().getContextClassLoader().loadClass(JSweetConfig.DEPRECATED_UTIL_CLASSNAME)
-					.getDeclaredField("EXPORTED_VARS");
-		}
-		f.setAccessible(true);
-		@SuppressWarnings("unchecked")
-		ThreadLocal<Map<String, Object>> exportedVars = (ThreadLocal<Map<String, Object>>) f.get(null);
-		exportedVars.set(new HashMap<>());
-	}
-
-	private Map<String, Object> getExportedVarMap() throws Exception {
-		Field f = null;
-		try {
-			f = Thread.currentThread().getContextClassLoader().loadClass(JSweetConfig.UTIL_CLASSNAME)
-					.getDeclaredField("EXPORTED_VARS");
-		} catch (ClassNotFoundException ex) {
-			f = Thread.currentThread().getContextClassLoader().loadClass(JSweetConfig.DEPRECATED_UTIL_CLASSNAME)
-					.getDeclaredField("EXPORTED_VARS");
-		}
-		f.setAccessible(true);
-		@SuppressWarnings("unchecked")
-		ThreadLocal<Map<String, Object>> exportedVars = (ThreadLocal<Map<String, Object>>) f.get(null);
-		return new HashMap<>(exportedVars.get());
-	}
-
 	/**
 	 * Evaluates the given source files with the given evaluation engine.
 	 * <p>
@@ -731,74 +686,13 @@ public class JSweetTranspiler implements JSweetOptions {
 	public EvaluationResult eval(String engineName, TranspilationHandler transpilationHandler,
 			SourceFile... sourceFiles) throws Exception {
 		logger.info("[" + engineName + " engine] eval files: " + Arrays.asList(sourceFiles));
+		
+		EvalOptions options = new EvalOptions(isUsingModules(), workingDir);
+		
 		if ("Java".equals(engineName)) {
-			// search for main functions
-			JSweetContext context = new JSweetContext(this);
-			Options options = Options.instance(context);
-			if (classPath != null) {
-				options.put(Option.CLASSPATH, classPath);
-			}
-			options.put(Option.XLINT, "path");
-			if (encoding != null) {
-				options.put(Option.ENCODING, encoding);
-			}
 
-			JavacFileManager.preRegister(context);
-			JavaFileManager fileManager = context.get(JavaFileManager.class);
-
-			List<JavaFileObject> fileObjects = toJavaFileObjects(fileManager,
-					Arrays.asList(SourceFile.toFiles(sourceFiles)));
-
-			JavaCompiler compiler = JavaCompiler.instance(context);
-			compiler.attrParseOnly = true;
-			compiler.verbose = true;
-			compiler.genEndPos = false;
-			compiler.encoding = encoding;
-
-			log = Log.instance(context);
-			log.dumpOnError = false;
-			log.emitWarnings = false;
-
-			logger.info("parsing: " + fileObjects);
-			List<JCCompilationUnit> compilationUnits = compiler.enterTrees(compiler.parseFiles(fileObjects));
-			MainMethodFinder mainMethodFinder = new MainMethodFinder();
-			try {
-				for (JCCompilationUnit cu : compilationUnits) {
-					cu.accept(mainMethodFinder);
-				}
-			} catch (Exception e) {
-				// swallow on purpose
-			}
-			if (mainMethodFinder.mainMethod != null) {
-				try {
-					initExportedVarMap();
-					Class<?> c = Class
-							.forName(mainMethodFinder.mainMethod.getEnclosingElement().getQualifiedName().toString());
-					c.getMethod("main", String[].class).invoke(null, (Object) null);
-				} catch (Exception e) {
-					throw new Exception("evalution error", e);
-				}
-			}
-
-			final Map<String, Object> map = getExportedVarMap();
-			return new EvaluationResult() {
-
-				@SuppressWarnings("unchecked")
-				@Override
-				public <T> T get(String variableName) {
-					return (T) map.get("_exportedVar_" + variableName);
-				}
-
-				@Override
-				public String toString() {
-					return map.toString();
-				}
-
-				@Override
-				public String getExecutionTrace() {
-					return "<not available>";
-				}
-			};
+			JavaEval evaluator = new JavaEval(this, options);
+			return evaluator.performEval(sourceFiles);
 		} else {
 			if (!areAllTranspiled(sourceFiles)) {
 				ErrorCountTranspilationHandler errorHandler = new ErrorCountTranspilationHandler(transpilationHandler);
@@ -806,11 +700,10 @@ public class JSweetTranspiler implements JSweetOptions {
 				if (errorHandler.getErrorCount() > 0) {
 					throw new Exception("unable to evaluate: transpilation errors remain");
 				}
+
 			}
-
-			StringWriter trace = new StringWriter();
-
-			Process runProcess;
+			
+			Collection<File> jsFiles;
 			if (context.useModules) {
 				File f = null;
 				if (!context.entryFiles.isEmpty()) {
@@ -824,96 +717,13 @@ public class JSweetTranspiler implements JSweetOptions {
 				if (f == null) {
 					f = sourceFiles[sourceFiles.length - 1].getJsFile();
 				}
-				logger.info("[modules] eval file: " + f);
-				runProcess = ProcessUtil.runCommand(ProcessUtil.NODE_COMMAND, line -> trace.append(line + "\n"), null,
-						f.getPath());
+				jsFiles = asList(f);
 			} else {
-				File tmpFile = new File(workingDir, "eval.tmp.js");
-				FileUtils.deleteQuietly(tmpFile);
-				if (jsLibFiles != null) {
-					for (File jsLibFile : jsLibFiles) {
-						String script = FileUtils.readFileToString(jsLibFile);
-						FileUtils.write(tmpFile, script + "\n", true);
-					}
-				}
-
-				Set<File> alreadyWrittenScripts = new HashSet<>();
-				for (SourceFile sourceFile : sourceFiles) {
-					if (!alreadyWrittenScripts.contains(sourceFile.getJsFile())) {
-						String script = FileUtils.readFileToString(sourceFile.getJsFile());
-						FileUtils.write(tmpFile, script + "\n", true);
-						alreadyWrittenScripts.add(sourceFile.getJsFile());
-					}
-				}
-
-				logger.info("[no modules] eval file: " + tmpFile);
-				runProcess = ProcessUtil.runCommand(ProcessUtil.NODE_COMMAND, line -> trace.append(line + "\n"), null,
-						tmpFile.getPath());
+				jsFiles = Stream.of(sourceFiles).map(sourceFile -> sourceFile.getJsFile()).collect(toList());	
 			}
-
-			int returnCode = runProcess.exitValue();
-			logger.info("return code=" + returnCode);
-			if (returnCode != 0) {
-				throw new Exception("evaluation error (code=" + returnCode + ") - trace=" + trace);
-			}
-			return new TraceBasedEvaluationResult(trace.getBuffer().toString());
-		}
-	}
-
-	static private class TraceBasedEvaluationResult implements EvaluationResult {
-		private String trace;
-
-		public TraceBasedEvaluationResult(String trace) {
-			super();
-			this.trace = trace;
-		}
-
-		@SuppressWarnings("unchecked")
-		@Override
-		public <T> T get(String variableName) {
-			String[] var = null;
-			Matcher matcher = exportedVarRE.matcher(trace);
-			int index = 0;
-			boolean match = true;
-			while (match) {
-				match = matcher.find(index);
-				if (match) {
-					if (variableName.equals(matcher.group(1))) {
-						var = new String[] { matcher.group(1), matcher.group(2) };
-						match = false;
-
-					}
-					index = matcher.end() - 1;
-				}
-			}
-			if (var == null) {
-				return null;
-			} else {
-				String stringValue = var[1];
-				try {
-					return (T) (Integer) Integer.parseInt(stringValue);
-				} catch (Exception e1) {
-					try {
-						return (T) (Double) Double.parseDouble(stringValue);
-					} catch (Exception e2) {
-						if ("true".equals(stringValue)) {
-							return (T) Boolean.TRUE;
-						}
-						if ("false".equals(stringValue)) {
-							return (T) Boolean.FALSE;
-						}
-						if ("undefined".equals(stringValue)) {
-							return null;
-						}
-					}
-				}
-				return (T) stringValue;
-			}
-		}
-
-		@Override
-		public String getExecutionTrace() {
-			return trace;
+			
+			JavaScriptEval evaluator = new JavaScriptEval(options, JavaScriptRuntime.NodeJs);
+			return evaluator.performEval(jsFiles);
 		}
 	}
 
@@ -1095,11 +905,11 @@ public class JSweetTranspiler implements JSweetOptions {
 			List<JCCompilationUnit> compilationUnits) throws IOException {
 		// regular file-to-file generation
 		new OverloadScanner(transpilationHandler, context).process(compilationUnits);
-		
+
 		if (isVerbose()) {
 			context.dumpOverloads(System.out);
 		}
-		
+
 		String[] headerLines = getHeaderLines();
 		for (int i = 0; i < compilationUnits.length(); i++) {
 			try {
@@ -1970,4 +1780,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		return configurationFile;
 	}
 
+	public String getClassPath() {
+		return classPath;
+	}
 }

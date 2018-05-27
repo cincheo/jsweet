@@ -21,10 +21,18 @@ package org.jsweet.transpiler.util;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
+import java.nio.file.FileVisitOption;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -72,7 +80,7 @@ public class ProcessUtil {
 	 */
 	public static File NPM_DIR = new File(USER_HOME_DIR, ".jsweet-node_modules");
 
-	private static List<String> nodeCommands = Arrays.asList("tsc", "browserify");
+	private static List<String> nodeCommandsBaseNames = Arrays.asList("tsc", "browserify", "phantomjs");
 
 	/**
 	 * The node command name (can be full path in some environments).
@@ -95,9 +103,9 @@ public class ProcessUtil {
 	 * Gets the full path of a global package's (system) command installed with npm.
 	 */
 	public static String getGlobalNpmPackageNodeMainFilePath(String nodeModule, String mainFileName) {
-		if (System.getProperty("os.name").startsWith("Windows")) {
+		if (isWindows()) {
 			return NPM_DIR.getPath() + File.separator + "node_modules" + File.separator + "typescript" + File.separator
-					+ "bin"+ File.separator + mainFileName;
+					+ "bin" + File.separator + mainFileName;
 		} else {
 			return NPM_DIR.getPath() + File.separator + "bin" + File.separator + mainFileName;
 		}
@@ -107,7 +115,10 @@ public class ProcessUtil {
 	 * Gets the full path of a global package's JS main file installed with npm.
 	 */
 	public static String getGlobalNpmPackageExecutablePath(String command) {
-		if (System.getProperty("os.name").startsWith("Windows")) {
+		if (new File(command).isFile()) {
+			return command;
+		}
+		if (isWindows()) {
 			return NPM_DIR.getPath() + File.separator + command + ".cmd";
 		} else {
 			return NPM_DIR.getPath() + File.separator + "bin" + File.separator + command;
@@ -193,15 +204,16 @@ public class ProcessUtil {
 			Consumer<Process> endConsumer, Runnable errorHandler, String... args) {
 
 		String[] cmd;
-		if (System.getProperty("os.name").startsWith("Windows")) {
-			if (nodeCommands.contains(command)) {
+		if (isWindows()) {
+			String commandExecutableName = FilenameUtils.getBaseName(command);
+			if (nodeCommandsBaseNames.contains(commandExecutableName)) {
 				cmd = new String[] { getGlobalNpmPackageExecutablePath(command) };
 			} else {
 				cmd = new String[] { "cmd", "/c", command };
 			}
 			cmd = ArrayUtils.addAll(cmd, args);
 		} else {
-			if (nodeCommands.contains(command)) {
+			if (nodeCommandsBaseNames.contains(command)) {
 				cmd = new String[] { getGlobalNpmPackageExecutablePath(command) };
 				cmd = ArrayUtils.addAll(cmd, args);
 			} else {
@@ -210,7 +222,7 @@ public class ProcessUtil {
 			}
 		}
 		logger.debug("run command: " + StringUtils.join(cmd, " "));
-		Process[] process = { null };
+		Process[] processReference = { null };
 		try {
 			ProcessBuilder processBuilder = new ProcessBuilder(cmd);
 			processBuilder.redirectErrorStream(true);
@@ -222,15 +234,20 @@ public class ProcessUtil {
 						processBuilder.environment().get("PATH") + File.pathSeparator + EXTRA_PATH);
 			}
 
-			process[0] = processBuilder.start();
+			Process process = processBuilder.start();
+			processReference[0] = process;
+			logger.debug("started " + processBuilder.command());
+
+			Runtime.getRuntime().addShutdownHook(new Thread(() -> process.destroyForcibly()));
 
 			Runnable runnable = new Runnable() {
 
 				@Override
 				public void run() {
 					try {
+
 						try (BufferedReader in = new BufferedReader(
-								new InputStreamReader(process[0].getInputStream(), "UTF-8"))) {
+								new InputStreamReader(process.getInputStream(), "UTF-8"))) {
 							String line;
 							while ((line = in.readLine()) != null) {
 								if (stdoutConsumer != null) {
@@ -241,11 +258,11 @@ public class ProcessUtil {
 							}
 						}
 
-						process[0].waitFor();
+						process.waitFor();
 						if (endConsumer != null) {
-							endConsumer.accept(process[0]);
+							endConsumer.accept(process);
 						}
-						if (process[0].exitValue() != 0) {
+						if (process.exitValue() != 0) {
 							if (errorHandler != null) {
 								errorHandler.run();
 							}
@@ -271,7 +288,11 @@ public class ProcessUtil {
 			}
 			return null;
 		}
-		return process[0];
+		return processReference[0];
+	}
+
+	public static boolean isWindows() {
+		return System.getProperty("os.name").startsWith("Windows");
 	}
 
 	/**
@@ -335,10 +356,10 @@ public class ProcessUtil {
 	}
 
 	public static boolean isVersionHighEnough(String currentVersion, String minimumVersion) {
-		
+
 		currentVersion = currentVersion.replace("v", "");
 		minimumVersion = minimumVersion.replace("v", "");
-		
+
 		String[] currentVersionParts = currentVersion.split("[.]");
 		String[] minimumVersionParts = minimumVersion.split("[.]");
 
@@ -346,7 +367,7 @@ public class ProcessUtil {
 			if (minimumVersionParts.length <= i) {
 				break;
 			}
-			
+
 			try {
 				int currentVersionPart = Integer.parseInt(currentVersionParts[i]);
 				int minimumVersionPart = Integer.parseInt(minimumVersionParts[i]);
@@ -359,8 +380,44 @@ public class ProcessUtil {
 				logger.error("unexpected version token " + currentVersion + " / " + minimumVersion, e);
 			}
 		}
-		
+
 		return true;
+	}
+
+	private static final Map<String, String> globalExecutableCache = new HashMap<>();
+
+	public static String findGlobalExecutable(String fileName, String packageName) {
+
+		String path = globalExecutableCache.get(fileName);
+		if (path == null) {
+			try {
+
+				String globalPackagesDir = NPM_DIR.getAbsolutePath();
+				Stream<Path> searchPaths = Files.walk(Paths.get(globalPackagesDir));
+				if (isWindows()) {
+					File programFilesPath = new File(
+							System.getenv("ProgramFiles") + "/nodejs/node_modules/" + packageName);
+					if (programFilesPath.isDirectory()) {
+						searchPaths = Stream.concat(searchPaths, Files
+								.walk(Paths.get(programFilesPath.getAbsolutePath()), FileVisitOption.FOLLOW_LINKS));
+					}
+				}
+
+				path = searchPaths //
+						.filter(Files::isRegularFile)//
+						.filter((f) -> {
+							String file = f.toFile().getName();
+							return file.equals(fileName);
+						}) //
+						.map(f -> f.toFile().getAbsolutePath()).findFirst() //
+						.orElse(null);
+
+				globalExecutableCache.put(fileName, path);
+			} catch (Exception e) {
+				throw new RuntimeException("cannot find global executable", e);
+			}
+		}
+		return path;
 	}
 
 }

@@ -45,4 +45,17 @@ public interface EvaluationResult {
 	 * Gets the execution trace of the program execution.
 	 */
 	String getExecutionTrace();
+	
+	public static final EvaluationResult VOID = new EvaluationResult() {
+		
+		@Override
+		public String getExecutionTrace() {
+			return "";
+		}
+		
+		@Override
+		public <T> T get(String variableName) {
+			return null;
+		}
+	};
 }
