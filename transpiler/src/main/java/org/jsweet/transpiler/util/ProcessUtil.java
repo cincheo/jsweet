@@ -115,7 +115,8 @@ public class ProcessUtil {
 	 * Gets the full path of a global package's JS main file installed with npm.
 	 */
 	public static String getGlobalNpmPackageExecutablePath(String command) {
-		if (new File(command).isFile()) {
+		File commandFile = new File(command);
+		if (commandFile.isFile() && commandFile.isAbsolute()) {
 			return command;
 		}
 		if (isWindows()) {

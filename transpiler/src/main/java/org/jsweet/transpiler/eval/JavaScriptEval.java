@@ -88,19 +88,17 @@ public class JavaScriptEval extends RuntimeEval {
 							throw new RuntimeException("error during execution: " + errorMessage);
 						}
 						trace.append(line + "\n");
-					},
-					process -> {
+					}, process -> {
 						logger.info("PHANTOM END - " + process);
 						trace.append("phantom ended\n");
-					},
-					() -> {
+					}, () -> {
 						trace.append("phantom errored\n");
 						logger.info("phantomERROR :(");
 					}, //
-					// debugger causes hanging process, never returning..
-//					"--remote-debugger-port=9000", //
-//					"--remote-debugger-autorun=true", //
-//					"--debug=true", //
+						// debugger causes hanging process, never returning..
+						// "--remote-debugger-port=9000", //
+						// "--remote-debugger-autorun=true", //
+						// "--debug=true", //
 					"--webdriver-loglevel=DEBUG", //
 					mainFile.getPath());
 
@@ -115,7 +113,12 @@ public class JavaScriptEval extends RuntimeEval {
 	public String resolvePhantomJsPath() {
 		String phantomJsPath = ProcessUtil.getGlobalNpmPackageExecutablePath(PHANTOMJS_EXECUTABLE_NAME);
 		if (ProcessUtil.isWindows()) {
+			// we need to use the .exe file to be able to fix this bug:
+			// https://github.com/ariya/phantomjs/issues/10845#issuecomment-24220355
 			phantomJsPath = ProcessUtil.findGlobalExecutable("phantomjs.exe", "phantomjs-prebuilt");
+			if (phantomJsPath == null || !new File(phantomJsPath).isFile()) {
+				phantomJsPath = ProcessUtil.getGlobalNpmPackageExecutablePath(PHANTOMJS_EXECUTABLE_NAME);
+			}
 		}
 		logger.info("phantomJsPath=" + phantomJsPath);
 		if (!new File(phantomJsPath).canExecute()) {
