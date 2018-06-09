@@ -727,22 +727,40 @@ public class JSweetTranspiler implements JSweetOptions {
 		}
 	}
 
-	public List<JCCompilationUnit> setupCompiler(java.util.List<File> files,
+	protected List<JCCompilationUnit> setupCompiler(java.util.List<File> files,
 			ErrorCountTranspilationHandler transpilationHandler) throws IOException {
 		initJavac(transpilationHandler);
 		List<JavaFileObject> fileObjects = toJavaFileObjects(fileManager, files);
 
-		logger.info("parsing: " + fileObjects);
+		try {
+			compiler.compile(fileObjects);
+		} catch (Throwable e) {
+			throw new RuntimeException(e);
+		}
+		
+		logger.info("ENTER phase: " + fileObjects);
 		transpilationHandler.setDisabled(isIgnoreJavaErrors());
 		List<JCCompilationUnit> compilationUnits = compiler.enterTrees(compiler.parseFiles(fileObjects));
-		context.compilationUnits = compilationUnits.toArray(new JCCompilationUnit[compilationUnits.size()]);
 		if (transpilationHandler.getErrorCount() > 0) {
 			logger.warn("errors during parse tree");
 			return null;
 		}
-		logger.info("attribution phase");
+		logger.info("ATTRIBUTE phase");
 		compiler.attribute(compiler.todo);
+		
 		transpilationHandler.setDisabled(false);
+		logger.info("FLOW phase");
+		compiler.flow(compiler.todo);
+		
+		compiler.processAnnotations(compilationUnits);
+		
+		logger.info("DESUGAR phase");
+		compiler.desugar(compiler.todo);
+		
+		
+		context.compilationUnits = compilationUnits.toArray(new JCCompilationUnit[compilationUnits.size()]);
+//		logger.info("DESUGAR phase");
+//		compiler.desugar(compiler.todo);
 
 		if (transpilationHandler.getErrorCount() > 0) {
 			return null;
