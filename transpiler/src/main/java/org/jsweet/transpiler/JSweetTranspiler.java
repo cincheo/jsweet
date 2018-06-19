@@ -743,17 +743,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		compiler.attribute(compiler.todo);
 
 		transpilationHandler.setDisabled(false);
-		logger.info("FLOW phase");
-		compiler.flow(compiler.todo);
-
-		compiler.processAnnotations(compilationUnits);
-
-		logger.info("DESUGAR phase");
-		compiler.desugar(compiler.todo);
-
 		context.compilationUnits = compilationUnits.toArray(new JCCompilationUnit[compilationUnits.size()]);
-		// logger.info("DESUGAR phase");
-		// compiler.desugar(compiler.todo);
 
 		if (transpilationHandler.getErrorCount() > 0) {
 			return null;
