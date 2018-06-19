@@ -19,6 +19,7 @@
 package org.jsweet.transpiler.util;
 
 import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toList;
 
 import java.io.File;
 import java.io.IOException;
@@ -67,23 +68,32 @@ import com.sun.tools.javac.file.JavacFileManager;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCBinary;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
+import com.sun.tools.javac.tree.JCTree.JCBreak;
 import com.sun.tools.javac.tree.JCTree.JCCase;
 import com.sun.tools.javac.tree.JCTree.JCCatch;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
+import com.sun.tools.javac.tree.JCTree.JCDoWhileLoop;
 import com.sun.tools.javac.tree.JCTree.JCEnhancedForLoop;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCForLoop;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
+import com.sun.tools.javac.tree.JCTree.JCIf;
 import com.sun.tools.javac.tree.JCTree.JCImport;
+import com.sun.tools.javac.tree.JCTree.JCLabeledStatement;
 import com.sun.tools.javac.tree.JCTree.JCLambda;
 import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
+import com.sun.tools.javac.tree.JCTree.JCReturn;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
+import com.sun.tools.javac.tree.JCTree.JCSwitch;
+import com.sun.tools.javac.tree.JCTree.JCSynchronized;
+import com.sun.tools.javac.tree.JCTree.JCTry;
 import com.sun.tools.javac.tree.JCTree.JCUnary;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
+import com.sun.tools.javac.tree.JCTree.JCWhileLoop;
 import com.sun.tools.javac.tree.TreeScanner;
 import com.sun.tools.javac.util.Name;
 
@@ -336,6 +346,36 @@ public class Util {
 		fillAllVariablesInScope(vars, scanningStack, parent, to);
 	}
 
+	public static List<JCClassDecl> findTypeDeclarationsInCompilationUnits(List<JCCompilationUnit> compilationUnits) {
+		List<JCClassDecl> symbols = new LinkedList<>();
+		for (JCCompilationUnit compilationUnit : compilationUnits) {
+			for (JCTree definition : compilationUnit.defs) {
+				if (definition instanceof JCClassDecl) {
+					symbols.add((JCClassDecl) definition);
+				}
+			}
+		}
+
+		return symbols;
+	}
+
+	public static List<JCMethodDecl> findMethodDeclarations(JCClassDecl typeDeclaration) {
+		List<JCMethodDecl> methods = new LinkedList<>();
+		for (JCTree definition : typeDeclaration.defs) {
+			if (definition instanceof JCMethodDecl) {
+				methods.add((JCMethodDecl) definition);
+			}
+		}
+
+		return methods;
+	}
+
+	public static JCMethodDecl findFirstMethodDeclaration(JCClassDecl typeDeclaration, String methodName) {
+		return findMethodDeclarations(typeDeclaration).stream() //
+				.filter(methodDecl -> methodDecl.getName().toString().equals(methodName)) //
+				.findFirst().orElse(null);
+	}
+
 	/**
 	 * Fills the given map with all the variables beeing accessed within the given
 	 * code tree.
@@ -410,9 +450,9 @@ public class Util {
 		if (methodType == null || candidate.getParameters().size() != methodType.argtypes.size()) {
 			return -50;
 		}
-		
+
 		int score = 0;
-		
+
 		boolean isAbstract = (candidate.flags() & Flags.ABSTRACT) != 0;
 		if (isAbstract) {
 			score -= 30;
@@ -1357,21 +1397,168 @@ public class Util {
 		if (expression == null) {
 			return false;
 		}
-		
+
 		if (expression instanceof JCLiteral) {
 			return true;
 		}
-		
+
 		if (expression instanceof JCBinary) {
-			return isLiteralExpression(((JCBinary)expression).lhs)
-					&& isLiteralExpression(((JCBinary)expression).rhs);
+			return isLiteralExpression(((JCBinary) expression).lhs) && isLiteralExpression(((JCBinary) expression).rhs);
 		}
-		
+
 		if (expression instanceof JCUnary) {
-			return isLiteralExpression(((JCUnary)expression).arg);
+			return isLiteralExpression(((JCUnary) expression).arg);
 		}
-		
+
 		return false;
 	}
 
+	public static List<List<JCTree>> getExecutionPaths(JCMethodDecl methodDeclaration) {
+
+		List<List<JCTree>> executionPaths = new LinkedList<>();
+		executionPaths.add(new LinkedList<>());
+		List<List<JCTree>> currentPaths = new LinkedList<>(executionPaths);
+		List<JCBreak> activeBreaks = new LinkedList<>();
+		for (JCStatement statement : methodDeclaration.body.stats) {
+			collectExecutionPaths(statement, executionPaths, currentPaths, activeBreaks);
+		}
+
+		return executionPaths;
+	}
+
+	private static void collectExecutionPaths(JCStatement currentNode, List<List<JCTree>> allExecutionPaths,
+			List<List<JCTree>> currentPaths, List<JCBreak> activeBreaks) {
+
+		for (List<JCTree> currentPath : new ArrayList<>(currentPaths)) {
+			JCTree lastStatement = currentPath.isEmpty() ? null : currentPath.get(currentPath.size() - 1);
+			if (lastStatement instanceof JCReturn
+					|| (lastStatement instanceof JCBreak && activeBreaks.contains(lastStatement))) {
+				continue;
+			}
+
+			currentPath.add(currentNode);
+
+			List<List<JCTree>> currentPathForksList = pathsList(currentPath);
+			if (currentNode instanceof JCIf) {
+				JCIf ifNode = (JCIf) currentNode;
+
+				boolean lastIsCurrentPath = true;
+				JCStatement[] forks = { ifNode.thenpart, ifNode.elsepart };
+
+				evaluateForksExecutionPaths(allExecutionPaths, currentPathForksList, currentPath, lastIsCurrentPath,
+						activeBreaks, forks);
+
+			} else if (currentNode instanceof JCBlock) {
+				for (JCStatement statement : ((JCBlock) currentNode).stats) {
+					collectExecutionPaths(statement, allExecutionPaths, currentPathForksList, activeBreaks);
+				}
+			} else if (currentNode instanceof JCLabeledStatement) {
+				collectExecutionPaths(((JCLabeledStatement) currentNode).body, allExecutionPaths, currentPaths,
+						activeBreaks);
+			} else if (currentNode instanceof JCForLoop) {
+				collectExecutionPaths(((JCForLoop) currentNode).body, allExecutionPaths, currentPaths, activeBreaks);
+
+				activeBreaks.clear();
+			} else if (currentNode instanceof JCEnhancedForLoop) {
+				collectExecutionPaths(((JCEnhancedForLoop) currentNode).body, allExecutionPaths, currentPaths,
+						activeBreaks);
+
+				activeBreaks.clear();
+			} else if (currentNode instanceof JCWhileLoop) {
+				collectExecutionPaths(((JCWhileLoop) currentNode).body, allExecutionPaths, currentPaths, activeBreaks);
+
+				activeBreaks.clear();
+			} else if (currentNode instanceof JCDoWhileLoop) {
+				collectExecutionPaths(((JCDoWhileLoop) currentNode).body, allExecutionPaths, currentPaths,
+						activeBreaks);
+
+				activeBreaks.clear();
+			} else if (currentNode instanceof JCSynchronized) {
+				collectExecutionPaths(((JCSynchronized) currentNode).body, allExecutionPaths, currentPaths,
+						activeBreaks);
+			} else if (currentNode instanceof JCTry) {
+				JCTry tryNode = (JCTry) currentNode;
+				collectExecutionPaths(tryNode.getBlock(), allExecutionPaths, currentPaths, activeBreaks);
+
+				JCStatement[] catchForks = (JCStatement[]) tryNode.getCatches().stream().map(catchExp -> catchExp.body)
+						.collect(toList()).toArray(new JCStatement[0]);
+
+				evaluateForksExecutionPaths(allExecutionPaths, currentPathForksList, currentPath, false, activeBreaks,
+						catchForks);
+				if (tryNode.getFinallyBlock() != null) {
+					collectExecutionPaths(tryNode.getFinallyBlock(), allExecutionPaths, currentPathForksList,
+							activeBreaks);
+				}
+			} else if (currentNode instanceof JCSwitch) {
+				JCSwitch switchNode = (JCSwitch) currentNode;
+				evaluateForksExecutionPaths(allExecutionPaths, currentPathForksList, currentPath, true, activeBreaks,
+						switchNode.cases.toArray(new JCCase[0]));
+
+				activeBreaks.clear();
+			} else if (currentNode instanceof JCCase) {
+				for (JCStatement statement : ((JCCase) currentNode).stats) {
+					collectExecutionPaths(statement, allExecutionPaths, currentPathForksList, activeBreaks);
+				}
+			}
+
+			addAllWithoutDuplicates(currentPaths, currentPathForksList);
+		}
+	}
+
+	/**
+	 * @return generated paths
+	 */
+	private static void evaluateForksExecutionPaths( //
+			List<List<JCTree>> allExecutionPaths, //
+			List<List<JCTree>> currentPaths, //
+			List<JCTree> currentPath, //
+			boolean lastIsCurrentPath, //
+			List<JCBreak> activeBreaks, //
+			JCStatement[] forks) {
+		int i = 0;
+		List<List<JCTree>> generatedExecutionPaths = new LinkedList<>();
+		for (JCStatement fork : forks) {
+			if (fork != null) {
+				List<List<JCTree>> currentPathsForFork;
+				if (lastIsCurrentPath && ++i == forks.length) {
+					currentPathsForFork = pathsList(currentPath);
+				} else {
+					List<JCTree> forkedPath = new LinkedList<>(currentPath);
+					allExecutionPaths.add(forkedPath);
+					currentPathsForFork = pathsList(forkedPath);
+				}
+				collectExecutionPaths(fork, allExecutionPaths, currentPathsForFork, activeBreaks);
+
+				generatedExecutionPaths.addAll(currentPathsForFork);
+			}
+		}
+
+		// we need to merge with paths created by fork
+		addAllWithoutDuplicates(currentPaths, generatedExecutionPaths);
+	}
+
+	private static List<List<JCTree>> addAllWithoutDuplicates(List<List<JCTree>> pathsListUnique,
+			List<List<JCTree>> listToBeAdded) {
+		for (List<JCTree> path : listToBeAdded) {
+			boolean pathAlreadyAdded = false;
+			for (List<JCTree> pathFromUnique : pathsListUnique) {
+				if (path == pathFromUnique) {
+					pathAlreadyAdded = true;
+				}
+			}
+			if (!pathAlreadyAdded) {
+				pathsListUnique.add(path);
+			}
+		}
+		return pathsListUnique;
+	}
+
+	@SafeVarargs
+	private static List<List<JCTree>> pathsList(List<JCTree>... executionPaths) {
+		List<List<JCTree>> pathsList = new LinkedList<>();
+		for (List<JCTree> path : executionPaths) {
+			pathsList.add(path);
+		}
+		return pathsList;
+	}
 }

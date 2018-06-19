@@ -137,7 +137,7 @@ public class AbstractTest {
 	}
 
 	@Before
-	public void setUp() {
+	public void setUpAbstractTest() {
 		initOutputDir();
 	}
 

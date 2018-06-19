@@ -686,9 +686,9 @@ public class JSweetTranspiler implements JSweetOptions {
 	public EvaluationResult eval(String engineName, TranspilationHandler transpilationHandler,
 			SourceFile... sourceFiles) throws Exception {
 		logger.info("[" + engineName + " engine] eval files: " + Arrays.asList(sourceFiles));
-		
+
 		EvalOptions options = new EvalOptions(isUsingModules(), workingDir);
-		
+
 		if ("Java".equals(engineName)) {
 
 			JavaEval evaluator = new JavaEval(this, options);
@@ -702,7 +702,7 @@ public class JSweetTranspiler implements JSweetOptions {
 				}
 
 			}
-			
+
 			Collection<File> jsFiles;
 			if (context.useModules) {
 				File f = null;
@@ -719,25 +719,19 @@ public class JSweetTranspiler implements JSweetOptions {
 				}
 				jsFiles = asList(f);
 			} else {
-				jsFiles = Stream.of(sourceFiles).map(sourceFile -> sourceFile.getJsFile()).collect(toList());	
+				jsFiles = Stream.of(sourceFiles).map(sourceFile -> sourceFile.getJsFile()).collect(toList());
 			}
-			
+
 			JavaScriptEval evaluator = new JavaScriptEval(options, JavaScriptRuntime.NodeJs);
 			return evaluator.performEval(jsFiles);
 		}
 	}
 
-	protected List<JCCompilationUnit> setupCompiler(java.util.List<File> files,
+	public List<JCCompilationUnit> setupCompiler(java.util.List<File> files,
 			ErrorCountTranspilationHandler transpilationHandler) throws IOException {
 		initJavac(transpilationHandler);
 		List<JavaFileObject> fileObjects = toJavaFileObjects(fileManager, files);
 
-		try {
-			compiler.compile(fileObjects);
-		} catch (Throwable e) {
-			throw new RuntimeException(e);
-		}
-		
 		logger.info("ENTER phase: " + fileObjects);
 		transpilationHandler.setDisabled(isIgnoreJavaErrors());
 		List<JCCompilationUnit> compilationUnits = compiler.enterTrees(compiler.parseFiles(fileObjects));
@@ -747,20 +741,19 @@ public class JSweetTranspiler implements JSweetOptions {
 		}
 		logger.info("ATTRIBUTE phase");
 		compiler.attribute(compiler.todo);
-		
+
 		transpilationHandler.setDisabled(false);
 		logger.info("FLOW phase");
 		compiler.flow(compiler.todo);
-		
+
 		compiler.processAnnotations(compilationUnits);
-		
+
 		logger.info("DESUGAR phase");
 		compiler.desugar(compiler.todo);
-		
-		
+
 		context.compilationUnits = compilationUnits.toArray(new JCCompilationUnit[compilationUnits.size()]);
-//		logger.info("DESUGAR phase");
-//		compiler.desugar(compiler.todo);
+		// logger.info("DESUGAR phase");
+		// compiler.desugar(compiler.todo);
 
 		if (transpilationHandler.getErrorCount() > 0) {
 			return null;
