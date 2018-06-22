@@ -138,8 +138,8 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 	}
 
 	/**
-	 * Creates a new adapter that will try delegate to the given parent adapter
-	 * when not implementing its own behavior.
+	 * Creates a new adapter that will try delegate to the given parent adapter when
+	 * not implementing its own behavior.
 	 * 
 	 * @param parentAdapter
 	 *            cannot be null: if no parent you must use the
@@ -358,7 +358,8 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 		String targetMethodName = invocationElement.getMethodName();
 		String targetClassName = targetType.toString();
 
-		if ("println".equals(targetMethodName)) {
+		if ("println".equals(targetMethodName) || "printf".equals(targetMethodName)
+				|| "print".equals(targetMethodName)) {
 			if (invocationElement.getTargetExpression() != null) {
 				if ("System.out".equals(invocationElement.getTargetExpression().toString())) {
 					PrinterAdapter print = print("console.info(");
@@ -501,7 +502,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 					print("await ");
 					printCastMethodInvocation(invocationElement);
 					return true;
-					
+
 				case "asyncReturn":
 					printCastMethodInvocation(invocationElement);
 					return true;
@@ -1281,12 +1282,12 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 	}
 
 	protected final void printCastMethodInvocation(InvocationElement invocation) {
-		boolean needsParens =getPrinter().getParent() instanceof JCMethodInvocation;
+		boolean needsParens = getPrinter().getParent() instanceof JCMethodInvocation;
 		if (needsParens) {
 			// async needs no parens to work
-			JCMethodInvocation parentInvocation = (JCMethodInvocation)getPrinter().getParent();
+			JCMethodInvocation parentInvocation = (JCMethodInvocation) getPrinter().getParent();
 			if (parentInvocation.meth instanceof JCIdent) {
-				needsParens = !((JCIdent)parentInvocation.meth).getName().toString().equals("async");
+				needsParens = !((JCIdent) parentInvocation.meth).getName().toString().equals("async");
 			}
 		}
 		if (needsParens) {
