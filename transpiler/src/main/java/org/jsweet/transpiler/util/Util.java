@@ -1425,7 +1425,7 @@ public class Util {
 
 		return executionPaths;
 	}
-
+	
 	private static void collectExecutionPaths(JCStatement currentNode, List<List<JCTree>> allExecutionPaths,
 			List<List<JCTree>> currentPaths, List<JCBreak> activeBreaks) {
 
@@ -1434,6 +1434,10 @@ public class Util {
 			if (lastStatement instanceof JCReturn
 					|| (lastStatement instanceof JCBreak && activeBreaks.contains(lastStatement))) {
 				continue;
+			}
+			
+			if (allExecutionPaths.size() > 20000) {
+				throw new RuntimeException("too many execution paths, aborting");
 			}
 
 			currentPath.add(currentNode);

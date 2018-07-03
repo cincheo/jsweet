@@ -55,13 +55,21 @@ public class ExecutionPathTest extends AbstractTest {
 	@Test
 	public void ifElseReturns() throws Throwable {
 		JCMethodDecl methodDeclaration = Util.findFirstMethodDeclaration(executionPathClassDecl, "ifElseReturns");
-
+		
 		List<List<JCTree>> executionPaths = Util.getExecutionPaths(methodDeclaration);
 		printPaths(methodDeclaration, executionPaths);
-
+		
 		assertPaths(executionPaths, //
 				executionPath(JCIf.class, JCBlock.class, JCReturn.class), //
 				executionPath(JCIf.class, JCBlock.class, JCReturn.class));
+	}
+	
+	@Test(expected = RuntimeException.class)
+	public void testPerfsIfs() throws Throwable {
+		JCMethodDecl methodDeclaration = Util.findFirstMethodDeclaration(executionPathClassDecl, "testPerfsIfs");
+
+		List<List<JCTree>> executionPaths = Util.getExecutionPaths(methodDeclaration);
+		printPaths(methodDeclaration, executionPaths);
 	}
 
 	@Test

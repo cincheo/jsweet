@@ -137,7 +137,7 @@ public class ExecutionPaths {
 
 		return 3;
 	}
-	
+
 	public int forIfBreak(boolean b) {
 		for (int i = 0; i < 10; i++) {
 			if (b) {
@@ -148,6 +148,82 @@ public class ExecutionPaths {
 		System.out.println("after for & if");
 
 		return 3;
+	}
+
+	@SuppressWarnings("all")
+	public void testPerfsIfs() {
+
+		System.out.println("testPerfsIfs");
+		
+		if (true) {
+			if (false) {
+				if (true) {
+					System.out.println("hello");
+				}
+			}
+			if (true) {
+				if (true) {
+					System.out.println("hello");
+				}
+			}
+			if (false) {
+				if (true) {
+					System.out.println("hello");
+				}
+			}
+		}
+		if (true) {
+			if (false) {
+				if (true) {
+					System.out.println("hello");
+				}
+			}
+			if (true) {
+				if (true) {
+					System.out.println("hello");
+				}
+			}
+			if (false) {
+				if (true) {
+					System.out.println("hello");
+				}
+			}
+		}
+
+		if (true) {
+			if (false) {
+				if (true) {
+					System.out.println("hello");
+				}
+			}
+			if (true) {
+				if (true) {
+					System.out.println("hello");
+				}
+			}
+			if (false) {
+				if (true) {
+					System.out.println("hello");
+				}
+			}
+		}
+		if (true) {
+			if (false) {
+				if (true) {
+					System.out.println("hello");
+				}
+			}
+			if (true) {
+				if (true) {
+					System.out.println("hello");
+				}
+			}
+			if (false) {
+				if (true) {
+					System.out.println("hello");
+				}
+			}
+		}
 	}
 
 }
