@@ -18,6 +18,7 @@ package source.typing;
 
 import static jsweet.util.Lang.$export;
 
+import java.util.concurrent.Callable;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
@@ -125,6 +126,17 @@ public class Lambdas<T> {
 		f5.accept("a", "b");
 	}
 
+	Callable<Boolean> getCallable() {
+		return new Callable<Boolean>() {
+			@Override
+			public Boolean call() throws Exception {
+				return true;
+			}
+		};
+	}
+	
+	Callable<Boolean> c1 = () -> false;
+	
 	BiFunction<String, String, Boolean> f1;
 
 	TriFunction<String, String, String, Boolean> f2;

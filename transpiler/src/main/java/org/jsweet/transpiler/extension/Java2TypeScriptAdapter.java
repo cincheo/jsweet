@@ -40,6 +40,7 @@ import java.net.URL;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleBinaryOperator;
 import java.util.function.DoubleConsumer;
@@ -154,6 +155,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 	private void init() {
 		addTypeMapping(Object.class.getName(), "any");
 		addTypeMapping(Runnable.class.getName(), "() => void");
+		addTypeMapping(Callable.class.getName(), "() => any");
 
 		addTypeMapping(DoubleConsumer.class.getName(), "(number) => void");
 		addTypeMapping(DoublePredicate.class.getName(), "(number) => boolean");
@@ -193,9 +195,9 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 		addTypeMapping(Character.class.getName(), "string");
 		addTypeMapping(CharSequence.class.getName(), "any");
 		addTypeMapping(Void.class.getName(), "void");
-		
+
 		addTypeMapping(URL.class.getName(), "URL");
-		
+
 		addTypeMapping("double", "number");
 		addTypeMapping("int", "number");
 		addTypeMapping("float", "number");
@@ -791,6 +793,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 		}
 		if (invocationElement.getTargetExpression() != null && targetClassName != null
 				&& (targetClassName.startsWith(UTIL_PACKAGE + ".function.")
+						|| targetClassName.equals(Callable.class.getName())
 						|| targetClassName.startsWith(Function.class.getPackage().getName()))) {
 			if (!TypeChecker.jdkAllowed && targetClassName.startsWith(Function.class.getPackage().getName())
 					&& TypeChecker.FORBIDDEN_JDK_FUNCTIONAL_METHODS.contains(targetMethodName)) {
