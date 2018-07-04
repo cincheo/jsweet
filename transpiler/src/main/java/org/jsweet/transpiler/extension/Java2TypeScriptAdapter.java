@@ -1202,10 +1202,16 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 			print(".constructor)");
 			return true;
 		case "hashCode":
-			printMacroName(targetMethodName);
-			print("(<any>((o: any) => { if(o.hashCode) { return o.hashCode(); } else { return o.toString(); } })(");
-			printTarget(invocationElement.getTargetExpression());
-			print("))");
+			if (invocationElement.getArgumentCount() > 0) {
+				printTarget(invocationElement.getTargetExpression()).print(".hashCode(");
+				printArgList(invocationElement.getArguments());
+				print(")");
+			} else {
+				printMacroName(targetMethodName);
+				print("(<any>((o: any) => { if(o.hashCode) { return o.hashCode(); } else { return o.toString(); } })(");
+				printTarget(invocationElement.getTargetExpression());
+				print("))");
+			}
 			return true;
 		case "equals":
 			if (invocationElement.getTargetExpression() != null) {
