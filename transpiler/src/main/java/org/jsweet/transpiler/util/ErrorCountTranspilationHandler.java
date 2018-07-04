@@ -19,8 +19,6 @@
 package org.jsweet.transpiler.util;
 
 import org.jsweet.transpiler.JSweetProblem;
-import org.jsweet.transpiler.JSweetTranspiler;
-import org.jsweet.transpiler.SourceFile;
 import org.jsweet.transpiler.SourcePosition;
 import org.jsweet.transpiler.TranspilationHandler;
 
@@ -29,9 +27,8 @@ import org.jsweet.transpiler.TranspilationHandler;
  * 
  * @author Renaud Pawlak
  */
-public class ErrorCountTranspilationHandler implements TranspilationHandler {
+public class ErrorCountTranspilationHandler extends AbstractDelegatedTranspilationHandler {
 
-	private TranspilationHandler delegate;
 	private int errorCount = 0;
 	private int warningCount = 0;
 	private int problemCount = 0;
@@ -41,7 +38,7 @@ public class ErrorCountTranspilationHandler implements TranspilationHandler {
 	 * Decorates the given transpilation handler.
 	 */
 	public ErrorCountTranspilationHandler(TranspilationHandler delegate) {
-		this.delegate = delegate;
+		super(delegate);
 	}
 
 	/**
@@ -62,7 +59,7 @@ public class ErrorCountTranspilationHandler implements TranspilationHandler {
 				problemCount++;
 			}
 		}
-		delegate.report(problem, sourcePosition, message);
+		super.report(problem, sourcePosition, message);
 	}
 
 	/**
@@ -70,11 +67,6 @@ public class ErrorCountTranspilationHandler implements TranspilationHandler {
 	 */
 	public int getErrorCount() {
 		return errorCount;
-	}
-
-	@Override
-	public void onCompleted(JSweetTranspiler transpiler, boolean fullPass, SourceFile[] files) {
-		delegate.onCompleted(transpiler, fullPass, files);
 	}
 
 	/**

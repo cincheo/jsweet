@@ -2904,7 +2904,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		boolean globals = (parent instanceof JCClassDecl)
 				&& JSweetConfig.GLOBALS_CLASS_NAME.equals(((JCClassDecl) parent).name.toString());
 		boolean initializer = (parent instanceof JCClassDecl) && !globals;
-		int static_i = 0;
 		if (initializer) {
 			if (getScope().interfaceScope) {
 				report(block, JSweetProblem.INVALID_INITIALIZER_IN_INTERFACE, ((JCClassDecl) parent).name);
@@ -2912,22 +2911,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			if (!block.isStatic()) {
 				// non-static blocks are initialized in the constructor
 				return;
-			} else if (getScope().enumScope) {
-				// static blocks are initialized in the enum wrapper class
-				return;
 			}
 
-			for (JCTree m : ((JCClassDecl) parent).getMembers()) {
-				if (m instanceof JCBlock) {
-					if (((JCBlock) m).isStatic()) {
-						if (block == m) {
-							print("static __static_initializer_" + static_i + "() ");
-							break;
-						}
-						static_i++;
-					}
-				}
-			}
+			printStaticInitializer(block);
+			return;
 		}
 		if (!globals) {
 			print("{").println().startIndent();
@@ -2937,6 +2924,32 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 		if (!globals) {
 			endIndent().printIndent().print("}");
+		}
+	}
+
+	private void printStaticInitializer(JCBlock block) {
+		if (getScope().isEnumScope()) {
+			// static blocks are initialized in the enum wrapper class
+			return;
+		}
+
+		if (getScope().isDeclareClassScope()) {
+			// static init block are erased in declare class
+			return;
+		}
+		
+		int static_i = 0;
+		for (JCTree m : ((JCClassDecl) getParent()).getMembers()) {
+			if (m instanceof JCBlock) {
+				if (((JCBlock) m).isStatic()) {
+					if (block == m) {
+						print("static __static_initializer_" + static_i + "() ");
+						printBlockStatements(block.stats);
+						break;
+					}
+					static_i++;
+				}
+			}
 		}
 	}
 
@@ -5086,8 +5099,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			for (JCTree resource : tryStatement.resources) {
 				print(resource).println(";").printIndent();
 			}
-		}
-		else if (tryStatement.catchers.isEmpty() && tryStatement.finalizer == null) {
+		} else if (tryStatement.catchers.isEmpty() && tryStatement.finalizer == null) {
 			report(tryStatement, JSweetProblem.TRY_WITHOUT_CATCH_OR_FINALLY);
 		}
 		print("try ").print(tryStatement.body);
@@ -5125,7 +5137,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				endIndent();
 			}
 			if (tryStatement.finalizer != null) {
-				startIndent();//.printIndent();
+				startIndent();// .printIndent();
 				for (JCStatement statement : tryStatement.finalizer.getStatements()) {
 					println().printIndent().print(statement).print(";");
 				}
