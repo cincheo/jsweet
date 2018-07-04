@@ -2919,9 +2919,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (!globals) {
 			print("{").println().startIndent();
 		}
-
 		printBlockStatements(block.stats);
-
 		if (!globals) {
 			endIndent().printIndent().print("}");
 		}
@@ -2944,7 +2942,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (((JCBlock) m).isStatic()) {
 					if (block == m) {
 						print("static __static_initializer_" + static_i + "() ");
+						print("{");
+						println().startIndent();
+						
 						printBlockStatements(block.stats);
+						
+						endIndent().printIndent();
+						print("}");
 						break;
 					}
 					static_i++;
