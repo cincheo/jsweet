@@ -73,7 +73,6 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 
-import com.sun.tools.javac.code.Type;
 import org.apache.commons.lang3.StringUtils;
 import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.JSweetContext;
@@ -104,6 +103,8 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
+import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.Type.ClassType;
 import com.sun.tools.javac.code.Type.MethodType;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCEnhancedForLoop;
@@ -363,11 +364,11 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 		// least do it conditionally).
 		if (hasAnnotationType(invocationElement.getMethod(), ANNOTATION_ERASED)
 				&& !isAmbientDeclaration(invocationElement.getMethod())) {
-			// there is the hacked functions:
+			// there is the hacked Future.get() functions:
 			if (targetMethodName.equals("get") &&
 					!invocationElement.getMethod().getModifiers().contains(Modifier.STATIC) &&
-					targetType.asType() instanceof Type.ClassType) {
-				for (Type type : ((Type.ClassType) targetType.asType()).all_interfaces_field) {
+					targetType.asType() instanceof ClassType) {
+				for (Type type : ((ClassType) targetType.asType()).all_interfaces_field) {
 					if (type.tsym.toString().equals(Future.class.getName())) {
 						if (invocationElement.getArgumentCount() == 0) {
 							print("(await ").print(invocationElement.getTargetExpression()).print(".getPromise())");
