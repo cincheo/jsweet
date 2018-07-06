@@ -378,8 +378,8 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 									.printArgList(invocationElement.getArguments()).print(")]" +
 									"))");
 						}
+						return true;
 					}
-					return true;
 				}
 			}
 
