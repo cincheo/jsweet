@@ -41,6 +41,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleBinaryOperator;
 import java.util.function.DoubleConsumer;
@@ -72,6 +73,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 
+import com.sun.tools.javac.code.Type;
 import org.apache.commons.lang3.StringUtils;
 import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.JSweetContext;
@@ -214,6 +216,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 		addTypeMapping(LANG_PACKAGE_ALT + ".Boolean", "boolean");
 		addTypeMapping(LANG_PACKAGE_ALT + ".String", "string");
 		addTypeMapping(LANG_PACKAGE_ALT + ".Number", "number");
+		addTypeMapping("def.es6_promise.Promise", "Promise");
 
 		context.getLangTypeMappings().put(Object.class.getName(), "Object");
 		context.getLangTypeMappings().put(String.class.getName(), "String");
@@ -343,8 +346,13 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 
 	@Override
 	public boolean substituteMethodInvocation(MethodInvocationElement invocationElement) {
-
 		Element targetType = invocationElement.getMethod().getEnclosingElement();
+		if (invocationElement.getTargetExpression() != null) {
+			targetType = invocationElement.getTargetExpression().getTypeAsElement();
+		}
+		String targetMethodName = invocationElement.getMethodName();
+		String targetClassName = targetType.toString();
+
 		// This is some sort of hack to avoid invoking erased methods.
 		// If the containing class is erased, we still invoke it because we
 		// don't know if the class may be provided externally.
@@ -355,14 +363,28 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 		// least do it conditionally).
 		if (hasAnnotationType(invocationElement.getMethod(), ANNOTATION_ERASED)
 				&& !isAmbientDeclaration(invocationElement.getMethod())) {
+			// there is the hacked functions:
+			if (targetMethodName.equals("get") &&
+					!invocationElement.getMethod().getModifiers().contains(Modifier.STATIC) &&
+					targetType.asType() instanceof Type.ClassType) {
+				for (Type type : ((Type.ClassType) targetType.asType()).all_interfaces_field) {
+					if (type.tsym.toString().equals(Future.class.getName())) {
+						if (invocationElement.getArgumentCount() == 0) {
+							print("(await ").print(invocationElement.getTargetExpression()).print(".getPromise())");
+						} else {
+							print("(await Promise.race([").print(invocationElement.getTargetExpression())
+									.print(".getPromise(), java.util.concurrent.Future.delay(")
+									.printArgList(invocationElement.getArguments()).print(")]" +
+									"))");
+						}
+					}
+					return true;
+				}
+			}
+
 			print("null");
 			return true;
 		}
-		if (invocationElement.getTargetExpression() != null) {
-			targetType = invocationElement.getTargetExpression().getTypeAsElement();
-		}
-		String targetMethodName = invocationElement.getMethodName();
-		String targetClassName = targetType.toString();
 
 		if ("println".equals(targetMethodName) || "printf".equals(targetMethodName)
 				|| "print".equals(targetMethodName)) {
