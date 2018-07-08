@@ -1,12 +1,12 @@
-/* 
+/*
  * JSweet transpiler - http://www.jsweet.org
  * Copyright (C) 2015 CINCHEO SAS <renaud.pawlak@cincheo.fr>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
- *  
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
@@ -70,6 +70,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
 import org.apache.commons.lang3.StringUtils;
@@ -117,7 +118,7 @@ import com.sun.tools.javac.tree.JCTree.Tag;
 /**
  * This is an adapter for the TypeScript code generator. It overrides the
  * default adapter's behavior.
- * 
+ *
  * @author Renaud Pawlak
  */
 public class Java2TypeScriptAdapter extends PrinterAdapter {
@@ -130,7 +131,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 
 	/**
 	 * Creates a root adapter (with no parent).
-	 * 
+	 *
 	 * @param context
 	 *            the transpilation context
 	 */
@@ -142,7 +143,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 	/**
 	 * Creates a new adapter that will try delegate to the given parent adapter when
 	 * not implementing its own behavior.
-	 * 
+	 *
 	 * @param parentAdapter
 	 *            cannot be null: if no parent you must use the
 	 *            {@link #AbstractPrinterAdapter(JSweetContext)} constructor
@@ -1215,7 +1216,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 			}
 			return true;
 		case "equals":
-			if (invocationElement.getTargetExpression() != null) {
+			if (invocationElement.getTargetExpression() != null && invocationElement.getArgumentCount() == 1) {
 				MethodSymbol methSym = Util.findMethodDeclarationInType(context.types,
 						(TypeSymbol) invocationElement.getTargetExpression().getTypeAsElement(), targetMethodName,
 						(MethodType) invocationElement.getMethod().asType());
@@ -1223,7 +1224,8 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 						&& (Object.class.getName().equals(methSym.getEnclosingElement().toString())
 								|| methSym.getEnclosingElement().isInterface())
 						|| invocationElement.getTargetExpression().getTypeAsElement()
-								.getKind() == ElementKind.INTERFACE) {
+								.getKind() == ElementKind.INTERFACE
+						|| invocationElement.getTargetExpression().getType().getKind() == TypeKind.TYPEVAR) {
 					printMacroName(targetMethodName);
 					print("(<any>((o1: any, o2: any) => { if(o1 && o1.equals) { return o1.equals(o2); } else { return o1 === o2; } })(");
 					printTarget(invocationElement.getTargetExpression()).print(",")
