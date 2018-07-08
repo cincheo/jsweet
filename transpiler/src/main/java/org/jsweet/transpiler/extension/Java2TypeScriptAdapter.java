@@ -1208,7 +1208,8 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 				print(")");
 			} else {
 				printMacroName(targetMethodName);
-				print("(<any>((o: any) => { if(o.hashCode) { return o.hashCode(); } else { return o.toString(); } })(");
+				print("(<any>((o: any) => { if(o.hashCode) { return o.hashCode(); } else { " +
+						"return o.toString().split('').reduce((prevHash, currVal) => (((prevHash << 5) - prevHash) + currVal.charCodeAt(0))|0, 0); }})(");
 				printTarget(invocationElement.getTargetExpression());
 				print("))");
 			}
