@@ -1190,6 +1190,16 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 								.print(invocationElement.getArgument(0));
 						print("))");
 						return true;
+					case "compareTo":
+						if (invocationElement.getArgumentCount() == 1 &&
+								invocationElement.getTargetExpression() != null) {
+							printMacroName(targetMethodName);
+							print("(<any>((o1: any, o2: any) => { if(o1 && o1.compareTo) { return o1.compareTo(o2); } else { return o1 < o2 ? -1 : o2 < o1 ? 1 : 0; } })(");
+							printTarget(invocationElement.getTargetExpression()).print(",")
+									.print(invocationElement.getArgument(0));
+							print("))");
+						}
+						return true;
 					}
 				}
 			}
