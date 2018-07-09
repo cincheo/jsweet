@@ -52,8 +52,6 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
-import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.tree.JCTree;
 import org.apache.commons.lang3.StringUtils;
 import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.JSweetContext;
@@ -71,12 +69,7 @@ import org.jsweet.transpiler.model.LiteralElement;
 import org.jsweet.transpiler.model.MethodInvocationElement;
 import org.jsweet.transpiler.model.NewClassElement;
 import org.jsweet.transpiler.model.VariableAccessElement;
-import org.jsweet.transpiler.model.support.ForeachLoopElementSupport;
-import org.jsweet.transpiler.model.support.IdentifierElementSupport;
-import org.jsweet.transpiler.model.support.ImportElementSupport;
-import org.jsweet.transpiler.model.support.MethodInvocationElementSupport;
-import org.jsweet.transpiler.model.support.NewClassElementSupport;
-import org.jsweet.transpiler.model.support.VariableAccessElementSupport;
+import org.jsweet.transpiler.model.support.*;
 import org.jsweet.transpiler.util.Util;
 
 import com.sun.codemodel.internal.JJavaName;
@@ -84,7 +77,9 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
+import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.MethodType;
+import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCEnhancedForLoop;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
@@ -352,8 +347,30 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 
 
 		if (hasAnnotationType(method, ANNOTATION_INLINE)) {
-			JCTree.JCMethodDecl inlinedMethod = context.getInlinedMethod(method);
 
+			if (invocationElement instanceof ExtendedElementSupport) {
+				JCTree tree = ((ExtendedElementSupport) invocationElement).getTree();
+				// check recurse
+				Stack<JCTree> stack = getPrinter().getStack();
+				for (int i = 0; i < stack.size() - 1; i++) {
+					if (stack.get(i).equals(tree)) {
+						print("($$INLINED$$").print(targetType.getSimpleName()).print("$").print(method.getSimpleName());
+						print(".call(");
+						if (invocationElement.getTargetExpression() != null) {
+							print(invocationElement.getTargetExpression());
+						} else {
+							print("this");
+						}
+						if (invocationElement.getArgumentCount() > 0) {
+							print(", ");
+						}
+						printArgList(invocationElement.getArguments()).print("))");
+						return true;
+					}
+				}
+			}
+
+			JCTree.JCMethodDecl inlinedMethod = context.getInlinedMethod(method);
 			if (inlinedMethod != null) {
 				print("(");
 				if (hasAnnotationType(invocationElement.getMethod(), ANNOTATION_ASYNC) &&
@@ -363,7 +380,9 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 				}
 				print("(");
 				getPrinter().printAsyncKeyword(inlinedMethod);
-				print("function (");
+				print("function ");
+				print("$$INLINED$$").print(targetType.getSimpleName()).print("$").print(method.getSimpleName());
+				print("(");
 				for (JCTree.JCVariableDecl param : inlinedMethod.params) {
 					print(context.getActualName(param.sym) + ", ");
 				}
@@ -372,7 +391,12 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 				}
 				print(") ");
 				getPrinter().print(inlinedMethod.body);
-				print(").call(").print(invocationElement.getTargetExpression());
+				print(").call(");
+				if (invocationElement.getTargetExpression() != null) {
+					print(invocationElement.getTargetExpression());
+				} else {
+					print("this");
+				}
 				if (invocationElement.getArgumentCount() > 0) {
 					print(", ");
 				}
