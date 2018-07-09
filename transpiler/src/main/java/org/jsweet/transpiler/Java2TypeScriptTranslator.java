@@ -2226,9 +2226,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			printDocComment(methodDecl);
 		}
 
-		printAsyncKeyword(methodDecl);
-
 		if (parent == null) {
+			printAsyncKeyword(methodDecl);
+
 			print("function ");
 		} else if (globals) {
 			if (getScope().constructor && methodDecl.sym.isPrivate() && methodDecl.getParameters().isEmpty()) {
@@ -2268,9 +2268,15 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			if (ambient || (getIndent() == 0 && isDefinitionScope)) {
 				print("declare ");
 			}
+
+			printAsyncKeyword(methodDecl);
+
 			print("function ");
 		} else {
 			printMethodModifiers(methodDecl, parent, getScope().constructor, inOverload, overload);
+
+			printAsyncKeyword(methodDecl);
+
 			if (ambient) {
 				report(methodDecl, methodDecl.name, JSweetProblem.WRONG_USE_OF_AMBIENT, methodDecl.name);
 			}
