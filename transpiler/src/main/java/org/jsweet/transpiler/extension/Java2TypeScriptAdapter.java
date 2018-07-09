@@ -390,8 +390,9 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 				print("$$INLINED$$").print(targetType.getSimpleName()).print("$").print(method.getSimpleName());
 				print("(");
 				for (JCTree.JCVariableDecl param : inlinedMethod.params) {
-					print(context.getActualName(param.sym) + ", ");
+					getPrinter().print(param.name.toString()).print(" : ").print(param.vartype).print(", ");
 				}
+
 				if (!inlinedMethod.params.isEmpty()) {
 					removeLastChars(2);
 				}
