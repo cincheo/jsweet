@@ -2482,7 +2482,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 * shouldn't be async
 	 */
 	protected void printAsyncKeyword(JCMethodDecl methodDecl) {
-		if (getScope().declareClassScope) {
+		if (getScope().declareClassScope || getScope().interfaceScope) {
 			return;
 		}
 
