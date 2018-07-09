@@ -1014,8 +1014,8 @@ public class JSweetContext extends Context {
 	/**
 	 * Stores an inlined method with the symbol.
 	 */
-	public void addInlinedMethod(JCMethodDecl defaultMethod) {
-		inlinedMethod.put(defaultMethod.sym, defaultMethod);
+	public void addInlinedMethod(JCMethodDecl inlineMethod) {
+		inlinedMethod.put(inlineMethod.sym, inlineMethod);
 	}
 
 	/**

@@ -347,14 +347,20 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 
 
 		if (hasAnnotationType(method, ANNOTATION_INLINE)) {
-
 			if (invocationElement instanceof ExtendedElementSupport) {
-				JCTree tree = ((ExtendedElementSupport) invocationElement).getTree();
 				// check recurse
 				Stack<JCTree> stack = getPrinter().getStack();
 				for (int i = 0; i < stack.size() - 1; i++) {
-					if (stack.get(i).equals(tree)) {
-						print("($$INLINED$$").print(targetType.getSimpleName()).print("$").print(method.getSimpleName());
+					JCTree jcTree = stack.get(i);
+					MethodInvocationElement prev;
+					if (jcTree instanceof JCMethodInvocation &&
+							(prev = new MethodInvocationElementSupport((JCMethodInvocation)jcTree)).getMethod().equals(method)) {
+						Element prevTargetType = prev.getMethod().getEnclosingElement();
+						if (invocationElement.getTargetExpression() != null) {
+							prevTargetType = invocationElement.getTargetExpression().getTypeAsElement();
+						}
+
+						print("($$INLINED$$").print(prevTargetType.getSimpleName()).print("$").print(method.getSimpleName());
 						print(".call(");
 						if (invocationElement.getTargetExpression() != null) {
 							print(invocationElement.getTargetExpression());
