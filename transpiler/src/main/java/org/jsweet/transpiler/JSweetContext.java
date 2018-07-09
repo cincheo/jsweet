@@ -1000,8 +1000,23 @@ public class JSweetContext extends Context {
 		return b.toString();
 	}
 
+	private Map<ExecutableElement, JCMethodDecl> inlinedMethod = new HashMap<>();
 	private Map<TypeSymbol, Set<Entry<JCClassDecl, JCMethodDecl>>> defaultMethods = new HashMap<>();
 	private Map<JCMethodDecl, JCCompilationUnit> defaultMethodsCompilationUnits = new HashMap<>();
+
+	/**
+	 * Gets the inlined methods declared in the given type.
+	 */
+	public JCMethodDecl getInlinedMethod(ExecutableElement type) {
+		return inlinedMethod.get(type);
+	}
+
+	/**
+	 * Stores an inlined method with the symbol.
+	 */
+	public void addInlinedMethod(JCMethodDecl defaultMethod) {
+		inlinedMethod.put(defaultMethod.sym, defaultMethod);
+	}
 
 	/**
 	 * Gets the default methods declared in the given type.
@@ -1014,11 +1029,7 @@ public class JSweetContext extends Context {
 	 * Stores a default method AST for the given type.
 	 */
 	public void addDefaultMethod(JCCompilationUnit compilationUnit, JCClassDecl type, JCMethodDecl defaultMethod) {
-		Set<Entry<JCClassDecl, JCMethodDecl>> methods = defaultMethods.get(type.sym);
-		if (methods == null) {
-			methods = new HashSet<>();
-			defaultMethods.put(type.sym, methods);
-		}
+		Set<Entry<JCClassDecl, JCMethodDecl>> methods = defaultMethods.computeIfAbsent(type.sym, k -> new HashSet<>());
 		methods.add(new AbstractMap.SimpleEntry<>(type, defaultMethod));
 		defaultMethodsCompilationUnits.put(defaultMethod, compilationUnit);
 	}

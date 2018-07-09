@@ -2053,9 +2053,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 */
 	@Override
 	public void visitMethodDef(JCMethodDecl methodDecl) {
-
-		if (context.hasAnnotationType(methodDecl.sym, JSweetConfig.ANNOTATION_ERASED)) {
-			// erased elements are ignored
+		if (context.hasAnnotationType(methodDecl.sym, JSweetConfig.ANNOTATION_ERASED) ||
+				(context.hasAnnotationType(methodDecl.sym, JSweetConfig.ANNOTATION_INLINED) && methodDecl.params.size() == 0)) {
+			// erased and inlined elements are ignored
 			return;
 		}
 

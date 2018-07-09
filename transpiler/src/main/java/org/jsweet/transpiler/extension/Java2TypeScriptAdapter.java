@@ -18,24 +18,6 @@
  */
 package org.jsweet.transpiler.extension;
 
-import static org.jsweet.JSweetConfig.ANNOTATION_ERASED;
-import static org.jsweet.JSweetConfig.ANNOTATION_OBJECT_TYPE;
-import static org.jsweet.JSweetConfig.ANNOTATION_STRING_TYPE;
-import static org.jsweet.JSweetConfig.DEPRECATED_UTIL_CLASSNAME;
-import static org.jsweet.JSweetConfig.GLOBALS_CLASS_NAME;
-import static org.jsweet.JSweetConfig.GLOBALS_PACKAGE_NAME;
-import static org.jsweet.JSweetConfig.INDEXED_DELETE_FUCTION_NAME;
-import static org.jsweet.JSweetConfig.INDEXED_DELETE_STATIC_FUCTION_NAME;
-import static org.jsweet.JSweetConfig.INDEXED_GET_FUCTION_NAME;
-import static org.jsweet.JSweetConfig.INDEXED_GET_STATIC_FUCTION_NAME;
-import static org.jsweet.JSweetConfig.INDEXED_SET_FUCTION_NAME;
-import static org.jsweet.JSweetConfig.INDEXED_SET_STATIC_FUCTION_NAME;
-import static org.jsweet.JSweetConfig.LANG_PACKAGE;
-import static org.jsweet.JSweetConfig.LANG_PACKAGE_ALT;
-import static org.jsweet.JSweetConfig.UTIL_CLASSNAME;
-import static org.jsweet.JSweetConfig.UTIL_PACKAGE;
-import static org.jsweet.JSweetConfig.isJSweetPath;
-
 import java.net.URL;
 import java.util.Date;
 import java.util.List;
@@ -73,6 +55,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
+import com.sun.tools.javac.tree.JCTree;
 import org.apache.commons.lang3.StringUtils;
 import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.JSweetContext;
@@ -114,6 +97,8 @@ import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.JCTree.JCTypeApply;
 import com.sun.tools.javac.tree.JCTree.Tag;
+
+import static org.jsweet.JSweetConfig.*;
 
 /**
  * This is an adapter for the TypeScript code generator. It overrides the
@@ -346,6 +331,11 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 	public boolean substituteMethodInvocation(MethodInvocationElement invocationElement) {
 
 		Element targetType = invocationElement.getMethod().getEnclosingElement();
+
+		if (invocationElement.getTargetExpression() != null) {
+			targetType = invocationElement.getTargetExpression().getTypeAsElement();
+		}
+
 		// This is some sort of hack to avoid invoking erased methods.
 		// If the containing class is erased, we still invoke it because we
 		// don't know if the class may be provided externally.
@@ -357,11 +347,20 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 		if (hasAnnotationType(invocationElement.getMethod(), ANNOTATION_ERASED)
 				&& !isAmbientDeclaration(invocationElement.getMethod())) {
 			print("null");
+
 			return true;
 		}
-		if (invocationElement.getTargetExpression() != null) {
-			targetType = invocationElement.getTargetExpression().getTypeAsElement();
+
+		if (hasAnnotationType(invocationElement.getMethod(), ANNOTATION_INLINED) && invocationElement.getArgumentCount() == 0) {
+			JCTree.JCMethodDecl inlinedMethod = context.getInlinedMethod(invocationElement.getMethod());
+
+			if (inlinedMethod != null) {
+				getPrinter().print(inlinedMethod.body);
+			}
+
+			return true;
 		}
+
 		String targetMethodName = invocationElement.getMethodName();
 		String targetClassName = targetType.toString();
 

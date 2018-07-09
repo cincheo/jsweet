@@ -163,6 +163,12 @@ public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {
 		if (methodDecl.mods.getFlags().contains(Modifier.DEFAULT)) {
 			getContext().addDefaultMethod(compilationUnit, getParent(JCClassDecl.class), methodDecl);
 		}
+
+		if (getContext().hasAnnotationType(methodDecl.sym, JSweetConfig.ANNOTATION_INLINED) &&
+				methodDecl.params.size() == 0) {
+			getContext().addInlinedMethod(methodDecl);
+		}
+
 		if (!getContext().ignoreWildcardBounds) {
 			scan(methodDecl.params);
 		}
