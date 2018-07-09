@@ -3995,7 +3995,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (getScope().defaultMethodScope) {
 					if (Util.isImported(getContext().getDefaultMethodCompilationUnit(getParent(JCMethodDecl.class)),
 							clazz)) {
-						print(getRootRelativeName(clazz.getEnclosingElement()) + ".");
+						String rootRelativeName = getRootRelativeName(clazz.getEnclosingElement());
+						if (!rootRelativeName.isEmpty()) {
+							print(rootRelativeName + ".");
+						}
 						prefixAdded = true;
 					}
 				}
