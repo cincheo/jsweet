@@ -19,6 +19,8 @@ package source.structural;
 class Foo1 {
 }
 
-public class ExtendsClassInSameFile extends Foo1 {
+interface Bar1 {
+}
 
+public class ExtendsClassInSameFile extends Foo1 implements Bar1 {
 }

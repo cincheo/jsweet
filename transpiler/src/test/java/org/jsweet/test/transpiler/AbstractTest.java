@@ -16,14 +16,19 @@
  */
 package org.jsweet.test.transpiler;
 
+import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.fail;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+
+import javax.lang.model.element.Modifier;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -33,6 +38,8 @@ import org.jsweet.transpiler.JSweetFactory;
 import org.jsweet.transpiler.JSweetTranspiler;
 import org.jsweet.transpiler.ModuleKind;
 import org.jsweet.transpiler.SourceFile;
+import org.jsweet.transpiler.util.ConsoleTranspilationHandler;
+import org.jsweet.transpiler.util.ErrorCountTranspilationHandler;
 import org.jsweet.transpiler.util.EvaluationResult;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -41,6 +48,10 @@ import org.junit.rules.TestName;
 import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
+
+import com.sun.tools.javac.model.JavacTypes;
+import com.sun.tools.javac.tree.JCTree.JCClassDecl;
+import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 
 public class AbstractTest {
 
@@ -101,6 +112,7 @@ public class AbstractTest {
 	}
 
 	protected static JSweetTranspiler transpiler;
+
 	protected static final String TMPOUT_DIR = "tempOut";
 
 	protected static void createTranspiler(JSweetFactory factory) {
@@ -116,6 +128,10 @@ public class AbstractTest {
 		transpiler.setIgnoreAssertions(false);
 		transpiler.setGenerateSourceMaps(false);
 		transpiler.setUseTsserver(true);
+	}
+	
+	protected JavacTypes types() {
+		return com.sun.tools.javac.model.JavacTypes.instance(transpiler.getContext());
 	}
 
 	@BeforeClass
@@ -143,6 +159,20 @@ public class AbstractTest {
 
 	public AbstractTest() {
 		super();
+	}
+
+	protected JCClassDecl getSourcePublicClassDeclaration(SourceFile sourceFile) throws IOException {
+		return getSourceClassesDeclarations(sourceFile).stream() //
+				.filter(classDecl -> classDecl.mods.getFlags().contains(Modifier.PUBLIC))
+				.findFirst().get();
+	}
+	
+	protected List<JCClassDecl> getSourceClassesDeclarations(SourceFile sourceFile) throws IOException {
+		List<JCCompilationUnit> compilUnits = transpiler.setupCompiler(asList(sourceFile.getJavaFile()),
+				new ErrorCountTranspilationHandler(new ConsoleTranspilationHandler()));
+		return compilUnits.get(0).defs.stream().filter(declaration -> declaration instanceof JCClassDecl) //
+				.map(declaration -> (JCClassDecl) declaration) //
+				.collect(toList());
 	}
 
 	protected SourceFile getSourceFile(Class<?> mainClass) {

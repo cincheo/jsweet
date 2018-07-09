@@ -61,6 +61,7 @@ import com.sun.tools.javac.code.Symbol.PackageSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.Type.ClassType;
 import com.sun.tools.javac.code.Type.MethodType;
 import com.sun.tools.javac.code.Type.TypeVar;
 import com.sun.tools.javac.code.Types;
@@ -1425,7 +1426,7 @@ public class Util {
 
 		return executionPaths;
 	}
-	
+
 	private static void collectExecutionPaths(JCStatement currentNode, List<List<JCTree>> allExecutionPaths,
 			List<List<JCTree>> currentPaths, List<JCBreak> activeBreaks) {
 
@@ -1435,7 +1436,7 @@ public class Util {
 					|| (lastStatement instanceof JCBreak && activeBreaks.contains(lastStatement))) {
 				continue;
 			}
-			
+
 			if (allExecutionPaths.size() > 20000) {
 				throw new RuntimeException("too many execution paths, aborting");
 			}
@@ -1564,5 +1565,33 @@ public class Util {
 			pathsList.add(path);
 		}
 		return pathsList;
+	}
+	
+	public static boolean isDeclarationOrSubClassDeclaration(javax.lang.model.util.Types types, ClassType classType,
+			String searchedClassName) {
+		
+		while (classType != null) {
+			if (classType.tsym.getQualifiedName().toString().equals(searchedClassName)) {
+				return true;
+			}
+			List<? extends TypeMirror> superTypes = types.directSupertypes(classType);
+			classType = superTypes == null || superTypes.isEmpty() ? null : (ClassType) superTypes.get(0);
+		}
+		
+		return false;
+	}
+
+	public static boolean isDeclarationOrSubClassDeclarationBySimpleName(javax.lang.model.util.Types types, ClassType classType,
+			String searchedClassSimpleName) {
+
+		while (classType != null) {
+			if (classType.tsym.getSimpleName().toString().equals(searchedClassSimpleName)) {
+				return true;
+			}
+			List<? extends TypeMirror> superTypes = types.directSupertypes(classType);
+			classType = superTypes == null || superTypes.isEmpty() ? null : (ClassType) superTypes.get(0);
+		}
+
+		return false;
 	}
 }
