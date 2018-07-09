@@ -2224,11 +2224,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			printDocComment(methodDecl);
 		}
 
-		if (context.hasAnnotationType(methodDecl.sym, JSweetConfig.ANNOTATION_ASYNC)) {
-			print(" async ");
-		}
-
 		if (parent == null) {
+			if (context.hasAnnotationType(methodDecl.sym, JSweetConfig.ANNOTATION_ASYNC)) {
+				print(" async ");
+			}
+
 			print("function ");
 		} else if (globals) {
 			if (getScope().constructor && methodDecl.sym.isPrivate() && methodDecl.getParameters().isEmpty()) {
@@ -2268,9 +2268,19 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			if (ambient || (getIndent() == 0 && isDefinitionScope)) {
 				print("declare ");
 			}
+
+			if (context.hasAnnotationType(methodDecl.sym, JSweetConfig.ANNOTATION_ASYNC)) {
+				print(" async ");
+			}
+
 			print("function ");
 		} else {
 			printMethodModifiers(methodDecl, parent, getScope().constructor, inOverload, overload);
+
+			if (context.hasAnnotationType(methodDecl.sym, JSweetConfig.ANNOTATION_ASYNC)) {
+				print(" async ");
+			}
+
 			if (ambient) {
 				report(methodDecl, methodDecl.name, JSweetProblem.WRONG_USE_OF_AMBIENT, methodDecl.name);
 			}
