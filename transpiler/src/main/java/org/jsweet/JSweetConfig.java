@@ -254,9 +254,9 @@ public abstract class JSweetConfig {
 	 */
 	public static final String ANNOTATION_ERASED = JSweetConfig.LANG_PACKAGE + ".Erased";
 	/**
-	 * Fully-qualified name for the JSweet <code>@Inlined</code> annotation (see JSweet core API).
+	 * Fully-qualified name for the JSweet <code>@Inline</code> annotation (see JSweet core API).
 	 */
-	public static final String ANNOTATION_INLINED = JSweetConfig.LANG_PACKAGE + ".Inlined";
+	public static final String ANNOTATION_INLINE = JSweetConfig.LANG_PACKAGE + ".Inline";
 	/**
 	 * Fully-qualified name for the JSweet <code>@Async</code> annotation (see JSweet core API).
 	 */

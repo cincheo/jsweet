@@ -22,6 +22,7 @@ import java.net.URL;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.Stack;
 import java.util.concurrent.Callable;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleBinaryOperator;
@@ -47,14 +48,11 @@ import java.util.function.LongToDoubleFunction;
 import java.util.function.LongToIntFunction;
 import java.util.function.LongUnaryOperator;
 
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
+import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree;
 import org.apache.commons.lang3.StringUtils;
 import org.jsweet.JSweetConfig;
@@ -330,7 +328,8 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 	@Override
 	public boolean substituteMethodInvocation(MethodInvocationElement invocationElement) {
 
-		Element targetType = invocationElement.getMethod().getEnclosingElement();
+		ExecutableElement method = invocationElement.getMethod();
+		Element targetType = method.getEnclosingElement();
 
 		if (invocationElement.getTargetExpression() != null) {
 			targetType = invocationElement.getTargetExpression().getTypeAsElement();
@@ -344,18 +343,42 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 		// access, TS compilation will fail.
 		// So, we should probably find a better way to erase invocations (or at
 		// least do it conditionally).
-		if (hasAnnotationType(invocationElement.getMethod(), ANNOTATION_ERASED)
-				&& !isAmbientDeclaration(invocationElement.getMethod())) {
+		if (hasAnnotationType(method, ANNOTATION_ERASED)
+				&& !isAmbientDeclaration(method)) {
 			print("null");
 
 			return true;
 		}
 
-		if (hasAnnotationType(invocationElement.getMethod(), ANNOTATION_INLINED) && invocationElement.getArgumentCount() == 0) {
-			JCTree.JCMethodDecl inlinedMethod = context.getInlinedMethod(invocationElement.getMethod());
+
+		if (hasAnnotationType(method, ANNOTATION_INLINE)) {
+			JCTree.JCMethodDecl inlinedMethod = context.getInlinedMethod(method);
 
 			if (inlinedMethod != null) {
+				print("(");
+				if (hasAnnotationType(invocationElement.getMethod(), ANNOTATION_ASYNC) &&
+						method.getReturnType() instanceof Type &&
+						!((Type) method.getReturnType()).tsym.name.toString().equals("Promise")) {
+					print("await ");
+				}
+				print("(");
+				getPrinter().printAsyncKeyword(inlinedMethod);
+				print("function (");
+				for (JCTree.JCVariableDecl param : inlinedMethod.params) {
+					print(context.getActualName(param.sym) + ", ");
+				}
+				if (!inlinedMethod.params.isEmpty()) {
+					removeLastChars(2);
+				}
+				print(") ");
 				getPrinter().print(inlinedMethod.body);
+				print(").call(").print(invocationElement.getTargetExpression());
+				if (invocationElement.getArgumentCount() > 0) {
+					print(", ");
+				}
+				printArgList(invocationElement.getArguments()).print("))");
+			} else {
+				print("null");
 			}
 
 			return true;
@@ -447,7 +470,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 			}
 			// enum objets wrapping
 			if (invocationElement.getTargetExpression() != null) {
-				if (invocationElement.getMethod().getModifiers().contains(Modifier.STATIC)) {
+				if (method.getModifiers().contains(Modifier.STATIC)) {
 					print(invocationElement.getTargetExpression())
 							.print(Java2TypeScriptTranslator.ENUM_WRAPPER_CLASS_SUFFIX + ".")
 							.print(invocationElement.getMethodName()).print("(")
@@ -630,6 +653,27 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 					print("new (<any>").print(invocationElement.getArgument(0)).print(")(")
 							.printArgList(invocationElement.getArgumentTail()).print(")");
 					return true;
+				}
+			}
+		}
+
+		if (invocationElement.getTargetExpression() == null) {
+			Stack<JCTree> stack = getPrinter().getStack();
+			boolean needThisPrefix = false;
+			for (int stackIndex = stack.lastIndexOf(getPrinter().getFirstParent(JCTree.JCMethodDecl.class, JCTree.JCVariableDecl.class, JCTree.JCClassDecl.class)) + 1;
+				 stackIndex < stack.size(); ++stackIndex) {
+				JCTree jcElement = stack.get(stackIndex);
+				if (jcElement instanceof JCMethodInvocation &&
+						hasAnnotationType(new MethodInvocationElementSupport((JCMethodInvocation) jcElement).getMethod(), ANNOTATION_INLINE)) {
+					needThisPrefix = true;
+					break;
+				}
+			}
+			if (needThisPrefix) {
+				if (method.getModifiers().contains(Modifier.STATIC)) {
+					print(targetClassName).print(".");
+				} else {
+					print("this.");
 				}
 			}
 		}
@@ -1176,7 +1220,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 
 			if (invocationElement.getTargetExpression() != null && isMappedType(targetClassName)
 					&& targetClassName.startsWith("java.lang.")) {
-				if (invocationElement.getMethod().getModifiers().contains(Modifier.STATIC)) {
+				if (method.getModifiers().contains(Modifier.STATIC)) {
 					// delegation to javaemul
 					delegateToEmulLayer(targetClassName, targetMethodName, invocationElement);
 					return true;
@@ -1228,7 +1272,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 			if (invocationElement.getTargetExpression() != null && invocationElement.getArgumentCount() == 1) {
 				MethodSymbol methSym = Util.findMethodDeclarationInType(context.types,
 						(TypeSymbol) invocationElement.getTargetExpression().getTypeAsElement(), targetMethodName,
-						(MethodType) invocationElement.getMethod().asType());
+						(MethodType) method.asType());
 				if (methSym != null
 						&& (Object.class.getName().equals(methSym.getEnclosingElement().toString())
 								|| methSym.getEnclosingElement().isInterface())
@@ -1245,7 +1289,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 			}
 			break;
 		case "clone":
-			if (!invocationElement.getMethod().getModifiers().contains(Modifier.STATIC)
+			if (!method.getModifiers().contains(Modifier.STATIC)
 					&& invocationElement.getArgumentCount() == 0) {
 				printMacroName(targetMethodName);
 				if (invocationElement.getTargetExpression() != null

@@ -2054,7 +2054,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	@Override
 	public void visitMethodDef(JCMethodDecl methodDecl) {
 		if (context.hasAnnotationType(methodDecl.sym, JSweetConfig.ANNOTATION_ERASED) ||
-				(context.hasAnnotationType(methodDecl.sym, JSweetConfig.ANNOTATION_INLINED) && methodDecl.params.size() == 0)) {
+				context.hasAnnotationType(methodDecl.sym, JSweetConfig.ANNOTATION_INLINE)) {
 			// erased and inlined elements are ignored
 			return;
 		}
@@ -2481,13 +2481,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 * Print async keyword for given method if relevant. Prints nothing if method
 	 * shouldn't be async
 	 */
-	protected void printAsyncKeyword(JCMethodDecl methodDecl) {
+	public void printAsyncKeyword(JCMethodDecl methodDecl) {
 		if (getScope().declareClassScope) {
 			return;
 		}
 
 		if (context.hasAnnotationType(methodDecl.sym, JSweetConfig.ANNOTATION_ASYNC)) {
-			print(" async ");
+			print("async ");
 		}
 	}
 
