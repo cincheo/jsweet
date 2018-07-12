@@ -41,6 +41,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -85,6 +86,8 @@ import com.google.debugging.sourcemap.proto.Mapping.OriginalMapping;
 import com.google.gson.Gson;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.PackageSymbol;
+import com.sun.tools.javac.comp.AttrContext;
+import com.sun.tools.javac.comp.Env;
 import com.sun.tools.javac.file.JavacFileManager;
 import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.main.Option;
@@ -610,7 +613,6 @@ public class JSweetTranspiler implements JSweetOptions {
 				}
 			}
 		}
-
 		if (encoding != null) {
 			options.put(Option.ENCODING, encoding);
 		}
@@ -734,13 +736,26 @@ public class JSweetTranspiler implements JSweetOptions {
 
 		logger.info("ENTER phase: " + fileObjects);
 		transpilationHandler.setDisabled(isIgnoreJavaErrors());
+
 		List<JCCompilationUnit> compilationUnits = compiler.enterTrees(compiler.parseFiles(fileObjects));
 		if (transpilationHandler.getErrorCount() > 0) {
 			logger.warn("errors during parse tree");
 			return null;
 		}
 		logger.info("ATTRIBUTE phase");
-		compiler.attribute(compiler.todo);
+		Queue<Env<AttrContext>> todo = compiler.attribute(compiler.todo);
+
+		logger.info("FLOW phase");
+		todo = compiler.flow(todo);
+
+		// logger.info("DESUGAR phase");
+		// compiler.generate(compiler.desugar(todo));
+
+		logger.info("REPORT DEFERRED phase");
+		compiler.reportDeferredDiagnostics();
+
+		// logger.info("CLOSE phase");
+		// compiler.close(true);
 
 		transpilationHandler.setDisabled(false);
 		context.compilationUnits = compilationUnits.toArray(new JCCompilationUnit[compilationUnits.size()]);
