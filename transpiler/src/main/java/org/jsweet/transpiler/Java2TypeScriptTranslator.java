@@ -2509,7 +2509,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 * shouldn't be async
 	 */
 	protected void printAsyncKeyword(JCMethodDecl methodDecl) {
-		if (getScope().declareClassScope) {
+		if (getScope().declareClassScope || getScope().interfaceScope) {
 			return;
 		}
 
@@ -4022,7 +4022,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (getScope().defaultMethodScope) {
 					if (Util.isImported(getContext().getDefaultMethodCompilationUnit(getParent(JCMethodDecl.class)),
 							clazz)) {
-						print(getRootRelativeName(clazz.getEnclosingElement()) + ".");
+						String rootRelativeName = getRootRelativeName(clazz.getEnclosingElement());
+						if (!rootRelativeName.isEmpty()) {
+							print(rootRelativeName + ".");
+						}
 						prefixAdded = true;
 					}
 				}
