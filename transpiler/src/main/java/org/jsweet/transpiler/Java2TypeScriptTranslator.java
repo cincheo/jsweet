@@ -81,6 +81,7 @@ import org.jsweet.transpiler.util.Util;
 
 import com.sun.source.tree.Tree.Kind;
 import com.sun.tools.javac.code.Attribute;
+import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Attribute.Compound;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
@@ -91,6 +92,7 @@ import com.sun.tools.javac.code.Symbol.TypeVariableSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.ArrayType;
+import com.sun.tools.javac.code.Type.ClassType;
 import com.sun.tools.javac.code.Type.MethodType;
 import com.sun.tools.javac.code.Type.TypeVar;
 import com.sun.tools.javac.code.TypeTag;
@@ -127,6 +129,7 @@ import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCMemberReference;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
+import com.sun.tools.javac.tree.JCTree.JCModifiers;
 import com.sun.tools.javac.tree.JCTree.JCNewArray;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.JCTree.JCParens;
@@ -2084,6 +2087,19 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			return;
 		}
 
+		// do not generate definition if parent class already declares method to avoid
+		// wrong override error with overloads ({ scale(number); scale(number, number);
+		// } cannot be overriden with { scale(number) } only)
+		if (getScope().isDeclareClassScope() && parent.getExtendsClause() != null
+				&& parent.getExtendsClause().type instanceof ClassType) {
+			ClassType superClassType = (ClassType) parent.getExtendsClause().type;
+			MethodSymbol superMethod = Util.findMethodDeclarationInType(context.types, superClassType.tsym,
+					methodDecl.getName().toString(), (MethodType) methodDecl.type);
+			if (superMethod != null) {
+				return;
+			}
+		}
+
 		Overload overload = null;
 		boolean inOverload = false;
 		boolean inCoreWrongOverload = false;
@@ -2477,6 +2493,17 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 	}
 
+	@Override
+	public void visitModifiers(JCModifiers modifiers) {
+		
+		// we don't want the abstract keyword in definition files
+		if (getScope().isDeclareClassScope() && modifiers.getFlags().contains(Modifier.ABSTRACT)) {
+			modifiers.flags ^= Flags.ABSTRACT; 
+		}
+		
+		super.visitModifiers(modifiers);
+	}
+	
 	/**
 	 * Print async keyword for given method if relevant. Prints nothing if method
 	 * shouldn't be async
