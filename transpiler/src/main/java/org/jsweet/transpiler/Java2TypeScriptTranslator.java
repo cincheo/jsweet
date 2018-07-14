@@ -1994,7 +1994,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			context.entryFiles.add(new File(compilationUnit.sourcefile.getName()));
 			context.addFooterStatement(mainMethodQualifier + JSweetConfig.MAIN_FUNCTION_NAME + "("
 					+ (getScope().mainMethod.getParameters().isEmpty() ? "" :
-					"(document && document.currentScript && document.currentScript['src'] ? new URL(document.currentScript['src']) : self.location)" +
+					"(this.document && this.document.currentScript && this.document.currentScript['src'] ? new URL(this.document.currentScript['src']) : this.location !== undefined ? this.location : { 'search': '' })" +
 							".search.substr(1).split('&')" +
 							".map(s => s.length == 0 ? s : s.indexOf('=') > 1 || (s.indexOf('=') == -1 && s.length > 1) ? '--'+s : '-'+s.split(/=(.+)/).join(''))")
 					+ ");");
