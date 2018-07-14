@@ -1996,7 +1996,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					+ (getScope().mainMethod.getParameters().isEmpty() ? "" :
 					"(document && document.currentScript && document.currentScript['src'] ? new URL(document.currentScript['src']) : self.location)" +
 							".search.substr(1).split('&')" +
-							".map(s => s.length == 0 ? s : s.indexOf('=') > 1 || (s.indexOf('=') == -1 && s.length > 1) ? '--'+s : '-'+s.split(/=(.+)/).join(' '))")
+							".map(s => s.length == 0 ? s : s.indexOf('=') > 1 || (s.indexOf('=') == -1 && s.length > 1) ? '--'+s : '-'+s.split(/=(.+)/).join(''))")
 					+ ");");
 		}
 
