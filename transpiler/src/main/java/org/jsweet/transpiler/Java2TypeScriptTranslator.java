@@ -2673,7 +2673,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			// the __parent added parameter is not part of the actual arguments
 			printIndent().print(VAR_DECL_KEYWORD + " __args = Array.prototype.slice.call(arguments, [1]);").println();
 		} else {
-			printIndent().print(VAR_DECL_KEYWORD + " __args = Array.prototype.slice.call(arguments);").println();
+			printIndent().print(VAR_DECL_KEYWORD + " __args = arguments;").println();
 		}
 		for (int j = 0; j < method.getParameters().size(); j++) {
 			if (args.get(j) instanceof JCVariableDecl) {
