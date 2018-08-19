@@ -4504,12 +4504,16 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				print(VAR_DECL_KEYWORD + " " + foreachLoop.var.name.toString() + " = " + arrayVarName + "["
 						+ indexVarName + "];").println();
 			}
+			visitBeforeForEachBody(foreachLoop);
 			printIndent().print(foreachLoop.body);
 			endIndent().println().printIndent().print("}");
 			if (!noVariable) {
 				endIndent().println().printIndent().print("}");
 			}
 		}
+	}
+
+	protected void visitBeforeForEachBody(JCEnhancedForLoop foreachLoop) {
 	}
 
 	/**
@@ -4802,7 +4806,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	public void visitForLoop(JCForLoop forLoop) {
 		print("for(").printArgList(null, forLoop.init).print("; ").print(forLoop.cond).print("; ")
 				.printArgList(null, forLoop.step).print(") ");
+		print("{");
+		visitBeforeForBody(forLoop);
 		print(forLoop.body).print(";");
+		print("}");
+	}
+
+	protected void visitBeforeForBody(JCForLoop forLoop) {
 	}
 
 	/**
@@ -5111,12 +5121,18 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	@Override
 	public void visitDoLoop(JCDoWhileLoop doWhileLoop) {
 		print("do ");
+		print("{");
+		visitBeforeDoWhileBody(doWhileLoop);
 		if (doWhileLoop.body instanceof JCBlock) {
 			print(doWhileLoop.body);
 		} else {
 			print(doWhileLoop.body).print(";");
 		}
+		print("}");
 		print(" while(").print(doWhileLoop.cond).print(")");
+	}
+
+	protected void visitBeforeDoWhileBody(JCDoWhileLoop doWhileLoop) {
 	}
 
 	/**
@@ -5125,7 +5141,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	@Override
 	public void visitWhileLoop(JCWhileLoop whileLoop) {
 		print("while(").print(whileLoop.cond).print(") ");
+		print("{");
+		visitBeforeWhileBody(whileLoop);
 		print(whileLoop.body);
+		print("}");
+	}
+
+	protected void visitBeforeWhileBody(JCWhileLoop whileLoop) {
 	}
 
 	/**
