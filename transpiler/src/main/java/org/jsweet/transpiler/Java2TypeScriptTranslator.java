@@ -4391,7 +4391,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			removeLastChars(2);
 		}
 		print(">");
-
 	}
 
 	@Override

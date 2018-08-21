@@ -149,7 +149,7 @@ public class JSweetContext extends Context {
 
 	private List<AnnotationManager> annotationManagers = new ArrayList<>();
 	private Map<String, String> typesMapping = new HashMap<String, String>();
-	private List<BiFunction<ExtendedElement, String, Object>> complexTypesMapping = new ArrayList<>();
+	private List<BiFunction<ExtendedElement, String, Object>> functionalTypesMapping = new ArrayList<>();
 	protected Map<String, String> langTypesMapping = new HashMap<String, String>();
 	protected Set<String> langTypesSimpleNames = new HashSet<String>();
 	protected Set<String> baseThrowables = new HashSet<String>();
@@ -244,14 +244,14 @@ public class JSweetContext extends Context {
 	 *            of another type tree).
 	 */
 	public final void addTypeMapping(BiFunction<ExtendedElement, String, Object> mappingFunction) {
-		complexTypesMapping.add(mappingFunction);
+		functionalTypesMapping.add(mappingFunction);
 	}
 
 	/**
 	 * Returns the functional type mappings.
 	 */
 	public final List<BiFunction<ExtendedElement, String, Object>> getFunctionalTypeMappings() {
-		return complexTypesMapping;
+		return functionalTypesMapping;
 	}
 
 	/**

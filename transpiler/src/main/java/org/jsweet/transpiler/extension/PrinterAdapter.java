@@ -36,6 +36,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 
+import org.apache.log4j.Logger;
 import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetOptions;
@@ -71,6 +72,8 @@ import com.sun.tools.javac.code.Symbol.PackageSymbol;
  */
 public class PrinterAdapter {
 
+	protected Logger logger = Logger.getLogger(getClass());
+	
 	private PrinterAdapter parentAdapter;
 
 	private AbstractTreePrinter printer;

@@ -26,6 +26,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.text.Collator;
@@ -375,7 +376,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 				case "skip":
 					printMacroName(targetMethodName);
 					print(invocation.getTargetExpression(), delegate).print(".cursor+=")
-					.print(invocation.getArgument(0));
+							.print(invocation.getArgument(0));
 					return true;
 				case "reset":
 					printMacroName(targetMethodName);
@@ -1386,8 +1387,9 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 	@Override
 	public boolean substituteVariableAccess(VariableAccessElement variableAccess) {
 		String targetClassName = variableAccess.getTargetElement().toString();
+		String variableName = variableAccess.getVariableName();
 		if (variableAccess.getVariable().getModifiers().contains(Modifier.STATIC) && isMappedType(targetClassName)
-				&& targetClassName.startsWith("java.lang.") && !"class".equals(variableAccess.getVariableName())) {
+				&& targetClassName.startsWith("java.lang.") && !"class".equals(variableName)) {
 
 			switch (targetClassName) {
 			case "java.lang.Float":
@@ -1396,12 +1398,19 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			case "java.lang.Byte":
 			case "java.lang.Long":
 			case "java.lang.Short":
-				switch (variableAccess.getVariableName()) {
+				switch (variableName) {
 				case "MIN_VALUE":
 				case "MAX_VALUE":
 				case "POSITIVE_INFINITY":
 				case "NEGATIVE_INFINITY":
-					print("Number." + variableAccess.getVariableName());
+
+					try {
+						Field constantField = Class.forName(targetClassName).getDeclaredField(variableName);
+						print("" + constantField.get(null));
+					} catch (Exception e) {
+						logger.warn("unable to read Java constant value " + targetClassName + "." + variableName, e);
+						print("Number." + variableName);
+					}
 					return true;
 				case "NaN":
 					print("NaN");
@@ -1409,7 +1418,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 				}
 				break;
 			case "java.lang.Boolean":
-				switch (variableAccess.getVariableName()) {
+				switch (variableName) {
 				case "TRUE":
 					print("true");
 					return true;

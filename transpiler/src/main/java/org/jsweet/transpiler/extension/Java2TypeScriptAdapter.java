@@ -41,6 +41,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.function.BiFunction;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleBinaryOperator;
 import java.util.function.DoubleConsumer;
@@ -104,6 +105,7 @@ import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Type.MethodType;
+import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCEnhancedForLoop;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
@@ -1191,8 +1193,8 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 						print("))");
 						return true;
 					case "compareTo":
-						if (invocationElement.getArgumentCount() == 1 &&
-								invocationElement.getTargetExpression() != null) {
+						if (invocationElement.getArgumentCount() == 1
+								&& invocationElement.getTargetExpression() != null) {
 							printMacroName(targetMethodName);
 							print("(<any>((o1: any, o2: any) => { if(o1 && o1.compareTo) { return o1.compareTo(o2); } else { return o1 < o2 ? -1 : o2 < o1 ? 1 : 0; } })(");
 							printTarget(invocationElement.getTargetExpression()).print(",")
@@ -1219,8 +1221,8 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 				print(")");
 			} else {
 				printMacroName(targetMethodName);
-				print("(<any>((o: any) => { if(o.hashCode) { return o.hashCode(); } else { " +
-						"return o.toString().split('').reduce((prevHash, currVal) => (((prevHash << 5) - prevHash) + currVal.charCodeAt(0))|0, 0); }})(");
+				print("(<any>((o: any) => { if(o.hashCode) { return o.hashCode(); } else { "
+						+ "return o.toString().split('').reduce((prevHash, currVal) => (((prevHash << 5) - prevHash) + currVal.charCodeAt(0))|0, 0); }})(");
 				printTarget(invocationElement.getTargetExpression());
 				print("))");
 			}
@@ -1233,8 +1235,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 				if (methSym != null
 						&& (Object.class.getName().equals(methSym.getEnclosingElement().toString())
 								|| methSym.getEnclosingElement().isInterface())
-						|| invocationElement.getTargetExpression().getTypeAsElement()
-								.getKind() == ElementKind.INTERFACE
+						|| invocationElement.getTargetExpression().getTypeAsElement().getKind() == ElementKind.INTERFACE
 						|| invocationElement.getTargetExpression().getType().getKind() == TypeKind.TYPEVAR) {
 					printMacroName(targetMethodName);
 					print("(<any>((o1: any, o2: any) => { if(o1 && o1.equals) { return o1.equals(o2); } else { return o1 === o2; } })(");
@@ -1325,6 +1326,46 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 		}
 	}
 
+	/**
+	 * @param enclosingElement
+	 *            is required for functional (ie dynamic) type mappings
+	 */
+	public boolean substituteAndPrintType(ExtendedElement enclosingElement, TypeElement type) {
+		String typeFullName = type.toString();
+		boolean completeRawTypes = true;
+
+		String mappedType = context.getTypeMappingTarget(typeFullName);
+		if (mappedType != null) {
+			if (mappedType.endsWith("<>")) {
+				print(mappedType.substring(0, mappedType.length() - 2));
+			} else {
+				print(mappedType);
+
+				if (completeRawTypes && !type.getTypeParameters().isEmpty()
+						&& !context.getTypeMappingTarget(typeFullName).equals("any")) {
+					getPrinter().printAnyTypeArguments(type.getTypeParameters().size());
+				}
+			}
+			return true;
+		}
+
+		for (BiFunction<ExtendedElement, String, Object> mapping : context.getFunctionalTypeMappings()) {
+			Object mapped = mapping.apply(enclosingElement, typeFullName);
+			if (mapped instanceof String) {
+				print((String) mapped);
+				return true;
+			} else if (mapped instanceof JCTree) {
+				getPrinter().substituteAndPrintType((JCTree) mapped);
+				return true;
+			} else if (mapped instanceof TypeMirror) {
+				print(getMappedType((TypeMirror) mapped));
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	@Override
 	public boolean substituteVariableAccess(VariableAccessElement variableAccess) {
 		if (variableAccess.getTypeAsElement().getKind() == ElementKind.ENUM
@@ -1343,10 +1384,13 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 			// automatic static field access target redirection
 			if (!"class".equals(variableAccess.getVariableName())
 					&& variableAccess.getVariable().getModifiers().contains(Modifier.STATIC)) {
-				if (isMappedType(targetType.toString())
-						&& !context.getLangTypeMappings().containsKey(targetType.toString())) {
-					print(getTypeMappingTarget(targetType.toString()) + ".").print(variableAccess.getVariableName());
-					return true;
+
+				if (!context.getLangTypeMappings().containsKey(targetType.toString())) {
+					if (substituteAndPrintType(variableAccess, (TypeElement) targetType)) {
+						print(".");
+						print(variableAccess.getVariableName());
+						return true;
+					}
 				}
 			}
 
