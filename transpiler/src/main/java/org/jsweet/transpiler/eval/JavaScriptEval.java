@@ -72,7 +72,6 @@ public class JavaScriptEval extends RuntimeEval {
 	private Process runScript(StringWriter trace, File mainFile) throws IOException {
 		Process runProcess;
 		if (runtime == JavaScriptRuntime.PhantomJs) {
-			FileUtils.writeStringToFile(mainFile, "\n\n phantom.exit();\n", true);
 
 			checkPhantomJsInstall();
 			String phantomJsPath = resolvePhantomJsPath();
