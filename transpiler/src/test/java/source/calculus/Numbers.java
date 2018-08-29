@@ -17,7 +17,7 @@ public class Numbers {
 		
 		float f3 = 5.0f;
 		f3 /= 2;
-		$export("f3", f3);
+		$export("Numbers_f3", f3);
 	}
 
 }

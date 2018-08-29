@@ -163,7 +163,7 @@ public class CalculusTests extends AbstractTest {
 		eval(ModuleKind.none, (logHandler, r) -> {
 			logHandler.assertNoProblems();
 			assertTrue(r.get("NaN_test"));
-			assertEquals(2.5, (double) r.get("f3"), 0.00001);
+			assertEquals(2.5, (double) r.get("Numbers_f3"), 0.00001);
 		}, getSourceFile(Numbers.class));
 	}
 
