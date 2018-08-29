@@ -373,6 +373,8 @@ public enum JSweetProblem {
 					params);
 		case JDK_TYPE:
 			return String.format("invalid access to JDK type '%s' from JSweet", params);
+		case UNSUPPORTED_TRY_WITH_RESOURCE:
+			return String.format("unsupported try with resources '%s' from JSweet", params);
 		case JDK_METHOD:
 			return String.format("invalid access to JDK method '%s' from JSweet", params);
 		case ERASED_METHOD:

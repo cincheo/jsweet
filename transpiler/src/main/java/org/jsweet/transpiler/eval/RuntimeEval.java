@@ -6,8 +6,6 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.jsweet.JSweetConfig;
-import org.jsweet.transpiler.SourceFile;
-import org.jsweet.transpiler.util.EvaluationResult;
 
 public abstract class RuntimeEval {
 

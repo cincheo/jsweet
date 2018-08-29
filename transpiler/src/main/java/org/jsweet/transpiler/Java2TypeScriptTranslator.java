@@ -66,6 +66,7 @@ import org.jsweet.transpiler.model.ExtendedElementFactory;
 import org.jsweet.transpiler.model.MethodInvocationElement;
 import org.jsweet.transpiler.model.support.ArrayAccessElementSupport;
 import org.jsweet.transpiler.model.support.AssignmentElementSupport;
+import org.jsweet.transpiler.model.support.AssignmentWithOperatorElementSupport;
 import org.jsweet.transpiler.model.support.BinaryOperatorElementSupport;
 import org.jsweet.transpiler.model.support.CaseElementSupport;
 import org.jsweet.transpiler.model.support.CompilationUnitElementSupport;
@@ -2495,15 +2496,15 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	@Override
 	public void visitModifiers(JCModifiers modifiers) {
-		
+
 		// we don't want the abstract keyword in definition files
 		if (getScope().isDeclareClassScope() && modifiers.getFlags().contains(Modifier.ABSTRACT)) {
-			modifiers.flags ^= Flags.ABSTRACT; 
+			modifiers.flags ^= Flags.ABSTRACT;
 		}
-		
+
 		super.visitModifiers(modifiers);
 	}
-	
+
 	/**
 	 * Print async keyword for given method if relevant. Prints nothing if method
 	 * shouldn't be async
@@ -3469,7 +3470,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						if (fieldAccess.sym instanceof VarSymbol) {
 							VarSymbol varSym = (VarSymbol) fieldAccess.sym;
 							if (varSym.isStatic() && varSym.owner.isInterface()
-									&& varSym.owner != Util.getSymbol(fieldAccess.selected)) {
+									&& varSym.owner != Util.getAccessedSymbol(fieldAccess.selected)) {
 								accessSubstituted = true;
 								print(getRootRelativeName(varSym.owner)).print(".");
 							}
@@ -3518,8 +3519,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 		boolean debugMode = false;
 		if (context.options.isDebugMode()) {
-			if (Util.getSymbol(inv.meth) instanceof MethodSymbol) {
-				MethodSymbol methodSymbol = (MethodSymbol) Util.getSymbol(inv.meth);
+			if (Util.getAccessedSymbol(inv.meth) instanceof MethodSymbol) {
+				MethodSymbol methodSymbol = (MethodSymbol) Util.getAccessedSymbol(inv.meth);
 				if (!methodSymbol.isConstructor() && Util.isSourceElement(methodSymbol)) {
 					debugMode = true;
 				}
@@ -4733,45 +4734,50 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 */
 	@Override
 	public void visitAssignop(JCAssignOp assignOp) {
-		boolean expand = staticInitializedAssignment = (getStaticInitializedField(assignOp.lhs) != null);
-		boolean expandChar = context.types.isSameType(context.symtab.charType,
-				context.types.unboxedTypeOrType(assignOp.lhs.type));
-		print(assignOp.lhs);
-		staticInitializedAssignment = false;
-		String op = assignOp.operator.name.toString();
+		if (!getAdapter().substituteAssignmentWithOperator(new AssignmentWithOperatorElementSupport(assignOp))) {
+			boolean expand = staticInitializedAssignment = (getStaticInitializedField(assignOp.lhs) != null);
+			boolean expandChar = context.types.isSameType(context.symtab.charType,
+					context.types.unboxedTypeOrType(assignOp.lhs.type));
+			print(assignOp.lhs);
+			staticInitializedAssignment = false;
+			String op = assignOp.operator.name.toString();
 
-		if (context.types.isSameType(context.symtab.booleanType, context.types.unboxedTypeOrType(assignOp.lhs.type))) {
-			if ("|".equals(op)) {
-				print(" = ").print(assignOp.rhs).print(" || ").print(assignOp.lhs);
-				return;
-			} else if ("&".equals(op)) {
-				print(" = ").print(assignOp.rhs).print(" && ").print(assignOp.lhs);
+			if (context.types.isSameType(context.symtab.booleanType,
+					context.types.unboxedTypeOrType(assignOp.lhs.type))) {
+				if ("|".equals(op)) {
+					print(" = ").print(assignOp.rhs).print(" || ").print(assignOp.lhs);
+					return;
+				} else if ("&".equals(op)) {
+					print(" = ").print(assignOp.rhs).print(" && ").print(assignOp.lhs);
+					return;
+				}
+			}
+
+			if (expandChar) {
+				print(" = String.fromCharCode(")
+						.substituteAndPrintAssignedExpression(context.symtab.intType, assignOp.lhs)
+						.print(" " + op + " ")
+						.substituteAndPrintAssignedExpression(context.symtab.intType, assignOp.rhs).print(")");
 				return;
 			}
-		}
 
-		if (expandChar) {
-			print(" = String.fromCharCode(").substituteAndPrintAssignedExpression(context.symtab.intType, assignOp.lhs)
-					.print(" " + op + " ").substituteAndPrintAssignedExpression(context.symtab.intType, assignOp.rhs)
-					.print(")");
-			return;
-		}
+			if (expand) {
+				print(" = ").print(assignOp.lhs).print(" " + op + " ");
+				if (context.types.isSameType(context.symtab.charType,
+						context.types.unboxedTypeOrType(assignOp.rhs.type))) {
+					substituteAndPrintAssignedExpression(context.symtab.intType, assignOp.rhs);
+				} else {
+					print(assignOp.rhs);
+				}
+				return;
+			}
 
-		if (expand) {
-			print(" = ").print(assignOp.lhs).print(" " + op + " ");
+			print(" " + op + "= ");
 			if (context.types.isSameType(context.symtab.charType, context.types.unboxedTypeOrType(assignOp.rhs.type))) {
 				substituteAndPrintAssignedExpression(context.symtab.intType, assignOp.rhs);
 			} else {
 				print(assignOp.rhs);
 			}
-			return;
-		}
-
-		print(" " + op + "= ");
-		if (context.types.isSameType(context.symtab.charType, context.types.unboxedTypeOrType(assignOp.rhs.type))) {
-			substituteAndPrintAssignedExpression(context.symtab.intType, assignOp.rhs);
-		} else {
-			print(assignOp.rhs);
 		}
 	}
 
@@ -5685,7 +5691,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			} else if (expression instanceof JCMethodInvocation) {
 				// disable type checking when the method returns a type variable
 				// because it may to be correctly set in the invocation
-				MethodSymbol m = (MethodSymbol) Util.getSymbol(((JCMethodInvocation) expression).meth);
+				MethodSymbol m = (MethodSymbol) Util.getAccessedSymbol(((JCMethodInvocation) expression).meth);
 				if (m != null && m.getReturnType() instanceof TypeVar
 						&& m.getReturnType().tsym.getEnclosingElement() == m) {
 					print("<any>(").print(expression).print(")");

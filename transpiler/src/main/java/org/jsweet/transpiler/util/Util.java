@@ -1301,9 +1301,10 @@ public class Util {
 	}
 
 	/**
-	 * Gets the symbol on an access if exists/possible, or return null.
+	 * Gets the symbol on JCFieldAccess or JCIdent if possible, or return null.
+	 * Could return either a MethodSymbol, or VariableSymbol
 	 */
-	public static Symbol getSymbol(JCTree tree) {
+	public static Symbol getAccessedSymbol(JCTree tree) {
 		if (tree instanceof JCFieldAccess) {
 			return ((JCFieldAccess) tree).sym;
 		} else if (tree instanceof JCIdent) {
@@ -1566,10 +1567,10 @@ public class Util {
 		}
 		return pathsList;
 	}
-	
+
 	public static boolean isDeclarationOrSubClassDeclaration(javax.lang.model.util.Types types, ClassType classType,
 			String searchedClassName) {
-		
+
 		while (classType != null) {
 			if (classType.tsym.getQualifiedName().toString().equals(searchedClassName)) {
 				return true;
@@ -1577,12 +1578,12 @@ public class Util {
 			List<? extends TypeMirror> superTypes = types.directSupertypes(classType);
 			classType = superTypes == null || superTypes.isEmpty() ? null : (ClassType) superTypes.get(0);
 		}
-		
+
 		return false;
 	}
 
-	public static boolean isDeclarationOrSubClassDeclarationBySimpleName(javax.lang.model.util.Types types, ClassType classType,
-			String searchedClassSimpleName) {
+	public static boolean isDeclarationOrSubClassDeclarationBySimpleName(javax.lang.model.util.Types types,
+			ClassType classType, String searchedClassSimpleName) {
 
 		while (classType != null) {
 			if (classType.tsym.getSimpleName().toString().equals(searchedClassSimpleName)) {
