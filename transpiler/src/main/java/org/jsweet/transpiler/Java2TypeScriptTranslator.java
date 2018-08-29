@@ -4753,6 +4753,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 			}
 
+			boolean castToIntegral = "/".equals(op) //
+					&& Util.isIntegral(assignOp.lhs.type) //
+					&& Util.isIntegral(assignOp.rhs.type);
+
 			if (expandChar) {
 				print(" = String.fromCharCode(")
 						.substituteAndPrintAssignedExpression(context.symtab.intType, assignOp.lhs)
@@ -4761,14 +4765,26 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				return;
 			}
 
-			if (expand) {
-				print(" = ").print(assignOp.lhs).print(" " + op + " ");
+			if (expand || castToIntegral) {
+				print(" = ");
+
+				if (castToIntegral) {
+					print("(n => n<0?Math.ceil(n):Math.floor(n))(");
+				}
+
+				print(assignOp.lhs);
+				print(" " + op + " ");
 				if (context.types.isSameType(context.symtab.charType,
 						context.types.unboxedTypeOrType(assignOp.rhs.type))) {
 					substituteAndPrintAssignedExpression(context.symtab.intType, assignOp.rhs);
 				} else {
 					print(assignOp.rhs);
 				}
+
+				if (castToIntegral) {
+					print(")");
+				}
+
 				return;
 			}
 

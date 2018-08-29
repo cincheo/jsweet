@@ -22,6 +22,13 @@ public class Integers {
 		for (int i2 = 0; i2 < l.length; i2++) {
 			System.out.println(l[i2]);
 		}
+		
+		
+		int j = 5;
+		j /= 3;
+		System.out.println(j);
+		$export("j", j);
+		
 	}
 
 }

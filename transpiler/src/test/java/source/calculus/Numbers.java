@@ -14,6 +14,10 @@ public class Numbers {
 		assert d != f;
 		float f2 = (float) d;
 		assert f == f2;
+		
+		float f3 = 5.0f;
+		f3 /= 2;
+		$export("f3", f3);
 	}
 
 }

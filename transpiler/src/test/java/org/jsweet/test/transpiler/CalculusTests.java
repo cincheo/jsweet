@@ -17,6 +17,7 @@
 package org.jsweet.test.transpiler;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.jsweet.transpiler.ModuleKind;
@@ -48,6 +49,7 @@ public class CalculusTests extends AbstractTest {
 			Assert.assertEquals((Double) 7.5, r.get("f3"));
 			Assert.assertEquals((Integer) 7, r.get("i3"));
 			Assert.assertEquals((Integer) 7, r.get("i4"));
+			Assert.assertEquals((Integer) 1, r.get("j"));
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail("Exception occured while running test");
@@ -62,6 +64,7 @@ public class CalculusTests extends AbstractTest {
 			Assert.assertEquals((Double) 7.5, r.get("f3"));
 			Assert.assertEquals((Integer) 7, r.get("i3"));
 			Assert.assertEquals((Integer) 7, r.get("i4"));
+			Assert.assertEquals((Integer) 1, r.get("j"));
 		}, getSourceFile(Integers.class));
 	}
 
@@ -159,7 +162,8 @@ public class CalculusTests extends AbstractTest {
 	public void testNumbers() {
 		eval(ModuleKind.none, (logHandler, r) -> {
 			logHandler.assertNoProblems();
-			Assert.assertTrue(r.get("NaN_test"));
+			assertTrue(r.get("NaN_test"));
+			assertEquals(2.5, (double) r.get("f3"), 0.00001);
 		}, getSourceFile(Numbers.class));
 	}
 
