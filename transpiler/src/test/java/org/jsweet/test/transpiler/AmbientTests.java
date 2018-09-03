@@ -38,7 +38,7 @@ public class AmbientTests extends AbstractTest {
 
 	@Test
 	public void testLibAccess() throws Exception {
-		File target = new File(transpiler.getTsOutputDir(), "lib.js");
+		File target = new File(getCurrentTestOutDir(), "lib.js");
 		FileUtils.deleteQuietly(target);
 		FileUtils.copyFile(new File(TEST_DIRECTORY_NAME + "/source/ambient/lib.js"), target);
 		System.out.println("copied to " + target);
@@ -68,7 +68,7 @@ public class AmbientTests extends AbstractTest {
 
 	@Test
 	public void testLibAccessSubModule() throws Exception {
-		File target = new File(transpiler.getTsOutputDir(), "libsub.js");
+		File target = new File(getCurrentTestOutDir(), "libsub.js");
 		FileUtils.deleteQuietly(target);
 		FileUtils.copyFile(new File(TEST_DIRECTORY_NAME + "/source/ambient/libsub.js"), target);
 		System.out.println("copied to " + target);

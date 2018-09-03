@@ -140,8 +140,8 @@ public class TsComparisonTest extends AbstractTest {
 			System.out.println("running tsc: " + sourceFile);
 			TestTranspilationHandler logHandler = new TestTranspilationHandler();
 
-			transpiler.setTsOutputDir(sourceFile.getTsFile().getParentFile());
-			EvaluationResult result = transpiler.eval(logHandler, sourceFile);
+			transpilerTest().getTranspiler().setTsOutputDir(sourceFile.getTsFile().getParentFile());
+			EvaluationResult result = transpilerTest().getTranspiler().eval(logHandler, sourceFile);
 			FileUtils.deleteQuietly(sourceFile.getJsFile());
 
 			return result;

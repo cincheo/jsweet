@@ -140,7 +140,8 @@ public class SyntaxTests extends AbstractTest {
 	public void testFinalVariablesRuntime() {
 		try {
 			TestTranspilationHandler logHandler = new TestTranspilationHandler();
-			EvaluationResult r = transpiler.eval("Java", logHandler, getSourceFile(FinalVariablesRuntime.class));
+			EvaluationResult r = transpilerTest().getTranspiler().eval("Java", logHandler,
+					getSourceFile(FinalVariablesRuntime.class));
 			logHandler.assertNoProblems();
 			Assert.assertEquals("Wrong behavior output trace", "11223344", r.get("out").toString());
 		} catch (Exception e) {
@@ -205,7 +206,7 @@ public class SyntaxTests extends AbstractTest {
 				assertTrue(generatedCode.contains("Main overload."));
 				assertTrue(generatedCode.contains("@param {*} i is an interface"));
 				assertTrue(generatedCode.contains("@param {number[]} aList"));
-				if (transpiler.getModuleKind() == ModuleKind.commonjs) {
+				if (transpilerTest().getTranspiler().getModuleKind() == ModuleKind.commonjs) {
 					assertTrue(Pattern.compile("\\* @property \\{E\\} XX_B\\s*\\* Test enum").matcher(generatedCode)
 							.find());
 					assertTrue(generatedCode.contains("* @property {E} XX_C"));

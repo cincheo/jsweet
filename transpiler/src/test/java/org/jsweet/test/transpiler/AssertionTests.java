@@ -20,7 +20,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import org.jsweet.transpiler.ModuleKind;
-import org.jsweet.transpiler.util.EvaluationResult;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -49,7 +48,7 @@ public class AssertionTests extends AbstractTest {
 	@Test
 	public void testIgnoreAssertions() {
 		try {
-			transpiler.setIgnoreAssertions(true);
+			transpilerTest().getTranspiler().setIgnoreAssertions(true);
 			eval(ModuleKind.none, (logHandler, r) -> {
 				Assert.assertTrue(r.get("assertion1"));
 				Assert.assertNull(r.get("assertion2"));
@@ -57,8 +56,6 @@ public class AssertionTests extends AbstractTest {
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail("Exception occured while running test");
-		} finally {
-			transpiler.setIgnoreAssertions(false);
 		}
 	}
 

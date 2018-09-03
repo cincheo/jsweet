@@ -3,6 +3,7 @@ package org.jsweet.test.transpiler;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 
+import org.jsweet.test.transpiler.util.TranspilerTestRunner;
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetFactory;
 import org.jsweet.transpiler.ModuleKind;
@@ -39,18 +40,18 @@ public class NativeStructuresTests extends AbstractTest {
 
 	@Test
 	public void testArraysSort() {
-		createTranspiler(new JSweetFactory() {
+		TranspilerTestRunner transpilerTest = new TranspilerTestRunner(getCurrentTestOutDir(), new JSweetFactory() {
 			@Override
-			public PrinterAdapter createAdapter (JSweetContext context) {
+			public PrinterAdapter createAdapter(JSweetContext context) {
 				return new RemoveJavaDependenciesAdapter(super.createAdapter(context));
 			}
 		});
-		eval((logHandler, r) -> {
+
+		transpilerTest.eval((logHandler, r) -> {
 			logHandler.assertNoProblems();
 		}, getSourceFile(ArraysSort.class));
-		createTranspiler(new JSweetFactory());
 	}
-	
+
 	@Test
 	public void testCollections() {
 		eval((logHandler, result) -> {
@@ -204,7 +205,7 @@ public class NativeStructuresTests extends AbstractTest {
 			logHandler.assertNoProblems();
 		}, getSourceFile(ExtendsJDKRegular.class));
 	}
-	
+
 	@Test
 	public void testExtendsJDKInterface() {
 		eval(ModuleKind.none, (logHandler, result) -> {
@@ -227,5 +228,5 @@ public class NativeStructuresTests extends AbstractTest {
 			logHandler.assertNoProblems();
 		}, getSourceFile(Iterators.class));
 	}
-	
+
 }

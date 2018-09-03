@@ -18,6 +18,7 @@ package org.jsweet.test.transpiler;
 
 import static org.junit.Assert.assertEquals;
 
+import org.jsweet.test.transpiler.util.TranspilerTestRunner;
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetFactory;
 import org.jsweet.transpiler.ModuleKind;
@@ -111,33 +112,31 @@ public class EnumTests extends AbstractTest {
 			logHandler.assertNoProblems();
 			Assert.assertEquals(">ok1,ok2", r.get("trace"));
 		}, getSourceFile(ComplexEnumWithAbstractMethods.class));
-		transpiler.setBundle(true);
+		transpilerTest().getTranspiler().setBundle(true);
 		eval(ModuleKind.none, (logHandler, r) -> {
 			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
 			Assert.assertEquals(">ok1,ok2", r.get("trace"));
 		}, getSourceFile(ComplexEnumWithAbstractMethods.class));
-		transpiler.setBundle(false);
-		createTranspiler(new AddRootFactory());
-		eval((logHandler, r) -> {
+		transpilerTest().getTranspiler().setBundle(false);
+		
+		TranspilerTestRunner transpilerTest = new TranspilerTestRunner(getCurrentTestOutDir(), new AddRootFactory());
+		transpilerTest.eval((logHandler, r) -> {
 			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
 			Assert.assertEquals(">ok1,ok2", r.get("trace"));
 		}, getSourceFile(ComplexEnumWithAbstractMethods.class));
-		transpiler.setBundle(true);
+		transpilerTest.getTranspiler().setBundle(true);
 		eval(ModuleKind.none, (logHandler, r) -> {
 			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
 			Assert.assertEquals(">ok1,ok2", r.get("trace"));
 		}, getSourceFile(ComplexEnumWithAbstractMethods.class));
-		transpiler.setBundle(false);
-		createTranspiler(new JSweetFactory());
 	}
 
 	@Test
 	public void testErasedEnum() {
-		createTranspiler(new EraseEnumFactory());
-		transpile(logHandler -> {
+		TranspilerTestRunner transpilerTest = new TranspilerTestRunner(getCurrentTestOutDir(), new EraseEnumFactory());
+		transpilerTest.transpile(logHandler -> {
 			logHandler.assertNoProblems();
 		}, getSourceFile(ErasedEnum.class));
-		createTranspiler(new JSweetFactory());
 	}
 
 	@Test
@@ -156,16 +155,15 @@ public class EnumTests extends AbstractTest {
 
 	@Test
 	public void testStringEnums() {
-		createTranspiler(new JSweetFactory() {
+		TranspilerTestRunner transpilerTest = new TranspilerTestRunner(getCurrentTestOutDir(), new JSweetFactory() {
 			@Override
 			public PrinterAdapter createAdapter(JSweetContext context) {
 				return new StringEnumAdapter(super.createAdapter(context));
 			}
 		});
-		eval((logHandler, r) -> {
+		transpilerTest.eval((logHandler, r) -> {
 			logHandler.assertNoProblems();
 		}, getSourceFile(StringEnums.class));
-		createTranspiler(new JSweetFactory());
 	}
 
 	@Test

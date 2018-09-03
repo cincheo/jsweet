@@ -16,6 +16,7 @@ import javax.ws.rs.Path;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jsweet.JSweetConfig;
+import org.jsweet.test.transpiler.util.TranspilerTestRunner;
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetFactory;
 import org.jsweet.transpiler.JSweetProblem;
@@ -28,9 +29,7 @@ import org.jsweet.transpiler.extension.MapAdapter;
 import org.jsweet.transpiler.extension.PrinterAdapter;
 import org.jsweet.transpiler.extension.RemoveJavaDependenciesAdapter;
 import org.jsweet.transpiler.model.ImportElement;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import source.extension.A1;
@@ -170,22 +169,15 @@ class JaxRSStubAdapter extends PrinterAdapter {
 
 public class ExtensionTests extends AbstractTest {
 
-	@BeforeClass
-	public static void start() {
-		createTranspiler(new TestFactory());
-	}
-
-	@AfterClass
-	public static void end() {
-		createTranspiler(new JSweetFactory());
-	}
-
 	@Test
 	public void testAnnotations() {
-		transpile(ModuleKind.none, (logHandler) -> {
+		TranspilerTestRunner transpilerExtensionTest = new TranspilerTestRunner(getCurrentTestOutDir(),
+				new TestFactory());
+		transpilerExtensionTest.transpile(ModuleKind.none, (logHandler) -> {
 			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
 			try {
-				String generated = FileUtils.readFileToString(transpiler.getContext().sourceFiles[0].getTsFile());
+				String generated = FileUtils.readFileToString(
+						transpilerExtensionTest.getTranspiler().getContext().sourceFiles[0].getTsFile());
 				Assert.assertEquals(4, StringUtils.countMatches(generated, "_f1"));
 				Assert.assertEquals(4, StringUtils.countMatches(generated, "_f2"));
 				Assert.assertEquals(2, StringUtils.countMatches(generated, "_f3"));
@@ -203,72 +195,70 @@ public class ExtensionTests extends AbstractTest {
 
 	@Test
 	public void testMaps() {
-		createTranspiler(new JSweetFactory() {
-			@Override
-			public PrinterAdapter createAdapter(JSweetContext context) {
-				return new MapAdapter(super.createAdapter(context));
-			}
-		});
-		eval((logHandler, r) -> {
+		TranspilerTestRunner transpilerExtensionTest = new TranspilerTestRunner(getCurrentTestOutDir(),
+				new JSweetFactory() {
+					@Override
+					public PrinterAdapter createAdapter(JSweetContext context) {
+						return new MapAdapter(super.createAdapter(context));
+					}
+				});
+		transpilerExtensionTest.eval((logHandler, r) -> {
 			logHandler.assertNoProblems();
 		}, getSourceFile(Maps.class));
-		createTranspiler(new JSweetFactory());
 
 	}
 
 	@Test
 	public void testJaxRSStubs() {
-		createTranspiler(new JSweetFactory() {
+
+		TranspilerTestRunner transpilerTest = new TranspilerTestRunner(getCurrentTestOutDir(), new JSweetFactory() {
 			@Override
 			public PrinterAdapter createAdapter(JSweetContext context) {
 				return new JaxRSStubAdapter(super.createAdapter(context));
 			}
 		});
-		transpile(logHandler -> {
+		transpilerTest.transpile(logHandler -> {
 			logHandler.assertNoProblems();
 		}, getSourceFile(HelloWorldService.class), getSourceFile(HelloWorldDto.class));
-		createTranspiler(new JSweetFactory());
 
 	}
 
 	@Test
 	public void testHelloWorldAdapter() throws IOException {
-		createTranspiler(new JSweetFactory() {
+		TranspilerTestRunner transpilerTest = new TranspilerTestRunner(getCurrentTestOutDir(), new JSweetFactory() {
+
 			@Override
 			public PrinterAdapter createAdapter(JSweetContext context) {
 				return new HelloWorldAdapter(super.createAdapter(context));
 			}
 		});
 		SourceFile f = getSourceFile(HelloWorldDto.class);
-		transpile(logHandler -> {
+		transpilerTest.transpile(logHandler -> {
 			logHandler.assertNoProblems();
 		}, f);
 		String generatedCode = FileUtils.readFileToString(f.getTsFile());
 		Assert.assertTrue(generatedCode.contains("this is a header comment"));
 		Assert.assertTrue(generatedCode.contains("date : string"));
 		Assert.assertFalse(generatedCode.contains("date : Date"));
-
-		createTranspiler(new JSweetFactory());
 	}
 
 	@Test
 	public void testDisallowGlobalVariablesAdapter() {
-		createTranspiler(new JSweetFactory() {
+		TranspilerTestRunner transpilerTest = new TranspilerTestRunner(getCurrentTestOutDir(), new JSweetFactory() {
 			@Override
 			public PrinterAdapter createAdapter(JSweetContext context) {
 				return new DisallowGlobalVariablesAdapter(super.createAdapter(context));
 			}
 		});
-		transpile(logHandler -> {
+		transpilerTest.transpile(logHandler -> {
 			logHandler.assertReportedProblems(JSweetProblem.USER_ERROR);
 		}, getSourceFile(UseOfGlobalVariable.class));
-		createTranspiler(new JSweetFactory());
 
 	}
 
 	@Test
 	public void testErasedImportAdapter() {
-		createTranspiler(new JSweetFactory() {
+		TranspilerTestRunner transpilerTest = new TranspilerTestRunner(getCurrentTestOutDir(), new JSweetFactory() {
 			@Override
 			public PrinterAdapter createAdapter(JSweetContext context) {
 				return new PrinterAdapter(super.createAdapter(context)) {
@@ -279,45 +269,23 @@ public class ExtensionTests extends AbstractTest {
 				};
 			}
 		});
-		eval((logHandler, result) -> {
+		transpilerTest.eval((logHandler, result) -> {
 			logHandler.assertNoProblems();
 			try {
-				String generatedCode = FileUtils.readFileToString(transpiler.getContext().sourceFiles[1].getTsFile());
+				String generatedCode = FileUtils
+						.readFileToString(transpilerTest.getTranspiler().getContext().sourceFiles[1].getTsFile());
 				Assert.assertFalse(generatedCode.contains("A2"));
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
 		}, getSourceFile(A2.class), getSourceFile(A1.class));
-		createTranspiler(new JSweetFactory());
 
 	}
 
 	@Test
-	public void testRemoveImportAdapter() {
-		createTranspiler(new JSweetFactory() {
-			@Override
-			public PrinterAdapter createAdapter(JSweetContext context) {
-				return new PrinterAdapter(super.createAdapter(context)) {
-					{
-						addAnnotation("@Replace('')", A1.class.getName() + ".main(..)");
-					}
-				};
-			}
-		});
-		eval((logHandler, result) -> {
-			logHandler.assertNoProblems();
-			if (transpiler.getContext().options.getModuleKind() == ModuleKind.commonjs) {
-				try {
-					String generatedCode = FileUtils
-							.readFileToString(transpiler.getContext().sourceFiles[1].getTsFile());
-					Assert.assertTrue(generatedCode.contains("A2"));
-				} catch (Exception e) {
-					throw new RuntimeException(e);
-				}
-			}
-		}, getSourceFile(A2.class), getSourceFile(A1.class));
-
-		createTranspiler(new JSweetFactory() {
+	public void testRemoveImportAdapter2() {
+	
+		TranspilerTestRunner transpilerTest = new TranspilerTestRunner(getCurrentTestOutDir(), new JSweetFactory() {
 			@Override
 			public PrinterAdapter createAdapter(JSweetContext context) {
 				return new PrinterAdapter(super.createAdapter(context)) {
@@ -337,12 +305,12 @@ public class ExtensionTests extends AbstractTest {
 				};
 			}
 		});
-		eval((logHandler, result) -> {
+		transpilerTest.eval((logHandler, result) -> {
 			logHandler.assertNoProblems();
-			if (transpiler.getContext().options.getModuleKind() == ModuleKind.commonjs) {
+			if (transpilerTest.getTranspiler().getContext().options.getModuleKind() == ModuleKind.commonjs) {
 				try {
 					String generatedCode = FileUtils
-							.readFileToString(transpiler.getContext().sourceFiles[1].getTsFile());
+							.readFileToString(transpilerTest.getTranspiler().getContext().sourceFiles[1].getTsFile());
 					// it is still there because it is used in the main function body
 					Assert.assertTrue(generatedCode.contains("A2"));
 				} catch (Exception e) {
@@ -350,8 +318,32 @@ public class ExtensionTests extends AbstractTest {
 				}
 			}
 		}, getSourceFile(A2.class), getSourceFile(A1.class));
-		createTranspiler(new JSweetFactory());
-
+	}
+	
+	@Test
+	public void testRemoveImportAdapter() {
+		TranspilerTestRunner transpilerTest = new TranspilerTestRunner(getCurrentTestOutDir(), new JSweetFactory() {
+			@Override
+			public PrinterAdapter createAdapter(JSweetContext context) {
+				return new PrinterAdapter(super.createAdapter(context)) {
+					{
+						addAnnotation("@Replace('')", A1.class.getName() + ".main(..)");
+					}
+				};
+			}
+		});
+		transpilerTest.eval((logHandler, result) -> {
+			logHandler.assertNoProblems();
+			if (transpilerTest.getTranspiler().getContext().options.getModuleKind() == ModuleKind.commonjs) {
+				try {
+					String generatedCode = FileUtils
+							.readFileToString(transpilerTest.getTranspiler().getContext().sourceFiles[1].getTsFile());
+					Assert.assertTrue(generatedCode.contains("A2"));
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+			}
+		}, getSourceFile(A2.class), getSourceFile(A1.class));
 	}
 
 }

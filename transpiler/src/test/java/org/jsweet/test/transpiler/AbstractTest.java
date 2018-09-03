@@ -18,12 +18,9 @@ package org.jsweet.test.transpiler;
 
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
-import static org.junit.Assert.fail;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -31,18 +28,15 @@ import java.util.function.Consumer;
 import javax.lang.model.element.Modifier;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
-import org.jsweet.transpiler.EcmaScriptComplianceLevel;
+import org.jsweet.test.transpiler.util.TranspilerTestRunner;
 import org.jsweet.transpiler.JSweetFactory;
-import org.jsweet.transpiler.JSweetTranspiler;
 import org.jsweet.transpiler.ModuleKind;
 import org.jsweet.transpiler.SourceFile;
 import org.jsweet.transpiler.util.ConsoleTranspilationHandler;
 import org.jsweet.transpiler.util.ErrorCountTranspilationHandler;
 import org.jsweet.transpiler.util.EvaluationResult;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.rules.TestName;
 import org.junit.rules.TestRule;
@@ -57,11 +51,7 @@ public class AbstractTest {
 
 	protected static final String TEST_DIRECTORY_NAME = "src/test/java";
 
-	protected static final Logger staticLogger = Logger.getLogger(AbstractTest.class);
-
 	protected final Logger logger = Logger.getLogger(getClass());
-
-	private static boolean testSuiteInitialized = false;
 
 	private static int testCount;
 
@@ -85,90 +75,38 @@ public class AbstractTest {
 		return getClass().getSimpleName() + "." + testNameRule.getMethodName();
 	}
 
-	public static int runTsc(String... files) throws IOException {
-		String[] args;
-		if (System.getProperty("os.name").startsWith("Windows")) {
-			args = new String[] { "cmd", "/c", "tsc --target ES3" };
-		} else {
-			args = new String[] { "tsc", "--target", "ES3" };
-		}
-		args = ArrayUtils.addAll(args, files);
-		ProcessBuilder pb = new ProcessBuilder(args);
-		pb.redirectErrorStream(true);
-		Process process = pb.start();
-
-		try {
-			BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()));
-			String line;
-			while ((line = in.readLine()) != null) {
-				System.out.println(line);
-			}
-
-			return process.waitFor();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		return -1;
-	}
-
-	protected static JSweetTranspiler transpiler;
+	private TranspilerTestRunner transpilerTest;
 
 	protected static final String TMPOUT_DIR = "tempOut";
 
-	protected static void createTranspiler(JSweetFactory factory) {
-		createTranspiler(null, factory);
-	}
-
-	protected static void createTranspiler(File configurationFile, JSweetFactory factory) {
-		transpiler = new JSweetTranspiler(configurationFile, factory, null, new File(TMPOUT_DIR), null,
-				new File(JSweetTranspiler.TMP_WORKING_DIR_NAME + "/candies/js"), System.getProperty("java.class.path"));
-		transpiler.setEcmaTargetVersion(EcmaScriptComplianceLevel.ES6);
-		transpiler.setEncoding("UTF-8");
-		transpiler.setSkipTypeScriptChecks(true);
-		transpiler.setIgnoreAssertions(false);
-		transpiler.setGenerateSourceMaps(false);
-		transpiler.setUseTsserver(true);
+	protected JavacTypes types() {
+		return transpilerTest.types();
 	}
 	
-	protected JavacTypes types() {
-		return com.sun.tools.javac.model.JavacTypes.instance(transpiler.getContext());
-	}
-
-	@BeforeClass
-	public static void globalSetUp() throws Exception {
-		if (!testSuiteInitialized) {
-			staticLogger.info("*** test suite initialization ***");
-			FileUtils.deleteQuietly(new File(TMPOUT_DIR));
-			staticLogger.info("*** create transpiler ***");
-			createTranspiler(new JSweetFactory());
-			FileUtils.deleteQuietly(transpiler.getWorkingDirectory());
-			transpiler.getCandiesProcessor().touch();
-			testSuiteInitialized = true;
-		}
-	}
-
-	private void initOutputDir() {
-		transpiler.setTsOutputDir(new File(new File(TMPOUT_DIR),
-				getCurrentTestName() + "/" + transpiler.getModuleKind() + (transpiler.isBundle() ? "_bundle" : "")));
+	protected TranspilerTestRunner transpilerTest() {
+		return transpilerTest;
 	}
 
 	@Before
 	public void setUpAbstractTest() {
-		initOutputDir();
+		logger.info("*** init transpiler test  ***");
+		File baseTsOutDir = getCurrentTestOutDir();
+		FileUtils.deleteQuietly(baseTsOutDir);
+		transpilerTest = new TranspilerTestRunner(baseTsOutDir, new JSweetFactory());
 	}
-
-	public AbstractTest() {
-		super();
+	
+	protected File getCurrentTestOutDir() {
+		return new File(new File(TMPOUT_DIR), getCurrentTestName());
 	}
 
 	protected JCClassDecl getSourcePublicClassDeclaration(SourceFile sourceFile) throws IOException {
 		return getSourceClassesDeclarations(sourceFile).stream() //
-				.filter(classDecl -> classDecl.mods.getFlags().contains(Modifier.PUBLIC))
-				.findFirst().get();
+				.filter(classDecl -> classDecl.mods.getFlags().contains(Modifier.PUBLIC)).findFirst().get();
 	}
-	
+
 	protected List<JCClassDecl> getSourceClassesDeclarations(SourceFile sourceFile) throws IOException {
-		List<JCCompilationUnit> compilUnits = transpiler.setupCompiler(asList(sourceFile.getJavaFile()),
+		List<JCCompilationUnit> compilUnits = transpilerTest.getTranspiler().setupCompiler(
+				asList(sourceFile.getJavaFile()),
 				new ErrorCountTranspilationHandler(new ConsoleTranspilationHandler()));
 		return compilUnits.get(0).defs.stream().filter(declaration -> declaration instanceof JCClassDecl) //
 				.map(declaration -> (JCClassDecl) declaration) //
@@ -185,101 +123,36 @@ public class AbstractTest {
 	}
 
 	protected void transpile(Consumer<TestTranspilationHandler> assertions, SourceFile... files) {
-		transpile(new ModuleKind[] { ModuleKind.none, ModuleKind.commonjs }, assertions, files);
+		transpilerTest.transpile(assertions, files);
 	}
 
 	protected void transpile(ModuleKind[] moduleKinds, Consumer<TestTranspilationHandler> assertions,
 			SourceFile... files) {
-		for (ModuleKind moduleKind : moduleKinds) {
-			transpile(moduleKind, assertions, files);
-		}
+		transpilerTest.transpile(moduleKinds, assertions, files);
 	}
 
 	protected void transpile(ModuleKind moduleKind, Consumer<TestTranspilationHandler> assertions,
 			SourceFile... files) {
-		ModuleKind initialModuleKind = transpiler.getModuleKind();
-		File initialOutputDir = transpiler.getTsOutputDir();
-		try {
-			logger.info("*** module kind: " + moduleKind + (transpiler.isBundle() ? " (with bundle)" : "") + " ***");
-			TestTranspilationHandler logHandler = new TestTranspilationHandler();
-			transpiler.setModuleKind(moduleKind);
-			initOutputDir();
-			transpiler.transpile(logHandler, files);
-			if (assertions != null) {
-				assertions.accept(logHandler);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail("exception occured while running test " + getCurrentTestName() + " with module kind " + moduleKind);
-		} finally {
-			transpiler.setModuleKind(initialModuleKind);
-			transpiler.setTsOutputDir(initialOutputDir);
-		}
-		if (moduleKind == ModuleKind.none && !transpiler.isBundle() && files.length > 1) {
-			ArrayUtils.reverse(files);
-			transpiler.setBundle(true);
-			try {
-				transpile(moduleKind, assertions, files);
-			} finally {
-				transpiler.setBundle(false);
-				ArrayUtils.reverse(files);
-			}
-		}
+		transpilerTest.transpile(moduleKind, assertions, files);
 	}
 
 	protected void eval(BiConsumer<TestTranspilationHandler, EvaluationResult> assertions, SourceFile... files) {
-		eval(new ModuleKind[] { ModuleKind.none, ModuleKind.commonjs }, assertions, files);
+		transpilerTest.eval(assertions, files);
 	}
 
 	protected void eval(ModuleKind[] moduleKinds, BiConsumer<TestTranspilationHandler, EvaluationResult> assertions,
 			SourceFile... files) {
-		for (ModuleKind moduleKind : moduleKinds) {
-			eval(moduleKind, assertions, files);
-		}
+		transpilerTest.eval(moduleKinds, assertions, files);
 	}
 
 	protected void eval(ModuleKind moduleKind, BiConsumer<TestTranspilationHandler, EvaluationResult> assertions,
 			SourceFile... files) {
-		eval(moduleKind, true, assertions, files);
+		transpilerTest.eval(moduleKind, assertions, files);
 	}
 
 	protected void eval(ModuleKind moduleKind, boolean testBundle,
 			BiConsumer<TestTranspilationHandler, EvaluationResult> assertions, SourceFile... files) {
-		ModuleKind initialModuleKind = transpiler.getModuleKind();
-		File initialOutputDir = transpiler.getTsOutputDir();
-		try {
-			logger.info("*** module kind: " + moduleKind + (transpiler.isBundle() ? " (with bundle)" : "") + " ***");
-			TestTranspilationHandler logHandler = new TestTranspilationHandler();
-			EvaluationResult res = null;
-			transpiler.setModuleKind(moduleKind);
-
-			// touch will force the transpilation even if the files were
-			// already
-			// transpiled
-			SourceFile.touch(files);
-			initOutputDir();
-			res = transpiler.eval(logHandler, files);
-			logger.trace(getCurrentTestName() + " -- result=" + res.getExecutionTrace());
-			if (assertions != null) {
-				assertions.accept(logHandler, res);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail("exception occured while running test " + getCurrentTestName() + " with module kind " + moduleKind);
-		} finally {
-			transpiler.setModuleKind(initialModuleKind);
-			transpiler.setTsOutputDir(initialOutputDir);
-		}
-		if (testBundle && moduleKind == ModuleKind.none && !transpiler.isBundle() && files.length > 1) {
-			ArrayUtils.reverse(files);
-			transpiler.setBundle(true);
-			try {
-				eval(moduleKind, assertions, files);
-			} finally {
-				transpiler.setBundle(false);
-				ArrayUtils.reverse(files);
-			}
-		}
+		transpilerTest.eval(moduleKind, testBundle, assertions, files);
 
 	}
 

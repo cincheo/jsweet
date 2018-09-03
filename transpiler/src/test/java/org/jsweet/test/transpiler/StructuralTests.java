@@ -19,6 +19,7 @@ package org.jsweet.test.transpiler;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import org.jsweet.test.transpiler.util.TranspilerTestRunner;
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetFactory;
 import org.jsweet.transpiler.JSweetOptions;
@@ -372,7 +373,7 @@ public class StructuralTests extends AbstractTest {
 
 	@Test
 	public void testReplaceAnnotation() {
-		createTranspiler(new JSweetFactory() {
+		TranspilerTestRunner transpilerTest = new TranspilerTestRunner(getCurrentTestOutDir(), new JSweetFactory() {
 			@Override
 			public Java2TypeScriptAdapter createAdapter(JSweetContext context) {
 				return new Java2TypeScriptAdapter(context) {
@@ -386,7 +387,7 @@ public class StructuralTests extends AbstractTest {
 				};
 			}
 		});
-		eval(ModuleKind.none, (logHandler, r) -> {
+		transpilerTest.eval(ModuleKind.none, (logHandler, r) -> {
 			logHandler.assertNoProblems();
 			assertEquals(2, (int) r.get("test1"));
 			assertEquals(3, (int) r.get("test2"));
@@ -394,7 +395,6 @@ public class StructuralTests extends AbstractTest {
 			assertEquals(3, (int) r.get("test4"));
 			assertEquals(3, (int) r.get("test5"));
 		}, getSourceFile(ReplaceAnnotation.class));
-		createTranspiler(new JSweetFactory());
 	}
 
 	@Test
@@ -433,7 +433,7 @@ public class StructuralTests extends AbstractTest {
 			assertEquals("test3", r.get("value3"));
 			assertEquals("test4", r.get("value4"));
 		}, getSourceFile(StaticMembersInInterfaces.class));
-		createTranspiler(new JSweetFactory() {
+		TranspilerTestRunner transpilerTest = new TranspilerTestRunner(getCurrentTestOutDir(), new JSweetFactory() {
 			@Override
 			public JSweetContext createContext(JSweetOptions options) {
 				return new JSweetContext(options) {
@@ -443,14 +443,13 @@ public class StructuralTests extends AbstractTest {
 				};
 			}
 		});
-		eval((logHandler, r) -> {
+		transpilerTest.eval((logHandler, r) -> {
 			logHandler.assertNoProblems();
 			assertEquals("test1", r.get("value1"));
 			assertEquals("test2", r.get("value2"));
 			assertEquals("test3", r.get("value3"));
 			assertEquals("test4", r.get("value4"));
 		}, getSourceFile(StaticMembersInInterfaces.class));
-		createTranspiler(new JSweetFactory());
 	}
 
 	@Test

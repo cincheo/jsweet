@@ -57,13 +57,12 @@ public class RootTests extends AbstractTest {
 		transpile((logHandler) -> {
 			logHandler.assertNoProblems();
 		}, getSourceFile(InvalidClassLocation.class), getSourceFile(NoClassesInRootParent.class));
-		transpiler.setNoRootDirectories(true);
+transpilerTest().getTranspiler().setNoRootDirectories(true);
 		transpile((logHandler) -> {
-			if (!transpiler.isBundle()) {
+			if (!transpilerTest().getTranspiler().isBundle()) {
 				logHandler.assertReportedProblems(JSweetProblem.CLASS_OUT_OF_ROOT_PACKAGE_SCOPE);
 			}
 		}, getSourceFile(InvalidClassLocation.class), getSourceFile(NoClassesInRootParent.class));
-		transpiler.setNoRootDirectories(false);
 	}
 
 	@Test
@@ -71,11 +70,10 @@ public class RootTests extends AbstractTest {
 		transpile((logHandler) -> {
 			logHandler.assertNoProblems();
 		}, getSourceFile(NoRootInRoot.class));
-		transpiler.setNoRootDirectories(true);
+		transpilerTest().getTranspiler().setNoRootDirectories(true);
 		transpile((logHandler) -> {
 			logHandler.assertReportedProblems(JSweetProblem.ENCLOSED_ROOT_PACKAGES);
 		}, getSourceFile(NoRootInRoot.class));
-		transpiler.setNoRootDirectories(false);
 	}
 
 	@Test

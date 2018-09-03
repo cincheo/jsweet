@@ -24,11 +24,10 @@ public class DefinitionsTest extends AbstractTest {
 
 	@Test
 	public void testObjectType() {
-		transpiler.setGenerateDefinitions(true);
+		transpilerTest().getTranspiler().setGenerateDefinitions(true);
 		transpile(h -> {
 			h.assertNoProblems();
 		}, getSourceFile(ClassWithObjectType.class));
-		transpiler.setGenerateDefinitions(false);
 	}
 
 }

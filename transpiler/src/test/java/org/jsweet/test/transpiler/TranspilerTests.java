@@ -30,6 +30,7 @@ import java.util.stream.Stream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jsweet.JSweetCommandLineLauncher;
+import org.jsweet.test.transpiler.util.TranspilerTestRunner;
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetFactory;
 import org.jsweet.transpiler.JSweetTranspiler;
@@ -93,7 +94,7 @@ public class TranspilerTests extends AbstractTest {
 			File abstractClass = getSourceFile(AbstractClass.class).getJavaFile();
 			JSweetTranspiler transpiler = new JSweetTranspiler(new JSweetFactory());
 			transpiler.setTscWatchMode(true);
-			transpiler.setPreserveSourceLineNumbers(true);
+			transpiler.setGenerateSourceMaps(true);
 			long t = System.currentTimeMillis();
 			transpiler.transpile(logHandler, new SourceFile(overload), new SourceFile(abstractClass));
 			t = System.currentTimeMillis() - t;
@@ -155,16 +156,6 @@ public class TranspilerTests extends AbstractTest {
 			e.printStackTrace();
 			fail("Exception occured while running test");
 		}
-	}
-
-	@Ignore
-	@Test
-	public void testTscInstallation() throws Exception {
-		ProcessUtil.uninstallNodePackage("typescript", true);
-		assertFalse(ProcessUtil.isInstalledWithNpm("tsc"));
-		globalSetUp();
-		// transpiler.cleanWorkingDirectory();
-		transpile(ModuleKind.none, h -> h.assertNoProblems(), getSourceFile(Overload.class));
 	}
 
 	@Test
@@ -317,59 +308,52 @@ public class TranspilerTests extends AbstractTest {
 
 	@Test
 	public void testSourceMapsSimple() throws Throwable {
-		boolean sourceMaps = transpiler.isPreserveSourceLineNumbers();
-		try {
-			transpiler.setPreserveSourceLineNumbers(true);
-			SourceFile[] sourceFiles = { getSourceFile(CanvasDrawing.class) };
-			transpile(ModuleKind.none, logHandler -> {
+		JSweetTranspiler transpiler = transpilerTest().getTranspiler();
 
-				logger.info("transpilation finished: " + transpiler.getModuleKind());
-				logHandler.assertNoProblems();
-				logger.info(sourceFiles[0].getSourceMap().toString());
+		transpiler.setGenerateSourceMaps(true);
+		SourceFile[] sourceFiles = { getSourceFile(CanvasDrawing.class) };
+		transpile(ModuleKind.none, logHandler -> {
 
-				assertEqualPositions(sourceFiles, sourceFiles[0], "angle += 0.05");
-				assertEqualPositions(sourceFiles, sourceFiles[0], "aTestVar");
-				assertEqualPositions(sourceFiles, sourceFiles[0], "for");
+			logger.info("transpilation finished: " + transpiler.getModuleKind());
+			logHandler.assertNoProblems();
+			logger.info(sourceFiles[0].getSourceMap().toString());
 
-				assertEqualPositions(sourceFiles, sourceFiles[0], "aTestParam1");
-				assertEqualPositions(sourceFiles, sourceFiles[0], "aTestParam2");
+			assertEqualPositions(sourceFiles, sourceFiles[0], "angle += 0.05");
+			assertEqualPositions(sourceFiles, sourceFiles[0], "aTestVar");
+			assertEqualPositions(sourceFiles, sourceFiles[0], "for");
 
-				assertEqualPositions(sourceFiles, sourceFiles[0], "aTestString");
+			assertEqualPositions(sourceFiles, sourceFiles[0], "aTestParam1");
+			assertEqualPositions(sourceFiles, sourceFiles[0], "aTestParam2");
 
-			}, Arrays.copyOf(sourceFiles, sourceFiles.length));
-		} finally {
-			transpiler.setPreserveSourceLineNumbers(sourceMaps);
-		}
+			assertEqualPositions(sourceFiles, sourceFiles[0], "aTestString");
+
+		}, Arrays.copyOf(sourceFiles, sourceFiles.length));
 	}
 
 	@Test
 	public void testSourceMaps() throws Throwable {
-		boolean sourceMaps = transpiler.isPreserveSourceLineNumbers();
-		try {
-			transpiler.setPreserveSourceLineNumbers(true);
-			SourceFile[] sourceFiles = { getSourceFile(Point.class), getSourceFile(Vector.class),
-					getSourceFile(AnimatedElement.class), getSourceFile(Line.class), getSourceFile(MobileElement.class),
-					getSourceFile(Rectangle.class), getSourceFile(Direction.class), getSourceFile(Collisions.class),
-					getSourceFile(Ball.class), getSourceFile(Globals.class), getSourceFile(BlockElement.class),
-					getSourceFile(Factory.class), getSourceFile(GameArea.class), getSourceFile(GameManager.class),
-					getSourceFile(Player.class) };
-			transpile(logHandler -> {
+		JSweetTranspiler transpiler = transpilerTest().getTranspiler();
+		transpiler.setGenerateSourceMaps(true);
+		SourceFile[] sourceFiles = { getSourceFile(Point.class), getSourceFile(Vector.class),
+				getSourceFile(AnimatedElement.class), getSourceFile(Line.class), getSourceFile(MobileElement.class),
+				getSourceFile(Rectangle.class), getSourceFile(Direction.class), getSourceFile(Collisions.class),
+				getSourceFile(Ball.class), getSourceFile(Globals.class), getSourceFile(BlockElement.class),
+				getSourceFile(Factory.class), getSourceFile(GameArea.class), getSourceFile(GameManager.class),
+				getSourceFile(Player.class) };
+		transpile(logHandler -> {
 
-				logger.info("transpilation finished: " + transpiler.getModuleKind());
-				logHandler.assertNoProblems();
-				logger.info(sourceFiles[11].getSourceMap().toString());
+			logger.info("transpilation finished: " + transpiler.getModuleKind());
+			logHandler.assertNoProblems();
+			logger.info(sourceFiles[11].getSourceMap().toString());
 
-				assertEqualPositions(sourceFiles, sourceFiles[0], " distance(");
-				assertEqualPositions(sourceFiles, sourceFiles[0], "class Point");
-				assertEqualPositions(sourceFiles, sourceFiles[3], "invalid query on non-vertical lines");
+			assertEqualPositions(sourceFiles, sourceFiles[0], " distance(");
+			assertEqualPositions(sourceFiles, sourceFiles[0], "class Point");
+			assertEqualPositions(sourceFiles, sourceFiles[3], "invalid query on non-vertical lines");
 
-				assertEqualPositions(sourceFiles, sourceFiles[11], "class InnerClass");
-				assertEqualPositions(sourceFiles, sourceFiles[11], "inner class");
+			assertEqualPositions(sourceFiles, sourceFiles[11], "class InnerClass");
+			assertEqualPositions(sourceFiles, sourceFiles[11], "inner class");
 
-			}, Arrays.copyOf(sourceFiles, sourceFiles.length));
-		} finally {
-			transpiler.setPreserveSourceLineNumbers(sourceMaps);
-		}
+		}, Arrays.copyOf(sourceFiles, sourceFiles.length));
 	}
 
 	private void assertEqualPositions(SourceFile[] sourceFiles, SourceFile sourceFile, String codeSnippet) {
@@ -404,21 +388,20 @@ public class TranspilerTests extends AbstractTest {
 
 	@Test
 	public void testExtension() {
-		createTranspiler(new JSweetFactory() {
+		TranspilerTestRunner transpilerTest = new TranspilerTestRunner(getCurrentTestOutDir(), new JSweetFactory() {
 			@Override
 			public PrinterAdapter createAdapter(JSweetContext context) {
 				return new AddPrefixToNonPublicMembersAdapter(super.createAdapter(context));
 			}
 		});
-		eval(ModuleKind.none, (logHandler, result) -> {
+		transpilerTest.eval(ModuleKind.none, (logHandler, result) -> {
 			logHandler.assertNoProblems();
 		}, getSourceFile(PrefixExtension.class));
-		createTranspiler(new JSweetFactory());
 	}
 
 	@Test
 	public void testExtension2() {
-		createTranspiler(new JSweetFactory() {
+		TranspilerTestRunner transpilerTest = new TranspilerTestRunner(getCurrentTestOutDir(), new JSweetFactory() {
 			@Override
 			public Java2TypeScriptAdapter createAdapter(JSweetContext context) {
 				return new Java2TypeScriptAdapter(super.createAdapter(context)) {
@@ -429,11 +412,10 @@ public class TranspilerTests extends AbstractTest {
 				};
 			}
 		});
-		transpiler.setBundle(true);
-		eval(ModuleKind.none, true, (logHandler, result) -> {
+		transpilerTest.getTranspiler().setBundle(true);
+		transpilerTest.eval(ModuleKind.none, true, (logHandler, result) -> {
 			logHandler.assertNoProblems();
 		}, getSourceFile(A.class), getSourceFile(B.class), getSourceFile(Extended.class));
-		createTranspiler(new JSweetFactory());
 	}
 
 	@Test
@@ -449,7 +431,7 @@ public class TranspilerTests extends AbstractTest {
 				fail(e.getMessage());
 			}
 		}, f);
-		transpiler.setBundle(true);
+		transpilerTest().getTranspiler().setBundle(true);
 		transpile(ModuleKind.none, logHandler -> {
 			logHandler.assertNoProblems();
 			try {
@@ -460,14 +442,13 @@ public class TranspilerTests extends AbstractTest {
 				fail(e.getMessage());
 			}
 		}, f);
-		transpiler.setBundle(false);
 	}
 
 	@Test
 	public void testHeaderFile() {
 		SourceFile f = getSourceFile(CanvasDrawing.class);
 		File headerFile = new File(f.getJavaFile().getParentFile(), "header.txt");
-		transpiler.setHeaderFile(headerFile);
+		transpilerTest().getTranspiler().setHeaderFile(headerFile);
 		transpile(logHandler -> {
 			logHandler.assertNoProblems();
 			try {
@@ -478,7 +459,7 @@ public class TranspilerTests extends AbstractTest {
 				fail(e.getMessage());
 			}
 		}, f);
-		transpiler.setBundle(true);
+		transpilerTest().getTranspiler().setBundle(true);
 		transpile(ModuleKind.none, logHandler -> {
 			logHandler.assertNoProblems();
 			try {
@@ -489,18 +470,16 @@ public class TranspilerTests extends AbstractTest {
 				fail(e.getMessage());
 			}
 		}, f);
-		transpiler.setBundle(false);
-		transpiler.setHeaderFile(null);
 	}
 
 	@Test
 	public void testConfigurationFile() {
 		SourceFile f = getSourceFile(CanvasDrawing.class);
 		File configurationFile = new File(f.getJavaFile().getParentFile(), "configuration-nobundle.json");
-		createTranspiler(configurationFile, new JSweetFactory());
-		assertTrue(transpiler.getHeaderFile().getPath().endsWith("header.txt"));
-		assertFalse(transpiler.isBundle());
-		transpile(logHandler -> {
+		TranspilerTestRunner transpilerTest = new TranspilerTestRunner(configurationFile, getCurrentTestOutDir(), new JSweetFactory());
+		assertTrue(transpilerTest.getTranspiler().getHeaderFile().getPath().endsWith("header.txt"));
+		assertFalse(transpilerTest.getTranspiler().isBundle());
+		transpilerTest.transpile(logHandler -> {
 			logHandler.assertNoProblems();
 			try {
 				String generatedCode = FileUtils.readFileToString(f.getTsFile());
@@ -511,10 +490,10 @@ public class TranspilerTests extends AbstractTest {
 			}
 		}, f);
 		configurationFile = new File(f.getJavaFile().getParentFile(), "configuration-bundle.json");
-		createTranspiler(configurationFile, new JSweetFactory());
-		assertTrue(transpiler.getHeaderFile().getPath().endsWith("header.txt"));
-		assertTrue(transpiler.isBundle());
-		transpile(ModuleKind.none, logHandler -> {
+		transpilerTest = new TranspilerTestRunner(configurationFile, getCurrentTestOutDir(), new JSweetFactory());
+		assertTrue(transpilerTest.getTranspiler().getHeaderFile().getPath().endsWith("header.txt"));
+		assertTrue(transpilerTest.getTranspiler().isBundle());
+		transpilerTest.transpile(ModuleKind.none, logHandler -> {
 			logHandler.assertNoProblems();
 			try {
 				String generatedCode = FileUtils.readFileToString(f.getTsFile());
@@ -524,7 +503,6 @@ public class TranspilerTests extends AbstractTest {
 				fail(e.getMessage());
 			}
 		}, f);
-		createTranspiler(new JSweetFactory());
 	}
 
 }
