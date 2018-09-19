@@ -4730,72 +4730,75 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	}
 
 	/**
-	 * Prints an assignment operator tree (<code>+=, -=, *=, ...</code>).
-	 */
-	@Override
-	public void visitAssignop(JCAssignOp assignOp) {
-		if (!getAdapter().substituteAssignmentWithOperator(new AssignmentWithOperatorElementSupport(assignOp))) {
-			boolean expand = staticInitializedAssignment = (getStaticInitializedField(assignOp.lhs) != null);
-			boolean expandChar = context.types.isSameType(context.symtab.charType,
-					context.types.unboxedTypeOrType(assignOp.lhs.type));
-			print(assignOp.lhs);
-			staticInitializedAssignment = false;
-			String op = assignOp.operator.name.toString();
+     * Prints an assignment operator tree (<code>+=, -=, *=, ...</code>).
+     */
+    @Override
+    public void visitAssignop(JCAssignOp assignOp) {
+        if (!getAdapter().substituteAssignmentWithOperator(new AssignmentWithOperatorElementSupport(assignOp))) {
+            boolean expand = staticInitializedAssignment = (getStaticInitializedField(assignOp.lhs) != null);
+            boolean expandChar = context.types.isSameType(context.symtab.charType,
+                    context.types.unboxedTypeOrType(assignOp.lhs.type));
+            print(assignOp.lhs);
+            staticInitializedAssignment = false;
+            String op = assignOp.operator.name.toString();
 
-			if (context.types.isSameType(context.symtab.booleanType,
-					context.types.unboxedTypeOrType(assignOp.lhs.type))) {
-				if ("|".equals(op)) {
-					print(" = ").print(assignOp.rhs).print(" || ").print(assignOp.lhs);
-					return;
-				} else if ("&".equals(op)) {
-					print(" = ").print(assignOp.rhs).print(" && ").print(assignOp.lhs);
-					return;
-				}
-			}
+            if (context.types.isSameType(context.symtab.booleanType,
+                    context.types.unboxedTypeOrType(assignOp.lhs.type))) {
+                if ("|".equals(op)) {
+                    print(" = ").print(assignOp.rhs).print(" || ").print(assignOp.lhs);
+                    return;
+                } else if ("&".equals(op)) {
+                    print(" = ").print(assignOp.rhs).print(" && ").print(assignOp.lhs);
+                    return;
+                }
+            }
 
-			boolean castToIntegral = "/".equals(op) //
-					&& Util.isIntegral(assignOp.lhs.type) //
-					&& Util.isIntegral(assignOp.rhs.type);
+            boolean castToIntegral = "/".equals(op) //
+                    && Util.isIntegral(assignOp.lhs.type) //
+                    && Util.isIntegral(assignOp.rhs.type);
 
-			if (expandChar) {
-				print(" = String.fromCharCode(")
-						.substituteAndPrintAssignedExpression(context.symtab.intType, assignOp.lhs)
-						.print(" " + op + " ")
-						.substituteAndPrintAssignedExpression(context.symtab.intType, assignOp.rhs).print(")");
-				return;
-			}
+            if (expandChar) {
+                print(" = String.fromCharCode(")
+                        .substituteAndPrintAssignedExpression(context.symtab.intType, assignOp.lhs)
+                        .print(" " + op + " ")
+                        .substituteAndPrintAssignedExpression(context.symtab.intType, assignOp.rhs).print(")");
+                return;
+            }
 
-			if (expand || castToIntegral) {
-				print(" = ");
+            if (expand || castToIntegral) {
+                print(" = ");
 
-				if (castToIntegral) {
-					print("(n => n<0?Math.ceil(n):Math.floor(n))(");
-				}
+                if (castToIntegral) {
+                    print("(n => n<0?Math.ceil(n):Math.floor(n))(");
+                }
 
-				print(assignOp.lhs);
-				print(" " + op + " ");
-				if (context.types.isSameType(context.symtab.charType,
-						context.types.unboxedTypeOrType(assignOp.rhs.type))) {
-					substituteAndPrintAssignedExpression(context.symtab.intType, assignOp.rhs);
-				} else {
-					print(assignOp.rhs);
-				}
+                print(assignOp.lhs);
+                print(" " + op + " ");
+                if (context.types.isSameType(context.symtab.charType,
+                        context.types.unboxedTypeOrType(assignOp.rhs.type))) {
+                    substituteAndPrintAssignedExpression(context.symtab.intType, assignOp.rhs);
+                } else {
+                    print(assignOp.rhs);
+                }
 
-				if (castToIntegral) {
-					print(")");
-				}
+                if (castToIntegral) {
+                    print(")");
+                }
 
-				return;
-			}
+                return;
+            }
 
-			print(" " + op + "= ");
-			if (context.types.isSameType(context.symtab.charType, context.types.unboxedTypeOrType(assignOp.rhs.type))) {
-				substituteAndPrintAssignedExpression(context.symtab.intType, assignOp.rhs);
-			} else {
-				print(assignOp.rhs);
-			}
-		}
-	}
+            print(" " + op + "= ");
+            if (context.types.isSameType(context.symtab.charType, context.types.unboxedTypeOrType(assignOp.rhs.type))) {
+                // Type lhsType = assignOp.lhs.type;
+                boolean isLeftOperandString = (assignOp.lhs.type.tsym == context.symtab.stringType.tsym);
+                Type rightPromotedType = isLeftOperandString ? context.symtab.charType : context.symtab.intType;            
+                substituteAndPrintAssignedExpression(rightPromotedType, assignOp.rhs);
+            } else {
+                print(assignOp.rhs);
+            }
+        }
+    }
 
 	/**
 	 * Prints a <code>condition?trueExpr:falseExpr</code> tree.

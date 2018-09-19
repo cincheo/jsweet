@@ -32,6 +32,7 @@ import source.calculus.MathApi;
 import source.calculus.Null;
 import source.calculus.Numbers;
 import source.calculus.Operators;
+import source.calculus.Strings;
 
 public class CalculusTests extends AbstractTest {
 
@@ -168,4 +169,15 @@ public class CalculusTests extends AbstractTest {
 		}, getSourceFile(Numbers.class));
 	}
 
+	@Test
+	public void testStrings() {
+		eval(ModuleKind.none, (logHandler, r) -> {
+			logHandler.assertNoProblems();
+			Assert.assertEquals("a", r.get("str_plus_char_casted_int").toString());
+			Assert.assertEquals("97", r.get("str_plus_int").toString());
+			Assert.assertEquals("d", r.get("str_plus_char").toString());
+			Assert.assertEquals("a", r.get("str_plus_equal_casted_int").toString());
+			Assert.assertEquals("97", r.get("str_plus_equal_int").toString());
+		}, getSourceFile(Strings.class));
+	}
 }
