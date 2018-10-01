@@ -21,6 +21,7 @@ package org.jsweet.transpiler.candy;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -87,7 +88,7 @@ public class CandyProcessor {
 	private File candiesTsdefsDir;
 	private File candiesJavascriptOutDir;
 	private File workingDir;
-	private List<File> extractedJsFiles = new LinkedList<>();
+	private Map<String, List<File>> extractedJsFilesByCandy = new HashMap<>();
 
 	/**
 	 * Create a candies processor.
@@ -307,6 +308,9 @@ public class CandyProcessor {
 					}
 					extractEntry(jarFile, entry, out);
 				});
+		
+		List<File> extractJsFileForCandy = new LinkedList<>();
+		extractedJsFilesByCandy.put(descriptor.name, extractJsFileForCandy);
 
 		for (String jsFilePath : descriptor.jsFilesPaths) {
 			JarEntry entry = jarFile.getJarEntry(jsFilePath);
@@ -314,7 +318,7 @@ public class CandyProcessor {
 
 			File out = new File(jsOutputDirectory, relativeJsPath);
 			extractEntry(jarFile, entry, out);
-			extractedJsFiles.add(out);
+			extractJsFileForCandy.add(out);
 		}
 	}
 
@@ -380,6 +384,14 @@ public class CandyProcessor {
 	}
 
 	public List<File> getExtractedJsFiles() {
+		List<File> extractedJsFiles = new LinkedList<>();
+		for (List<File> extractedFilesForCandy : getExtractedJsFilesByCandy().values()) {
+			extractedJsFiles.addAll(extractedFilesForCandy);
+		}
 		return extractedJsFiles;
+	}
+	
+	public Map<String, List<File>> getExtractedJsFilesByCandy() {
+		return extractedJsFilesByCandy;
 	}
 }
