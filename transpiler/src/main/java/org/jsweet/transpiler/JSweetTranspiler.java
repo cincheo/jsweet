@@ -228,6 +228,8 @@ public class JSweetTranspiler implements JSweetOptions {
 	private boolean debugMode = false;
 	private boolean skipTypeScriptChecks = false;
 	private boolean disableSingleFloatPrecision = false;
+	private boolean ignoreCandiesTypeScriptDefinitions = false;
+	
 	private ArrayList<String> adapters = new ArrayList<>();
 	private File configurationFile;
 
@@ -821,7 +823,9 @@ public class JSweetTranspiler implements JSweetOptions {
 		}
 		candiesProcessor.processCandies(transpilationHandler);
 
-		addTsDefDir(candiesProcessor.getCandiesTsdefsDir());
+		if (!isIgnoreCandiesTypeScriptDefinitions()) {
+			addTsDefDir(candiesProcessor.getCandiesTsdefsDir());
+		}
 
 		ErrorCountTranspilationHandler errorHandler = new ErrorCountTranspilationHandler(transpilationHandler);
 		Collection<SourceFile> jsweetSources = asList(files).stream() //
@@ -1798,5 +1802,13 @@ public class JSweetTranspiler implements JSweetOptions {
 
 	public String getClassPath() {
 		return classPath;
+	}
+	
+	public boolean isIgnoreCandiesTypeScriptDefinitions() {
+		return ignoreCandiesTypeScriptDefinitions;
+	}
+	
+	public void setIgnoreCandiesTypeScriptDefinitions(boolean ignoreCandiesTypeScriptDefinitions) {
+		this.ignoreCandiesTypeScriptDefinitions = ignoreCandiesTypeScriptDefinitions;
 	}
 }
