@@ -144,8 +144,8 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		extTypesMapping.put(RuntimeException.class.getName(), "Error");
 		extTypesMapping.put(Throwable.class.getName(), "Error");
 		extTypesMapping.put(Error.class.getName(), "Error");
-		extTypesMapping.put(StringBuffer.class.getName(), "{ str: string }");
-		extTypesMapping.put(StringBuilder.class.getName(), "{ str: string }");
+		extTypesMapping.put(StringBuffer.class.getName(), "{ str: string, toString: Function }");
+		extTypesMapping.put(StringBuilder.class.getName(), "{ str: string, toString: Function }");
 		extTypesMapping.put(Collator.class.getName(), "any");
 		extTypesMapping.put(Calendar.class.getName(), "Date");
 		extTypesMapping.put(GregorianCalendar.class.getName(), "Date");
@@ -1535,9 +1535,9 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		case "java.lang.StringBuffer":
 		case "java.lang.StringBuilder":
 			if (newClass.getArgumentCount() == 0 || Util.isNumber(newClass.getArgument(0).getType())) {
-				print("{ str: \"\" }");
+				print("{ str: \"\", toString: function() { return this.str; } }");
 			} else {
-				print("{ str: ").print(newClass.getArgument(0)).print("}");
+				print("{ str: ").print(newClass.getArgument(0)).print(", toString: function() { return this.str; } }");
 			}
 			substitute = true;
 			break;
