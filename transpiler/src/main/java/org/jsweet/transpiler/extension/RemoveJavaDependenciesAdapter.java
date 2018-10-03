@@ -1535,9 +1535,9 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		case "java.lang.StringBuffer":
 		case "java.lang.StringBuilder":
 			if (newClass.getArgumentCount() == 0 || Util.isNumber(newClass.getArgument(0).getType())) {
-				print("{ str: \"\", toString: function() { return this.str; } }");
+				print("{ str: \"\" }");
 			} else {
-				print("{ str: ").print(newClass.getArgument(0)).print(", toString: function() { return this.str; } }");
+				print("{ str: ").print(newClass.getArgument(0)).print("}");
 			}
 			substitute = true;
 			break;
