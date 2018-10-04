@@ -983,9 +983,14 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 				return true;
 			case "remove":
 				printMacroName(targetMethodName);
+				print("(map => { let deleted = ");
+				print(invocation.getTargetExpression(), delegate).print("[").print(invocation.getArgument(0))
+						.print("];");
 				print("delete ");
 				print(invocation.getTargetExpression(), delegate).print("[").print(invocation.getArgument(0))
-						.print("]");
+						.print("];");
+				print("return deleted;})").print("(");
+				print(invocation.getTargetExpression(), delegate).print(")");
 				return true;
 			case "clear":
 				printMacroName(targetMethodName);
