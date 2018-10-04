@@ -392,8 +392,13 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 				switch (targetMethodName) {
 				case "get":
 					printMacroName(targetMethodName);
+
+					print("((tlObj: any) => {" //
+							+ "    if (tlObj.___value) { return tlObj.___value } " //
+							+ "    else { return tlObj.___value = tlObj.initialValue() } " //
+							+ "  })(");
 					print(invocation.getTargetExpression());
-					print(".initialValue()");
+					print(")");
 					return true;
 				}
 				break;

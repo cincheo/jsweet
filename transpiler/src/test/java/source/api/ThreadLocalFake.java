@@ -10,6 +10,10 @@ public class ThreadLocalFake {
 		public ImportantClass(String string) {
 			this.message = string;
 		}
+		
+		public void setMessage(String message) {
+			this.message = message;
+		}
 
 		@Override
 		public String toString() {
@@ -29,5 +33,10 @@ public class ThreadLocalFake {
 
 		ImportantClass c = test.get();
 		$export("out", "" + c);
+		
+		test.get().setMessage("nakach");
+		$export("out2", "" + test.get());
+		
+		$export("out3", "" + test.get());
 	}
 }

@@ -101,6 +101,8 @@ public class ApiTests extends AbstractTest {
 		eval((logHandler, result) -> {
 			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
 			assertEquals("coucou", result.get("out"));
+			assertEquals("nakach", result.get("out2"));
+			assertEquals("nakach", result.get("out3"));
 		}, getSourceFile(ThreadLocalFake.class));
 	}
 

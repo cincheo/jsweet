@@ -47,6 +47,8 @@ import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 
+import ts.nodejs.NodejsProcess;
+
 public class AbstractTest {
 
 	protected static final String TEST_DIRECTORY_NAME = "src/test/java";
@@ -89,6 +91,8 @@ public class AbstractTest {
 
 	@Before
 	public void setUpAbstractTest() {
+		NodejsProcess.logProcessStopStack = false;
+		
 		logger.info("*** init transpiler test  ***");
 		File baseTsOutDir = getCurrentTestOutDir();
 		FileUtils.deleteQuietly(baseTsOutDir);
