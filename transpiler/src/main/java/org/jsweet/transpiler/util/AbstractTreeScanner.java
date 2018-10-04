@@ -336,6 +336,17 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 	}
 
 	/**
+	 * Returns the currently visited node in the printer's scanning stack.
+	 */
+	public JCTree getCurrent() {
+		if (this.stack.size() >= 1) {
+			return this.stack.get(this.stack.size() - 1);
+		} else {
+			return null;
+		}
+	}
+	
+	/**
 	 * Returns the immediate parent in the printer's scanning stack.
 	 */
 	public JCTree getParent() {

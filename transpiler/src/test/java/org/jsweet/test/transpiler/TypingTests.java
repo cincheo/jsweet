@@ -25,6 +25,7 @@ import def.test.Globals;
 import def.test.JQuery;
 import def.test2.ExtendedJQuery;
 import source.typing.ArraysOfLambdas;
+import source.typing.CastConversions;
 import source.typing.ClassType;
 import source.typing.ClassTypeAsFunction;
 import source.typing.ClassTypeAsTypeOf;
@@ -121,6 +122,13 @@ public class TypingTests extends AbstractTest {
 		}, getSourceFile(Tuples.class));
 	}
 
+	@Test
+	public void testCastConversions() {
+		eval(ModuleKind.none, (logHandler, r) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(CastConversions.class));
+	}
+	
 	@Test
 	public void testUnions() {
 		eval(ModuleKind.none, (logHandler, r) -> {
