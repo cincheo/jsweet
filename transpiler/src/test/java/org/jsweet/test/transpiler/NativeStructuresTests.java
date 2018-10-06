@@ -109,7 +109,7 @@ public class NativeStructuresTests extends AbstractTest {
 	public void testMaps() {
 		eval((logHandler, result) -> {
 			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-			assertEquals("1,a,2,b,2,a,true,[1, 2],[a, b],1,true,size2=2,1,2,[],empty=true,-null-,1,a,2,b",
+			assertEquals("1,a,2,b,2,a,true,[1, 2],[a, b],a,1,true,size2=2,1,2,[],empty=true,-null-,1,a,2,b",
 					result.get("trace"));
 		}, getSourceFile(Maps.class));
 	}

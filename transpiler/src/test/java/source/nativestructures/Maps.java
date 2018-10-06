@@ -47,8 +47,9 @@ public class Maps {
 
 		Map<String, String> m2 = (Map) m.clone();
 		
-		m.remove("1");
+		String removed = m.remove("1");
 
+		trace.push(removed);
 		trace.push("" + m.size());
 		trace.push("" + (m.get("1") == null));
 		
