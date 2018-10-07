@@ -5,6 +5,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import jsweet.lang.Name;
 import jsweet.util.Lang;
 
 /**
@@ -77,7 +78,18 @@ public class Promise<T> extends PromiseLike<T> {
 	 *            An array of Promises.
 	 * @returns A new Promise.
 	 */
-	native public static <T> Promise<T[]> all(IterableT<T> values);
+	@Name("all")
+	native public static <T> Promise<T[]> allFromValues(Iterable<T> values);
+
+	/**
+	 * Creates a Promise that is resolved with an array of results when all of the
+	 * provided Promises resolve, or rejected when any Promise is rejected.
+	 * 
+	 * @param values
+	 *            An array of Promises.
+	 * @returns A new Promise.
+	 */
+	native public static <T> Promise<T[]> all(Iterable<PromiseLike<T>> values);
 
 	/**
 	 * Creates a Promise that is resolved or rejected when any of the provided
@@ -211,16 +223,6 @@ public class Promise<T> extends PromiseLike<T> {
 	 */
 	public Promise(BiConsumer<java.util.function.Consumer<T>, java.util.function.Consumer<java.lang.Object>> executor) {
 	}
-
-	/**
-	 * Creates a Promise that is resolved with an array of results when all of the
-	 * provided Promises resolve, or rejected when any Promise is rejected.
-	 * 
-	 * @param values
-	 *            An array of Promises.
-	 * @returns A new Promise.
-	 */
-	native public static <T> Promise<T[]> all(IterablePromiseLikeT<T> values);
 
 	/**
 	 * Creates a Promise that is resolved or rejected when any of the provided
