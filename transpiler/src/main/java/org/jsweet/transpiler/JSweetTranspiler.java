@@ -229,7 +229,7 @@ public class JSweetTranspiler implements JSweetOptions {
 	private boolean skipTypeScriptChecks = false;
 	private boolean disableSingleFloatPrecision = false;
 	private boolean ignoreCandiesTypeScriptDefinitions = false;
-	
+
 	private ArrayList<String> adapters = new ArrayList<>();
 	private File configurationFile;
 
@@ -1769,7 +1769,11 @@ public class JSweetTranspiler implements JSweetOptions {
 	}
 
 	public void setVerbose(boolean verbose) {
-		LogManager.getLogger("org.jsweet").setLevel(Level.ALL);
+		Level level = Level.WARN;
+		if (verbose) {
+			level = Level.ALL;
+		}
+		LogManager.getLogger("org.jsweet").setLevel(level);
 	}
 
 	@Override
@@ -1803,11 +1807,11 @@ public class JSweetTranspiler implements JSweetOptions {
 	public String getClassPath() {
 		return classPath;
 	}
-	
+
 	public boolean isIgnoreCandiesTypeScriptDefinitions() {
 		return ignoreCandiesTypeScriptDefinitions;
 	}
-	
+
 	public void setIgnoreCandiesTypeScriptDefinitions(boolean ignoreCandiesTypeScriptDefinitions) {
 		this.ignoreCandiesTypeScriptDefinitions = ignoreCandiesTypeScriptDefinitions;
 	}

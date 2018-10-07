@@ -6,7 +6,7 @@ jdk:
   - oraclejdk8
 
 env:
-  - TEST_DIR=transpiler
+  - TEST_DIR=transpiler JSWEET_VERBOSE=false
 
 script:
   - cd $TEST_DIR && mvn clean verify
