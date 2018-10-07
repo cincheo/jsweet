@@ -11,6 +11,7 @@ import java.util.function.Consumer;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.log4j.Logger;
 import org.jsweet.test.transpiler.TestTranspilationHandler;
 import org.jsweet.transpiler.EcmaScriptComplianceLevel;
@@ -75,6 +76,9 @@ public class TranspilerTestRunner {
 			File baseTsOutputDir, //
 			JSweetFactory factory) {
 		this.baseTsOutputDir = baseTsOutputDir;
+		
+		boolean verbose = System.getenv("JSWEET_VERBOSE") == null
+				|| BooleanUtils.toBoolean(System.getenv("JSWEET_VERBOSE"));
 
 		transpiler = new JSweetTranspiler( //
 				configurationFile, //
@@ -90,6 +94,7 @@ public class TranspilerTestRunner {
 		transpiler.setIgnoreAssertions(false);
 		transpiler.setGenerateSourceMaps(false);
 		transpiler.setUseTsserver(true);
+		transpiler.setVerbose(verbose);
 
 		FileUtils.deleteQuietly(transpiler.getWorkingDirectory());
 	}
