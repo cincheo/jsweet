@@ -144,8 +144,8 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		extTypesMapping.put(RuntimeException.class.getName(), "Error");
 		extTypesMapping.put(Throwable.class.getName(), "Error");
 		extTypesMapping.put(Error.class.getName(), "Error");
-		extTypesMapping.put(StringBuffer.class.getName(), "{ str: string }");
-		extTypesMapping.put(StringBuilder.class.getName(), "{ str: string }");
+		extTypesMapping.put(StringBuffer.class.getName(), "{ str: string, toString: Function }");
+		extTypesMapping.put(StringBuilder.class.getName(), "{ str: string, toString: Function }");
 		extTypesMapping.put(Collator.class.getName(), "any");
 		extTypesMapping.put(Calendar.class.getName(), "Date");
 		extTypesMapping.put(GregorianCalendar.class.getName(), "Date");
@@ -810,6 +810,11 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			printMacroName(targetMethodName);
 			print(invocation.getTargetExpression(), delegate).print(".str");
 			return true;
+		case "lastIndexOf":
+			printMacroName(targetMethodName);
+			print(invocation.getTargetExpression(), delegate).print(".str.lastIndexOf(").print(invocation.getArgument(0))
+					.print(")");
+			return true;
 		}
 		return false;
 	}
@@ -988,9 +993,14 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 				return true;
 			case "remove":
 				printMacroName(targetMethodName);
+				print("(map => { let deleted = ");
+				print(invocation.getTargetExpression(), delegate).print("[").print(invocation.getArgument(0))
+						.print("];");
 				print("delete ");
 				print(invocation.getTargetExpression(), delegate).print("[").print(invocation.getArgument(0))
-						.print("]");
+						.print("];");
+				print("return deleted;})").print("(");
+				print(invocation.getTargetExpression(), delegate).print(")");
 				return true;
 			case "clear":
 				printMacroName(targetMethodName);

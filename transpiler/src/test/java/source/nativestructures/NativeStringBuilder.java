@@ -22,6 +22,8 @@ public class NativeStringBuilder {
 
 		trace.push("" + sb);
 
+		trace.push(sb.lastIndexOf("c") + "");
+
 		StringBuffer sb2 = new StringBuffer();
 
 		sb2.append("a");
