@@ -640,6 +640,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				importedClass);
 	}
 
+	private boolean isMappedOrErasedType(Symbol symbol) {
+		return context.isMappedType(symbol.type.tsym.toString()) || context.hasAnnotationType(symbol, JSweetConfig.ANNOTATION_ERASED);
+	}
+
 	/**
 	 * Prints a compilation unit tree.
 	 */
@@ -781,7 +785,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				private HashSet<String> names = new HashSet<>();
 
 				private void checkType(TypeSymbol type) {
-					if (type instanceof ClassSymbol) {
+					if (type instanceof ClassSymbol && !isMappedOrErasedType(type)) {
 						String name = type.getSimpleName().toString();
 						if (!names.contains(name)) {
 							names.add(name);
@@ -1700,7 +1704,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			methods.sort((m1, m2) -> m1.getSimpleName().compareTo(m2.getSimpleName()));
 			Map<Name, String> signatures = new HashMap<>();
 			for (MethodSymbol meth : methods) {
-				if (meth.type instanceof MethodType) {
+				if (meth.type instanceof MethodType && !context.hasAnnotationType(meth, JSweetConfig.ANNOTATION_ERASED) && !isMappedOrErasedType(meth.owner)) {
 					// do not generate default abstract method for already
 					// generated methods
 					if (getScope().generatedMethodNames.contains(meth.name.toString())) {
@@ -2914,7 +2918,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	}
 
 	private void checkType(TypeSymbol type) {
-		if (type instanceof ClassSymbol) {
+		if (type instanceof ClassSymbol && !isMappedOrErasedType(type)) {
 			String name = type.getSimpleName().toString();
 			ModuleImportDescriptor moduleImport = getModuleImportDescriptor(name, (ClassSymbol) type);
 			if (moduleImport != null) {
