@@ -5328,6 +5328,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		boolean printAsInstanceMethod = !memberReference.sym.isStatic()
 				&& !"<init>".equals(memberReference.name.toString())
 				&& !JSweetConfig.GLOBALS_CLASS_NAME.equals(memberReferenceSimpleName);
+		boolean exprIsInstance = memberReference.expr.equals("this") || memberReference.expr.equals("super") ||
+				(memberReference.expr instanceof JCIdent && ((JCIdent) memberReference.expr).sym instanceof VarSymbol) ||
+				(memberReference.expr instanceof JCFieldAccess && ((JCFieldAccess) memberReference.expr).sym instanceof VarSymbol);
 
 		if (memberReference.sym instanceof MethodSymbol) {
 			MethodSymbol method = (MethodSymbol) memberReference.sym;
@@ -5335,11 +5338,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				print("(");
 			}
 			print("(");
-			if (printAsInstanceMethod) {
+			if (printAsInstanceMethod && !exprIsInstance) {
 				print("instance$").print(memberReferenceSimpleName);
 			}
 			if (method.getParameters() != null) {
-				if (printAsInstanceMethod) {
+				if (printAsInstanceMethod && !exprIsInstance) {
 					print(",");
 				}
 				for (VarSymbol var : method.getParameters()) {
@@ -5364,7 +5367,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					print("new ").print(memberReference.expr);
 				}
 			} else {
-				if(printAsInstanceMethod) {
+				if(printAsInstanceMethod && !exprIsInstance) {
 					print("instance$").print(memberReferenceSimpleName);
 				} else {
 					print(memberReference.expr);
