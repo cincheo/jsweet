@@ -5324,13 +5324,23 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 */
 	@Override
 	public void visitReference(JCMemberReference memberReference) {
+		boolean printAsInstanceMethod = !memberReference.sym.isStatic()
+				&& !"<init>".equals(memberReference.name.toString())
+				&& !JSweetConfig.GLOBALS_CLASS_NAME.equals(memberReference.expr.type.tsym.getSimpleName().toString());
+
 		if (memberReference.sym instanceof MethodSymbol) {
 			MethodSymbol method = (MethodSymbol) memberReference.sym;
 			if (getParent() instanceof JCTypeCast) {
 				print("(");
 			}
 			print("(");
+			if (printAsInstanceMethod) {
+				print("instance$").print(memberReference.expr);
+			}
 			if (method.getParameters() != null) {
+				if (printAsInstanceMethod) {
+					print(",");
+				}
 				for (VarSymbol var : method.getParameters()) {
 					print(var.name.toString());
 					print(",");
@@ -5355,6 +5365,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					print("new ").print(memberReference.expr);
 				}
 			} else {
+				if(printAsInstanceMethod) {
+					print("instance$");
+				}
 				print(memberReference.expr).print(".").print(memberReference.name.toString());
 			}
 		}
