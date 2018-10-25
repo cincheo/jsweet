@@ -1,6 +1,7 @@
 package org.jsweet.test.transpiler;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.EventObject;
 
 import javax.lang.model.element.Element;
@@ -32,13 +33,7 @@ import org.jsweet.transpiler.model.ImportElement;
 import org.junit.Assert;
 import org.junit.Test;
 
-import source.extension.A1;
-import source.extension.A2;
-import source.extension.AnnotationTest;
-import source.extension.HelloWorldDto;
-import source.extension.HelloWorldService;
-import source.extension.Maps;
-import source.extension.UseOfGlobalVariable;
+import source.extension.*;
 
 class TestFactory extends JSweetFactory {
 
@@ -344,6 +339,36 @@ public class ExtensionTests extends AbstractTest {
 				}
 			}
 		}, getSourceFile(A2.class), getSourceFile(A1.class));
+	}
+
+	@Test
+	public void testTypeMappingForImportAndInterface() {
+		TranspilerTestRunner transpilerTest = new TranspilerTestRunner(getCurrentTestOutDir(), new JSweetFactory() {
+			@Override
+			public PrinterAdapter createAdapter(JSweetContext context) {
+				return new PrinterAdapter(super.createAdapter(context)) {
+					{
+						addTypeMapping(BigDecimal.class.getName(), "number");
+						addTypeMapping(IAddNumber.class.getName(), "Object");
+					}
+				};
+			}
+		});
+		transpilerTest.eval((logHandler, result) -> {
+			logHandler.assertNoProblems();
+			if (transpilerTest.getTranspiler().getContext().options.getModuleKind() == ModuleKind.commonjs) {
+				try {
+					String generatedCode = FileUtils
+							.readFileToString(transpilerTest.getTranspiler().getContext().sourceFiles[1].getTsFile());
+					// "BigDecimal" should never occur, not even in an import statement
+					Assert.assertFalse(generatedCode.contains("BigDecimal"));
+					// the method signatures from the mapped interface should not be added automatically
+					Assert.assertFalse(generatedCode.contains("addNumber"));
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+			}
+		}, getSourceFile(IAddNumber.class), getSourceFile(AbstractClassWithBigDec.class));
 	}
 
 }
