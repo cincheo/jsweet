@@ -5324,9 +5324,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 */
 	@Override
 	public void visitReference(JCMemberReference memberReference) {
+		String memberReferenceSimpleName = memberReference.expr.type.tsym.getSimpleName().toString();
 		boolean printAsInstanceMethod = !memberReference.sym.isStatic()
 				&& !"<init>".equals(memberReference.name.toString())
-				&& !JSweetConfig.GLOBALS_CLASS_NAME.equals(memberReference.expr.type.tsym.getSimpleName().toString());
+				&& !JSweetConfig.GLOBALS_CLASS_NAME.equals(memberReferenceSimpleName);
 
 		if (memberReference.sym instanceof MethodSymbol) {
 			MethodSymbol method = (MethodSymbol) memberReference.sym;
@@ -5335,7 +5336,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 			print("(");
 			if (printAsInstanceMethod) {
-				print("instance$").print(memberReference.expr);
+				print("instance$").print(memberReferenceSimpleName);
 			}
 			if (method.getParameters() != null) {
 				if (printAsInstanceMethod) {
@@ -5345,9 +5346,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					print(var.name.toString());
 					print(",");
 				}
-				if (!method.getParameters().isEmpty()) {
-					removeLastChar();
-				}
+				removeLastChar();
 			}
 			print(")");
 			print(" => { return ");
@@ -5366,9 +5365,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 			} else {
 				if(printAsInstanceMethod) {
-					print("instance$");
+					print("instance$").print(memberReferenceSimpleName);
+				} else {
+					print(memberReference.expr);
 				}
-				print(memberReference.expr).print(".").print(memberReference.name.toString());
+				print(".").print(memberReference.name.toString());
 			}
 		}
 

@@ -22,37 +22,22 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
-import org.jsweet.transpiler.JSweetProblem;
-import org.jsweet.transpiler.ModuleKind;
-import org.jsweet.transpiler.SourceFile;
+import org.jsweet.test.transpiler.util.TranspilerTestRunner;
+import org.jsweet.transpiler.*;
+import org.jsweet.transpiler.extension.PrinterAdapter;
+import org.jsweet.transpiler.model.ExtendedElement;
+import org.jsweet.transpiler.model.MethodInvocationElement;
 import org.jsweet.transpiler.util.EvaluationResult;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import source.syntax.AnnotationQualifiedNames;
-import source.syntax.Casts;
-import source.syntax.DocComments;
-import source.syntax.FinalVariables;
-import source.syntax.FinalVariablesRuntime;
-import source.syntax.GlobalsCastMethod;
-import source.syntax.GlobalsInvocation;
-import source.syntax.IndexedAccessInStaticScope;
-import source.syntax.Keywords;
-import source.syntax.Labels;
-import source.syntax.LambdaExpression;
-import source.syntax.LambdasWithInterfaces;
-import source.syntax.Literals;
-import source.syntax.Looping;
-import source.syntax.QualifiedNames;
-import source.syntax.References;
-import source.syntax.SpecialFunctions;
-import source.syntax.StatementsWithNoBlocks;
-import source.syntax.SuperInvocation;
-import source.syntax.ValidIndexedAccesses;
+import source.syntax.*;
 
 public class SyntaxTests extends AbstractTest {
 
@@ -267,6 +252,35 @@ public class SyntaxTests extends AbstractTest {
 		transpile((logHandler) -> {
 			logHandler.assertNoProblems();
 		}, getSourceFile(LambdaExpression.class));
+	}
+
+	@Test
+	public void testMemberReferences() {
+		TranspilerTestRunner transpilerTest = new TranspilerTestRunner(getCurrentTestOutDir(), new JSweetFactory() {
+			@Override
+			public PrinterAdapter createAdapter(JSweetContext context) {
+				return new PrinterAdapter(super.createAdapter(context)) {
+					@Override
+					public boolean substituteMethodInvocation(MethodInvocationElement invocation) {
+						// fix the java.util.stream stuff
+						ExtendedElement targetExpr = invocation.getTargetExpression();
+						if(targetExpr != null) {
+							String targetName = targetExpr.getTypeAsElement().toString();
+							if (targetName.equals(List.class.getName()) && invocation.getMethodName().equals("stream")) {
+								print(targetExpr).print("/*stream*/");
+								return true;
+							}
+							if (targetName.equals(Stream.class.getName()) && invocation.getMethodName().equals("collect")) {
+								print(targetExpr).print("/*collect*/");
+								return true;
+							}
+						}
+						return super.substituteMethodInvocation(invocation);
+					}
+				};
+			}
+		});
+		transpilerTest.transpile(TestTranspilationHandler::assertNoProblems, getSourceFile(MemberReferences.class));
 	}
 
 }
