@@ -5328,7 +5328,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		boolean printAsInstanceMethod = !memberReference.sym.isStatic()
 				&& !"<init>".equals(memberReference.name.toString())
 				&& !JSweetConfig.GLOBALS_CLASS_NAME.equals(memberReferenceSimpleName);
-		boolean exprIsInstance = memberReference.expr.equals("this") || memberReference.expr.equals("super") ||
+		boolean exprIsInstance = memberReference.expr.toString().equals("this") || memberReference.expr.toString().equals("super") ||
 				(memberReference.expr instanceof JCIdent && ((JCIdent) memberReference.expr).sym instanceof VarSymbol) ||
 				(memberReference.expr instanceof JCFieldAccess && ((JCFieldAccess) memberReference.expr).sym instanceof VarSymbol);
 
@@ -5338,17 +5338,20 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				print("(");
 			}
 			print("(");
+			int argumentsPrinted = 0;
 			if (printAsInstanceMethod && !exprIsInstance) {
 				print("instance$").print(memberReferenceSimpleName);
+				print(",");
+				argumentsPrinted++;
 			}
 			if (method.getParameters() != null) {
-				if (printAsInstanceMethod && !exprIsInstance) {
-					print(",");
-				}
 				for (VarSymbol var : method.getParameters()) {
 					print(var.name.toString());
 					print(",");
+					argumentsPrinted++;
 				}
+			}
+			if(argumentsPrinted > 0) {
 				removeLastChar();
 			}
 			print(")");
