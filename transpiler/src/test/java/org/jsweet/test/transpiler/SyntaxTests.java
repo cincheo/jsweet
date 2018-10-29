@@ -256,31 +256,7 @@ public class SyntaxTests extends AbstractTest {
 
 	@Test
 	public void testMemberReferences() {
-		TranspilerTestRunner transpilerTest = new TranspilerTestRunner(getCurrentTestOutDir(), new JSweetFactory() {
-			@Override
-			public PrinterAdapter createAdapter(JSweetContext context) {
-				return new PrinterAdapter(super.createAdapter(context)) {
-					@Override
-					public boolean substituteMethodInvocation(MethodInvocationElement invocation) {
-						// fix the java.util.stream stuff
-						ExtendedElement targetExpr = invocation.getTargetExpression();
-						if(targetExpr != null) {
-							String targetName = targetExpr.getTypeAsElement().toString();
-							if (targetName.equals(List.class.getName()) && invocation.getMethodName().equals("stream")) {
-								print(targetExpr).print("/*stream*/");
-								return true;
-							}
-							if (targetName.equals(Stream.class.getName()) && invocation.getMethodName().equals("collect")) {
-								print(targetExpr).print("/*collect*/");
-								return true;
-							}
-						}
-						return super.substituteMethodInvocation(invocation);
-					}
-				};
-			}
-		});
-		transpilerTest.transpile(TestTranspilationHandler::assertNoProblems, getSourceFile(MemberReferences.class));
+		transpile(TestTranspilationHandler::assertNoProblems, getSourceFile(MemberReferences.class));
 	}
 
 }
