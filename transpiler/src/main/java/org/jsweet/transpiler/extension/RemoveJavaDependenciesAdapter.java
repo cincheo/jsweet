@@ -1154,7 +1154,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 					&& types().isSubtype(types().erasure(invocation.getTargetExpression().getType()),
 							types().erasure(util().getType(List.class)))) {
 				print(invocation.getTargetExpression(), delegate).print(".splice(")
-						.printArgList(invocation.getArguments()).print(", 1)");
+						.printArgList(invocation.getArguments()).print(", 1)[0]");
 			} else {
 				print("(a => { let index = a.indexOf(").print(invocation.getArgument(0))
 						.print("); if(index>=0) { a.splice(index").print(invocation.getArgumentCount() == 1 ? "" : ", ")

@@ -33,7 +33,13 @@ import org.jsweet.transpiler.model.ImportElement;
 import org.junit.Assert;
 import org.junit.Test;
 
-import source.extension.*;
+import source.extension.A1;
+import source.extension.A2;
+import source.extension.AnnotationTest;
+import source.extension.HelloWorldDto;
+import source.extension.HelloWorldService;
+import source.extension.Maps;
+import source.extension.UseOfGlobalVariable;
 
 class TestFactory extends JSweetFactory {
 
