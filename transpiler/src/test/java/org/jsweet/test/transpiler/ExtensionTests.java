@@ -35,9 +35,11 @@ import org.junit.Test;
 
 import source.extension.A1;
 import source.extension.A2;
+import source.extension.AbstractClassWithBigDec;
 import source.extension.AnnotationTest;
 import source.extension.HelloWorldDto;
 import source.extension.HelloWorldService;
+import source.extension.IAddNumber;
 import source.extension.Maps;
 import source.extension.UseOfGlobalVariable;
 
