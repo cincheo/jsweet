@@ -77,7 +77,7 @@ public class NativeStructuresTests extends AbstractTest {
 	public void testStringBuilder() {
 		eval((logHandler, result) -> {
 			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-			assertEquals("a,abc,2,a,abc,ab,X,tEst,E,4,tst,tt,:qqqq,:aaaaqqqq", result.get("trace"));
+			assertEquals("a,abc,2,a,abc,ab,X,tEst,E,4,tst,tt,:qqqq,:aaaaqqqq,aaqqqq,aaqq", result.get("trace"));
 		}, getSourceFile(NativeStringBuilder.class));
 	}
 

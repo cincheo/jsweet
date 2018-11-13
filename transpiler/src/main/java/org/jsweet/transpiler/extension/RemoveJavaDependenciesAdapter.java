@@ -815,6 +815,11 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			print(invocation.getTargetExpression(), delegate).print(".str.lastIndexOf(").print(invocation.getArgument(0))
 					.print(")");
 			return true;
+		case "substring":
+			printMacroName(targetMethodName);
+			print(invocation.getTargetExpression(), delegate).print(".str.substring(").printArgList(invocation.getArguments())
+					.print(")");
+			return true;
 		}
 		return false;
 	}
