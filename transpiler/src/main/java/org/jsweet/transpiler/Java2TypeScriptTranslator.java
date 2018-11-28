@@ -5328,20 +5328,35 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 */
 	@Override
 	public void visitReference(JCMemberReference memberReference) {
+		String memberReferenceSimpleName = memberReference.expr.type.tsym.getSimpleName().toString();
+		boolean printAsInstanceMethod = !memberReference.sym.isStatic()
+				&& !"<init>".equals(memberReference.name.toString())
+				&& !JSweetConfig.GLOBALS_CLASS_NAME.equals(memberReferenceSimpleName);
+		boolean exprIsInstance = memberReference.expr.toString().equals("this") || memberReference.expr.toString().equals("super") ||
+				(memberReference.expr instanceof JCIdent && ((JCIdent) memberReference.expr).sym instanceof VarSymbol) ||
+				(memberReference.expr instanceof JCFieldAccess && ((JCFieldAccess) memberReference.expr).sym instanceof VarSymbol);
+
 		if (memberReference.sym instanceof MethodSymbol) {
 			MethodSymbol method = (MethodSymbol) memberReference.sym;
 			if (getParent() instanceof JCTypeCast) {
 				print("(");
 			}
 			print("(");
+			int argumentsPrinted = 0;
+			if (printAsInstanceMethod && !exprIsInstance) {
+				print("instance$").print(memberReferenceSimpleName);
+				print(",");
+				argumentsPrinted++;
+			}
 			if (method.getParameters() != null) {
 				for (VarSymbol var : method.getParameters()) {
 					print(var.name.toString());
 					print(",");
+					argumentsPrinted++;
 				}
-				if (!method.getParameters().isEmpty()) {
-					removeLastChar();
-				}
+			}
+			if(argumentsPrinted > 0) {
+				removeLastChar();
 			}
 			print(")");
 			print(" => { return ");
@@ -5359,7 +5374,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					print("new ").print(memberReference.expr);
 				}
 			} else {
-				print(memberReference.expr).print(".").print(memberReference.name.toString());
+				if(printAsInstanceMethod && !exprIsInstance) {
+					print("instance$").print(memberReferenceSimpleName);
+				} else {
+					print(memberReference.expr);
+				}
+				print(".").print(memberReference.name.toString());
 			}
 		}
 
