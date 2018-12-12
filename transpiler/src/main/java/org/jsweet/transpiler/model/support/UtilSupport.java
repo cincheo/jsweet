@@ -35,7 +35,7 @@ import com.sun.tools.javac.code.Type;
  */
 public class UtilSupport implements Util {
 
-	JSweetContext context;
+	protected JSweetContext context;
 
 	public UtilSupport(JSweetContext context) {
 		this.context = context;
