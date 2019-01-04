@@ -4589,7 +4589,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					&& !(binary.rhs.type.tsym == context.symtab.stringType.tsym)) {
 				actualCharWrapping = true;
 				if (binary.lhs instanceof JCLiteral) {
-					print(binary.lhs).print(".charCodeAt(0)");
+					printBinaryLeftOperand(binary);
+					print(".charCodeAt(0)");
 				} else {
 					print("(c => c.charCodeAt==null?<any>c:c.charCodeAt(0))(").print(binary.lhs).print(")");
 				}
@@ -4597,7 +4598,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (forceParens) {
 					print("(");
 				}
-				print(binary.lhs);
+				printBinaryLeftOperand(binary);
 				if (forceParens) {
 					print(")");
 				}
@@ -4641,15 +4642,18 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							context.types.unboxedTypeOrType(binary.rhs.type))
 					&& !(binary.lhs.type.tsym == context.symtab.stringType.tsym)) {
 				if (binary.rhs instanceof JCLiteral) {
-					print(binary.rhs).print(".charCodeAt(0)");
+					printBinaryRightOperand(binary);
+					print(".charCodeAt(0)");
 				} else {
-					print("(c => c.charCodeAt==null?<any>c:c.charCodeAt(0))(").print(binary.rhs).print(")");
+					print("(c => c.charCodeAt==null?<any>c:c.charCodeAt(0))(");
+					printBinaryRightOperand(binary);
+					print(")");
 				}
 			} else {
 				if (forceParens) {
 					print("(");
 				}
-				print(binary.rhs);
+				printBinaryRightOperand(binary);
 				if (forceParens) {
 					print(")");
 				}
@@ -4661,6 +4665,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				print("|0)");
 			}
 		}
+	}
+
+	protected void printBinaryRightOperand(JCBinary binary) {
+		print(binary.rhs);
+	}
+
+	protected void printBinaryLeftOperand(JCBinary binary) {
+		print(binary.lhs);
 	}
 
 	/**
@@ -4782,7 +4794,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                         context.types.unboxedTypeOrType(assignOp.rhs.type))) {
                     substituteAndPrintAssignedExpression(context.symtab.intType, assignOp.rhs);
                 } else {
-                    print(assignOp.rhs);
+                    printAssignWithOperatorRightOperand(assignOp);
                 }
 
                 if (castToIntegral) {
@@ -4796,13 +4808,17 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             if (context.types.isSameType(context.symtab.charType, context.types.unboxedTypeOrType(assignOp.rhs.type))) {
                 // Type lhsType = assignOp.lhs.type;
                 boolean isLeftOperandString = (assignOp.lhs.type.tsym == context.symtab.stringType.tsym);
-                Type rightPromotedType = isLeftOperandString ? context.symtab.charType : context.symtab.intType;            
+                Type rightPromotedType = isLeftOperandString ? context.symtab.charType : context.symtab.intType;
                 substituteAndPrintAssignedExpression(rightPromotedType, assignOp.rhs);
             } else {
-                print(assignOp.rhs);
+            	printAssignWithOperatorRightOperand(assignOp);
             }
         }
     }
+
+	protected void printAssignWithOperatorRightOperand(JCAssignOp assignOp) {
+		print(assignOp.rhs);
+	}
 
 	/**
 	 * Prints a <code>condition?trueExpr:falseExpr</code> tree.
