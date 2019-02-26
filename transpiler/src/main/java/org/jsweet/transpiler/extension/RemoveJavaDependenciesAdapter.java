@@ -1153,9 +1153,16 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			print(invocation.getTargetExpression(), delegate).print(")");
 			return true;
 		case "remove":
-		case "removeElement":
+		case "removeFirst": // in Deque
+		case "removeElement": // in Vector: functionally equivalent to List.remove(int idx)
 			printMacroName(targetMethodName);
-			if (Util.isNumber(invocation.getArgument(0).getType())
+			/* in Queue: interface contains a no-arg method remove()
+			 * which is functionally identical to Deque.removeFirst()
+			 */
+			if (invocation.getArgumentCount() == 0) {
+				print(invocation.getTargetExpression(), delegate)
+					.print(".splice(0, 1)[0]");
+			} else if (Util.isNumber(invocation.getArgument(0).getType())
 					&& types().isSubtype(types().erasure(invocation.getTargetExpression().getType()),
 							types().erasure(util().getType(List.class)))) {
 				print(invocation.getTargetExpression(), delegate).print(".splice(")

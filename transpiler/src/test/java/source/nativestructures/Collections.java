@@ -265,6 +265,10 @@ public class Collections implements Cloneable, Serializable {
 		dq.addLast("a");
 		dq.addLast("b");
 		dq.addFirst("c");
+		dq.remove();
+		dq.addFirst("c");
+		dq.removeFirst();
+		dq.addFirst("c");
 
 		trace.push("" + dq.isEmpty());
 
