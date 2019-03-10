@@ -5,7 +5,7 @@
 	<artifactId>jsweet-core</artifactId>
 	<name>JSweet Core Lib</name>
 	<description>JavaScript API for JSweet</description>
-	<version>5-SNAPSHOT</version>
+	<version>5</version>
 	
 	<developers>
 		<developer>
