@@ -6,6 +6,28 @@
 	<name>JSweet Core Lib</name>
 	<description>JavaScript API for JSweet</description>
 	<version>5-SNAPSHOT</version>
+	
+	<developers>
+		<developer>
+			<id>rpawlak</id>
+			<name>Renaud Pawlak</name>
+			<email>renaud.pawlak@gmail.com</email>
+		</developer>
+		<developer>
+			<id>lgrignon</id>
+			<name>Louis Grignon</name>
+			<email>louis.grignon@gmail.com</email>
+		</developer>
+	</developers>
+	<issueManagement>
+		<url>https://github.com/cincheo/jsweet/issues</url>
+		<system>GitHub Issues</system>
+	</issueManagement>
+	<scm>
+		<url>https://github.com/cincheo/jsweet</url>
+		<connection>scm:git:git://github.com/cincheo/jsweet.git</connection>
+		<developerConnection>scm:git:git@github.com:cincheo/jsweet.git</developerConnection>
+	</scm>
 	<build>
 		<plugins>
 			<plugin>
