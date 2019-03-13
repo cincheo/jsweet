@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.jsweet</groupId>
 	<artifactId>jsweet-transpiler</artifactId>
-	<version>2.2.0-SNAPSHOT</version>
+	<version>2.2.0</version>
 	<name>JSweet transpiler</name>
 	<description>A Java to TypeScript/JavaScript Open Transpiler</description>
 	<developers>
@@ -12,7 +12,21 @@
 			<name>Renaud Pawlak</name>
 			<email>renaud.pawlak@gmail.com</email>
 		</developer>
+		<developer>
+			<id>lgrignon</id>
+			<name>Louis Grignon</name>
+			<email>louis.grignon@gmail.com</email>
+		</developer>
 	</developers>
+	<issueManagement>
+		<url>https://github.com/cincheo/jsweet/issues</url>
+		<system>GitHub Issues</system>
+	</issueManagement>
+	<scm>
+		<url>https://github.com/cincheo/jsweet</url>
+		<connection>scm:git:git://github.com/cincheo/jsweet.git</connection>
+		<developerConnection>scm:git:git@github.com:cincheo/jsweet.git</developerConnection>
+	</scm>
 	<licenses>
 		<license>
 			<name>The Apache Software License, Version 2.0</name>
@@ -220,7 +234,7 @@
 		<dependency>
 			<groupId>org.jsweet</groupId>
 			<artifactId>jsweet-core</artifactId>
-			<version>6-SNAPSHOT</version>
+			<version>6</version>
 			<scope>test</scope>
 			<optional>true</optional>
 		</dependency>

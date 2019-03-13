@@ -5,11 +5,30 @@
 	<artifactId>jsweet-core</artifactId>
 	<name>JSweet Core Lib</name>
 	<description>JavaScript API for JSweet</description>
-	<version>6-SNAPSHOT</version>
-	<properties>
-		<jsweet.transpiler.version>2.0.0</jsweet.transpiler.version>
-	</properties>
-		<repositories>
+	<version>6</version>
+
+	<developers>
+		<developer>
+			<id>rpawlak</id>
+			<name>Renaud Pawlak</name>
+			<email>renaud.pawlak@gmail.com</email>
+		</developer>
+		<developer>
+			<id>lgrignon</id>
+			<name>Louis Grignon</name>
+			<email>louis.grignon@gmail.com</email>
+		</developer>
+	</developers>
+	<issueManagement>
+		<url>https://github.com/cincheo/jsweet/issues</url>
+		<system>GitHub Issues</system>
+	</issueManagement>
+	<scm>
+		<url>https://github.com/cincheo/jsweet</url>
+		<connection>scm:git:git://github.com/cincheo/jsweet.git</connection>
+		<developerConnection>scm:git:git@github.com:cincheo/jsweet.git</developerConnection>
+	</scm>
+	<repositories>
 		<repository>
 			<id>jsweet-central</id>
 			<name>libs-release</name>
@@ -55,7 +74,7 @@
 					<fork>true</fork>
 				</configuration>
 			</plugin>
-			
+
 			<plugin>
 				<artifactId>maven-antrun-plugin</artifactId>
 				<version>1.8</version>
@@ -65,9 +84,9 @@
 						<configuration>
 							<target>
 								<echo message="copying generated bundles to dist..." />
-								
+
 								<mkdir dir="dist/"></mkdir>
-								
+
 								<copy
 									file="src/main/resources/src/typings/${project.artifactId}/${project.version}/bundle.d.ts"
 									tofile="dist/${project.artifactId}.d.ts" verbose="true"
@@ -99,7 +118,7 @@
 					</execution>
 				</executions>
 			</plugin>
-			
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
@@ -111,10 +130,11 @@
 					<encoding>UTF-8</encoding>
 					<fixTags>all</fixTags>
 					<failOnError>false</failOnError>
-                    <!-- leave these options unchanged to place the Javadoc at the right place for jsweet.org -->
-                    <reportOutputDirectory>/var/www/apidocs/org/jsweet</reportOutputDirectory>
-                    <destDir>${project.artifactId}/${project.version}</destDir>
-                    <!-- end of jsweet.org configuration -->
+					<!-- leave these options unchanged to place the Javadoc at the right 
+						place for jsweet.org -->
+					<reportOutputDirectory>/var/www/apidocs/org/jsweet</reportOutputDirectory>
+					<destDir>${project.artifactId}/${project.version}</destDir>
+					<!-- end of jsweet.org configuration -->
 					<header><![CDATA[<a href="http://www.jsweet.org" target="_blank" style="text-transform: lowercase">http://www.jsweet.org<a>]]></header>
 					<bottom><![CDATA[<center>Copyright 2015, <a href="http://www.cincheo.org" target="_blank">Cinchéo SAS<a> - Web site: <a href="http://www.jsweet.org" target="_blank">http://www.jsweet.org<a><center>]]></bottom>
 					<stylesheetfile>/var/www/apidocs/stylesheet.css</stylesheetfile>
@@ -129,7 +149,7 @@
 				</executions>
 			</plugin>
 		</plugins>
-		
+
 		<pluginManagement>
 			<plugins>
 				<!--This plugin's configuration is used to store Eclipse m2e settings 
