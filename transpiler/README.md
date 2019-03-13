@@ -35,3 +35,11 @@ or
 Since version 2, the JSweet transpiler source code is licensed under GPLv3, which in short means that you can use is as is to compile any kind of programs (including closed-source commercial ones). You can also use/modify this transpiler's source code in any open source project (commercial or not), as long as you conform to the license terms (see the license file). On the other hand, your cannot embed this transpiler's source code in a closed-source commercial project. In case you would want to do so, you must contact Renaud Pawlak (renaud.pawlak@gmail.com), who can grant you a commercial license depending on your use case.
 
 NOTE: JSweet transpiler version 1.x, which is no longer maintained, is licensed under Apache v2.
+
+## Release
+```
+git flow release start X.Y.Z
+```
+
+
+
