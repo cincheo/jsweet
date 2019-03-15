@@ -40,6 +40,20 @@ NOTE: JSweet transpiler version 1.x, which is no longer maintained, is licensed 
 ```
 git flow release start X.Y.Z
 ```
+Change core-lib versions (remove SNAPSHOT) and mvn deploy them
+Change jsweet-transpiler's version and core-lib dependencies' versions and mvn deploy it
 
+```
+git flow release finish
+```
+
+Release related projets (jsweet-maven-plugin, jsweet-gradle-plugin, jsweet-examples, ...) by updating snapshot dependencies to release dependencies, bumping version number and mvn deploying them.
+Create git tags.
+
+If possible, deploy to Bintray and Maven Central.
+
+Declare release in GitHub.
+ 
+Update all projects to next snapshot versions.
 
 
