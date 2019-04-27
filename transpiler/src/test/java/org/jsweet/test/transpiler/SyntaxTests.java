@@ -22,22 +22,37 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.util.List;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
-import org.jsweet.test.transpiler.util.TranspilerTestRunner;
-import org.jsweet.transpiler.*;
-import org.jsweet.transpiler.extension.PrinterAdapter;
-import org.jsweet.transpiler.model.ExtendedElement;
-import org.jsweet.transpiler.model.MethodInvocationElement;
+import org.jsweet.transpiler.JSweetProblem;
+import org.jsweet.transpiler.ModuleKind;
+import org.jsweet.transpiler.SourceFile;
 import org.jsweet.transpiler.util.EvaluationResult;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
-import source.syntax.*;
+import source.syntax.AnnotationQualifiedNames;
+import source.syntax.Casts;
+import source.syntax.DocComments;
+import source.syntax.DynamicInvoke;
+import source.syntax.FinalVariables;
+import source.syntax.FinalVariablesRuntime;
+import source.syntax.GlobalsCastMethod;
+import source.syntax.GlobalsInvocation;
+import source.syntax.Keywords;
+import source.syntax.Labels;
+import source.syntax.LambdaExpression;
+import source.syntax.LambdasWithInterfaces;
+import source.syntax.Literals;
+import source.syntax.Looping;
+import source.syntax.MemberReferences;
+import source.syntax.QualifiedNames;
+import source.syntax.References;
+import source.syntax.SpecialFunctions;
+import source.syntax.StatementsWithNoBlocks;
+import source.syntax.SuperInvocation;
+import source.syntax.ValidIndexedAccesses;
 
 public class SyntaxTests extends AbstractTest {
 
@@ -140,14 +155,17 @@ public class SyntaxTests extends AbstractTest {
 
 	}
 
-	@Ignore
 	@Test
-	public void testIndexedAccessInStaticScope() {
+	public void testDynamicInvoke() {
 		eval((logHandler, r) -> {
-			Assert.assertEquals("Wrong output value", "value", r.get("out_a"));
-			Assert.assertNull("Wrong output value", r.get("out_b"));
-			Assert.assertNull("var wasn't deleted", r.get("out_c"));
-		}, getSourceFile(IndexedAccessInStaticScope.class));
+			assertEquals(true, r.get("a_1"));
+			assertEquals(true, r.get("a"));
+			assertEquals(true, r.get("b"));
+			assertEquals(true, r.get("c"));
+			assertEquals(true, r.get("d"));
+			assertEquals(true, r.get("e"));
+			assertEquals("5;true;foo", r.get("f"));
+		}, getSourceFile(DynamicInvoke.class));
 	}
 
 	@Test

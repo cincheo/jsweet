@@ -204,6 +204,8 @@ public abstract class JSweetConfig {
 	public static final String UNION_PACKAGE = UTIL_PACKAGE + ".union";
 	/** The constant for the Union core class full name. */
 	public static final String UNION_CLASS_NAME = UNION_PACKAGE + ".Union";
+	/** The constant for dynamic invoke function. */
+	public static final String INVOKE_FUCTION_NAME = "$invoke";
 	/** The constant for indexed access function. */
 	public static final String INDEXED_GET_FUCTION_NAME = "$get";
 	/** The constant for indexed assignment function. */

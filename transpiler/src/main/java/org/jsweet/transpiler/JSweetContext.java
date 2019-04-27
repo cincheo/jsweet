@@ -1620,6 +1620,10 @@ public class JSweetContext extends Context {
 		return false;
 	}
 
+	/**
+	 * Returns true if given statement can be used in a Java object instantation block
+	 * to be transformed to a JS Object Literal
+	 */
 	private static boolean isAllowedStatementInMap(JCStatement statement) {
 		if (statement instanceof JCExpressionStatement) {
 			JCExpressionStatement exprStat = (JCExpressionStatement) statement;

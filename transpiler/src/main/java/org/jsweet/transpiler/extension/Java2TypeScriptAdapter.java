@@ -30,6 +30,7 @@ import static org.jsweet.JSweetConfig.INDEXED_GET_FUCTION_NAME;
 import static org.jsweet.JSweetConfig.INDEXED_GET_STATIC_FUCTION_NAME;
 import static org.jsweet.JSweetConfig.INDEXED_SET_FUCTION_NAME;
 import static org.jsweet.JSweetConfig.INDEXED_SET_STATIC_FUCTION_NAME;
+import static org.jsweet.JSweetConfig.INVOKE_FUCTION_NAME;
 import static org.jsweet.JSweetConfig.LANG_PACKAGE;
 import static org.jsweet.JSweetConfig.LANG_PACKAGE_ALT;
 import static org.jsweet.JSweetConfig.UTIL_CLASSNAME;
@@ -134,8 +135,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 	/**
 	 * Creates a root adapter (with no parent).
 	 *
-	 * @param context
-	 *            the transpilation context
+	 * @param context the transpilation context
 	 */
 	public Java2TypeScriptAdapter(JSweetContext context) {
 		super(context);
@@ -146,9 +146,9 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 	 * Creates a new adapter that will try delegate to the given parent adapter when
 	 * not implementing its own behavior.
 	 *
-	 * @param parentAdapter
-	 *            cannot be null: if no parent you must use the
-	 *            {@link #AbstractPrinterAdapter(JSweetContext)} constructor
+	 * @param parentAdapter cannot be null: if no parent you must use the
+	 *                      {@link #AbstractPrinterAdapter(JSweetContext)}
+	 *                      constructor
 	 */
 	public Java2TypeScriptAdapter(PrinterAdapter parent) {
 		super(parent);
@@ -639,6 +639,33 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 
 		if (targetMethodName != null) {
 			switch (targetMethodName) {
+			case INVOKE_FUCTION_NAME:
+				if (invocationElement.getTargetExpression() != null && !(UTIL_CLASSNAME.equals(targetClassName)
+						|| DEPRECATED_UTIL_CLASSNAME.equals(targetClassName))) {
+
+				} else {
+					if (invocationElement.getArgumentCount() == 1) {
+						print("this[").print(invocationElement.getArguments().get(0)).print("]");
+					} else {
+						print(invocationElement.getArguments().get(0)).print("[")
+								.print(invocationElement.getArguments().get(1)).print("]");
+					}
+				}
+				print(invocationElement.getTargetExpression());
+				print("[");
+				print(invocationElement.getArgument(0));
+				print("]");
+				print("(");
+				List<ExtendedElement> arguments = invocationElement.getArguments();
+				int argCount = arguments.size();
+				for (int i = 1; i < argCount; i++) {
+					print(arguments.get(i));
+					if (i < argCount - 1) {
+						print(",");
+					}
+				}
+				print(")");
+				return true;
 			case INDEXED_GET_FUCTION_NAME:
 				if (isWithinGlobals(targetClassName)) {
 					if (invocationElement.getArgumentCount() == 1) {
@@ -1327,8 +1354,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 	}
 
 	/**
-	 * @param enclosingElement
-	 *            is required for functional (ie dynamic) type mappings
+	 * @param enclosingElement is required for functional (ie dynamic) type mappings
 	 */
 	public boolean substituteAndPrintType(ExtendedElement enclosingElement, TypeElement type) {
 		String typeFullName = type.toString();
