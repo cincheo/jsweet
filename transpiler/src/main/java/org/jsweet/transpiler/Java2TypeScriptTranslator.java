@@ -2496,7 +2496,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				print(" : ");
 
 				boolean promisify = isAsyncMethod(methodDecl)
-						&& !methodDecl.restype.type.tsym.name.toString().endsWith(".Promise");
+						&& !methodDecl.restype.type.tsym.getQualifiedName().toString().endsWith(".Promise");
 				if (promisify) {
 					print(" Promise< ");
 				}

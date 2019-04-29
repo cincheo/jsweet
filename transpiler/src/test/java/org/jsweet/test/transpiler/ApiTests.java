@@ -142,6 +142,12 @@ public class ApiTests extends AbstractTest {
 			assertEquals(new Integer(42), result.get("2_r1"));
 			assertEquals("my answer", result.get("2_r2"));
 			assertEquals("supermessage", result.get("2_e"));
+			
+			assertTrue(result.get("subMethod1"));
+			assertTrue(result.get("subMethod2"));
+			assertEquals("subMethod2", result.get("resultSubMethod2"));
+			
+			
 		}, getSourceFile(PromisesAsyncAwait.class));
 	}
 
