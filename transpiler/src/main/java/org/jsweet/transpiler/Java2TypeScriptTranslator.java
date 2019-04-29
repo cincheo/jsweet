@@ -508,18 +508,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	/**
 	 * Creates a new TypeScript translator.
 	 * 
-	 * @param adapter
-	 *            an object that can tune various aspects of the TypeScript code
-	 *            generation
-	 * @param logHandler
-	 *            the handler for logging and error reporting
-	 * @param context
-	 *            the AST scanning context
-	 * @param compilationUnit
-	 *            the compilation unit to be translated
-	 * @param fillSourceMap
-	 *            if true, the printer generates the source maps, for debugging
-	 *            purpose
+	 * @param adapter         an object that can tune various aspects of the
+	 *                        TypeScript code generation
+	 * @param logHandler      the handler for logging and error reporting
+	 * @param context         the AST scanning context
+	 * @param compilationUnit the compilation unit to be translated
+	 * @param fillSourceMap   if true, the printer generates the source maps, for
+	 *                        debugging purpose
 	 */
 	public Java2TypeScriptTranslator(PrinterAdapter adapter, TranspilationHandler logHandler, JSweetContext context,
 			JCCompilationUnit compilationUnit, boolean fillSourceMap) {
@@ -641,7 +636,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	}
 
 	private boolean isMappedOrErasedType(Symbol symbol) {
-		return context.isMappedType(symbol.type.tsym.toString()) || context.hasAnnotationType(symbol, JSweetConfig.ANNOTATION_ERASED);
+		return context.isMappedType(symbol.type.tsym.toString())
+				|| context.hasAnnotationType(symbol, JSweetConfig.ANNOTATION_ERASED);
 	}
 
 	/**
@@ -1704,7 +1700,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			methods.sort((m1, m2) -> m1.getSimpleName().compareTo(m2.getSimpleName()));
 			Map<Name, String> signatures = new HashMap<>();
 			for (MethodSymbol meth : methods) {
-				if (meth.type instanceof MethodType && !context.hasAnnotationType(meth, JSweetConfig.ANNOTATION_ERASED) && !isMappedOrErasedType(meth.owner)) {
+				if (meth.type instanceof MethodType && !context.hasAnnotationType(meth, JSweetConfig.ANNOTATION_ERASED)
+						&& !isMappedOrErasedType(meth.owner)) {
 					// do not generate default abstract method for already
 					// generated methods
 					if (getScope().generatedMethodNames.contains(meth.name.toString())) {
@@ -2337,14 +2334,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		print("(");
 		printMethodArgs(methodDecl, overload, inOverload, inCoreWrongOverload, getScope());
 		print(")");
-		if (inCoreWrongOverload && !methodDecl.sym.isConstructor()) {
-			print(" : any");
-		} else {
-			if (methodDecl.restype != null && methodDecl.restype.type.getTag() != TypeTag.VOID) {
-				print(" : ");
-				substituteAndPrintType(methodDecl.restype);
-			}
-		}
+		printMethodReturnDeclaration(methodDecl, inCoreWrongOverload);
 		if (inCoreWrongOverload && isInterfaceMethod(parent, methodDecl)) {
 			print(";");
 			return;
@@ -2498,6 +2488,28 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 	}
 
+	protected void printMethodReturnDeclaration(JCMethodDecl methodDecl, boolean inCoreWrongOverload) {
+		if (inCoreWrongOverload && !methodDecl.sym.isConstructor()) {
+			print(" : any");
+		} else {
+			if (methodDecl.restype != null && methodDecl.restype.type.getTag() != TypeTag.VOID) {
+				print(" : ");
+
+				boolean promisify = isAsyncMethod(methodDecl)
+						&& !methodDecl.restype.type.tsym.name.toString().endsWith(".Promise");
+				if (promisify) {
+					print(" Promise< ");
+				}
+
+				substituteAndPrintType(methodDecl.restype);
+
+				if (promisify) {
+					print(" > ");
+				}
+			}
+		}
+	}
+
 	@Override
 	public void visitModifiers(JCModifiers modifiers) {
 
@@ -2512,15 +2524,20 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	/**
 	 * Print async keyword for given method if relevant. Prints nothing if method
 	 * shouldn't be async
+	 * 
 	 */
 	protected void printAsyncKeyword(JCMethodDecl methodDecl) {
 		if (getScope().declareClassScope || getScope().interfaceScope) {
 			return;
 		}
 
-		if (context.hasAnnotationType(methodDecl.sym, JSweetConfig.ANNOTATION_ASYNC)) {
+		if (isAsyncMethod(methodDecl)) {
 			print(" async ");
 		}
+	}
+
+	protected boolean isAsyncMethod(JCMethodDecl methodDecl) {
+		return context.hasAnnotationType(methodDecl.sym, JSweetConfig.ANNOTATION_ASYNC);
 	}
 
 	protected void printMethodArgs(JCMethodDecl methodDecl, Overload overload, boolean inOverload,
@@ -4746,75 +4763,75 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	}
 
 	/**
-     * Prints an assignment operator tree (<code>+=, -=, *=, ...</code>).
-     */
-    @Override
-    public void visitAssignop(JCAssignOp assignOp) {
-        if (!getAdapter().substituteAssignmentWithOperator(new AssignmentWithOperatorElementSupport(assignOp))) {
-            boolean expand = staticInitializedAssignment = (getStaticInitializedField(assignOp.lhs) != null);
-            boolean expandChar = context.types.isSameType(context.symtab.charType,
-                    context.types.unboxedTypeOrType(assignOp.lhs.type));
-            print(assignOp.lhs);
-            staticInitializedAssignment = false;
-            String op = assignOp.operator.name.toString();
+	 * Prints an assignment operator tree (<code>+=, -=, *=, ...</code>).
+	 */
+	@Override
+	public void visitAssignop(JCAssignOp assignOp) {
+		if (!getAdapter().substituteAssignmentWithOperator(new AssignmentWithOperatorElementSupport(assignOp))) {
+			boolean expand = staticInitializedAssignment = (getStaticInitializedField(assignOp.lhs) != null);
+			boolean expandChar = context.types.isSameType(context.symtab.charType,
+					context.types.unboxedTypeOrType(assignOp.lhs.type));
+			print(assignOp.lhs);
+			staticInitializedAssignment = false;
+			String op = assignOp.operator.name.toString();
 
-            if (context.types.isSameType(context.symtab.booleanType,
-                    context.types.unboxedTypeOrType(assignOp.lhs.type))) {
-                if ("|".equals(op)) {
-                    print(" = ").print(assignOp.rhs).print(" || ").print(assignOp.lhs);
-                    return;
-                } else if ("&".equals(op)) {
-                    print(" = ").print(assignOp.rhs).print(" && ").print(assignOp.lhs);
-                    return;
-                }
-            }
+			if (context.types.isSameType(context.symtab.booleanType,
+					context.types.unboxedTypeOrType(assignOp.lhs.type))) {
+				if ("|".equals(op)) {
+					print(" = ").print(assignOp.rhs).print(" || ").print(assignOp.lhs);
+					return;
+				} else if ("&".equals(op)) {
+					print(" = ").print(assignOp.rhs).print(" && ").print(assignOp.lhs);
+					return;
+				}
+			}
 
-            boolean castToIntegral = "/".equals(op) //
-                    && Util.isIntegral(assignOp.lhs.type) //
-                    && Util.isIntegral(assignOp.rhs.type);
+			boolean castToIntegral = "/".equals(op) //
+					&& Util.isIntegral(assignOp.lhs.type) //
+					&& Util.isIntegral(assignOp.rhs.type);
 
-            if (expandChar) {
-                print(" = String.fromCharCode(")
-                        .substituteAndPrintAssignedExpression(context.symtab.intType, assignOp.lhs)
-                        .print(" " + op + " ")
-                        .substituteAndPrintAssignedExpression(context.symtab.intType, assignOp.rhs).print(")");
-                return;
-            }
+			if (expandChar) {
+				print(" = String.fromCharCode(")
+						.substituteAndPrintAssignedExpression(context.symtab.intType, assignOp.lhs)
+						.print(" " + op + " ")
+						.substituteAndPrintAssignedExpression(context.symtab.intType, assignOp.rhs).print(")");
+				return;
+			}
 
-            if (expand || castToIntegral) {
-                print(" = ");
+			if (expand || castToIntegral) {
+				print(" = ");
 
-                if (castToIntegral) {
-                    print("(n => n<0?Math.ceil(n):Math.floor(n))(");
-                }
+				if (castToIntegral) {
+					print("(n => n<0?Math.ceil(n):Math.floor(n))(");
+				}
 
-                print(assignOp.lhs);
-                print(" " + op + " ");
-                if (context.types.isSameType(context.symtab.charType,
-                        context.types.unboxedTypeOrType(assignOp.rhs.type))) {
-                    substituteAndPrintAssignedExpression(context.symtab.intType, assignOp.rhs);
-                } else {
-                    printAssignWithOperatorRightOperand(assignOp);
-                }
+				print(assignOp.lhs);
+				print(" " + op + " ");
+				if (context.types.isSameType(context.symtab.charType,
+						context.types.unboxedTypeOrType(assignOp.rhs.type))) {
+					substituteAndPrintAssignedExpression(context.symtab.intType, assignOp.rhs);
+				} else {
+					printAssignWithOperatorRightOperand(assignOp);
+				}
 
-                if (castToIntegral) {
-                    print(")");
-                }
+				if (castToIntegral) {
+					print(")");
+				}
 
-                return;
-            }
+				return;
+			}
 
-            print(" " + op + "= ");
-            if (context.types.isSameType(context.symtab.charType, context.types.unboxedTypeOrType(assignOp.rhs.type))) {
-                // Type lhsType = assignOp.lhs.type;
-                boolean isLeftOperandString = (assignOp.lhs.type.tsym == context.symtab.stringType.tsym);
-                Type rightPromotedType = isLeftOperandString ? context.symtab.charType : context.symtab.intType;
-                substituteAndPrintAssignedExpression(rightPromotedType, assignOp.rhs);
-            } else {
-            	printAssignWithOperatorRightOperand(assignOp);
-            }
-        }
-    }
+			print(" " + op + "= ");
+			if (context.types.isSameType(context.symtab.charType, context.types.unboxedTypeOrType(assignOp.rhs.type))) {
+				// Type lhsType = assignOp.lhs.type;
+				boolean isLeftOperandString = (assignOp.lhs.type.tsym == context.symtab.stringType.tsym);
+				Type rightPromotedType = isLeftOperandString ? context.symtab.charType : context.symtab.intType;
+				substituteAndPrintAssignedExpression(rightPromotedType, assignOp.rhs);
+			} else {
+				printAssignWithOperatorRightOperand(assignOp);
+			}
+		}
+	}
 
 	protected void printAssignWithOperatorRightOperand(JCAssignOp assignOp) {
 		print(assignOp.rhs);
@@ -5348,9 +5365,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		boolean printAsInstanceMethod = !memberReference.sym.isStatic()
 				&& !"<init>".equals(memberReference.name.toString())
 				&& !JSweetConfig.GLOBALS_CLASS_NAME.equals(memberReferenceSimpleName);
-		boolean exprIsInstance = memberReference.expr.toString().equals("this") || memberReference.expr.toString().equals("super") ||
-				(memberReference.expr instanceof JCIdent && ((JCIdent) memberReference.expr).sym instanceof VarSymbol) ||
-				(memberReference.expr instanceof JCFieldAccess && ((JCFieldAccess) memberReference.expr).sym instanceof VarSymbol);
+		boolean exprIsInstance = memberReference.expr.toString().equals("this")
+				|| memberReference.expr.toString().equals("super")
+				|| (memberReference.expr instanceof JCIdent
+						&& ((JCIdent) memberReference.expr).sym instanceof VarSymbol)
+				|| (memberReference.expr instanceof JCFieldAccess
+						&& ((JCFieldAccess) memberReference.expr).sym instanceof VarSymbol);
 
 		if (memberReference.sym instanceof MethodSymbol) {
 			MethodSymbol method = (MethodSymbol) memberReference.sym;
@@ -5371,7 +5391,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					argumentsPrinted++;
 				}
 			}
-			if(argumentsPrinted > 0) {
+			if (argumentsPrinted > 0) {
 				removeLastChar();
 			}
 			print(")");
@@ -5390,7 +5410,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					print("new ").print(memberReference.expr);
 				}
 			} else {
-				if(printAsInstanceMethod && !exprIsInstance) {
+				if (printAsInstanceMethod && !exprIsInstance) {
 					print("instance$").print(memberReferenceSimpleName);
 				} else {
 					print(memberReference.expr);
@@ -5448,10 +5468,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	/**
 	 * Prints either a string, or the tree if the the string is null.
 	 * 
-	 * @param exprStr
-	 *            a string to be printed as is if not null
-	 * @param expr
-	 *            a tree to be printed if exprStr is null
+	 * @param exprStr a string to be printed as is if not null
+	 * @param expr    a tree to be printed if exprStr is null
 	 */
 	public void print(String exprStr, JCTree expr) {
 		if (exprStr == null) {
