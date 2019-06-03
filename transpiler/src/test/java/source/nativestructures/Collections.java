@@ -245,7 +245,7 @@ public class Collections implements Cloneable, Serializable {
 
 		trace.push("array[" + array1 + "]");
 
-		Arrays.fill(array1, 1, 1, "b");
+		Arrays.fill(array1, 1, 2, "b");
 
 		trace.push("array[" + array1 + "]");
 
