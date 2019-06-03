@@ -620,8 +620,13 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			return true;
 		case "fill":
 			printMacroName(targetMethodName);
-			print("((a, v) => { for(let i=0;i<a.length;i++) a[i]=v; })(").printArgList(invocation.getArguments())
-					.print(")");
+			if (invocation.getArgumentCount() == 4) {
+				print("((a, start, end, v) => { for(let i=start;i<end;i++) a[i]=v; })(").printArgList(invocation.getArguments())
+						.print(")");
+			} else {
+				print("((a, v) => { for(let i=0;i<a.length;i++) a[i]=v; })(").printArgList(invocation.getArguments())
+						.print(")");
+			}
 			// ES6 implementation
 			// print(invocation.getArgument(0)).print(".fill(").printArgList(invocation.getArgumentTail())
 			// .print(")");

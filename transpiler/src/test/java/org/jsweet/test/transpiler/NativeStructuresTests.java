@@ -57,7 +57,7 @@ public class NativeStructuresTests extends AbstractTest {
 		eval((logHandler, result) -> {
 			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
 			assertEquals("1,a,1,b,3,4,d,a,d,0,0,0,a,a,2,a,true,false,3,c,c,a,b,c,a,b,c,b,1,c,b,a,b,c,a,0,"
-					+ "true,true,it,true,1,array[a,b,c],0,false,true,array[a,b,c],array[c,b,a],[c, b, a],[aa, bb, cc],-3,-3,cc,[aa, bb],array[a,a,a],[a, d, e, b, c],"
+					+ "true,true,it,true,1,array[a,b,c],0,false,true,array[a,b,c],array[c,b,a],[c, b, a],[aa, bb, cc],-3,-3,cc,[aa, bb],array[a,a,a],array[a,b,a],[a, d, e, b, c],"
 			// queues
 					+ "false,[c, a, b],c,[a, b],b,[a],a,null,true,null,"
 			// removeAll, retainAll, containsAll, disjoint
