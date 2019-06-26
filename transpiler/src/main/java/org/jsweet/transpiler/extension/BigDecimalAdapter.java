@@ -77,6 +77,11 @@ public class BigDecimalAdapter extends PrinterAdapter {
 					print(invocation.getTargetExpression()).print(".plus(").printArgList(invocation.getArguments())
 							.print(")");
 					return true;
+				case "subtract":
+					printMacroName(invocation.getMethodName());
+					print(invocation.getTargetExpression()).print(".minus(").printArgList(invocation.getArguments())
+							.print(")");
+					return true;
 				case "scale":
 					printMacroName(invocation.getMethodName());
 					// we assume that we always have a scale of 2, which is a
@@ -98,6 +103,10 @@ public class BigDecimalAdapter extends PrinterAdapter {
 					printMacroName(invocation.getMethodName());
 					print(invocation.getTargetExpression()).print(".eq(").print(invocation.getArguments().get(0))
 							.print(")");
+					return true;
+				case "signum":
+					printMacroName(invocation.getMethodName());
+					print(invocation.getTargetExpression()).print(".cmp(0)");
 					return true;
 				}
 			}
