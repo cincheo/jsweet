@@ -127,6 +127,21 @@ public class ProcessUtil {
 	}
 
 	/**
+	 * Gets the full path of a local package's JS main file installed with npm.
+	 * 
+	 * @param projectDirectory
+	 */
+	public static String getLocalNpmPackageExecutablePath(String command, File projectDirectory) {
+		File commandFile = new File(command);
+		if (commandFile.isFile() && commandFile.isAbsolute()) {
+			return command;
+		}
+
+		return projectDirectory.getAbsolutePath() + File.separator + "node_modules" + File.separator + ".bin"
+				+ File.separator + command + (isWindows() ? ".cmd" : "");
+	}
+
+	/**
 	 * Gets the full path of a global package installed with npm.
 	 */
 	public static String getGlobalNpmPackagePath(String packageName) {
@@ -134,23 +149,48 @@ public class ProcessUtil {
 	}
 
 	/**
-	 * Tells if this node command is installed.
+	 * Tells if this node command is globally installed.
 	 */
-	public static boolean isInstalledWithNpm(String command) {
+	public static boolean isExecutableInstalledGloballyWithNpm(String command) {
 		return new File(getGlobalNpmPackageExecutablePath(command)).exists();
+	}
+
+	/**
+	 * Tells if this node command is locally or globally installed
+	 */
+	public static boolean isExecutableInstalledLocallyWithNpm(String command, File projectDirectory) {
+		return new File(getLocalNpmPackageExecutablePath(command, projectDirectory)).exists();
+	}
+
+	/**
+	 * Tells if this node package is installed in global modules
+	 * 
+	 * @param packageName package name
+	 */
+	public static boolean isPackageInstalledGloballyWithNpm(String packageName) {
+		return new File(getGlobalNpmPackagePath(packageName)).exists();
+	}
+
+	/**
+	 * Tells if this node package is locally installed
+	 */
+	public static boolean isPackageInstalledLocallyWithNpm(String packageName, File projectDirectory) {
+		return new File(getLocalNpmPackagePath(packageName, projectDirectory)).exists();
+	}
+
+	public static String getLocalNpmPackagePath(String packageName, File projectDirectory) {
+		return projectDirectory.getAbsolutePath() + File.separator + "node_modules" + File.separator + packageName;
 	}
 
 	/**
 	 * Runs the given command.
 	 * 
-	 * @param command
-	 *            the command name
-	 * @param stdoutConsumer
-	 *            consumes the standard output stream as lines of characters
-	 * @param errorHandler
-	 *            upcalled when the command does not terminate successfully
-	 * @param args
-	 *            the command-line arguments
+	 * @param command        the command name
+	 * @param stdoutConsumer consumes the standard output stream as lines of
+	 *                       characters
+	 * @param errorHandler   upcalled when the command does not terminate
+	 *                       successfully
+	 * @param args           the command-line arguments
 	 * @return the process that was created to execute the command (exited at this
 	 *         point)
 	 */
@@ -162,16 +202,13 @@ public class ProcessUtil {
 	/**
 	 * Runs the given command in an asynchronous manner.
 	 * 
-	 * @param command
-	 *            the command name
-	 * @param stdoutConsumer
-	 *            consumes the standard output stream as lines of characters
-	 * @param endConsumer
-	 *            called when the process actually ends
-	 * @param errorHandler
-	 *            upcalled when the command does not terminate successfully
-	 * @param args
-	 *            the command-line arguments
+	 * @param command        the command name
+	 * @param stdoutConsumer consumes the standard output stream as lines of
+	 *                       characters
+	 * @param endConsumer    called when the process actually ends
+	 * @param errorHandler   upcalled when the command does not terminate
+	 *                       successfully
+	 * @param args           the command-line arguments
 	 * @return the process that was created to execute the command (can be still
 	 *         running at this point)
 	 */
@@ -183,21 +220,16 @@ public class ProcessUtil {
 	/**
 	 * Runs the given command.
 	 * 
-	 * @param command
-	 *            the command name
-	 * @param directory
-	 *            the working directory of the created process
-	 * @param async
-	 *            tells if the command should be run asynchronously (in a separate
-	 *            thread)
-	 * @param stdoutConsumer
-	 *            consumes the standard output stream as lines of characters
-	 * @param endConsumer
-	 *            called when the process actually ends
-	 * @param errorHandler
-	 *            upcalled when the command does not terminate successfully
-	 * @param args
-	 *            the command-line arguments
+	 * @param command        the command name
+	 * @param directory      the working directory of the created process
+	 * @param async          tells if the command should be run asynchronously (in a
+	 *                       separate thread)
+	 * @param stdoutConsumer consumes the standard output stream as lines of
+	 *                       characters
+	 * @param endConsumer    called when the process actually ends
+	 * @param errorHandler   upcalled when the command does not terminate
+	 *                       successfully
+	 * @param args           the command-line arguments
 	 * @return the process that was created to execute the command (can be still
 	 *         running at this point if <code>async</code> is <code>true</code>)
 	 */
@@ -300,28 +332,39 @@ public class ProcessUtil {
 	 * Installs a <code>node<code> package with <code>npm</code> (assumes that
 	 * <code>node</code> is installed).
 	 * 
-	 * @param nodePackageName
-	 *            the package name
-	 * @param global
-	 *            <code>true</code> for adding the <code>-g</code> option
+	 * @param nodePackageName the package name
 	 */
-	public static void installNodePackage(String nodePackageName, String version, boolean global) {
+	public static void installGlobalNodePackage(String nodePackageName, String version) {
 		logger.debug("installing " + nodePackageName + " with npm");
 		initNode();
-		if (global) {
-			runCommand(NPM_COMMAND, USER_HOME_DIR, false, null, null, null, "install", "--prefix", NPM_DIR.getPath(),
-					version == null ? nodePackageName : nodePackageName + "@" + version, "-g");
-		} else {
-			runCommand(NPM_COMMAND, USER_HOME_DIR, false, null, null, null, "install",
-					version == null ? nodePackageName : nodePackageName + "@" + version, "--save");
+		runCommand(NPM_COMMAND, USER_HOME_DIR, false, null, null, null, "install", "--prefix", NPM_DIR.getPath(),
+				version == null ? nodePackageName : nodePackageName + "@" + version);
+	}
+
+	/**
+	 * Installs a <code>node<code> package with <code>npm</code> (assumes that
+	 * <code>node</code> is installed).
+	 * 
+	 * @param nodePackageName the package name
+	 */
+	public static void installLocalNodePackage(String nodePackageName, String version, File projectDirectory) {
+		logger.debug("installing " + nodePackageName + " local with npm");
+		initNode();
+		checkNpmProjectInitialization(projectDirectory);
+		runCommand(NPM_COMMAND, projectDirectory, false, null, null, null, "install",
+				version == null ? nodePackageName : nodePackageName + "@" + version, "--save");
+	}
+
+	private static void checkNpmProjectInitialization(File projectDirectory) {
+		if (!new File(projectDirectory, "package.json").isFile()) {
+			runCommand(NPM_COMMAND, projectDirectory, false, null, null, null, "init", "-y");
 		}
 	}
 
 	/**
 	 * Checks if a node package has been installed locally.
 	 * 
-	 * @param nodePackageName
-	 *            the node module to be tested
+	 * @param nodePackageName the node module to be tested
 	 * @return true if already installed locally
 	 */
 	public static boolean isNodePackageInstalled(String nodePackageName) {
@@ -340,20 +383,15 @@ public class ProcessUtil {
 	 * Uninstalls a <code>node<code> package with <code>npm</code> (assumes that
 	 * <code>node</code> is installed).
 	 * 
-	 * @param nodePackageName
-	 *            the package name
-	 * @param global
-	 *            <code>true</code> for adding the <code>-g</code> option
+	 * @param nodePackageName the package name
+	 * @param location        <code>Global</code> for adding the <code>-g</code>
+	 *                        option
 	 */
-	public static void uninstallNodePackage(String nodePackageName, boolean global) {
+	public static void uninstallGlobalNodePackage(String nodePackageName) {
 		logger.debug("uninstalling " + nodePackageName + " with npm");
 		initNode();
-		if (global) {
-			runCommand(NPM_COMMAND, USER_HOME_DIR, false, null, null, null, "uninstall", "--prefix", NPM_DIR.getPath(),
-					nodePackageName, "-g");
-		} else {
-			runCommand(NPM_COMMAND, USER_HOME_DIR, false, null, null, null, "uninstall", nodePackageName);
-		}
+		runCommand(NPM_COMMAND, USER_HOME_DIR, false, null, null, null, "uninstall", "--prefix", NPM_DIR.getPath(),
+				nodePackageName, "-g");
 	}
 
 	public static boolean isVersionHighEnough(String currentVersion, String minimumVersion) {

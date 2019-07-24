@@ -13,6 +13,11 @@ import org.jsweet.transpiler.util.ProcessUtil;
 
 public class JavaScriptEval extends RuntimeEval {
 
+	private static final String BABEL_EXECUTABLE_NAME = "babel";
+	private static final String BABEL_PACKAGE_NAME = "@babel/cli";
+	private static final String BABEL_CORE_PACKAGE_NAME = "@babel/core";
+	private static final String BABEL_PRESET_PACKAGE_NAME = "@babel/preset-env";
+
 	private static final String PHANTOMJS_EXECUTABLE_NAME = "phantomjs";
 	private static final String PHANTOMJS_PACKAGE_NAME = "phantomjs-prebuilt";
 
@@ -45,7 +50,7 @@ public class JavaScriptEval extends RuntimeEval {
 			runProcess = runScript(trace, mainFile);
 		} else {
 
-			File tmpFile = new File(options.workingDir, "eval.tmp.js");
+			File tmpFile = new File(options.workingDir, "eval.tmp_" + System.currentTimeMillis() + ".js");
 			FileUtils.deleteQuietly(tmpFile);
 			Set<File> alreadyWrittenScripts = new HashSet<>();
 			for (File jsFile : jsFiles) {
@@ -73,9 +78,33 @@ public class JavaScriptEval extends RuntimeEval {
 		Process runProcess;
 		if (runtime == JavaScriptRuntime.PhantomJs) {
 
+			File projectDir = mainFile.getParentFile();
+			checkBabelInstall(projectDir);
 			checkPhantomJsInstall();
-			String phantomJsPath = resolvePhantomJsPath();
 
+			String phantomJsPath = resolvePhantomJsPath();
+			String babelPath = resolveBabelPath();
+
+			// RUN BABEL
+			runProcess = ProcessUtil.runCommand( //
+					babelPath, //
+					null, //
+					false, //
+					line -> {
+						logger.info("BABEL OUT: " + line);
+						trace.append(line + "\n");
+					}, process -> {
+						logger.info("BABEL END - " + process);
+						trace.append("babel ended\n");
+					}, () -> {
+						trace.append("BABEL errored\n");
+						logger.info("babel ERROR :(");
+					}, //
+					mainFile.getPath(), //
+					"--out-file=" + mainFile.getPath(), //
+					"--presets=" + BABEL_PRESET_PACKAGE_NAME);
+
+			// RUN PHANTOMJS
 			runProcess = ProcessUtil.runCommand( //
 					phantomJsPath, //
 					null, //
@@ -109,7 +138,7 @@ public class JavaScriptEval extends RuntimeEval {
 		return runProcess;
 	}
 
-	public String resolvePhantomJsPath() {
+	private String resolvePhantomJsPath() {
 		String phantomJsPath = ProcessUtil.getGlobalNpmPackageExecutablePath(PHANTOMJS_EXECUTABLE_NAME);
 		if (ProcessUtil.isWindows()) {
 			// we need to use the .exe file to be able to fix this bug:
@@ -127,9 +156,31 @@ public class JavaScriptEval extends RuntimeEval {
 		return phantomJsPath;
 	}
 
+	private String resolveBabelPath() {
+		String babelPath = ProcessUtil.getGlobalNpmPackageExecutablePath(BABEL_EXECUTABLE_NAME);
+		logger.info("babelPath=" + babelPath);
+		if (!new File(babelPath).canExecute()) {
+			throw new RuntimeException("babel cannot be found");
+		}
+
+		return babelPath;
+	}
+
 	private void checkPhantomJsInstall() {
-		if (!ProcessUtil.isInstalledWithNpm(PHANTOMJS_EXECUTABLE_NAME)) {
-			ProcessUtil.installNodePackage(PHANTOMJS_PACKAGE_NAME, null, true);
+		if (!ProcessUtil.isExecutableInstalledGloballyWithNpm(PHANTOMJS_EXECUTABLE_NAME)) {
+			ProcessUtil.installGlobalNodePackage(PHANTOMJS_PACKAGE_NAME, null);
+		}
+	}
+
+	private void checkBabelInstall(File projectDirectory) {
+		if (!ProcessUtil.isPackageInstalledLocallyWithNpm(BABEL_EXECUTABLE_NAME, projectDirectory)) {
+			ProcessUtil.installLocalNodePackage(BABEL_PACKAGE_NAME, null, projectDirectory);
+		}
+		if (!ProcessUtil.isPackageInstalledLocallyWithNpm(BABEL_CORE_PACKAGE_NAME, projectDirectory)) {
+			ProcessUtil.installLocalNodePackage(BABEL_CORE_PACKAGE_NAME, null, projectDirectory);
+		}
+		if (!ProcessUtil.isPackageInstalledLocallyWithNpm(BABEL_PRESET_PACKAGE_NAME, projectDirectory)) {
+			ProcessUtil.installLocalNodePackage(BABEL_PRESET_PACKAGE_NAME, null, projectDirectory);
 		}
 	}
 }
