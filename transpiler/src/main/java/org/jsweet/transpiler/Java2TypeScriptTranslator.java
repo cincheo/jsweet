@@ -4047,6 +4047,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						String rootRelativeName = getRootRelativeName(clazz.getEnclosingElement());
 						if (!rootRelativeName.isEmpty()) {
 							print(rootRelativeName + ".");
+							PackageSymbol identifierPackage = clazz.packge();
+							String pathToModulePackage = Util.getRelativePath(compilationUnit.packge, identifierPackage);
+							if (pathToModulePackage == null) {
+								pathToModulePackage = ".";
+							}
+							File moduleFile = new File(new File(pathToModulePackage), clazz.owner.getSimpleName().toString());
+							useModule(false, identifierPackage, ident, clazz.owner.getSimpleName().toString(), moduleFile.getPath().replace('\\', '/'), null);
 						}
 						prefixAdded = true;
 					}
