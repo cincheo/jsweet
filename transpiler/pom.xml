@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.jsweet</groupId>
 	<artifactId>jsweet-transpiler</artifactId>
-	<version>2.3.2-SNAPSHOT</version>
+	<version>2.3.1</version>
 	<name>JSweet transpiler</name>
 	<description>A Java to TypeScript/JavaScript Open Transpiler</description>
 	<developers>
@@ -234,7 +234,7 @@
 		<dependency>
 			<groupId>org.jsweet</groupId>
 			<artifactId>jsweet-core</artifactId>
-			<version>6.0.2-SNAPSHOT</version>
+			<version>6.0.2</version>
 			<scope>test</scope>
 			<optional>true</optional>
 		</dependency>
