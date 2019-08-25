@@ -3490,7 +3490,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						boolean accessSubstituted = false;
 						if (fieldAccess.sym instanceof VarSymbol) {
 							VarSymbol varSym = (VarSymbol) fieldAccess.sym;
-							if (varSym.isStatic() && varSym.owner.isInterface()
+							if (varSym.isStatic()
 									&& varSym.owner != Util.getAccessedSymbol(fieldAccess.selected)) {
 								accessSubstituted = true;
 								print(getRootRelativeName(varSym.owner)).print(".");

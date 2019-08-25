@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.jsweet</groupId>
 	<artifactId>jsweet-transpiler</artifactId>
-	<version>2.3.1-SNAPSHOT</version>
+	<version>2.3.1</version>
 	<name>JSweet transpiler</name>
 	<description>A Java to TypeScript/JavaScript Open Transpiler</description>
 	<developers>
@@ -217,9 +217,9 @@
 		</dependency>
 
 		<dependency>
-			<groupId>fr.opensagres.js</groupId>
-			<artifactId>ts.core</artifactId>
-			<version>1.4.0-SNAPSHOT</version>
+			<groupId>org.jsweet.ext</groupId>
+			<artifactId>typescript.java-ts.core</artifactId>
+			<version>1.4.0.1</version>
 		</dependency>
 
 		<!-- Compile-time only dependency (JSweet looks up installed JDK at runtime 
