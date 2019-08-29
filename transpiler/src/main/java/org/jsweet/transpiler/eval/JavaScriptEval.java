@@ -143,7 +143,7 @@ public class JavaScriptEval extends RuntimeEval {
 		if (ProcessUtil.isWindows()) {
 			// we need to use the .exe file to be able to fix this bug:
 			// https://github.com/ariya/phantomjs/issues/10845#issuecomment-24220355
-			phantomJsPath = ProcessUtil.findGlobalExecutable("phantomjs.exe", "phantomjs-prebuilt");
+			phantomJsPath = ProcessUtil.findGlobalExecutable("phantomjs.exe", PHANTOMJS_PACKAGE_NAME);
 			if (phantomJsPath == null || !new File(phantomJsPath).isFile()) {
 				phantomJsPath = ProcessUtil.getGlobalNpmPackageExecutablePath(PHANTOMJS_EXECUTABLE_NAME);
 			}

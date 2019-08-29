@@ -118,8 +118,39 @@ public class ProcessUtil {
 		if (isWindows()) {
 			return NPM_DIR.getPath() + File.separator + command + ".cmd";
 		} else {
-			return NPM_DIR.getPath() + File.separator + "bin" + File.separator + command;
+			String unixPath = NPM_DIR.getPath() + File.separator + "bin" + File.separator + command;
+			if (new File(unixPath).isFile()) {
+				return unixPath;
+			}
+
+			logger.info("cannot find " + command + " - searching in node_modules files");
+			unixPath = lookupGlobalNpmPackageExecutablePath(NPM_DIR, command);
+			if (unixPath != null) {
+				return unixPath;
+			}
+
+			throw new RuntimeException("cannot find executable " + command);
 		}
+	}
+
+	private static String lookupGlobalNpmPackageExecutablePath(File directory, String executableName) {
+		for (File child : directory.listFiles()) {
+			if (child.isDirectory()) {
+				if (child.getName().equals("bin")) {
+					for (File binFile : child.listFiles()) {
+						if (binFile.getName().equals(executableName)) {
+							return binFile.getAbsolutePath();
+						}
+					}
+				} else {
+					String foundPath = lookupGlobalNpmPackageExecutablePath(child, executableName);
+					if (foundPath != null) {
+						return foundPath;
+					}
+				}
+			}
+		}
+		return null;
 	}
 
 	/**
