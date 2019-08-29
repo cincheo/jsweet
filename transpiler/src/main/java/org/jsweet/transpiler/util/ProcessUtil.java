@@ -103,12 +103,8 @@ public class ProcessUtil {
 	 * Gets the full path of a global package's (system) command installed with npm.
 	 */
 	public static String getGlobalNpmPackageNodeMainFilePath(String nodeModule, String mainFileName) {
-		if (isWindows()) {
-			return NPM_DIR.getPath() + File.separator + "node_modules" + File.separator + "typescript" + File.separator
-					+ "bin" + File.separator + mainFileName;
-		} else {
-			return NPM_DIR.getPath() + File.separator + "bin" + File.separator + mainFileName;
-		}
+		return NPM_DIR.getPath() + File.separator + "node_modules" + File.separator + nodeModule + File.separator
+				+ "bin" + File.separator + mainFileName;
 	}
 
 	/**
