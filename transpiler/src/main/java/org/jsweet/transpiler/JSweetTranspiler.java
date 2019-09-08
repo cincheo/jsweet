@@ -561,10 +561,10 @@ public class JSweetTranspiler implements JSweetOptions {
 		if (tscVersionFile.exists()) {
 			v = FileUtils.readFileToString(tscVersionFile);
 		}
-		if (!ProcessUtil.isPackageInstalledGloballyWithNpm("tsc") || !v.trim().startsWith(TSC_VERSION)) {
+		if (!ProcessUtil.isExecutableInstalledGloballyWithNpm("tsc") || !v.trim().startsWith(TSC_VERSION)) {
 			// this will lead to performances issues if having multiple versions
 			// of JSweet installed
-			if (ProcessUtil.isPackageInstalledGloballyWithNpm("tsc")) {
+			if (ProcessUtil.isExecutableInstalledGloballyWithNpm("tsc")) {
 				ProcessUtil.uninstallGlobalNodePackage("typescript");
 			}
 			ProcessUtil.installGlobalNodePackage("typescript", TSC_VERSION);
