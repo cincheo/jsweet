@@ -134,18 +134,23 @@ public class ProcessUtil {
 	}
 
 	private static String lookupGlobalNpmPackageExecutablePath(File directory, String executableName) {
-		for (File child : directory.listFiles()) {
-			if (child.isDirectory()) {
-				if (child.getName().equals("bin")) {
-					for (File binFile : child.listFiles()) {
-						if (binFile.getName().equals(executableName)) {
-							return binFile.getAbsolutePath();
+		if (directory != null) {
+			File[] children = directory.listFiles();
+			if (children != null) {
+				for (File child : children) {
+					if (child.isDirectory()) {
+						if (child.getName().equals("bin")) {
+							for (File binFile : child.listFiles()) {
+								if (binFile.getName().equals(executableName)) {
+									return binFile.getAbsolutePath();
+								}
+							}
+						} else {
+							String foundPath = lookupGlobalNpmPackageExecutablePath(child, executableName);
+							if (foundPath != null) {
+								return foundPath;
+							}
 						}
-					}
-				} else {
-					String foundPath = lookupGlobalNpmPackageExecutablePath(child, executableName);
-					if (foundPath != null) {
-						return foundPath;
 					}
 				}
 			}
