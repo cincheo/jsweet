@@ -125,11 +125,8 @@ public class ProcessUtil {
 
 			logger.info("cannot find " + command + " - searching in node_modules files");
 			unixPath = lookupGlobalNpmPackageExecutablePath(NPM_DIR, command);
-			if (unixPath != null) {
-				return unixPath;
-			}
-
-			throw new RuntimeException("cannot find executable " + command);
+			
+			return unixPath;
 		}
 	}
 
@@ -184,14 +181,16 @@ public class ProcessUtil {
 	 * Tells if this node command is globally installed.
 	 */
 	public static boolean isExecutableInstalledGloballyWithNpm(String command) {
-		return new File(getGlobalNpmPackageExecutablePath(command)).exists();
+		String executablePath = getGlobalNpmPackageExecutablePath(command);
+		return executablePath != null && new File(executablePath).exists();
 	}
 
 	/**
 	 * Tells if this node command is locally or globally installed
 	 */
 	public static boolean isExecutableInstalledLocallyWithNpm(String command, File projectDirectory) {
-		return new File(getLocalNpmPackageExecutablePath(command, projectDirectory)).exists();
+		String executablePath = getLocalNpmPackageExecutablePath(command, projectDirectory);
+		return executablePath != null && new File(executablePath).exists();
 	}
 
 	/**
