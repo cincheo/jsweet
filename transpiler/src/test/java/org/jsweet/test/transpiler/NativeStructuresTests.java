@@ -96,7 +96,9 @@ public class NativeStructuresTests extends AbstractTest {
 	public void testOverloadWithNative() {
 		eval((logHandler, result) -> {
 			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-			assertEquals("1,2", result.get("trace"));
+			assertEquals("1,2," + //
+					"overloadWithClass0:10,overloadWithClass1:foo"
+			, result.get("trace"));
 		}, getSourceFile(OverloadWithNative.class));
 	}
 
