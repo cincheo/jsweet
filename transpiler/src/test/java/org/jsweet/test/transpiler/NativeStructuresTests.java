@@ -62,7 +62,10 @@ public class NativeStructuresTests extends AbstractTest {
 					+ "false,[c, a, b],c,[a, b],b,[a],a,null,true,null,"
 			// removeAll, retainAll, containsAll, disjoint
 					+ "[a, b, c],[d, e, f],false,true,false,true," //
-					+ "[nyan, nyan, nyan, nyan, nyan, nyan, nyan]", result.get("trace"));
+					+ "[nyan, nyan, nyan, nyan, nyan, nyan, nyan]," //
+			// arrayList copy constructor
+					+ "a2.size=2,a2[0]=foo,a2[1]=bar", //
+					result.get("trace"));
 		}, getSourceFile(Collections.class));
 	}
 

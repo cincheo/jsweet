@@ -30,24 +30,24 @@ public class Collections implements Cloneable, Serializable {
 
 	public static void main(String[] args) {
 		ArrayList<String> values = new ArrayList<String>();
-        String derp = "derp";
-        values.add("derp");
-        String cccc = "wow cool";
-        values.add(cccc);
-        assert values.size() == 2;
-        
-        String removeReturnValue = values.remove(0);
-        assert removeReturnValue != null;
-        assert removeReturnValue.equals(derp);
-        
-        assert values.size() == 1;
-        boolean removed = values.remove(cccc);
-        assert values.size() == 0;
-        assert removed;
+		String derp = "derp";
+		values.add("derp");
+		String cccc = "wow cool";
+		values.add(cccc);
+		assert values.size() == 2;
 
-        removed = values.remove(cccc);
-        assert ! removed;
-		
+		String removeReturnValue = values.remove(0);
+		assert removeReturnValue != null;
+		assert removeReturnValue.equals(derp);
+
+		assert values.size() == 1;
+		boolean removed = values.remove(cccc);
+		assert values.size() == 0;
+		assert removed;
+
+		removed = values.remove(cccc);
+		assert !removed;
+
 		List<String> l = new ArrayList<String>();
 
 		l.add("a");
@@ -332,24 +332,36 @@ public class Collections implements Cloneable, Serializable {
 				return o2.compareTo(o1);
 			}
 		});
-		
+
 		java.util.Collections.sort(list2, new Comparator<String>() {
 			@Override
 			public int compare(String o1, String o2) {
 				return o2.compareTo(o1);
 			}
 		});
-		
-		HashSet<String> aSet = new HashSet<>();		
-		Set<String> aSet2 = new HashSet<>();		
-		Set<String> aSet3 = new TreeSet<>();		
-		List<String> aList = new ArrayList<>();		
-		
+
+		HashSet<String> aSet = new HashSet<>();
+		Set<String> aSet2 = new HashSet<>();
+		Set<String> aSet3 = new TreeSet<>();
+		List<String> aList = new ArrayList<>();
+
 		List<String> copies = java.util.Collections.nCopies(7, "nyan");
 		trace.push("" + copies);
-		
+
+		testArrayListCopyConstructor();
+
 		$export("trace", trace.join(","));
 
+	}
+
+	private static void testArrayListCopyConstructor() {
+		ArrayList<String> al = new ArrayList<String>();
+		al.add("foo");
+		al.add("bar");
+		ArrayList<String> a2 = new ArrayList<String>(al);
+		trace.push("a2.size=" + a2.size());
+		trace.push("a2[0]=" + a2.get(0));
+		trace.push("a2[1]=" + a2.get(1));
 	}
 
 	private static Comparator MyComparator = new Comparator() {
