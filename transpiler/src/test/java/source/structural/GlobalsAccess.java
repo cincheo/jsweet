@@ -18,7 +18,7 @@ package source.structural;
 
 import static jsweet.util.Lang.$export;
 import static jsweet.util.Lang.string;
-import static source.structural.Globals.toTitleCase;
+import static source.structural.Globals.*;
 
 import def.js.String;
 import def.js.RegExp;
@@ -27,8 +27,13 @@ public class GlobalsAccess {
 
 	public static void main(String[] args) {
 		$export("result", toTitleCase(string("renaud pawlak")));
+		test();
 	}
 
+	public static void test() {
+		foo();
+		foo(3);
+	}
 }
 
 class Globals {
@@ -38,6 +43,12 @@ class Globals {
 			return tok.charAt(0).toUpperCase().concat(tok.substr(1).toLowerCase());
 		});
 	}
-	
-	
+
+	public static void foo() {
+		$export("foo0", "true");
+	}
+
+	public static void foo(int len) {
+		$export("foo1", "true" + len);
+	}
 }

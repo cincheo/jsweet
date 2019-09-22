@@ -322,7 +322,9 @@ public class StructuralTests extends AbstractTest {
 	public void testGlobalsAccess() {
 		eval((logHandler, r) -> {
 			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-			Assert.assertEquals("Renaud Pawlak", r.get("result"));
+			assertEquals("Renaud Pawlak", r.get("result"));
+			assertEquals("true", r.get("foo0").toString());
+			assertEquals("true3", r.get("foo1"));
 		}, getSourceFile(GlobalsAccess.class));
 	}
 

@@ -29,6 +29,7 @@ import static org.jsweet.JSweetConfig.TS_IDENTIFIER_FORBIDDEN_CHARS;
 import static org.jsweet.JSweetConfig.TUPLE_CLASSES_PACKAGE;
 import static org.jsweet.JSweetConfig.UNION_CLASS_NAME;
 import static org.jsweet.JSweetConfig.UTIL_PACKAGE;
+import static org.jsweet.transpiler.util.Util.isGlobalsClassName;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -2368,75 +2369,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (inCoreWrongOverload) {
 					print(" {").println().startIndent().printIndent();
 
-					boolean wasPrinted = false;
-					for (int i = 0; i < overload.methods.size(); i++) {
-						JCMethodDecl method = overload.methods.get(i);
-						if (context.isInterface((ClassSymbol) method.sym.getEnclosingElement())
-								&& !method.getModifiers().getFlags().contains(Modifier.DEFAULT)
-								&& !method.getModifiers().getFlags().contains(Modifier.STATIC)) {
-							continue;
-						}
-						if (!Util.isParent(parent.sym, (ClassSymbol) method.sym.getEnclosingElement())) {
-							continue;
-						}
-						if (wasPrinted) {
-							print(" else ");
-						}
-						wasPrinted = true;
-						print("if(");
-						printMethodParamsTest(overload, method);
-						print(") ");
-						if (method.sym.isConstructor()) {
-							printInlinedMethod(overload, method, methodDecl.getParameters());
-						} else {
-							if (parent.sym != method.sym.getEnclosingElement()
-									&& context.getOverload((ClassSymbol) method.sym.getEnclosingElement(),
-											method.sym).coreMethod == method) {
-								print("{").println().startIndent().printIndent();
+					printCoreOverloadMethod(methodDecl, parent, overload);
 
-								if ((method.getBody() == null || (method.mods.getFlags().contains(Modifier.DEFAULT)
-										&& !getScope().defaultMethodScope)) && !getScope().interfaceScope
-										&& method.getModifiers().getFlags().contains(Modifier.ABSTRACT)) {
-									print(" throw new Error('cannot invoke abstract overloaded method... check your argument(s) type(s)'); ");
-								} else {
-									String tsMethodAccess = getTSMemberAccess(getTSMethodName(methodDecl), true);
-									print("super" + tsMethodAccess);
-									print("(");
-									for (int j = 0; j < method.getParameters().size(); j++) {
-										print(avoidJSKeyword(
-												overload.coreMethod.getParameters().get(j).name.toString()))
-														.print(", ");
-									}
-									if (!method.getParameters().isEmpty()) {
-										removeLastChars(2);
-									}
-									print(");");
-								}
-								println().endIndent().printIndent().print("}");
-							} else {
-								print("{").println().startIndent().printIndent();
-								// temporary cast to any because of Java
-								// generics
-								// bug
-								print("return <any>");
-								if (method.sym.isStatic()) {
-									print(getQualifiedTypeName(parent.sym, false, false).toString());
-								} else {
-									print("this");
-								}
-								print(".").print(getOverloadMethodName(method.sym)).print("(");
-								for (int j = 0; j < method.getParameters().size(); j++) {
-									print(avoidJSKeyword(overload.coreMethod.getParameters().get(j).name.toString()))
-											.print(", ");
-								}
-								if (!method.getParameters().isEmpty()) {
-									removeLastChars(2);
-								}
-								print(");");
-								println().endIndent().printIndent().print("}");
-							}
-						}
-					}
 					print(" else throw new Error('invalid overload');");
 					endIndent().println().printIndent().print("}");
 				} else {
@@ -2483,6 +2417,77 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						printIndent().print(replacedBody).println();
 					}
 					endIndent().printIndent().print("}");
+				}
+			}
+		}
+	}
+
+	private void printCoreOverloadMethod(JCMethodDecl methodDecl, JCClassDecl parent, Overload overload) {
+		boolean wasPrinted = false;
+		for (int i = 0; i < overload.methods.size(); i++) {
+			JCMethodDecl method = overload.methods.get(i);
+			if (context.isInterface((ClassSymbol) method.sym.getEnclosingElement())
+					&& !method.getModifiers().getFlags().contains(Modifier.DEFAULT)
+					&& !method.getModifiers().getFlags().contains(Modifier.STATIC)) {
+				continue;
+			}
+			if (!Util.isParent(parent.sym, (ClassSymbol) method.sym.getEnclosingElement())) {
+				continue;
+			}
+			if (wasPrinted) {
+				print(" else ");
+			}
+			wasPrinted = true;
+			print("if(");
+			printMethodParamsTest(overload, method);
+			print(") ");
+			if (method.sym.isConstructor()) {
+				printInlinedMethod(overload, method, methodDecl.getParameters());
+			} else {
+				if (parent.sym != method.sym.getEnclosingElement() && context
+						.getOverload((ClassSymbol) method.sym.getEnclosingElement(), method.sym).coreMethod == method) {
+					print("{").println().startIndent().printIndent();
+
+					if ((method.getBody() == null
+							|| (method.mods.getFlags().contains(Modifier.DEFAULT) && !getScope().defaultMethodScope))
+							&& !getScope().interfaceScope
+							&& method.getModifiers().getFlags().contains(Modifier.ABSTRACT)) {
+						print(" throw new Error('cannot invoke abstract overloaded method... check your argument(s) type(s)'); ");
+					} else {
+						String tsMethodAccess = getTSMemberAccess(getTSMethodName(methodDecl), true);
+						print("super" + tsMethodAccess);
+						print("(");
+						for (int j = 0; j < method.getParameters().size(); j++) {
+							print(avoidJSKeyword(overload.coreMethod.getParameters().get(j).name.toString()))
+									.print(", ");
+						}
+						if (!method.getParameters().isEmpty()) {
+							removeLastChars(2);
+						}
+						print(");");
+					}
+					println().endIndent().printIndent().print("}");
+				} else {
+					print("{").println().startIndent().printIndent();
+					// temporary cast to any because of Java generics bug
+					print("return <any>");
+					if (!isGlobalsClassName(parent.name.toString())) {
+						if (method.sym.isStatic()) {
+							print(getQualifiedTypeName(parent.sym, false, false).toString());
+						} else {
+							print("this");
+						}
+						print(".");
+					}
+					print(getOverloadMethodName(method.sym)).print("(");
+					for (int j = 0; j < method.getParameters().size(); j++) {
+						print(avoidJSKeyword(overload.coreMethod.getParameters().get(j).name.toString())).print(", ");
+					}
+					if (!method.getParameters().isEmpty()) {
+						removeLastChars(2);
+					}
+					print(");");
+					println().endIndent().printIndent().print("}");
 				}
 			}
 		}
@@ -3490,8 +3495,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						boolean accessSubstituted = false;
 						if (fieldAccess.sym instanceof VarSymbol) {
 							VarSymbol varSym = (VarSymbol) fieldAccess.sym;
-							if (varSym.isStatic()
-									&& varSym.owner != Util.getAccessedSymbol(fieldAccess.selected)) {
+							if (varSym.isStatic() && varSym.owner != Util.getAccessedSymbol(fieldAccess.selected)) {
 								accessSubstituted = true;
 								print(getRootRelativeName(varSym.owner)).print(".");
 							}
@@ -4048,12 +4052,15 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						if (!rootRelativeName.isEmpty()) {
 							print(rootRelativeName + ".");
 							PackageSymbol identifierPackage = clazz.packge();
-							String pathToModulePackage = Util.getRelativePath(compilationUnit.packge, identifierPackage);
+							String pathToModulePackage = Util.getRelativePath(compilationUnit.packge,
+									identifierPackage);
 							if (pathToModulePackage == null) {
 								pathToModulePackage = ".";
 							}
-							File moduleFile = new File(new File(pathToModulePackage), clazz.owner.getSimpleName().toString());
-							useModule(false, identifierPackage, ident, clazz.owner.getSimpleName().toString(), moduleFile.getPath().replace('\\', '/'), null);
+							File moduleFile = new File(new File(pathToModulePackage),
+									clazz.owner.getSimpleName().toString());
+							useModule(false, identifierPackage, ident, clazz.owner.getSimpleName().toString(),
+									moduleFile.getPath().replace('\\', '/'), null);
 						}
 						prefixAdded = true;
 					}
