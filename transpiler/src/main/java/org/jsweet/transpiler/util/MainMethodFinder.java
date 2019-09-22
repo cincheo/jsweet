@@ -1,5 +1,9 @@
 package org.jsweet.transpiler.util;
 
+import java.util.ServiceLoader;
+
+import javax.tools.Tool;
+
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.tree.TreeScanner;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;

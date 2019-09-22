@@ -18,6 +18,7 @@
  */
 package org.jsweet.transpiler.util;
 
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -25,11 +26,19 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.Stack;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import javax.tools.JavaCompiler;
+import javax.tools.JavaFileObject;
+import javax.tools.StandardJavaFileManager;
+import javax.tools.Tool;
+import javax.tools.ToolProvider;
 
 /**
  * This class defines a directed graph collection type, that is to say a set of
@@ -613,19 +622,28 @@ public class DirectedGraph<T> implements Collection<T> {
 	 * Just for testing.
 	 */
 	public static void main(String[] args) {
-		DirectedGraph<Integer> g = new DirectedGraph<Integer>();
-		g.add(7, 5, 3, 11, 8, 2, 9, 10);
-		System.out.println(g.nodes.values());
-		System.out.println(g.nodes.keySet());
-		g.buildEdges(new Comparator<Integer>() {
-			@Override
-			public int compare(Integer o1, Integer o2) {
-				if (o1 == 5 && o2 == 3) {
-					return 1;
-				}
-				return 0;
-			}
-		});
-		System.out.println(g.topologicalSort(null));
+		
+		  for (Tool tool : ServiceLoader.loadInstalled(Tool.class)) {
+	            System.out.println("Found tool: " + tool);
+	        }
+		  JavaCompiler javac = ToolProvider.getSystemJavaCompiler();
+		  StandardJavaFileManager fileManager = javac.getStandardFileManager(null, Locale.getDefault(), Charset.forName("UTF-8"));
+		   Iterable<? extends JavaFileObject> fileObjects =
+		            fileManager.getJavaFileObjectsFromFiles(new ArrayList<>());
+//		   javac.
+//		DirectedGraph<Integer> g = new DirectedGraph<Integer>();
+//		g.add(7, 5, 3, 11, 8, 2, 9, 10);
+//		System.out.println(g.nodes.values());
+//		System.out.println(g.nodes.keySet());
+//		g.buildEdges(new Comparator<Integer>() {
+//			@Override
+//			public int compare(Integer o1, Integer o2) {
+//				if (o1 == 5 && o2 == 3) {
+//					return 1;
+//				}
+//				return 0;
+//			}
+//		});
+//		System.out.println(g.topologicalSort(null));
 	}
 }
