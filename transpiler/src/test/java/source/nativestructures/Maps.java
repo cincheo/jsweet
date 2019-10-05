@@ -2,7 +2,9 @@ package source.nativestructures;
 
 import static jsweet.util.Lang.$export;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -118,7 +120,20 @@ public class Maps {
 		assert m8.containsKey(3);
 		assert m7.containsKey(1);
 		assert !m7.containsKey(3);
-		
+
+		for (Map<String, Integer> map : Arrays.<Map<String, Integer>>asList(
+				new HashMap<>(10),
+                new HashMap<>(10, 11),
+				new TreeMap<>(Comparator.comparingInt(String::hashCode))
+		)) {
+			map.put("a", 1);
+			map.put("b", 2);
+			assert map.size() == 2;
+			assert map.get("a") == 1;
+			assert map.get("b") == 2;
+			assert map.get("c") == null;
+		}
+
 		$export("trace", trace.join(","));
 
 	}
