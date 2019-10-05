@@ -1,7 +1,7 @@
 package org.jsweet.test.transpiler;
 
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.jsweet.test.transpiler.util.TranspilerTestRunner;
 import org.jsweet.transpiler.JSweetContext;
@@ -23,6 +23,7 @@ import source.nativestructures.ExtendsJDKInterface;
 import source.nativestructures.ExtendsJDKRegular;
 import source.nativestructures.Input;
 import source.nativestructures.Iterators;
+import source.nativestructures.MapExtended;
 import source.nativestructures.Maps;
 import source.nativestructures.NativeArrays;
 import source.nativestructures.NativeStringBuilder;
@@ -109,7 +110,7 @@ public class NativeStructuresTests extends AbstractTest {
 			assertEquals("test,test,finally,test2,test3", result.get("trace"));
 		}, getSourceFile(Exceptions.class));
 	}
-
+	
 	@Test
 	public void testMaps() {
 		eval((logHandler, result) -> {
@@ -117,6 +118,13 @@ public class NativeStructuresTests extends AbstractTest {
 			assertEquals("1,a,2,b,2,a,true,[1, 2],[a, b],a,1,true,size2=2,1,2,[],empty=true,-null-,1,a,2,b",
 					result.get("trace"));
 		}, getSourceFile(Maps.class));
+	}
+
+	@Test
+	public void testMapExtended() {
+		eval((logHandler, result) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(MapExtended.class));
 	}
 
 	@Test
