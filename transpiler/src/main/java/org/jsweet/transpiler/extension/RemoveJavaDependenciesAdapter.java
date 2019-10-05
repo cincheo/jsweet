@@ -67,6 +67,7 @@ import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
+import com.sun.tools.javac.code.Type;
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.Java2TypeScriptTranslator;
 import org.jsweet.transpiler.ModuleKind;
@@ -1526,7 +1527,11 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		case "java.util.Hashtable":
 		case "java.util.WeakHashMap":
 		case "java.util.LinkedHashMap":
-			if (newClass.getArgumentCount() == 0) {
+			if (newClass.getArgumentCount() == 0 ||
+                !(newClass.getArgument(0).getType() instanceof Type.ClassType) ||
+				!Util.isDeclarationOrSubClassDeclaration(
+                	types(), (Type.ClassType) newClass.getArgument(0).getType(), Map.class.getName())
+			) {
 				print("{}");
 			} else {
 				if (((DeclaredType) newClass.getType()).getTypeArguments().size() == 2 && types().isSameType(
