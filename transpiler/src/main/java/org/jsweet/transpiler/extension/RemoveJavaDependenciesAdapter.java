@@ -1424,6 +1424,9 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			printMacroName(targetMethodName);
 			print(invocation.getTargetExpression());
 			return true;
+		case "valueOf":
+			print(invocation.getArgument(0));
+			return true;
 		}
 
 		return false;
@@ -1497,7 +1500,13 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		case "java.lang.Float":
 		case "java.long.Short":
 		case "java.util.Byte":
-			print("new Number(").print(newClass.getArgument(0)).print(").valueOf()");
+		    String argType = newClass.getArgument(0).getType().toString();
+			boolean isCharArgument = Character.class.getName().equals(argType) || "char".equals(argType);
+			if (isCharArgument) {
+				print("new Number(").print(newClass.getArgument(0)).print(".charCodeAt(0)" + ").valueOf()");
+			} else {
+				print("new Number(").print(newClass.getArgument(0)).print(").valueOf()");
+			}
 			substitute = true;
 			break;
 		case "java.util.ArrayList":
