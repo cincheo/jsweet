@@ -3390,16 +3390,20 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	}
 
 	private void printInnerClassAccess(String accessedElementName, ElementKind kind) {
+		printInnerClassAccess(accessedElementName, kind, null);
+	}
+	
+	private void printInnerClassAccess(String accessedElementName, ElementKind kind, Integer methodArgsCount) {
 		print("this.");
 		JCClassDecl parent = getParent(JCClassDecl.class);
 		int level = 0;
 		boolean foundInParent = Util.findFirstDeclarationInClassAndSuperClasses(parent.sym, accessedElementName,
-				kind) != null;
+				kind, methodArgsCount) != null;
 		if (!foundInParent) {
 			while (getScope(level++).innerClassNotStatic) {
 				parent = getParent(JCClassDecl.class, parent);
 				if (parent != null && Util.findFirstDeclarationInClassAndSuperClasses(parent.sym, accessedElementName,
-						kind) != null) {
+						kind, methodArgsCount) != null) {
 					foundInParent = true;
 					break;
 				}
@@ -3752,7 +3756,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						if (!GLOBALS_CLASS_NAME.equals(selected.type.tsym.getSimpleName().toString())) {
 							if (getScope().innerClassNotStatic
 									&& ("this".equals(selected.toString()) || selected.toString().endsWith(".this"))) {
-								printInnerClassAccess(methSym.name.toString(), methSym.getKind());
+								printInnerClassAccess(methSym.name.toString(), methSym.getKind(), methSym.getParameters().size());
 							} else {
 								print(selected).print(".");
 							}

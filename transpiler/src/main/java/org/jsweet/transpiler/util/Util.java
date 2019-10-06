@@ -40,6 +40,7 @@ import java.util.stream.Collectors;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.type.TypeKind;
@@ -159,10 +160,8 @@ public class Util {
 	 * Gets the tree that corresponds to the given element (this is a slow
 	 * implementation - do not use intensively).
 	 * 
-	 * @param context
-	 *            the transpiler's context
-	 * @param element
-	 *            the element to lookup
+	 * @param context the transpiler's context
+	 * @param element the element to lookup
 	 * @return the javac AST that corresponds to that element
 	 */
 	public static JCTree lookupTree(JSweetContext context, Element element) {
@@ -225,12 +224,9 @@ public class Util {
 	/**
 	 * Recursively adds files to the given list.
 	 * 
-	 * @param extension
-	 *            the extension to filter with
-	 * @param file
-	 *            the root file/directory to look into recursively
-	 * @param files
-	 *            the list to add the files matching the extension
+	 * @param extension the extension to filter with
+	 * @param file      the root file/directory to look into recursively
+	 * @param files     the list to add the files matching the extension
 	 */
 	public static void addFiles(String extension, File file, Collection<File> files) {
 		addFiles(f -> f.getName().endsWith(extension), file, files);
@@ -239,13 +235,10 @@ public class Util {
 	/**
 	 * Recursively adds files to the given list.
 	 * 
-	 * @param filter
-	 *            the filter predicate to apply (only files matching the predicate
-	 *            will be added)
-	 * @param file
-	 *            the root file/directory to look into recursively
-	 * @param files
-	 *            the list to add the files matching the extension
+	 * @param filter the filter predicate to apply (only files matching the
+	 *               predicate will be added)
+	 * @param file   the root file/directory to look into recursively
+	 * @param files  the list to add the files matching the extension
 	 */
 	public static void addFiles(Predicate<File> filter, File file, Collection<File> files) {
 		if (file.isDirectory()) {
@@ -573,27 +566,38 @@ public class Util {
 	}
 
 	/**
-	 * Find first declaration (of any kind) matching the given name.
+	 * @see #findFirstDeclarationInClassAndSuperClasses(TypeSymbol, String,
+	 *      ElementKind, Integer)
 	 */
 	public static Symbol findFirstDeclarationInClassAndSuperClasses(TypeSymbol typeSymbol, String name,
 			ElementKind kind) {
+		return findFirstDeclarationInClassAndSuperClasses(typeSymbol, name, kind, null);
+	}
+
+	/**
+	 * Find first declaration (of any kind) matching the given name (and optionally
+	 * the given number of arguments for methods)
+	 */
+	public static Symbol findFirstDeclarationInClassAndSuperClasses(TypeSymbol typeSymbol, String name,
+			ElementKind kind, Integer methodArgsCount) {
 		if (typeSymbol == null) {
 			return null;
 		}
 		if (typeSymbol.getEnclosedElements() != null) {
 			for (Element element : typeSymbol.getEnclosedElements()) {
-				if (name.equals(element.getSimpleName().toString()) && element.getKind() == kind) {
+				if (name.equals(element.getSimpleName().toString()) && element.getKind() == kind
+						&& (methodArgsCount == null || methodArgsCount.equals(((ExecutableElement)element).getParameters().size()))) {
 					return (Symbol) element;
 				}
 			}
 		}
 		if (typeSymbol instanceof ClassSymbol) {
 			Symbol s = findFirstDeclarationInClassAndSuperClasses(((ClassSymbol) typeSymbol).getSuperclass().tsym, name,
-					kind);
+					kind, methodArgsCount);
 			if (s == null && kind == ElementKind.METHOD) {
 				// also looks up in interfaces for methods
 				for (Type type : ((ClassSymbol) typeSymbol).getInterfaces()) {
-					s = findFirstDeclarationInClassAndSuperClasses(type.tsym, name, kind);
+					s = findFirstDeclarationInClassAndSuperClasses(type.tsym, name, kind, methodArgsCount);
 					if (s != null) {
 						break;
 					}
@@ -654,12 +658,10 @@ public class Util {
 	/**
 	 * Tells if a method can be invoked with some given parameter types.
 	 * 
-	 * @param types
-	 *            a reference to the types in the compilation scope
-	 * @param from
-	 *            the caller method signature to test (contains the parameter types)
-	 * @param target
-	 *            the callee method signature
+	 * @param types  a reference to the types in the compilation scope
+	 * @param from   the caller method signature to test (contains the parameter
+	 *               types)
+	 * @param target the callee method signature
 	 * @return true if the callee can be invoked by the caller
 	 */
 	public static boolean isInvocable(Types types, MethodType from, MethodType target) {
@@ -790,8 +792,7 @@ public class Util {
 	 * accepting using input that needs to be used in functions that take a regular
 	 * expression as an argument (such as String.replaceAll(), or String.split()).
 	 * 
-	 * @param regex
-	 *            - argument which we wish to escape.
+	 * @param regex - argument which we wish to escape.
 	 * @return - Resulting string with the following characters escaped:
 	 *         [](){}+*^?$.\
 	 */
@@ -838,10 +839,8 @@ public class Util {
 	/**
 	 * Get the relative path to reach a symbol from another one.
 	 * 
-	 * @param fromSymbol
-	 *            the start path
-	 * @param toSymbol
-	 *            the end path
+	 * @param fromSymbol the start path
+	 * @param toSymbol   the end path
 	 * @return the '/'-separated path
 	 * @see #getRelativePath(String, String)
 	 */
@@ -872,10 +871,8 @@ public class Util {
 	 * <p>
 	 * Bug fix: Renaud Pawlak
 	 * 
-	 * @param fromPath
-	 *            the path to start from
-	 * @param toPath
-	 *            the path to reach
+	 * @param fromPath the path to start from
+	 * @param toPath   the path to reach
 	 */
 	public static String getRelativePath(String fromPath, String toPath) {
 		StringBuilder relativePath = null;
@@ -930,8 +927,7 @@ public class Util {
 	/**
 	 * Removes the extensions of the given file name.
 	 * 
-	 * @param fileName
-	 *            the given file name (can contain path)
+	 * @param fileName the given file name (can contain path)
 	 * @return the file name without the extension
 	 */
 	public static String removeExtension(String fileName) {
@@ -947,10 +943,8 @@ public class Util {
 	 * Tells if the given directory or any of its sub-directory contains one of the
 	 * given files.
 	 * 
-	 * @param dir
-	 *            the directory to look into
-	 * @param files
-	 *            the files to be found
+	 * @param dir   the directory to look into
+	 * @param files the files to be found
 	 * @return true if one of the given files is found
 	 */
 	public static boolean containsFile(File dir, File[] files) {

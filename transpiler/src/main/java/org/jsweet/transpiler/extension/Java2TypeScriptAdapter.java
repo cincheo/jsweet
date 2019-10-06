@@ -1242,18 +1242,15 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 			print(".constructor)");
 			return true;
 		case "hashCode":
-			if (invocationElement.getArgumentCount() > 0) {
-				printTarget(invocationElement.getTargetExpression()).print(".hashCode(");
-				printArgList(invocationElement.getArguments());
-				print(")");
-			} else {
+			if (invocationElement.getArgumentCount() == 0) {
 				printMacroName(targetMethodName);
 				print("(<any>((o: any) => { if(o.hashCode) { return o.hashCode(); } else { "
 						+ "return o.toString().split('').reduce((prevHash, currVal) => (((prevHash << 5) - prevHash) + currVal.charCodeAt(0))|0, 0); }})(");
 				printTarget(invocationElement.getTargetExpression());
 				print("))");
+				return true;
 			}
-			return true;
+			break;
 		case "equals":
 			if (invocationElement.getTargetExpression() != null && invocationElement.getArgumentCount() == 1) {
 				MethodSymbol methSym = Util.findMethodDeclarationInType(context.types,
