@@ -21,6 +21,7 @@ package org.jsweet.transpiler;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.jsweet.transpiler.util.ProcessUtil.isVersionHighEnough;
+import static org.jsweet.transpiler.util.Util.iterableToList;
 import static org.jsweet.transpiler.util.Util.toJavaFileObjects;
 
 import java.io.File;
@@ -40,6 +41,8 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -47,8 +50,12 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.tools.JavaCompiler;
+import javax.tools.JavaCompiler.CompilationTask;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
+import javax.tools.StandardJavaFileManager;
+import javax.tools.ToolProvider;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -85,18 +92,9 @@ import com.google.debugging.sourcemap.SourceMapGeneratorV3;
 import com.google.debugging.sourcemap.SourceMapping;
 import com.google.debugging.sourcemap.proto.Mapping.OriginalMapping;
 import com.google.gson.Gson;
-import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.code.Symbol.PackageSymbol;
-import com.sun.tools.javac.comp.AttrContext;
-import com.sun.tools.javac.comp.Env;
-import com.sun.tools.javac.file.JavacFileManager;
-import com.sun.tools.javac.main.JavaCompiler;
-import com.sun.tools.javac.main.Option;
-import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
-import com.sun.tools.javac.util.List;
-import com.sun.tools.javac.util.Log;
-import com.sun.tools.javac.util.Options;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.util.JavacTask;
+import com.sun.tools.javac.api.JavacTool;
 
 /**
  * The actual JSweet transpiler.
@@ -132,7 +130,7 @@ import com.sun.tools.javac.util.Options;
  * 
  * @author Renaud Pawlak
  */
-public class JSweetTranspiler implements JSweetOptions {
+public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 
 	/**
 	 * The TypeScript version to be installed/used with this version of JSweet
@@ -199,10 +197,10 @@ public class JSweetTranspiler implements JSweetOptions {
 	private long transpilationStartTimestamp;
 
 	private JSweetContext context;
-	private Options options;
-	private JavaFileManager fileManager;
+	private StandardJavaFileManager fileManager;
 	private JavaCompiler compiler;
-	private Log log;
+	private JavacTask task;
+	
 	private CandyProcessor candiesProcessor;
 	private boolean generateSourceMaps = false;
 	private File workingDir;
@@ -303,6 +301,8 @@ public class JSweetTranspiler implements JSweetOptions {
 	private Map<String, Object> configuration;
 
 	private File baseDirectory;
+
+	
 
 	@SuppressWarnings("unchecked")
 	private <T> T getMapValue(Map<String, Object> map, String key) {
@@ -561,10 +561,10 @@ public class JSweetTranspiler implements JSweetOptions {
 		if (tscVersionFile.exists()) {
 			v = FileUtils.readFileToString(tscVersionFile);
 		}
-		if (!ProcessUtil.isExecutableInstalledGloballyWithNpm("tsc") || !v.trim().startsWith(TSC_VERSION)) {
+		if (!ProcessUtil.isPackageInstalledGloballyWithNpm("tsc") || !v.trim().startsWith(TSC_VERSION)) {
 			// this will lead to performances issues if having multiple versions
 			// of JSweet installed
-			if (ProcessUtil.isExecutableInstalledGloballyWithNpm("tsc")) {
+			if (ProcessUtil.isPackageInstalledGloballyWithNpm("tsc")) {
 				ProcessUtil.uninstallGlobalNodePackage("typescript");
 			}
 			ProcessUtil.installGlobalNodePackage("typescript", TSC_VERSION);
@@ -601,48 +601,6 @@ public class JSweetTranspiler implements JSweetOptions {
 	 */
 	public void clearTsDefDirs() {
 		tsDefDirs.clear();
-	}
-
-	private void initJavac(final TranspilationHandler transpilationHandler) {
-		context = factory.createContext(this);
-		context.setUsingJavaRuntime(forceJavaRuntime ? isUsingJavaRuntime
-				: (candiesProcessor == null ? false : candiesProcessor.isUsingJavaRuntime()));
-		adapter = factory.createAdapter(context);
-		options = Options.instance(context);
-		if (classPath != null) {
-			options.put(Option.CLASSPATH, classPath);
-			for (String s : classPath.split(File.pathSeparator)) {
-				if (s.contains(JSweetConfig.MAVEN_JAVA_OVERRIDE_ARTIFACT)) {
-					context.strictMode = true;
-					options.put(Option.BOOTCLASSPATH, s);
-				}
-			}
-		}
-		if (encoding != null) {
-			options.put(Option.ENCODING, encoding);
-		}
-		logger.debug("encoding: " + options.get(Option.ENCODING));
-		// this is too verbose for Travis...
-		// logger.debug("classpath: " + options.get(Option.CLASSPATH));
-		// logger.debug("bootclasspath: " + options.get(Option.BOOTCLASSPATH));
-		logger.debug("strict mode: " + context.strictMode);
-		options.put(Option.XLINT, "path");
-		JavacFileManager.preRegister(context);
-		fileManager = context.get(JavaFileManager.class);
-		compiler = JavaCompiler.instance(context);
-		compiler.attrParseOnly = true;
-		compiler.verbose = false;
-		compiler.genEndPos = true;
-		compiler.keepComments = true;
-		log = Log.instance(context);
-		log.dumpOnError = false;
-		log.emitWarnings = false;
-		log.setWriters(new PrintWriter(new StringWriter() {
-			@Override
-			public void write(String str) {
-			}
-		}));
-		log.setDiagnosticFormatter(factory.createDiagnosticHandler(transpilationHandler, context));
 	}
 
 	private boolean areAllTranspiled(SourceFile... sourceFiles) {
@@ -728,36 +686,79 @@ public class JSweetTranspiler implements JSweetOptions {
 		}
 	}
 
-	public List<JCCompilationUnit> setupCompiler(java.util.List<File> files,
-			ErrorCountTranspilationHandler transpilationHandler) throws IOException {
-		initJavac(transpilationHandler);
-		List<JavaFileObject> fileObjects = toJavaFileObjects(fileManager, files);
+	private void createJavaCompilerAndTask(List<File> sourceFiles, TranspilationHandler transpilationHandler) {
 
-		logger.info("ENTER phase: " + fileObjects);
+		class JavaCompilerOptions {
+			List<String> optionsAsList = new ArrayList<>();
+
+			void put(String name, String value) {
+				optionsAsList.add(name);
+				optionsAsList.add(value);
+			}
+		}
+
+		JavaCompilerOptions options = new JavaCompilerOptions();
+
+//		System.out.println(compiler.isSupportedOption("-cp"));
+//		System.out.println(compiler.isSupportedOption("-Xlint"));
+//		System.out.println(compiler.isSupportedOption("-bootclasspath"));
+//		System.out.println(compiler.isSupportedOption("-encoding"));
+		if (classPath != null) {
+			options.put("-cp", classPath);
+			for (String s : classPath.split(File.pathSeparator)) {
+				if (s.contains(JSweetConfig.MAVEN_JAVA_OVERRIDE_ARTIFACT)) {
+					context.strictMode = true;
+					options.put("-bootclasspath", s);
+				}
+			}
+		}
+
+		options.put("-Xlint", "path");
+
+		Charset charset = null;
+		if (encoding != null) {
+			options.put("-encoding", encoding);
+			try {
+				charset = Charset.forName(encoding);
+			} catch (Exception e) {
+				logger.warn("cannot use charset " + encoding, e);
+			}
+		}
+		if (encoding == null) {
+			charset = Charset.forName("UTF-8");
+		}
+		logger.debug("charset: " + charset);
+		logger.debug("strict mode: " + context.strictMode);
+		
+		JSweetDiagnosticHandler diagnosticHandler = factory.createDiagnosticHandler(transpilationHandler, context);
+
+		compiler = ToolProvider.getSystemJavaCompiler();
+
+		fileManager = compiler.getStandardFileManager(null, Locale.getDefault(), charset);
+		
+		List<JavaFileObject> sourceFileObjects = toJavaFileObjects(fileManager, sourceFiles);
+		task = (JavacTask) compiler.getTask(null, fileManager, diagnosticHandler, null, null, sourceFileObjects);
+		task.setProcessors(asList(processor1, processor2));
+	}
+
+	public List<CompilationUnitTree> setupCompiler(List<File> files,
+			ErrorCountTranspilationHandler transpilationHandler) throws IOException {
+		
 		transpilationHandler.setDisabled(isIgnoreJavaErrors());
 
-		List<JCCompilationUnit> compilationUnits = compiler.enterTrees(compiler.parseFiles(fileObjects));
-		if (transpilationHandler.getErrorCount() > 0) {
-			logger.warn("errors during parse tree");
-			return null;
-		}
-		logger.info("ATTRIBUTE phase");
-		Queue<Env<AttrContext>> todo = compiler.attribute(compiler.todo);
+		context = factory.createContext(this);
+		context.setUsingJavaRuntime(forceJavaRuntime ? isUsingJavaRuntime
+				: (candiesProcessor == null ? false : candiesProcessor.isUsingJavaRuntime()));
+		adapter = factory.createAdapter(context);
 
-		logger.info("FLOW phase");
-		todo = compiler.flow(todo);
+		createJavaCompilerAndTask(files,transpilationHandler);
 
-		// logger.info("DESUGAR phase");
-		// compiler.generate(compiler.desugar(todo));
 
-		logger.info("REPORT DEFERRED phase");
-		compiler.reportDeferredDiagnostics();
-
-		// logger.info("CLOSE phase");
-		// compiler.close(true);
+		Iterable<? extends CompilationUnitTree> compilUnits = task.parse();
+		task.analyze();
 
 		transpilationHandler.setDisabled(false);
-		context.compilationUnits = compilationUnits.toArray(new JCCompilationUnit[compilationUnits.size()]);
+		context.compilationUnits = iterableToList(compilUnits);
 
 		if (transpilationHandler.getErrorCount() > 0) {
 			return null;
@@ -773,7 +774,7 @@ public class JSweetTranspiler implements JSweetOptions {
 					JSweetProblem.BUNDLE_WITH_MODULE.getMessage());
 			return null;
 		}
-		return compilationUnits;
+		return context.compilationUnits;
 	}
 
 	private String ts2js(ErrorCountTranspilationHandler handler, String tsCode, String targetFileName)
@@ -1740,10 +1741,6 @@ public class JSweetTranspiler implements JSweetOptions {
 		return context;
 	}
 
-	public Options getOptions() {
-		return options;
-	}
-
 	@Override
 	public boolean isDebugMode() {
 		return debugMode;
@@ -1804,5 +1801,10 @@ public class JSweetTranspiler implements JSweetOptions {
 
 	public void setIgnoreCandiesTypeScriptDefinitions(boolean ignoreCandiesTypeScriptDefinitions) {
 		this.ignoreCandiesTypeScriptDefinitions = ignoreCandiesTypeScriptDefinitions;
+	}
+
+	@Override
+	public void close() throws Exception {
+		fileManager.close();
 	}
 }

@@ -226,14 +226,6 @@
 			<version>1.4.0.1</version>
 		</dependency>
 
-		<!-- Compile-time only dependency (JSweet looks up installed JDK at runtime 
-			to conform to legal obligations) -->
-		<dependency>
-			<groupId>com.sun</groupId>
-			<artifactId>tools</artifactId>
-			<version>8</version>
-			<scope>provided</scope>
-		</dependency>
 		<!-- Test-only dependencies for testing candies -->
 		<dependency>
 			<groupId>org.jsweet</groupId>

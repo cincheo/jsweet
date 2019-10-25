@@ -59,6 +59,7 @@ import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.util.DirectedGraph;
 import org.jsweet.transpiler.util.Util;
 
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.Attribute.Compound;
 import com.sun.tools.javac.code.Symbol;
@@ -684,7 +685,7 @@ public class JSweetContext extends Context {
 	/**
 	 * The compilation units that correspond to the source files.
 	 */
-	public JCCompilationUnit[] compilationUnits;
+	public List<CompilationUnitTree> compilationUnits;
 
 	private List<String> usedModules = new ArrayList<>();
 

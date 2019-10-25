@@ -47,6 +47,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
+import javax.tools.StandardJavaFileManager;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
@@ -54,50 +55,6 @@ import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.JSweetContext;
 
 import com.sun.source.tree.Tree.Kind;
-import com.sun.tools.javac.code.Flags;
-import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.code.Symbol.ClassSymbol;
-import com.sun.tools.javac.code.Symbol.MethodSymbol;
-import com.sun.tools.javac.code.Symbol.PackageSymbol;
-import com.sun.tools.javac.code.Symbol.TypeSymbol;
-import com.sun.tools.javac.code.Symbol.VarSymbol;
-import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.code.Type.ClassType;
-import com.sun.tools.javac.code.Type.MethodType;
-import com.sun.tools.javac.code.Type.TypeVar;
-import com.sun.tools.javac.code.Types;
-import com.sun.tools.javac.file.JavacFileManager;
-import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.JCBinary;
-import com.sun.tools.javac.tree.JCTree.JCBlock;
-import com.sun.tools.javac.tree.JCTree.JCBreak;
-import com.sun.tools.javac.tree.JCTree.JCCase;
-import com.sun.tools.javac.tree.JCTree.JCCatch;
-import com.sun.tools.javac.tree.JCTree.JCClassDecl;
-import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
-import com.sun.tools.javac.tree.JCTree.JCDoWhileLoop;
-import com.sun.tools.javac.tree.JCTree.JCEnhancedForLoop;
-import com.sun.tools.javac.tree.JCTree.JCExpression;
-import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
-import com.sun.tools.javac.tree.JCTree.JCForLoop;
-import com.sun.tools.javac.tree.JCTree.JCIdent;
-import com.sun.tools.javac.tree.JCTree.JCIf;
-import com.sun.tools.javac.tree.JCTree.JCImport;
-import com.sun.tools.javac.tree.JCTree.JCLabeledStatement;
-import com.sun.tools.javac.tree.JCTree.JCLambda;
-import com.sun.tools.javac.tree.JCTree.JCLiteral;
-import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
-import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
-import com.sun.tools.javac.tree.JCTree.JCReturn;
-import com.sun.tools.javac.tree.JCTree.JCStatement;
-import com.sun.tools.javac.tree.JCTree.JCSwitch;
-import com.sun.tools.javac.tree.JCTree.JCSynchronized;
-import com.sun.tools.javac.tree.JCTree.JCTry;
-import com.sun.tools.javac.tree.JCTree.JCUnary;
-import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
-import com.sun.tools.javac.tree.JCTree.JCWhileLoop;
-import com.sun.tools.javac.tree.TreeScanner;
-import com.sun.tools.javac.util.Name;
 
 /**
  * Various utilities.
@@ -586,7 +543,8 @@ public class Util {
 		if (typeSymbol.getEnclosedElements() != null) {
 			for (Element element : typeSymbol.getEnclosedElements()) {
 				if (name.equals(element.getSimpleName().toString()) && element.getKind() == kind
-						&& (methodArgsCount == null || methodArgsCount.equals(((ExecutableElement)element).getParameters().size()))) {
+						&& (methodArgsCount == null
+								|| methodArgsCount.equals(((ExecutableElement) element).getParameters().size()))) {
 					return (Symbol) element;
 				}
 			}
@@ -763,17 +721,17 @@ public class Util {
 	/**
 	 * Transforms a list of source files to Java file objects (used by javac).
 	 */
-	public static com.sun.tools.javac.util.List<JavaFileObject> toJavaFileObjects(JavaFileManager fileManager,
+	public static List<JavaFileObject> toJavaFileObjects(StandardJavaFileManager fileManager,
 			Collection<File> sourceFiles) throws IOException {
-		com.sun.tools.javac.util.List<JavaFileObject> fileObjects = com.sun.tools.javac.util.List.nil();
-		JavacFileManager javacFileManager = (JavacFileManager) fileManager;
-		for (JavaFileObject fo : javacFileManager.getJavaFileObjectsFromFiles(sourceFiles)) {
-			fileObjects = fileObjects.append(fo);
-		}
-		if (fileObjects.length() != sourceFiles.size()) {
-			throw new IOException("invalid file list");
-		}
-		return fileObjects;
+		Iterable<? extends JavaFileObject> javaFileObjectsIterable = fileManager
+				.getJavaFileObjectsFromFiles(sourceFiles);
+		return iterableToList(javaFileObjectsIterable);
+	}
+
+	public static <T> List<T> iterableToList(Iterable<? extends T> iterable) {
+		List<T> result = new ArrayList<T>();
+		iterable.forEach(result::add);
+		return result;
 	}
 
 	/**
