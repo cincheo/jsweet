@@ -106,17 +106,17 @@ import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Type.MethodType;
-import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.JCClassDecl;
-import com.sun.tools.javac.tree.JCTree.JCEnhancedForLoop;
-import com.sun.tools.javac.tree.JCTree.JCExpression;
-import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
-import com.sun.tools.javac.tree.JCTree.JCIdent;
-import com.sun.tools.javac.tree.JCTree.JCImport;
-import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
-import com.sun.tools.javac.tree.JCTree.JCNewClass;
-import com.sun.tools.javac.tree.JCTree.JCTypeApply;
-import com.sun.tools.javac.tree.JCTree.Tag;
+import com.sun.tools.javac.tree.Tree;
+import com.sun.tools.javac.tree.Tree.JCClassDecl;
+import com.sun.tools.javac.tree.Tree.JCEnhancedForLoop;
+import com.sun.tools.javac.tree.Tree.JCExpression;
+import com.sun.tools.javac.tree.Tree.JCFieldAccess;
+import com.sun.tools.javac.tree.Tree.JCIdent;
+import com.sun.tools.javac.tree.Tree.JCImport;
+import com.sun.tools.javac.tree.Tree.JCMethodInvocation;
+import com.sun.tools.javac.tree.Tree.JCNewClass;
+import com.sun.tools.javac.tree.Tree.JCTypeApply;
+import com.sun.tools.javac.tree.Tree.Tag;
 
 /**
  * This is an adapter for the TypeScript code generator. It overrides the
@@ -1377,8 +1377,8 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 			if (mapped instanceof String) {
 				print((String) mapped);
 				return true;
-			} else if (mapped instanceof JCTree) {
-				getPrinter().substituteAndPrintType((JCTree) mapped);
+			} else if (mapped instanceof Tree) {
+				getPrinter().substituteAndPrintType((Tree) mapped);
 				return true;
 			} else if (mapped instanceof TypeMirror) {
 				print(getMappedType((TypeMirror) mapped));

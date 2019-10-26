@@ -20,7 +20,7 @@ package org.jsweet.transpiler.model.support;
 
 import org.jsweet.transpiler.model.LiteralElement;
 
-import com.sun.tools.javac.tree.JCTree.JCLiteral;
+import com.sun.tools.javac.tree.Tree.JCLiteral;
 
 /**
  * See {@link LiteralElement}.

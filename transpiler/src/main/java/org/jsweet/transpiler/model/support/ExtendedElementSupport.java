@@ -25,15 +25,15 @@ import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.util.Util;
 
 import com.sun.source.tree.Tree.Kind;
-import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.JCExpression;
+import com.sun.tools.javac.tree.Tree;
+import com.sun.tools.javac.tree.Tree.JCExpression;
 
 /**
  * See {@link ExtendedElement}.
  * 
  * @author Renaud Pawlak
  */
-public class ExtendedElementSupport<T extends JCTree> implements ExtendedElement {
+public class ExtendedElementSupport<T extends Tree> implements ExtendedElement {
 
 	protected T tree;
 

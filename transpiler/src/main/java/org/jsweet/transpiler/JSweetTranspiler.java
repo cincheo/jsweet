@@ -42,7 +42,6 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -94,7 +93,6 @@ import com.google.debugging.sourcemap.proto.Mapping.OriginalMapping;
 import com.google.gson.Gson;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.util.JavacTask;
-import com.sun.tools.javac.api.JavacTool;
 
 /**
  * The actual JSweet transpiler.
@@ -129,6 +127,7 @@ import com.sun.tools.javac.api.JavacTool;
  * associated TypeScript definitions for phase 2.
  * 
  * @author Renaud Pawlak
+ * @author Louis Grignon
  */
 public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 
@@ -197,9 +196,19 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 	private long transpilationStartTimestamp;
 
 	private JSweetContext context;
-	private StandardJavaFileManager fileManager;
-	private JavaCompiler compiler;
-	private JavacTask task;
+	
+	private static class JavaCompilationComponents {
+		final StandardJavaFileManager fileManager;
+		final JavaCompiler compiler;
+		final JavacTask task;
+		JavaCompilationComponents(StandardJavaFileManager fileManager, JavaCompiler compiler, JavacTask task) {
+			this.fileManager = fileManager;
+			this.compiler = compiler;
+			this.task = task;
+		}
+	}
+	
+	private JavaCompilationComponents javaCompilationComponents;
 	
 	private CandyProcessor candiesProcessor;
 	private boolean generateSourceMaps = false;
@@ -686,7 +695,7 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 		}
 	}
 
-	private void createJavaCompilerAndTask(List<File> sourceFiles, TranspilationHandler transpilationHandler) {
+	private JavaCompilationComponents createJavaCompilationComponents(List<File> sourceFiles, TranspilationHandler transpilationHandler) {
 
 		class JavaCompilerOptions {
 			List<String> optionsAsList = new ArrayList<>();
@@ -730,15 +739,20 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 		logger.debug("charset: " + charset);
 		logger.debug("strict mode: " + context.strictMode);
 		
-		JSweetDiagnosticHandler diagnosticHandler = factory.createDiagnosticHandler(transpilationHandler, context);
 
-		compiler = ToolProvider.getSystemJavaCompiler();
-
-		fileManager = compiler.getStandardFileManager(null, Locale.getDefault(), charset);
+		JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+		StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, context.locale, charset);
 		
 		List<JavaFileObject> sourceFileObjects = toJavaFileObjects(fileManager, sourceFiles);
-		task = (JavacTask) compiler.getTask(null, fileManager, diagnosticHandler, null, null, sourceFileObjects);
-		task.setProcessors(asList(processor1, processor2));
+		
+		JSweetDiagnosticHandler diagnosticHandler = factory.createDiagnosticHandler(transpilationHandler, context);
+		
+		JavacTask task = (JavacTask) compiler.getTask(null, fileManager, diagnosticHandler, null, null, sourceFileObjects);
+		
+		// TODO [Java11]
+		task.setProcessors(asList());
+		
+		return new JavaCompilationComponents(fileManager, compiler, task);
 	}
 
 	public List<CompilationUnitTree> setupCompiler(List<File> files,
@@ -751,11 +765,11 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 				: (candiesProcessor == null ? false : candiesProcessor.isUsingJavaRuntime()));
 		adapter = factory.createAdapter(context);
 
-		createJavaCompilerAndTask(files,transpilationHandler);
+		javaCompilationComponents = createJavaCompilationComponents(files,transpilationHandler);
 
 
-		Iterable<? extends CompilationUnitTree> compilUnits = task.parse();
-		task.analyze();
+		Iterable<? extends CompilationUnitTree> compilUnits = javaCompilationComponents.task.parse();
+		javaCompilationComponents.task.analyze();
 
 		transpilationHandler.setDisabled(false);
 		context.compilationUnits = iterableToList(compilUnits);
@@ -1647,7 +1661,7 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 	 *                             where to put the transpilation output
 	 * @throws IOException
 	 */
-	public String transpile(ErrorCountTranspilationHandler handler, JCTree tree, String targetFileName)
+	public String transpile(ErrorCountTranspilationHandler handler, Tree tree, String targetFileName)
 			throws IOException {
 		Java2TypeScriptTranslator translator = factory.createTranslator(adapter, handler, context, null, false);
 		translator.enterScope();

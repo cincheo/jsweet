@@ -37,12 +37,12 @@ import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.TypeVar;
 import com.sun.tools.javac.parser.Tokens.Comment;
-import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.JCClassDecl;
-import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
-import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
-import com.sun.tools.javac.tree.JCTree.JCTypeApply;
-import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
+import com.sun.tools.javac.tree.Tree;
+import com.sun.tools.javac.tree.Tree.JCClassDecl;
+import com.sun.tools.javac.tree.Tree.JCCompilationUnit;
+import com.sun.tools.javac.tree.Tree.JCMethodDecl;
+import com.sun.tools.javac.tree.Tree.JCTypeApply;
+import com.sun.tools.javac.tree.Tree.JCVariableDecl;
 
 /**
  * A utility class to print JSDoc comments from regular Java comments.
@@ -80,7 +80,7 @@ public class JSDoc {
 	 *            the Java type
 	 * @return the JSDoc type
 	 */
-	public static String getMappedDocType(JSweetContext context, JCTree typeTree, Type type) {
+	public static String getMappedDocType(JSweetContext context, Tree typeTree, Type type) {
 		String qualifiedName = type.toString();
 		if (typeTree instanceof JCTypeApply) {
 			qualifiedName = ((JCTypeApply) typeTree).clazz.type.toString();
@@ -96,13 +96,13 @@ public class JSDoc {
 		boolean isMapped = false;
 		if (typeTree != null) {
 			for (BiFunction<ExtendedElement, String, Object> mapping : context.getFunctionalTypeMappings()) {
-				Object mapped = mapping.apply(new ExtendedElementSupport<JCTree>(typeTree), qualifiedName);
+				Object mapped = mapping.apply(new ExtendedElementSupport<Tree>(typeTree), qualifiedName);
 				if (mapped instanceof String) {
 					isMapped = true;
 					qualifiedName = (String) mapped;
-				} else if (mapped instanceof JCTree) {
+				} else if (mapped instanceof Tree) {
 					isMapped = true;
-					qualifiedName = getMappedDocType(context, (JCTree) mapped, ((JCTree) mapped).type);
+					qualifiedName = getMappedDocType(context, (Tree) mapped, ((Tree) mapped).type);
 				}
 			}
 		}
@@ -159,7 +159,7 @@ public class JSDoc {
 	 * this method. For example:
 	 * 
 	 * <pre>
-	 * public String adaptDocComment(JCTree element, String commentText) {
+	 * public String adaptDocComment(Tree element, String commentText) {
 	 * 	if (commentText == null) {
 	 * 		return "My default comment";
 	 * 	}
@@ -173,11 +173,11 @@ public class JSDoc {
 	 *            the comment text if any (null when no comment)
 	 * @return the adapted comment (null will remove the JavaDoc comment)
 	 */
-	public static String adaptDocComment(JSweetContext context, JCCompilationUnit compilationUnit, JCTree element,
+	public static String adaptDocComment(JSweetContext context, JCCompilationUnit compilationUnit, Tree element,
 			String commentText) {
 		if (element instanceof JCClassDecl) {
 			JCMethodDecl mainConstructor = null;
-			for (JCTree member : ((JCClassDecl) element).defs) {
+			for (Tree member : ((JCClassDecl) element).defs) {
 				if (member instanceof JCMethodDecl) {
 					if (((JCMethodDecl) member).sym.isConstructor()
 							&& ((JCMethodDecl) member).getModifiers().getFlags().contains(Modifier.PUBLIC)) {
@@ -251,7 +251,7 @@ public class JSDoc {
 			JCClassDecl clazz = (JCClassDecl) element;
 			if (clazz.sym.isEnum()) {
 				commentLines.add(" @enum");
-				for(JCTree def : clazz.defs) {
+				for(Tree def : clazz.defs) {
 					if(def instanceof JCVariableDecl) {
 						JCVariableDecl var = (JCVariableDecl) def;
 						if (var.sym.getModifiers() != null && var.sym.getModifiers().contains(Modifier.PUBLIC)

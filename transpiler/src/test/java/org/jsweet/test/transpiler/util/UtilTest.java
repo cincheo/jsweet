@@ -10,7 +10,7 @@ import org.jsweet.transpiler.util.Util;
 import org.junit.Test;
 
 import com.sun.tools.javac.code.Type.ClassType;
-import com.sun.tools.javac.tree.JCTree.JCClassDecl;
+import com.sun.tools.javac.tree.Tree.JCClassDecl;
 
 import source.structural.ExtendsClassInSameFile;
 

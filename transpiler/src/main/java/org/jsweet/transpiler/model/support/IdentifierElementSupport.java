@@ -22,7 +22,7 @@ import javax.lang.model.element.Element;
 
 import org.jsweet.transpiler.model.IdentifierElement;
 
-import com.sun.tools.javac.tree.JCTree.JCIdent;
+import com.sun.tools.javac.tree.Tree.JCIdent;
 
 /**
  * See {@link IdentifierElement}.

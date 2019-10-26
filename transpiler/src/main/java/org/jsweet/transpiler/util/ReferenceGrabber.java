@@ -23,8 +23,8 @@ import java.util.Set;
 
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
-import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
-import com.sun.tools.javac.tree.JCTree.JCNewClass;
+import com.sun.tools.javac.tree.Tree.JCFieldAccess;
+import com.sun.tools.javac.tree.Tree.JCNewClass;
 import com.sun.tools.javac.tree.TreeScanner;
 
 /**

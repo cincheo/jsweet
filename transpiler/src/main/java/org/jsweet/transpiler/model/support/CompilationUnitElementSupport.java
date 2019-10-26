@@ -22,7 +22,7 @@ import javax.lang.model.element.PackageElement;
 
 import org.jsweet.transpiler.model.CompilationUnitElement;
 
-import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
+import com.sun.tools.javac.tree.Tree.JCCompilationUnit;
 
 /**
  * See {@link CompilationUnitElement}.

@@ -25,7 +25,7 @@ import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.ExtendedElementFactory;
 import org.jsweet.transpiler.model.NewArrayElement;
 
-import com.sun.tools.javac.tree.JCTree.JCNewArray;
+import com.sun.tools.javac.tree.Tree.JCNewArray;
 
 /**
  * See {@link NewArrayElement}.

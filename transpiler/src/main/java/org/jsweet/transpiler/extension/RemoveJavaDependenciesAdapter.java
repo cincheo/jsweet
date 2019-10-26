@@ -84,9 +84,9 @@ import org.jsweet.transpiler.model.VariableAccessElement;
 import org.jsweet.transpiler.model.support.ForeachLoopElementSupport;
 import org.jsweet.transpiler.util.Util;
 
-import com.sun.tools.javac.tree.JCTree.JCEnhancedForLoop;
-import com.sun.tools.javac.tree.JCTree.JCLiteral;
-import com.sun.tools.javac.tree.JCTree.JCTypeApply;
+import com.sun.tools.javac.tree.Tree.JCEnhancedForLoop;
+import com.sun.tools.javac.tree.Tree.JCLiteral;
+import com.sun.tools.javac.tree.Tree.JCTypeApply;
 
 /**
  * An adapter that removes many uses of Java APIs and replace them with

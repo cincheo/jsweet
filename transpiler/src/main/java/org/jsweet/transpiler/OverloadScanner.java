@@ -37,16 +37,16 @@ import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Types;
-import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.JCClassDecl;
-import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
-import com.sun.tools.javac.tree.JCTree.JCExpression;
-import com.sun.tools.javac.tree.JCTree.JCExpressionStatement;
-import com.sun.tools.javac.tree.JCTree.JCIdent;
-import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
-import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
-import com.sun.tools.javac.tree.JCTree.JCReturn;
-import com.sun.tools.javac.tree.JCTree.JCStatement;
+import com.sun.tools.javac.tree.Tree;
+import com.sun.tools.javac.tree.Tree.JCClassDecl;
+import com.sun.tools.javac.tree.Tree.JCCompilationUnit;
+import com.sun.tools.javac.tree.Tree.JCExpression;
+import com.sun.tools.javac.tree.Tree.JCExpressionStatement;
+import com.sun.tools.javac.tree.Tree.JCIdent;
+import com.sun.tools.javac.tree.Tree.JCMethodDecl;
+import com.sun.tools.javac.tree.Tree.JCMethodInvocation;
+import com.sun.tools.javac.tree.Tree.JCReturn;
+import com.sun.tools.javac.tree.Tree.JCStatement;
 
 /**
  * This AST scanner detects method overloads and gather them into
@@ -93,7 +93,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 		/**
 		 * The default values for the parameters of the core method.
 		 */
-		public Map<Integer, JCTree> defaultValues;
+		public Map<Integer, Tree> defaultValues;
 
 		/**
 		 * A flag to tell if this overload was printed out (used by the printer).
@@ -363,7 +363,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 			return;
 		}
 
-		for (JCTree member : classdecl.defs) {
+		for (Tree member : classdecl.defs) {
 			if (member instanceof JCMethodDecl) {
 				processMethod(classdecl, (JCMethodDecl) member);
 			}

@@ -31,15 +31,15 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.MethodType;
-import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.JCBlock;
-import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
-import com.sun.tools.javac.tree.JCTree.JCExpression;
-import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
-import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
-import com.sun.tools.javac.tree.JCTree.JCNewClass;
-import com.sun.tools.javac.tree.JCTree.JCStatement;
-import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
+import com.sun.tools.javac.tree.Tree;
+import com.sun.tools.javac.tree.Tree.JCBlock;
+import com.sun.tools.javac.tree.Tree.JCCompilationUnit;
+import com.sun.tools.javac.tree.Tree.JCExpression;
+import com.sun.tools.javac.tree.Tree.JCMethodDecl;
+import com.sun.tools.javac.tree.Tree.JCMethodInvocation;
+import com.sun.tools.javac.tree.Tree.JCNewClass;
+import com.sun.tools.javac.tree.Tree.JCStatement;
+import com.sun.tools.javac.tree.Tree.JCVariableDecl;
 
 /**
  * A tree printer is a kind of tree scanner specialized in pretty printing the
@@ -121,7 +121,7 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	/**
 	 * Print a given AST.
 	 */
-	public AbstractTreePrinter print(JCTree tree) {
+	public AbstractTreePrinter print(Tree tree) {
 		scan(tree);
 		return this;
 	}
@@ -135,9 +135,9 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	// }
 
 	/**
-	 * Enters the given tree (se {@link #scan(JCTree)}.
+	 * Enters the given tree (se {@link #scan(Tree)}.
 	 */
-	protected void enter(JCTree tree) {
+	protected void enter(Tree tree) {
 		super.enter(tree);
 		positionStack.push(new Position(getCurrentPosition(), currentLine, currentColumn));
 		if (compilationUnit != null && tree.pos >= 0 && inSourceMap(tree)) {
@@ -147,12 +147,12 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 		}
 	}
 
-	private boolean inSourceMap(JCTree tree) {
+	private boolean inSourceMap(Tree tree) {
 		return (tree instanceof JCExpression || tree instanceof JCStatement || tree instanceof JCMethodDecl);
 	}
 
 	@Override
-	protected void onRollbacked(JCTree target) {
+	protected void onRollbacked(Tree target) {
 		super.onRollbacked(target);
 		Position position = positionStack.peek();
 		out.delete(position.getPosition(), out.length());
@@ -165,7 +165,7 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	 */
 	@Override
 	protected void exit() {
-		JCTree tree = stack.peek();
+		Tree tree = stack.peek();
 		if (compilationUnit != null && tree instanceof JCBlock) {
 			int endPos = tree.getEndPosition(diagnosticSource.getEndPosTable());
 			sourceMap.addEntry(
@@ -357,10 +357,10 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	/**
 	 * Prints a comma-separated list of subtrees.
 	 */
-	public AbstractTreePrinter printArgList(List<Type> assignedTypes, List<? extends JCTree> args,
-			Consumer<JCTree> printer) {
+	public AbstractTreePrinter printArgList(List<Type> assignedTypes, List<? extends Tree> args,
+			Consumer<Tree> printer) {
 		int i = 0;
-		for (JCTree arg : args) {
+		for (Tree arg : args) {
 			if (printer != null) {
 				printer.accept(arg);
 			} else {
@@ -430,13 +430,13 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 		return this;
 	}
 
-	public AbstractTreePrinter printArgList(List<Type> assignedTypes, List<? extends JCTree> args) {
+	public AbstractTreePrinter printArgList(List<Type> assignedTypes, List<? extends Tree> args) {
 		return printArgList(assignedTypes, args, null);
 	}
 
 	public abstract AbstractTreePrinter printConstructorArgList(JCNewClass newClass, boolean localClass);
 
-	public abstract AbstractTreePrinter substituteAndPrintType(JCTree typeTree);
+	public abstract AbstractTreePrinter substituteAndPrintType(Tree typeTree);
 
 	/**
 	 * Prints a comma-separated list of variable names (no types).
@@ -455,8 +455,8 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	/**
 	 * Prints a comma-separated list of type subtrees.
 	 */
-	public AbstractTreePrinter printTypeArgList(List<? extends JCTree> args) {
-		for (JCTree arg : args) {
+	public AbstractTreePrinter printTypeArgList(List<? extends Tree> args) {
+		for (Tree arg : args) {
 			substituteAndPrintType(arg);
 			print(", ");
 		}

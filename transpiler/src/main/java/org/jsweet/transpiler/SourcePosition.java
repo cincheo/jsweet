@@ -22,12 +22,13 @@ import java.io.File;
 
 import org.jsweet.transpiler.util.Position;
 
-import com.sun.tools.javac.tree.JCTree;
+import com.sun.source.tree.Tree;
 
 /**
  * A non-mutable position in a source file.
  * 
  * @author Renaud Pawlak
+ * @author Louis Grignon
  */
 public final class SourcePosition {
 	/**
@@ -46,7 +47,7 @@ public final class SourcePosition {
 	 * @param endColumn
 	 *            the end columb in the source file
 	 */
-	public SourcePosition(File file, JCTree sourceElement, int startLine, int startColumn, int endLine, int endColumn) {
+	public SourcePosition(File file, Tree sourceElement, int startLine, int startColumn, int endLine, int endColumn) {
 		super();
 		this.file = file;
 		this.startPosition = new Position(startLine, startColumn);
@@ -66,7 +67,7 @@ public final class SourcePosition {
 	 * @param column
 	 *            the position's column
 	 */
-	public SourcePosition(File file, JCTree sourceElement, int line, int column) {
+	public SourcePosition(File file, Tree sourceElement, int line, int column) {
 		this(file, sourceElement, new Position(line, column));
 	}
 
@@ -82,7 +83,7 @@ public final class SourcePosition {
 	 * @param endPosition
 	 *            the end position in the source file
 	 */
-	public SourcePosition(File file, JCTree sourceElement, Position startPosition, Position endPosition) {
+	public SourcePosition(File file, Tree sourceElement, Position startPosition, Position endPosition) {
 		super();
 		this.file = file;
 		this.startPosition = startPosition;
@@ -101,7 +102,7 @@ public final class SourcePosition {
 	 * @param position
 	 *            the position this source position with start and end at
 	 */
-	public SourcePosition(File file, JCTree sourceElement, Position position) {
+	public SourcePosition(File file, Tree sourceElement, Position position) {
 		super();
 		this.file = file;
 		this.endPosition = this.startPosition = position;
@@ -111,7 +112,7 @@ public final class SourcePosition {
 	private final File file;
 	private final Position startPosition;
 	private final Position endPosition;
-	private final JCTree sourceElement;
+	private final Tree sourceElement;
 
 	/**
 	 * The source file.
@@ -165,7 +166,7 @@ public final class SourcePosition {
 	/**
 	 * The source element (can be null).
 	 */
-	public final JCTree getSourceElement() {
+	public final Tree getSourceElement() {
 		return sourceElement;
 	}
 

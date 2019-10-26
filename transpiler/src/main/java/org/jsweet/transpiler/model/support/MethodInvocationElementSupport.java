@@ -27,10 +27,10 @@ import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.ExtendedElementFactory;
 import org.jsweet.transpiler.model.MethodInvocationElement;
 
-import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
-import com.sun.tools.javac.tree.JCTree.JCIdent;
-import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
+import com.sun.tools.javac.tree.Tree;
+import com.sun.tools.javac.tree.Tree.JCFieldAccess;
+import com.sun.tools.javac.tree.Tree.JCIdent;
+import com.sun.tools.javac.tree.Tree.JCMethodInvocation;
 
 /**
  * See {@link MethodInvocationElement}.
@@ -65,7 +65,7 @@ public class MethodInvocationElementSupport extends ExtendedElementSupport<JCMet
 
 	@Override
 	public String getMethodName() {
-		JCTree methTree = tree.meth;
+		Tree methTree = tree.meth;
 		if (methTree instanceof JCIdent) {
 			return methTree.toString();
 		} else if (methTree instanceof JCFieldAccess) {
@@ -77,7 +77,7 @@ public class MethodInvocationElementSupport extends ExtendedElementSupport<JCMet
 
 	@Override
 	public ExecutableElement getMethod() {
-		JCTree methTree = tree.meth;
+		Tree methTree = tree.meth;
 		if (methTree instanceof JCIdent) {
 			return (ExecutableElement) ((JCIdent) methTree).sym;
 		} else if (methTree instanceof JCFieldAccess) {
@@ -89,7 +89,7 @@ public class MethodInvocationElementSupport extends ExtendedElementSupport<JCMet
 
 	@Override
 	public ExtendedElement getTargetExpression() {
-		JCTree methTree = tree.meth;
+		Tree methTree = tree.meth;
 		if (methTree instanceof JCFieldAccess) {
 			return ExtendedElementFactory.INSTANCE.create(((JCFieldAccess) methTree).selected);
 		} else {

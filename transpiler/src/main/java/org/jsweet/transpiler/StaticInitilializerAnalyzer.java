@@ -34,12 +34,12 @@ import org.jsweet.transpiler.util.ReferenceGrabber;
 import com.sun.tools.javac.code.Symbol.PackageSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.JCBlock;
-import com.sun.tools.javac.tree.JCTree.JCClassDecl;
-import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
-import com.sun.tools.javac.tree.JCTree.JCImport;
-import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
+import com.sun.tools.javac.tree.Tree;
+import com.sun.tools.javac.tree.Tree.JCBlock;
+import com.sun.tools.javac.tree.Tree.JCClassDecl;
+import com.sun.tools.javac.tree.Tree.JCCompilationUnit;
+import com.sun.tools.javac.tree.Tree.JCImport;
+import com.sun.tools.javac.tree.Tree.JCVariableDecl;
 import com.sun.tools.javac.tree.TreeScanner;
 
 /**
@@ -139,7 +139,7 @@ public class StaticInitilializerAnalyzer extends TreeScanner {
 				}
 			}
 
-			for (JCTree member : classdecl.defs) {
+			for (Tree member : classdecl.defs) {
 				if (member instanceof JCVariableDecl) {
 					JCVariableDecl field = (JCVariableDecl) member;
 					if (field.getModifiers().getFlags().contains(Modifier.STATIC) && field.getInitializer() != null
@@ -158,7 +158,7 @@ public class StaticInitilializerAnalyzer extends TreeScanner {
 		super.visitClassDef(classdecl);
 	}
 
-	private void acceptReferences(JCTree tree) {
+	private void acceptReferences(Tree tree) {
 		ReferenceGrabber refGrabber = new ReferenceGrabber();
 		refGrabber.scan(tree);
 		for (TypeSymbol type : refGrabber.referencedTypes) {

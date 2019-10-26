@@ -29,13 +29,13 @@ import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.ClassType;
 import com.sun.tools.javac.code.Types;
-import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.JCArrayTypeTree;
-import com.sun.tools.javac.tree.JCTree.JCAssign;
-import com.sun.tools.javac.tree.JCTree.JCExpression;
-import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
-import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
-import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
+import com.sun.tools.javac.tree.Tree;
+import com.sun.tools.javac.tree.Tree.JCArrayTypeTree;
+import com.sun.tools.javac.tree.Tree.JCAssign;
+import com.sun.tools.javac.tree.Tree.JCExpression;
+import com.sun.tools.javac.tree.Tree.JCFieldAccess;
+import com.sun.tools.javac.tree.Tree.JCMethodInvocation;
+import com.sun.tools.javac.tree.Tree.JCVariableDecl;
 import com.sun.tools.javac.util.Name;
 
 /**
@@ -162,7 +162,7 @@ public class TypeChecker {
 	/**
 	 * Checks that the given type is JSweet compatible.
 	 */
-	public boolean checkType(JCTree declaringElement, Name declaringElementName, JCExpression typeExpression) {
+	public boolean checkType(Tree declaringElement, Name declaringElementName, JCExpression typeExpression) {
 		if (!JSweetConfig.isJDKReplacementMode()) {
 			if (typeExpression instanceof JCArrayTypeTree) {
 				return checkType(declaringElement, declaringElementName, ((JCArrayTypeTree) typeExpression).elemtype);
@@ -198,7 +198,7 @@ public class TypeChecker {
 		return true;
 	}
 
-	private boolean checkUnionTypeAssignment(Types types, JCTree parent, Type assigned, JCMethodInvocation union) {
+	private boolean checkUnionTypeAssignment(Types types, Tree parent, Type assigned, JCMethodInvocation union) {
 		if (union.args.head.type.tsym.getQualifiedName().toString().startsWith(JSweetConfig.UNION_CLASS_NAME)) {
 			// union type -> simple type
 			if (!Util.containsAssignableType(types, union.args.head.type.getTypeArguments(), assigned)) {
@@ -229,7 +229,7 @@ public class TypeChecker {
 	 * Checks that the given union type assignment conforms to JSweet
 	 * contraints.
 	 */
-	public boolean checkUnionTypeAssignment(Types types, JCTree parent, JCMethodInvocation union) {
+	public boolean checkUnionTypeAssignment(Types types, Tree parent, JCMethodInvocation union) {
 		if (parent instanceof JCVariableDecl) {
 			JCVariableDecl decl = (JCVariableDecl) parent;
 			if (decl.init == union) {
@@ -242,7 +242,7 @@ public class TypeChecker {
 			}
 		} else if (parent instanceof JCMethodInvocation) {
 			JCMethodInvocation invocation = (JCMethodInvocation) parent;
-			for (JCTree arg : invocation.args) {
+			for (Tree arg : invocation.args) {
 				if (arg == union) {
 					return checkUnionTypeAssignment(types, parent, arg.type, union);
 				}

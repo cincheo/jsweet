@@ -22,7 +22,7 @@ import javax.lang.model.element.TypeElement;
 
 import org.jsweet.transpiler.model.ImportElement;
 
-import com.sun.tools.javac.tree.JCTree.JCImport;
+import com.sun.tools.javac.tree.Tree.JCImport;
 
 /**
  * See {@link ImportElement}.

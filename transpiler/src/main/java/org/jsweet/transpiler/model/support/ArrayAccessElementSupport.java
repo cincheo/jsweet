@@ -22,7 +22,7 @@ import org.jsweet.transpiler.model.ArrayAccessElement;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.ExtendedElementFactory;
 
-import com.sun.tools.javac.tree.JCTree.JCArrayAccess;
+import com.sun.tools.javac.tree.Tree.JCArrayAccess;
 
 /**
  * See {@link ArrayAccessElement}.

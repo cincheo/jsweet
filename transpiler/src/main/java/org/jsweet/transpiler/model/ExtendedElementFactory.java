@@ -36,21 +36,21 @@ import org.jsweet.transpiler.model.support.NewClassElementSupport;
 import org.jsweet.transpiler.model.support.UnaryOperatorElementSupport;
 import org.jsweet.transpiler.model.support.VariableAccessElementSupport;
 
-import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.JCArrayAccess;
-import com.sun.tools.javac.tree.JCTree.JCAssign;
-import com.sun.tools.javac.tree.JCTree.JCBinary;
-import com.sun.tools.javac.tree.JCTree.JCCase;
-import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
-import com.sun.tools.javac.tree.JCTree.JCEnhancedForLoop;
-import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
-import com.sun.tools.javac.tree.JCTree.JCIdent;
-import com.sun.tools.javac.tree.JCTree.JCImport;
-import com.sun.tools.javac.tree.JCTree.JCLiteral;
-import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
-import com.sun.tools.javac.tree.JCTree.JCNewArray;
-import com.sun.tools.javac.tree.JCTree.JCNewClass;
-import com.sun.tools.javac.tree.JCTree.JCUnary;
+import com.sun.tools.javac.tree.Tree;
+import com.sun.tools.javac.tree.Tree.JCArrayAccess;
+import com.sun.tools.javac.tree.Tree.JCAssign;
+import com.sun.tools.javac.tree.Tree.JCBinary;
+import com.sun.tools.javac.tree.Tree.JCCase;
+import com.sun.tools.javac.tree.Tree.JCCompilationUnit;
+import com.sun.tools.javac.tree.Tree.JCEnhancedForLoop;
+import com.sun.tools.javac.tree.Tree.JCFieldAccess;
+import com.sun.tools.javac.tree.Tree.JCIdent;
+import com.sun.tools.javac.tree.Tree.JCImport;
+import com.sun.tools.javac.tree.Tree.JCLiteral;
+import com.sun.tools.javac.tree.Tree.JCMethodInvocation;
+import com.sun.tools.javac.tree.Tree.JCNewArray;
+import com.sun.tools.javac.tree.Tree.JCNewClass;
+import com.sun.tools.javac.tree.Tree.JCUnary;
 
 /**
  * A factory to create extended elements. It defines an overloaded create method
@@ -73,7 +73,7 @@ public class ExtendedElementFactory {
 	 * @return the corresponding javac tree
 	 */
 	@SuppressWarnings("unchecked")
-	public static <T extends JCTree> T toTree(ExtendedElement element) {
+	public static <T extends Tree> T toTree(ExtendedElement element) {
 		return ((ExtendedElementSupport<T>) element).getTree();
 	}
 
@@ -86,7 +86,7 @@ public class ExtendedElementFactory {
 	 * element can be mapped back to a javac tree using the
 	 * {@link #toTree(ExtendedElement)} method.
 	 */
-	public ExtendedElement create(JCTree tree) {
+	public ExtendedElement create(Tree tree) {
 		if (tree == null) {
 			return null;
 		}

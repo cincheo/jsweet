@@ -39,12 +39,12 @@ import org.jsweet.transpiler.model.support.ExtendedElementSupport;
 
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Types;
-import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.JCClassDecl;
-import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
-import com.sun.tools.javac.tree.JCTree.JCImport;
-import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
-import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
+import com.sun.tools.javac.tree.Tree;
+import com.sun.tools.javac.tree.Tree.JCClassDecl;
+import com.sun.tools.javac.tree.Tree.JCCompilationUnit;
+import com.sun.tools.javac.tree.Tree.JCImport;
+import com.sun.tools.javac.tree.Tree.JCMethodDecl;
+import com.sun.tools.javac.tree.Tree.JCVariableDecl;
 import com.sun.tools.javac.tree.TreeScanner;
 import com.sun.tools.javac.util.DiagnosticSource;
 import com.sun.tools.javac.util.Log;
@@ -70,7 +70,7 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 	 * @param params
 	 *            problem arguments
 	 */
-	public void report(JCTree tree, JSweetProblem problem, Object... params) {
+	public void report(Tree tree, JSweetProblem problem, Object... params) {
 		report(tree, null, problem, params);
 	}
 
@@ -86,7 +86,7 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 	 * @param params
 	 *            problem arguments
 	 */
-	public void report(JCTree tree, Name name, JSweetProblem problem, Object... params) {
+	public void report(Tree tree, Name name, JSweetProblem problem, Object... params) {
 		if (logHandler == null) {
 			System.err.println(problem.getMessage(params));
 		} else {
@@ -113,7 +113,7 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 	/**
 	 * The scanning stack.
 	 */
-	protected Stack<JCTree> stack = new Stack<JCTree>();
+	protected Stack<Tree> stack = new Stack<Tree>();
 
 	/**
 	 * A map holding static import statements.
@@ -229,7 +229,7 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 	 * Scans a program tree.
 	 */
 	@Override
-	public void scan(JCTree tree) {
+	public void scan(Tree tree) {
 		if (tree == null) {
 			return;
 		}
@@ -264,7 +264,7 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 	protected void dumpStackTrace() {
 		System.err.println("dumping transpiler's strack trace:");
 		for (int i = stack.size() - 1; i >= 0; i--) {
-			JCTree tree = stack.get(i);
+			Tree tree = stack.get(i);
 			if (tree == null) {
 				continue;
 			}
@@ -292,9 +292,9 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 	 * 
 	 * @param target
 	 *            the rollback's target
-	 * @see #rollback(JCTree, Consumer)
+	 * @see #rollback(Tree, Consumer)
 	 */
-	protected void onRollbacked(JCTree target) {
+	protected void onRollbacked(Tree target) {
 	}
 
 	/**
@@ -304,9 +304,9 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 	 *            the element up to which the printing should be undone
 	 * @param onRollbacked
 	 *            the callback to be invoked once the rollback is finished (see
-	 *            also {@link #onRollbacked(JCTree)}
+	 *            also {@link #onRollbacked(Tree)}
 	 */
-	protected void rollback(JCTree target, Consumer<JCTree> onRollbacked) {
+	protected void rollback(Tree target, Consumer<Tree> onRollbacked) {
 		throw new RollbackException(target, onRollbacked);
 	}
 
@@ -315,14 +315,14 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 	 * 
 	 * @see #exit()
 	 */
-	protected void enter(JCTree tree) {
+	protected void enter(Tree tree) {
 		stack.push(tree);
 	}
 
 	/**
 	 * Exits a tree element (to be scanned for printing).
 	 * 
-	 * @see #enter(JCTree)
+	 * @see #enter(Tree)
 	 */
 	protected void exit() {
 		stack.pop();
@@ -331,14 +331,14 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 	/**
 	 * Returns the printer's scanning stack.
 	 */
-	public Stack<JCTree> getStack() {
+	public Stack<Tree> getStack() {
 		return this.stack;
 	}
 
 	/**
 	 * Returns the currently visited node in the printer's scanning stack.
 	 */
-	public JCTree getCurrent() {
+	public Tree getCurrent() {
 		if (this.stack.size() >= 1) {
 			return this.stack.get(this.stack.size() - 1);
 		} else {
@@ -349,7 +349,7 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 	/**
 	 * Returns the immediate parent in the printer's scanning stack.
 	 */
-	public JCTree getParent() {
+	public Tree getParent() {
 		if (this.stack.size() >= 2) {
 			return this.stack.get(this.stack.size() - 2);
 		} else {
@@ -363,7 +363,7 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 	 * 
 	 * @see #getStack()
 	 */
-	public JCTree getParentOfParent() {
+	public Tree getParentOfParent() {
 		if (this.stack.size() >= 3) {
 			return this.stack.get(this.stack.size() - 3);
 		} else {
@@ -389,7 +389,7 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 	 * @see #getStack()
 	 */
 	@SuppressWarnings("unchecked")
-	public <T extends JCTree> T getParent(Class<T> type) {
+	public <T extends Tree> T getParent(Class<T> type) {
 		for (int i = this.stack.size() - 2; i >= 0; i--) {
 			if (type.isAssignableFrom(this.stack.get(i).getClass())) {
 				return (T) this.stack.get(i);
@@ -410,7 +410,7 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 	@SuppressWarnings("unchecked")
 	public <T extends Element> T getParentElement(Class<T> type) {
 		for (int i = this.stack.size() - 2; i >= 0; i--) {
-			JCTree t = this.stack.get(i);
+			Tree t = this.stack.get(i);
 			if (t instanceof JCClassDecl && type.isAssignableFrom(((JCClassDecl) t).sym.getClass())) {
 				return (T) ((JCClassDecl) t).sym;
 			} else if (t instanceof JCMethodDecl && type.isAssignableFrom(((JCMethodDecl) t).sym.getClass())) {
@@ -431,7 +431,7 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 	 * @return the first matching tree
 	 * @see #getStack()
 	 */
-	public JCTree getFirstParent(Class<?>... types) {
+	public Tree getFirstParent(Class<?>... types) {
 		for (int i = this.stack.size() - 2; i >= 0; i--) {
 			for (Class<?> type : types) {
 				if (type.isAssignableFrom(this.stack.get(i).getClass())) {
@@ -454,7 +454,7 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 	 * @see #getStack()
 	 */
 	@SuppressWarnings("unchecked")
-	public <T extends JCTree> T getParent(Class<T> type, JCTree from) {
+	public <T extends Tree> T getParent(Class<T> type, Tree from) {
 		for (int i = this.stack.size() - 1; i >= 0; i--) {
 			if (this.stack.get(i) == from) {
 				for (int j = i - 1; j >= 0; j--) {

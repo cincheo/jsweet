@@ -36,14 +36,14 @@ import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.JCBlock;
-import com.sun.tools.javac.tree.JCTree.JCClassDecl;
-import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
-import com.sun.tools.javac.tree.JCTree.JCLiteral;
-import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
-import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
-import com.sun.tools.javac.tree.JCTree.JCWildcard;
+import com.sun.tools.javac.tree.Tree;
+import com.sun.tools.javac.tree.Tree.JCBlock;
+import com.sun.tools.javac.tree.Tree.JCClassDecl;
+import com.sun.tools.javac.tree.Tree.JCCompilationUnit;
+import com.sun.tools.javac.tree.Tree.JCLiteral;
+import com.sun.tools.javac.tree.Tree.JCMethodDecl;
+import com.sun.tools.javac.tree.Tree.JCVariableDecl;
+import com.sun.tools.javac.tree.Tree.JCWildcard;
 
 /**
  * This AST scanner performs global analysis and fills up the context with
@@ -109,7 +109,7 @@ public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {
 			globals = true;
 		}
 
-		for (JCTree def : classdecl.defs) {
+		for (Tree def : classdecl.defs) {
 			if (def instanceof JCVariableDecl) {
 				JCVariableDecl var = (JCVariableDecl) def;
 				if (getCompilationUnit().docComments.hasComment(var)) {

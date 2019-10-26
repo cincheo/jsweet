@@ -8,7 +8,7 @@ import org.jsweet.transpiler.extension.Java2TypeScriptAdapter;
 import org.jsweet.transpiler.extension.PrinterAdapter;
 import org.jsweet.transpiler.extension.RemoveJavaDependenciesAdapter;
 
-import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
+import com.sun.tools.javac.tree.Tree.JCCompilationUnit;
 
 /**
  * The factory object is the one creating instances for key JSweet transpilation

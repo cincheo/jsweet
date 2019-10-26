@@ -6,7 +6,7 @@ import javax.tools.Tool;
 
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.tree.TreeScanner;
-import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
+import com.sun.tools.javac.tree.Tree.JCMethodDecl;
 
 public class MainMethodFinder extends TreeScanner {
 	public MethodSymbol mainMethod;

@@ -25,18 +25,18 @@ import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.ExtendedElementFactory;
 import org.jsweet.transpiler.model.VariableAccessElement;
 
-import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
-import com.sun.tools.javac.tree.JCTree.JCIdent;
+import com.sun.tools.javac.tree.Tree;
+import com.sun.tools.javac.tree.Tree.JCFieldAccess;
+import com.sun.tools.javac.tree.Tree.JCIdent;
 
 /**
  * See {@link VariableAccessElement}.
  * 
  * @author Renaud Pawlak
  */
-public class VariableAccessElementSupport extends ExtendedElementSupport<JCTree> implements VariableAccessElement {
+public class VariableAccessElementSupport extends ExtendedElementSupport<Tree> implements VariableAccessElement {
 
-	public VariableAccessElementSupport(JCTree tree) {
+	public VariableAccessElementSupport(Tree tree) {
 		super(tree);
 	}
 

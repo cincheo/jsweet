@@ -33,6 +33,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -71,19 +72,19 @@ import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Types;
-import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.JCAssign;
-import com.sun.tools.javac.tree.JCTree.JCBlock;
-import com.sun.tools.javac.tree.JCTree.JCClassDecl;
-import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
-import com.sun.tools.javac.tree.JCTree.JCExpressionStatement;
-import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
-import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
-import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
-import com.sun.tools.javac.tree.JCTree.JCNewClass;
-import com.sun.tools.javac.tree.JCTree.JCStatement;
-import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
-import com.sun.tools.javac.tree.JCTree.JCWildcard;
+import com.sun.tools.javac.tree.Tree;
+import com.sun.tools.javac.tree.Tree.JCAssign;
+import com.sun.tools.javac.tree.Tree.JCBlock;
+import com.sun.tools.javac.tree.Tree.JCClassDecl;
+import com.sun.tools.javac.tree.Tree.JCCompilationUnit;
+import com.sun.tools.javac.tree.Tree.JCExpressionStatement;
+import com.sun.tools.javac.tree.Tree.JCFieldAccess;
+import com.sun.tools.javac.tree.Tree.JCMethodDecl;
+import com.sun.tools.javac.tree.Tree.JCMethodInvocation;
+import com.sun.tools.javac.tree.Tree.JCNewClass;
+import com.sun.tools.javac.tree.Tree.JCStatement;
+import com.sun.tools.javac.tree.Tree.JCVariableDecl;
+import com.sun.tools.javac.tree.Tree.JCWildcard;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Names;
 
@@ -91,6 +92,7 @@ import com.sun.tools.javac.util.Names;
  * The transpiler context, which is an extension of the Java compiler context.
  * 
  * @author Renaud Pawlak
+ * @author Louis Grignon
  */
 public class JSweetContext extends Context {
 
@@ -155,7 +157,7 @@ public class JSweetContext extends Context {
 	protected Set<String> langTypesSimpleNames = new HashSet<String>();
 	protected Set<String> baseThrowables = new HashSet<String>();
 
-	private Map<String, JCTree[]> globalMethods = new HashMap<>();
+	private Map<String, Tree[]> globalMethods = new HashMap<>();
 	private Map<String, JCClassDecl> decoratorAnnotations = new HashMap<>();
 
 	/**
@@ -167,7 +169,7 @@ public class JSweetContext extends Context {
 		String name = method.sym.getEnclosingElement().getQualifiedName().toString();
 		name += "." + method.name;
 		name = name.replace(JSweetConfig.GLOBALS_CLASS_NAME + ".", "");
-		globalMethods.put(name, new JCTree[] { owner, method });
+		globalMethods.put(name, new Tree[] { owner, method });
 	}
 
 	/**
@@ -180,7 +182,7 @@ public class JSweetContext extends Context {
 	 *         but we ignore it here)
 	 * @see #registerGlobalMethod(JCMethodDecl)
 	 */
-	public JCTree[] lookupGlobalMethod(String fullyQualifiedName) {
+	public Tree[] lookupGlobalMethod(String fullyQualifiedName) {
 		return globalMethods.get(fullyQualifiedName);
 	}
 
@@ -550,6 +552,8 @@ public class JSweetContext extends Context {
 
 	private boolean usingJavaRuntime = false;
 
+	public final Locale locale = Locale.getDefault();
+	
 	/**
 	 * JSweet transpilation options.
 	 */
@@ -1599,7 +1603,7 @@ public class JSweetContext extends Context {
 				// maps cannot be abstract
 				return true;
 			}
-			for (JCTree def : newClass.def.defs) {
+			for (Tree def : newClass.def.defs) {
 				if (def instanceof JCVariableDecl) {
 					// no variables in maps
 					return true;

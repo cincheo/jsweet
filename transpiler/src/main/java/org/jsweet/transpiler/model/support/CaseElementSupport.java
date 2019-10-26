@@ -20,7 +20,7 @@ package org.jsweet.transpiler.model.support;
 
 import org.jsweet.transpiler.model.CaseElement;
 
-import com.sun.tools.javac.tree.JCTree.JCCase;
+import com.sun.tools.javac.tree.Tree.JCCase;
 
 /**
  * See {@link CaseElement}.

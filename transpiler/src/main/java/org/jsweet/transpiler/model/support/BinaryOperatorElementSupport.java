@@ -24,7 +24,7 @@ import org.jsweet.transpiler.model.BinaryOperatorElement;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.ExtendedElementFactory;
 
-import com.sun.tools.javac.tree.JCTree.JCBinary;
+import com.sun.tools.javac.tree.Tree.JCBinary;
 
 /**
  * See {@link BinaryOperatorElement}.

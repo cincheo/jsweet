@@ -18,6 +18,9 @@
  */
 package org.jsweet.transpiler.util;
 
+import static java.util.Arrays.asList;
+
+import java.io.File;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,16 +32,38 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.Set;
 import java.util.Stack;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.annotation.processing.SupportedSourceVersion;
+import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.util.ElementScanner9;
+import javax.tools.Diagnostic;
+import javax.tools.DiagnosticCollector;
 import javax.tools.JavaCompiler;
+import javax.tools.JavaCompiler.CompilationTask;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.Tool;
 import javax.tools.ToolProvider;
+
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.util.JavacTask;
+import com.sun.source.util.TreePathScanner;
+import com.sun.source.util.Trees;
 
 /**
  * This class defines a directed graph collection type, that is to say a set of
@@ -77,8 +102,7 @@ import javax.tools.ToolProvider;
  * 
  * @author Renaud Pawlak
  * 
- * @param <T>
- *            the types of the nodes in the graph
+ * @param <T> the types of the nodes in the graph
  */
 public class DirectedGraph<T> implements Collection<T> {
 
@@ -247,10 +271,8 @@ public class DirectedGraph<T> implements Collection<T> {
 	/**
 	 * Add an edge between the given elements (nodes).
 	 * 
-	 * @param sourceElement
-	 *            the source element/node
-	 * @param destinationElement
-	 *            the destination element/node
+	 * @param sourceElement      the source element/node
+	 * @param destinationElement the destination element/node
 	 */
 	public void addEdge(T sourceElement, T destinationElement) {
 		if (sourceElement.equals(destinationElement)) {
@@ -263,12 +285,11 @@ public class DirectedGraph<T> implements Collection<T> {
 	}
 
 	/**
-	 * Automatically builds the edges between all the nodes of the graph by
-	 * using the given comparator. If the comparator returns 0, then no edge is
+	 * Automatically builds the edges between all the nodes of the graph by using
+	 * the given comparator. If the comparator returns 0, then no edge is
 	 * constructor between the compared nodes.
 	 * 
-	 * @param nodeComparator
-	 *            a comparator which is used to build the edges
+	 * @param nodeComparator a comparator which is used to build the edges
 	 */
 	public <U extends T> void buildEdges(Comparator<U> nodeComparator) {
 		for (T e1 : nodes.keySet()) {
@@ -286,13 +307,10 @@ public class DirectedGraph<T> implements Collection<T> {
 	}
 
 	/**
-	 * Adds some edges form the source elements to the given destination
-	 * elements.
+	 * Adds some edges form the source elements to the given destination elements.
 	 * 
-	 * @param sourceElement
-	 *            the source of the edges
-	 * @param destinationElements
-	 *            the destination elements of the edges
+	 * @param sourceElement       the source of the edges
+	 * @param destinationElements the destination elements of the edges
 	 */
 	@SuppressWarnings("unchecked")
 	public void addEdges(T sourceElement, T... destinationElements) {
@@ -303,10 +321,8 @@ public class DirectedGraph<T> implements Collection<T> {
 	 * Tells if this graph contains an edge between the given source and the
 	 * destination elements/nodes.
 	 * 
-	 * @param sourceElement
-	 *            the source node
-	 * @param destinationElement
-	 *            the destination node
+	 * @param sourceElement      the source node
+	 * @param destinationElement the destination node
 	 * @return true if an edge is found, false otherwise
 	 */
 	public boolean hasEdge(T sourceElement, T destinationElement) {
@@ -370,8 +386,7 @@ public class DirectedGraph<T> implements Collection<T> {
 	 * 
 	 * @author Renaud Pawlak
 	 *
-	 * @param <T>
-	 *            the type of object hold in the graph
+	 * @param <T> the type of object hold in the graph
 	 */
 	public static class Node<T> {
 		private DirectedGraph<T> graph;
@@ -399,10 +414,8 @@ public class DirectedGraph<T> implements Collection<T> {
 		/**
 		 * Creates a new node for the given graph and holding the given element.
 		 * 
-		 * @param graph
-		 *            the graph this node belongs to
-		 * @param element
-		 *            the element hold by this node
+		 * @param graph   the graph this node belongs to
+		 * @param element the element hold by this node
 		 */
 		public Node(DirectedGraph<T> graph, T element) {
 			this.graph = graph;
@@ -414,8 +427,8 @@ public class DirectedGraph<T> implements Collection<T> {
 		}
 
 		/**
-		 * Adds an edge starting from this node and going to a node holding the
-		 * given element.
+		 * Adds an edge starting from this node and going to a node holding the given
+		 * element.
 		 */
 		public void addEdge(T destinationElement) {
 			Node<T> node = graph.nodes.get(destinationElement);
@@ -429,8 +442,8 @@ public class DirectedGraph<T> implements Collection<T> {
 		}
 
 		/**
-		 * Adds edges starting from this node and going to nodes holding the
-		 * given elements.
+		 * Adds edges starting from this node and going to nodes holding the given
+		 * elements.
 		 */
 		@SuppressWarnings("unchecked")
 		public void addEdges(T... destinationElements) {
@@ -478,8 +491,7 @@ public class DirectedGraph<T> implements Collection<T> {
 	 * 
 	 * @author Renaud Pawlak
 	 *
-	 * @param <T>
-	 *            the type of the objects being stored in the graph
+	 * @param <T> the type of the objects being stored in the graph
 	 */
 	public static class Edge<T> {
 		/**
@@ -494,10 +506,8 @@ public class DirectedGraph<T> implements Collection<T> {
 		/**
 		 * Creates a new edge.
 		 * 
-		 * @param from
-		 *            the start node
-		 * @param to
-		 *            the end node
+		 * @param from the start node
+		 * @param to   the end node
 		 */
 		public Edge(Node<T> from, Node<T> to) {
 			this.from = from;
@@ -526,15 +536,13 @@ public class DirectedGraph<T> implements Collection<T> {
 	}
 
 	/**
-	 * Sorts this graph using a topological sort algorithm given in this
-	 * <a href=
+	 * Sorts this graph using a topological sort algorithm given in this <a href=
 	 * "http://stackoverflow.com/questions/2739392/sample-directed-graph-and-topological-sort-code"
 	 * >StackOverflow thread</a>.
 	 * 
 	 * @return the list of nodes, sorted according to the topological sort
-	 * @throws CycleFoundException
-	 *             thrown if a cycle is found in the graph (in that case no
-	 *             topological sort is possible)
+	 * @throws CycleFoundException thrown if a cycle is found in the graph (in that
+	 *                             case no topological sort is possible)
 	 */
 	public List<T> topologicalSort(Consumer<Node<T>> cycleHandler) {
 		List<Node<T>> allNodes = new ArrayList<Node<T>>(nodes.values());
@@ -589,10 +597,8 @@ public class DirectedGraph<T> implements Collection<T> {
 	/**
 	 * Dumps the found cycles to System.out.
 	 * 
-	 * @param nodes
-	 *            the nodes in which to look for cycles
-	 * @param toString
-	 *            the element's toString function
+	 * @param nodes    the nodes in which to look for cycles
+	 * @param toString the element's toString function
 	 */
 	public static <T> void dumpCycles(List<Node<T>> nodes, Function<T, String> toString) {
 		for (Node<T> node : nodes) {
@@ -618,32 +624,163 @@ public class DirectedGraph<T> implements Collection<T> {
 		;
 	}
 
+
+	static class Scanner1 extends ElementScanner9<Void, Void> {
+		private int numberOfClasses;
+		private int numberOfMethods;
+		private int numberOfFields;
+
+		public Void visitType(final TypeElement type, final Void p) {
+			++numberOfClasses;
+			return super.visitType(type, p);
+		}
+
+		public Void visitExecutable(final ExecutableElement executable, final Void p) {
+			++numberOfMethods;
+			return super.visitExecutable(executable, p);
+		}
+
+		public Void visitVariable(final VariableElement variable, final Void p) {
+			if (variable.getEnclosingElement().getKind() == ElementKind.CLASS) {
+				++numberOfFields;
+			}
+
+			return super.visitVariable(variable, p);
+		}
+	}
+
+	@SupportedSourceVersion(SourceVersion.RELEASE_11)
+	@SupportedAnnotationTypes("*")
+	static class Processor1 extends AbstractProcessor {
+		private final Scanner1 scanner;
+
+		public Processor1(final Scanner1 scanner) {
+			this.scanner = scanner;
+		}
+
+		public boolean process(final Set<? extends TypeElement> types, final RoundEnvironment environment) {
+
+			if (!environment.processingOver()) {
+				for (final Element element : environment.getRootElements()) {
+					scanner.scan(element);
+				}
+			}
+
+			return false;
+		}
+	}
+
+	static class Scanner2 extends TreePathScanner<Object, Trees> {
+		private int count;
+
+		@Override
+		public Object visitMethodInvocation(MethodInvocationTree node, Trees p) {
+
+			++count;
+			return super.visitMethodInvocation(node, p);
+		}
+
+		public int getCount() {
+			return count;
+		}
+	}
+
+	@SupportedSourceVersion(SourceVersion.RELEASE_11)
+	@SupportedAnnotationTypes("*")
+	static class Processor2 extends AbstractProcessor {
+		private final Scanner2 scanner;
+		private Trees trees;
+
+		public Processor2(final Scanner2 scanner) {
+			this.scanner = scanner;
+		}
+
+		@Override
+		public synchronized void init(final ProcessingEnvironment processingEnvironment) {
+			super.init(processingEnvironment);
+			trees = Trees.instance(processingEnvironment);
+		}
+
+		public boolean process(final Set<? extends TypeElement> types, final RoundEnvironment environment) {
+
+			if (!environment.processingOver()) {
+				for (final Element element : environment.getRootElements()) {
+					scanner.scan(trees.getPath(element), trees);
+				}
+			}
+
+			return true;
+		}
+	}
+	
+
 	/**
 	 * Just for testing.
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
+
+		for (Tool tool : ServiceLoader.loadInstalled(Tool.class)) {
+			System.out.println("Found tool: " + tool);
+		}
+		JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+		for (final SourceVersion version : compiler.getSourceVersions()) {
+			System.out.println("javac source version: " + version);
+		}
+
+		System.out.println(compiler.isSupportedOption("-cp"));
+		System.out.println(compiler.isSupportedOption("-Xlint"));
+		System.out.println(compiler.isSupportedOption("-bootclasspath"));
+		System.out.println(compiler.isSupportedOption("-encoding"));
+		File f = new File("src/test/java/source/calculus/Strings.java");
+
+		try (StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, Locale.getDefault(),
+				Charset.forName("UTF-8"))) {
+			final DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
+			Iterable<? extends JavaFileObject> sources = fileManager.getJavaFileObjectsFromFiles(asList(f));
+			System.out.println("f=" + f);
+			System.out.println("fileObjects=" + sources);
+
+			final Scanner1 scanner1 = new Scanner1();
+			final Processor1 processor1 = new Processor1(scanner1);
+			final Scanner2 scanner2 = new Scanner2();
+			final Processor2 processor2 = new Processor2(scanner2);
+
+			final CompilationTask task = compiler.getTask(null, fileManager, diagnostics, null, null, sources);
+			JavacTask javacTask = (JavacTask) task;
+			javacTask.setProcessors(asList(processor1, processor2));
+			Iterable<? extends CompilationUnitTree> compilUnits = javacTask.parse();
+			javacTask.analyze();
+
+			System.out.println("compilUnits=" + compilUnits);
+
+			System.out.format("Classes %d, methods/constructors %d, fields %d\n", scanner1.numberOfClasses,
+					scanner1.numberOfMethods, scanner1.numberOfFields);
+
+			System.out.format("meth count: %d \n", scanner2.getCount());
+
+			for (final Diagnostic<? extends JavaFileObject> diagnostic : diagnostics.getDiagnostics()) {
+				System.out.format("DIAG: %s, line %d in %s\n", diagnostic.getMessage(null), diagnostic.getLineNumber(),
+						diagnostic.getSource().getName());
+			}
+		}
 		
-		  for (Tool tool : ServiceLoader.loadInstalled(Tool.class)) {
-	            System.out.println("Found tool: " + tool);
-	        }
-		  JavaCompiler javac = ToolProvider.getSystemJavaCompiler();
-		  StandardJavaFileManager fileManager = javac.getStandardFileManager(null, Locale.getDefault(), Charset.forName("UTF-8"));
-		   Iterable<? extends JavaFileObject> fileObjects =
-		            fileManager.getJavaFileObjectsFromFiles(new ArrayList<>());
-//		   javac.
-//		DirectedGraph<Integer> g = new DirectedGraph<Integer>();
-//		g.add(7, 5, 3, 11, 8, 2, 9, 10);
-//		System.out.println(g.nodes.values());
-//		System.out.println(g.nodes.keySet());
-//		g.buildEdges(new Comparator<Integer>() {
-//			@Override
-//			public int compare(Integer o1, Integer o2) {
-//				if (o1 == 5 && o2 == 3) {
-//					return 1;
-//				}
-//				return 0;
-//			}
-//		});
-//		System.out.println(g.topologicalSort(null));
+		if (true) {
+			System.exit(0);
+		}
+		
+		DirectedGraph<Integer> g = new DirectedGraph<Integer>();
+		g.add(7, 5, 3, 11, 8, 2, 9, 10);
+		System.out.println(g.nodes.values());
+		System.out.println(g.nodes.keySet());
+		g.buildEdges(new Comparator<Integer>() {
+			@Override
+			public int compare(Integer o1, Integer o2) {
+				if (o1 == 5 && o2 == 3) {
+					return 1;
+				}
+				return 0;
+			}
+		});
+		System.out.println(g.topologicalSort(null));
 	}
 }

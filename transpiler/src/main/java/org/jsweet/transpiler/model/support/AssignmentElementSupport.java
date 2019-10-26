@@ -23,7 +23,7 @@ import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.ExtendedElementFactory;
 import org.jsweet.transpiler.model.VariableAccessElement;
 
-import com.sun.tools.javac.tree.JCTree.JCAssign;
+import com.sun.tools.javac.tree.Tree.JCAssign;
 
 /**
  * See {@link AssignmentElement}.

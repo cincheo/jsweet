@@ -121,7 +121,7 @@ public class Util {
 	 * @param element the element to lookup
 	 * @return the javac AST that corresponds to that element
 	 */
-	public static JCTree lookupTree(JSweetContext context, Element element) {
+	public static Tree lookupTree(JSweetContext context, Element element) {
 		if (element == null || element instanceof PackageSymbol) {
 			return null;
 		}
@@ -131,7 +131,7 @@ public class Util {
 			// hack to know if it is a source file or a class file
 			if (clazz.sourcefile != null
 					&& clazz.sourcefile.getClass().getName().equals("com.sun.tools.javac.file.RegularFileObject")) {
-				JCTree[] result = { null };
+				Tree[] result = { null };
 				for (int i = 0; i < context.sourceFiles.length; i++) {
 					if (new File(clazz.sourcefile.getName()).equals(context.sourceFiles[i].getJavaFile())) {
 						JCCompilationUnit cu = context.compilationUnits[i];
@@ -218,7 +218,7 @@ public class Util {
 	 * Tells if the given type declaration contains some method declarations.
 	 */
 	public static boolean containsMethods(JCClassDecl classDeclaration) {
-		for (JCTree member : classDeclaration.getMembers()) {
+		for (Tree member : classDeclaration.getMembers()) {
 			if (member instanceof JCMethodDecl) {
 				JCMethodDecl method = (JCMethodDecl) member;
 				if (method.pos == classDeclaration.pos) {
@@ -244,8 +244,8 @@ public class Util {
 	/**
 	 * Finds all the variables accessible within the current scanning scope.
 	 */
-	public static void fillAllVariablesInScope(Map<String, VarSymbol> vars, Stack<JCTree> scanningStack, JCTree from,
-			JCTree to) {
+	public static void fillAllVariablesInScope(Map<String, VarSymbol> vars, Stack<Tree> scanningStack, Tree from,
+			Tree to) {
 		if (from == to) {
 			return;
 		}
@@ -253,7 +253,7 @@ public class Util {
 		if (i == -1 || i == 0) {
 			return;
 		}
-		JCTree parent = scanningStack.get(i - 1);
+		Tree parent = scanningStack.get(i - 1);
 		List<JCStatement> statements = null;
 		switch (parent.getKind()) {
 		case BLOCK:
@@ -300,7 +300,7 @@ public class Util {
 	public static List<JCClassDecl> findTypeDeclarationsInCompilationUnits(List<JCCompilationUnit> compilationUnits) {
 		List<JCClassDecl> symbols = new LinkedList<>();
 		for (JCCompilationUnit compilationUnit : compilationUnits) {
-			for (JCTree definition : compilationUnit.defs) {
+			for (Tree definition : compilationUnit.defs) {
 				if (definition instanceof JCClassDecl) {
 					symbols.add((JCClassDecl) definition);
 				}
@@ -312,7 +312,7 @@ public class Util {
 
 	public static List<JCMethodDecl> findMethodDeclarations(JCClassDecl typeDeclaration) {
 		List<JCMethodDecl> methods = new LinkedList<>();
-		for (JCTree definition : typeDeclaration.defs) {
+		for (Tree definition : typeDeclaration.defs) {
 			if (definition instanceof JCMethodDecl) {
 				methods.add((JCMethodDecl) definition);
 			}
@@ -331,7 +331,7 @@ public class Util {
 	 * Fills the given map with all the variables beeing accessed within the given
 	 * code tree.
 	 */
-	public static void fillAllVariableAccesses(final Map<String, VarSymbol> vars, final JCTree tree) {
+	public static void fillAllVariableAccesses(final Map<String, VarSymbol> vars, final Tree tree) {
 		new TreeScanner() {
 			@Override
 			public void visitIdent(JCIdent ident) {
@@ -712,17 +712,10 @@ public class Util {
 	}
 
 	/**
-	 * Transforms a Java iterable to a javac list.
-	 */
-	public static <T> com.sun.tools.javac.util.List<T> toJCList(Iterable<T> collection) {
-		return com.sun.tools.javac.util.List.from(collection);
-	}
-
-	/**
 	 * Transforms a list of source files to Java file objects (used by javac).
 	 */
 	public static List<JavaFileObject> toJavaFileObjects(StandardJavaFileManager fileManager,
-			Collection<File> sourceFiles) throws IOException {
+			Collection<File> sourceFiles) {
 		Iterable<? extends JavaFileObject> javaFileObjectsIterable = fileManager
 				.getJavaFileObjectsFromFiles(sourceFiles);
 		return iterableToList(javaFileObjectsIterable);
@@ -737,7 +730,7 @@ public class Util {
 	/**
 	 * Transforms a source file to a Java file object (used by javac).
 	 */
-	public static JavaFileObject toJavaFileObject(JavaFileManager fileManager, File sourceFile) throws IOException {
+	public static JavaFileObject toJavaFileObject(StandardJavaFileManager fileManager, File sourceFile) throws IOException {
 		List<JavaFileObject> javaFileObjects = toJavaFileObjects(fileManager, asList(sourceFile));
 		return javaFileObjects.isEmpty() ? null : javaFileObjects.get(0);
 	}
@@ -1221,7 +1214,7 @@ public class Util {
 	/**
 	 * Tells if that tree is the null literal.
 	 */
-	public static boolean isNullLiteral(JCTree tree) {
+	public static boolean isNullLiteral(Tree tree) {
 		return tree instanceof JCLiteral && ((JCLiteral) tree).getValue() == null;
 	}
 
@@ -1256,7 +1249,7 @@ public class Util {
 	 * Gets the symbol on JCFieldAccess or JCIdent if possible, or return null.
 	 * Could return either a MethodSymbol, or VariableSymbol
 	 */
-	public static Symbol getAccessedSymbol(JCTree tree) {
+	public static Symbol getAccessedSymbol(Tree tree) {
 		if (tree instanceof JCFieldAccess) {
 			return ((JCFieldAccess) tree).sym;
 		} else if (tree instanceof JCIdent) {
@@ -1297,7 +1290,7 @@ public class Util {
 	 * 100% coverage we would need a much more complicated implementation that is
 	 * probably not worth it.
 	 */
-	public static List<JCClassDecl> getSortedClassDeclarations(List<JCTree> decls) {
+	public static List<JCClassDecl> getSortedClassDeclarations(List<Tree> decls) {
 		// return (List<JCClassDecl>)(Object)decls;
 		List<JCClassDecl> classDecls = decls.stream().filter(d -> d instanceof JCClassDecl).map(d -> (JCClassDecl) d)
 				.collect(Collectors.toList());
@@ -1367,11 +1360,11 @@ public class Util {
 		return false;
 	}
 
-	public static List<List<JCTree>> getExecutionPaths(JCMethodDecl methodDeclaration) {
+	public static List<List<Tree>> getExecutionPaths(JCMethodDecl methodDeclaration) {
 
-		List<List<JCTree>> executionPaths = new LinkedList<>();
+		List<List<Tree>> executionPaths = new LinkedList<>();
 		executionPaths.add(new LinkedList<>());
-		List<List<JCTree>> currentPaths = new LinkedList<>(executionPaths);
+		List<List<Tree>> currentPaths = new LinkedList<>(executionPaths);
 		List<JCBreak> activeBreaks = new LinkedList<>();
 		for (JCStatement statement : methodDeclaration.body.stats) {
 			collectExecutionPaths(statement, executionPaths, currentPaths, activeBreaks);
@@ -1380,11 +1373,11 @@ public class Util {
 		return executionPaths;
 	}
 
-	private static void collectExecutionPaths(JCStatement currentNode, List<List<JCTree>> allExecutionPaths,
-			List<List<JCTree>> currentPaths, List<JCBreak> activeBreaks) {
+	private static void collectExecutionPaths(JCStatement currentNode, List<List<Tree>> allExecutionPaths,
+			List<List<Tree>> currentPaths, List<JCBreak> activeBreaks) {
 
-		for (List<JCTree> currentPath : new ArrayList<>(currentPaths)) {
-			JCTree lastStatement = currentPath.isEmpty() ? null : currentPath.get(currentPath.size() - 1);
+		for (List<Tree> currentPath : new ArrayList<>(currentPaths)) {
+			Tree lastStatement = currentPath.isEmpty() ? null : currentPath.get(currentPath.size() - 1);
 			if (lastStatement instanceof JCReturn
 					|| (lastStatement instanceof JCBreak && activeBreaks.contains(lastStatement))) {
 				continue;
@@ -1396,7 +1389,7 @@ public class Util {
 
 			currentPath.add(currentNode);
 
-			List<List<JCTree>> currentPathForksList = pathsList(currentPath);
+			List<List<Tree>> currentPathForksList = pathsList(currentPath);
 			if (currentNode instanceof JCIf) {
 				JCIf ifNode = (JCIf) currentNode;
 
@@ -1467,21 +1460,21 @@ public class Util {
 	 * @return generated paths
 	 */
 	private static void evaluateForksExecutionPaths( //
-			List<List<JCTree>> allExecutionPaths, //
-			List<List<JCTree>> currentPaths, //
-			List<JCTree> currentPath, //
+			List<List<Tree>> allExecutionPaths, //
+			List<List<Tree>> currentPaths, //
+			List<Tree> currentPath, //
 			boolean lastIsCurrentPath, //
 			List<JCBreak> activeBreaks, //
 			JCStatement[] forks) {
 		int i = 0;
-		List<List<JCTree>> generatedExecutionPaths = new LinkedList<>();
+		List<List<Tree>> generatedExecutionPaths = new LinkedList<>();
 		for (JCStatement fork : forks) {
 			if (fork != null) {
-				List<List<JCTree>> currentPathsForFork;
+				List<List<Tree>> currentPathsForFork;
 				if (lastIsCurrentPath && ++i == forks.length) {
 					currentPathsForFork = pathsList(currentPath);
 				} else {
-					List<JCTree> forkedPath = new LinkedList<>(currentPath);
+					List<Tree> forkedPath = new LinkedList<>(currentPath);
 					allExecutionPaths.add(forkedPath);
 					currentPathsForFork = pathsList(forkedPath);
 				}
@@ -1495,11 +1488,11 @@ public class Util {
 		addAllWithoutDuplicates(currentPaths, generatedExecutionPaths);
 	}
 
-	private static List<List<JCTree>> addAllWithoutDuplicates(List<List<JCTree>> pathsListUnique,
-			List<List<JCTree>> listToBeAdded) {
-		for (List<JCTree> path : listToBeAdded) {
+	private static List<List<Tree>> addAllWithoutDuplicates(List<List<Tree>> pathsListUnique,
+			List<List<Tree>> listToBeAdded) {
+		for (List<Tree> path : listToBeAdded) {
 			boolean pathAlreadyAdded = false;
-			for (List<JCTree> pathFromUnique : pathsListUnique) {
+			for (List<Tree> pathFromUnique : pathsListUnique) {
 				if (path == pathFromUnique) {
 					pathAlreadyAdded = true;
 				}
@@ -1512,9 +1505,9 @@ public class Util {
 	}
 
 	@SafeVarargs
-	private static List<List<JCTree>> pathsList(List<JCTree>... executionPaths) {
-		List<List<JCTree>> pathsList = new LinkedList<>();
-		for (List<JCTree> path : executionPaths) {
+	private static List<List<Tree>> pathsList(List<Tree>... executionPaths) {
+		List<List<Tree>> pathsList = new LinkedList<>();
+		for (List<Tree> path : executionPaths) {
 			pathsList.add(path);
 		}
 		return pathsList;

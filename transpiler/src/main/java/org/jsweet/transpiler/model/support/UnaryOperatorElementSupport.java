@@ -24,7 +24,7 @@ import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.ExtendedElementFactory;
 import org.jsweet.transpiler.model.UnaryOperatorElement;
 
-import com.sun.tools.javac.tree.JCTree.JCUnary;
+import com.sun.tools.javac.tree.Tree.JCUnary;
 
 /**
  * See {@link UnaryOperatorElement}.

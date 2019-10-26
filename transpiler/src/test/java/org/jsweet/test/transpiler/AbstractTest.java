@@ -44,8 +44,8 @@ import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
 import com.sun.tools.javac.model.JavacTypes;
-import com.sun.tools.javac.tree.JCTree.JCClassDecl;
-import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
+import com.sun.tools.javac.tree.Tree.JCClassDecl;
+import com.sun.tools.javac.tree.Tree.JCCompilationUnit;
 
 import ts.nodejs.NodejsProcess;
 
