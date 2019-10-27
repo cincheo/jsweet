@@ -196,20 +196,21 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 	private long transpilationStartTimestamp;
 
 	private JSweetContext context;
-	
+
 	private static class JavaCompilationComponents {
 		final StandardJavaFileManager fileManager;
 		final JavaCompiler compiler;
 		final JavacTask task;
+
 		JavaCompilationComponents(StandardJavaFileManager fileManager, JavaCompiler compiler, JavacTask task) {
 			this.fileManager = fileManager;
 			this.compiler = compiler;
 			this.task = task;
 		}
 	}
-	
+
 	private JavaCompilationComponents javaCompilationComponents;
-	
+
 	private CandyProcessor candiesProcessor;
 	private boolean generateSourceMaps = false;
 	private File workingDir;
@@ -310,8 +311,6 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 	private Map<String, Object> configuration;
 
 	private File baseDirectory;
-
-	
 
 	@SuppressWarnings("unchecked")
 	private <T> T getMapValue(Map<String, Object> map, String key) {
@@ -695,7 +694,8 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 		}
 	}
 
-	private JavaCompilationComponents createJavaCompilationComponents(List<File> sourceFiles, TranspilationHandler transpilationHandler) {
+	private JavaCompilationComponents createJavaCompilationComponents(List<File> sourceFiles,
+			TranspilationHandler transpilationHandler) {
 
 		class JavaCompilerOptions {
 			List<String> optionsAsList = new ArrayList<>();
@@ -738,26 +738,26 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 		}
 		logger.debug("charset: " + charset);
 		logger.debug("strict mode: " + context.strictMode);
-		
 
 		JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 		StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, context.locale, charset);
-		
+
 		List<JavaFileObject> sourceFileObjects = toJavaFileObjects(fileManager, sourceFiles);
-		
+
 		JSweetDiagnosticHandler diagnosticHandler = factory.createDiagnosticHandler(transpilationHandler, context);
-		
-		JavacTask task = (JavacTask) compiler.getTask(null, fileManager, diagnosticHandler, null, null, sourceFileObjects);
-		
+
+		JavacTask task = (JavacTask) compiler.getTask(null, fileManager, diagnosticHandler, options.optionsAsList, null,
+				sourceFileObjects);
+
 		// TODO [Java11]
 		task.setProcessors(asList());
-		
+
 		return new JavaCompilationComponents(fileManager, compiler, task);
 	}
 
 	public List<CompilationUnitTree> setupCompiler(List<File> files,
 			ErrorCountTranspilationHandler transpilationHandler) throws IOException {
-		
+
 		transpilationHandler.setDisabled(isIgnoreJavaErrors());
 
 		context = factory.createContext(this);
@@ -765,8 +765,7 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 				: (candiesProcessor == null ? false : candiesProcessor.isUsingJavaRuntime()));
 		adapter = factory.createAdapter(context);
 
-		javaCompilationComponents = createJavaCompilationComponents(files,transpilationHandler);
-
+		javaCompilationComponents = createJavaCompilationComponents(files, transpilationHandler);
 
 		Iterable<? extends CompilationUnitTree> compilUnits = javaCompilationComponents.task.parse();
 		javaCompilationComponents.task.analyze();
@@ -889,7 +888,7 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 	}
 
 	private void java2ts(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files) throws IOException {
-		List<JCCompilationUnit> compilationUnits = setupCompiler(Arrays.asList(SourceFile.toFiles(files)),
+		List<CompilationUnitTree> compilationUnits = setupCompiler(Arrays.asList(SourceFile.toFiles(files)),
 				transpilationHandler);
 		if (compilationUnits == null) {
 			return;
@@ -918,10 +917,9 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 				generateTsFiles(transpilationHandler, files, compilationUnits);
 			}
 		}
-		log.flush();
 	}
 
-	private void generateModuleDefs(JCCompilationUnit moduleDefs) throws IOException {
+	private void generateModuleDefs(CompilationUnitTree moduleDefs) throws IOException {
 		StringBuilder out = new StringBuilder();
 		for (String line : FileUtils.readLines(new File(moduleDefs.getSourceFile().getName()))) {
 			if (line.startsWith("///")) {
@@ -932,7 +930,7 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 	}
 
 	private void generateTsFiles(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files,
-			List<JCCompilationUnit> compilationUnits) throws IOException {
+			List<CompilationUnitTree> compilationUnits) throws IOException {
 		// regular file-to-file generation
 		new OverloadScanner(transpilationHandler, context).process(compilationUnits);
 
@@ -943,7 +941,7 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 		String[] headerLines = getHeaderLines();
 		for (int i = 0; i < compilationUnits.length(); i++) {
 			try {
-				JCCompilationUnit cu = compilationUnits.get(i);
+				CompilationUnitTree cu = compilationUnits.get(i);
 				if (isModuleDefsFile(cu)) {
 					if (context.useModules) {
 						generateModuleDefs(cu);
@@ -1031,20 +1029,20 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 
 	}
 
-	private boolean isModuleDefsFile(JCCompilationUnit cu) {
+	private boolean isModuleDefsFile(CompilationUnitTree cu) {
 		return cu.getSourceFile().getName().equals("module_defs.java")
 				|| cu.getSourceFile().getName().endsWith("/module_defs.java");
 	}
 
 	private void generateTsBundle(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files,
-			List<JCCompilationUnit> compilationUnits) throws IOException {
+			List<CompilationUnitTree> compilationUnits) throws IOException {
 		if (context.useModules) {
 			return;
 		}
 		StaticInitilializerAnalyzer analizer = new StaticInitilializerAnalyzer(context);
 		analizer.process(compilationUnits);
-		ArrayList<Node<JCCompilationUnit>> sourcesInCycle = new ArrayList<>();
-		java.util.List<JCCompilationUnit> orderedCompilationUnits = analizer.globalStaticInitializersDependencies
+		ArrayList<Node<CompilationUnitTree>> sourcesInCycle = new ArrayList<>();
+		java.util.List<CompilationUnitTree> orderedCompilationUnits = analizer.globalStaticInitializersDependencies
 				.topologicalSort(n -> {
 					sourcesInCycle.add(n);
 				});
@@ -1078,7 +1076,7 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 		}
 	}
 
-	private void initSourceFileJavaPaths(SourceFile file, JCCompilationUnit cu) {
+	private void initSourceFileJavaPaths(SourceFile file, CompilationUnitTree cu) {
 		String[] s = cu.getSourceFile().getName().split(File.separator.equals("\\") ? "\\\\" : File.separator);
 		String cuName = s[s.length - 1];
 		s = cuName.split("\\.");
@@ -1092,7 +1090,7 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 	}
 
 	private void createBundle(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files,
-			int[] permutation, java.util.List<JCCompilationUnit> orderedCompilationUnits, boolean definitionBundle)
+			int[] permutation, java.util.List<CompilationUnitTree> orderedCompilationUnits, boolean definitionBundle)
 			throws FileNotFoundException {
 		context.bundleMode = true;
 		StringBuilder sb = new StringBuilder();
@@ -1102,7 +1100,7 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 			lineCount++;
 		}
 		for (int i = 0; i < orderedCompilationUnits.size(); i++) {
-			JCCompilationUnit cu = orderedCompilationUnits.get(i);
+			CompilationUnitTree cu = orderedCompilationUnits.get(i);
 			if (isModuleDefsFile(cu)) {
 				continue;
 			}
@@ -1176,7 +1174,7 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 			out.close();
 		}
 		for (int i = 0; i < orderedCompilationUnits.size(); i++) {
-			JCCompilationUnit cu = orderedCompilationUnits.get(i);
+			CompilationUnitTree cu = orderedCompilationUnits.get(i);
 			if (cu.packge.fullname.toString().startsWith("def.")) {
 				if (!definitionBundle) {
 					continue;
@@ -1819,6 +1817,9 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 
 	@Override
 	public void close() throws Exception {
-		fileManager.close();
+		if (javaCompilationComponents != null) {
+			javaCompilationComponents.fileManager.close();
+		}
 	}
+
 }

@@ -20,21 +20,23 @@ package org.jsweet.transpiler.model.support;
 
 import javax.lang.model.type.ExecutableType;
 
+import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.ExtendedElementFactory;
 import org.jsweet.transpiler.model.UnaryOperatorElement;
 
-import com.sun.tools.javac.tree.Tree.JCUnary;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.UnaryTree;
 
 /**
  * See {@link UnaryOperatorElement}.
  * 
  * @author Renaud Pawlak
  */
-public class UnaryOperatorElementSupport extends ExtendedElementSupport<JCUnary> implements UnaryOperatorElement {
+public class UnaryOperatorElementSupport extends ExtendedElementSupport<UnaryTree> implements UnaryOperatorElement {
 
-	public UnaryOperatorElementSupport(JCUnary tree) {
-		super(tree);
+	public UnaryOperatorElementSupport(CompilationUnitTree compilationUnit, UnaryTree tree, JSweetContext context) {
+		super(compilationUnit, tree, context);
 	}
 
 	@Override

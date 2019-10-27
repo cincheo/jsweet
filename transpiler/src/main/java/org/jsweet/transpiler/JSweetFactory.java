@@ -8,7 +8,7 @@ import org.jsweet.transpiler.extension.Java2TypeScriptAdapter;
 import org.jsweet.transpiler.extension.PrinterAdapter;
 import org.jsweet.transpiler.extension.RemoveJavaDependenciesAdapter;
 
-import com.sun.tools.javac.tree.Tree.JCCompilationUnit;
+import com.sun.tools.javac.tree.Tree.CompilationUnitTree;
 
 /**
  * The factory object is the one creating instances for key JSweet transpilation
@@ -125,7 +125,7 @@ public class JSweetFactory {
 	 * Creates the core translator or any subclass.
 	 */
 	public Java2TypeScriptTranslator createTranslator(PrinterAdapter adapter, TranspilationHandler transpilationHandler,
-			JSweetContext context, JCCompilationUnit compilationUnit, boolean fillSourceMap) {
+			JSweetContext context, CompilationUnitTree compilationUnit, boolean fillSourceMap) {
 		return new Java2TypeScriptTranslator(adapter, transpilationHandler, context, compilationUnit, fillSourceMap);
 	}
 

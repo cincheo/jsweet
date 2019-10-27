@@ -48,6 +48,8 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -57,36 +59,14 @@ import org.jsweet.transpiler.OverloadScanner.Overload;
 import org.jsweet.transpiler.extension.AnnotationManager;
 import org.jsweet.transpiler.extension.AnnotationManager.Action;
 import org.jsweet.transpiler.model.ExtendedElement;
+import org.jsweet.transpiler.model.support.Util;
 import org.jsweet.transpiler.util.DirectedGraph;
-import org.jsweet.transpiler.util.Util;
 
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
-import com.sun.tools.javac.code.Attribute;
-import com.sun.tools.javac.code.Attribute.Compound;
-import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.code.Symbol.ClassSymbol;
-import com.sun.tools.javac.code.Symbol.MethodSymbol;
-import com.sun.tools.javac.code.Symbol.PackageSymbol;
-import com.sun.tools.javac.code.Symbol.TypeSymbol;
-import com.sun.tools.javac.code.Symbol.VarSymbol;
-import com.sun.tools.javac.code.Symtab;
-import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.code.Types;
-import com.sun.tools.javac.tree.Tree;
-import com.sun.tools.javac.tree.Tree.JCAssign;
-import com.sun.tools.javac.tree.Tree.JCBlock;
-import com.sun.tools.javac.tree.Tree.JCClassDecl;
-import com.sun.tools.javac.tree.Tree.JCCompilationUnit;
-import com.sun.tools.javac.tree.Tree.JCExpressionStatement;
-import com.sun.tools.javac.tree.Tree.JCFieldAccess;
-import com.sun.tools.javac.tree.Tree.JCMethodDecl;
-import com.sun.tools.javac.tree.Tree.JCMethodInvocation;
-import com.sun.tools.javac.tree.Tree.JCNewClass;
-import com.sun.tools.javac.tree.Tree.JCStatement;
-import com.sun.tools.javac.tree.Tree.JCVariableDecl;
-import com.sun.tools.javac.tree.Tree.JCWildcard;
-import com.sun.tools.javac.util.Context;
-import com.sun.tools.javac.util.Names;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.Trees;
 
 /**
  * The transpiler context, which is an extension of the Java compiler context.
@@ -94,7 +74,7 @@ import com.sun.tools.javac.util.Names;
  * @author Renaud Pawlak
  * @author Louis Grignon
  */
-public class JSweetContext extends Context {
+public class JSweetContext {
 
 	protected static Logger logger = Logger.getLogger(Java2TypeScriptTranslator.class);
 
@@ -158,14 +138,14 @@ public class JSweetContext extends Context {
 	protected Set<String> baseThrowables = new HashSet<String>();
 
 	private Map<String, Tree[]> globalMethods = new HashMap<>();
-	private Map<String, JCClassDecl> decoratorAnnotations = new HashMap<>();
+	private Map<String, ClassTree> decoratorAnnotations = new HashMap<>();
 
 	/**
 	 * Registers a global method in the context.
 	 * 
 	 * @see #lookupGlobalMethod(String)
 	 */
-	public void registerGlobalMethod(JCClassDecl owner, JCMethodDecl method) {
+	public void registerGlobalMethod(ClassTree owner, MethodTree method) {
 		String name = method.sym.getEnclosingElement().getQualifiedName().toString();
 		name += "." + method.name;
 		name = name.replace(JSweetConfig.GLOBALS_CLASS_NAME + ".", "");
@@ -180,7 +160,7 @@ public class JSweetContext extends Context {
 	 * @return an array containing the class and method AST objects of any matching
 	 *         method (in theory several methods could match because of overloading
 	 *         but we ignore it here)
-	 * @see #registerGlobalMethod(JCMethodDecl)
+	 * @see #registerGlobalMethod(MethodTree)
 	 */
 	public Tree[] lookupGlobalMethod(String fullyQualifiedName) {
 		return globalMethods.get(fullyQualifiedName);
@@ -189,14 +169,14 @@ public class JSweetContext extends Context {
 	/**
 	 * Registers a decorator annotation in the context.
 	 */
-	public void registerDecoratorAnnotation(JCClassDecl annotationDeclaration) {
+	public void registerDecoratorAnnotation(ClassTree annotationDeclaration) {
 		decoratorAnnotations.put(annotationDeclaration.sym.getQualifiedName().toString(), annotationDeclaration);
 	}
 
 	/**
 	 * Registers a decorator annotation in the context.
 	 */
-	public JCClassDecl lookupDecoratorAnnotation(String fullyQualifiedName) {
+	public ClassTree lookupDecoratorAnnotation(String fullyQualifiedName) {
 		return decoratorAnnotations.get(fullyQualifiedName);
 	}
 
@@ -652,23 +632,28 @@ public class JSweetContext extends Context {
 	 */
 	public Set<ClassSymbol> classesWithWrongConstructorOverload = new HashSet<>();
 
-	/**
-	 * The Java compiler symbol table for fast access.
-	 */
-	public Symtab symtab;
-
-	/**
-	 * The Java compiler names for fast access.
-	 */
-	public Names names;
 
 	/**
 	 * The Java compiler types for fast access.
 	 */
 	public Types types;
 
-	public javax.lang.model.util.Types modelTypes;
+	/**
+	 * The Java compiler trees for fast access.
+	 */
+	public Trees trees;
+	
+	/**
+	 * The Java compiler trees for fast access.
+	 */
+	public Elements elements;
+	
 
+	/**
+	 * Gets the util API, which provides a set of utilities.
+	 */
+	public Util util = new Util(this);
+	
 	/**
 	 * A flag to tell if the transpiler is in module mode or not.
 	 */
@@ -843,7 +828,7 @@ public class JSweetContext extends Context {
 	/**
 	 * Adds an exported element for a module.
 	 */
-	public void addExportedElement(String moduleName, Symbol exportedElement, JCCompilationUnit compilationUnit) {
+	public void addExportedElement(String moduleName, Symbol exportedElement, CompilationUnitTree compilationUnit) {
 		List<Symbol> exportedNamesForModule = exportedElements.get(moduleName);
 		if (exportedNamesForModule == null) {
 			exportedNamesForModule = new ArrayList<Symbol>();
@@ -1005,21 +990,21 @@ public class JSweetContext extends Context {
 		return b.toString();
 	}
 
-	private Map<TypeSymbol, Set<Entry<JCClassDecl, JCMethodDecl>>> defaultMethods = new HashMap<>();
-	private Map<JCMethodDecl, JCCompilationUnit> defaultMethodsCompilationUnits = new HashMap<>();
+	private Map<TypeSymbol, Set<Entry<ClassTree, MethodTree>>> defaultMethods = new HashMap<>();
+	private Map<MethodTree, CompilationUnitTree> defaultMethodsCompilationUnits = new HashMap<>();
 
 	/**
 	 * Gets the default methods declared in the given type.
 	 */
-	public Set<Entry<JCClassDecl, JCMethodDecl>> getDefaultMethods(TypeSymbol type) {
+	public Set<Entry<ClassTree, MethodTree>> getDefaultMethods(TypeSymbol type) {
 		return defaultMethods.get(type);
 	}
 
 	/**
 	 * Stores a default method AST for the given type.
 	 */
-	public void addDefaultMethod(JCCompilationUnit compilationUnit, JCClassDecl type, JCMethodDecl defaultMethod) {
-		Set<Entry<JCClassDecl, JCMethodDecl>> methods = defaultMethods.get(type.sym);
+	public void addDefaultMethod(CompilationUnitTree compilationUnit, ClassTree type, MethodTree defaultMethod) {
+		Set<Entry<ClassTree, MethodTree>> methods = defaultMethods.get(type.sym);
 		if (methods == null) {
 			methods = new HashSet<>();
 			defaultMethods.put(type.sym, methods);
@@ -1031,7 +1016,7 @@ public class JSweetContext extends Context {
 	/**
 	 * Gets the compilation unit the given default method belongs to.
 	 */
-	public JCCompilationUnit getDefaultMethodCompilationUnit(JCMethodDecl defaultMethod) {
+	public CompilationUnitTree getDefaultMethodCompilationUnit(MethodTree defaultMethod) {
 		return defaultMethodsCompilationUnits.get(defaultMethod);
 	}
 
@@ -1608,8 +1593,8 @@ public class JSweetContext extends Context {
 					// no variables in maps
 					return true;
 				}
-				if (def instanceof JCMethodDecl && !(((JCMethodDecl) def).sym.isConstructor()
-						&& ((JCMethodDecl) def).sym.getParameters().isEmpty())) {
+				if (def instanceof MethodTree && !(((MethodTree) def).sym.isConstructor()
+						&& ((MethodTree) def).sym.getParameters().isEmpty())) {
 					// no regular methods or non-empty constructors in maps
 					return true;
 				}
@@ -1759,7 +1744,7 @@ public class JSweetContext extends Context {
 	/**
 	 * Returns true if this class declaration is not to be output by the transpiler.
 	 */
-	public boolean isIgnored(JCClassDecl classdecl) {
+	public boolean isIgnored(ClassTree classdecl) {
 		if (hasAnnotationType(classdecl.type.tsym, JSweetConfig.ANNOTATION_OBJECT_TYPE)) {
 			// object types are ignored
 			return true;

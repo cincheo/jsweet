@@ -31,6 +31,7 @@ import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.util.AbstractTreeScanner;
 import org.jsweet.transpiler.util.Util;
 
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
@@ -38,10 +39,10 @@ import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.Tree;
 import com.sun.tools.javac.tree.Tree.JCBlock;
-import com.sun.tools.javac.tree.Tree.JCClassDecl;
-import com.sun.tools.javac.tree.Tree.JCCompilationUnit;
+import com.sun.tools.javac.tree.Tree.ClassTree;
+import com.sun.tools.javac.tree.Tree.CompilationUnitTree;
 import com.sun.tools.javac.tree.Tree.JCLiteral;
-import com.sun.tools.javac.tree.Tree.JCMethodDecl;
+import com.sun.tools.javac.tree.Tree.MethodTree;
 import com.sun.tools.javac.tree.Tree.JCVariableDecl;
 import com.sun.tools.javac.tree.Tree.JCWildcard;
 
@@ -64,7 +65,7 @@ public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {
 	}
 
 	@Override
-	public void visitTopLevel(JCCompilationUnit topLevel) {
+	public void visitTopLevel(CompilationUnitTree topLevel) {
 		if (topLevel.packge.getQualifiedName().toString().startsWith(JSweetConfig.LIBS_PACKAGE + ".")) {
 			return;
 		}
@@ -73,7 +74,7 @@ public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {
 	}
 
 	@Override
-	public void visitClassDef(JCClassDecl classdecl) {
+	public void visitClassDef(ClassTree classdecl) {
 		if (getCompilationUnit().docComments.hasComment(classdecl)) {
 			context.docComments.put(classdecl.sym, getCompilationUnit().docComments.getCommentText(classdecl));
 		}
@@ -145,9 +146,9 @@ public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {
 					context.countStaticInitializer(classdecl.sym);
 				}
 			}
-			if (globals && def instanceof JCMethodDecl) {
-				if (((JCMethodDecl) def).sym.isStatic()) {
-					context.registerGlobalMethod(classdecl, (JCMethodDecl) def);
+			if (globals && def instanceof MethodTree) {
+				if (((MethodTree) def).sym.isStatic()) {
+					context.registerGlobalMethod(classdecl, (MethodTree) def);
 				}
 			}
 		}
@@ -155,13 +156,13 @@ public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {
 	}
 
 	@Override
-	public void visitMethodDef(JCMethodDecl methodDecl) {
+	public void visitMethodDef(MethodTree methodDecl) {
 		if (getCompilationUnit().docComments.hasComment(methodDecl)) {
 			context.docComments.put(methodDecl.sym, getCompilationUnit().docComments.getCommentText(methodDecl));
 		}
 
 		if (methodDecl.mods.getFlags().contains(Modifier.DEFAULT)) {
-			getContext().addDefaultMethod(compilationUnit, getParent(JCClassDecl.class), methodDecl);
+			getContext().addDefaultMethod(compilationUnit, getParent(ClassTree.class), methodDecl);
 		}
 		if (!getContext().ignoreWildcardBounds) {
 			scan(methodDecl.params);
@@ -171,7 +172,7 @@ public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {
 	@Override
 	public void visitWildcard(JCWildcard wildcard) {
 		Symbol container = null;
-		JCMethodDecl method = getParent(JCMethodDecl.class);
+		MethodTree method = getParent(MethodTree.class);
 		if (method != null) {
 			container = method.sym;
 		}
@@ -181,8 +182,8 @@ public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {
 		}
 	}
 
-	public void process(List<JCCompilationUnit> compilationUnits) {
-		for (JCCompilationUnit compilationUnit : compilationUnits) {
+	public void process(List<CompilationUnitTree> compilationUnits) {
+		for (CompilationUnitTree compilationUnit : compilationUnits) {
 			scan(compilationUnit);
 		}
 		for (JCVariableDecl var : lazyInitializedStaticCandidates) {

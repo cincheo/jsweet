@@ -20,19 +20,21 @@ package org.jsweet.transpiler.model.support;
 
 import javax.lang.model.element.TypeElement;
 
+import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.ImportElement;
 
-import com.sun.tools.javac.tree.Tree.JCImport;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ImportTree;
 
 /**
  * See {@link ImportElement}.
  * 
  * @author Renaud Pawlak
  */
-public class ImportElementSupport extends ExtendedElementSupport<JCImport> implements ImportElement {
+public class ImportElementSupport extends ExtendedElementSupport<ImportTree> implements ImportElement {
 
-	public ImportElementSupport(JCImport tree) {
-		super(tree);
+	public ImportElementSupport(CompilationUnitTree compilationUnit, ImportTree tree, JSweetContext context) {
+		super(compilationUnit, tree, context);
 	}
 
 	@Override

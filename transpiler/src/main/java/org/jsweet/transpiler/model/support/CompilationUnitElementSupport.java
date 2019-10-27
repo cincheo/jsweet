@@ -20,19 +20,20 @@ package org.jsweet.transpiler.model.support;
 
 import javax.lang.model.element.PackageElement;
 
+import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.CompilationUnitElement;
 
-import com.sun.tools.javac.tree.Tree.JCCompilationUnit;
+import com.sun.source.tree.CompilationUnitTree;
 
 /**
  * See {@link CompilationUnitElement}.
  * 
  * @author Renaud Pawlak
  */
-public class CompilationUnitElementSupport extends ExtendedElementSupport<JCCompilationUnit> implements CompilationUnitElement {
+public class CompilationUnitElementSupport extends ExtendedElementSupport<CompilationUnitTree> implements CompilationUnitElement {
 
-	public CompilationUnitElementSupport(JCCompilationUnit tree) {
-		super(tree);
+	public CompilationUnitElementSupport(CompilationUnitTree compilationUnit, JSweetContext context) {
+		super(compilationUnit, compilationUnit, context);
 	}
 
 	@Override

@@ -20,26 +20,28 @@ package org.jsweet.transpiler.model.support;
 
 import javax.lang.model.type.ExecutableType;
 
+import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.BinaryOperatorElement;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.ExtendedElementFactory;
 
-import com.sun.tools.javac.tree.Tree.JCBinary;
+import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.CompilationUnitTree;
 
 /**
  * See {@link BinaryOperatorElement}.
  * 
  * @author Renaud Pawlak
  */
-public class BinaryOperatorElementSupport extends ExtendedElementSupport<JCBinary> implements BinaryOperatorElement {
+public class BinaryOperatorElementSupport extends ExtendedElementSupport<BinaryTree> implements BinaryOperatorElement {
 
-	public BinaryOperatorElementSupport(JCBinary tree) {
-		super(tree);
+	public BinaryOperatorElementSupport(CompilationUnitTree compilationUnit, BinaryTree tree, JSweetContext context) {
+		super(compilationUnit, tree, context);
 	}
 
 	@Override
 	public String getOperator() {
-		return tree.operator.getSimpleName().toString();
+		return util().toOperator(getTree().getKind());
 	}
 
 	@Override

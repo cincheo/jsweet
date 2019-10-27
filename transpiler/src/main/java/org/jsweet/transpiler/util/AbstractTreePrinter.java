@@ -33,9 +33,9 @@ import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.MethodType;
 import com.sun.tools.javac.tree.Tree;
 import com.sun.tools.javac.tree.Tree.JCBlock;
-import com.sun.tools.javac.tree.Tree.JCCompilationUnit;
+import com.sun.tools.javac.tree.Tree.CompilationUnitTree;
 import com.sun.tools.javac.tree.Tree.JCExpression;
-import com.sun.tools.javac.tree.Tree.JCMethodDecl;
+import com.sun.tools.javac.tree.Tree.MethodTree;
 import com.sun.tools.javac.tree.Tree.JCMethodInvocation;
 import com.sun.tools.javac.tree.Tree.JCNewClass;
 import com.sun.tools.javac.tree.Tree.JCStatement;
@@ -103,7 +103,7 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	 *            tells if printer fills the source map
 	 */
 	public AbstractTreePrinter(TranspilationHandler logHandler, JSweetContext context,
-			JCCompilationUnit compilationUnit, PrinterAdapter adapter, boolean fillSourceMap) {
+			CompilationUnitTree compilationUnit, PrinterAdapter adapter, boolean fillSourceMap) {
 		super(logHandler, context, compilationUnit);
 		this.typeChecker = new TypeChecker(this);
 		this.adapter = adapter;
@@ -148,7 +148,7 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	}
 
 	private boolean inSourceMap(Tree tree) {
-		return (tree instanceof JCExpression || tree instanceof JCStatement || tree instanceof JCMethodDecl);
+		return (tree instanceof JCExpression || tree instanceof JCStatement || tree instanceof MethodTree);
 	}
 
 	@Override
@@ -483,7 +483,7 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	/**
 	 * Gets the current compilation unit.
 	 */
-	public JCCompilationUnit getCompilationUnit() {
+	public CompilationUnitTree getCompilationUnit() {
 		return compilationUnit;
 	}
 

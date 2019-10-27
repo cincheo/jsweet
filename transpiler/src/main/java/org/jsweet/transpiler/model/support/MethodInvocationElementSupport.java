@@ -23,24 +23,26 @@ import java.util.stream.Collectors;
 
 import javax.lang.model.element.ExecutableElement;
 
+import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.ExtendedElementFactory;
 import org.jsweet.transpiler.model.MethodInvocationElement;
 
-import com.sun.tools.javac.tree.Tree;
-import com.sun.tools.javac.tree.Tree.JCFieldAccess;
-import com.sun.tools.javac.tree.Tree.JCIdent;
-import com.sun.tools.javac.tree.Tree.JCMethodInvocation;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.Tree;
+import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
+import com.sun.tools.javac.tree.JCTree.JCIdent;
 
 /**
  * See {@link MethodInvocationElement}.
  * 
  * @author Renaud Pawlak
  */
-public class MethodInvocationElementSupport extends ExtendedElementSupport<JCMethodInvocation> implements MethodInvocationElement {
+public class MethodInvocationElementSupport extends ExtendedElementSupport<MethodInvocationTree> implements MethodInvocationElement {
 
-	public MethodInvocationElementSupport(JCMethodInvocation tree) {
-		super(tree);
+	public MethodInvocationElementSupport(CompilationUnitTree compilationUnit, MethodInvocationTree tree, JSweetContext context) {
+		super(compilationUnit, tree, context);
 	}
 
 	public List<ExtendedElement> getArguments() {

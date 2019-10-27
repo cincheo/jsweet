@@ -36,8 +36,8 @@ import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.Tree;
 import com.sun.tools.javac.tree.Tree.JCBlock;
-import com.sun.tools.javac.tree.Tree.JCClassDecl;
-import com.sun.tools.javac.tree.Tree.JCCompilationUnit;
+import com.sun.tools.javac.tree.Tree.ClassTree;
+import com.sun.tools.javac.tree.Tree.CompilationUnitTree;
 import com.sun.tools.javac.tree.Tree.JCImport;
 import com.sun.tools.javac.tree.Tree.JCVariableDecl;
 import com.sun.tools.javac.tree.TreeScanner;
@@ -51,25 +51,25 @@ import com.sun.tools.javac.tree.TreeScanner;
 public class StaticInitilializerAnalyzer extends TreeScanner {
 
 	private JSweetContext context;
-	private JCCompilationUnit currentTopLevel;
+	private CompilationUnitTree currentTopLevel;
 	private int pass = 1;
 	private static final Logger logger = Logger.getLogger(StaticInitilializerAnalyzer.class);
 	/**
 	 * A map containing the static initializers dependencies for each package
 	 * when using modules (empty otherwise).
 	 */
-	public Map<PackageSymbol, DirectedGraph<JCCompilationUnit>> staticInitializersDependencies = new HashMap<>();
+	public Map<PackageSymbol, DirectedGraph<CompilationUnitTree>> staticInitializersDependencies = new HashMap<>();
 
 	/**
 	 * A map containing the static initializers dependencies when not using
 	 * modules (empty otherwise).
 	 */
-	public DirectedGraph<JCCompilationUnit> globalStaticInitializersDependencies = new DirectedGraph<>();
+	public DirectedGraph<CompilationUnitTree> globalStaticInitializersDependencies = new DirectedGraph<>();
 
 	/**
 	 * Maps the types to the compilation units in which they are declared.
 	 */
-	public Map<TypeSymbol, JCCompilationUnit> typesToCompilationUnits = new HashMap<>();
+	public Map<TypeSymbol, CompilationUnitTree> typesToCompilationUnits = new HashMap<>();
 
 	/**
 	 * Creates the analyzer.
@@ -78,9 +78,9 @@ public class StaticInitilializerAnalyzer extends TreeScanner {
 		this.context = context;
 	}
 
-	private DirectedGraph<JCCompilationUnit> getGraph() {
+	private DirectedGraph<CompilationUnitTree> getGraph() {
 		if (context.useModules) {
-			DirectedGraph<JCCompilationUnit> graph = staticInitializersDependencies.get(currentTopLevel.packge);
+			DirectedGraph<CompilationUnitTree> graph = staticInitializersDependencies.get(currentTopLevel.packge);
 			if (graph == null) {
 				graph = new DirectedGraph<>();
 				staticInitializersDependencies.put(currentTopLevel.packge, graph);
@@ -94,7 +94,7 @@ public class StaticInitilializerAnalyzer extends TreeScanner {
 	Set<Type> currentTopLevelImportedTypes = new HashSet<>();
 
 	@Override
-	public void visitTopLevel(JCCompilationUnit compilationUnit) {
+	public void visitTopLevel(CompilationUnitTree compilationUnit) {
 		currentTopLevel = compilationUnit;
 		if (pass == 1) {
 			getGraph().add(compilationUnit);
@@ -110,7 +110,7 @@ public class StaticInitilializerAnalyzer extends TreeScanner {
 				}
 				// TypeSymbol type = Util.getImportedType(i);
 				// if (type != null) {
-				// JCCompilationUnit target = typesToCompilationUnits.get(type);
+				// CompilationUnitTree target = typesToCompilationUnits.get(type);
 				// if (target != null && getGraph().contains(target)) {
 				// logger.debug("adding import dependency: " +
 				// currentTopLevel.getSourceFile() + " -> " +
@@ -126,12 +126,12 @@ public class StaticInitilializerAnalyzer extends TreeScanner {
 	}
 
 	@Override
-	public void visitClassDef(JCClassDecl classdecl) {
+	public void visitClassDef(ClassTree classdecl) {
 		if (pass == 1) {
 			typesToCompilationUnits.put(classdecl.sym, currentTopLevel);
 		} else {
 			if (classdecl.extending != null) {
-				JCCompilationUnit target = typesToCompilationUnits.get(classdecl.extending.type.tsym);
+				CompilationUnitTree target = typesToCompilationUnits.get(classdecl.extending.type.tsym);
 				if (target != null && getGraph().contains(target)) {
 					logger.debug("adding inheritance dependency: " + currentTopLevel.getSourceFile() + " -> "
 							+ target.getSourceFile());
@@ -163,7 +163,7 @@ public class StaticInitilializerAnalyzer extends TreeScanner {
 		refGrabber.scan(tree);
 		for (TypeSymbol type : refGrabber.referencedTypes) {
 			if (!context.useModules || currentTopLevel.packge.equals(type.packge())) {
-				JCCompilationUnit target = typesToCompilationUnits.get(type);
+				CompilationUnitTree target = typesToCompilationUnits.get(type);
 				if (target != null && !currentTopLevel.equals(target) && getGraph().contains(target)) {
 					logger.debug("adding static initializer dependency: " + currentTopLevel.getSourceFile() + " -> "
 							+ target.getSourceFile());
@@ -180,7 +180,7 @@ public class StaticInitilializerAnalyzer extends TreeScanner {
 	// }
 	// if (!Util.isInterface(newClass.type.tsym) &&
 	// currentTopLevelImportedTypes.contains(newClass.type)) {
-	// JCCompilationUnit target =
+	// CompilationUnitTree target =
 	// typesToCompilationUnits.get(newClass.type.tsym);
 	// if (target != null && !currentTopLevel.equals(target) &&
 	// getGraph().contains(target)) {
@@ -203,12 +203,12 @@ public class StaticInitilializerAnalyzer extends TreeScanner {
 	/**
 	 * Processes all the given compilation units.
 	 */
-	public void process(Collection<JCCompilationUnit> compilationUnits) {
-		for (JCCompilationUnit cu : compilationUnits) {
+	public void process(Collection<CompilationUnitTree> compilationUnits) {
+		for (CompilationUnitTree cu : compilationUnits) {
 			scan(cu);
 		}
 		pass++;
-		for (JCCompilationUnit cu : compilationUnits) {
+		for (CompilationUnitTree cu : compilationUnits) {
 			scan(cu);
 		}
 	}

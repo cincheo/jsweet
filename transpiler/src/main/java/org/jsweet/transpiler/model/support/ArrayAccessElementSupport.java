@@ -18,31 +18,32 @@
  */
 package org.jsweet.transpiler.model.support;
 
+import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.ArrayAccessElement;
 import org.jsweet.transpiler.model.ExtendedElement;
-import org.jsweet.transpiler.model.ExtendedElementFactory;
 
-import com.sun.tools.javac.tree.Tree.JCArrayAccess;
+import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.CompilationUnitTree;
 
 /**
  * See {@link ArrayAccessElement}.
  * 
  * @author Renaud Pawlak
  */
-public class ArrayAccessElementSupport extends ExtendedElementSupport<JCArrayAccess> implements ArrayAccessElement {
+public class ArrayAccessElementSupport extends ExtendedElementSupport<ArrayAccessTree> implements ArrayAccessElement {
 
-	public ArrayAccessElementSupport(JCArrayAccess tree) {
-		super(tree);
+	public ArrayAccessElementSupport(CompilationUnitTree compilationUnit, ArrayAccessTree tree, JSweetContext context) {
+		super(compilationUnit, tree, context);
 	}
 
 	@Override
 	public ExtendedElement getTarget() {
-		return ExtendedElementFactory.INSTANCE.create(getTree().indexed);
+		return createElement(getTree().getExpression());
 	}
 
 	@Override
 	public ExtendedElement getIndex() {
-		return ExtendedElementFactory.INSTANCE.create(getTree().index);
+		return createElement(getTree().getIndex());
 	}
-	
+
 }

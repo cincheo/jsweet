@@ -38,9 +38,9 @@ import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.TypeVar;
 import com.sun.tools.javac.parser.Tokens.Comment;
 import com.sun.tools.javac.tree.Tree;
-import com.sun.tools.javac.tree.Tree.JCClassDecl;
-import com.sun.tools.javac.tree.Tree.JCCompilationUnit;
-import com.sun.tools.javac.tree.Tree.JCMethodDecl;
+import com.sun.tools.javac.tree.Tree.ClassTree;
+import com.sun.tools.javac.tree.Tree.CompilationUnitTree;
+import com.sun.tools.javac.tree.Tree.MethodTree;
 import com.sun.tools.javac.tree.Tree.JCTypeApply;
 import com.sun.tools.javac.tree.Tree.JCVariableDecl;
 
@@ -173,17 +173,17 @@ public class JSDoc {
 	 *            the comment text if any (null when no comment)
 	 * @return the adapted comment (null will remove the JavaDoc comment)
 	 */
-	public static String adaptDocComment(JSweetContext context, JCCompilationUnit compilationUnit, Tree element,
+	public static String adaptDocComment(JSweetContext context, CompilationUnitTree compilationUnit, Tree element,
 			String commentText) {
-		if (element instanceof JCClassDecl) {
-			JCMethodDecl mainConstructor = null;
-			for (Tree member : ((JCClassDecl) element).defs) {
-				if (member instanceof JCMethodDecl) {
-					if (((JCMethodDecl) member).sym.isConstructor()
-							&& ((JCMethodDecl) member).getModifiers().getFlags().contains(Modifier.PUBLIC)) {
-						if (mainConstructor == null || mainConstructor.getParameters().size() < ((JCMethodDecl) member)
+		if (element instanceof ClassTree) {
+			MethodTree mainConstructor = null;
+			for (Tree member : ((ClassTree) element).defs) {
+				if (member instanceof MethodTree) {
+					if (((MethodTree) member).sym.isConstructor()
+							&& ((MethodTree) member).getModifiers().getFlags().contains(Modifier.PUBLIC)) {
+						if (mainConstructor == null || mainConstructor.getParameters().size() < ((MethodTree) member)
 								.getParameters().size()) {
-							mainConstructor = ((JCMethodDecl) member);
+							mainConstructor = ((MethodTree) member);
 						}
 					}
 				}
@@ -210,7 +210,7 @@ public class JSDoc {
 					commentText = replaceLinks(context, commentText);
 					List<String> commentLines = new ArrayList<>(Arrays.asList(commentText.split("\n")));
 					applyForMethod(context, mainConstructor, commentLines);
-					JCClassDecl clazz = (JCClassDecl) element;
+					ClassTree clazz = (ClassTree) element;
 					if (clazz.sym.isEnum()) {
 						commentLines.add(" @enum");
 					}
@@ -227,11 +227,11 @@ public class JSDoc {
 		}
 		List<String> commentLines = null;
 		if (commentText == null) {
-			if (element instanceof JCMethodDecl
-					&& context.hasAnnotationType(((JCMethodDecl) element).sym, Override.class.getName())) {
+			if (element instanceof MethodTree
+					&& context.hasAnnotationType(((MethodTree) element).sym, Override.class.getName())) {
 				commentText = "";
 				commentLines = new ArrayList<>();
-				applyForMethod(context, (JCMethodDecl) element, commentLines);
+				applyForMethod(context, (MethodTree) element, commentLines);
 			}
 		}
 		if (commentText == null) {
@@ -239,16 +239,16 @@ public class JSDoc {
 		}
 		commentText = replaceLinks(context, commentText);
 		commentLines = new ArrayList<>(Arrays.asList(commentText.split("\n")));
-		if (element instanceof JCMethodDecl) {
-			JCMethodDecl method = (JCMethodDecl) element;
+		if (element instanceof MethodTree) {
+			MethodTree method = (MethodTree) element;
 			if (!method.sym.isConstructor()) {
 				applyForMethod(context, method, commentLines);
 			} else {
 				// erase constructor comments because jsDoc uses class comments
 				return null;
 			}
-		} else if (element instanceof JCClassDecl) {
-			JCClassDecl clazz = (JCClassDecl) element;
+		} else if (element instanceof ClassTree) {
+			ClassTree clazz = (ClassTree) element;
 			if (clazz.sym.isEnum()) {
 				commentLines.add(" @enum");
 				for(Tree def : clazz.defs) {
@@ -279,7 +279,7 @@ public class JSDoc {
 		return String.join("\n", commentLines);
 	}
 
-	private static void applyForMethod(JSweetContext context, JCMethodDecl method, List<String> commentLines) {
+	private static void applyForMethod(JSweetContext context, MethodTree method, List<String> commentLines) {
 		Set<String> params = new HashSet<>();
 		boolean hasReturn = false;
 		for (int i = 0; i < commentLines.size(); i++) {

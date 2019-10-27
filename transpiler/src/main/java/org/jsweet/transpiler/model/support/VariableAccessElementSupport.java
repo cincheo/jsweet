@@ -21,23 +21,25 @@ package org.jsweet.transpiler.model.support;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
 
+import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.ExtendedElementFactory;
 import org.jsweet.transpiler.model.VariableAccessElement;
 
-import com.sun.tools.javac.tree.Tree;
-import com.sun.tools.javac.tree.Tree.JCFieldAccess;
-import com.sun.tools.javac.tree.Tree.JCIdent;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.VariableTree;
+import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
+import com.sun.tools.javac.tree.JCTree.JCIdent;
 
 /**
  * See {@link VariableAccessElement}.
  * 
  * @author Renaud Pawlak
  */
-public class VariableAccessElementSupport extends ExtendedElementSupport<Tree> implements VariableAccessElement {
+public class VariableAccessElementSupport extends ExtendedElementSupport<VariableTree> implements VariableAccessElement {
 
-	public VariableAccessElementSupport(Tree tree) {
-		super(tree);
+	public VariableAccessElementSupport(CompilationUnitTree compilationUnit, VariableTree tree, JSweetContext context) {
+		super(compilationUnit, tree, context);
 	}
 
 	public ExtendedElement getTargetExpression() {

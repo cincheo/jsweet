@@ -59,7 +59,7 @@ import org.jsweet.transpiler.model.Util;
 import org.jsweet.transpiler.model.VariableAccessElement;
 import org.jsweet.transpiler.model.support.ExtendedElementSupport;
 import org.jsweet.transpiler.model.support.MethodInvocationElementSupport;
-import org.jsweet.transpiler.model.support.UtilSupport;
+import org.jsweet.transpiler.model.support.Util;
 import org.jsweet.transpiler.util.AbstractTreePrinter;
 
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
@@ -964,16 +964,11 @@ public class PrinterAdapter {
 		return types;
 	}
 
-	private Util util;
-
 	/**
 	 * Gets the util API, which provides a set of utilities.
 	 */
 	public Util util() {
-		if (util == null) {
-			util = new UtilSupport(context);
-		}
-		return util;
+		return context.util;
 	}
 
 	/**

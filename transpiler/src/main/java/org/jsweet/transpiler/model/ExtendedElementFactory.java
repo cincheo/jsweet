@@ -20,6 +20,7 @@ package org.jsweet.transpiler.model;
 
 import javax.lang.model.element.VariableElement;
 
+import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.support.ArrayAccessElementSupport;
 import org.jsweet.transpiler.model.support.AssignmentElementSupport;
 import org.jsweet.transpiler.model.support.BinaryOperatorElementSupport;
@@ -36,21 +37,10 @@ import org.jsweet.transpiler.model.support.NewClassElementSupport;
 import org.jsweet.transpiler.model.support.UnaryOperatorElementSupport;
 import org.jsweet.transpiler.model.support.VariableAccessElementSupport;
 
-import com.sun.tools.javac.tree.Tree;
-import com.sun.tools.javac.tree.Tree.JCArrayAccess;
-import com.sun.tools.javac.tree.Tree.JCAssign;
-import com.sun.tools.javac.tree.Tree.JCBinary;
-import com.sun.tools.javac.tree.Tree.JCCase;
-import com.sun.tools.javac.tree.Tree.JCCompilationUnit;
-import com.sun.tools.javac.tree.Tree.JCEnhancedForLoop;
-import com.sun.tools.javac.tree.Tree.JCFieldAccess;
-import com.sun.tools.javac.tree.Tree.JCIdent;
-import com.sun.tools.javac.tree.Tree.JCImport;
-import com.sun.tools.javac.tree.Tree.JCLiteral;
-import com.sun.tools.javac.tree.Tree.JCMethodInvocation;
-import com.sun.tools.javac.tree.Tree.JCNewArray;
-import com.sun.tools.javac.tree.Tree.JCNewClass;
-import com.sun.tools.javac.tree.Tree.JCUnary;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.UnaryTree;
 
 /**
  * A factory to create extended elements. It defines an overloaded create method
@@ -86,43 +76,43 @@ public class ExtendedElementFactory {
 	 * element can be mapped back to a javac tree using the
 	 * {@link #toTree(ExtendedElement)} method.
 	 */
-	public ExtendedElement create(Tree tree) {
+	public ExtendedElement create(CompilationUnitTree compilationUnit, Tree tree, JSweetContext context) {
 		if (tree == null) {
 			return null;
 		}
-		switch (tree.getTag()) {
-		case APPLY:
-			return new MethodInvocationElementSupport((JCMethodInvocation) tree);
-		case SELECT:
+		switch (tree.getKind()) {
+		case METHOD_INVOCATION:
+			return new MethodInvocationElementSupport(compilationUnit, (MethodInvocationTree) tree, context);
+		case MEMBER_SELECT:
 			if (((JCFieldAccess) tree).sym instanceof VariableElement) {
-				return new VariableAccessElementSupport(tree);
+				return new VariableAccessElementSupport(compilationUnit, tree, context);
 			} else {
-				return new ExtendedElementSupport<>(tree);
+				return new ExtendedElementSupport<>(compilationUnit, tree, context);
 			}
-		case NEWCLASS:
-			return new NewClassElementSupport((JCNewClass) tree);
+		case NEW_CLASS:
+			return new NewClassElementSupport(compilationUnit, (JCNewClass) tree, context);
 		case IDENT:
 			if (((JCIdent) tree).sym instanceof VariableElement) {
-				return new VariableAccessElementSupport(tree);
+				return new VariableAccessElementSupport(compilationUnit, tree, context);
 			} else {
-				return new IdentifierElementSupport((JCIdent) tree);
+				return new IdentifierElementSupport(compilationUnit, (JCIdent) tree, context);
 			}
 		case LITERAL:
-			return new LiteralElementSupport((JCLiteral) tree);
+			return new LiteralElementSupport(compilationUnit, (JCLiteral) tree, context);
 		case CASE:
-			return new CaseElementSupport((JCCase) tree);
+			return new CaseElementSupport(compilationUnit, (JCCase) tree, context);
 		case NEWARRAY:
-			return new NewArrayElementSupport((JCNewArray) tree);
-		case INDEXED:
-			return new ArrayAccessElementSupport((JCArrayAccess) tree);
+			return new NewArrayElementSupport(compilationUnit, (JCNewArray) tree, context);
+		case ARRAY_ACCESS:
+			return new ArrayAccessElementSupport(compilationUnit,  (ArrayAccessTree) tree, context);
 		case FOREACHLOOP:
-			return new ForeachLoopElementSupport((JCEnhancedForLoop) tree);
+			return new ForeachLoopElementSupport(compilationUnit, (JCEnhancedForLoop) tree, context);
 		case ASSIGN:
-			return new AssignmentElementSupport((JCAssign) tree);
+			return new AssignmentElementSupport(compilationUnit, (JCAssign) tree, context);
 		case IMPORT:
-			return new ImportElementSupport((JCImport) tree);
+			return new ImportElementSupport(compilationUnit, (JCImport) tree, context);
 		case TOPLEVEL:
-			return new CompilationUnitElementSupport((JCCompilationUnit) tree);
+			return new CompilationUnitElementSupport(compilationUnit, (CompilationUnitTree) tree, context);
 		case AND:
 		case OR:
 		case BITAND:
@@ -138,7 +128,7 @@ public class ExtendedElementFactory {
 		case MUL:
 		case NE:
 		case PLUS:
-			return new BinaryOperatorElementSupport((JCBinary) tree);
+			return new BinaryOperatorElementSupport(compilationUnit, (JCBinary) tree, context);
 		case NEG:
 		case NOT:
 		case POS:
@@ -146,7 +136,7 @@ public class ExtendedElementFactory {
 		case PREINC:
 		case POSTDEC:
 		case POSTINC:
-			return new UnaryOperatorElementSupport((JCUnary) tree);
+			return new UnaryOperatorElementSupport(compilationUnit, (UnaryTree) tree, context);
 		default:
 			return new ExtendedElementSupport<>(tree);
 		}

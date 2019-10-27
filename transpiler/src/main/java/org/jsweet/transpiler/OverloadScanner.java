@@ -31,22 +31,7 @@ import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.util.AbstractTreeScanner;
 import org.jsweet.transpiler.util.Util;
 
-import com.sun.tools.javac.code.Symbol.ClassSymbol;
-import com.sun.tools.javac.code.Symbol.MethodSymbol;
-import com.sun.tools.javac.code.Symbol.TypeSymbol;
-import com.sun.tools.javac.code.Symtab;
-import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.code.Types;
-import com.sun.tools.javac.tree.Tree;
-import com.sun.tools.javac.tree.Tree.JCClassDecl;
-import com.sun.tools.javac.tree.Tree.JCCompilationUnit;
-import com.sun.tools.javac.tree.Tree.JCExpression;
-import com.sun.tools.javac.tree.Tree.JCExpressionStatement;
-import com.sun.tools.javac.tree.Tree.JCIdent;
-import com.sun.tools.javac.tree.Tree.JCMethodDecl;
-import com.sun.tools.javac.tree.Tree.JCMethodInvocation;
-import com.sun.tools.javac.tree.Tree.JCReturn;
-import com.sun.tools.javac.tree.Tree.JCStatement;
+import com.sun.source.tree.CompilationUnitTree;
 
 /**
  * This AST scanner detects method overloads and gather them into
@@ -64,7 +49,6 @@ import com.sun.tools.javac.tree.Tree.JCStatement;
  */
 public class OverloadScanner extends AbstractTreeScanner {
 
-	private Types types;
 	private int pass = 1;
 
 	/**
@@ -80,7 +64,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 		/**
 		 * The methods carrying the same name.
 		 */
-		public List<JCMethodDecl> methods = new ArrayList<>();
+		public List<MethodTree> methods = new ArrayList<>();
 		/**
 		 * Tells if this overload is valid wrt to JSweet conventions.
 		 */
@@ -89,7 +73,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 		 * The core method of the overload, that is to say the one holding the
 		 * implementation.
 		 */
-		public JCMethodDecl coreMethod;
+		public MethodTree coreMethod;
 		/**
 		 * The default values for the parameters of the core method.
 		 */
@@ -107,7 +91,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 			StringBuilder sb = new StringBuilder(
 					"overload(" + methodName + ")[" + methods.size() + "," + isValid + "]");
 			if (methods.size() > 1) {
-				for (JCMethodDecl method : methods) {
+				for (MethodTree method : methods) {
 					sb.append("\n      # " + method.sym.getEnclosingElement() + "." + method.sym);
 				}
 			}
@@ -198,7 +182,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 			coreMethod = methods.get(0);
 
 			Type coreMethodType = types.erasureRecursive(coreMethod.type);
-			for (JCMethodDecl m : new ArrayList<>(methods)) {
+			for (MethodTree m : new ArrayList<>(methods)) {
 				if (m == coreMethod) {
 					continue;
 				}
@@ -212,7 +196,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 			}
 
 			if (methods.size() > 1 && isValid) {
-				for (JCMethodDecl methodDecl : methods) {
+				for (MethodTree methodDecl : methods) {
 					if (methodDecl.body != null && methodDecl.body.stats.size() == 1) {
 						if (!methodDecl.equals(coreMethod)) {
 							JCMethodInvocation invocation = null;
@@ -266,7 +250,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 			// initParameterNames();
 		}
 
-		private static boolean hasMethodType(Types types, Overload overload, JCMethodDecl method) {
+		private static boolean hasMethodType(Types types, Overload overload, MethodTree method) {
 			return overload.methods.stream().map(m -> types.erasureRecursive(m.type)).anyMatch(t -> {
 				boolean match = t.toString().equals(types.erasureRecursive(method.type).toString());
 				if (match && t.tsym.getEnclosingElement() != method.sym.getEnclosingElement()) {
@@ -276,7 +260,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 			});
 		}
 
-		private static void safeAdd(Types types, Overload overload, JCMethodDecl method) {
+		private static void safeAdd(Types types, Overload overload, MethodTree method) {
 			if (!overload.methods.contains(method) && !hasMethodType(types, overload, method)) {
 				overload.methods.add(method);
 			}
@@ -287,10 +271,10 @@ public class OverloadScanner extends AbstractTreeScanner {
 		 */
 		public void merge(Types types, Overload subOverload) {
 			// merge default methods
-			for (JCMethodDecl m : methods) {
+			for (MethodTree m : methods) {
 				if (m.getModifiers().getFlags().contains(Modifier.DEFAULT)) {
 					boolean overriden = false;
-					for (JCMethodDecl subm : new ArrayList<>(subOverload.methods)) {
+					for (MethodTree subm : new ArrayList<>(subOverload.methods)) {
 						if (subm.getParameters().size() == m.getParameters().size()) {
 							overriden = true;
 							for (int i = 0; i < subm.getParameters().size(); i++) {
@@ -308,9 +292,9 @@ public class OverloadScanner extends AbstractTreeScanner {
 			}
 			// merge other methods
 			boolean merge = false;
-			for (JCMethodDecl subm : new ArrayList<>(subOverload.methods)) {
+			for (MethodTree subm : new ArrayList<>(subOverload.methods)) {
 				boolean overrides = false;
-				for (JCMethodDecl m : new ArrayList<>(methods)) {
+				for (MethodTree m : new ArrayList<>(methods)) {
 					if (subm.getParameters().size() == m.getParameters().size()) {
 						overrides = true;
 						for (int i = 0; i < subm.getParameters().size(); i++) {
@@ -326,7 +310,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 			merge = merge || methods.size() > 1;
 
 			if (merge) {
-				for (JCMethodDecl m : methods) {
+				for (MethodTree m : methods) {
 					safeAdd(types, subOverload, m);
 				}
 			}
@@ -338,10 +322,9 @@ public class OverloadScanner extends AbstractTreeScanner {
 	 */
 	public OverloadScanner(TranspilationHandler logHandler, JSweetContext context) {
 		super(logHandler, context, null);
-		this.types = Types.instance(context);
 	}
 
-	private void inspectSuperTypes(ClassSymbol clazz, Overload overload, JCMethodDecl method) {
+	private void inspectSuperTypes(ClassSymbol clazz, Overload overload, MethodTree method) {
 		if (clazz == null) {
 			return;
 		}
@@ -356,7 +339,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 	}
 
 	@Override
-	public void visitClassDef(JCClassDecl classdecl) {
+	public void visitClassDef(ClassTree classdecl) {
 		ClassSymbol clazz = classdecl.sym;
 		if (clazz.getQualifiedName().toString().startsWith(JSweetConfig.LIBS_PACKAGE + ".")
 				|| context.hasAnnotationType(clazz, JSweetConfig.ANNOTATION_ERASED, JSweetConfig.ANNOTATION_AMBIENT)) {
@@ -364,14 +347,14 @@ public class OverloadScanner extends AbstractTreeScanner {
 		}
 
 		for (Tree member : classdecl.defs) {
-			if (member instanceof JCMethodDecl) {
-				processMethod(classdecl, (JCMethodDecl) member);
+			if (member instanceof MethodTree) {
+				processMethod(classdecl, (MethodTree) member);
 			}
 		}
 
-		HashSet<Entry<JCClassDecl, JCMethodDecl>> defaultMethods = new HashSet<>();
+		HashSet<Entry<ClassTree, MethodTree>> defaultMethods = new HashSet<>();
 		Util.findDefaultMethodsInType(defaultMethods, context, classdecl.sym);
-		for (Entry<JCClassDecl, JCMethodDecl> defaultMethodWithEnclosingClass : defaultMethods) {
+		for (Entry<ClassTree, MethodTree> defaultMethodWithEnclosingClass : defaultMethods) {
 			processMethod(classdecl, defaultMethodWithEnclosingClass.getValue());
 		}
 		// scan all AST because of anonymous classes that may appear everywhere
@@ -379,7 +362,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 		super.visitClassDef(classdecl);
 	}
 
-	private void processMethod(JCClassDecl enclosingClassdecl, JCMethodDecl method) {
+	private void processMethod(ClassTree enclosingClassdecl, MethodTree method) {
 		if (context.hasAnnotationType(method.sym, JSweetConfig.ANNOTATION_ERASED, JSweetConfig.ANNOTATION_AMBIENT)) {
 			return;
 		}
@@ -394,7 +377,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 	}
 
 	@Override
-	public void visitTopLevel(JCCompilationUnit cu) {
+	public void visitTopLevel(CompilationUnitTree cu) {
 		setCompilationUnit(cu);
 		super.visitTopLevel(cu);
 		setCompilationUnit(null);
@@ -403,16 +386,16 @@ public class OverloadScanner extends AbstractTreeScanner {
 	/**
 	 * Processes all the overload of a given compilation unit list.
 	 */
-	public void process(List<JCCompilationUnit> cuList) {
-		for (JCCompilationUnit cu : cuList) {
-			scan(cu);
+	public void process(List<CompilationUnitTree> cuList) {
+		for (CompilationUnitTree cu : cuList) {
+			scan(cu, getContext().trees);
 		}
 		pass++;
-		for (JCCompilationUnit cu : cuList) {
-			scan(cu);
+		for (CompilationUnitTree cu : cuList) {
+			scan(cu, getContext().trees);
 		}
 		for (Overload overload : context.getAllOverloads()) {
-			overload.calculate(types, context.symtab);
+			overload.calculate(getContext().types, context.symtab);
 			if (overload.methods.size() > 1 && !overload.isValid) {
 				if (overload.coreMethod.sym.isConstructor()) {
 					context.classesWithWrongConstructorOverload.add(overload.coreMethod.sym.enclClass());

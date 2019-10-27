@@ -21,25 +21,28 @@ package org.jsweet.transpiler.model.support;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.ExtendedElementFactory;
 import org.jsweet.transpiler.model.NewArrayElement;
 
-import com.sun.tools.javac.tree.Tree.JCNewArray;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.NewArrayTree;
 
 /**
  * See {@link NewArrayElement}.
  * 
  * @author Renaud Pawlak
  */
-public class NewArrayElementSupport extends ExtendedElementSupport<JCNewArray> implements NewArrayElement {
+public class NewArrayElementSupport extends ExtendedElementSupport<NewArrayTree> implements NewArrayElement {
 
-	public NewArrayElementSupport(JCNewArray tree) {
-		super(tree);
+	public NewArrayElementSupport(CompilationUnitTree compilationUnit, NewArrayTree tree, JSweetContext context) {
+		super(compilationUnit, tree, context);
 	}
 
 	public List<ExtendedElement> getDimensions() {
-		return tree.getDimensions().stream().map(a -> ExtendedElementFactory.INSTANCE.create(a)).collect(Collectors.toList());
+		return tree.getDimensions().stream().map(a -> ExtendedElementFactory.INSTANCE.create(a))
+				.collect(Collectors.toList());
 	}
 
 	@Override
@@ -52,5 +55,4 @@ public class NewArrayElementSupport extends ExtendedElementSupport<JCNewArray> i
 		return ExtendedElementFactory.INSTANCE.create(tree.getDimensions().get(i));
 	}
 
-	
 }

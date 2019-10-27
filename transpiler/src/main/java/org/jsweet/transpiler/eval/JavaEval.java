@@ -17,7 +17,7 @@ import org.jsweet.transpiler.util.MainMethodFinder;
 import com.sun.tools.javac.file.JavacFileManager;
 import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.main.Option;
-import com.sun.tools.javac.tree.Tree.JCCompilationUnit;
+import com.sun.tools.javac.tree.Tree.CompilationUnitTree;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.Options;
@@ -59,10 +59,10 @@ public class JavaEval extends RuntimeEval {
 		log.emitWarnings = false;
 
 		logger.info("parsing: " + fileObjects);
-		List<JCCompilationUnit> compilationUnits = compiler.enterTrees(compiler.parseFiles(fileObjects));
+		List<CompilationUnitTree> compilationUnits = compiler.enterTrees(compiler.parseFiles(fileObjects));
 		MainMethodFinder mainMethodFinder = new MainMethodFinder();
 		try {
-			for (JCCompilationUnit cu : compilationUnits) {
+			for (CompilationUnitTree cu : compilationUnits) {
 				cu.accept(mainMethodFinder);
 			}
 		} catch (Exception e) {

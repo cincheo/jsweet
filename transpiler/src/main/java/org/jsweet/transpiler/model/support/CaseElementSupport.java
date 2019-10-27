@@ -18,8 +18,12 @@
  */
 package org.jsweet.transpiler.model.support;
 
+import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.CaseElement;
 
+import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.CaseTree;
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.tools.javac.tree.Tree.JCCase;
 
 /**
@@ -27,10 +31,10 @@ import com.sun.tools.javac.tree.Tree.JCCase;
  * 
  * @author Renaud Pawlak
  */
-public class CaseElementSupport extends ExtendedElementSupport<JCCase> implements CaseElement {
+public class CaseElementSupport extends ExtendedElementSupport<CaseTree> implements CaseElement {
 
-	public CaseElementSupport(JCCase tree) {
-		super(tree);
+	public CaseElementSupport(CompilationUnitTree compilationUnit, CaseTree tree, JSweetContext context) {
+		super(compilationUnit, tree, context);
 	}
 
 }

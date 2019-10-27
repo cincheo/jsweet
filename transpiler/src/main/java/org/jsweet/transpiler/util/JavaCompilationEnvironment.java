@@ -37,7 +37,7 @@ import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.file.JavacFileManager;
 import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.main.Option;
-import com.sun.tools.javac.tree.Tree.JCCompilationUnit;
+import com.sun.tools.javac.tree.Tree.CompilationUnitTree;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.Names;
 import com.sun.tools.javac.util.Options;
@@ -146,9 +146,9 @@ public class JavaCompilationEnvironment {
 	 * Parses and attributes the given files within this compilation
 	 * environment.
 	 */
-	public List<JCCompilationUnit> parseAndAttributeJavaFiles(List<File> javaFiles) throws IOException {
+	public List<CompilationUnitTree> parseAndAttributeJavaFiles(List<File> javaFiles) throws IOException {
 		List<JavaFileObject> sources = toJavaFileObjects(fileManager, javaFiles);
-		List<JCCompilationUnit> compilationUnits = compiler.enterTrees(compiler.parseFiles(sources));
+		List<CompilationUnitTree> compilationUnits = compiler.enterTrees(compiler.parseFiles(sources));
 		compiler.attribute(compiler.todo);
 		return compilationUnits;
 	}

@@ -20,7 +20,7 @@ package org.jsweet.transpiler.util;
 
 import java.util.function.Consumer;
 
-import com.sun.tools.javac.tree.Tree;
+import com.sun.source.tree.Tree;
 
 /**
  * This exception can be thrown to rollback the scanning of an AST.
@@ -37,10 +37,8 @@ public class RollbackException extends RuntimeException {
 	/**
 	 * Rollback up to the target.
 	 * 
-	 * @param target
-	 *            the target
-	 * @param onRollbacked
-	 *            the handler to be executed once rollbacked.
+	 * @param target       the target
+	 * @param onRollbacked the handler to be executed once rollbacked.
 	 */
 	public RollbackException(Tree target, Consumer<Tree> onRollbacked) {
 		super();

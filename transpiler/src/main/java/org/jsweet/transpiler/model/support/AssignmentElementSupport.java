@@ -18,32 +18,33 @@
  */
 package org.jsweet.transpiler.model.support;
 
+import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.AssignmentElement;
 import org.jsweet.transpiler.model.ExtendedElement;
-import org.jsweet.transpiler.model.ExtendedElementFactory;
 import org.jsweet.transpiler.model.VariableAccessElement;
 
-import com.sun.tools.javac.tree.Tree.JCAssign;
+import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.CompilationUnitTree;
 
 /**
  * See {@link AssignmentElement}.
  * 
  * @author Renaud Pawlak
  */
-public class AssignmentElementSupport extends ExtendedElementSupport<JCAssign> implements AssignmentElement {
+public class AssignmentElementSupport extends ExtendedElementSupport<AssignmentTree> implements AssignmentElement {
 
-	public AssignmentElementSupport(JCAssign tree) {
-		super(tree);
+	public AssignmentElementSupport(CompilationUnitTree compilationUnit, AssignmentTree tree, JSweetContext context) {
+		super(compilationUnit, tree, context);
 	}
 
 	@Override
 	public VariableAccessElement getTarget() {
-		return (VariableAccessElement) ExtendedElementFactory.INSTANCE.create(getTree().lhs);
+		return (VariableAccessElement) createElement(getTree().getVariable());
 	}
 
 	@Override
 	public ExtendedElement getValue() {
-		return ExtendedElementFactory.INSTANCE.create(getTree().rhs);
+		return createElement(getTree().getExpression());
 	}
 
 }

@@ -18,19 +18,21 @@
  */
 package org.jsweet.transpiler.model.support;
 
+import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.LiteralElement;
 
-import com.sun.tools.javac.tree.Tree.JCLiteral;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.LiteralTree;
 
 /**
  * See {@link LiteralElement}.
  * 
  * @author Renaud Pawlak
  */
-public class LiteralElementSupport extends ExtendedElementSupport<JCLiteral> implements LiteralElement {
+public class LiteralElementSupport extends ExtendedElementSupport<LiteralTree> implements LiteralElement {
 
-	public LiteralElementSupport(JCLiteral tree) {
-		super(tree);
+	public LiteralElementSupport(CompilationUnitTree compilationUnit, LiteralTree tree, JSweetContext context) {
+		super(compilationUnit, tree, context);
 	}
 
 	public Object getValue() {

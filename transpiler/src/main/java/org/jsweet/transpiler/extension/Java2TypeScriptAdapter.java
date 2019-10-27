@@ -107,7 +107,7 @@ import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Type.MethodType;
 import com.sun.tools.javac.tree.Tree;
-import com.sun.tools.javac.tree.Tree.JCClassDecl;
+import com.sun.tools.javac.tree.Tree.ClassTree;
 import com.sun.tools.javac.tree.Tree.JCEnhancedForLoop;
 import com.sun.tools.javac.tree.Tree.JCExpression;
 import com.sun.tools.javac.tree.Tree.JCFieldAccess;
@@ -337,7 +337,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 	private boolean isWithinGlobals(String targetClassName) {
 		if (targetClassName == null
 				|| (targetClassName.equals(UTIL_CLASSNAME) || targetClassName.equals(DEPRECATED_UTIL_CLASSNAME))) {
-			JCClassDecl c = getPrinter().getParent(JCClassDecl.class);
+			ClassTree c = getPrinter().getParent(ClassTree.class);
 			return c != null && c.sym.getQualifiedName().toString().endsWith("." + GLOBALS_CLASS_NAME);
 		} else {
 			return false;
@@ -390,8 +390,8 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 		if ("super".equals(invocationElement.getMethodName())) {
 			// we omit call to super if class extends nothing or if parent is an
 			// interface
-			if (getPrinter().getParent(JCClassDecl.class).extending == null //
-					|| context.isInterface(getPrinter().getParent(JCClassDecl.class).extending.type.tsym)) {
+			if (getPrinter().getParent(ClassTree.class).extending == null //
+					|| context.isInterface(getPrinter().getParent(ClassTree.class).extending.type.tsym)) {
 				return true;
 			}
 			// special case when subclassing a Java exception type
@@ -1276,7 +1276,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 				printMacroName(targetMethodName);
 				if (invocationElement.getTargetExpression() != null
 						&& "super".equals(invocationElement.getTargetExpression().toString())) {
-					JCClassDecl parent = getPrinter().getParent(JCClassDecl.class);
+					ClassTree parent = getPrinter().getParent(ClassTree.class);
 					if (parent.sym.getSuperclass() != null
 							&& !context.symtab.objectType.equals(parent.sym.getSuperclass())) {
 						print("((o:any) => { if(super.clone!=undefined) { return super.clone(); } else { let clone = Object.create(o); for(let p in o) { if (o.hasOwnProperty(p)) clone[p] = o[p]; } return clone; } })(this)");

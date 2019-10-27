@@ -20,21 +20,23 @@ package org.jsweet.transpiler.model.support;
 
 import javax.lang.model.element.VariableElement;
 
+import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.ExtendedElementFactory;
 import org.jsweet.transpiler.model.ForeachLoopElement;
 
-import com.sun.tools.javac.tree.Tree.JCEnhancedForLoop;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.EnhancedForLoopTree;
 
 /**
  * See {@link ForeachLoopElement}.
  * 
  * @author Renaud Pawlak
  */
-public class ForeachLoopElementSupport extends ExtendedElementSupport<JCEnhancedForLoop> implements ForeachLoopElement {
+public class ForeachLoopElementSupport extends ExtendedElementSupport<EnhancedForLoopTree> implements ForeachLoopElement {
 
-	public ForeachLoopElementSupport(JCEnhancedForLoop tree) {
-		super(tree);
+	public ForeachLoopElementSupport(CompilationUnitTree compilationUnit, EnhancedForLoopTree tree, JSweetContext context) {
+		super(compilationUnit, tree, context);
 	}
 
 	@Override

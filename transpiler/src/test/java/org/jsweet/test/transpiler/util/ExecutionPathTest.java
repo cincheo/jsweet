@@ -21,12 +21,12 @@ import com.sun.tools.javac.tree.Tree;
 import com.sun.tools.javac.tree.Tree.JCBlock;
 import com.sun.tools.javac.tree.Tree.JCBreak;
 import com.sun.tools.javac.tree.Tree.JCCase;
-import com.sun.tools.javac.tree.Tree.JCClassDecl;
-import com.sun.tools.javac.tree.Tree.JCCompilationUnit;
+import com.sun.tools.javac.tree.Tree.ClassTree;
+import com.sun.tools.javac.tree.Tree.CompilationUnitTree;
 import com.sun.tools.javac.tree.Tree.JCExpressionStatement;
 import com.sun.tools.javac.tree.Tree.JCForLoop;
 import com.sun.tools.javac.tree.Tree.JCIf;
-import com.sun.tools.javac.tree.Tree.JCMethodDecl;
+import com.sun.tools.javac.tree.Tree.MethodTree;
 import com.sun.tools.javac.tree.Tree.JCReturn;
 import com.sun.tools.javac.tree.Tree.JCSwitch;
 import com.sun.tools.javac.tree.Tree.JCTry;
@@ -36,7 +36,7 @@ import source.syntax.ExecutionPaths;
 @SuppressWarnings("unchecked")
 public class ExecutionPathTest extends AbstractTest {
 
-	private JCClassDecl executionPathClassDecl;
+	private ClassTree executionPathClassDecl;
 
 	@Before
 	public void setUp() throws Throwable {
@@ -45,16 +45,16 @@ public class ExecutionPathTest extends AbstractTest {
 		List<File> javaFiles = asList(getSourceFile(ExecutionPaths.class).getJavaFile());
 		System.out.println("java files = " + javaFiles);
 
-		List<JCCompilationUnit> compilUnits = transpiler.setupCompiler(javaFiles,
+		List<CompilationUnitTree> compilUnits = transpiler.setupCompiler(javaFiles,
 				new ErrorCountTranspilationHandler(testTranspilationHandler));
-		List<JCClassDecl> typeDeclarations = Util.findTypeDeclarationsInCompilationUnits(compilUnits);
+		List<ClassTree> typeDeclarations = Util.findTypeDeclarationsInCompilationUnits(compilUnits);
 		System.out.println("types=" + typeDeclarations.size());
 		executionPathClassDecl = typeDeclarations.get(0);
 	}
 
 	@Test
 	public void ifElseReturns() throws Throwable {
-		JCMethodDecl methodDeclaration = Util.findFirstMethodDeclaration(executionPathClassDecl, "ifElseReturns");
+		MethodTree methodDeclaration = Util.findFirstMethodDeclaration(executionPathClassDecl, "ifElseReturns");
 		
 		List<List<Tree>> executionPaths = Util.getExecutionPaths(methodDeclaration);
 		printPaths(methodDeclaration, executionPaths);
@@ -66,7 +66,7 @@ public class ExecutionPathTest extends AbstractTest {
 	
 	@Test(expected = RuntimeException.class)
 	public void testPerfsIfs() throws Throwable {
-		JCMethodDecl methodDeclaration = Util.findFirstMethodDeclaration(executionPathClassDecl, "testPerfsIfs");
+		MethodTree methodDeclaration = Util.findFirstMethodDeclaration(executionPathClassDecl, "testPerfsIfs");
 
 		List<List<Tree>> executionPaths = Util.getExecutionPaths(methodDeclaration);
 		printPaths(methodDeclaration, executionPaths);
@@ -74,7 +74,7 @@ public class ExecutionPathTest extends AbstractTest {
 
 	@Test
 	public void ifReturnInElse() throws Throwable {
-		JCMethodDecl methodDeclaration = Util.findFirstMethodDeclaration(executionPathClassDecl, "ifReturnInElse");
+		MethodTree methodDeclaration = Util.findFirstMethodDeclaration(executionPathClassDecl, "ifReturnInElse");
 
 		List<List<Tree>> executionPaths = Util.getExecutionPaths(methodDeclaration);
 		printPaths(methodDeclaration, executionPaths);
@@ -87,7 +87,7 @@ public class ExecutionPathTest extends AbstractTest {
 
 	@Test
 	public void ifElseNoReturns() throws Throwable {
-		JCMethodDecl methodDeclaration = Util.findFirstMethodDeclaration(executionPathClassDecl, "ifElseNoReturns");
+		MethodTree methodDeclaration = Util.findFirstMethodDeclaration(executionPathClassDecl, "ifElseNoReturns");
 
 		List<List<Tree>> executionPaths = Util.getExecutionPaths(methodDeclaration);
 		printPaths(methodDeclaration, executionPaths);
@@ -101,7 +101,7 @@ public class ExecutionPathTest extends AbstractTest {
 
 	@Test
 	public void forIfElse() throws Throwable {
-		JCMethodDecl methodDeclaration = Util.findFirstMethodDeclaration(executionPathClassDecl, "forIfElse");
+		MethodTree methodDeclaration = Util.findFirstMethodDeclaration(executionPathClassDecl, "forIfElse");
 
 		List<List<Tree>> executionPaths = Util.getExecutionPaths(methodDeclaration);
 		printPaths(methodDeclaration, executionPaths);
@@ -115,7 +115,7 @@ public class ExecutionPathTest extends AbstractTest {
 
 	@Test
 	public void switchWithTryCatch() throws Throwable {
-		JCMethodDecl methodDeclaration = Util.findFirstMethodDeclaration(executionPathClassDecl, "switchWithTryCatch");
+		MethodTree methodDeclaration = Util.findFirstMethodDeclaration(executionPathClassDecl, "switchWithTryCatch");
 
 		List<List<Tree>> executionPaths = Util.getExecutionPaths(methodDeclaration);
 		printPaths(methodDeclaration, executionPaths);
@@ -134,7 +134,7 @@ public class ExecutionPathTest extends AbstractTest {
 
 	@Test
 	public void tryWithCatchesAndFinally() throws Throwable {
-		JCMethodDecl methodDeclaration = Util.findFirstMethodDeclaration(executionPathClassDecl,
+		MethodTree methodDeclaration = Util.findFirstMethodDeclaration(executionPathClassDecl,
 				"tryWithCatchesAndFinally");
 
 		List<List<Tree>> executionPaths = Util.getExecutionPaths(methodDeclaration);
@@ -151,7 +151,7 @@ public class ExecutionPathTest extends AbstractTest {
 
 	@Test
 	public void tryFinally() throws Throwable {
-		JCMethodDecl methodDeclaration = Util.findFirstMethodDeclaration(executionPathClassDecl, "tryFinally");
+		MethodTree methodDeclaration = Util.findFirstMethodDeclaration(executionPathClassDecl, "tryFinally");
 
 		List<List<Tree>> executionPaths = Util.getExecutionPaths(methodDeclaration);
 		printPaths(methodDeclaration, executionPaths);
@@ -162,7 +162,7 @@ public class ExecutionPathTest extends AbstractTest {
 
 	@Test
 	public void ifElseDeepWithReturnsForSomePaths() throws Throwable {
-		JCMethodDecl methodDeclaration = Util.findFirstMethodDeclaration(executionPathClassDecl,
+		MethodTree methodDeclaration = Util.findFirstMethodDeclaration(executionPathClassDecl,
 				"ifElseDeepWithReturnsForSomePaths");
 
 		List<List<Tree>> executionPaths = Util.getExecutionPaths(methodDeclaration);
@@ -236,7 +236,7 @@ public class ExecutionPathTest extends AbstractTest {
 		return asList(nodeClasses);
 	}
 
-	private void printPaths(JCMethodDecl methodDeclaration, List<List<Tree>> executionPaths) {
+	private void printPaths(MethodTree methodDeclaration, List<List<Tree>> executionPaths) {
 		int i = 0;
 		for (List<Tree> executionPath : executionPaths) {
 			System.out

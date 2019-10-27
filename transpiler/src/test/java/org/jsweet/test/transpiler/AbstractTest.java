@@ -44,8 +44,8 @@ import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
 import com.sun.tools.javac.model.JavacTypes;
-import com.sun.tools.javac.tree.Tree.JCClassDecl;
-import com.sun.tools.javac.tree.Tree.JCCompilationUnit;
+import com.sun.tools.javac.tree.Tree.ClassTree;
+import com.sun.tools.javac.tree.Tree.CompilationUnitTree;
 
 import ts.nodejs.NodejsProcess;
 
@@ -103,17 +103,17 @@ public class AbstractTest {
 		return new File(new File(TMPOUT_DIR), getCurrentTestName());
 	}
 
-	protected JCClassDecl getSourcePublicClassDeclaration(SourceFile sourceFile) throws IOException {
+	protected ClassTree getSourcePublicClassDeclaration(SourceFile sourceFile) throws IOException {
 		return getSourceClassesDeclarations(sourceFile).stream() //
 				.filter(classDecl -> classDecl.mods.getFlags().contains(Modifier.PUBLIC)).findFirst().get();
 	}
 
-	protected List<JCClassDecl> getSourceClassesDeclarations(SourceFile sourceFile) throws IOException {
-		List<JCCompilationUnit> compilUnits = transpilerTest.getTranspiler().setupCompiler(
+	protected List<ClassTree> getSourceClassesDeclarations(SourceFile sourceFile) throws IOException {
+		List<CompilationUnitTree> compilUnits = transpilerTest.getTranspiler().setupCompiler(
 				asList(sourceFile.getJavaFile()),
 				new ErrorCountTranspilationHandler(new ConsoleTranspilationHandler()));
-		return compilUnits.get(0).defs.stream().filter(declaration -> declaration instanceof JCClassDecl) //
-				.map(declaration -> (JCClassDecl) declaration) //
+		return compilUnits.get(0).defs.stream().filter(declaration -> declaration instanceof ClassTree) //
+				.map(declaration -> (ClassTree) declaration) //
 				.collect(toList());
 	}
 

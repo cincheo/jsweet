@@ -21,30 +21,40 @@ package org.jsweet.transpiler.model.support;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 
+import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.ExtendedElement;
-import org.jsweet.transpiler.util.Util;
+import org.jsweet.transpiler.model.ExtendedElementFactory;
 
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
-import com.sun.tools.javac.tree.Tree;
-import com.sun.tools.javac.tree.Tree.JCExpression;
+import com.sun.source.util.TreePath;
 
 /**
  * See {@link ExtendedElement}.
  * 
  * @author Renaud Pawlak
+ * @author Louis Grignon
  */
 public class ExtendedElementSupport<T extends Tree> implements ExtendedElement {
 
-	protected T tree;
+	protected final T tree;
+	protected final TreePath treePath;
+	protected final Element element;
+	protected final JSweetContext context;
 
 	/**
 	 * Creates an extended element, wrapping the given javac tree node.
 	 */
-	public ExtendedElementSupport(T tree) {
-		super();
-		this.tree = tree;
-	}
+	public ExtendedElementSupport(CompilationUnitTree compilationUnit, T tree, JSweetContext context) {
+		this.context = context;
 
+		this.tree = tree;
+		this.treePath = context.trees.getPath(compilationUnit, tree);
+		this.element = context.trees.getElement(treePath);
+	}
+	
 	/**
 	 * Returns the wrapped javac tree node.
 	 */
@@ -56,18 +66,15 @@ public class ExtendedElementSupport<T extends Tree> implements ExtendedElement {
 	 * Gets the type that corresponds to this element, if any.
 	 */
 	public TypeMirror getType() {
-		return tree.type;
+		return context.trees.getTypeMirror(treePath);
 	}
 
 	/**
 	 * Gets this element's type, as a standard element.
 	 */
 	public Element getTypeAsElement() {
-		if (tree.type == null) {
-			return null;
-		} else {
-			return tree.type.tsym;
-		}
+		TypeMirror typeMirror = element.asType();
+		return context.types.asElement(typeMirror);
 	}
 
 	@Override
@@ -82,14 +89,22 @@ public class ExtendedElementSupport<T extends Tree> implements ExtendedElement {
 
 	@Override
 	public boolean isConstant() {
-		if (!(getTree() instanceof JCExpression)) {
+		if (!(getTree() instanceof ExpressionTree)) {
 			return false;
 		}
-		return Util.isConstant((JCExpression) getTree());
+		return context.util.isConstant((ExpressionTree) getTree());
 	}
 
 	@Override
 	public boolean isStringLiteral() {
 		return getTree().getKind() == Kind.STRING_LITERAL;
+	}
+	
+	protected ExtendedElement createElement(Tree tree) {
+		return ExtendedElementFactory.INSTANCE.create(treePath.getCompilationUnit(), tree, context);
+	}
+	
+	protected Util util() {
+		return context.util;
 	}
 }

@@ -21,6 +21,7 @@ package org.jsweet.transpiler.util;
 import static java.util.Arrays.asList;
 
 import java.io.File;
+import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -49,7 +50,12 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.PrimitiveType;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementScanner9;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaCompiler;
@@ -59,8 +65,15 @@ import javax.tools.StandardJavaFileManager;
 import javax.tools.Tool;
 import javax.tools.ToolProvider;
 
+import com.google.common.collect.Iterables;
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.ImportTree;
+import com.sun.source.tree.MemberReferenceTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.PackageTree;
 import com.sun.source.util.JavacTask;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
@@ -624,7 +637,6 @@ public class DirectedGraph<T> implements Collection<T> {
 		;
 	}
 
-
 	static class Scanner1 extends ElementScanner9<Void, Void> {
 		private int numberOfClasses;
 		private int numberOfMethods;
@@ -632,6 +644,7 @@ public class DirectedGraph<T> implements Collection<T> {
 
 		public Void visitType(final TypeElement type, final Void p) {
 			++numberOfClasses;
+
 			return super.visitType(type, p);
 		}
 
@@ -672,12 +685,94 @@ public class DirectedGraph<T> implements Collection<T> {
 
 	static class Scanner2 extends TreePathScanner<Object, Trees> {
 		private int count;
+		private ProcessingEnvironment processingEnvironment;
+
+		public Scanner2(ProcessingEnvironment processingEnvironment) {
+			this.processingEnvironment = processingEnvironment;
+		}
+
+		Types types() {
+			return processingEnvironment.getTypeUtils();
+		}
+
+		Elements elements() {
+			return processingEnvironment.getElementUtils();
+		}
 
 		@Override
 		public Object visitMethodInvocation(MethodInvocationTree node, Trees p) {
 
 			++count;
+
+			System.out.println(node.getKind().asInterface());
+
 			return super.visitMethodInvocation(node, p);
+		}
+
+		@Override
+		public Object visitMemberSelect(MemberSelectTree node, Trees p) {
+
+			System.out.println("== visitMemberSelect ==");
+
+			System.out.println(node.getKind().asInterface());
+			System.out.println(node.getExpression());
+			System.out.println(node.getIdentifier());
+			System.out.println(p.getTypeMirror(getCurrentPath()));
+			System.out.println(p.getTypeMirror(getCurrentPath()) != null);
+
+			System.out.println("via element ==");
+
+			Element element = p.getElement(getCurrentPath());
+			elements().printElements(new OutputStreamWriter(System.out), element);
+
+			TypeMirror typeMirror = element.asType();
+			System.out.println(typeMirror);
+			System.out.println(types().asElement(typeMirror));
+			System.out.println(typeMirror.getClass());
+			if (typeMirror instanceof DeclaredType) {
+				System.out.println("decl");
+				System.out.println(((DeclaredType) typeMirror).asElement());
+			} else if (typeMirror instanceof PrimitiveType) {
+				System.out.println("prim");
+				System.out.println(((PrimitiveType) typeMirror).toString());
+			}
+//			com.sun.tools.javac.code.Types t;
+			// System.out.println(elements().asElement(typeMirror));
+
+//			System.out.println(elements().element.asType());
+
+			System.out.println("== END visitMemberSelect END ==");
+
+			return super.visitMemberSelect(node, p);
+		}
+
+		@Override
+		public Object visitMemberReference(MemberReferenceTree node, Trees p) {
+			System.out.println("visitMemberReference");
+			System.out.println(node.getKind().asInterface());
+			return super.visitMemberReference(node, p);
+		}
+		
+		@Override
+		public Object visitAssignment(AssignmentTree node, Trees p) {
+			return super.visitAssignment(node, p);
+		}
+
+		@Override
+		public Object visitPackage(PackageTree node, Trees p) {
+			System.out.println("visitPackage");
+			return super.visitPackage(node, p);
+		}
+
+		@Override
+		public Object visitCompoundAssignment(CompoundAssignmentTree node, Trees p) {
+			return super.visitCompoundAssignment(node, p);
+		}
+		
+		@Override
+		public Object visitImport(ImportTree node, Trees p) {
+			System.out.println("visitImport");
+			return super.visitImport(node, p);
 		}
 
 		public int getCount() {
@@ -688,17 +783,14 @@ public class DirectedGraph<T> implements Collection<T> {
 	@SupportedSourceVersion(SourceVersion.RELEASE_11)
 	@SupportedAnnotationTypes("*")
 	static class Processor2 extends AbstractProcessor {
-		private final Scanner2 scanner;
 		private Trees trees;
-
-		public Processor2(final Scanner2 scanner) {
-			this.scanner = scanner;
-		}
+		Scanner2 scanner;
 
 		@Override
 		public synchronized void init(final ProcessingEnvironment processingEnvironment) {
 			super.init(processingEnvironment);
 			trees = Trees.instance(processingEnvironment);
+			scanner = new Scanner2(processingEnvironment);
 		}
 
 		public boolean process(final Set<? extends TypeElement> types, final RoundEnvironment environment) {
@@ -712,7 +804,6 @@ public class DirectedGraph<T> implements Collection<T> {
 			return true;
 		}
 	}
-	
 
 	/**
 	 * Just for testing.
@@ -727,11 +818,12 @@ public class DirectedGraph<T> implements Collection<T> {
 			System.out.println("javac source version: " + version);
 		}
 
-		System.out.println(compiler.isSupportedOption("-cp"));
-		System.out.println(compiler.isSupportedOption("-Xlint"));
-		System.out.println(compiler.isSupportedOption("-bootclasspath"));
-		System.out.println(compiler.isSupportedOption("-encoding"));
-		File f = new File("src/test/java/source/calculus/Strings.java");
+//		System.out.println(compiler.isSupportedOption("-cp"));
+//		System.out.println(compiler.isSupportedOption("-Xlint"));
+//		System.out.println(compiler.isSupportedOption("-bootclasspath"));
+//		System.out.println(compiler.isSupportedOption("-encoding"));
+
+		File f = new File("src/main/resources/Test.java");
 
 		try (StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, Locale.getDefault(),
 				Charset.forName("UTF-8"))) {
@@ -742,8 +834,7 @@ public class DirectedGraph<T> implements Collection<T> {
 
 			final Scanner1 scanner1 = new Scanner1();
 			final Processor1 processor1 = new Processor1(scanner1);
-			final Scanner2 scanner2 = new Scanner2();
-			final Processor2 processor2 = new Processor2(scanner2);
+			final Processor2 processor2 = new Processor2();
 
 			final CompilationTask task = compiler.getTask(null, fileManager, diagnostics, null, null, sources);
 			JavacTask javacTask = (JavacTask) task;
@@ -751,23 +842,23 @@ public class DirectedGraph<T> implements Collection<T> {
 			Iterable<? extends CompilationUnitTree> compilUnits = javacTask.parse();
 			javacTask.analyze();
 
-			System.out.println("compilUnits=" + compilUnits);
+			System.out.println("compilUnits=" + Iterables.size(compilUnits));
 
 			System.out.format("Classes %d, methods/constructors %d, fields %d\n", scanner1.numberOfClasses,
 					scanner1.numberOfMethods, scanner1.numberOfFields);
 
-			System.out.format("meth count: %d \n", scanner2.getCount());
+			System.out.format("meth count: %d \n", processor2.scanner.getCount());
 
 			for (final Diagnostic<? extends JavaFileObject> diagnostic : diagnostics.getDiagnostics()) {
 				System.out.format("DIAG: %s, line %d in %s\n", diagnostic.getMessage(null), diagnostic.getLineNumber(),
 						diagnostic.getSource().getName());
 			}
 		}
-		
+
 		if (true) {
 			System.exit(0);
 		}
-		
+
 		DirectedGraph<Integer> g = new DirectedGraph<Integer>();
 		g.add(7, 5, 3, 11, 8, 2, 9, 10);
 		System.out.println(g.nodes.values());

@@ -10,7 +10,7 @@ import org.jsweet.transpiler.util.Util;
 import org.junit.Test;
 
 import com.sun.tools.javac.code.Type.ClassType;
-import com.sun.tools.javac.tree.Tree.JCClassDecl;
+import com.sun.tools.javac.tree.Tree.ClassTree;
 
 import source.structural.ExtendsClassInSameFile;
 
@@ -32,7 +32,7 @@ public class UtilTest extends AbstractTest {
 	public void testIsDeclarationOrSubClassDeclaration() throws Exception {
 
 		SourceFile sourceFile = getSourceFile(ExtendsClassInSameFile.class);
-		JCClassDecl classDeclaration = getSourcePublicClassDeclaration(sourceFile);
+		ClassTree classDeclaration = getSourcePublicClassDeclaration(sourceFile);
 
 		boolean isDeclaration;
 		String searchedClassName = ExtendsClassInSameFile.class.getName();
@@ -59,7 +59,7 @@ public class UtilTest extends AbstractTest {
 	public void testIsDeclarationOrSubClassDeclarationBySimpleName() throws Exception {
 
 		SourceFile sourceFile = getSourceFile(ExtendsClassInSameFile.class);
-		JCClassDecl classDeclaration = getSourcePublicClassDeclaration(sourceFile);
+		ClassTree classDeclaration = getSourcePublicClassDeclaration(sourceFile);
 
 		boolean isDeclaration;
 

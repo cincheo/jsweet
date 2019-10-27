@@ -23,21 +23,23 @@ import java.util.stream.Collectors;
 
 import javax.lang.model.element.ExecutableElement;
 
+import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.ExtendedElementFactory;
 import org.jsweet.transpiler.model.NewClassElement;
 
-import com.sun.tools.javac.tree.Tree.JCNewClass;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.NewClassTree;
 
 /**
  * See {@link NewClassElement}.
  * 
  * @author Renaud Pawlak
  */
-public class NewClassElementSupport extends ExtendedElementSupport<JCNewClass> implements NewClassElement {
+public class NewClassElementSupport extends ExtendedElementSupport<NewClassTree> implements NewClassElement {
 
-	public NewClassElementSupport(JCNewClass tree) {
-		super(tree);
+	public NewClassElementSupport(CompilationUnitTree compilationUnit, NewClassTree tree, JSweetContext context) {
+		super(compilationUnit, tree, context);
 	}
 
 	public List<ExtendedElement> getArguments() {

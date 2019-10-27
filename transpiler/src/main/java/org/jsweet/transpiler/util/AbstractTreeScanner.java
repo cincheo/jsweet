@@ -26,7 +26,8 @@ import java.util.Map.Entry;
 import java.util.Stack;
 import java.util.function.Consumer;
 
-import javax.lang.model.element.Element;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 
 import org.apache.commons.io.FileUtils;
 import org.jsweet.transpiler.JSweetContext;
@@ -36,76 +37,41 @@ import org.jsweet.transpiler.TranspilationHandler;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.ExtendedElementFactory;
 import org.jsweet.transpiler.model.support.ExtendedElementSupport;
+import org.jsweet.transpiler.model.support.Util;
 
-import com.sun.tools.javac.code.Symtab;
-import com.sun.tools.javac.code.Types;
-import com.sun.tools.javac.tree.Tree;
-import com.sun.tools.javac.tree.Tree.JCClassDecl;
-import com.sun.tools.javac.tree.Tree.JCCompilationUnit;
-import com.sun.tools.javac.tree.Tree.JCImport;
-import com.sun.tools.javac.tree.Tree.JCMethodDecl;
-import com.sun.tools.javac.tree.Tree.JCVariableDecl;
-import com.sun.tools.javac.tree.TreeScanner;
-import com.sun.tools.javac.util.DiagnosticSource;
-import com.sun.tools.javac.util.Log;
-import com.sun.tools.javac.util.Name;
-import com.sun.tools.javac.util.Names;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ImportTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.SourcePositions;
+import com.sun.source.util.TreeScanner;
+import com.sun.source.util.Trees;
 
 /**
  * A Java AST scanner for JSweet.
  * 
  * @author Renaud Pawlak
+ * @author Louis Grignon
  */
-public abstract class AbstractTreeScanner extends TreeScanner {
+public abstract class AbstractTreeScanner extends TreeScanner<Void, Trees> {
 
 	private TranspilationHandler logHandler;
 
 	/**
 	 * Report a JSweet problem on the given program element (tree).
 	 * 
-	 * @param tree
-	 *            the program element causing the problem
-	 * @param problem
-	 *            the problem to be reported
-	 * @param params
-	 *            problem arguments
+	 * @param tree    the program element causing the problem
+	 * @param problem the problem to be reported
+	 * @param params  problem arguments
 	 */
 	public void report(Tree tree, JSweetProblem problem, Object... params) {
-		report(tree, null, problem, params);
-	}
-
-	/**
-	 * Report a JSweet problem on the given named program element (tree).
-	 * 
-	 * @param tree
-	 *            the program element causing the problem
-	 * @param name
-	 *            the name of that program element
-	 * @param problem
-	 *            the problem to be reported
-	 * @param params
-	 *            problem arguments
-	 */
-	public void report(Tree tree, Name name, JSweetProblem problem, Object... params) {
 		if (logHandler == null) {
 			System.err.println(problem.getMessage(params));
 		} else {
-			if (diagnosticSource == null) {
+			if (compilationUnit == null) {
 				logHandler.report(problem, null, problem.getMessage(params));
 			} else {
-				int s = tree.getStartPosition();
-				int e = tree.getEndPosition(diagnosticSource.getEndPosTable());
-				if (e == -1) {
-					e = s;
-				}
-				if (name != null) {
-					e += name.length();
-				}
-				logHandler.report(problem,
-						new SourcePosition(new File(compilationUnit.sourcefile.getName()), tree,
-								diagnosticSource.getLineNumber(s), diagnosticSource.getColumnNumber(s, false),
-								diagnosticSource.getLineNumber(e), diagnosticSource.getColumnNumber(e, false)),
-						problem.getMessage(params));
+				SourcePosition sourcePosition = util().getSourcePosition(compilationUnit, tree);
+				logHandler.report(problem, sourcePosition, problem.getMessage(params));
 			}
 		}
 	}
@@ -118,33 +84,30 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 	/**
 	 * A map holding static import statements.
 	 */
-	protected Map<String, JCImport> staticImports = new HashMap<>();
+	protected Map<String, ImportTree> staticImports = new HashMap<>();
 
 	/**
 	 * Gets the map of static imports in the current compilation unit.
 	 * 
 	 * @see #getCompilationUnit()
 	 */
-	public Map<String, JCImport> getStaticImports() {
+	public Map<String, ImportTree> getStaticImports() {
 		return staticImports;
 	}
 
 	/**
 	 * Holds the compilation being currently scanned.
 	 */
-	protected JCCompilationUnit compilationUnit;
+	protected CompilationUnitTree compilationUnit;
 
 	/**
 	 * Gets the currently scanned compilation unit.
 	 */
-	public JCCompilationUnit getCompilationUnit() {
+	public CompilationUnitTree getCompilationUnit() {
 		return compilationUnit;
 	}
 
-	/**
-	 * The transpiler context.
-	 */
-	protected JSweetContext context;
+	protected final JSweetContext context;
 
 	/**
 	 * Gets the transpiler context.
@@ -153,18 +116,32 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 		return context;
 	}
 
-	/**
-	 * The javac diagnostic source object (useful to get line information for
-	 * instance).
-	 */
-	protected DiagnosticSource diagnosticSource;
+	protected SourcePositions sourcePositions() {
+		return trees().getSourcePositions();
+	}
+
+	protected Trees trees() {
+		return getContext().trees;
+	}
+
+	protected Types types() {
+		return getContext().types;
+	}
+
+	protected Elements elements() {
+		return getContext().elements;
+	}
+
+	protected Util util() {
+		return getContext().util;
+	}
 
 	private Entry<String, String[]> sourceCache;
 
 	/**
 	 * Gets the Java source code for the given compilation unit.
 	 */
-	protected String[] getGetSource(JCCompilationUnit compilationUnit) {
+	protected String[] getGetSource(CompilationUnitTree compilationUnit) {
 		if (sourceCache != null && sourceCache.getKey().equals(compilationUnit.getSourceFile().getName())) {
 			return sourceCache.getValue();
 		} else {
@@ -181,39 +158,32 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 	/**
 	 * Creates a new scanner.
 	 * 
-	 * @param logHandler
-	 *            the handler for reporting messages
-	 * @param context
-	 *            the JSweet transpilation context
-	 * @param compilationUnit
-	 *            the compilation to be scanned
+	 * @param logHandler      the handler for reporting messages
+	 * @param context         the JSweet transpilation context
+	 * @param compilationUnit the compilation to be scanned
 	 */
-	public AbstractTreeScanner(TranspilationHandler logHandler, JSweetContext context,
-			JCCompilationUnit compilationUnit) {
+	protected AbstractTreeScanner(TranspilationHandler logHandler, JSweetContext context,
+			CompilationUnitTree compilationUnit) {
 		this.logHandler = logHandler;
 		this.context = context;
-		this.context.symtab = Symtab.instance(context);
-		this.context.names = Names.instance(context);
-		this.context.types = Types.instance(context);
-		this.context.modelTypes = com.sun.tools.javac.model.JavacTypes.instance(context);
 		this.setCompilationUnit(compilationUnit);
 	}
 
 	/**
 	 * Sets the compilation unit to be scanned.
 	 */
-	protected final void setCompilationUnit(JCCompilationUnit compilationUnit) {
+	protected final void setCompilationUnit(CompilationUnitTree compilationUnit) {
 		if (compilationUnit != null) {
 			this.compilationUnit = compilationUnit;
-			for (JCImport i : this.compilationUnit.getImports()) {
-				if (i.staticImport) {
-					staticImports.put(i.qualid.toString().substring(i.qualid.toString().lastIndexOf(".") + 1), i);
+			for (ImportTree importTree : this.compilationUnit.getImports()) {
+				if (importTree.isStatic()) {
+					String importedIdentifier = importTree.getQualifiedIdentifier().toString();
+					staticImports.put(importedIdentifier.substring(importedIdentifier.lastIndexOf(".") + 1),
+							importTree);
 				}
 			}
-			this.diagnosticSource = new DiagnosticSource(compilationUnit.sourcefile, Log.instance(context));
 		} else {
 			this.compilationUnit = null;
-			this.diagnosticSource = null;
 		}
 	}
 
@@ -222,20 +192,20 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 	 */
 	@SuppressWarnings("rawtypes")
 	public void scan(ExtendedElement element) {
-		scan(((ExtendedElementSupport) element).getTree());
+		scan(((ExtendedElementSupport) element).getTree(), trees());
 	}
 
 	/**
 	 * Scans a program tree.
 	 */
 	@Override
-	public void scan(Tree tree) {
+	public Void scan(Tree tree, Trees trees) {
 		if (tree == null) {
-			return;
+			return null;
 		}
 		enter(tree);
 		try {
-			tree.accept(this);
+			tree.accept(this, trees);
 		} catch (RollbackException rollback) {
 			if (rollback.getTarget() == tree) {
 				onRollbacked(tree);
@@ -252,14 +222,16 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 		} finally {
 			exit();
 		}
+
+		return null;
 	}
 
 	/**
 	 * Pretty prints the current scanning trace.
 	 * 
 	 * <p>
-	 * This is useful for reporting internal errors and give information about
-	 * what happened to the user.
+	 * This is useful for reporting internal errors and give information about what
+	 * happened to the user.
 	 */
 	protected void dumpStackTrace() {
 		System.err.println("dumping transpiler's strack trace:");
@@ -277,21 +249,16 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 			str = str.replace('\n', ' ');
 			str = str.substring(0, Math.min(str.length() - 1, 30));
 			System.err.print("   [" + stack.get(i).getClass().getSimpleName() + "] " + str
-					+ (str.length() < intialLength ? "..." : "") + " (" + compilationUnit.getSourceFile().getName()
-					+ ":");
-			if (diagnosticSource == null) {
-				System.err.println(tree.pos + ")");
-			} else {
-				System.err.println(diagnosticSource.getLineNumber(tree.pos) + ")");
-			}
+					+ (str.length() < intialLength ? "..." : "") + " ("
+					+ util().getSourcePosition(compilationUnit, tree));
+			System.err.println(")");
 		}
 	}
 
 	/**
 	 * A global handler to be called when a rollback operation terminates.
 	 * 
-	 * @param target
-	 *            the rollback's target
+	 * @param target the rollback's target
 	 * @see #rollback(Tree, Consumer)
 	 */
 	protected void onRollbacked(Tree target) {
@@ -300,11 +267,9 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 	/**
 	 * Rollbacks (undo) the current printing transaction up to the target.
 	 * 
-	 * @param target
-	 *            the element up to which the printing should be undone
-	 * @param onRollbacked
-	 *            the callback to be invoked once the rollback is finished (see
-	 *            also {@link #onRollbacked(Tree)}
+	 * @param target       the element up to which the printing should be undone
+	 * @param onRollbacked the callback to be invoked once the rollback is finished
+	 *                     (see also {@link #onRollbacked(Tree)}
 	 */
 	protected void rollback(Tree target, Consumer<Tree> onRollbacked) {
 		throw new RollbackException(target, onRollbacked);
@@ -345,7 +310,7 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 			return null;
 		}
 	}
-	
+
 	/**
 	 * Returns the immediate parent in the printer's scanning stack.
 	 */
@@ -358,8 +323,7 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 	}
 
 	/**
-	 * Returns the parent of the immediate parent in the printer's scanning
-	 * stack.
+	 * Returns the parent of the immediate parent in the printer's scanning stack.
 	 * 
 	 * @see #getStack()
 	 */
@@ -377,14 +341,13 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 	 * @see #getStack()
 	 */
 	public ExtendedElement getParentElement() {
-		return ExtendedElementFactory.INSTANCE.create(getParent());
+		return ExtendedElementFactory.INSTANCE.create(compilationUnit, getParent(), context);
 	}
 
 	/**
 	 * Gets the first parent in the scanning stack matching the given type.
 	 * 
-	 * @param type
-	 *            the type to search for
+	 * @param type the type to search for
 	 * @return the first matching tree
 	 * @see #getStack()
 	 */
@@ -399,35 +362,10 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 	}
 
 	/**
-	 * Gets the parent element matching the given type within the scanning
-	 * stack.
+	 * Gets the first tree in the scanning stack that matched one of the given tree
+	 * types.
 	 * 
-	 * @param type
-	 *            the element type being search for
-	 * @return the first matching element
-	 * @see #getStack()
-	 */
-	@SuppressWarnings("unchecked")
-	public <T extends Element> T getParentElement(Class<T> type) {
-		for (int i = this.stack.size() - 2; i >= 0; i--) {
-			Tree t = this.stack.get(i);
-			if (t instanceof JCClassDecl && type.isAssignableFrom(((JCClassDecl) t).sym.getClass())) {
-				return (T) ((JCClassDecl) t).sym;
-			} else if (t instanceof JCMethodDecl && type.isAssignableFrom(((JCMethodDecl) t).sym.getClass())) {
-				return (T) ((JCClassDecl) t).sym;
-			} else if (t instanceof JCVariableDecl && type.isAssignableFrom(((JCVariableDecl) t).sym.getClass())) {
-				return (T) ((JCClassDecl) t).sym;
-			}
-		}
-		return null;
-	}
-
-	/**
-	 * Gets the first tree in the scanning stack that matched one of the given
-	 * tree types.
-	 * 
-	 * @param types
-	 *            the tree types to be checked
+	 * @param types the tree types to be checked
 	 * @return the first matching tree
 	 * @see #getStack()
 	 */
@@ -443,13 +381,11 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 	}
 
 	/**
-	 * Gets the first parent matching the given type, looking up from the given
-	 * tree in the scanning stack.
+	 * Gets the first parent matching the given type, looking up from the given tree
+	 * in the scanning stack.
 	 * 
-	 * @param type
-	 *            the type to search for
-	 * @param from
-	 *            the tree to start the search from
+	 * @param type the type to search for
+	 * @param from the tree to start the search from
 	 * @return the first matching parent in the scanning stack
 	 * @see #getStack()
 	 */
