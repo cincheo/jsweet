@@ -42,9 +42,12 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
@@ -53,12 +56,15 @@ import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.log4j.Logger;
 import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.JSweetContext;
+import org.jsweet.transpiler.JSweetTranspiler;
 import org.jsweet.transpiler.SourcePosition;
 import org.jsweet.transpiler.model.Util;
 import org.jsweet.transpiler.util.DirectedGraph;
 
+import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
@@ -66,10 +72,12 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.LineMap;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.PackageTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.UnaryTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.Trees;
 
@@ -81,6 +89,8 @@ import com.sun.source.util.Trees;
  */
 public class Util {
 
+	private final static Logger logger = Logger.getLogger(Util.class);
+	
 	protected JSweetContext context;
 
 	public Util(JSweetContext context) {
@@ -105,49 +115,8 @@ public class Util {
 	 * the type cannot be found in the compiler's symbol table).
 	 */
 	public TypeMirror getType(Class<?> clazz) {
-		switch (clazz.getName()) {
-		case "java.lang.annotation.Annotation":
-			return context.symtab.annotationType;
-		case "java.lang.AssertionError":
-			return context.symtab.assertionErrorType;
-		case "java.lang.ClassLoader":
-			return context.symtab.classLoaderType;
-		case "java.lang.AutoCloseable":
-			return context.symtab.autoCloseableType;
-		case "java.lang.ClassNotFoundException":
-			return context.symtab.classNotFoundExceptionType;
-		case "java.util.Collections":
-			return context.symtab.collectionsType;
-		case "java.lang.Comparable":
-			return context.symtab.comparableType;
-		case "java.lang.IllegalArgumentException":
-			return context.symtab.illegalArgumentExceptionType;
-		case "java.lang.Error":
-			return context.symtab.errorType;
-		case "java.lang.StringBuffer":
-			return context.symtab.stringBufferType;
-		case "java.lang.StringBuilder":
-			return context.symtab.stringBuilderType;
-		case "java.lang.String":
-			return context.symtab.stringType;
-		case "java.lang.InterruptedException":
-			return context.symtab.interruptedExceptionType;
-		case "java.lang.Iterable":
-			return context.symtab.iterableType;
-		case "java.util.Iterator":
-			return context.symtab.iteratorType;
-		case "java.lang.RuntimeException":
-			return context.symtab.runtimeExceptionType;
-		case "java.lang.NoClassDefFoundError":
-			return context.symtab.noClassDefFoundErrorType;
-		case "java.lang.NoSuchFieldError":
-			return context.symtab.noSuchFieldErrorType;
-		case "java.lang.Throwable":
-			return context.symtab.throwableType;
-		case "java.util.List":
-			return context.symtab.listType;
-		}
-		return null;
+		TypeElement typeElement = getTypeElementByName(context, clazz.getName());
+		return typeElement == null ? null : typeElement.asType();
 	}
 
 	private static long id = 121;
@@ -433,35 +402,38 @@ public class Util {
 	/**
 	 * Finds the method declaration within the given type, for the given invocation.
 	 */
-	public MethodSymbol findMethodDeclarationInType(Types types, TypeSymbol typeSymbol, JCMethodInvocation invocation) {
-		String meth = invocation.meth.toString();
-		String methName = meth.substring(meth.lastIndexOf('.') + 1);
-		return findMethodDeclarationInType(types, typeSymbol, methName, (MethodType) invocation.meth.type);
+	public ExecutableElement findMethodDeclarationInType(TypeElement typeSymbol, MethodInvocationTree invocation) {
+		ExpressionTree method = invocation.getMethodSelect();
+		String methName = method.toString().substring(method.toString().lastIndexOf('.') + 1);
+
+		TypeMirror methodType = getTypeForTree(method, trees().getPath(typeSymbol).getCompilationUnit());
+
+		return findMethodDeclarationInType(typeSymbol, methName, (ExecutableType) methodType);
 	}
 
 	/**
 	 * Finds the method in the given type that matches the given name and signature.
 	 */
-	public MethodSymbol findMethodDeclarationInType(Types types, TypeSymbol typeSymbol, String methodName,
-			MethodType methodType) {
-		return findMethodDeclarationInType(types, typeSymbol, methodName, methodType, false);
+	public ExecutableElement findMethodDeclarationInType(TypeElement typeSymbol, String methodName,
+			ExecutableType methodType) {
+		return findMethodDeclarationInType(typeSymbol, methodName, methodType, false);
 	}
 
 	/**
 	 * Finds the method in the given type that matches the given name and signature.
 	 */
-	public MethodSymbol findMethodDeclarationInType(Types types, TypeSymbol typeSymbol, String methodName,
-			MethodType methodType, boolean overrides) {
+	public ExecutableElement findMethodDeclarationInType(TypeElement typeSymbol, String methodName,
+			ExecutableType methodType, boolean overrides) {
 
 		// gathers all the potential method matches
-		List<MethodSymbol> candidates = new LinkedList<>();
-		collectMatchingMethodDeclarationsInType(types, typeSymbol, methodName, methodType, overrides, candidates);
+		List<ExecutableElement> candidates = new LinkedList<>();
+		collectMatchingMethodDeclarationsInType(typeSymbol, methodName, methodType, overrides, candidates);
 
 		// score them
-		MethodSymbol bestMatch = null;
+		ExecutableElement bestMatch = null;
 		int lastScore = Integer.MIN_VALUE;
-		for (MethodSymbol candidate : candidates) {
-			int currentScore = getCandidateMethodMatchScore(candidate, methodType, types);
+		for (ExecutableElement candidate : candidates) {
+			int currentScore = getCandidateMethodMatchScore(candidate, methodType);
 			if (bestMatch == null || currentScore > lastScore) {
 				bestMatch = candidate;
 				lastScore = currentScore;
@@ -476,21 +448,21 @@ public class Util {
 		return bestMatch;
 	}
 
-	private static int getCandidateMethodMatchScore(MethodSymbol candidate, MethodType methodType, Types types) {
+	private static int getCandidateMethodMatchScore(ExecutableElement candidate, ExecutableType methodType) {
 
-		if (methodType == null || candidate.getParameters().size() != methodType.argtypes.size()) {
+		if (methodType == null || candidate.getParameters().size() != methodType.getParameterTypes().size()) {
 			return -50;
 		}
 
 		int score = 0;
 
-		boolean isAbstract = (candidate.flags() & Flags.ABSTRACT) != 0;
+		boolean isAbstract = candidate.getModifiers().contains(Modifier.ABSTRACT);
 		if (isAbstract) {
 			score -= 30;
 		}
 		for (int i = 0; i < candidate.getParameters().size(); i++) {
-			Type candidateParamType = candidate.getParameters().get(i).type;
-			Type paramType = methodType.argtypes.get(i);
+			TypeMirror candidateParamType = candidate.getParameters().get(i).asType();
+			TypeMirror paramType = methodType.getParameterTypes().get(i);
 
 			if (!candidateParamType.equals(paramType)) {
 				score--;
@@ -500,35 +472,37 @@ public class Util {
 		return score;
 	}
 
-	private static void collectMatchingMethodDeclarationsInType(Types types, TypeSymbol typeSymbol, String methodName,
-			MethodType methodType, boolean overrides, List<MethodSymbol> collector) {
+	private void collectMatchingMethodDeclarationsInType(TypeElement typeSymbol, String methodName,
+			ExecutableType methodType, boolean overrides, List<ExecutableElement> collector) {
 		if (typeSymbol == null) {
 			return;
 		}
 		if (typeSymbol.getEnclosedElements() != null) {
 			for (Element element : typeSymbol.getEnclosedElements()) {
-				if ((element instanceof MethodSymbol) && (methodName.equals(element.getSimpleName().toString())
-						|| ((MethodSymbol) element).getKind() == ElementKind.CONSTRUCTOR
+				if ((element instanceof ExecutableElement) && (methodName.equals(element.getSimpleName().toString())
+						|| ((ExecutableElement) element).getKind() == ElementKind.CONSTRUCTOR
 								&& ("this".equals(methodName) /* || "super".equals(methodName) */))) {
-					MethodSymbol methodSymbol = (MethodSymbol) element;
+					ExecutableElement methodSymbol = (ExecutableElement) element;
 					if (methodType == null) {
 						collector.add(methodSymbol);
-					} else if (overrides ? isInvocable(types, methodSymbol.type.asMethodType(), methodType)
-							: isInvocable(types, methodType, methodSymbol.type.asMethodType())) {
+					} else if (overrides ? isInvocable((ExecutableType) methodSymbol.asType(), methodType)
+							: isInvocable(methodType, (ExecutableType) methodSymbol.asType())) {
 						collector.add(methodSymbol);
 					}
 				}
 			}
 		}
-		if (typeSymbol instanceof ClassSymbol && ((ClassSymbol) typeSymbol).getSuperclass() != null) {
-			if (!overrides || !Object.class.getName().equals(((ClassSymbol) typeSymbol).getSuperclass().toString())) {
-				collectMatchingMethodDeclarationsInType(types, ((ClassSymbol) typeSymbol).getSuperclass().tsym,
+		if (typeSymbol.getSuperclass() != null) {
+			if (!overrides || !Object.class.getName().equals(typeSymbol.getSuperclass().toString())) {
+
+				collectMatchingMethodDeclarationsInType((TypeElement) types().asElement(typeSymbol.getSuperclass()),
 						methodName, methodType, overrides, collector);
 			}
 		}
-		if (typeSymbol instanceof ClassSymbol && ((ClassSymbol) typeSymbol).getInterfaces() != null) {
-			for (Type t : ((ClassSymbol) typeSymbol).getInterfaces()) {
-				collectMatchingMethodDeclarationsInType(types, t.tsym, methodName, methodType, overrides, collector);
+		if (typeSymbol.getInterfaces() != null) {
+			for (TypeMirror interfaceType : typeSymbol.getInterfaces()) {
+				collectMatchingMethodDeclarationsInType((TypeElement) types().asElement(interfaceType), methodName, methodType,
+						overrides, collector);
 			}
 		}
 	}
@@ -704,13 +678,13 @@ public class Util {
 	 * @param target the callee method signature
 	 * @return true if the callee can be invoked by the caller
 	 */
-	public boolean isInvocable(Types types, MethodType from, MethodType target) {
-		if (from.getParameterTypes().length() != target.getParameterTypes().length()) {
+	public boolean isInvocable(ExecutableType from, ExecutableType target) {
+		if (from.getParameterTypes().size() != target.getParameterTypes().size()) {
 			return false;
 		}
-		for (int i = 0; i < from.getParameterTypes().length(); i++) {
-			if (!types.isAssignable(types.erasure(from.getParameterTypes().get(i)),
-					types.erasure(target.getParameterTypes().get(i)))) {
+		for (int i = 0; i < from.getParameterTypes().size(); i++) {
+			if (!types().isAssignable(types().erasure(from.getParameterTypes().get(i)),
+					types().erasure(target.getParameterTypes().get(i)))) {
 				return false;
 			}
 		}
@@ -753,22 +727,28 @@ public class Util {
 	/**
 	 * Finds the field in the given type that matches the given name.
 	 */
-	public VarSymbol findFieldDeclaration(ClassSymbol classSymbol, Name name) {
+	public VariableElement findFieldDeclaration(TypeElement classSymbol, Name name) {
 		if (classSymbol == null) {
 			return null;
 		}
-		Iterator<Symbol> it = classSymbol.members_field.getElementsByName(name, (symbol) -> {
-			return symbol instanceof VarSymbol;
-		}).iterator();
-		if (it.hasNext()) {
-			return (VarSymbol) it.next();
-		} else {
-			if (classSymbol.getSuperclass().tsym instanceof ClassSymbol) {
-				return findFieldDeclaration((ClassSymbol) classSymbol.getSuperclass().tsym, name);
-			} else {
-				return null;
+
+		for (Element member : classSymbol.getEnclosedElements()) {
+			if (member instanceof VariableElement) {
+				VariableElement field = (VariableElement) member;
+				if (field.getSimpleName().toString().equals(name.toString())) {
+					return field;
+				}
 			}
 		}
+
+		if (classSymbol.getSuperclass() != null) {
+			Element superClassElement = types().asElement(classSymbol.getSuperclass());
+			if (superClassElement instanceof TypeElement) {
+				return findFieldDeclaration((TypeElement) superClassElement, name);
+			}
+		}
+
+		return null;
 	}
 
 	/**
@@ -1256,7 +1236,7 @@ public class Util {
 	 * 
 	 * @return null if not found
 	 */
-	public PackageSymbol getPackageByName(JSweetContext context, String qualifiedName) {
+	public PackageElement getPackageByName(JSweetContext context, String qualifiedName) {
 		return context.symtab.packages.get(context.names.fromString(qualifiedName));
 	}
 
@@ -1265,24 +1245,23 @@ public class Util {
 	 * 
 	 * @return null if not found
 	 */
-	public ClassSymbol getTypeByName(JSweetContext context, String qualifiedName) {
-		return context.symtab.classes.get(context.names.fromString(qualifiedName));
+	public TypeElement getTypeElementByName(JSweetContext context, String qualifiedName) {
+		return elements().getTypeElement(qualifiedName);
 	}
 
 	/**
 	 * Tells if the given method has varargs.
 	 */
-	public boolean hasVarargs(MethodSymbol methodSymbol) {
-		return methodSymbol != null && methodSymbol.getParameters().length() > 0
-				&& (methodSymbol.flags() & Flags.VARARGS) != 0;
+	public boolean hasVarargs(ExecutableElement methodSymbol) {
+		return methodSymbol != null && methodSymbol.getParameters().size() > 0 && methodSymbol.isVarArgs();
 	}
 
 	/**
 	 * Tells if the method uses a type parameter.
 	 */
-	public boolean hasTypeParameters(MethodSymbol methodSymbol) {
-		if (methodSymbol != null && methodSymbol.getParameters().length() > 0) {
-			for (VarSymbol p : methodSymbol.getParameters()) {
+	public boolean hasTypeParameters(ExecutableElement methodSymbol) {
+		if (methodSymbol != null && methodSymbol.getParameters().size() > 0) {
+			for (VariableElement p : methodSymbol.getParameters()) {
 				if (p.type instanceof TypeVar) {
 					return true;
 				}
@@ -1490,36 +1469,37 @@ public class Util {
 	 * Finds the first inner class declaration of the given name in the given class
 	 * hierarchy.
 	 */
-	public ClassSymbol findInnerClassDeclaration(ClassSymbol clazz, String name) {
+	public TypeElement findInnerClassDeclaration(TypeElement clazz, String name) {
 		if (clazz == null) {
 			return null;
 		}
-		for (Symbol s : clazz.getEnclosedElements()) {
-			if (s instanceof ClassSymbol && s.getSimpleName().toString().equals(name)) {
-				return (ClassSymbol) s;
+		for (Element s : clazz.getEnclosedElements()) {
+			if (s instanceof TypeElement && s.getSimpleName().toString().equals(name)) {
+				return (TypeElement) s;
 			}
 		}
 		if (clazz.getSuperclass() != null) {
-			return findInnerClassDeclaration((ClassSymbol) clazz.getSuperclass().tsym, name);
+			return findInnerClassDeclaration((TypeElement) clazz.getSuperclass(), name);
 		}
 		return null;
 	}
 
-	public boolean isLiteralExpression(JCExpression expression) {
+	public boolean isLiteralExpression(ExpressionTree expression) {
 		if (expression == null) {
 			return false;
 		}
 
-		if (expression instanceof JCLiteral) {
+		if (expression instanceof LiteralTree) {
 			return true;
 		}
 
-		if (expression instanceof JCBinary) {
-			return isLiteralExpression(((JCBinary) expression).lhs) && isLiteralExpression(((JCBinary) expression).rhs);
+		if (expression instanceof BinaryTree) {
+			return isLiteralExpression(((BinaryTree) expression).getLeftOperand())
+					&& isLiteralExpression(((BinaryTree) expression).getRightOperand());
 		}
 
-		if (expression instanceof JCUnary) {
-			return isLiteralExpression(((JCUnary) expression).arg);
+		if (expression instanceof UnaryTree) {
+			return isLiteralExpression(((UnaryTree) expression).getExpression());
 		}
 
 		return false;
@@ -1742,4 +1722,11 @@ public class Util {
 		return context.elements;
 	}
 
+	public <T extends Element> T getElementForTree(Tree tree, CompilationUnitTree compilationUnit) {
+		return (T) trees().getElement(trees().getPath(compilationUnit, tree));
+	}
+
+	public TypeMirror getTypeForTree(Tree tree, CompilationUnitTree compilationUnit) {
+		return getElementForTree(tree, compilationUnit).asType();
+	}
 }

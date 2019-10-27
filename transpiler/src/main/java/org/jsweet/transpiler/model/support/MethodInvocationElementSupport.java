@@ -38,6 +38,7 @@ import com.sun.tools.javac.tree.JCTree.JCIdent;
  * See {@link MethodInvocationElement}.
  * 
  * @author Renaud Pawlak
+ * @author Louis Grignon
  */
 public class MethodInvocationElementSupport extends ExtendedElementSupport<MethodInvocationTree> implements MethodInvocationElement {
 

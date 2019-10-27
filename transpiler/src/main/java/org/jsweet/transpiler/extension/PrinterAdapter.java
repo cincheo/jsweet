@@ -557,8 +557,7 @@ public class PrinterAdapter {
 	 */
 	public final ExecutableElement findExecutableDeclarationInType(TypeElement type,
 			MethodInvocationElement invocation) {
-		return org.jsweet.transpiler.util.Util.findMethodDeclarationInType(context.types,
-				(com.sun.tools.javac.code.Symbol.TypeSymbol) type,
+		return org.jsweet.transpiler.util.Util.findMethodDeclarationInType((com.sun.tools.javac.code.Symbol.TypeSymbol) type,
 				((MethodInvocationElementSupport) invocation).getTree());
 	}
 

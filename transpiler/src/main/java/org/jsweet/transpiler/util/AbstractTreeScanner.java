@@ -26,6 +26,7 @@ import java.util.Map.Entry;
 import java.util.Stack;
 import java.util.function.Consumer;
 
+import javax.lang.model.element.Element;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
@@ -356,6 +357,25 @@ public abstract class AbstractTreeScanner extends TreeScanner<Void, Trees> {
 		for (int i = this.stack.size() - 2; i >= 0; i--) {
 			if (type.isAssignableFrom(this.stack.get(i).getClass())) {
 				return (T) this.stack.get(i);
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Gets the first parent in the scanning stack matching the given element type.
+	 * 
+	 * @param elementType the type to search for
+	 * @return the first matching element
+	 * @see #getStack()
+	 */
+	@SuppressWarnings("unchecked")
+	public <T extends Element> T getParentElement(Class<T> elementType) {
+		for (int i = this.stack.size() - 2; i >= 0; i--) {
+			Tree treeAtIndex = this.stack.get(i);
+			Element element = trees().getElement(trees().getPath(compilationUnit, treeAtIndex));
+			if (elementType.isAssignableFrom(element.getClass())) {
+				return (T) element;
 			}
 		}
 		return null;

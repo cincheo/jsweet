@@ -69,6 +69,7 @@ import com.google.common.collect.Iterables;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -741,9 +742,16 @@ public class DirectedGraph<T> implements Collection<T> {
 
 //			System.out.println(elements().element.asType());
 
+//			TypeElement tt = elements().getTypeElement(Throwable.class.getName());
+//			System.out.println(tt);
 			System.out.println("== END visitMemberSelect END ==");
 
 			return super.visitMemberSelect(node, p);
+		}
+
+		@Override
+		public Object visitEnhancedForLoop(EnhancedForLoopTree node, Trees p) {
+			return super.visitEnhancedForLoop(node, p);
 		}
 
 		@Override
@@ -752,7 +760,7 @@ public class DirectedGraph<T> implements Collection<T> {
 			System.out.println(node.getKind().asInterface());
 			return super.visitMemberReference(node, p);
 		}
-		
+
 		@Override
 		public Object visitAssignment(AssignmentTree node, Trees p) {
 			return super.visitAssignment(node, p);
@@ -768,7 +776,7 @@ public class DirectedGraph<T> implements Collection<T> {
 		public Object visitCompoundAssignment(CompoundAssignmentTree node, Trees p) {
 			return super.visitCompoundAssignment(node, p);
 		}
-		
+
 		@Override
 		public Object visitImport(ImportTree node, Trees p) {
 			System.out.println("visitImport");
@@ -824,12 +832,14 @@ public class DirectedGraph<T> implements Collection<T> {
 //		System.out.println(compiler.isSupportedOption("-encoding"));
 
 		File f = new File("src/main/resources/Test.java");
+		File f2 = new File("src/main/resources/Test2.java");
 
 		try (StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, Locale.getDefault(),
 				Charset.forName("UTF-8"))) {
 			final DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
-			Iterable<? extends JavaFileObject> sources = fileManager.getJavaFileObjectsFromFiles(asList(f));
+			Iterable<? extends JavaFileObject> sources = fileManager.getJavaFileObjectsFromFiles(asList(f, f2));
 			System.out.println("f=" + f);
+			System.out.println("f2=" + f2);
 			System.out.println("fileObjects=" + sources);
 
 			final Scanner1 scanner1 = new Scanner1();
@@ -841,6 +851,9 @@ public class DirectedGraph<T> implements Collection<T> {
 			javacTask.setProcessors(asList(processor1, processor2));
 			Iterable<? extends CompilationUnitTree> compilUnits = javacTask.parse();
 			javacTask.analyze();
+
+//			fileManager.inferModuleName(location)
+//			javacTask.getElements().getModuleElement("test").
 
 			System.out.println("compilUnits=" + Iterables.size(compilUnits));
 

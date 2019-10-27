@@ -30,6 +30,7 @@ import com.sun.source.tree.CompilationUnitTree;
  * See {@link AssignmentElement}.
  * 
  * @author Renaud Pawlak
+ * @author Louis Grignon
  */
 public class AssignmentElementSupport extends ExtendedElementSupport<AssignmentTree> implements AssignmentElement {
 

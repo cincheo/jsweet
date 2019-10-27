@@ -138,7 +138,7 @@ public class JSDoc {
 			do {
 				sb.append(text.substring(lastMatch, linkMatcher.start()));
 				sb.append(linkMatcher.group(1));
-				TypeSymbol type = Util.getTypeByName(context, linkMatcher.group(2));
+				TypeSymbol type = Util.getTypeElementByName(context, linkMatcher.group(2));
 				sb.append(type == null ? linkMatcher.group(2) : getMappedDocType(context, null, type.type));
 				sb.append(linkMatcher.group(3));
 				lastMatch = linkMatcher.end();

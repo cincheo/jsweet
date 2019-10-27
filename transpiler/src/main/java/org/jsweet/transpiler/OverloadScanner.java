@@ -213,8 +213,8 @@ public class OverloadScanner extends AbstractTreeScanner {
 							if (invocation == null) {
 								isValid = false;
 							} else {
-								MethodSymbol method = Util.findMethodDeclarationInType(types,
-										(TypeSymbol) methodDecl.sym.getEnclosingElement(), invocation);
+								MethodSymbol method = Util.findMethodDeclarationInType((TypeSymbol) methodDecl.sym.getEnclosingElement(),
+										invocation);
 								if (method != null && method.getSimpleName().toString().equals(methodName)) {
 									String inv = invocation.meth.toString();
 									if (!(inv.equals(methodName) || inv.equals("this." + methodName)

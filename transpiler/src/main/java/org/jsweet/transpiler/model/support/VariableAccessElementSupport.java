@@ -35,6 +35,7 @@ import com.sun.tools.javac.tree.JCTree.JCIdent;
  * See {@link VariableAccessElement}.
  * 
  * @author Renaud Pawlak
+ * @author Louis Grignon
  */
 public class VariableAccessElementSupport extends ExtendedElementSupport<VariableTree> implements VariableAccessElement {
 

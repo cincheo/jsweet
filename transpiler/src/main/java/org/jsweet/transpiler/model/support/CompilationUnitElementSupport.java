@@ -29,8 +29,10 @@ import com.sun.source.tree.CompilationUnitTree;
  * See {@link CompilationUnitElement}.
  * 
  * @author Renaud Pawlak
+ * @author Louis Grignon
  */
-public class CompilationUnitElementSupport extends ExtendedElementSupport<CompilationUnitTree> implements CompilationUnitElement {
+public class CompilationUnitElementSupport extends ExtendedElementSupport<CompilationUnitTree>
+		implements CompilationUnitElement {
 
 	public CompilationUnitElementSupport(CompilationUnitTree compilationUnit, JSweetContext context) {
 		super(compilationUnit, compilationUnit, context);
@@ -38,13 +40,12 @@ public class CompilationUnitElementSupport extends ExtendedElementSupport<Compil
 
 	@Override
 	public PackageElement getPackage() {
-		return tree.packge;
+		return (PackageElement) util().getElementForTree(tree.getPackage(), compilationUnit);
 	}
 
 	@Override
 	public String getSourceFilePath() {
-		return tree.sourcefile.getName();
+		return tree.getSourceFile().getName();
 	}
-	
-	
+
 }

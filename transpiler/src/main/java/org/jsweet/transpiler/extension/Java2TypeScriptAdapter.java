@@ -1253,9 +1253,8 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 			break;
 		case "equals":
 			if (invocationElement.getTargetExpression() != null && invocationElement.getArgumentCount() == 1) {
-				MethodSymbol methSym = Util.findMethodDeclarationInType(context.types,
-						(TypeSymbol) invocationElement.getTargetExpression().getTypeAsElement(), targetMethodName,
-						(MethodType) invocationElement.getMethod().asType());
+				MethodSymbol methSym = util().findMethodDeclarationInType((TypeSymbol) invocationElement.getTargetExpression().getTypeAsElement(),
+						targetMethodName, (MethodType) invocationElement.getMethod().asType());
 				if (methSym != null
 						&& (Object.class.getName().equals(methSym.getEnclosingElement().toString())
 								|| methSym.getEnclosingElement().isInterface())

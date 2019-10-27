@@ -25,11 +25,13 @@ import org.jsweet.transpiler.model.ImportElement;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ImportTree;
+import com.sun.source.tree.Tree;
 
 /**
  * See {@link ImportElement}.
  * 
  * @author Renaud Pawlak
+ * @author Louis Grignon
  */
 public class ImportElementSupport extends ExtendedElementSupport<ImportTree> implements ImportElement {
 
@@ -44,10 +46,13 @@ public class ImportElementSupport extends ExtendedElementSupport<ImportTree> imp
 
 	@Override
 	public TypeElement getImportedType() {
-		if (getTree().isStatic() || getTree().getQualifiedIdentifier().type == null) {
+//		trees().getTypeMirror(treePath)
+		
+		Tree importedIdentifier = getTree().getQualifiedIdentifier();
+		if (getTree().isStatic() || importedIdentifier.type == null) {
 			return null;
 		} else {
-			return (TypeElement) getTree().getQualifiedIdentifier().type.tsym;
+			return (TypeElement) importedIdentifier.type.tsym;
 		}
 	}
 

@@ -28,6 +28,7 @@ import com.sun.source.tree.LiteralTree;
  * See {@link LiteralElement}.
  * 
  * @author Renaud Pawlak
+ * @author Louis Grignon
  */
 public class LiteralElementSupport extends ExtendedElementSupport<LiteralTree> implements LiteralElement {
 

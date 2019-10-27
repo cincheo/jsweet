@@ -30,6 +30,7 @@ import com.sun.source.tree.IdentifierTree;
  * See {@link IdentifierElement}.
  * 
  * @author Renaud Pawlak
+ * @author Louis Grignon
  */
 public class IdentifierElementSupport extends ExtendedElementSupport<IdentifierTree> implements IdentifierElement {
 
@@ -39,7 +40,7 @@ public class IdentifierElementSupport extends ExtendedElementSupport<IdentifierT
 
 	@Override
 	public Element getReferencedElement() {
-		return getTree().sym;
+		return util().getElementForTree(getTree(), compilationUnit);
 	}
 
 }

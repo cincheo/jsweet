@@ -35,6 +35,7 @@ import com.sun.source.tree.NewClassTree;
  * See {@link NewClassElement}.
  * 
  * @author Renaud Pawlak
+ * @author Louis Grignon
  */
 public class NewClassElementSupport extends ExtendedElementSupport<NewClassTree> implements NewClassElement {
 

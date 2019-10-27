@@ -47,6 +47,8 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
@@ -66,6 +68,8 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.Trees;
 
 /**
@@ -687,14 +691,14 @@ public class JSweetContext {
 	/**
 	 * Holds all the static fields that are lazy intitialized.
 	 */
-	public Set<VarSymbol> lazyInitializedStatics = new HashSet<>();
+	public Set<VariableElement> lazyInitializedStatics = new HashSet<>();
 
-	private Map<ClassSymbol, Integer> staticInitializerCounts = new HashMap<>();
+	private Map<TypeElement, Integer> staticInitializerCounts = new HashMap<>();
 
 	/**
 	 * Increments the count of static initialization blocks for the given class.
 	 */
-	public void countStaticInitializer(ClassSymbol clazz) {
+	public void countStaticInitializer(TypeElement clazz) {
 		staticInitializerCounts.put(clazz,
 				(staticInitializerCounts.containsKey(clazz) ? staticInitializerCounts.get(clazz) : 0) + 1);
 	}
@@ -702,7 +706,7 @@ public class JSweetContext {
 	/**
 	 * Gets the static initializer count for the given class.
 	 */
-	public int getStaticInitializerCount(ClassSymbol clazz) {
+	public int getStaticInitializerCount(TypeElement clazz) {
 		Integer count = null;
 		return (count = staticInitializerCounts.get(clazz)) == null ? 0 : count;
 	}
@@ -1020,19 +1024,19 @@ public class JSweetContext {
 		return defaultMethodsCompilationUnits.get(defaultMethod);
 	}
 
-	private Map<VarSymbol, String> fieldNameMapping = new HashMap<>();
+	private Map<VariableElement, String> fieldNameMapping = new HashMap<>();
 
 	/**
 	 * Adds a name mapping to a field (rename it to avoid name clashes).
 	 */
-	public void addFieldNameMapping(VarSymbol field, String name) {
+	public void addFieldNameMapping(VariableElement field, String name) {
 		fieldNameMapping.put(field, name);
 	}
 
 	/**
 	 * Gets a field name mapping if any (null otherwise).
 	 */
-	public String getFieldNameMapping(Symbol field) {
+	public String getFieldNameMapping(VariableElement field) {
 		return fieldNameMapping.get(field);
 	}
 
@@ -1042,23 +1046,23 @@ public class JSweetContext {
 	 * @see #addFieldNameMapping(VarSymbol, String)
 	 * @see #getFieldNameMapping(Symbol)
 	 */
-	public boolean hasFieldNameMapping(Symbol field) {
+	public boolean hasFieldNameMapping(VariableElement field) {
 		return fieldNameMapping.containsKey(field);
 	}
 
-	private Map<ClassSymbol, String> classNameMapping = new HashMap<>();
+	private Map<TypeElement, String> classNameMapping = new HashMap<>();
 
 	/**
 	 * Adds a name mapping to a class (rename it to avoid name clashes).
 	 */
-	public void addClassNameMapping(ClassSymbol clazz, String name) {
+	public void addClassNameMapping(TypeElement clazz, String name) {
 		classNameMapping.put(clazz, name);
 	}
 
 	/**
 	 * Gets a class name mapping if any (null otherwise).
 	 */
-	public String getClassNameMapping(Symbol clazz) {
+	public String getClassNameMapping(TypeElement clazz) {
 		return classNameMapping.get(clazz);
 	}
 
@@ -1068,7 +1072,7 @@ public class JSweetContext {
 	 * @see #addClassNameMapping(ClassSymbol, String)
 	 * @see #getClassNameMapping(Symbol)
 	 */
-	public boolean hasClassNameMapping(Symbol clazz) {
+	public boolean hasClassNameMapping(TypeElement clazz) {
 		return classNameMapping.containsKey(clazz);
 	}
 
@@ -1100,18 +1104,18 @@ public class JSweetContext {
 	 */
 	public boolean ignoreWildcardBounds = true;
 
-	private Map<JCWildcard, String> wildcardNames = new HashMap<>();
+	private Map<WildcardTree, String> wildcardNames = new HashMap<>();
 
-	private Map<Symbol, List<JCWildcard>> wildcards = new HashMap<>();
+	private Map<ExecutableElement, List<WildcardTree>> wildcards = new HashMap<>();
 
 	/**
 	 * Registers a wilcard for a given container (type parameterized element).
 	 */
-	public void registerWildcard(Symbol holder, JCWildcard wildcard) {
+	public void registerWildcard(ExecutableElement holder, WildcardTree wildcard) {
 		if (wildcard.getBound() == null) {
 			return;
 		}
-		List<JCWildcard> l = wildcards.get(holder);
+		List<WildcardTree> l = wildcards.get(holder);
 		if (l == null) {
 			l = new ArrayList<>();
 			wildcards.put(holder, l);
@@ -1123,14 +1127,14 @@ public class JSweetContext {
 	/**
 	 * Gets the wildcard name if any.
 	 */
-	public String getWildcardName(JCWildcard wildcard) {
+	public String getWildcardName(WildcardTree wildcard) {
 		return wildcardNames.get(wildcard);
 	}
 
 	/**
 	 * Gets the registered wildcards for the given type parameter holder.
 	 */
-	public List<JCWildcard> getWildcards(Symbol holder) {
+	public List<WildcardTree> getWildcards(ExecutableElement holder) {
 		return wildcards.get(holder);
 	}
 
@@ -1157,7 +1161,7 @@ public class JSweetContext {
 	 * Tells if the given symbol is annotated with one of the given annotation
 	 * types.
 	 */
-	public boolean hasAnnotationType(Symbol symbol, String... annotationTypes) {
+	public boolean hasAnnotationType(Element symbol, String... annotationTypes) {
 		String[] types = annotationTypes;
 		for (AnnotationManager annotationIntrospector : annotationManagers) {
 			for (String annotationType : types) {

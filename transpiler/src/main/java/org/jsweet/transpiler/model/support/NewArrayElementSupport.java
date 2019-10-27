@@ -33,6 +33,7 @@ import com.sun.source.tree.NewArrayTree;
  * See {@link NewArrayElement}.
  * 
  * @author Renaud Pawlak
+ * @author Louis Grignon
  */
 public class NewArrayElementSupport extends ExtendedElementSupport<NewArrayTree> implements NewArrayElement {
 

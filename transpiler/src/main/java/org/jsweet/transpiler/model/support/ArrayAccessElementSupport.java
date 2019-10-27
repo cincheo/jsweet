@@ -29,6 +29,7 @@ import com.sun.source.tree.CompilationUnitTree;
  * See {@link ArrayAccessElement}.
  * 
  * @author Renaud Pawlak
+ * @author Louis Grignon
  */
 public class ArrayAccessElementSupport extends ExtendedElementSupport<ArrayAccessTree> implements ArrayAccessElement {
 

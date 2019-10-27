@@ -22,7 +22,6 @@ import javax.lang.model.element.VariableElement;
 
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.ExtendedElement;
-import org.jsweet.transpiler.model.ExtendedElementFactory;
 import org.jsweet.transpiler.model.ForeachLoopElement;
 
 import com.sun.source.tree.CompilationUnitTree;
@@ -32,26 +31,29 @@ import com.sun.source.tree.EnhancedForLoopTree;
  * See {@link ForeachLoopElement}.
  * 
  * @author Renaud Pawlak
+ * @author Louis Grignon
  */
-public class ForeachLoopElementSupport extends ExtendedElementSupport<EnhancedForLoopTree> implements ForeachLoopElement {
+public class ForeachLoopElementSupport extends ExtendedElementSupport<EnhancedForLoopTree>
+		implements ForeachLoopElement {
 
-	public ForeachLoopElementSupport(CompilationUnitTree compilationUnit, EnhancedForLoopTree tree, JSweetContext context) {
+	public ForeachLoopElementSupport(CompilationUnitTree compilationUnit, EnhancedForLoopTree tree,
+			JSweetContext context) {
 		super(compilationUnit, tree, context);
 	}
 
 	@Override
 	public ExtendedElement getBody() {
-		return ExtendedElementFactory.INSTANCE.create(getTree().body);
+		return createElement(getTree().getStatement());
 	}
 
 	@Override
 	public VariableElement getIterationVariable() {
-		return getTree().var.sym;
+		return (VariableElement) util().getElementForTree(getTree().getVariable(), compilationUnit);
 	}
 
 	@Override
 	public ExtendedElement getIterableExpression() {
-		return ExtendedElementFactory.INSTANCE.create(getTree().expr);
+		return createElement(getTree().getExpression());
 	}
-	
+
 }

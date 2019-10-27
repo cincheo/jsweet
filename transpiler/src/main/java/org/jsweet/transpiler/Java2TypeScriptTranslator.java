@@ -53,6 +53,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
@@ -1589,8 +1590,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (!(entry.getValue().type instanceof MethodType)) {
 					continue;
 				}
-				MethodSymbol s = Util.findMethodDeclarationInType(context.types, classdecl.sym,
-						entry.getValue().getName().toString(), (MethodType) entry.getValue().type);
+				MethodSymbol s = Util.findMethodDeclarationInType(classdecl.sym, entry.getValue().getName().toString(),
+						(MethodType) entry.getValue().type);
 				if (s == null || s == entry.getValue().sym) {
 					getAdapter().typeVariablesToErase
 							.addAll(((ClassSymbol) s.getEnclosingElement()).getTypeParameters());
@@ -1708,8 +1709,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					if (getScope().generatedMethodNames.contains(meth.name.toString())) {
 						continue;
 					}
-					MethodSymbol s = Util.findMethodDeclarationInType(getContext().types, classdecl.sym,
-							meth.getSimpleName().toString(), (MethodType) meth.type, true);
+					MethodSymbol s = Util.findMethodDeclarationInType(classdecl.sym, meth.getSimpleName().toString(),
+							(MethodType) meth.type, true);
 					if (Object.class.getName().equals(s.getEnclosingElement().toString())) {
 						s = null;
 					}
@@ -2096,8 +2097,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (getScope().isDeclareClassScope() && parent.getExtendsClause() != null
 				&& parent.getExtendsClause().type instanceof ClassType) {
 			ClassType superClassType = (ClassType) parent.getExtendsClause().type;
-			MethodSymbol superMethod = Util.findMethodDeclarationInType(context.types, superClassType.tsym,
-					methodDecl.getName().toString(), (MethodType) methodDecl.type);
+			MethodSymbol superMethod = Util.findMethodDeclarationInType(superClassType.tsym, methodDecl.getName().toString(),
+					(MethodType) methodDecl.type);
 			if (superMethod != null) {
 				return;
 			}
@@ -2133,8 +2134,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 											|| !context.types.isSubtype(parent.sym.type,
 													overload.coreMethod.sym.getEnclosingElement().type));
 							if (!overload.printed && !addCoreMethod && overload.coreMethod.type instanceof MethodType) {
-								addCoreMethod = Util.findMethodDeclarationInType(context.types, parent.sym,
-										methodDecl.getName().toString(), (MethodType) overload.coreMethod.type) == null;
+								addCoreMethod = Util.findMethodDeclarationInType(parent.sym, methodDecl.getName().toString(),
+										(MethodType) overload.coreMethod.type) == null;
 							}
 							if (addCoreMethod) {
 								visitMethodDef(overload.coreMethod);
@@ -2733,8 +2734,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				skipFirst = true;
 				JCMethodInvocation inv = (JCMethodInvocation) ((JCExpressionStatement) method.getBody().stats
 						.get(0)).expr;
-				MethodSymbol ms = Util.findMethodDeclarationInType(context.types,
-						(TypeSymbol) overload.coreMethod.sym.getEnclosingElement(), inv);
+				MethodSymbol ms = Util.findMethodDeclarationInType((TypeSymbol) overload.coreMethod.sym.getEnclosingElement(),
+						inv);
 				for (MethodTree md : overload.methods) {
 					if (md.sym.equals(ms)) {
 						printIndent();
@@ -3038,7 +3039,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		return name;
 	}
 
-	private boolean isLazyInitialized(VarSymbol var) {
+	private boolean isLazyInitialized(VariableElement var) {
 		return var.isStatic() && context.lazyInitializedStatics.contains(var)
 				&& /* enum fields are not lazy initialized */ !(var.isEnum()
 						&& var.getEnclosingElement().equals(var.type.tsym));
@@ -3086,8 +3087,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			boolean confictInDefinitionScope = false;
 
 			if (parent instanceof ClassTree) {
-				MethodSymbol m = Util.findMethodDeclarationInType(context.types, ((ClassTree) parent).sym, name,
-						null);
+				MethodSymbol m = Util.findMethodDeclarationInType(((ClassTree) parent).sym, name, null);
 				if (m != null) {
 					if (!isDefinitionScope) {
 						report(varDecl, varDecl.name, JSweetProblem.FIELD_CONFLICTS_METHOD, name, m.owner);
@@ -3594,7 +3594,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			JCImport staticImport = getStaticGlobalImport(methName);
 			if (staticImport == null) {
 				ClassTree p = getParent(ClassTree.class);
-				methSym = p == null ? null : Util.findMethodDeclarationInType(context.types, p.sym, methName, type);
+				methSym = p == null ? null : Util.findMethodDeclarationInType(p.sym, methName, type);
 				if (methSym != null) {
 					typeChecker.checkApply(inv, methSym);
 					if (!methSym.isStatic()) {
@@ -3639,8 +3639,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						if (parent != null) {
 							while (getScope(level++).innerClass) {
 								parent = getParent(ClassTree.class, parent);
-								if ((method = Util.findMethodDeclarationInType(context.types, parent.sym, methName,
-										type)) != null) {
+								if ((method = Util.findMethodDeclarationInType(parent.sym, methName, type)) != null) {
 									break;
 								}
 							}
@@ -3665,8 +3664,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 			} else {
 				JCFieldAccess staticFieldAccess = (JCFieldAccess) staticImport.qualid;
-				methSym = Util.findMethodDeclarationInType(context.types, staticFieldAccess.selected.type.tsym,
-						methName, type);
+				methSym = Util.findMethodDeclarationInType(staticFieldAccess.selected.type.tsym, methName,
+						type);
 				if (methSym != null) {
 					Map<String, VarSymbol> vars = new HashMap<>();
 					Util.fillAllVariablesInScope(vars, getStack(), inv, getParent(MethodTree.class));
@@ -3700,7 +3699,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (context.isFunctionalType(selected.type.tsym)) {
 					anonymous = true;
 				}
-				methSym = Util.findMethodDeclarationInType(context.types, selected.type.tsym, methName, type);
+				methSym = Util.findMethodDeclarationInType(selected.type.tsym, methName, type);
 				if (methSym != null) {
 					typeChecker.checkApply(inv, methSym);
 				}
@@ -3867,7 +3866,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 		if ("super".equals(methName)) {
 			ClassTree p = getParent(ClassTree.class);
-			methSym = p == null ? null : Util.findMethodDeclarationInType(context.types, p.sym, "this", type);
+			methSym = p == null ? null : Util.findMethodDeclarationInType(p.sym, "this", type);
 		}
 		for (int i = 0; i < argsLength; i++) {
 			JCExpression arg = inv.args.get(i);
