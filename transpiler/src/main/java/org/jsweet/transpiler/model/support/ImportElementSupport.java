@@ -46,8 +46,6 @@ public class ImportElementSupport extends ExtendedElementSupport<ImportTree> imp
 
 	@Override
 	public TypeElement getImportedType() {
-//		trees().getTypeMirror(treePath)
-		
 		Tree importedIdentifier = getTree().getQualifiedIdentifier();
 		if (getTree().isStatic() || importedIdentifier.type == null) {
 			return null;

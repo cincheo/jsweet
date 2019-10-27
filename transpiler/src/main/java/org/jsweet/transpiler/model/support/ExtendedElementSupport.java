@@ -59,7 +59,7 @@ public class ExtendedElementSupport<T extends Tree> implements ExtendedElement {
 		this.treePath = context.trees.getPath(compilationUnit, tree);
 		this.element = context.trees.getElement(treePath);
 	}
-	
+
 	/**
 	 * Returns the wrapped javac tree node.
 	 */
@@ -104,23 +104,23 @@ public class ExtendedElementSupport<T extends Tree> implements ExtendedElement {
 	public boolean isStringLiteral() {
 		return getTree().getKind() == Kind.STRING_LITERAL;
 	}
-	
+
 	protected ExtendedElement createElement(Tree tree) {
-		return ExtendedElementFactory.INSTANCE.create(whichCompilUnit, tree, context);
+		return ExtendedElementFactory.INSTANCE.create(compilationUnit, tree, context);
 	}
-	
+
 	protected Util util() {
 		return context.util;
 	}
-	
+
 	protected Elements elements() {
 		return context.elements;
 	}
-	
+
 	protected Trees trees() {
 		return context.trees;
 	}
-	
+
 	protected Types types() {
 		return context.types;
 	}

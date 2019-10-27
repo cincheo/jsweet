@@ -1,5 +1,6 @@
 package pouet;
 
+import java.util.ArrayList;
 import java.util.List;
 
 class Toto {
@@ -25,6 +26,11 @@ public class Test {
 		int l;
 		l = 10;
 		l += 1;
+		
+		List<String> list = new ArrayList<>();
+		for (String s : list) {
+			System.out.println("sss = " + s);
+		}
 	}
 
 	public int getX() {

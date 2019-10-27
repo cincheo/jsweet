@@ -44,7 +44,7 @@ public class UnaryOperatorElementSupport extends ExtendedElementSupport<UnaryTre
 
 	@Override
 	public ExtendedElement getArgument() {
-		return createElement(tree.getExpression());
+		return createElement( tree.getExpression());
 	}
 
 }

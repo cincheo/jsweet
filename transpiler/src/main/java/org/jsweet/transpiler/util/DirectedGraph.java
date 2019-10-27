@@ -70,12 +70,15 @@ import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.EnhancedForLoopTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.PackageTree;
+import com.sun.source.tree.UnaryTree;
 import com.sun.source.util.JavacTask;
+import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
 
@@ -710,6 +713,19 @@ public class DirectedGraph<T> implements Collection<T> {
 			return super.visitMethodInvocation(node, p);
 		}
 
+		@Override
+		public Object visitUnary(UnaryTree node, Trees p) {
+			
+			ExpressionTree e = node.getExpression();
+			TreePath tp =  p.getPath(getCurrentPath().getCompilationUnit(), e);
+			Element el = p.getElement(tp);
+			TreePath tp2 = p.getPath(el);
+			TreePath tp3 =  p.getPath(tp2.getCompilationUnit(), e);
+			
+			
+			return super.visitUnary(node, p);
+		}
+		
 		@Override
 		public Object visitMemberSelect(MemberSelectTree node, Trees p) {
 
