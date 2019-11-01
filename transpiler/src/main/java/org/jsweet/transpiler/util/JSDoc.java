@@ -33,7 +33,7 @@ import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.support.ExtendedElementSupport;
 
-import com.sun.tools.javac.code.Symbol.TypeSymbol;
+import com.sun.tools.javac.code.Element.TypeElement;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.TypeVar;
 import com.sun.tools.javac.parser.Tokens.Comment;
@@ -42,7 +42,7 @@ import com.sun.tools.javac.tree.Tree.ClassTree;
 import com.sun.tools.javac.tree.Tree.CompilationUnitTree;
 import com.sun.tools.javac.tree.Tree.MethodTree;
 import com.sun.tools.javac.tree.Tree.JCTypeApply;
-import com.sun.tools.javac.tree.Tree.JCVariableDecl;
+import com.sun.tools.javac.tree.Tree.VariableTree;
 
 /**
  * A utility class to print JSDoc comments from regular Java comments.
@@ -138,7 +138,7 @@ public class JSDoc {
 			do {
 				sb.append(text.substring(lastMatch, linkMatcher.start()));
 				sb.append(linkMatcher.group(1));
-				TypeSymbol type = Util.getTypeElementByName(context, linkMatcher.group(2));
+				TypeElement type = Util.getTypeElementByName(context, linkMatcher.group(2));
 				sb.append(type == null ? linkMatcher.group(2) : getMappedDocType(context, null, type.type));
 				sb.append(linkMatcher.group(3));
 				lastMatch = linkMatcher.end();
@@ -252,8 +252,8 @@ public class JSDoc {
 			if (clazz.sym.isEnum()) {
 				commentLines.add(" @enum");
 				for(Tree def : clazz.defs) {
-					if(def instanceof JCVariableDecl) {
-						JCVariableDecl var = (JCVariableDecl) def;
+					if(def instanceof VariableTree) {
+						VariableTree var = (VariableTree) def;
 						if (var.sym.getModifiers() != null && var.sym.getModifiers().contains(Modifier.PUBLIC)
 								&& var.sym.getModifiers().contains(Modifier.STATIC)) {
 							commentLines.add("@property {" + getMappedDocType(context, var.getType(), var.getType().type) + "} "
@@ -287,7 +287,7 @@ public class JSDoc {
 			if (m.matches()) {
 				String name = m.group(2);
 				params.add(name);
-				JCVariableDecl parameter = Util.findParameter(method, name);
+				VariableTree parameter = Util.findParameter(method, name);
 				if (parameter != null) {
 					commentLines.set(i,
 							m.group(1) + "{" + getMappedDocType(context, parameter.vartype, parameter.vartype.type)
@@ -301,7 +301,7 @@ public class JSDoc {
 				}
 			}
 		}
-		for (JCVariableDecl parameter : method.getParameters()) {
+		for (VariableTree parameter : method.getParameters()) {
 			String name = parameter.name.toString();
 			if (!params.contains(name)) {
 				commentLines.add(" @param {" + getMappedDocType(context, parameter.vartype, parameter.vartype.type)

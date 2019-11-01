@@ -61,8 +61,8 @@ import org.jsweet.transpiler.model.support.ExtendedElementSupport;
 import org.jsweet.transpiler.model.support.MethodInvocationElementSupport;
 import org.jsweet.transpiler.util.AbstractTreePrinter;
 
-import com.sun.tools.javac.code.Symbol.ClassSymbol;
-import com.sun.tools.javac.code.Symbol.PackageSymbol;
+import com.sun.tools.javac.code.Element.ClassSymbol;
+import com.sun.tools.javac.code.Element.PackageSymbol;
 
 /**
  * A printer adapter, which can be overridden to change the default printer
@@ -310,7 +310,7 @@ public class PrinterAdapter {
 	 * {@link #addAnnotationManager(AnnotationManager)}.
 	 */
 	public final boolean hasAnnotationType(Element element, String... annotationTypes) {
-		return context.hasAnnotationType((com.sun.tools.javac.code.Symbol) element, annotationTypes);
+		return context.hasAnnotationType((com.sun.tools.javac.code.Element) element, annotationTypes);
 	}
 
 	/**
@@ -334,7 +334,7 @@ public class PrinterAdapter {
 	 */
 	public final <T> T getAnnotationValue(Element element, String annotationType, Class<T> propertyClass,
 			T defaultValue) {
-		return getAnnotationValue((com.sun.tools.javac.code.Symbol) element, annotationType, null, propertyClass,
+		return getAnnotationValue((com.sun.tools.javac.code.Element) element, annotationType, null, propertyClass,
 				defaultValue);
 	}
 
@@ -358,7 +358,7 @@ public class PrinterAdapter {
 	 */
 	public final <T> T getAnnotationValue(Element element, String annotationType, String propertyName,
 			Class<T> propertyClass, T defaultValue) {
-		return context.getAnnotationValue((com.sun.tools.javac.code.Symbol) element, annotationType, propertyName,
+		return context.getAnnotationValue((com.sun.tools.javac.code.Element) element, annotationType, propertyName,
 				propertyClass, defaultValue);
 	}
 
@@ -556,7 +556,7 @@ public class PrinterAdapter {
 	 */
 	public final ExecutableElement findExecutableDeclarationInType(TypeElement type,
 			MethodInvocationElement invocation) {
-		return org.jsweet.transpiler.util.Util.findMethodDeclarationInType((com.sun.tools.javac.code.Symbol.TypeSymbol) type,
+		return org.jsweet.transpiler.util.Util.findMethodDeclarationInType((com.sun.tools.javac.code.Element.TypeElement) type,
 				((MethodInvocationElementSupport) invocation).getTree());
 	}
 
@@ -565,7 +565,7 @@ public class PrinterAdapter {
 	 * <code>@Root</code> annotation.
 	 */
 	public final String getRootRelativeName(Element element) {
-		return printer.getRootRelativeName((com.sun.tools.javac.code.Symbol) element);
+		return printer.getRootRelativeName((com.sun.tools.javac.code.Element) element);
 	}
 
 	/**
@@ -981,7 +981,7 @@ public class PrinterAdapter {
 	 * <code>@Ambient</code>-annotated scope).
 	 */
 	public final boolean isAmbientDeclaration(Element element) {
-		return context.isAmbientDeclaration((com.sun.tools.javac.code.Symbol) element);
+		return context.isAmbientDeclaration((com.sun.tools.javac.code.Element) element);
 	}
 
 	/**

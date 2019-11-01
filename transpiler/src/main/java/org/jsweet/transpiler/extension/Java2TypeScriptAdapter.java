@@ -101,20 +101,20 @@ import org.jsweet.transpiler.model.support.VariableAccessElementSupport;
 import org.jsweet.transpiler.util.Util;
 
 import com.sun.codemodel.internal.JJavaName;
-import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.code.Symbol.ClassSymbol;
-import com.sun.tools.javac.code.Symbol.MethodSymbol;
-import com.sun.tools.javac.code.Symbol.TypeSymbol;
+import com.sun.tools.javac.code.Element;
+import com.sun.tools.javac.code.Element.ClassSymbol;
+import com.sun.tools.javac.code.Element.MethodSymbol;
+import com.sun.tools.javac.code.Element.TypeElement;
 import com.sun.tools.javac.code.Type.MethodType;
 import com.sun.tools.javac.tree.Tree;
 import com.sun.tools.javac.tree.Tree.ClassTree;
 import com.sun.tools.javac.tree.Tree.JCEnhancedForLoop;
-import com.sun.tools.javac.tree.Tree.JCExpression;
+import com.sun.tools.javac.tree.Tree.ExpressionTree;
 import com.sun.tools.javac.tree.Tree.JCFieldAccess;
 import com.sun.tools.javac.tree.Tree.JCIdent;
 import com.sun.tools.javac.tree.Tree.JCImport;
-import com.sun.tools.javac.tree.Tree.JCMethodInvocation;
-import com.sun.tools.javac.tree.Tree.JCNewClass;
+import com.sun.tools.javac.tree.Tree.MethodInvocationTree;
+import com.sun.tools.javac.tree.Tree.NewClassTree;
 import com.sun.tools.javac.tree.Tree.JCTypeApply;
 import com.sun.tools.javac.tree.Tree.Tag;
 
@@ -304,9 +304,9 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 						return null;
 					}
 				}
-				Symbol nameSymbol = fa.sym;
+				Element nameSymbol = fa.sym;
 				if (nameSymbol == null) {
-					TypeSymbol t = fa.selected.type.tsym;
+					TypeElement t = fa.selected.type.tsym;
 					nameSymbol = Util.findFirstDeclarationInType(t, methodName);
 				}
 
@@ -417,7 +417,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 		if (targetType != null && targetType.getKind() == ElementKind.ENUM
 				&& (invocationElement.getTargetExpression() != null
 						&& !"this".equals(invocationElement.getTargetExpression().toString()))) {
-			String relTarget = getRootRelativeName((Symbol) targetType);
+			String relTarget = getRootRelativeName((Element) targetType);
 			switch (targetMethodName) {
 			case "name":
 				printMacroName("Enum." + targetMethodName);
@@ -595,7 +595,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 						report(invocationElement, JSweetProblem.UNTYPED_OBJECT_ODD_PARAMETER_COUNT);
 					}
 					print("{");
-					com.sun.tools.javac.util.List<JCExpression> args = ((MethodInvocationElementSupport) invocationElement)
+					com.sun.tools.javac.util.List<ExpressionTree> args = ((MethodInvocationElementSupport) invocationElement)
 							.getTree().args;
 					while (args != null && args.head != null) {
 						String key = args.head.toString();
@@ -1253,7 +1253,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 			break;
 		case "equals":
 			if (invocationElement.getTargetExpression() != null && invocationElement.getArgumentCount() == 1) {
-				MethodSymbol methSym = util().findMethodDeclarationInType((TypeSymbol) invocationElement.getTargetExpression().getTypeAsElement(),
+				MethodSymbol methSym = util().findMethodDeclarationInType((TypeElement) invocationElement.getTargetExpression().getTypeAsElement(),
 						targetMethodName, (MethodType) invocationElement.getMethod().asType());
 				if (methSym != null
 						&& (Object.class.getName().equals(methSym.getEnclosingElement().toString())
@@ -1332,10 +1332,10 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 	}
 
 	protected final void printCastMethodInvocation(InvocationElement invocation) {
-		boolean needsParens = getPrinter().getParent() instanceof JCMethodInvocation;
+		boolean needsParens = getPrinter().getParent() instanceof MethodInvocationTree;
 		if (needsParens) {
 			// async needs no parens to work
-			JCMethodInvocation parentInvocation = (JCMethodInvocation) getPrinter().getParent();
+			MethodInvocationTree parentInvocation = (MethodInvocationTree) getPrinter().getParent();
 			if (parentInvocation.meth instanceof JCIdent) {
 				needsParens = !((JCIdent) parentInvocation.meth).getName().toString().equals("async");
 			}
@@ -1446,7 +1446,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 			// enum objects wrapping
 			if (targetType != null && targetType.getKind() == ElementKind.ENUM && !fieldAccess.sym.isEnum()
 					&& !"this".equals(fieldAccess.selected.toString()) && !"class".equals(targetFieldName)) {
-				String relTarget = getRootRelativeName((Symbol) targetType);
+				String relTarget = getRootRelativeName((Element) targetType);
 				getPrinter().print(relTarget)
 						.print("[\"" + Java2TypeScriptTranslator.ENUM_WRAPPER_CLASS_WRAPPERS + "\"][")
 						.print(fieldAccess.selected).print("].").print(fieldAccess.name.toString());
@@ -1454,7 +1454,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 			}
 
 			// built-in Java support
-			String accessedType = ((Symbol) targetType).getQualifiedName().toString();
+			String accessedType = ((Element) targetType).getQualifiedName().toString();
 			if (fieldAccess.sym.isStatic() && isMappedType(accessedType) && accessedType.startsWith("java.lang.")
 					&& !"class".equals(fieldAccess.name.toString())) {
 				delegateToEmulLayer(accessedType, variableAccess);
@@ -1485,7 +1485,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 
 	@Override
 	public boolean substituteNewClass(NewClassElement newClassElement) {
-		JCNewClass newClass = ((NewClassElementSupport) newClassElement).getTree();
+		NewClassTree newClass = ((NewClassElementSupport) newClassElement).getTree();
 		String className = newClassElement.getTypeAsElement().toString();
 		if (className.startsWith(JSweetConfig.TUPLE_CLASSES_PACKAGE + ".")) {
 			getPrinter().print("[").printArgList(null, newClass.args).print("]");
@@ -1496,7 +1496,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 
 			print("<").print(getTypeMappingTarget(className));
 			if (newClass.clazz instanceof JCTypeApply) {
-				List<JCExpression> typeArgs = ((JCTypeApply) newClass.clazz).arguments;
+				List<ExpressionTree> typeArgs = ((JCTypeApply) newClass.clazz).arguments;
 				if (typeArgs.size() > 0) {
 					getPrinter().print("<").printTypeArgList(typeArgs).print(">");
 				}

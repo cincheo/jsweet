@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software Foundation,
+ * aint with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 package org.jsweet.transpiler.util;
@@ -24,14 +24,14 @@ package org.jsweet.transpiler.util;
  * @author Renaud Pawlak
  */
 public final class Position implements Comparable<Position> {
-	private final long position;
-	private final long line;
-	private final long column;
+	private final int position;
+	private final int line;
+	private final int column;
 
 	/**
 	 * Creates a new position.
 	 */
-	public Position(long position, long line, long column) {
+	public Position(int position, int line, int column) {
 		super();
 		this.position = position;
 		this.line = line;
@@ -41,7 +41,7 @@ public final class Position implements Comparable<Position> {
 	/**
 	 * Creates a new position.
 	 */
-	public Position(long line, long column) {
+	public Position(int line, int column) {
 		this(-1, line, column);
 	}
 
@@ -55,9 +55,9 @@ public final class Position implements Comparable<Position> {
 	@Override
 	public int compareTo(Position position) {
 		if (this.line != position.line) {
-			return (int)(this.line - position.line);
+			return (this.line - position.line);
 		} else {
-			return (int)(this.column - position.column);
+			return (this.column - position.column);
 		}
 	}
 
@@ -69,21 +69,21 @@ public final class Position implements Comparable<Position> {
 	/**
 	 * The position in the stream (-1 if not used).
 	 */
-	public final long getPosition() {
+	public final int getPosition() {
 		return position;
 	}
 
 	/**
 	 * The position's line.
 	 */
-	public final long getLine() {
+	public final int getLine() {
 		return line;
 	}
 
 	/**
 	 * The position's column.
 	 */
-	public final long getColumn() {
+	public final int getColumn() {
 		return column;
 	}
 }

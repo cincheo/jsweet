@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software Foundation,
+ * aint with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 package org.jsweet.transpiler;
@@ -41,8 +41,8 @@ public final class SourcePosition {
 	 * @param endLine       the end line in the source file
 	 * @param endColumn     the end columb in the source file
 	 */
-	public SourcePosition(File file, Tree sourceElement, long startLine, long startColumn, long endLine,
-			long endColumn) {
+	public SourcePosition(File file, Tree sourceElement, int startLine, int startColumn, int endLine,
+			int endColumn) {
 		super();
 		this.file = file;
 		this.startPosition = new Position(startLine, startColumn);
@@ -122,28 +122,28 @@ public final class SourcePosition {
 	/**
 	 * The start line in the source file.
 	 */
-	public final long getStartLine() {
+	public final int getStartLine() {
 		return this.startPosition.getLine();
 	}
 
 	/**
 	 * The start column in the source file.
 	 */
-	public final long getStartColumn() {
+	public final int getStartColumn() {
 		return this.startPosition.getColumn();
 	}
 
 	/**
 	 * The end line in the source file.
 	 */
-	public final long getEndLine() {
+	public final int getEndLine() {
 		return this.endPosition.getLine();
 	}
 
 	/**
 	 * The end column in the source file.
 	 */
-	public final long getEndColumn() {
+	public final int getEndColumn() {
 		return this.endPosition.getColumn();
 	}
 

@@ -945,12 +945,9 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 			}
 		})) {
 			generator.addMapping(javaSourceFilePath, null,
-					new FilePosition((int) entry.getInputPosition().getLine(),
-							(int) entry.getInputPosition().getColumn()),
-					new FilePosition((int) entry.getOutputPosition().getLine(),
-							(int) entry.getOutputPosition().getColumn()),
-					new FilePosition((int) entry.getOutputPosition().getLine(),
-							(int) entry.getOutputPosition().getColumn() + 1));
+					new FilePosition(entry.getInputPosition().getLine(), entry.getInputPosition().getColumn()),
+					new FilePosition(entry.getOutputPosition().getLine(), entry.getOutputPosition().getColumn()),
+					new FilePosition(entry.getOutputPosition().getLine(), entry.getOutputPosition().getColumn() + 1));
 		}
 		File outputFile = new File(sourceFile.getTsFile().getPath() + ".map");
 		try (FileWriter writer = new FileWriter(outputFile, false)) {
@@ -1264,7 +1261,7 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 														.relativize(
 																originPosition.getFile().getCanonicalFile().toPath())
 														.toString(),
-												null, new FilePosition((int) (originPosition.getStartLine() - 1), 0),
+												null, new FilePosition(originPosition.getStartLine() - 1, 0),
 												new FilePosition(line - 1, 0),
 												new FilePosition(line - 1, lineContent.length() - 1));
 									}

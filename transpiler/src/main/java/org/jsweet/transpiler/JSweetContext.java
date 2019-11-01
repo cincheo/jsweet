@@ -995,13 +995,13 @@ public class JSweetContext {
 		return b.toString();
 	}
 
-	private Map<TypeSymbol, Set<Entry<ClassTree, MethodTree>>> defaultMethods = new HashMap<>();
+	private Map<TypeElement, Set<Entry<ClassTree, MethodTree>>> defaultMethods = new HashMap<>();
 	private Map<MethodTree, CompilationUnitTree> defaultMethodsCompilationUnits = new HashMap<>();
 
 	/**
 	 * Gets the default methods declared in the given type.
 	 */
-	public Set<Entry<ClassTree, MethodTree>> getDefaultMethods(TypeSymbol type) {
+	public Set<Entry<ClassTree, MethodTree>> getDefaultMethods(TypeElement type) {
 		return defaultMethods.get(type);
 	}
 
@@ -1045,7 +1045,7 @@ public class JSweetContext {
 	 * Tells if the given field has a field name mapping.
 	 * 
 	 * @see #addFieldNameMapping(VarSymbol, String)
-	 * @see #getFieldNameMapping(Symbol)
+	 * @see #getFieldNameMapping(Element)
 	 */
 	public boolean hasFieldNameMapping(VariableElement field) {
 		return fieldNameMapping.containsKey(field);
@@ -1071,7 +1071,7 @@ public class JSweetContext {
 	 * Tells if the given class has a class name mapping.
 	 * 
 	 * @see #addClassNameMapping(ClassSymbol, String)
-	 * @see #getClassNameMapping(Symbol)
+	 * @see #getClassNameMapping(Element)
 	 */
 	public boolean hasClassNameMapping(TypeElement clazz) {
 		return classNameMapping.containsKey(clazz);
@@ -1146,7 +1146,7 @@ public class JSweetContext {
 	 * definition package).
 	 */
 	public boolean isRootPackage(Element element) {
-		Symbol symbol = (Symbol) element;
+		Element symbol = (Element) element;
 		return hasAnnotationType(symbol, JSweetConfig.ANNOTATION_ROOT) || (symbol instanceof PackageSymbol
 				&& libPackagePattern.matcher(symbol.getQualifiedName().toString()).matches());
 	}
@@ -1154,7 +1154,7 @@ public class JSweetContext {
 	/**
 	 * Tells if the given type is a Java interface.
 	 */
-	public boolean isInterface(TypeSymbol typeSymbol) {
+	public boolean isInterface(TypeElement typeSymbol) {
 		return (typeSymbol.type.isInterface() || hasAnnotationType(typeSymbol, JSweetConfig.ANNOTATION_INTERFACE));
 	}
 
@@ -1177,7 +1177,7 @@ public class JSweetContext {
 
 		if (hasAnnotationFilters()) {
 			String signature = symbol.toString();
-			if (!(symbol instanceof TypeSymbol) && symbol.getEnclosingElement() != null) {
+			if (!(symbol instanceof TypeElement) && symbol.getEnclosingElement() != null) {
 				signature = symbol.getEnclosingElement().getQualifiedName().toString() + "." + signature;
 			}
 			for (String annotationType : annotationTypes) {
@@ -1215,7 +1215,7 @@ public class JSweetContext {
 	 * Gets the actual name of a symbol from a JSweet convention, so including
 	 * potential <code>jsweet.lang.Name</code> annotation.
 	 */
-	public String getActualName(Symbol symbol) {
+	public String getActualName(Element symbol) {
 		String name = symbol.getSimpleName().toString();
 		if (hasAnnotationType(symbol, JSweetConfig.ANNOTATION_NAME)) {
 			String originalName = getAnnotationValue(symbol, JSweetConfig.ANNOTATION_NAME, String.class, null);
@@ -1261,11 +1261,11 @@ public class JSweetContext {
 	 * is the one that is enclosed within a root package (see
 	 * <code>jsweet.lang.Root</code>) or the one in the default (unnamed) package.
 	 */
-	public PackageSymbol getTopLevelPackage(Symbol symbol) {
+	public PackageSymbol getTopLevelPackage(Element symbol) {
 		if ((symbol instanceof PackageSymbol) && isRootPackage(symbol)) {
 			return null;
 		}
-		Symbol parent = (symbol instanceof PackageSymbol) ? ((PackageSymbol) symbol).owner
+		Element parent = (symbol instanceof PackageSymbol) ? ((PackageSymbol) symbol).owner
 				: symbol.getEnclosingElement();
 		if (parent != null && isRootPackage(parent)) {
 			if (symbol instanceof PackageSymbol) {
@@ -1486,7 +1486,7 @@ public class JSweetContext {
 	 * Gets the symbol's annotation that correspond to the given annotation type
 	 * name if exists.
 	 */
-	private static AnnotationMirror getAnnotation(Symbol symbol, String annotationType) {
+	private static AnnotationMirror getAnnotation(Element symbol, String annotationType) {
 		for (Compound a : symbol.getAnnotationMirrors()) {
 			if (annotationType.equals(a.type.toString())) {
 				return a;
@@ -1512,7 +1512,7 @@ public class JSweetContext {
 	 * Grabs the names of all the support interfaces in the class and interface
 	 * hierarchy.
 	 */
-	public void grabSupportedInterfaceNames(Set<String> interfaces, TypeSymbol type) {
+	public void grabSupportedInterfaceNames(Set<String> interfaces, TypeElement type) {
 		if (type == null) {
 			return;
 		}
@@ -1540,12 +1540,12 @@ public class JSweetContext {
 		}
 	}
 
-	public void grabMethodsToBeImplemented(List<MethodSymbol> methods, TypeSymbol type) {
+	public void grabMethodsToBeImplemented(List<MethodSymbol> methods, TypeElement type) {
 		if (type == null) {
 			return;
 		}
 		if (isInterface(type)) {
-			for (Symbol s : type.getEnclosedElements()) {
+			for (Element s : type.getEnclosedElements()) {
 				if (s instanceof MethodSymbol) {
 					if (!s.isStatic() && !Util.isOverridingBuiltInJavaObjectMethod((MethodSymbol) s)) {
 						methods.add((MethodSymbol) s);
@@ -1565,7 +1565,7 @@ public class JSweetContext {
 	 * Tells if the given symbol is annotated with one of the given annotation type
 	 * names.
 	 */
-	private static boolean hasActualAnnotationType(Symbol symbol, String... annotationTypes) {
+	private static boolean hasActualAnnotationType(Element symbol, String... annotationTypes) {
 		for (Compound a : symbol.getAnnotationMirrors()) {
 			for (String annotationType : annotationTypes) {
 				if (annotationType.equals(a.type.toString())) {
@@ -1579,7 +1579,7 @@ public class JSweetContext {
 	/**
 	 * Returns true if this new class expression defines an anonymous class.
 	 */
-	public boolean isAnonymousClass(JCNewClass newClass) {
+	public boolean isAnonymousClass(NewClassTree newClass) {
 		if (newClass.clazz != null && newClass.def != null) {
 			if (hasAnnotationType(newClass.clazz.type.tsym, JSweetConfig.ANNOTATION_OBJECT_TYPE)
 					|| hasAnnotationType(newClass.clazz.type.tsym, JSweetConfig.ANNOTATION_INTERFACE)) {
@@ -1594,7 +1594,7 @@ public class JSweetContext {
 				return true;
 			}
 			for (Tree def : newClass.def.defs) {
-				if (def instanceof JCVariableDecl) {
+				if (def instanceof VariableTree) {
 					// no variables in maps
 					return true;
 				}
@@ -1625,8 +1625,8 @@ public class JSweetContext {
 			if (exprStat.getExpression() instanceof JCAssign) {
 				return true;
 			}
-			if (exprStat.getExpression() instanceof JCMethodInvocation) {
-				JCMethodInvocation inv = (JCMethodInvocation) exprStat.getExpression();
+			if (exprStat.getExpression() instanceof MethodInvocationTree) {
+				MethodInvocationTree inv = (MethodInvocationTree) exprStat.getExpression();
 				String methodName;
 				if (inv.meth instanceof JCFieldAccess) {
 					methodName = ((JCFieldAccess) inv.meth).name.toString();
@@ -1709,7 +1709,7 @@ public class JSweetContext {
 	 * Returns true if the given type symbol corresponds to a functional type (in
 	 * the TypeScript way).
 	 */
-	public boolean isFunctionalType(TypeSymbol type) {
+	public boolean isFunctionalType(TypeElement type) {
 		String name = type.getQualifiedName().toString();
 		return name.startsWith("java.util.function.") //
 				|| name.equals(Runnable.class.getName()) //
@@ -1721,7 +1721,7 @@ public class JSweetContext {
 	/**
 	 * Returns true if the given type symbol corresponds to a core functional type.
 	 */
-	public boolean isCoreFunctionalType(TypeSymbol type) {
+	public boolean isCoreFunctionalType(TypeElement type) {
 		String name = type.getQualifiedName().toString();
 		return name.startsWith("java.util.function.") //
 				|| name.equals(Runnable.class.getName()) //
@@ -1733,8 +1733,8 @@ public class JSweetContext {
 	 * Tells if the given type has a anonymous function (instances can be used as
 	 * lambdas).
 	 */
-	public boolean hasAnonymousFunction(TypeSymbol type) {
-		for (Symbol s : type.getEnclosedElements()) {
+	public boolean hasAnonymousFunction(TypeElement type) {
+		for (Element s : type.getEnclosedElements()) {
 			if (s instanceof MethodSymbol) {
 				String methodName = s.getSimpleName().toString();
 				if (JSweetConfig.ANONYMOUS_FUNCTION_NAME.equals(methodName) //
@@ -1810,7 +1810,7 @@ public class JSweetContext {
 
 	public Map<Element, String> docComments = new HashMap<>();
 
-	private boolean isAmbientAnnotatedDeclaration(Symbol symbol) {
+	private boolean isAmbientAnnotatedDeclaration(Element symbol) {
 		if (symbol == null) {
 			return false;
 		}
@@ -1825,8 +1825,8 @@ public class JSweetContext {
 	 * Tells if the given symbol is ambient (part of a def.* package or within an
 	 * <code>@Ambient</code>-annotated scope).
 	 */
-	public boolean isAmbientDeclaration(Symbol symbol) {
-		if (symbol instanceof TypeSymbol
+	public boolean isAmbientDeclaration(Element symbol) {
+		if (symbol instanceof TypeElement
 				? symbol.getQualifiedName().toString().startsWith(JSweetConfig.LIBS_PACKAGE + ".")
 				: symbol.getEnclosingElement().getQualifiedName().toString()
 						.startsWith(JSweetConfig.LIBS_PACKAGE + ".")) {

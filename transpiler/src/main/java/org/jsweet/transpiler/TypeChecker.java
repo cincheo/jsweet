@@ -25,17 +25,17 @@ import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.util.AbstractTreePrinter;
 import org.jsweet.transpiler.util.Util;
 
-import com.sun.tools.javac.code.Symbol.MethodSymbol;
+import com.sun.tools.javac.code.Element.MethodSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.ClassType;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.tree.Tree;
 import com.sun.tools.javac.tree.Tree.JCArrayTypeTree;
 import com.sun.tools.javac.tree.Tree.JCAssign;
-import com.sun.tools.javac.tree.Tree.JCExpression;
+import com.sun.tools.javac.tree.Tree.ExpressionTree;
 import com.sun.tools.javac.tree.Tree.JCFieldAccess;
-import com.sun.tools.javac.tree.Tree.JCMethodInvocation;
-import com.sun.tools.javac.tree.Tree.JCVariableDecl;
+import com.sun.tools.javac.tree.Tree.MethodInvocationTree;
+import com.sun.tools.javac.tree.Tree.VariableTree;
 import com.sun.tools.javac.util.Name;
 
 /**
@@ -133,7 +133,7 @@ public class TypeChecker {
 	/**
 	 * Checks that the given invocation conforms to JSweet contraints.
 	 */
-	public boolean checkApply(JCMethodInvocation invocation, MethodSymbol methSym) {
+	public boolean checkApply(MethodInvocationTree invocation, MethodSymbol methSym) {
 		// if (Util.hasAnnotationType(methSym, JSweetConfig.ANNOTATION_ERASED))
 		// {
 		// translator.report(invocation, JSweetProblem.ERASED_METHOD, methSym);
@@ -162,7 +162,7 @@ public class TypeChecker {
 	/**
 	 * Checks that the given type is JSweet compatible.
 	 */
-	public boolean checkType(Tree declaringElement, Name declaringElementName, JCExpression typeExpression) {
+	public boolean checkType(Tree declaringElement, Name declaringElementName, ExpressionTree typeExpression) {
 		if (!JSweetConfig.isJDKReplacementMode()) {
 			if (typeExpression instanceof JCArrayTypeTree) {
 				return checkType(declaringElement, declaringElementName, ((JCArrayTypeTree) typeExpression).elemtype);
@@ -198,7 +198,7 @@ public class TypeChecker {
 		return true;
 	}
 
-	private boolean checkUnionTypeAssignment(Types types, Tree parent, Type assigned, JCMethodInvocation union) {
+	private boolean checkUnionTypeAssignment(Types types, Tree parent, Type assigned, MethodInvocationTree union) {
 		if (union.args.head.type.tsym.getQualifiedName().toString().startsWith(JSweetConfig.UNION_CLASS_NAME)) {
 			// union type -> simple type
 			if (!Util.containsAssignableType(types, union.args.head.type.getTypeArguments(), assigned)) {
@@ -229,9 +229,9 @@ public class TypeChecker {
 	 * Checks that the given union type assignment conforms to JSweet
 	 * contraints.
 	 */
-	public boolean checkUnionTypeAssignment(Types types, Tree parent, JCMethodInvocation union) {
-		if (parent instanceof JCVariableDecl) {
-			JCVariableDecl decl = (JCVariableDecl) parent;
+	public boolean checkUnionTypeAssignment(Types types, Tree parent, MethodInvocationTree union) {
+		if (parent instanceof VariableTree) {
+			VariableTree decl = (VariableTree) parent;
 			if (decl.init == union) {
 				return checkUnionTypeAssignment(types, parent, decl.type, union);
 			}
@@ -240,8 +240,8 @@ public class TypeChecker {
 			if (assign.rhs == union) {
 				return checkUnionTypeAssignment(types, parent, assign.lhs.type, union);
 			}
-		} else if (parent instanceof JCMethodInvocation) {
-			JCMethodInvocation invocation = (JCMethodInvocation) parent;
+		} else if (parent instanceof MethodInvocationTree) {
+			MethodInvocationTree invocation = (MethodInvocationTree) parent;
 			for (Tree arg : invocation.args) {
 				if (arg == union) {
 					return checkUnionTypeAssignment(types, parent, arg.type, union);

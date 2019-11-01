@@ -201,7 +201,7 @@ public class Util {
 								}
 							}
 
-							public void visitVarDef(JCVariableDecl tree) {
+							public void visitVarDef(VariableTree tree) {
 								if (tree.sym == element) {
 									result[0] = tree;
 								} else {
@@ -329,8 +329,8 @@ public class Util {
 				// if (method.body != null) {
 				// return true;
 				// }
-			} else if (member instanceof JCVariableDecl) {
-				if (((JCVariableDecl) member).mods.getFlags().contains(Modifier.STATIC)) {
+			} else if (member instanceof VariableTree) {
+				if (((VariableTree) member).mods.getFlags().contains(Modifier.STATIC)) {
 					return true;
 				}
 			}
@@ -368,8 +368,8 @@ public class Util {
 		case FOR_LOOP:
 			if (((JCForLoop) parent).init != null) {
 				for (JCStatement s : ((JCForLoop) parent).init) {
-					if (s instanceof JCVariableDecl) {
-						putVar(vars, ((JCVariableDecl) s).sym);
+					if (s instanceof VariableTree) {
+						putVar(vars, ((VariableTree) s).sym);
 					}
 				}
 			}
@@ -378,7 +378,7 @@ public class Util {
 			putVar(vars, ((JCEnhancedForLoop) parent).var.sym);
 			break;
 		case METHOD:
-			for (JCVariableDecl var : ((MethodTree) parent).params) {
+			for (VariableTree var : ((MethodTree) parent).params) {
 				putVar(vars, var.sym);
 			}
 			break;
@@ -389,8 +389,8 @@ public class Util {
 			for (JCStatement s : statements) {
 				if (s == from) {
 					break;
-				} else if (s instanceof JCVariableDecl) {
-					putVar(vars, ((JCVariableDecl) s).sym);
+				} else if (s instanceof VariableTree) {
+					putVar(vars, ((VariableTree) s).sym);
 				}
 			}
 		}
@@ -560,7 +560,7 @@ public class Util {
 	/**
 	 * Finds methods by name.
 	 */
-	public void findMethodDeclarationsInType(TypeSymbol typeSymbol, Collection<String> methodNames,
+	public void findMethodDeclarationsInType(TypeElement typeSymbol, Collection<String> methodNames,
 			Set<String> ignoredTypeNames, List<MethodSymbol> result) {
 		if (typeSymbol == null) {
 			return;
@@ -609,20 +609,20 @@ public class Util {
 	 * Tells if the given element is deprecated.
 	 */
 	public boolean isDeprecated(Element element) {
-		return ((Symbol) element).isDeprecated();
+		return ((Element) element).isDeprecated();
 	}
 
 	/**
 	 * Find first declaration (of any kind) matching the given name.
 	 */
-	public Symbol findFirstDeclarationInType(Element typeSymbol, String name) {
+	public Element findFirstDeclarationInType(Element typeSymbol, String name) {
 		if (typeSymbol == null) {
 			return null;
 		}
 		if (typeSymbol.getEnclosedElements() != null) {
 			for (Element element : typeSymbol.getEnclosedElements()) {
 				if (name.equals(element.getSimpleName().toString())) {
-					return (Symbol) element;
+					return (Element) element;
 				}
 			}
 		}
@@ -630,10 +630,10 @@ public class Util {
 	}
 
 	/**
-	 * @see #findFirstDeclarationInClassAndSuperClasses(TypeSymbol, String,
+	 * @see #findFirstDeclarationInClassAndSuperClasses(TypeElement, String,
 	 *      ElementKind, Integer)
 	 */
-	public Symbol findFirstDeclarationInClassAndSuperClasses(TypeSymbol typeSymbol, String name, ElementKind kind) {
+	public Element findFirstDeclarationInClassAndSuperClasses(TypeElement typeSymbol, String name, ElementKind kind) {
 		return findFirstDeclarationInClassAndSuperClasses(typeSymbol, name, kind, null);
 	}
 
@@ -641,7 +641,7 @@ public class Util {
 	 * Find first declaration (of any kind) matching the given name (and optionally
 	 * the given number of arguments for methods)
 	 */
-	public Symbol findFirstDeclarationInClassAndSuperClasses(TypeSymbol typeSymbol, String name, ElementKind kind,
+	public Element findFirstDeclarationInClassAndSuperClasses(TypeElement typeSymbol, String name, ElementKind kind,
 			Integer methodArgsCount) {
 		if (typeSymbol == null) {
 			return null;
@@ -651,12 +651,12 @@ public class Util {
 				if (name.equals(element.getSimpleName().toString()) && element.getKind() == kind
 						&& (methodArgsCount == null
 								|| methodArgsCount.equals(((ExecutableElement) element).getParameters().size()))) {
-					return (Symbol) element;
+					return (Element) element;
 				}
 			}
 		}
 		if (typeSymbol instanceof ClassSymbol) {
-			Symbol s = findFirstDeclarationInClassAndSuperClasses(((ClassSymbol) typeSymbol).getSuperclass().tsym, name,
+			Element s = findFirstDeclarationInClassAndSuperClasses(((ClassSymbol) typeSymbol).getSuperclass().tsym, name,
 					kind, methodArgsCount);
 			if (s == null && kind == ElementKind.METHOD) {
 				// also looks up in interfaces for methods
@@ -676,7 +676,7 @@ public class Util {
 	/**
 	 * Scans member declarations in type hierachy.
 	 */
-	public boolean scanMemberDeclarationsInType(TypeSymbol typeSymbol, Set<String> ignoredTypeNames,
+	public boolean scanMemberDeclarationsInType(TypeElement typeSymbol, Set<String> ignoredTypeNames,
 			Function<Element, Boolean> scanner) {
 		if (typeSymbol == null) {
 			return true;
@@ -710,8 +710,8 @@ public class Util {
 	/**
 	 * Finds and returns the parameter matching the given name if any.
 	 */
-	public JCVariableDecl findParameter(MethodTree method, String name) {
-		for (JCVariableDecl parameter : method.getParameters()) {
+	public VariableTree findParameter(MethodTree method, String name) {
+		for (VariableTree parameter : method.getParameters()) {
 			if (name.equals(parameter.name.toString())) {
 				return parameter;
 			}
@@ -812,7 +812,7 @@ public class Util {
 	/**
 	 * Tells if this parameter declaration is varargs.
 	 */
-	public boolean isVarargs(JCVariableDecl varDecl) {
+	public boolean isVarargs(VariableTree varDecl) {
 		return (varDecl.mods.flags & Flags.VARARGS) == Flags.VARARGS;
 	}
 
@@ -878,7 +878,7 @@ public class Util {
 	/**
 	 * Tells if two type symbols are assignable.
 	 */
-	public boolean isAssignable(Types types, TypeSymbol to, TypeSymbol from) {
+	public boolean isAssignable(Types types, TypeElement to, TypeElement from) {
 		if (to.equals(from)) {
 			return true;
 		} else {
@@ -906,7 +906,7 @@ public class Util {
 	 * @return the '/'-separated path
 	 * @see #getRelativePath(String, String)
 	 */
-	public String getRelativePath(Symbol fromSymbol, Symbol toSymbol) {
+	public String getRelativePath(Element fromSymbol, Element toSymbol) {
 		return getRelativePath("/" + fromSymbol.getQualifiedName().toString().replace('.', '/'),
 				"/" + toSymbol.getQualifiedName().toString().replace('.', '/'));
 	}
@@ -1237,7 +1237,7 @@ public class Util {
 	/**
 	 * Looks up a class in the given class hierarchy and returns true if found.
 	 */
-	public boolean isParent(TypeSymbol type, TypeSymbol toFind) {
+	public boolean isParent(TypeElement type, TypeElement toFind) {
 		if (!(type instanceof ClassSymbol)) {
 			return false;
 		}
@@ -1289,7 +1289,7 @@ public class Util {
 	public PackageElement getPackageByName(JSweetContext context, String qualifiedName) {
 		return context.symtab.packages.get(context.names.fromString(qualifiedName));
 	}
-	
+
 	public String getPackageFullNameForCompilationUnit(CompilationUnitTree compilationUnitTree) {
 		return compilationUnitTree.getPackage().getPackageName().toString();
 	}
@@ -1327,7 +1327,7 @@ public class Util {
 	/**
 	 * Tells if the given type is imported in the given compilation unit.
 	 */
-	public boolean isImported(CompilationUnitTree compilationUnit, TypeSymbol type) {
+	public boolean isImported(CompilationUnitTree compilationUnit, TypeElement type) {
 		for (JCImport i : compilationUnit.getImports()) {
 			if (i.isStatic() || i.qualid.type == null) {
 				continue;
@@ -1343,7 +1343,7 @@ public class Util {
 	 * Tells if the given symbol is statically imported in the given compilation
 	 * unit.
 	 */
-	public TypeSymbol getStaticImportTarget(CompilationUnitTree compilationUnit, String name) {
+	public TypeElement getStaticImportTarget(CompilationUnitTree compilationUnit, String name) {
 		if (compilationUnit == null) {
 			return null;
 		}
@@ -1359,8 +1359,8 @@ public class Util {
 				if (qualified.selected instanceof JCFieldAccess) {
 					qualified = (JCFieldAccess) qualified.selected;
 				}
-				if (qualified.sym instanceof TypeSymbol) {
-					return (TypeSymbol) qualified.sym;
+				if (qualified.sym instanceof TypeElement) {
+					return (TypeElement) qualified.sym;
 				}
 			}
 			return null;
@@ -1371,7 +1371,7 @@ public class Util {
 	/**
 	 * Gets the imported type (wether statically imported or not).
 	 */
-	public TypeSymbol getImportedType(JCImport i) {
+	public TypeElement getImportedType(JCImport i) {
 		if (!i.isStatic()) {
 			return i.qualid.type == null ? null : i.qualid.type.tsym;
 		} else {
@@ -1380,8 +1380,8 @@ public class Util {
 				if (qualified.selected instanceof JCFieldAccess) {
 					qualified = (JCFieldAccess) qualified.selected;
 				}
-				if (qualified.sym instanceof TypeSymbol) {
-					return (TypeSymbol) qualified.sym;
+				if (qualified.sym instanceof TypeElement) {
+					return (TypeElement) qualified.sym;
 				}
 			}
 		}
@@ -1420,7 +1420,7 @@ public class Util {
 	 * Tells if that variable is a non-static final field initialized with a literal
 	 * value.
 	 */
-	public boolean isConstantOrNullField(JCVariableDecl var) {
+	public boolean isConstantOrNullField(VariableTree var) {
 		return !var.getModifiers().getFlags().contains(Modifier.STATIC) && (var.init == null
 				|| var.getModifiers().getFlags().contains(Modifier.FINAL) && var.init instanceof JCLiteral);
 	}
@@ -1447,7 +1447,7 @@ public class Util {
 	 * Gets the symbol on JCFieldAccess or JCIdent if possible, or return null.
 	 * Could return either a MethodSymbol, or VariableSymbol
 	 */
-	public Symbol getAccessedSymbol(Tree tree) {
+	public Element getAccessedSymbol(Tree tree) {
 		if (tree instanceof JCFieldAccess) {
 			return ((JCFieldAccess) tree).sym;
 		} else if (tree instanceof JCIdent) {
@@ -1510,7 +1510,7 @@ public class Util {
 		int superClassIndex = symbols.indexOf(clazz.getSuperclass().tsym);
 		// looks up also if any inner class extends a class in the list
 		if (superClassIndex < 0) {
-			for (Symbol s : clazz.getEnclosedElements()) {
+			for (Element s : clazz.getEnclosedElements()) {
 				if (s instanceof ClassSymbol) {
 					return indexOfSuperclass(symbols, ((ClassSymbol) s));
 				}
@@ -1756,8 +1756,8 @@ public class Util {
 		return new SourcePosition( //
 				new File(compilationUnit.getSourceFile().getName()), //
 				tree, //
-				lineMap.getLineNumber(startPosition), lineMap.getColumnNumber(startPosition), //
-				lineMap.getLineNumber(endPosition), lineMap.getColumnNumber(endPosition));
+				(int) lineMap.getLineNumber(startPosition), (int) lineMap.getColumnNumber(startPosition), //
+				(int) lineMap.getLineNumber(endPosition), (int) lineMap.getColumnNumber(endPosition));
 	}
 
 	private SourcePositions sourcePositions() {

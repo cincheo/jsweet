@@ -199,21 +199,21 @@ public class OverloadScanner extends AbstractTreeScanner {
 				for (MethodTree methodDecl : methods) {
 					if (methodDecl.body != null && methodDecl.body.stats.size() == 1) {
 						if (!methodDecl.equals(coreMethod)) {
-							JCMethodInvocation invocation = null;
+							MethodInvocationTree invocation = null;
 							JCStatement stat = methodDecl.body.stats.get(0);
 							if (stat instanceof JCReturn) {
-								if (((JCReturn) stat).expr instanceof JCMethodInvocation) {
-									invocation = (JCMethodInvocation) ((JCReturn) stat).expr;
+								if (((JCReturn) stat).expr instanceof MethodInvocationTree) {
+									invocation = (MethodInvocationTree) ((JCReturn) stat).expr;
 								}
 							} else if (stat instanceof JCExpressionStatement) {
-								if (((JCExpressionStatement) stat).expr instanceof JCMethodInvocation) {
-									invocation = (JCMethodInvocation) ((JCExpressionStatement) stat).expr;
+								if (((JCExpressionStatement) stat).expr instanceof MethodInvocationTree) {
+									invocation = (MethodInvocationTree) ((JCExpressionStatement) stat).expr;
 								}
 							}
 							if (invocation == null) {
 								isValid = false;
 							} else {
-								MethodSymbol method = Util.findMethodDeclarationInType((TypeSymbol) methodDecl.sym.getEnclosingElement(),
+								MethodSymbol method = Util.findMethodDeclarationInType((TypeElement) methodDecl.sym.getEnclosingElement(),
 										invocation);
 								if (method != null && method.getSimpleName().toString().equals(methodName)) {
 									String inv = invocation.meth.toString();
@@ -223,7 +223,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 									}
 									if (isValid && invocation.getArguments() != null) {
 										for (int i = 0; i < invocation.getArguments().size(); i++) {
-											JCExpression expr = invocation.getArguments().get(i);
+											ExpressionTree expr = invocation.getArguments().get(i);
 											if (Util.isConstant(expr)) {
 												defaultValues.put(i, expr);
 											} else {

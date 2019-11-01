@@ -118,7 +118,7 @@ public class StaticInitilializerAnalyzer extends TreePathScanner<Void, Trees> {
 				if (importedType != null) {
 					currentTopLevelImportedTypes.add(importedType);
 				}
-				// TypeSymbol type = Util.getImportedType(i);
+				// TypeElement type = Util.getImportedType(i);
 				// if (type != null) {
 				// CompilationUnitTree target = typesToCompilationUnits.get(type);
 				// if (target != null && getGraph().contains(target)) {

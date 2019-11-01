@@ -22,14 +22,26 @@ import java.util.List;
 import java.util.Stack;
 import java.util.function.Consumer;
 
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.TypeMirror;
+
 import org.jsweet.transpiler.JSweetContext;
+import org.jsweet.transpiler.SourcePosition;
 import org.jsweet.transpiler.TranspilationHandler;
 import org.jsweet.transpiler.TypeChecker;
 import org.jsweet.transpiler.extension.PrinterAdapter;
 
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
-
+import com.sun.source.tree.VariableTree;
 
 /**
  * A tree printer is a kind of tree scanner specialized in pretty printing the
@@ -81,16 +93,11 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	/**
 	 * Creates a new printer.
 	 * 
-	 * @param logHandler
-	 *            the handler that reports logs and problems
-	 * @param context
-	 *            the scanning context
-	 * @param compilationUnit
-	 *            the source file to be printed
-	 * @param adapter
-	 *            the printer adapter
-	 * @param fillSourceMap
-	 *            tells if printer fills the source map
+	 * @param logHandler      the handler that reports logs and problems
+	 * @param context         the scanning context
+	 * @param compilationUnit the source file to be printed
+	 * @param adapter         the printer adapter
+	 * @param fillSourceMap   tells if printer fills the source map
 	 */
 	public AbstractTreePrinter(TranspilationHandler logHandler, JSweetContext context,
 			CompilationUnitTree compilationUnit, PrinterAdapter adapter, boolean fillSourceMap) {
@@ -112,17 +119,9 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	 * Print a given AST.
 	 */
 	public AbstractTreePrinter print(Tree tree) {
-		scan(tree);
+		scan(tree, context.trees);
 		return this;
 	}
-
-	// /**
-	// * Print a given AST.
-	// */
-	// public AbstractTreePrinter print(ExtendedElement element) {
-	// scan(element);
-	// return this;
-	// }
 
 	/**
 	 * Enters the given tree (se {@link #scan(Tree)}.
@@ -130,15 +129,16 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	protected void enter(Tree tree) {
 		super.enter(tree);
 		positionStack.push(new Position(getCurrentPosition(), currentLine, currentColumn));
-		if (compilationUnit != null && tree.pos >= 0 && inSourceMap(tree)) {
-			sourceMap.addEntry(new Position(tree.pos, //
-					compilationUnit.lineMap.getLineNumber(tree.pos), //
-					compilationUnit.lineMap.getColumnNumber(tree.pos)), positionStack.peek());
+		if (compilationUnit != null && inSourceMap(tree)) {
+			SourcePosition sourcePosition = util().getSourcePosition(compilationUnit, tree);
+			Position startPosition = sourcePosition.getStartPosition();
+
+			sourceMap.addEntry(startPosition, positionStack.peek());
 		}
 	}
 
 	private boolean inSourceMap(Tree tree) {
-		return (tree instanceof JCExpression || tree instanceof JCStatement || tree instanceof MethodTree);
+		return (tree instanceof ExpressionTree || tree instanceof StatementTree || tree instanceof MethodTree);
 	}
 
 	@Override
@@ -156,13 +156,11 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	@Override
 	protected void exit() {
 		Tree tree = stack.peek();
-		if (compilationUnit != null && tree instanceof JCBlock) {
-			int endPos = tree.getEndPosition(diagnosticSource.getEndPosTable());
-			sourceMap.addEntry(
-					new Position(endPos, //
-							compilationUnit.lineMap.getLineNumber(endPos), //
-							compilationUnit.lineMap.getColumnNumber(endPos)),
-					new Position(getCurrentPosition(), currentLine, currentColumn));
+		if (compilationUnit != null && tree instanceof BlockTree) {
+			SourcePosition sourcePosition = util().getSourcePosition(compilationUnit, tree);
+			Position endPosition = sourcePosition.getEndPosition();
+
+			sourceMap.addEntry(endPosition, new Position(getCurrentPosition(), currentLine, currentColumn));
 		}
 		super.exit();
 		positionStack.pop();
@@ -234,7 +232,7 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 		currentColumn += string.length();
 		return this;
 	}
-	
+
 	/**
 	 * Outputs a string and new line
 	 */
@@ -245,16 +243,16 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	/**
 	 * Outputs an identifier.
 	 */
-	public AbstractTreePrinter printIdentifier(Symbol symbol) {
+	public AbstractTreePrinter printIdentifier(Element symbol) {
 		String adaptedIdentifier = context.getActualName(symbol);
 		return print(adaptedIdentifier);
 	}
 
-	public String getQualifiedTypeName(TypeSymbol type, boolean globals, boolean ignoreLangTypes) {
+	public String getQualifiedTypeName(TypeElement type, boolean globals, boolean ignoreLangTypes) {
 		return getRootRelativeName(type);
 	}
 
-	public String getIdentifier(Symbol symbol) {
+	public String getIdentifier(Element symbol) {
 		return context.getActualName(symbol);
 	}
 
@@ -347,15 +345,15 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	/**
 	 * Prints a comma-separated list of subtrees.
 	 */
-	public AbstractTreePrinter printArgList(List<Type> assignedTypes, List<? extends Tree> args,
+	public AbstractTreePrinter printArgList(List<TypeMirror> assignedTypes, List<? extends Tree> args,
 			Consumer<Tree> printer) {
 		int i = 0;
 		for (Tree arg : args) {
 			if (printer != null) {
 				printer.accept(arg);
 			} else {
-				if (assignedTypes != null && (arg instanceof JCExpression) && i < assignedTypes.size()) {
-					if (!substituteAssignedExpression(assignedTypes.get(i++), (JCExpression) arg)) {
+				if (assignedTypes != null && (arg instanceof ExpressionTree) && i < assignedTypes.size()) {
+					if (!substituteAssignedExpression(assignedTypes.get(i++), (ExpressionTree) arg)) {
 						print(arg);
 					}
 				} else {
@@ -376,12 +374,11 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	 * Print an expression being assigned to a type (should handled necessary
 	 * wraping/unwraping).
 	 * 
-	 * @param assignedType
-	 *            the type the expression is being assigned to
-	 * @param expression
-	 *            the assigned expression
+	 * @param assignedType the type the expression is being assigned to
+	 * @param expression   the assigned expression
 	 */
-	public AbstractTreePrinter substituteAndPrintAssignedExpression(Type assignedType, JCExpression expression) {
+	public AbstractTreePrinter substituteAndPrintAssignedExpression(TypeMirror assignedType,
+			ExpressionTree expression) {
 		if (!substituteAssignedExpression(assignedType, expression)) {
 			print(expression);
 		}
@@ -389,51 +386,52 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	}
 
 	/**
-	 * Conditionally substitutes an expression when it is assigned to a given
-	 * type.
+	 * Conditionally substitutes an expression when it is assigned to a given type.
 	 * 
-	 * @param assignedType
-	 *            the type the expression is being assigned to
-	 * @param expression
-	 *            the assigned expression
+	 * @param assignedType the type the expression is being assigned to
+	 * @param expression   the assigned expression
 	 * @return true if the expression what subtituted
 	 */
-	abstract protected boolean substituteAssignedExpression(Type assignedType, JCExpression expression);
+	abstract protected boolean substituteAssignedExpression(TypeMirror assignedType, ExpressionTree expression);
 
 	/**
 	 * Prints an invocation argument list, with type assignment.
 	 */
-	public AbstractTreePrinter printArgList(JCMethodInvocation inv) {
-		for (int i = 0; i < inv.args.size(); i++) {
-			JCExpression arg = inv.args.get(i);
-			if (inv.meth.type != null) {
-				List<Type> argTypes = ((MethodType) inv.meth.type).argtypes;
-				Type paramType = i < argTypes.size() ? argTypes.get(i) : argTypes.get(argTypes.size() - 1);
+	public AbstractTreePrinter printArgList(MethodInvocationTree invocationTree) {
+
+		List<? extends ExpressionTree> arguments = invocationTree.getArguments();
+
+		for (int i = 0; i < arguments.size(); i++) {
+			ExpressionTree arg = arguments.get(i);
+			TypeMirror methodType = util().getTypeForTree(invocationTree.getMethodSelect(), compilationUnit);
+			if (methodType != null) {
+				List<? extends TypeMirror> argTypes = ((ExecutableType) methodType).getParameterTypes();
+				TypeMirror paramType = i < argTypes.size() ? argTypes.get(i) : argTypes.get(argTypes.size() - 1);
 				if (!substituteAssignedExpression(paramType, arg)) {
 					print(arg);
 				}
 			}
-			if (i < inv.args.size() - 1) {
+			if (i < arguments.size() - 1) {
 				print(", ");
 			}
 		}
 		return this;
 	}
 
-	public AbstractTreePrinter printArgList(List<Type> assignedTypes, List<? extends Tree> args) {
+	public AbstractTreePrinter printArgList(List<TypeMirror> assignedTypes, List<? extends Tree> args) {
 		return printArgList(assignedTypes, args, null);
 	}
 
-	public abstract AbstractTreePrinter printConstructorArgList(JCNewClass newClass, boolean localClass);
+	public abstract AbstractTreePrinter printConstructorArgList(NewClassTree newClass, boolean localClass);
 
 	public abstract AbstractTreePrinter substituteAndPrintType(Tree typeTree);
 
 	/**
 	 * Prints a comma-separated list of variable names (no types).
 	 */
-	public AbstractTreePrinter printVarNameList(List<JCVariableDecl> args) {
-		for (JCVariableDecl arg : args) {
-			print(arg.name.toString());
+	public AbstractTreePrinter printVarNameList(List<VariableTree> args) {
+		for (VariableTree arg : args) {
+			print(arg.getName().toString());
 			print(", ");
 		}
 		if (!args.isEmpty()) {
@@ -478,20 +476,20 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	}
 
 	/**
-	 * Tells if this printer tries to preserve the original line numbers of the
-	 * Java input.
+	 * Tells if this printer tries to preserve the original line numbers of the Java
+	 * input.
 	 */
 	public boolean isFillSourceMap() {
 		return fillSourceMap;
 	}
 
-	public String getRootRelativeName(Symbol symbol) {
+	public String getRootRelativeName(Element symbol) {
 		return context.getRootRelativeName(
 				context.useModules ? context.getImportedElements(compilationUnit.getSourceFile().getName()) : null,
 				symbol);
 	}
 
-	public String getRootRelativeName(Symbol symbol, boolean useJavaNames) {
+	public String getRootRelativeName(Element symbol, boolean useJavaNames) {
 		return context.getRootRelativeName(
 				context.useModules ? context.getImportedElements(compilationUnit.getSourceFile().getName()) : null,
 				symbol, useJavaNames);
