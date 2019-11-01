@@ -67,6 +67,7 @@ import javax.tools.ToolProvider;
 
 import com.google.common.collect.Iterables;
 import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.EnhancedForLoopTree;
@@ -704,7 +705,7 @@ public class DirectedGraph<T> implements Collection<T> {
 		Elements elements() {
 			return processingEnvironment.getElementUtils();
 		}
-		
+
 		@Override
 		public Object visitNewClass(NewClassTree node, Trees p) {
 			return super.visitNewClass(node, p);
@@ -718,8 +719,8 @@ public class DirectedGraph<T> implements Collection<T> {
 				System.out.println(p.getElement(p.getPath(getCompilationUnit(), methTree)));
 				ExpressionTree et = ((MemberSelectTree) methTree).getExpression();
 				System.out.println(et);
-			} 
-			
+			}
+
 			++count;
 
 			System.out.println(tree.getKind().asInterface());
@@ -737,6 +738,15 @@ public class DirectedGraph<T> implements Collection<T> {
 			TreePath tp3 = p.getPath(tp2.getCompilationUnit(), e);
 
 			return super.visitUnary(node, p);
+		}
+
+		@Override
+		public Object visitClass(ClassTree node, Trees p) {
+			System.out.println("== visitClass ==");
+			if (node.getExtendsClause() != null) {
+				System.out.println(toElement(node.getExtendsClause(), p));
+			}
+			return super.visitClass(node, p);
 		}
 
 		@Override
@@ -762,7 +772,6 @@ public class DirectedGraph<T> implements Collection<T> {
 			if (typeMirror instanceof DeclaredType) {
 				System.out.println("decl");
 				System.out.println(((DeclaredType) typeMirror).asElement());
-			} else if (typeMirror instanceof PrimitiveType) {
 				System.out.println("prim");
 				System.out.println(((PrimitiveType) typeMirror).toString());
 			}
@@ -797,7 +806,8 @@ public class DirectedGraph<T> implements Collection<T> {
 
 		@Override
 		public Object visitPackage(PackageTree node, Trees p) {
-			System.out.println("visitPackage");
+			System.out.println("visitPackage ");
+
 			return super.visitPackage(node, p);
 		}
 
@@ -815,9 +825,19 @@ public class DirectedGraph<T> implements Collection<T> {
 		public int getCount() {
 			return count;
 		}
-		
+
 		private CompilationUnitTree getCompilationUnit() {
 			return getCurrentPath().getCompilationUnit();
+		}
+
+		@Override
+		public Object visitCompilationUnit(CompilationUnitTree node, Trees p) {
+			System.out.println(node.getPackage().getPackageName().toString() + " COMPIL UNIT");
+			return super.visitCompilationUnit(node, p);
+		}
+
+		private Element toElement(Tree tree, Trees trees) {
+			return trees.getElement(trees.getPath(getCompilationUnit(), tree));
 		}
 	}
 

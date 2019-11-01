@@ -6,7 +6,11 @@ import java.util.List;
 class Toto {
 }
 
-public class Test {
+class Pichade {
+	
+}
+
+public class Test extends Pichade {
 
 	public Test() {
 	}

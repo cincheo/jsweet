@@ -1289,6 +1289,10 @@ public class Util {
 	public PackageElement getPackageByName(JSweetContext context, String qualifiedName) {
 		return context.symtab.packages.get(context.names.fromString(qualifiedName));
 	}
+	
+	public String getPackageFullNameForCompilationUnit(CompilationUnitTree compilationUnitTree) {
+		return compilationUnitTree.getPackage().getPackageName().toString();
+	}
 
 	/**
 	 * Looks up a type element from its qualified name.

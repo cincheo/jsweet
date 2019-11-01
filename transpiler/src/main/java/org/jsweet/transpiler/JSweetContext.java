@@ -47,6 +47,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
@@ -731,7 +732,7 @@ public class JSweetContext {
 	}
 
 	private Map<String, Set<String>> importedNamesInModules = new HashMap<>();
-	private Map<String, Map<Symbol, String>> importedElementsInModules = new HashMap<>();
+	private Map<String, Map<Element, String>> importedElementsInModules = new HashMap<>();
 
 	/**
 	 * Register a name that is imported by the given package of the transpiled
@@ -748,7 +749,7 @@ public class JSweetContext {
 	 * @param targetName
 	 *            the target name being imported
 	 */
-	public void registerImportedName(String moduleName, Symbol sourceElement, String targetName) {
+	public void registerImportedName(String moduleName, Element sourceElement, String targetName) {
 		Set<String> importedNames = importedNamesInModules.get(moduleName);
 		if (importedNames == null) {
 			importedNames = new HashSet<>();
@@ -758,7 +759,7 @@ public class JSweetContext {
 			importedNames.add(targetName);
 		}
 		if (sourceElement != null) {
-			Map<Symbol, String> importedElements = importedElementsInModules.get(moduleName);
+			Map<Element, String> importedElements = importedElementsInModules.get(moduleName);
 			if (importedElements == null) {
 				importedElements = new HashMap<>();
 				importedElementsInModules.put(moduleName, importedElements);
@@ -785,8 +786,8 @@ public class JSweetContext {
 	/**
 	 * The list of package names imported by the given m of the transpiled program.
 	 */
-	public Map<Symbol, String> getImportedElements(String moduleName) {
-		Map<Symbol, String> importedElements = importedElementsInModules.get(moduleName);
+	public Map<Element, String> getImportedElements(String moduleName) {
+		Map<Element, String> importedElements = importedElementsInModules.get(moduleName);
 		if (importedElements == null) {
 			importedElements = new HashMap<>();
 			importedElementsInModules.put(moduleName, importedElements);
@@ -800,17 +801,17 @@ public class JSweetContext {
 	public void clearImportedNames(String moduleName) {
 		Set<String> importedNames = new HashSet<>();
 		importedNamesInModules.put(moduleName, importedNames);
-		Map<Symbol, String> importedModulesForNames = new HashMap<>();
+		Map<Element, String> importedModulesForNames = new HashMap<>();
 		importedElementsInModules.put(moduleName, importedModulesForNames);
 	}
 
-	private Map<String, List<Symbol>> exportedElements = new HashMap<>();
-	private Map<Symbol, String> exportedNames = new HashMap<>();
+	private Map<String, List<Element>> exportedElements = new HashMap<>();
+	private Map<Element, String> exportedNames = new HashMap<>();
 
 	/**
 	 * Gets the exported elements for all the modules defined in the program.
 	 */
-	public Map<String, List<Symbol>> getExportedElements() {
+	public Map<String, List<Element>> getExportedElements() {
 		return exportedElements;
 	}
 
@@ -818,7 +819,7 @@ public class JSweetContext {
 	 * Returns the idenfier of the given exported symbol, including Module
 	 * annotation's name if specified
 	 */
-	public String getExportedElementName(Symbol exportedElement) {
+	public String getExportedElementName(Element exportedElement) {
 		String name = exportedNames.get(exportedElement);
 		String forcedName = getAnnotationValue(exportedElement, JSweetConfig.ANNOTATION_MODULE, "exportedElement",
 				String.class, null);
@@ -832,10 +833,10 @@ public class JSweetContext {
 	/**
 	 * Adds an exported element for a module.
 	 */
-	public void addExportedElement(String moduleName, Symbol exportedElement, CompilationUnitTree compilationUnit) {
-		List<Symbol> exportedNamesForModule = exportedElements.get(moduleName);
+	public void addExportedElement(String moduleName, Element exportedElement, CompilationUnitTree compilationUnit) {
+		List<Element> exportedNamesForModule = exportedElements.get(moduleName);
 		if (exportedNamesForModule == null) {
-			exportedNamesForModule = new ArrayList<Symbol>();
+			exportedNamesForModule = new ArrayList<Element>();
 			exportedElements.put(moduleName, exportedNamesForModule);
 		}
 
@@ -1225,8 +1226,8 @@ public class JSweetContext {
 		return name;
 	}
 
-	private void getRootRelativeName(Map<Symbol, String> nameMapping, StringBuilder sb, Symbol symbol) {
-		if (useModules && symbol instanceof PackageSymbol
+	private void getRootRelativeName(Map<Element, String> nameMapping, StringBuilder sb, Element symbol) {
+		if (useModules && symbol instanceof PackageElement
 				&& !symbol.toString().startsWith(JSweetConfig.LIBS_PACKAGE + ".")) {
 			return;
 		}
@@ -1248,7 +1249,7 @@ public class JSweetContext {
 				}
 			}
 			sb.insert(0, name);
-			symbol = (symbol instanceof PackageSymbol) ? ((PackageSymbol) symbol).owner : symbol.getEnclosingElement();
+			symbol = (symbol instanceof PackageElement) ? ((PackageElement) symbol).owner : symbol.getEnclosingElement();
 			if (symbol != null) {
 				getRootRelativeName(nameMapping, sb, symbol);
 			}
@@ -1298,7 +1299,7 @@ public class JSweetContext {
 		return getFirstEnclosingRootPackage((PackageSymbol) packageSymbol.owner);
 	}
 
-	private void getRootRelativeJavaName(StringBuilder sb, Symbol symbol) {
+	private void getRootRelativeJavaName(StringBuilder sb, Element symbol) {
 		if (!isRootPackage(symbol)) {
 			if (sb.length() > 0 && !"".equals(symbol.toString())) {
 				sb.insert(0, ".");
@@ -1307,7 +1308,7 @@ public class JSweetContext {
 			String name = symbol.getSimpleName().toString();
 
 			sb.insert(0, name);
-			symbol = (symbol instanceof PackageSymbol) ? ((PackageSymbol) symbol).owner : symbol.getEnclosingElement();
+			symbol = (symbol instanceof PackageElement) ? ((PackageElement) symbol).owner : symbol.getEnclosingElement();
 			if (symbol != null) {
 				getRootRelativeJavaName(sb, symbol);
 			}
@@ -1327,7 +1328,7 @@ public class JSweetContext {
 	 *            <code>jsweet.lang.Name</code> annotations
 	 * @return
 	 */
-	public String getRootRelativeName(Map<Symbol, String> nameMapping, Symbol symbol, boolean useJavaNames) {
+	public String getRootRelativeName(Map<Element, String> nameMapping, Element symbol, boolean useJavaNames) {
 		if (useJavaNames) {
 			return getRootRelativeJavaName(symbol);
 		} else {
@@ -1340,7 +1341,7 @@ public class JSweetContext {
 	 * (potentially annotated with <code>jsweet.lang.Root</code>). This function
 	 * takes into account potential <code>jsweet.lang.Name</code> annotations).
 	 */
-	public String getRootRelativeName(Map<Symbol, String> nameMapping, Symbol symbol) {
+	public String getRootRelativeName(Map<Element, String> nameMapping, Element symbol) {
 		StringBuilder sb = new StringBuilder();
 		getRootRelativeName(nameMapping, sb, symbol);
 		if (sb.length() > 0 && sb.charAt(0) == '.') {
@@ -1354,7 +1355,7 @@ public class JSweetContext {
 	 * (potentially annotated with <code>jsweet.lang.Root</code>). This function
 	 * ignores <code>jsweet.lang.Name</code> annotations).
 	 */
-	public String getRootRelativeJavaName(Symbol symbol) {
+	public String getRootRelativeJavaName(Element symbol) {
 		StringBuilder sb = new StringBuilder();
 		getRootRelativeJavaName(sb, symbol);
 		return sb.toString();
@@ -1364,7 +1365,7 @@ public class JSweetContext {
 	 * Gets the first value of the 'value' property for the given annotation type if
 	 * found on the given symbol.
 	 */
-	public final <T> T getAnnotationValue(Symbol symbol, String annotationType, Class<T> propertyClass,
+	public final <T> T getAnnotationValue(Element symbol, String annotationType, Class<T> propertyClass,
 			T defaultValue) {
 		return getAnnotationValue(symbol, annotationType, null, propertyClass, defaultValue);
 	}
@@ -1374,7 +1375,7 @@ public class JSweetContext {
 	 * found on the given symbol.
 	 */
 	@SuppressWarnings("unchecked")
-	public <T> T getAnnotationValue(Symbol symbol, String annotationType, String propertyName, Class<T> propertyClass,
+	public <T> T getAnnotationValue(Element symbol, String annotationType, String propertyName, Class<T> propertyClass,
 			T defaultValue) {
 		for (AnnotationManager annotationIntrospector : annotationManagers) {
 			T value = annotationIntrospector.getAnnotationValue(symbol, annotationType, propertyName, propertyClass,
