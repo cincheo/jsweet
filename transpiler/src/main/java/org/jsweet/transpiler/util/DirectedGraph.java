@@ -75,7 +75,9 @@ import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.PackageTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.util.JavacTask;
 import com.sun.source.util.TreePath;
@@ -702,30 +704,41 @@ public class DirectedGraph<T> implements Collection<T> {
 		Elements elements() {
 			return processingEnvironment.getElementUtils();
 		}
+		
+		@Override
+		public Object visitNewClass(NewClassTree node, Trees p) {
+			return super.visitNewClass(node, p);
+		}
 
 		@Override
-		public Object visitMethodInvocation(MethodInvocationTree node, Trees p) {
+		public Object visitMethodInvocation(MethodInvocationTree tree, Trees p) {
 
+			Tree methTree = tree.getMethodSelect();
+			if (methTree instanceof MemberSelectTree) {
+				System.out.println(p.getElement(p.getPath(getCompilationUnit(), methTree)));
+				ExpressionTree et = ((MemberSelectTree) methTree).getExpression();
+				System.out.println(et);
+			} 
+			
 			++count;
 
-			System.out.println(node.getKind().asInterface());
+			System.out.println(tree.getKind().asInterface());
 
-			return super.visitMethodInvocation(node, p);
+			return super.visitMethodInvocation(tree, p);
 		}
 
 		@Override
 		public Object visitUnary(UnaryTree node, Trees p) {
-			
+
 			ExpressionTree e = node.getExpression();
-			TreePath tp =  p.getPath(getCurrentPath().getCompilationUnit(), e);
+			TreePath tp = p.getPath(getCurrentPath().getCompilationUnit(), e);
 			Element el = p.getElement(tp);
 			TreePath tp2 = p.getPath(el);
-			TreePath tp3 =  p.getPath(tp2.getCompilationUnit(), e);
-			
-			
+			TreePath tp3 = p.getPath(tp2.getCompilationUnit(), e);
+
 			return super.visitUnary(node, p);
 		}
-		
+
 		@Override
 		public Object visitMemberSelect(MemberSelectTree node, Trees p) {
 
@@ -740,7 +753,7 @@ public class DirectedGraph<T> implements Collection<T> {
 			System.out.println("via element ==");
 
 			Element element = p.getElement(getCurrentPath());
-			elements().printElements(new OutputStreamWriter(System.out), element);
+//			elements().printElements(new OutputStreamWriter(System.out), element);
 
 			TypeMirror typeMirror = element.asType();
 			System.out.println(typeMirror);
@@ -802,12 +815,16 @@ public class DirectedGraph<T> implements Collection<T> {
 		public int getCount() {
 			return count;
 		}
+		
+		private CompilationUnitTree getCompilationUnit() {
+			return getCurrentPath().getCompilationUnit();
+		}
 	}
 
 	@SupportedSourceVersion(SourceVersion.RELEASE_11)
 	@SupportedAnnotationTypes("*")
 	static class Processor2 extends AbstractProcessor {
-		private Trees trees;
+		Trees trees;
 		Scanner2 scanner;
 
 		@Override
@@ -819,13 +836,13 @@ public class DirectedGraph<T> implements Collection<T> {
 
 		public boolean process(final Set<? extends TypeElement> types, final RoundEnvironment environment) {
 
-			if (!environment.processingOver()) {
-				for (final Element element : environment.getRootElements()) {
-					scanner.scan(trees.getPath(element), trees);
-				}
-			}
+//			if (!environment.processingOver()) {
+//				for (final Element element : environment.getRootElements()) {
+//					scanner.scan(trees.getPath(element), trees);
+//				}
+//			}
 
-			return true;
+			return false;
 		}
 	}
 
@@ -867,6 +884,11 @@ public class DirectedGraph<T> implements Collection<T> {
 			javacTask.setProcessors(asList(processor1, processor2));
 			Iterable<? extends CompilationUnitTree> compilUnits = javacTask.parse();
 			javacTask.analyze();
+
+			processor2.scanner.scan(compilUnits, processor2.trees);
+//			for (CompilationUnitTree compilUnit : compilUnits) {
+//				processor2.scanner.scan(processor2.trees.getPath(compilUnit, compilUnit), processor2.trees);
+//			}
 
 //			fileManager.inferModuleName(location)
 //			javacTask.getElements().getModuleElement("test").

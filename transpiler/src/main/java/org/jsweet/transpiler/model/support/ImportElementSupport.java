@@ -18,6 +18,7 @@
  */
 package org.jsweet.transpiler.model.support;
 
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 
 import org.jsweet.transpiler.JSweetContext;
@@ -47,11 +48,13 @@ public class ImportElementSupport extends ExtendedElementSupport<ImportTree> imp
 	@Override
 	public TypeElement getImportedType() {
 		Tree importedIdentifier = getTree().getQualifiedIdentifier();
-		if (getTree().isStatic() || importedIdentifier.type == null) {
+		Element importedElement = util().getElementForTree(importedIdentifier, compilationUnit);
+		if (getTree().isStatic() || importedElement == null || importedElement.asType() == null) {
 			return null;
-		} else {
-			return (TypeElement) importedIdentifier.type.tsym;
+
 		}
+
+		return (TypeElement) importedElement;
 	}
 
 	@Override

@@ -23,13 +23,11 @@ import javax.lang.model.element.VariableElement;
 
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.ExtendedElement;
-import org.jsweet.transpiler.model.ExtendedElementFactory;
 import org.jsweet.transpiler.model.VariableAccessElement;
 
 import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.VariableTree;
-import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
-import com.sun.tools.javac.tree.JCTree.JCIdent;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.Tree;
 
 /**
  * See {@link VariableAccessElement}.
@@ -37,15 +35,22 @@ import com.sun.tools.javac.tree.JCTree.JCIdent;
  * @author Renaud Pawlak
  * @author Louis Grignon
  */
-public class VariableAccessElementSupport extends ExtendedElementSupport<VariableTree> implements VariableAccessElement {
+public class VariableAccessElementSupport extends ExtendedElementSupport<Tree> implements VariableAccessElement {
 
-	public VariableAccessElementSupport(CompilationUnitTree compilationUnit, VariableTree tree, JSweetContext context) {
+	private VariableElement variableElement;
+
+	public VariableAccessElementSupport( //
+			CompilationUnitTree compilationUnit, //
+			VariableElement variableElement, //
+			Tree tree, //
+			JSweetContext context) {
 		super(compilationUnit, tree, context);
+		this.variableElement = variableElement;
 	}
 
 	public ExtendedElement getTargetExpression() {
-		if (tree instanceof JCFieldAccess) {
-			return ExtendedElementFactory.INSTANCE.create(((JCFieldAccess) tree).selected);
+		if (tree instanceof MemberSelectTree) {
+			return createElement(((MemberSelectTree) tree).getExpression());
 		} else {
 			return null;
 		}
@@ -53,11 +58,7 @@ public class VariableAccessElementSupport extends ExtendedElementSupport<Variabl
 
 	@Override
 	public VariableElement getVariable() {
-		if (tree instanceof JCFieldAccess) {
-			return (VariableElement) ((JCFieldAccess) tree).sym;
-		} else {
-			return (VariableElement) ((JCIdent) tree).sym;
-		}
+		return variableElement;
 	}
 
 	@Override
@@ -67,11 +68,6 @@ public class VariableAccessElementSupport extends ExtendedElementSupport<Variabl
 
 	@Override
 	public String getVariableName() {
-		if (tree instanceof JCFieldAccess) {
-			return ((JCFieldAccess) tree).name.toString();
-		} else {
-			return tree.toString();
-		}
+		return getVariable().getSimpleName().toString();
 	}
-
 }

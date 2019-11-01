@@ -23,6 +23,8 @@ public class Test {
 		this.x = 5;
 		this.toto = new Toto();
 
+		System.out.println(this.x);
+		
 		int l;
 		l = 10;
 		l += 1;

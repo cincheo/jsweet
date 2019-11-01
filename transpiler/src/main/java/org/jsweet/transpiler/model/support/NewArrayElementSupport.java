@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
 
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.ExtendedElement;
-import org.jsweet.transpiler.model.ExtendedElementFactory;
 import org.jsweet.transpiler.model.NewArrayElement;
 
 import com.sun.source.tree.CompilationUnitTree;
@@ -42,8 +41,7 @@ public class NewArrayElementSupport extends ExtendedElementSupport<NewArrayTree>
 	}
 
 	public List<ExtendedElement> getDimensions() {
-		return tree.getDimensions().stream().map(a -> ExtendedElementFactory.INSTANCE.create(a))
-				.collect(Collectors.toList());
+		return tree.getDimensions().stream().map(this::createElement).collect(Collectors.toList());
 	}
 
 	@Override
@@ -53,7 +51,7 @@ public class NewArrayElementSupport extends ExtendedElementSupport<NewArrayTree>
 
 	@Override
 	public ExtendedElement getDimension(int i) {
-		return ExtendedElementFactory.INSTANCE.create(tree.getDimensions().get(i));
+		return createElement(tree.getDimensions().get(i));
 	}
 
 }

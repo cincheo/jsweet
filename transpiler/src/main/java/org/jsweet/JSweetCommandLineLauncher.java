@@ -38,10 +38,10 @@ import org.jsweet.transpiler.JSweetTranspiler;
 import org.jsweet.transpiler.ModuleKind;
 import org.jsweet.transpiler.ModuleResolution;
 import org.jsweet.transpiler.SourceFile;
+import org.jsweet.transpiler.model.support.Util;
 import org.jsweet.transpiler.util.ConsoleTranspilationHandler;
 import org.jsweet.transpiler.util.ErrorCountTranspilationHandler;
 import org.jsweet.transpiler.util.ProcessUtil;
-import org.jsweet.transpiler.util.Util;
 
 import com.martiansoftware.jsap.FlaggedOption;
 import com.martiansoftware.jsap.JSAP;
@@ -98,7 +98,7 @@ import com.martiansoftware.jsap.stringparsers.FileStringParser;
 
   [--noRootDirectories]
         Skip the root directories (i.e. packages annotated with
-        @jsweet.lang.Root) so that the generated file hierarchy starts at the
+        &#64;jsweet.lang.Root) so that the generated file hierarchy starts at the
         root directories rather than including the entire directory structure.
 
   [--tsout <tsout>]
@@ -209,8 +209,8 @@ public class JSweetCommandLineLauncher {
 	}
 
 	/**
-	 * JSweet transpiler command line entry point. To use the JSweet transpiler
-	 * from Java, see {@link JSweetTranspiler}.
+	 * JSweet transpiler command line entry point. To use the JSweet transpiler from
+	 * Java, see {@link JSweetTranspiler}.
 	 */
 	public static void main(String[] args) {
 		try {
@@ -227,11 +227,11 @@ public class JSweetCommandLineLauncher {
 			}
 
 			LogManager.getLogger("org.jsweet").setLevel(Level.WARN);
-			
+
 			if (jsapArgs.getBoolean("verbose")) {
 				LogManager.getLogger("org.jsweet").setLevel(Level.INFO);
 			}
-			
+
 			if (jsapArgs.getBoolean("veryVerbose")) {
 				LogManager.getLogger("org.jsweet").setLevel(Level.ALL);
 			}
@@ -612,7 +612,7 @@ public class JSweetCommandLineLauncher {
 				javaInputFiles = new LinkedList<File>();
 
 				for (File inputDir : inputDirList) {
-					Util.addFiles(f -> {
+					Util.Static.addFiles(f -> {
 						String path = inputDir.toURI().relativize(f.toURI()).getPath();
 						if (path.endsWith(".java")) {
 							if (includedPatterns == null || includedPatterns.isEmpty() || includedPatterns != null
@@ -661,97 +661,85 @@ public class JSweetCommandLineLauncher {
 				String factoryClassName = jsapArgs.getString("factoryClassName");
 
 				if (factoryClassName != null) {
-					try {
-						factory = (JSweetFactory) Thread.currentThread().getContextClassLoader()
-								.loadClass(factoryClassName).newInstance();
-					} catch (Exception e) {
-						try {
-							// try forName just in case
-							factory = (JSweetFactory) Class.forName(factoryClassName).newInstance();
-						} catch (Exception e2) {
-							throw new RuntimeException(
-									"cannot find or instantiate factory class: " + factoryClassName
-											+ " (make sure the class is in the plugin's classpath and that it defines an empty public constructor)",
-									e2);
-						}
-					}
+					factory = Util.Static.newInstance(factoryClassName);
 				}
 
 				if (factory == null) {
 					factory = new JSweetFactory();
 				}
 
-				JSweetTranspiler transpiler = new JSweetTranspiler(factory, jsapArgs.getFile("workingDir"), tsOutputDir,
-						jsOutputDir, candiesJsOutputDir, classPath);
+				try (JSweetTranspiler transpiler = new JSweetTranspiler(factory, jsapArgs.getFile("workingDir"),
+						tsOutputDir, jsOutputDir, candiesJsOutputDir, classPath)) {
 
-				if (jsapArgs.userSpecified("bundle")) {
-					transpiler.setBundle(jsapArgs.getBoolean("bundle"));
-				}
-				if (jsapArgs.userSpecified("noRootDirectories")) {
-					transpiler.setNoRootDirectories(jsapArgs.getBoolean("noRootDirectories"));
-				}
-				if (jsapArgs.userSpecified("sourceMap")) {
-					transpiler.setGenerateSourceMaps(jsapArgs.getBoolean("sourceMap"));
-				}
-				if (sourceRootDir != null) {
-					transpiler.setSourceRoot(sourceRootDir);
-				}
-				if (jsapArgs.userSpecified("module")) {
-					transpiler.setModuleKind(ModuleKind.valueOf(jsapArgs.getString("module")));
-				}
-				if (jsapArgs.userSpecified(JSweetOptions.moduleResolution)) {
-					transpiler.setModuleResolution(
-							ModuleResolution.valueOf(jsapArgs.getString(JSweetOptions.moduleResolution)));
-				}
-				if (jsapArgs.userSpecified("encoding")) {
-					transpiler.setEncoding(jsapArgs.getString("encoding"));
-				}
-				if (jsapArgs.userSpecified("enableAssertions")) {
-					transpiler.setIgnoreAssertions(!jsapArgs.getBoolean("enableAssertions"));
-				}
-				if (jsapArgs.userSpecified("declaration")) {
-					transpiler.setGenerateDeclarations(jsapArgs.getBoolean("declaration"));
-				}
-				if (jsapArgs.userSpecified("tsOnly")) {
-					transpiler.setGenerateJsFiles(!jsapArgs.getBoolean("tsOnly"));
-				}
-				if (jsapArgs.userSpecified("ignoreDefinitions")) {
-					transpiler.setGenerateDefinitions(!jsapArgs.getBoolean("ignoreDefinitions"));
-				}
-				if (jsapArgs.userSpecified("dtsOutputDir")) {
-					transpiler.setDeclarationsOutputDir(dtsOutputDir);
-				}
-				if (jsapArgs.userSpecified("header")) {
-					transpiler.setHeaderFile(jsapArgs.getFile("header"));
-				}
-				if (jsapArgs.userSpecified("targetVersion")) {
-					transpiler.setEcmaTargetVersion(
-							JSweetTranspiler.getEcmaTargetVersion(jsapArgs.getString("targetVersion")));
-				}
-				if (jsapArgs.userSpecified("disableSinglePrecisionFloats")) {
-					transpiler.setDisableSinglePrecisionFloats(jsapArgs.getBoolean("disableSinglePrecisionFloats"));
-				}
-				if (jsapArgs.userSpecified(JSweetOptions.extraSystemPath)) {
-					ProcessUtil.addExtraPath(jsapArgs.getString(JSweetOptions.extraSystemPath));
-				}
+					if (jsapArgs.userSpecified("bundle")) {
+						transpiler.setBundle(jsapArgs.getBoolean("bundle"));
+					}
+					if (jsapArgs.userSpecified("noRootDirectories")) {
+						transpiler.setNoRootDirectories(jsapArgs.getBoolean("noRootDirectories"));
+					}
+					if (jsapArgs.userSpecified("sourceMap")) {
+						transpiler.setGenerateSourceMaps(jsapArgs.getBoolean("sourceMap"));
+					}
+					if (sourceRootDir != null) {
+						transpiler.setSourceRoot(sourceRootDir);
+					}
+					if (jsapArgs.userSpecified("module")) {
+						transpiler.setModuleKind(ModuleKind.valueOf(jsapArgs.getString("module")));
+					}
+					if (jsapArgs.userSpecified(JSweetOptions.moduleResolution)) {
+						transpiler.setModuleResolution(
+								ModuleResolution.valueOf(jsapArgs.getString(JSweetOptions.moduleResolution)));
+					}
+					if (jsapArgs.userSpecified("encoding")) {
+						transpiler.setEncoding(jsapArgs.getString("encoding"));
+					}
+					if (jsapArgs.userSpecified("enableAssertions")) {
+						transpiler.setIgnoreAssertions(!jsapArgs.getBoolean("enableAssertions"));
+					}
+					if (jsapArgs.userSpecified("declaration")) {
+						transpiler.setGenerateDeclarations(jsapArgs.getBoolean("declaration"));
+					}
+					if (jsapArgs.userSpecified("tsOnly")) {
+						transpiler.setGenerateJsFiles(!jsapArgs.getBoolean("tsOnly"));
+					}
+					if (jsapArgs.userSpecified("ignoreDefinitions")) {
+						transpiler.setGenerateDefinitions(!jsapArgs.getBoolean("ignoreDefinitions"));
+					}
+					if (jsapArgs.userSpecified("dtsOutputDir")) {
+						transpiler.setDeclarationsOutputDir(dtsOutputDir);
+					}
+					if (jsapArgs.userSpecified("header")) {
+						transpiler.setHeaderFile(jsapArgs.getFile("header"));
+					}
+					if (jsapArgs.userSpecified("targetVersion")) {
+						transpiler.setEcmaTargetVersion(
+								JSweetTranspiler.getEcmaTargetVersion(jsapArgs.getString("targetVersion")));
+					}
+					if (jsapArgs.userSpecified("disableSinglePrecisionFloats")) {
+						transpiler.setDisableSinglePrecisionFloats(jsapArgs.getBoolean("disableSinglePrecisionFloats"));
+					}
+					if (jsapArgs.userSpecified(JSweetOptions.extraSystemPath)) {
+						ProcessUtil.addExtraPath(jsapArgs.getString(JSweetOptions.extraSystemPath));
+					}
 
-				if (tsOutputDir != null) {
-					transpiler.setTsOutputDir(tsOutputDir);
+					if (tsOutputDir != null) {
+						transpiler.setTsOutputDir(tsOutputDir);
+					}
+					if (jsOutputDir != null) {
+						transpiler.setJsOutputDir(jsOutputDir);
+					}
+
+					// transpiler.setAdapters(Arrays.asList(jsapArgs.getStringArray("adapters")));
+
+					List<File> files = Arrays.asList(jsapArgs.getFileArray("defInput"));
+					logger.info("definition input dirs: " + files);
+
+					for (File f : files) {
+						transpiler.addTsDefDir(f);
+					}
+
+					transpiler.transpile(transpilationHandler, SourceFile.toSourceFiles(javaInputFiles));
 				}
-				if (jsOutputDir != null) {
-					transpiler.setJsOutputDir(jsOutputDir);
-				}
-
-				// transpiler.setAdapters(Arrays.asList(jsapArgs.getStringArray("adapters")));
-
-				List<File> files = Arrays.asList(jsapArgs.getFileArray("defInput"));
-				logger.info("definition input dirs: " + files);
-
-				for (File f : files) {
-					transpiler.addTsDefDir(f);
-				}
-
-				transpiler.transpile(transpilationHandler, SourceFile.toSourceFiles(javaInputFiles));
 			} catch (NoClassDefFoundError error) {
 				transpilationHandler.report(JSweetProblem.JAVA_COMPILER_NOT_FOUND, null,
 						JSweetProblem.JAVA_COMPILER_NOT_FOUND.getMessage());

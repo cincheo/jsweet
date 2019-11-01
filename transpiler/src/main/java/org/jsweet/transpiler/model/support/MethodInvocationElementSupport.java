@@ -25,14 +25,12 @@ import javax.lang.model.element.ExecutableElement;
 
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.ExtendedElement;
-import org.jsweet.transpiler.model.ExtendedElementFactory;
 import org.jsweet.transpiler.model.MethodInvocationElement;
 
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
-import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
-import com.sun.tools.javac.tree.JCTree.JCIdent;
 
 /**
  * See {@link MethodInvocationElement}.
@@ -40,61 +38,49 @@ import com.sun.tools.javac.tree.JCTree.JCIdent;
  * @author Renaud Pawlak
  * @author Louis Grignon
  */
-public class MethodInvocationElementSupport extends ExtendedElementSupport<MethodInvocationTree> implements MethodInvocationElement {
+public class MethodInvocationElementSupport extends ExtendedElementSupport<MethodInvocationTree>
+		implements MethodInvocationElement {
 
-	public MethodInvocationElementSupport(CompilationUnitTree compilationUnit, MethodInvocationTree tree, JSweetContext context) {
+	public MethodInvocationElementSupport(CompilationUnitTree compilationUnit, MethodInvocationTree tree,
+			JSweetContext context) {
 		super(compilationUnit, tree, context);
 	}
 
 	public List<ExtendedElement> getArguments() {
-		return tree.args.stream().map(a -> ExtendedElementFactory.INSTANCE.create(a)).collect(Collectors.toList());
+		return tree.getArguments().stream().map(this::createElement).collect(Collectors.toList());
 	}
 
 	@Override
 	public int getArgumentCount() {
-		return tree.args.size();
+		return tree.getArguments().size();
 	}
 
 	@Override
 	public List<ExtendedElement> getArgumentTail() {
-		return tree.args.tail.stream().map(a -> ExtendedElementFactory.INSTANCE.create(a))
-				.collect(Collectors.toList());
+		return tree.getArguments().stream().skip(1).map(this::createElement).collect(Collectors.toList());
 	}
 
 	@Override
 	public ExtendedElement getArgument(int i) {
-		return ExtendedElementFactory.INSTANCE.create(tree.args.get(i));
+		return createElement(tree.getArguments().get(i));
 	}
 
 	@Override
 	public String getMethodName() {
-		Tree methTree = tree.meth;
-		if (methTree instanceof JCIdent) {
-			return methTree.toString();
-		} else if (methTree instanceof JCFieldAccess) {
-			return ((JCFieldAccess) methTree).name.toString();
-		} else {
-			return null;
-		}
+		return getMethod().getSimpleName().toString();
 	}
 
 	@Override
 	public ExecutableElement getMethod() {
-		Tree methTree = tree.meth;
-		if (methTree instanceof JCIdent) {
-			return (ExecutableElement) ((JCIdent) methTree).sym;
-		} else if (methTree instanceof JCFieldAccess) {
-			return (ExecutableElement) ((JCFieldAccess) methTree).sym;
-		} else {
-			return null;
-		}
+		Tree methTree = tree.getMethodSelect();
+		return (ExecutableElement) trees().getElement(trees().getPath(compilationUnit, methTree));
 	}
 
 	@Override
 	public ExtendedElement getTargetExpression() {
-		Tree methTree = tree.meth;
-		if (methTree instanceof JCFieldAccess) {
-			return ExtendedElementFactory.INSTANCE.create(((JCFieldAccess) methTree).selected);
+		Tree methTree = tree.getMethodSelect();
+		if (methTree instanceof MemberSelectTree) {
+			return createElement(((MemberSelectTree) methTree).getExpression());
 		} else {
 			return null;
 		}

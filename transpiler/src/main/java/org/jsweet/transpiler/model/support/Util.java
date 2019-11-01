@@ -23,6 +23,7 @@ import static java.util.stream.Collectors.toList;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -59,9 +60,9 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.JSweetContext;
+import org.jsweet.transpiler.JSweetFactory;
 import org.jsweet.transpiler.JSweetTranspiler;
 import org.jsweet.transpiler.SourcePosition;
-import org.jsweet.transpiler.model.Util;
 import org.jsweet.transpiler.util.DirectedGraph;
 
 import com.sun.source.tree.BinaryTree;
@@ -90,7 +91,7 @@ import com.sun.source.util.Trees;
 public class Util {
 
 	private final static Logger logger = Logger.getLogger(Util.class);
-	
+
 	protected JSweetContext context;
 
 	public Util(JSweetContext context) {
@@ -229,6 +230,62 @@ public class Util {
 		}
 	}
 
+	public static class Static {
+
+		/**
+		 * Recursively adds files to the given list.
+		 * 
+		 * @param extension the extension to filter with
+		 * @param file      the root file/directory to look into recursively
+		 * @param files     the list to add the files matching the extension
+		 */
+		public static void addFiles(String extension, File file, Collection<File> files) {
+			addFiles(f -> f.getName().endsWith(extension), file, files);
+		}
+
+		/**
+		 * Recursively adds files to the given list.
+		 * 
+		 * @param filter the filter predicate to apply (only files matching the
+		 *               predicate will be added)
+		 * @param file   the root file/directory to look into recursively
+		 * @param files  the list to add the files matching the extension
+		 */
+		public static void addFiles(Predicate<File> filter, File file, Collection<File> files) {
+			if (file.isDirectory()) {
+				for (File f : file.listFiles()) {
+					addFiles(filter, f, files);
+				}
+			} else if (filter.test(file)) {
+				files.add(file);
+			}
+		}
+
+		public static <T> T newInstance(String fullClassName) {
+			String errorMessage = "cannot find or instantiate class: " + fullClassName
+					+ " (make sure the class is in the plugin's classpath and that it defines an empty public constructor)";
+
+			Class<T> clazz = null;
+			try {
+				clazz = (Class) Thread.currentThread().getContextClassLoader().loadClass(fullClassName);
+			} catch (Exception e) {
+				try {
+					// try forName just in case
+					clazz = (Class) Class.forName(fullClassName);
+				} catch (Exception e2) {
+					throw new RuntimeException(errorMessage, e2);
+				}
+			}
+
+			try {
+				Constructor<T> constructor = clazz.getConstructor();
+				return constructor.newInstance();
+			} catch (Exception e) {
+				throw new RuntimeException(errorMessage, e);
+			}
+		}
+	}
+
 	/**
 	 * Recursively adds files to the given list.
 	 * 
@@ -237,7 +294,7 @@ public class Util {
 	 * @param files     the list to add the files matching the extension
 	 */
 	public void addFiles(String extension, File file, Collection<File> files) {
-		addFiles(f -> f.getName().endsWith(extension), file, files);
+		Static.addFiles(extension, file, files);
 	}
 
 	/**
@@ -249,19 +306,13 @@ public class Util {
 	 * @param files  the list to add the files matching the extension
 	 */
 	public void addFiles(Predicate<File> filter, File file, Collection<File> files) {
-		if (file.isDirectory()) {
-			for (File f : file.listFiles()) {
-				addFiles(filter, f, files);
-			}
-		} else if (filter.test(file)) {
-			files.add(file);
-		}
+		Static.addFiles(filter, file, files);
 	}
 
 	/**
 	 * Gets the full signature of the given method.
 	 */
-	public String getFullMethodSignature(MethodSymbol method) {
+	public String getFullMethodSignature(ExecutableElement method) {
 		return method.getEnclosingElement().getQualifiedName() + "." + method.toString();
 	}
 
@@ -501,8 +552,8 @@ public class Util {
 		}
 		if (typeSymbol.getInterfaces() != null) {
 			for (TypeMirror interfaceType : typeSymbol.getInterfaces()) {
-				collectMatchingMethodDeclarationsInType((TypeElement) types().asElement(interfaceType), methodName, methodType,
-						overrides, collector);
+				collectMatchingMethodDeclarationsInType((TypeElement) types().asElement(interfaceType), methodName,
+						methodType, overrides, collector);
 			}
 		}
 	}
