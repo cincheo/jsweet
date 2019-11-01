@@ -61,8 +61,8 @@ import org.jsweet.transpiler.OverloadScanner.Overload;
 import org.jsweet.transpiler.extension.AnnotationManager;
 import org.jsweet.transpiler.extension.AnnotationManager.Action;
 import org.jsweet.transpiler.model.ExtendedElement;
-import org.jsweet.transpiler.model.support.Util;
 import org.jsweet.transpiler.util.DirectedGraph;
+import org.jsweet.transpiler.util.Util;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;

@@ -8,7 +8,7 @@ import org.jsweet.transpiler.extension.Java2TypeScriptAdapter;
 import org.jsweet.transpiler.extension.PrinterAdapter;
 import org.jsweet.transpiler.extension.RemoveJavaDependenciesAdapter;
 
-import com.sun.tools.javac.tree.Tree.CompilationUnitTree;
+import com.sun.source.tree.CompilationUnitTree;
 
 /**
  * The factory object is the one creating instances for key JSweet transpilation
@@ -42,9 +42,9 @@ public class JSweetFactory {
 	 * Creates the printer adapter or any subclass.
 	 * 
 	 * <p>
-	 * This is the method to be overridden to create composable extensions.
-	 * Adapters are chainable (decorator pattern) and new adapters will delegate
-	 * to parent adapters when not overriding the parent behavior.
+	 * This is the method to be overridden to create composable extensions. Adapters
+	 * are chainable (decorator pattern) and new adapters will delegate to parent
+	 * adapters when not overriding the parent behavior.
 	 * 
 	 * <p>
 	 * For instance, here my own adapter will override the needed behavior and
@@ -134,9 +134,8 @@ public class JSweetFactory {
 	 * 
 	 * <p>
 	 * A typical use would be to return a subclass of
-	 * {@link GlobalBeforeTranslationScanner} in order to fill the context with
-	 * some specific global analysis results that can be used later on by the
-	 * translator.
+	 * {@link GlobalBeforeTranslationScanner} in order to fill the context with some
+	 * specific global analysis results that can be used later on by the translator.
 	 */
 	public GlobalBeforeTranslationScanner createBeforeTranslationScanner(TranspilationHandler transpilationHandler,
 			JSweetContext context) {
@@ -148,8 +147,7 @@ public class JSweetFactory {
 	 * errors/warnings).
 	 * 
 	 * <p>
-	 * One can override with a subclass to tune how JSweet reports Java
-	 * messages.
+	 * One can override with a subclass to tune how JSweet reports Java messages.
 	 */
 	public JSweetDiagnosticHandler createDiagnosticHandler(TranspilationHandler transpilationHandler,
 			JSweetContext context) {

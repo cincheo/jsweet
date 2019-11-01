@@ -21,8 +21,6 @@ package org.jsweet.transpiler;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.jsweet.transpiler.util.ProcessUtil.isVersionHighEnough;
-import static org.jsweet.transpiler.util.Util.iterableToList;
-import static org.jsweet.transpiler.util.Util.toJavaFileObjects;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -92,6 +90,7 @@ import com.google.debugging.sourcemap.SourceMapping;
 import com.google.debugging.sourcemap.proto.Mapping.OriginalMapping;
 import com.google.gson.Gson;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.util.JavacTask;
 
 /**
@@ -196,18 +195,6 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 	private long transpilationStartTimestamp;
 
 	private JSweetContext context;
-
-	private static class JavaCompilationComponents {
-		final StandardJavaFileManager fileManager;
-		final JavaCompiler compiler;
-		final JavacTask task;
-
-		JavaCompilationComponents(StandardJavaFileManager fileManager, JavaCompiler compiler, JavacTask task) {
-			this.fileManager = fileManager;
-			this.compiler = compiler;
-			this.task = task;
-		}
-	}
 
 	private JavaCompilationComponents javaCompilationComponents;
 
@@ -694,67 +681,6 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 		}
 	}
 
-	private JavaCompilationComponents createJavaCompilationComponents(List<File> sourceFiles,
-			TranspilationHandler transpilationHandler) {
-
-		class JavaCompilerOptions {
-			List<String> optionsAsList = new ArrayList<>();
-
-			void put(String name, String value) {
-				optionsAsList.add(name);
-				optionsAsList.add(value);
-			}
-		}
-
-		JavaCompilerOptions options = new JavaCompilerOptions();
-
-//		System.out.println(compiler.isSupportedOption("-cp"));
-//		System.out.println(compiler.isSupportedOption("-Xlint"));
-//		System.out.println(compiler.isSupportedOption("-bootclasspath"));
-//		System.out.println(compiler.isSupportedOption("-encoding"));
-		if (classPath != null) {
-			options.put("-cp", classPath);
-			for (String s : classPath.split(File.pathSeparator)) {
-				if (s.contains(JSweetConfig.MAVEN_JAVA_OVERRIDE_ARTIFACT)) {
-					context.strictMode = true;
-					options.put("-bootclasspath", s);
-				}
-			}
-		}
-
-		options.put("-Xlint", "path");
-
-		Charset charset = null;
-		if (encoding != null) {
-			options.put("-encoding", encoding);
-			try {
-				charset = Charset.forName(encoding);
-			} catch (Exception e) {
-				logger.warn("cannot use charset " + encoding, e);
-			}
-		}
-		if (encoding == null) {
-			charset = Charset.forName("UTF-8");
-		}
-		logger.debug("charset: " + charset);
-		logger.debug("strict mode: " + context.strictMode);
-
-		JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-		StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, context.locale, charset);
-
-		List<JavaFileObject> sourceFileObjects = toJavaFileObjects(fileManager, sourceFiles);
-
-		JSweetDiagnosticHandler diagnosticHandler = factory.createDiagnosticHandler(transpilationHandler, context);
-
-		JavacTask task = (JavacTask) compiler.getTask(null, fileManager, diagnosticHandler, options.optionsAsList, null,
-				sourceFileObjects);
-
-		// TODO [Java11]
-		task.setProcessors(asList());
-
-		return new JavaCompilationComponents(fileManager, compiler, task);
-	}
-
 	public List<CompilationUnitTree> setupCompiler(List<File> files,
 			ErrorCountTranspilationHandler transpilationHandler) throws IOException {
 
@@ -765,13 +691,17 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 				: (candiesProcessor == null ? false : candiesProcessor.isUsingJavaRuntime()));
 		adapter = factory.createAdapter(context);
 
-		javaCompilationComponents = createJavaCompilationComponents(files, transpilationHandler);
+		JavaCompilationComponents.Options javaCompilationOptions = new JavaCompilationComponents.Options();
+		javaCompilationOptions.classPath = getClassPath();
+		javaCompilationOptions.encoding = getEncoding();
+		javaCompilationOptions.transpilationHandler = transpilationHandler;
+		javaCompilationComponents = JavaCompilationComponents.prepareFor(files, context,factory, javaCompilationOptions);
 
-		Iterable<? extends CompilationUnitTree> compilUnits = javaCompilationComponents.task.parse();
-		javaCompilationComponents.task.analyze();
+		Iterable<? extends CompilationUnitTree> compilUnits = javaCompilationComponents.getTask().parse();
+		javaCompilationComponents.getTask().analyze();
 
 		transpilationHandler.setDisabled(false);
-		context.compilationUnits = iterableToList(compilUnits);
+		context.compilationUnits = context.util.iterableToList(compilUnits);
 
 		if (transpilationHandler.getErrorCount() > 0) {
 			return null;
@@ -939,7 +869,7 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 		}
 
 		String[] headerLines = getHeaderLines();
-		for (int i = 0; i < compilationUnits.length(); i++) {
+		for (int i = 0; i < compilationUnits.size(); i++) {
 			try {
 				CompilationUnitTree cu = compilationUnits.get(i);
 				if (isModuleDefsFile(cu)) {
@@ -1663,7 +1593,7 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 			throws IOException {
 		Java2TypeScriptTranslator translator = factory.createTranslator(adapter, handler, context, null, false);
 		translator.enterScope();
-		translator.scan(tree);
+		translator.scan(tree, context.trees);
 		translator.exitScope();
 		String tsCode = translator.getResult();
 		return ts2js(handler, tsCode, targetFileName);
@@ -1818,8 +1748,11 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 	@Override
 	public void close() throws Exception {
 		if (javaCompilationComponents != null) {
-			javaCompilationComponents.fileManager.close();
+			javaCompilationComponents.close();
 		}
 	}
 
+	public JSweetFactory getFactory() {
+		return factory;
+	}
 }

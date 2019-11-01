@@ -16,7 +16,7 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jsweet.transpiler.model.support;
+package org.jsweet.transpiler.util;
 
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
@@ -63,7 +63,6 @@ import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetFactory;
 import org.jsweet.transpiler.JSweetTranspiler;
 import org.jsweet.transpiler.SourcePosition;
-import org.jsweet.transpiler.util.DirectedGraph;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ClassTree;

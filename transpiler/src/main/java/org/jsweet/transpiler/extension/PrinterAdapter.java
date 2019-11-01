@@ -59,7 +59,6 @@ import org.jsweet.transpiler.model.Util;
 import org.jsweet.transpiler.model.VariableAccessElement;
 import org.jsweet.transpiler.model.support.ExtendedElementSupport;
 import org.jsweet.transpiler.model.support.MethodInvocationElementSupport;
-import org.jsweet.transpiler.model.support.Util;
 import org.jsweet.transpiler.util.AbstractTreePrinter;
 
 import com.sun.tools.javac.code.Symbol.ClassSymbol;

@@ -1,26 +1,22 @@
 package org.jsweet.transpiler.eval;
 
-import static org.jsweet.transpiler.util.Util.toJavaFileObjects;
+import static java.util.Arrays.asList;
 
-import java.util.Arrays;
 import java.util.Map;
 
-import javax.tools.JavaFileManager;
-import javax.tools.JavaFileObject;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetTranspiler;
+import org.jsweet.transpiler.JavaCompilationComponents;
+import org.jsweet.transpiler.JavaCompilationComponents.Options;
 import org.jsweet.transpiler.SourceFile;
 import org.jsweet.transpiler.util.EvaluationResult;
 import org.jsweet.transpiler.util.MainMethodFinder;
+import org.jsweet.transpiler.util.MainMethodFinder.MainMethodFoundSignal;
 
-import com.sun.tools.javac.file.JavacFileManager;
-import com.sun.tools.javac.main.JavaCompiler;
-import com.sun.tools.javac.main.Option;
-import com.sun.tools.javac.tree.Tree.CompilationUnitTree;
-import com.sun.tools.javac.util.List;
-import com.sun.tools.javac.util.Log;
-import com.sun.tools.javac.util.Options;
+import com.sun.source.tree.CompilationUnitTree;
 
 public class JavaEval extends RuntimeEval {
 
@@ -31,48 +27,32 @@ public class JavaEval extends RuntimeEval {
 	}
 
 	public EvaluationResult performEval(SourceFile[] sourceFiles) throws Exception {
-		// search for main functions
 		JSweetContext context = new JSweetContext(transpiler);
-		Options options = Options.instance(context);
-		if (transpiler.getClassPath() != null) {
-			options.put(Option.CLASSPATH, transpiler.getClassPath());
-		}
-		options.put(Option.XLINT, "path");
-		if (transpiler.getEncoding() != null) {
-			options.put(Option.ENCODING, transpiler.getEncoding());
-		}
-
-		JavacFileManager.preRegister(context);
-		JavaFileManager fileManager = context.get(JavaFileManager.class);
-
-		List<JavaFileObject> fileObjects = toJavaFileObjects(fileManager,
-				Arrays.asList(SourceFile.toFiles(sourceFiles)));
-
-		JavaCompiler compiler = JavaCompiler.instance(context);
-		compiler.attrParseOnly = true;
-		compiler.verbose = true;
-		compiler.genEndPos = false;
-		compiler.encoding = transpiler.getEncoding();
-
-		Log log = Log.instance(context);
-		log.dumpOnError = false;
-		log.emitWarnings = false;
-
-		logger.info("parsing: " + fileObjects);
-		List<CompilationUnitTree> compilationUnits = compiler.enterTrees(compiler.parseFiles(fileObjects));
+		JavaCompilationComponents compilationComponents = JavaCompilationComponents.prepareFor( //
+				asList(SourceFile.toFiles(sourceFiles)), //
+				context, //
+				transpiler.getFactory(), //
+				new Options() {
+					{
+						classPath = transpiler.getClassPath();
+						encoding = transpiler.getEncoding();
+					}
+				});
+		
+		logger.info("parsing: " + compilationComponents.getSourceFileObjects());
+		ExecutableElement mainMethod = null;
+		Iterable<? extends CompilationUnitTree> compilationUnits = compilationComponents.getTask().parse();
 		MainMethodFinder mainMethodFinder = new MainMethodFinder();
 		try {
-			for (CompilationUnitTree cu : compilationUnits) {
-				cu.accept(mainMethodFinder);
-			}
-		} catch (Exception e) {
-			// swallow on purpose
+			mainMethodFinder.scan(compilationUnits, context.trees);
+		} catch (MainMethodFoundSignal foundSignal) {
+			mainMethod = foundSignal.mainMethod;
 		}
-		if (mainMethodFinder.mainMethod != null) {
+		if (mainMethod != null) {
 			try {
 				initExportedVarMap();
 				Class<?> c = Class
-						.forName(mainMethodFinder.mainMethod.getEnclosingElement().getQualifiedName().toString());
+						.forName(((TypeElement) mainMethod.getEnclosingElement()).getQualifiedName().toString());
 				c.getMethod("main", String[].class).invoke(null, (Object) null);
 			} catch (Exception e) {
 				throw new Exception("evalution error", e);
