@@ -34,8 +34,8 @@ import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.support.ExtendedElementSupport;
 
 import com.sun.tools.javac.code.Element.TypeElement;
-import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.code.Type.TypeVar;
+import com.sun.tools.javac.code.TypeMirror;
+import com.sun.tools.javac.code.TypeMirror.TypeVar;
 import com.sun.tools.javac.parser.Tokens.Comment;
 import com.sun.tools.javac.tree.Tree;
 import com.sun.tools.javac.tree.Tree.ClassTree;
@@ -80,7 +80,7 @@ public class JSDoc {
 	 *            the Java type
 	 * @return the JSDoc type
 	 */
-	public static String getMappedDocType(JSweetContext context, Tree typeTree, Type type) {
+	public static String getMappedDocType(JSweetContext context, Tree typeTree, TypeMirror type) {
 		String qualifiedName = type.toString();
 		if (typeTree instanceof JCTypeApply) {
 			qualifiedName = ((JCTypeApply) typeTree).clazz.type.toString();

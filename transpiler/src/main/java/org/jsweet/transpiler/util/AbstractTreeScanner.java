@@ -423,4 +423,9 @@ public abstract class AbstractTreeScanner extends TreeScanner<Void, Trees> {
 		return null;
 	}
 
+	@SuppressWarnings("unchecked")
+	protected <T extends Element> T toElement(Tree tree) {
+		return (T) context.trees.getElement(context.trees.getPath(getCompilationUnit(), tree));
+	}
+
 }

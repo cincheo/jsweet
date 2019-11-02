@@ -55,20 +55,18 @@ import org.jsweet.transpiler.model.ImportElement;
 import org.jsweet.transpiler.model.MethodInvocationElement;
 import org.jsweet.transpiler.model.NewClassElement;
 import org.jsweet.transpiler.model.UnaryOperatorElement;
-import org.jsweet.transpiler.model.Util;
 import org.jsweet.transpiler.model.VariableAccessElement;
 import org.jsweet.transpiler.model.support.ExtendedElementSupport;
 import org.jsweet.transpiler.model.support.MethodInvocationElementSupport;
 import org.jsweet.transpiler.util.AbstractTreePrinter;
-
-import com.sun.tools.javac.code.Element.ClassSymbol;
-import com.sun.tools.javac.code.Element.PackageSymbol;
+import org.jsweet.transpiler.util.Util;
 
 /**
  * A printer adapter, which can be overridden to change the default printer
  * behavior. Adapters are composable/chainable objects (decorator pattern).
  * 
  * @author Renaud Pawlak
+ * @author Louis Grignon
  */
 public class PrinterAdapter {
 
@@ -83,8 +81,7 @@ public class PrinterAdapter {
 	/**
 	 * Creates a root adapter (with no parent).
 	 * 
-	 * @param context
-	 *            the transpilation context
+	 * @param context the transpilation context
 	 */
 	public PrinterAdapter(JSweetContext context) {
 		this.context = context;
@@ -95,9 +92,9 @@ public class PrinterAdapter {
 	 * Creates a new adapter that will try delegate to the given parent adapter when
 	 * not implementing its own behavior.
 	 * 
-	 * @param parentAdapter
-	 *            cannot be null: if no parent you must use the
-	 *            {@link #AbstractPrinterAdapter(JSweetContext)} constructor
+	 * @param parentAdapter cannot be null: if no parent you must use the
+	 *                      {@link #AbstractPrinterAdapter(JSweetContext)}
+	 *                      constructor
 	 */
 	public PrinterAdapter(PrinterAdapter parentAdapter) {
 		if (parentAdapter == null) {
@@ -125,10 +122,9 @@ public class PrinterAdapter {
 	 * Adds a type mapping so that this adapter substitutes the source type with the
 	 * target type during the transpilation process.
 	 * 
-	 * @param sourceTypeName
-	 *            the fully qualified name of the type to be substituted
-	 * @param targetTypeName
-	 *            the fully Qualified name of the type the source type is mapped to
+	 * @param sourceTypeName the fully qualified name of the type to be substituted
+	 * @param targetTypeName the fully Qualified name of the type the source type is
+	 *                       mapped to
 	 */
 	protected final void addTypeMapping(String sourceTypeName, String targetTypeName) {
 		context.addTypeMapping(sourceTypeName, targetTypeName);
@@ -171,10 +167,9 @@ public class PrinterAdapter {
 	 * Adds a type mapping so that this adapter substitutes the source type tree
 	 * with a target type during the transpilation process.
 	 * 
-	 * @param mappingFunction
-	 *            a function that takes the type tree, the type name, and returns a
-	 *            substitution (either under the form of a string, or of a string,
-	 *            or of another type tree).
+	 * @param mappingFunction a function that takes the type tree, the type name,
+	 *                        and returns a substitution (either under the form of a
+	 *                        string, or of a string, or of another type tree).
 	 */
 	public void addTypeMapping(BiFunction<ExtendedElement, String, Object> mappingFunction) {
 		context.addTypeMapping(mappingFunction);
@@ -269,11 +264,9 @@ public class PrinterAdapter {
 	 * <li>all fields call aField in all the classes: **.aField</li>
 	 * </ul>
 	 * 
-	 * @param annotationType
-	 *            the annotation type
-	 * @param filters
-	 *            the annotation is activated if one of the filters match and no
-	 *            negative filter matches
+	 * @param annotationType the annotation type
+	 * @param filters        the annotation is activated if one of the filters match
+	 *                       and no negative filter matches
 	 */
 	public final void addAnnotation(Class<? extends Annotation> annotationType, String... filters) {
 		addAnnotation(annotationType.getName(), filters);
@@ -310,7 +303,7 @@ public class PrinterAdapter {
 	 * {@link #addAnnotationManager(AnnotationManager)}.
 	 */
 	public final boolean hasAnnotationType(Element element, String... annotationTypes) {
-		return context.hasAnnotationType((com.sun.tools.javac.code.Element) element, annotationTypes);
+		return context.hasAnnotationType((Element) element, annotationTypes);
 	}
 
 	/**
@@ -321,45 +314,35 @@ public class PrinterAdapter {
 	 * {@link #addAnnotation(Class, String...)} or
 	 * {@link #addAnnotationManager(AnnotationManager)}.
 	 * 
-	 * @param element
-	 *            the element holding the annotation
-	 * @param annotationType
-	 *            the fully qualified name of the value property type
-	 * @param propertyClass
-	 *            the expected class of the property (String.class,
-	 *            TypeMirror.class, Number.class, and arrays such as
-	 *            String[].class...)
-	 * @param defaultValue
-	 *            the default value if the property is not found
+	 * @param element        the element holding the annotation
+	 * @param annotationType the fully qualified name of the value property type
+	 * @param propertyClass  the expected class of the property (String.class,
+	 *                       TypeMirror.class, Number.class, and arrays such as
+	 *                       String[].class...)
+	 * @param defaultValue   the default value if the property is not found
 	 */
 	public final <T> T getAnnotationValue(Element element, String annotationType, Class<T> propertyClass,
 			T defaultValue) {
-		return getAnnotationValue((com.sun.tools.javac.code.Element) element, annotationType, null, propertyClass,
-				defaultValue);
+		return getAnnotationValue((Element) element, annotationType, null, propertyClass, defaultValue);
 	}
 
 	/**
 	 * Gets the first value of the given property for the given annotation type if
 	 * found on the given element.
 	 * 
-	 * @param element
-	 *            the element holding the annotation
-	 * @param annotationType
-	 *            the fully qualified name of the value property type
-	 * @param propertyName
-	 *            the name of the property in the annotation (<code>null</code> will
-	 *            look up the <code>value</code> property)
-	 * @param propertyClass
-	 *            the expected class of the property (String.class,
-	 *            TypeMirror.class, Number.class, and arrays such as
-	 *            String[].class...)
-	 * @param defaultValue
-	 *            the default value if the property is not found
+	 * @param element        the element holding the annotation
+	 * @param annotationType the fully qualified name of the value property type
+	 * @param propertyName   the name of the property in the annotation
+	 *                       (<code>null</code> will look up the <code>value</code>
+	 *                       property)
+	 * @param propertyClass  the expected class of the property (String.class,
+	 *                       TypeMirror.class, Number.class, and arrays such as
+	 *                       String[].class...)
+	 * @param defaultValue   the default value if the property is not found
 	 */
 	public final <T> T getAnnotationValue(Element element, String annotationType, String propertyName,
 			Class<T> propertyClass, T defaultValue) {
-		return context.getAnnotationValue((com.sun.tools.javac.code.Element) element, annotationType, propertyName,
-				propertyClass, defaultValue);
+		return context.getAnnotationValue((Element) element, annotationType, propertyName, propertyClass, defaultValue);
 	}
 
 	/**
@@ -382,13 +365,12 @@ public class PrinterAdapter {
 	 * <li>!: negates the filter (first character only)</li>
 	 * </ul>
 	 * 
-	 * @param annotationDescriptor
-	 *            the annotation type name, optionally preceded with a @, and
-	 *            optionally defining a value (fully qualified name is not necessary
-	 *            for JSweet annotations)
-	 * @param filters
-	 *            the annotation is activated if one of the filters match and no
-	 *            negative filter matches
+	 * @param annotationDescriptor the annotation type name, optionally preceded
+	 *                             with a @, and optionally defining a value (fully
+	 *                             qualified name is not necessary for JSweet
+	 *                             annotations)
+	 * @param filters              the annotation is activated if one of the filters
+	 *                             match and no negative filter matches
 	 */
 	public final void addAnnotation(String annotationDescriptor, String... filters) {
 		context.addAnnotation(annotationDescriptor, filters);
@@ -447,10 +429,8 @@ public class PrinterAdapter {
 	 * For instance <code>printIdentifierList("x", 4)</code> will print:
 	 * <code>x0, x1, x2, x3</code>.
 	 * 
-	 * @param prefix
-	 *            the prefix of the identifiers
-	 * @param count
-	 *            the number of identifiers in the list
+	 * @param prefix the prefix of the identifiers
+	 * @param count  the number of identifiers in the list
 	 * @return this printer adapter
 	 */
 	public PrinterAdapter printIdentifierList(String prefix, int count) {
@@ -556,7 +536,7 @@ public class PrinterAdapter {
 	 */
 	public final ExecutableElement findExecutableDeclarationInType(TypeElement type,
 			MethodInvocationElement invocation) {
-		return org.jsweet.transpiler.util.Util.findMethodDeclarationInType((com.sun.tools.javac.code.Element.TypeElement) type,
+		return util().findMethodDeclarationInType((TypeElement) type,
 				((MethodInvocationElementSupport) invocation).getTree());
 	}
 
@@ -565,18 +545,15 @@ public class PrinterAdapter {
 	 * <code>@Root</code> annotation.
 	 */
 	public final String getRootRelativeName(Element element) {
-		return printer.getRootRelativeName((com.sun.tools.javac.code.Element) element);
+		return printer.getRootRelativeName((Element) element);
 	}
 
 	/**
 	 * Reports a problem during the printing phase.
 	 * 
-	 * @param element
-	 *            the code where the problem occurred
-	 * @param problem
-	 *            the reported problem
-	 * @param params
-	 *            the parameters if any
+	 * @param element the code where the problem occurred
+	 * @param problem the reported problem
+	 * @param params  the parameters if any
 	 */
 	protected void report(ExtendedElement element, JSweetProblem problem, Object... params) {
 		printer.report(((ExtendedElementSupport<?>) element).getTree(), problem, params);
@@ -585,56 +562,18 @@ public class PrinterAdapter {
 	/**
 	 * Reports a problem during the printing phase.
 	 * 
-	 * @param element
-	 *            the code where the problem occurred
-	 * @param name
-	 *            the name of the element if any
-	 * @param problem
-	 *            the reported problem
-	 * @param params
-	 *            the parameters if any
-	 */
-	protected void report(ExtendedElement element, Name name, JSweetProblem problem, Object... params) {
-		printer.report(((ExtendedElementSupport<?>) element).getTree(), (com.sun.tools.javac.util.Name) name, problem,
-				params);
-	}
-
-	/**
-	 * Reports a problem during the printing phase.
-	 * 
-	 * @param element
-	 *            the code where the problem occurred
-	 * @param problem
-	 *            the reported problem
-	 * @param params
-	 *            the parameters if any
+	 * @param element the code where the problem occurred
+	 * @param problem the reported problem
+	 * @param params  the parameters if any
 	 */
 	protected void report(Element element, JSweetProblem problem, Object... params) {
-		printer.report(org.jsweet.transpiler.util.Util.lookupTree(context, element), problem, params);
-	}
-
-	/**
-	 * Reports a problem during the printing phase.
-	 * 
-	 * @param element
-	 *            the code where the problem occurred
-	 * @param name
-	 *            the name of the element if any
-	 * @param problem
-	 *            the reported problem
-	 * @param params
-	 *            the parameters if any
-	 */
-	protected void report(Element element, Name name, JSweetProblem problem, Object... params) {
-		printer.report(org.jsweet.transpiler.util.Util.lookupTree(context, element),
-				(com.sun.tools.javac.util.Name) name, problem, params);
+		printer.report(util().lookupTree(context, element), problem, params);
 	}
 
 	/**
 	 * Substitutes the value of an array access expression.
 	 * 
-	 * @param arrayAccess
-	 *            the array access being printed
+	 * @param arrayAccess the array access being printed
 	 * @return true if substituted
 	 */
 	public boolean substituteArrayAccess(ArrayAccessElement arrayAccess) {
@@ -644,8 +583,7 @@ public class PrinterAdapter {
 	/**
 	 * Substitutes the value of a binary operator.
 	 * 
-	 * @param binaryOperator
-	 *            the binary operator being printed
+	 * @param binaryOperator the binary operator being printed
 	 * @return true if substituted
 	 */
 	public boolean substituteBinaryOperator(BinaryOperatorElement binaryOperator) {
@@ -655,8 +593,7 @@ public class PrinterAdapter {
 	/**
 	 * Substitutes the value of a unary operator.
 	 * 
-	 * @param unaryOperator
-	 *            the unary operator being printed
+	 * @param unaryOperator the unary operator being printed
 	 * @return true if substituted
 	 */
 	public boolean substituteUnaryOperator(UnaryOperatorElement unaryOperator) {
@@ -666,8 +603,7 @@ public class PrinterAdapter {
 	/**
 	 * Substitutes the value of an identifier.
 	 * 
-	 * @param identifier
-	 *            the identifier being printed
+	 * @param identifier the identifier being printed
 	 * @return true if substituted
 	 */
 	public boolean substituteIdentifier(IdentifierElement identifier) {
@@ -677,8 +613,7 @@ public class PrinterAdapter {
 	/**
 	 * To override to tune the printing of a new class expression.
 	 * 
-	 * @param newClass
-	 *            the new class expression
+	 * @param newClass the new class expression
 	 * @return true if substituted
 	 */
 	public boolean substituteNewClass(NewClassElement newClass) {
@@ -702,8 +637,7 @@ public class PrinterAdapter {
 	/**
 	 * Substitutes the given variable access.
 	 * 
-	 * @param variableAccess
-	 *            the variable access being printed
+	 * @param variableAccess the variable access being printed
 	 * @return true if substituted
 	 */
 	public boolean substituteVariableAccess(VariableAccessElement variableAccess) {
@@ -715,10 +649,8 @@ public class PrinterAdapter {
 	 * Returns the import qualified id if the given import requires an import
 	 * statement to be printed.
 	 * 
-	 * @param importElement
-	 *            the given import declaration
-	 * @param qualifiedName
-	 *            the qualified import id
+	 * @param importElement the given import declaration
+	 * @param qualifiedName the qualified import id
 	 * @return the possibly adapted qualified id or null if the import should be
 	 *         ignored by the printer
 	 */
@@ -733,12 +665,9 @@ public class PrinterAdapter {
 	 * This method implements the default behavior to generate module imports. It
 	 * may be overridden by subclasses to implement specific behaviors.
 	 * 
-	 * @param currentCompilationUnit
-	 *            the currently transpiled compilation unit
-	 * @param importedName
-	 *            the name to be imported
-	 * @param importedClass
-	 *            the class being imported
+	 * @param currentCompilationUnit the currently transpiled compilation unit
+	 * @param importedName           the name to be imported
+	 * @param importedClass          the class being imported
 	 * @return a {@link ModuleImportDescriptor} instance that will be used to
 	 *         generate the TypeScript import statement
 	 */
@@ -751,12 +680,12 @@ public class PrinterAdapter {
 				return null;
 			}
 			Element parent = importedClass.getEnclosingElement();
-			while (!(parent instanceof PackageSymbol)) {
+			while (!(parent instanceof PackageElement)) {
 				importedName = parent.getSimpleName().toString();
 				parent = parent.getEnclosingElement();
 			}
-			while (importedClass.getEnclosingElement() instanceof ClassSymbol) {
-				importedClass = (ClassSymbol) importedClass.getEnclosingElement();
+			while (importedClass.getEnclosingElement() instanceof TypeElement) {
+				importedClass = (TypeElement) importedClass.getEnclosingElement();
 			}
 
 			if (parent != null && !hasAnnotationType(importedClass, JSweetConfig.ANNOTATION_ERASED)) {
@@ -781,8 +710,7 @@ public class PrinterAdapter {
 	/**
 	 * Substitutes the value of a <em>method invocation</em> expression.
 	 * 
-	 * @param invocation
-	 *            the invocation being printed
+	 * @param invocation the invocation being printed
 	 * @return true if substituted
 	 */
 	public boolean substituteMethodInvocation(MethodInvocationElement invocation) {
@@ -792,8 +720,7 @@ public class PrinterAdapter {
 	/**
 	 * Substitutes the value of a <em>field assignment</em> expression.
 	 * 
-	 * @param assignment
-	 *            the field assignment being printed
+	 * @param assignment the field assignment being printed
 	 * @return true if substituted
 	 */
 	public boolean substituteAssignment(AssignmentElement assignment) {
@@ -803,8 +730,7 @@ public class PrinterAdapter {
 	/**
 	 * Substitutes the value of an assignment with operator (a += b) expression.
 	 * 
-	 * @param assignment
-	 *            the assignment being printed
+	 * @param assignment the assignment being printed
 	 * @return true if substituted
 	 */
 	public boolean substituteAssignmentWithOperator(AssignmentWithOperatorElement assignment) {
@@ -851,12 +777,10 @@ public class PrinterAdapter {
 	/**
 	 * Substitutes if necessary the given foreach loop.
 	 * 
-	 * @param foreachLoop
-	 *            the foreach loop to print
-	 * @param targetHasLength
-	 *            true if the iterable defines a public length field
-	 * @param indexVarName
-	 *            a possible (fresh) variable name that can used to iterate
+	 * @param foreachLoop     the foreach loop to print
+	 * @param targetHasLength true if the iterable defines a public length field
+	 * @param indexVarName    a possible (fresh) variable name that can used to
+	 *                        iterate
 	 */
 	public boolean substituteForEachLoop(ForeachLoopElement foreachLoop, boolean targetHasLength, String indexVarName) {
 		return parentAdapter == null ? false
@@ -887,14 +811,11 @@ public class PrinterAdapter {
 	/**
 	 * Substitutes if necessary an instanceof expression.
 	 * 
-	 * @param exprStr
-	 *            the expression being tested as a string (null if provided as a
-	 *            tree)
-	 * @param expr
-	 *            the expression being tested as a tree (null if provided as a
-	 *            string)
-	 * @param type
-	 *            the type of the instanceof expression
+	 * @param exprStr the expression being tested as a string (null if provided as a
+	 *                tree)
+	 * @param expr    the expression being tested as a tree (null if provided as a
+	 *                string)
+	 * @param type    the type of the instanceof expression
 	 * @return true if substituted
 	 */
 	public boolean substituteInstanceof(String exprStr, ExtendedElement expr, TypeMirror type) {
@@ -920,10 +841,8 @@ public class PrinterAdapter {
 	/**
 	 * Adapts the JavaDoc comment for a given element.
 	 * 
-	 * @param element
-	 *            the documented element
-	 * @param commentText
-	 *            the comment text if any (null when no comment)
+	 * @param element     the documented element
+	 * @param commentText the comment text if any (null when no comment)
 	 * @return the adapted comment (null will remove the JavaDoc comment)
 	 */
 	public String adaptDocComment(Element element, String commentText) {
@@ -946,8 +865,6 @@ public class PrinterAdapter {
 		this.parentAdapter = parentAdapter;
 	}
 
-	private Types types;
-
 	/**
 	 * Gets the types API, which provides a set of utilities on TypeMirror.
 	 * 
@@ -956,10 +873,7 @@ public class PrinterAdapter {
 	 * @see ExtendedElement#getType()
 	 */
 	public Types types() {
-		if (types == null) {
-			types = com.sun.tools.javac.model.JavacTypes.instance(context);
-		}
-		return types;
+		return context.types;
 	}
 
 	/**
@@ -981,7 +895,7 @@ public class PrinterAdapter {
 	 * <code>@Ambient</code>-annotated scope).
 	 */
 	public final boolean isAmbientDeclaration(Element element) {
-		return context.isAmbientDeclaration((com.sun.tools.javac.code.Element) element);
+		return context.isAmbientDeclaration((Element) element);
 	}
 
 	/**
@@ -1001,11 +915,9 @@ public class PrinterAdapter {
 	 * each header. Headers will be printer in the order they have been added to the
 	 * file. Headers are reset for each new file.
 	 * 
-	 * @param key
-	 *            a key to identify the header (see {@link #getHeader(String)})
-	 * @param header
-	 *            any string that will be printed at the beginning of the file (only
-	 *            when not in bundle mode)
+	 * @param key    a key to identify the header (see {@link #getHeader(String)})
+	 * @param header any string that will be printed at the beginning of the file
+	 *               (only when not in bundle mode)
 	 * 
 	 * @see #getHeader(String)
 	 */
@@ -1016,8 +928,7 @@ public class PrinterAdapter {
 	/**
 	 * Gets the header associated to the given key (null if non-existing key).
 	 * 
-	 * @param key
-	 *            the header's key as set by {@link #addHeader(String, String)}
+	 * @param key the header's key as set by {@link #addHeader(String, String)}
 	 * @return the associated header (null if non-existing key)
 	 * 
 	 * @see #addHeader(String, String)

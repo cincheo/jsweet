@@ -4,32 +4,35 @@ import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 import java.io.File;
 import java.util.List;
 
 import org.jsweet.test.transpiler.AbstractTest;
 import org.jsweet.test.transpiler.TestTranspilationHandler;
+import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetFactory;
+import org.jsweet.transpiler.JSweetOptions;
 import org.jsweet.transpiler.JSweetTranspiler;
 import org.jsweet.transpiler.util.ErrorCountTranspilationHandler;
 import org.jsweet.transpiler.util.Util;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.sun.tools.javac.tree.Tree;
-import com.sun.tools.javac.tree.Tree.JCBlock;
-import com.sun.tools.javac.tree.Tree.JCBreak;
-import com.sun.tools.javac.tree.Tree.JCCase;
-import com.sun.tools.javac.tree.Tree.ClassTree;
-import com.sun.tools.javac.tree.Tree.CompilationUnitTree;
-import com.sun.tools.javac.tree.Tree.JCExpressionStatement;
-import com.sun.tools.javac.tree.Tree.JCForLoop;
-import com.sun.tools.javac.tree.Tree.JCIf;
-import com.sun.tools.javac.tree.Tree.MethodTree;
-import com.sun.tools.javac.tree.Tree.JCReturn;
-import com.sun.tools.javac.tree.Tree.JCSwitch;
-import com.sun.tools.javac.tree.Tree.JCTry;
+import com.sun.source.doctree.ReturnTree;
+import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.BreakTree;
+import com.sun.source.tree.CaseTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionStatementTree;
+import com.sun.source.tree.ForLoopTree;
+import com.sun.source.tree.IfTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.SwitchTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.TryTree;
 
 import source.syntax.ExecutionPaths;
 
@@ -37,6 +40,8 @@ import source.syntax.ExecutionPaths;
 public class ExecutionPathTest extends AbstractTest {
 
 	private ClassTree executionPathClassDecl;
+	
+	private Util util;
 
 	@Before
 	public void setUp() throws Throwable {
@@ -47,139 +52,140 @@ public class ExecutionPathTest extends AbstractTest {
 
 		List<CompilationUnitTree> compilUnits = transpiler.setupCompiler(javaFiles,
 				new ErrorCountTranspilationHandler(testTranspilationHandler));
-		List<ClassTree> typeDeclarations = Util.findTypeDeclarationsInCompilationUnits(compilUnits);
+		util = transpiler.getContext().util;
+		List<ClassTree> typeDeclarations = util.findTypeDeclarationsInCompilationUnits(compilUnits);
 		System.out.println("types=" + typeDeclarations.size());
 		executionPathClassDecl = typeDeclarations.get(0);
 	}
 
 	@Test
 	public void ifElseReturns() throws Throwable {
-		MethodTree methodDeclaration = Util.findFirstMethodDeclaration(executionPathClassDecl, "ifElseReturns");
+		MethodTree methodDeclaration = util.findFirstMethodDeclaration(executionPathClassDecl, "ifElseReturns");
 		
-		List<List<Tree>> executionPaths = Util.getExecutionPaths(methodDeclaration);
+		List<List<Tree>> executionPaths = util.getExecutionPaths(methodDeclaration);
 		printPaths(methodDeclaration, executionPaths);
 		
 		assertPaths(executionPaths, //
-				executionPath(JCIf.class, JCBlock.class, JCReturn.class), //
-				executionPath(JCIf.class, JCBlock.class, JCReturn.class));
+				executionPath(IfTree.class, BlockTree.class, ReturnTree.class), //
+				executionPath(IfTree.class, BlockTree.class, ReturnTree.class));
 	}
 	
 	@Test(expected = RuntimeException.class)
 	public void testPerfsIfs() throws Throwable {
-		MethodTree methodDeclaration = Util.findFirstMethodDeclaration(executionPathClassDecl, "testPerfsIfs");
+		MethodTree methodDeclaration = util.findFirstMethodDeclaration(executionPathClassDecl, "testPerfsIfs");
 
-		List<List<Tree>> executionPaths = Util.getExecutionPaths(methodDeclaration);
+		List<List<Tree>> executionPaths = util.getExecutionPaths(methodDeclaration);
 		printPaths(methodDeclaration, executionPaths);
 	}
 
 	@Test
 	public void ifReturnInElse() throws Throwable {
-		MethodTree methodDeclaration = Util.findFirstMethodDeclaration(executionPathClassDecl, "ifReturnInElse");
+		MethodTree methodDeclaration = util.findFirstMethodDeclaration(executionPathClassDecl, "ifReturnInElse");
 
-		List<List<Tree>> executionPaths = Util.getExecutionPaths(methodDeclaration);
+		List<List<Tree>> executionPaths = util.getExecutionPaths(methodDeclaration);
 		printPaths(methodDeclaration, executionPaths);
 
 		assertPaths(executionPaths, //
-				executionPath(JCIf.class, JCBlock.class, JCExpressionStatement.class, JCExpressionStatement.class,
-						JCReturn.class), //
-				executionPath(JCIf.class, JCBlock.class, JCExpressionStatement.class, JCReturn.class));
+				executionPath(IfTree.class, BlockTree.class, ExpressionStatementTree.class, ExpressionStatementTree.class,
+						ReturnTree.class), //
+				executionPath(IfTree.class, BlockTree.class, ExpressionStatementTree.class, ReturnTree.class));
 	}
 
 	@Test
 	public void ifElseNoReturns() throws Throwable {
-		MethodTree methodDeclaration = Util.findFirstMethodDeclaration(executionPathClassDecl, "ifElseNoReturns");
+		MethodTree methodDeclaration = util.findFirstMethodDeclaration(executionPathClassDecl, "ifElseNoReturns");
 
-		List<List<Tree>> executionPaths = Util.getExecutionPaths(methodDeclaration);
+		List<List<Tree>> executionPaths = util.getExecutionPaths(methodDeclaration);
 		printPaths(methodDeclaration, executionPaths);
 
 		assertPaths(executionPaths, //
-				executionPath(JCIf.class, JCBlock.class, JCExpressionStatement.class, JCExpressionStatement.class,
-						JCReturn.class), //
-				executionPath(JCIf.class, JCBlock.class, JCExpressionStatement.class, JCExpressionStatement.class,
-						JCReturn.class));
+				executionPath(IfTree.class, BlockTree.class, ExpressionStatementTree.class, ExpressionStatementTree.class,
+						ReturnTree.class), //
+				executionPath(IfTree.class, BlockTree.class, ExpressionStatementTree.class, ExpressionStatementTree.class,
+						ReturnTree.class));
 	}
 
 	@Test
 	public void forIfElse() throws Throwable {
-		MethodTree methodDeclaration = Util.findFirstMethodDeclaration(executionPathClassDecl, "forIfElse");
+		MethodTree methodDeclaration = util.findFirstMethodDeclaration(executionPathClassDecl, "forIfElse");
 
-		List<List<Tree>> executionPaths = Util.getExecutionPaths(methodDeclaration);
+		List<List<Tree>> executionPaths = util.getExecutionPaths(methodDeclaration);
 		printPaths(methodDeclaration, executionPaths);
 
 		assertPaths(executionPaths, //
-				executionPath(JCForLoop.class, JCBlock.class, JCIf.class, JCBlock.class, JCExpressionStatement.class,
-						JCExpressionStatement.class, JCReturn.class), //
-				executionPath(JCForLoop.class, JCBlock.class, JCIf.class, JCBlock.class, JCExpressionStatement.class,
-						JCReturn.class));
+				executionPath(ForLoopTree.class, BlockTree.class, IfTree.class, BlockTree.class, ExpressionStatementTree.class,
+						ExpressionStatementTree.class, ReturnTree.class), //
+				executionPath(ForLoopTree.class, BlockTree.class, IfTree.class, BlockTree.class, ExpressionStatementTree.class,
+						ReturnTree.class));
 	}
 
 	@Test
 	public void switchWithTryCatch() throws Throwable {
-		MethodTree methodDeclaration = Util.findFirstMethodDeclaration(executionPathClassDecl, "switchWithTryCatch");
+		MethodTree methodDeclaration = util.findFirstMethodDeclaration(executionPathClassDecl, "switchWithTryCatch");
 
-		List<List<Tree>> executionPaths = Util.getExecutionPaths(methodDeclaration);
+		List<List<Tree>> executionPaths = util.getExecutionPaths(methodDeclaration);
 		printPaths(methodDeclaration, executionPaths);
 
 		assertPaths(executionPaths, //
-				executionPath(JCSwitch.class, JCCase.class, JCExpressionStatement.class, JCReturn.class), //
-				executionPath(JCSwitch.class, JCCase.class, JCExpressionStatement.class, JCBreak.class,
-						JCExpressionStatement.class, JCReturn.class), //
-				executionPath(JCSwitch.class, JCCase.class, JCExpressionStatement.class, JCBreak.class,
-						JCExpressionStatement.class, JCReturn.class), //
-				executionPath(JCSwitch.class, JCCase.class, JCTry.class, JCBlock.class, JCExpressionStatement.class,
-						JCBlock.class, JCExpressionStatement.class, JCReturn.class), //
-				executionPath(JCSwitch.class, JCCase.class, JCTry.class, JCBlock.class, JCExpressionStatement.class,
-						JCBreak.class, JCExpressionStatement.class, JCReturn.class));
+				executionPath(SwitchTree.class, CaseTree.class, ExpressionStatementTree.class, ReturnTree.class), //
+				executionPath(SwitchTree.class, CaseTree.class, ExpressionStatementTree.class, BreakTree.class,
+						ExpressionStatementTree.class, ReturnTree.class), //
+				executionPath(SwitchTree.class, CaseTree.class, ExpressionStatementTree.class, BreakTree.class,
+						ExpressionStatementTree.class, ReturnTree.class), //
+				executionPath(SwitchTree.class, CaseTree.class, TryTree.class, BlockTree.class, ExpressionStatementTree.class,
+						BlockTree.class, ExpressionStatementTree.class, ReturnTree.class), //
+				executionPath(SwitchTree.class, CaseTree.class, TryTree.class, BlockTree.class, ExpressionStatementTree.class,
+						BreakTree.class, ExpressionStatementTree.class, ReturnTree.class));
 	}
 
 	@Test
 	public void tryWithCatchesAndFinally() throws Throwable {
-		MethodTree methodDeclaration = Util.findFirstMethodDeclaration(executionPathClassDecl,
+		MethodTree methodDeclaration = util.findFirstMethodDeclaration(executionPathClassDecl,
 				"tryWithCatchesAndFinally");
 
-		List<List<Tree>> executionPaths = Util.getExecutionPaths(methodDeclaration);
+		List<List<Tree>> executionPaths = util.getExecutionPaths(methodDeclaration);
 		printPaths(methodDeclaration, executionPaths);
 
 		assertPaths(executionPaths, //
-				executionPath(JCTry.class, JCBlock.class, JCExpressionStatement.class, JCBlock.class,
-						JCExpressionStatement.class, JCReturn.class), //
-				executionPath(JCTry.class, JCBlock.class, JCExpressionStatement.class, JCBlock.class,
-						JCExpressionStatement.class, JCReturn.class), //
-				executionPath(JCTry.class, JCBlock.class, JCExpressionStatement.class, JCBlock.class,
-						JCExpressionStatement.class, JCReturn.class));
+				executionPath(TryTree.class, BlockTree.class, ExpressionStatementTree.class, BlockTree.class,
+						ExpressionStatementTree.class, ReturnTree.class), //
+				executionPath(TryTree.class, BlockTree.class, ExpressionStatementTree.class, BlockTree.class,
+						ExpressionStatementTree.class, ReturnTree.class), //
+				executionPath(TryTree.class, BlockTree.class, ExpressionStatementTree.class, BlockTree.class,
+						ExpressionStatementTree.class, ReturnTree.class));
 	}
 
 	@Test
 	public void tryFinally() throws Throwable {
-		MethodTree methodDeclaration = Util.findFirstMethodDeclaration(executionPathClassDecl, "tryFinally");
+		MethodTree methodDeclaration = util.findFirstMethodDeclaration(executionPathClassDecl, "tryFinally");
 
-		List<List<Tree>> executionPaths = Util.getExecutionPaths(methodDeclaration);
+		List<List<Tree>> executionPaths = util.getExecutionPaths(methodDeclaration);
 		printPaths(methodDeclaration, executionPaths);
 
 		assertPaths(executionPaths, //
-				executionPath(JCTry.class, JCBlock.class, JCBlock.class, JCExpressionStatement.class, JCReturn.class));
+				executionPath(TryTree.class, BlockTree.class, BlockTree.class, ExpressionStatementTree.class, ReturnTree.class));
 	}
 
 	@Test
 	public void ifElseDeepWithReturnsForSomePaths() throws Throwable {
-		MethodTree methodDeclaration = Util.findFirstMethodDeclaration(executionPathClassDecl,
+		MethodTree methodDeclaration = util.findFirstMethodDeclaration(executionPathClassDecl,
 				"ifElseDeepWithReturnsForSomePaths");
 
-		List<List<Tree>> executionPaths = Util.getExecutionPaths(methodDeclaration);
+		List<List<Tree>> executionPaths = util.getExecutionPaths(methodDeclaration);
 		printPaths(methodDeclaration, executionPaths);
 
 		assertPaths(executionPaths, // if
-				executionPath(JCIf.class, JCBlock.class, JCExpressionStatement.class, JCExpressionStatement.class,
-						JCReturn.class), // else
-				executionPath(JCIf.class, JCBlock.class, JCExpressionStatement.class, JCExpressionStatement.class,
-						JCReturn.class), // elseif
-				executionPath(JCIf.class, JCIf.class, JCBlock.class, JCExpressionStatement.class, JCIf.class,
-						JCBlock.class, JCExpressionStatement.class, JCReturn.class), //
-				executionPath(JCIf.class, JCIf.class, JCBlock.class, JCExpressionStatement.class, JCIf.class,
-						JCIf.class, JCBlock.class, JCExpressionStatement.class, JCExpressionStatement.class,
-						JCExpressionStatement.class, JCReturn.class), //
-				executionPath(JCIf.class, JCIf.class, JCBlock.class, JCExpressionStatement.class, JCIf.class,
-						JCIf.class, JCExpressionStatement.class, JCExpressionStatement.class, JCReturn.class));
+				executionPath(IfTree.class, BlockTree.class, ExpressionStatementTree.class, ExpressionStatementTree.class,
+						ReturnTree.class), // else
+				executionPath(IfTree.class, BlockTree.class, ExpressionStatementTree.class, ExpressionStatementTree.class,
+						ReturnTree.class), // elseif
+				executionPath(IfTree.class, IfTree.class, BlockTree.class, ExpressionStatementTree.class, IfTree.class,
+						BlockTree.class, ExpressionStatementTree.class, ReturnTree.class), //
+				executionPath(IfTree.class, IfTree.class, BlockTree.class, ExpressionStatementTree.class, IfTree.class,
+						IfTree.class, BlockTree.class, ExpressionStatementTree.class, ExpressionStatementTree.class,
+						ExpressionStatementTree.class, ReturnTree.class), //
+				executionPath(IfTree.class, IfTree.class, BlockTree.class, ExpressionStatementTree.class, IfTree.class,
+						IfTree.class, ExpressionStatementTree.class, ExpressionStatementTree.class, ReturnTree.class));
 	}
 
 	private void assertPaths(List<List<Tree>> executionPaths, List<Class<?>>... expectedPaths) {

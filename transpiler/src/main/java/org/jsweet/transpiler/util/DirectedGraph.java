@@ -21,7 +21,8 @@ package org.jsweet.transpiler.util;
 import static java.util.Arrays.asList;
 
 import java.io.File;
-import java.io.OutputStreamWriter;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -48,6 +49,7 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
@@ -76,6 +78,7 @@ import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.PackageTree;
 import com.sun.source.tree.Tree;
@@ -718,7 +721,7 @@ public class DirectedGraph<T> implements Collection<T> {
 			if (methTree instanceof MemberSelectTree) {
 				System.out.println(p.getElement(p.getPath(getCompilationUnit(), methTree)));
 				ExpressionTree et = ((MemberSelectTree) methTree).getExpression();
-				System.out.println(et);
+				System.out.println("MEMBER SELECT EXP" + et);
 			}
 
 			++count;
@@ -750,41 +753,61 @@ public class DirectedGraph<T> implements Collection<T> {
 		}
 
 		@Override
+		public Object visitMethod(MethodTree node, Trees p) {
+
+			return super.visitMethod(node, p);
+		}
+
+		@Override
 		public Object visitMemberSelect(MemberSelectTree node, Trees p) {
+			try {
+				System.out.println("== visitMemberSelect ==");
 
-			System.out.println("== visitMemberSelect ==");
+				System.out.println(node.getKind().asInterface());
+				System.out.println(node.getExpression());
+				System.out.println(node.getIdentifier());
+				System.out.println(p.getTypeMirror(getCurrentPath()));
+				System.out.println(p.getTypeMirror(getCurrentPath()) != null);
 
-			System.out.println(node.getKind().asInterface());
-			System.out.println(node.getExpression());
-			System.out.println(node.getIdentifier());
-			System.out.println(p.getTypeMirror(getCurrentPath()));
-			System.out.println(p.getTypeMirror(getCurrentPath()) != null);
+				System.out.println("via element ==");
 
-			System.out.println("via element ==");
-
-			Element element = p.getElement(getCurrentPath());
+				Element element = p.getElement(getCurrentPath());
 //			elements().printElements(new OutputStreamWriter(System.out), element);
 
-			TypeMirror typeMirror = element.asType();
-			System.out.println(typeMirror);
-			System.out.println(types().asElement(typeMirror));
-			System.out.println(typeMirror.getClass());
-			if (typeMirror instanceof DeclaredType) {
-				System.out.println("decl");
-				System.out.println(((DeclaredType) typeMirror).asElement());
-				System.out.println("prim");
-				System.out.println(((PrimitiveType) typeMirror).toString());
-			}
+				TypeMirror typeMirror = element.asType();
+				Field typesField = types().getClass().getDeclaredField("types");
+				typesField.trySetAccessible();
+				Object internalJavacTypes = typesField.get(types());
+				Class<?> javacTypesClass = Class.forName("com.sun.tools.javac.code.Types");
+				Class<?> javacTypeClass = Class.forName("com.sun.tools.javac.code.Type");
+				Method erasureRecursiveMethod = javacTypesClass.getMethod("erasureRecursive", javacTypeClass);
+				System.out.println("theerrrrrrrrrrrrre" + typeMirror);
+				System.out.println(erasureRecursiveMethod);
+				System.out.println(erasureRecursiveMethod.invoke(internalJavacTypes, typeMirror));
+
+				System.out.println(typeMirror);
+				System.out.println(types().asElement(typeMirror));
+				System.out.println(typeMirror.getClass());
+				if (typeMirror instanceof DeclaredType) {
+					System.out.println("decl");
+					System.out.println(((DeclaredType) typeMirror).asElement());
+					System.out.println("prim");
+					System.out.println((typeMirror).toString());
+				}
 //			com.sun.tools.javac.code.Types t;
-			// System.out.println(elements().asElement(typeMirror));
+				// System.out.println(elements().asElement(typeMirror));
 
 //			System.out.println(elements().element.asType());
 
 //			TypeElement tt = elements().getTypeElement(Throwable.class.getName());
 //			System.out.println(tt);
-			System.out.println("== END visitMemberSelect END ==");
+				System.out.println("== END visitMemberSelect END ==");
 
-			return super.visitMemberSelect(node, p);
+				return super.visitMemberSelect(node, p);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				throw new RuntimeException(e);
+			}
 		}
 
 		@Override
@@ -808,6 +831,10 @@ public class DirectedGraph<T> implements Collection<T> {
 		public Object visitPackage(PackageTree node, Trees p) {
 			System.out.println("visitPackage ");
 
+			PackageElement pe = (PackageElement) toElement(node, p);
+
+
+			
 			return super.visitPackage(node, p);
 		}
 
@@ -831,9 +858,13 @@ public class DirectedGraph<T> implements Collection<T> {
 		}
 
 		@Override
-		public Object visitCompilationUnit(CompilationUnitTree node, Trees p) {
-			System.out.println(node.getPackage().getPackageName().toString() + " COMPIL UNIT");
-			return super.visitCompilationUnit(node, p);
+		public Object visitCompilationUnit(CompilationUnitTree compilUnit, Trees trees) {
+			System.out.println(compilUnit.getPackage().getPackageName().toString() + " COMPIL UNIT");
+
+			Element element = toElement(compilUnit, trees);
+			Tree t = trees.getTree(element);
+
+			return super.visitCompilationUnit(compilUnit, trees);
 		}
 
 		private Element toElement(Tree tree, Trees trees) {

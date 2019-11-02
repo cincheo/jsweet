@@ -38,6 +38,10 @@ public class Test extends Pichade {
 			System.out.println("sss = " + s);
 		}
 	}
+	
+	void varargTest(String[] s, String... ss) {
+		
+	}
 
 	public int getX() {
 		return x;

@@ -102,17 +102,17 @@ import org.jsweet.transpiler.util.Util;
 
 import com.sun.codemodel.internal.JJavaName;
 import com.sun.tools.javac.code.Element;
-import com.sun.tools.javac.code.Element.ClassSymbol;
-import com.sun.tools.javac.code.Element.MethodSymbol;
 import com.sun.tools.javac.code.Element.TypeElement;
-import com.sun.tools.javac.code.Type.MethodType;
+import com.sun.tools.javac.code.Element.ExecutableElement;
+import com.sun.tools.javac.code.Element.TypeElement;
+import com.sun.tools.javac.code.TypeMirror.MethodType;
 import com.sun.tools.javac.tree.Tree;
 import com.sun.tools.javac.tree.Tree.ClassTree;
-import com.sun.tools.javac.tree.Tree.JCEnhancedForLoop;
+import com.sun.tools.javac.tree.Tree.EnhancedForLoopTree;
 import com.sun.tools.javac.tree.Tree.ExpressionTree;
-import com.sun.tools.javac.tree.Tree.JCFieldAccess;
-import com.sun.tools.javac.tree.Tree.JCIdent;
-import com.sun.tools.javac.tree.Tree.JCImport;
+import com.sun.tools.javac.tree.Tree.MemberSelectTree;
+import com.sun.tools.javac.tree.Tree.IdentifierTree;
+import com.sun.tools.javac.tree.Tree.ImportTree;
 import com.sun.tools.javac.tree.Tree.MethodInvocationTree;
 import com.sun.tools.javac.tree.Tree.NewClassTree;
 import com.sun.tools.javac.tree.Tree.JCTypeApply;
@@ -248,7 +248,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 
 	@Override
 	public String needsImport(ImportElement importElement, String qualifiedName) {
-		JCImport importDecl = ((ImportElementSupport) importElement).getTree();
+		ImportTree importDecl = ((ImportElementSupport) importElement).getTree();
 		if (isJSweetPath(qualifiedName) || isMappedType(qualifiedName)
 				|| context.getLangTypeMappings().containsKey(qualifiedName)
 				|| qualifiedName.startsWith("java.util.function.")
@@ -265,8 +265,8 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 			}
 		}
 		if (importDecl.isStatic()) {
-			if (importDecl.getQualifiedIdentifier() instanceof JCFieldAccess) {
-				JCFieldAccess fa = (JCFieldAccess) importDecl.getQualifiedIdentifier();
+			if (importDecl.getQualifiedIdentifier() instanceof MemberSelectTree) {
+				MemberSelectTree fa = (MemberSelectTree) importDecl.getQualifiedIdentifier();
 				switch (fa.selected.toString()) {
 				case "java.lang.Math":
 					return null;
@@ -318,10 +318,10 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 		} else {
 			if (context.useModules) {
 				// check if inner class and do not import
-				if (importDecl.qualid instanceof JCFieldAccess) {
-					JCFieldAccess qualified = (JCFieldAccess) importDecl.qualid;
-					if (qualified.sym instanceof ClassSymbol
-							&& qualified.sym.getEnclosingElement() instanceof ClassSymbol) {
+				if (importDecl.qualid instanceof MemberSelectTree) {
+					MemberSelectTree qualified = (MemberSelectTree) importDecl.qualid;
+					if (qualified.sym instanceof TypeElement
+							&& qualified.sym.getEnclosingElement() instanceof TypeElement) {
 						return null;
 					}
 				}
@@ -395,8 +395,8 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 				return true;
 			}
 			// special case when subclassing a Java exception type
-			if (((MethodInvocationElementSupport) invocationElement).getTree().meth instanceof JCIdent) {
-				String superClassName = ((JCIdent) ((MethodInvocationElementSupport) invocationElement)
+			if (((MethodInvocationElementSupport) invocationElement).getTree().meth instanceof IdentifierTree) {
+				String superClassName = ((IdentifierTree) ((MethodInvocationElementSupport) invocationElement)
 						.getTree().meth).sym.getEnclosingElement().getQualifiedName().toString();
 				if (context.getBaseThrowables().contains(superClassName)) {
 					// ES6 would take the cause, but we ignore it so far for
@@ -1253,7 +1253,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 			break;
 		case "equals":
 			if (invocationElement.getTargetExpression() != null && invocationElement.getArgumentCount() == 1) {
-				MethodSymbol methSym = util().findMethodDeclarationInType((TypeElement) invocationElement.getTargetExpression().getTypeAsElement(),
+				ExecutableElement methSym = util().findMethodDeclarationInType((TypeElement) invocationElement.getTargetExpression().getTypeAsElement(),
 						targetMethodName, (MethodType) invocationElement.getMethod().asType());
 				if (methSym != null
 						&& (Object.class.getName().equals(methSym.getEnclosingElement().toString())
@@ -1336,8 +1336,8 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 		if (needsParens) {
 			// async needs no parens to work
 			MethodInvocationTree parentInvocation = (MethodInvocationTree) getPrinter().getParent();
-			if (parentInvocation.meth instanceof JCIdent) {
-				needsParens = !((JCIdent) parentInvocation.meth).getName().toString().equals("async");
+			if (parentInvocation.meth instanceof IdentifierTree) {
+				needsParens = !((IdentifierTree) parentInvocation.meth).getName().toString().equals("async");
 			}
 		}
 		if (needsParens) {
@@ -1399,7 +1399,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 		}
 
 		if (variableAccess.getTargetExpression() != null) {
-			JCFieldAccess fieldAccess = (JCFieldAccess) ((VariableAccessElementSupport) variableAccess).getTree();
+			MemberSelectTree fieldAccess = (MemberSelectTree) ((VariableAccessElementSupport) variableAccess).getTree();
 			String targetFieldName = variableAccess.getVariableName();
 			Element targetType = variableAccess.getTargetElement();
 
@@ -1467,7 +1467,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 					return true;
 				}
 			}
-			JCIdent identifier = (JCIdent) ((VariableAccessElementSupport) variableAccess).getTree();
+			IdentifierTree identifier = (IdentifierTree) ((VariableAccessElementSupport) variableAccess).getTree();
 			if (context.hasAnnotationType(identifier.sym, ANNOTATION_STRING_TYPE)) {
 				print("\"");
 				getPrinter().print((String) context.getAnnotationValue(identifier.sym, ANNOTATION_STRING_TYPE,
@@ -1524,7 +1524,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 
 	@Override
 	public boolean substituteIdentifier(IdentifierElement identifierElement) {
-		JCIdent identifier = ((IdentifierElementSupport) identifierElement).getTree();
+		IdentifierTree identifier = ((IdentifierElementSupport) identifierElement).getTree();
 		if (identifier.type != null) {
 			if (context.getLangTypesSimpleNames().contains(identifier.toString())
 					&& context.getLangTypeMappings().containsKey(identifier.type.toString())) {
@@ -1548,7 +1548,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 		return context.getLangTypeMappings().keySet();
 	}
 
-	protected void printForEachLoop(JCEnhancedForLoop loop, String indexVarName) {
+	protected void printForEachLoop(EnhancedForLoopTree loop, String indexVarName) {
 		getPrinter().print("for(" + VAR_DECL_KEYWORD + " " + indexVarName + "=").print(loop.expr)
 				.print(".iterator();" + indexVarName + ".hasNext();) {").println().startIndent().printIndent();
 		getPrinter().print(VAR_DECL_KEYWORD + " " + loop.var.name.toString() + " = ").print(indexVarName + ".next();")

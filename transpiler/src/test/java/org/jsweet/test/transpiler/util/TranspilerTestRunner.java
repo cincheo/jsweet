@@ -9,6 +9,8 @@ import java.io.InputStreamReader;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+import javax.lang.model.util.Types;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.BooleanUtils;
@@ -20,8 +22,6 @@ import org.jsweet.transpiler.JSweetTranspiler;
 import org.jsweet.transpiler.ModuleKind;
 import org.jsweet.transpiler.SourceFile;
 import org.jsweet.transpiler.util.EvaluationResult;
-
-import com.sun.tools.javac.model.JavacTypes;
 
 /**
  * Wraps a transpiler setup for one test run
@@ -103,8 +103,8 @@ public class TranspilerTestRunner {
 		return transpiler;
 	}
 
-	public JavacTypes types() {
-		return com.sun.tools.javac.model.JavacTypes.instance(transpiler.getContext());
+	public Types types() {
+		return transpiler.getContext().types;
 	}
 
 	public void transpile(Consumer<TestTranspilationHandler> assertions, SourceFile... files) {

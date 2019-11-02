@@ -50,6 +50,7 @@ import javax.lang.model.element.PackageElement;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.JavaVersion;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.log4j.Level;
@@ -131,9 +132,8 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 	public static final String TSC_VERSION = "2.1";
 
 	static {
-		if (!SystemUtils.IS_JAVA_1_8) {
-			throw new RuntimeException("JSweet is currently only supported for JDK8, please use JDK 8.\n" + //
-					"Please see this issue which asks for Java>8 support: https://github.com/cincheo/jsweet/issues/519");
+		if (!SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_1_8)) {
+			throw new RuntimeException("JSweet is currently only supported for JDK 8->11, please use JDK 8->11.");
 		}
 
 		JSweetConfig.initClassPath(null);

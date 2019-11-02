@@ -21,22 +21,23 @@ package org.jsweet.transpiler;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
+
 import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.util.AbstractTreePrinter;
 import org.jsweet.transpiler.util.Util;
 
-import com.sun.tools.javac.code.Element.MethodSymbol;
-import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.code.Type.ClassType;
-import com.sun.tools.javac.code.Types;
-import com.sun.tools.javac.tree.Tree;
-import com.sun.tools.javac.tree.Tree.JCArrayTypeTree;
-import com.sun.tools.javac.tree.Tree.JCAssign;
-import com.sun.tools.javac.tree.Tree.ExpressionTree;
-import com.sun.tools.javac.tree.Tree.JCFieldAccess;
-import com.sun.tools.javac.tree.Tree.MethodInvocationTree;
-import com.sun.tools.javac.tree.Tree.VariableTree;
-import com.sun.tools.javac.util.Name;
+import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 
 /**
  * This helper class performs extra type checking for the JSweet transpiler
@@ -47,6 +48,7 @@ import com.sun.tools.javac.util.Name;
  * as unions are valid.
  * 
  * @author Renaud Pawlak
+ * @author Louis Grignon
  */
 public class TypeChecker {
 
@@ -76,8 +78,6 @@ public class TypeChecker {
 	public static final Set<String> FORBIDDEN_JDK_FUNCTIONAL_METHODS = new HashSet<String>();
 
 	static {
-		// AUTHORIZED_ACCESSED_TYPES.add(String.class.getName());
-
 		AUTHORIZED_DECLARED_TYPES.add(String.class.getName());
 		AUTHORIZED_DECLARED_TYPES.add(Object.class.getName());
 		AUTHORIZED_DECLARED_TYPES.add(Class.class.getName());
@@ -121,27 +121,26 @@ public class TypeChecker {
 		FORBIDDEN_JDK_FUNCTIONAL_METHODS.add("andThen");
 	}
 
-	private AbstractTreePrinter translator;
+	private final AbstractTreePrinter translator;
+	private final JSweetContext context;
 
 	/**
 	 * Creates a new type checker object.
 	 */
 	public TypeChecker(AbstractTreePrinter translator) {
 		this.translator = translator;
+		this.context = translator.getContext();
 	}
 
 	/**
 	 * Checks that the given invocation conforms to JSweet contraints.
 	 */
-	public boolean checkApply(MethodInvocationTree invocation, MethodSymbol methSym) {
-		// if (Util.hasAnnotationType(methSym, JSweetConfig.ANNOTATION_ERASED))
-		// {
-		// translator.report(invocation, JSweetProblem.ERASED_METHOD, methSym);
-		// }
+	public boolean checkApply(MethodInvocationTree invocation, ExecutableElement methSym) {
 		if (!JSweetConfig.isJDKReplacementMode() && !jdkAllowed) {
-			if (methSym.owner.toString().startsWith("java.")) {
-				if (invocation.meth instanceof JCFieldAccess
-						&& "super".equals(((JCFieldAccess) invocation.meth).selected.toString())) {
+			TypeElement parentType = util().getParentElement(methSym, TypeElement.class);
+			if (parentType != null && parentType.getQualifiedName().toString().startsWith("java.")) {
+				if (invocation.meth instanceof MemberSelectTree
+						&& "super".equals(((MemberSelectTree) invocation.meth).selected.toString())) {
 					translator.report(invocation, JSweetProblem.JDK_METHOD, methSym);
 					return false;
 				}
@@ -182,7 +181,7 @@ public class TypeChecker {
 	/**
 	 * Checks that the given field access conforms to JSweet contraints.
 	 */
-	public boolean checkSelect(JCFieldAccess select) {
+	public boolean checkSelect(MemberSelectTree select) {
 		if (!JSweetConfig.isJDKReplacementMode()) {
 			if (select.selected.type instanceof ClassType) {
 				String type = select.selected.type.tsym.toString();
@@ -198,7 +197,7 @@ public class TypeChecker {
 		return true;
 	}
 
-	private boolean checkUnionTypeAssignment(Types types, Tree parent, Type assigned, MethodInvocationTree union) {
+	private boolean checkUnionTypeAssignment(Types types, Tree parent, TypeMirror assigned, MethodInvocationTree union) {
 		if (union.args.head.type.tsym.getQualifiedName().toString().startsWith(JSweetConfig.UNION_CLASS_NAME)) {
 			// union type -> simple type
 			if (!Util.containsAssignableType(types, union.args.head.type.getTypeArguments(), assigned)) {
@@ -229,26 +228,33 @@ public class TypeChecker {
 	 * Checks that the given union type assignment conforms to JSweet
 	 * contraints.
 	 */
-	public boolean checkUnionTypeAssignment(Types types, Tree parent, MethodInvocationTree union) {
+	public boolean checkUnionTypeAssignment(Types types, Tree parent, CompilationUnitTree compilationUnit, MethodInvocationTree union) {
 		if (parent instanceof VariableTree) {
 			VariableTree decl = (VariableTree) parent;
-			if (decl.init == union) {
-				return checkUnionTypeAssignment(types, parent, decl.type, union);
+			if (decl.getInitializer() == union) {
+				TypeMirror varType = util().getTypeForTree(decl, compilationUnit);
+				return checkUnionTypeAssignment(types, parent, varType, union);
 			}
-		} else if (parent instanceof JCAssign) {
-			JCAssign assign = (JCAssign) parent;
-			if (assign.rhs == union) {
-				return checkUnionTypeAssignment(types, parent, assign.lhs.type, union);
+		} else if (parent instanceof AssignmentTree) {
+			AssignmentTree assign = (AssignmentTree) parent;
+			if (assign.getExpression() == union) {
+				TypeMirror varType = util().getTypeForTree(assign.getVariable(), compilationUnit);
+				return checkUnionTypeAssignment(types, parent, varType, union);
 			}
 		} else if (parent instanceof MethodInvocationTree) {
 			MethodInvocationTree invocation = (MethodInvocationTree) parent;
-			for (Tree arg : invocation.args) {
+			for (Tree arg : invocation.getArguments()) {
 				if (arg == union) {
-					return checkUnionTypeAssignment(types, parent, arg.type, union);
+					TypeMirror varType = util().getTypeForTree(arg, compilationUnit);
+					return checkUnionTypeAssignment(types, parent, varType, union);
 				}
 			}
 		}
 		return true;
 	}
-
+	
+	
+	protected Util util() {
+		return context.util;
+	}
 }

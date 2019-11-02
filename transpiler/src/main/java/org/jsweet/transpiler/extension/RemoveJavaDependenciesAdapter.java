@@ -67,7 +67,7 @@ import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
-import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.TypeMirror;
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.Java2TypeScriptTranslator;
 import org.jsweet.transpiler.ModuleKind;
@@ -84,8 +84,8 @@ import org.jsweet.transpiler.model.VariableAccessElement;
 import org.jsweet.transpiler.model.support.ForeachLoopElementSupport;
 import org.jsweet.transpiler.util.Util;
 
-import com.sun.tools.javac.tree.Tree.JCEnhancedForLoop;
-import com.sun.tools.javac.tree.Tree.JCLiteral;
+import com.sun.tools.javac.tree.Tree.EnhancedForLoopTree;
+import com.sun.tools.javac.tree.Tree.LiteralTree;
 import com.sun.tools.javac.tree.Tree.JCTypeApply;
 
 /**
@@ -710,7 +710,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		case "singletonMap":
 			printMacroName(targetMethodName);
 			if (types().isSameType(invocation.getArgument(0).getType(), util().getType(String.class))) {
-				if (invocation.getArgument(0) instanceof JCLiteral) {
+				if (invocation.getArgument(0) instanceof LiteralTree) {
 					print("{ ").print(invocation.getArgument(0)).print(": ").print(invocation.getArgument(1))
 							.print(" }");
 				} else {
@@ -1537,9 +1537,9 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		case "java.util.WeakHashMap":
 		case "java.util.LinkedHashMap":
 			if (newClass.getArgumentCount() == 0 ||
-                !(newClass.getArgument(0).getType() instanceof Type.ClassType) ||
+                !(newClass.getArgument(0).getType() instanceof TypeMirror.ClassType) ||
 				!Util.isDeclarationOrSubClassDeclaration(
-                	types(), (Type.ClassType) newClass.getArgument(0).getType(), Map.class.getName())
+                	(TypeMirror.ClassType) newClass.getArgument(0).getType(), Map.class.getName())
 			) {
 				print("{}");
 			} else {
@@ -1667,7 +1667,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 
 	@Override
 	public boolean substituteForEachLoop(ForeachLoopElement foreachLoop, boolean targetHasLength, String indexVarName) {
-		JCEnhancedForLoop loop = ((ForeachLoopElementSupport) foreachLoop).getTree();
+		EnhancedForLoopTree loop = ((ForeachLoopElementSupport) foreachLoop).getTree();
 		if (!targetHasLength && !isJDKPath(loop.expr.type.toString())
 				&& types().isSubtype(loop.expr.type, types().erasure(util().getType(Iterable.class)))) {
 			printForEachLoop(loop, indexVarName);
@@ -1701,7 +1701,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 
 	@Override
 	public boolean substituteInstanceof(String exprStr, ExtendedElement expr, TypeMirror typeMirror) {
-		com.sun.tools.javac.code.Type type = (com.sun.tools.javac.code.Type) typeMirror;
+		com.sun.tools.javac.code.TypeMirror type = (com.sun.tools.javac.code.TypeMirror) typeMirror;
 		String typeName = type.tsym.getQualifiedName().toString();
 		if (typeName.startsWith("java.") && context.types.isSubtype(type, context.symtab.throwableType)) {
 			print(exprStr, expr);

@@ -65,9 +65,12 @@ import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.util.DirectedGraph;
 import org.jsweet.transpiler.util.Util;
 
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WildcardTree;
@@ -550,7 +553,7 @@ public class JSweetContext {
 	 * @see OverloadScanner
 	 * @see OverloadScanner.Overload
 	 */
-	private Map<ClassSymbol, Map<String, Overload>> overloads = new HashMap<>();
+	private Map<TypeElement, Map<String, Overload>> overloads = new HashMap<>();
 
 	/**
 	 * A cache of static method overloads.
@@ -558,19 +561,19 @@ public class JSweetContext {
 	 * @see OverloadScanner
 	 * @see OverloadScanner.Overload
 	 */
-	private Map<ClassSymbol, Map<String, Overload>> staticOverloads = new HashMap<>();
+	private Map<TypeElement, Map<String, Overload>> staticOverloads = new HashMap<>();
 
 	/**
 	 * Dump all the overloads gathered by {@link OverloadScanner}.
 	 */
 	public void dumpOverloads(PrintStream out) {
-		for (Entry<ClassSymbol, Map<String, Overload>> e1 : overloads.entrySet()) {
+		for (Entry<TypeElement, Map<String, Overload>> e1 : overloads.entrySet()) {
 			out.println("*** " + e1.getKey());
 			for (Entry<String, Overload> e2 : e1.getValue().entrySet()) {
 				out.println("  - " + e2.getValue());
 			}
 		}
-		for (Entry<ClassSymbol, Map<String, Overload>> e1 : staticOverloads.entrySet()) {
+		for (Entry<TypeElement, Map<String, Overload>> e1 : staticOverloads.entrySet()) {
 			out.println("*** " + e1.getKey() + " [STATIC]");
 			for (Entry<String, Overload> e2 : e1.getValue().entrySet()) {
 				out.println("  - " + e2.getValue());
@@ -591,8 +594,8 @@ public class JSweetContext {
 	/**
 	 * Gets or create an overload instance for the given class and method.
 	 */
-	public Overload getOrCreateOverload(ClassSymbol clazz, MethodSymbol method) {
-		Map<ClassSymbol, Map<String, Overload>> actualOverloads = method.isStatic() ? staticOverloads : overloads;
+	public Overload getOrCreateOverload(TypeElement clazz, ExecutableElement method) {
+		Map<TypeElement, Map<String, Overload>> actualOverloads = method.isStatic() ? staticOverloads : overloads;
 		Map<String, Overload> m = actualOverloads.get(clazz);
 		if (m == null) {
 			m = new HashMap<>();
@@ -601,7 +604,8 @@ public class JSweetContext {
 		String name = method.name.toString();
 		Overload overload = m.get(name);
 		if (overload == null) {
-			overload = new Overload();
+			trees.getTree(element)
+			overload = new Overload(this, util.getParentElement(method, Compilation));
 			overload.methodName = name;
 			m.put(name, overload);
 		}
@@ -611,8 +615,8 @@ public class JSweetContext {
 	/**
 	 * Gets an overload instance for the given class and method.
 	 */
-	public Overload getOverload(ClassSymbol clazz, MethodSymbol method) {
-		Map<ClassSymbol, Map<String, Overload>> actualOverloads = method.isStatic() ? staticOverloads : overloads;
+	public Overload getOverload(TypeElement clazz, ExecutableElement method) {
+		Map<TypeElement, Map<String, Overload>> actualOverloads = method.isStatic() ? staticOverloads : overloads;
 		Map<String, Overload> m = actualOverloads.get(clazz);
 		if (m == null) {
 			return null;
@@ -627,15 +631,15 @@ public class JSweetContext {
 	/**
 	 * Tells if that method is part of an invalid overload in its declaring class.
 	 */
-	public boolean isInvalidOverload(MethodSymbol method) {
-		Overload overload = getOverload((ClassSymbol) method.getEnclosingElement(), method);
+	public boolean isInvalidOverload(ExecutableElement method) {
+		Overload overload = getOverload((TypeElement) method.getEnclosingElement(), method);
 		return overload != null && overload.methods.size() > 1 && !overload.isValid;
 	}
 
 	/**
 	 * Contains the classes that have a wrong constructor overload.
 	 */
-	public Set<ClassSymbol> classesWithWrongConstructorOverload = new HashSet<>();
+	public Set<TypeElement> classesWithWrongConstructorOverload = new HashSet<>();
 
 
 	/**
@@ -854,7 +858,7 @@ public class JSweetContext {
 	 * A graph containing the module dependencies when using modules (empty
 	 * otherwise).
 	 */
-	public DirectedGraph<PackageSymbol> packageDependencies = new DirectedGraph<>();
+	public DirectedGraph<PackageElement> packageDependencies = new DirectedGraph<>();
 
 	/**
 	 * Stores the root package names (i.e. packages contained in the default package
@@ -867,7 +871,7 @@ public class JSweetContext {
 	 * package annotated with the {@link jsweet.lang.Root} annotation, including
 	 * null, i.e. default package).
 	 */
-	public HashSet<PackageSymbol> rootPackages = new HashSet<>();
+	public HashSet<PackageElement> rootPackages = new HashSet<>();
 
 	/**
 	 * A flag to keep track of wether a multiple root packages problem was already
@@ -1044,7 +1048,7 @@ public class JSweetContext {
 	/**
 	 * Tells if the given field has a field name mapping.
 	 * 
-	 * @see #addFieldNameMapping(VarSymbol, String)
+	 * @see #addFieldNameMapping(VariableElement, String)
 	 * @see #getFieldNameMapping(Element)
 	 */
 	public boolean hasFieldNameMapping(VariableElement field) {
@@ -1070,7 +1074,7 @@ public class JSweetContext {
 	/**
 	 * Tells if the given class has a class name mapping.
 	 * 
-	 * @see #addClassNameMapping(ClassSymbol, String)
+	 * @see #addClassNameMapping(TypeElement, String)
 	 * @see #getClassNameMapping(Element)
 	 */
 	public boolean hasClassNameMapping(TypeElement clazz) {
@@ -1147,7 +1151,7 @@ public class JSweetContext {
 	 */
 	public boolean isRootPackage(Element element) {
 		Element symbol = (Element) element;
-		return hasAnnotationType(symbol, JSweetConfig.ANNOTATION_ROOT) || (symbol instanceof PackageSymbol
+		return hasAnnotationType(symbol, JSweetConfig.ANNOTATION_ROOT) || (symbol instanceof PackageElement
 				&& libPackagePattern.matcher(symbol.getQualifiedName().toString()).matches());
 	}
 
@@ -1261,22 +1265,22 @@ public class JSweetContext {
 	 * is the one that is enclosed within a root package (see
 	 * <code>jsweet.lang.Root</code>) or the one in the default (unnamed) package.
 	 */
-	public PackageSymbol getTopLevelPackage(Element symbol) {
-		if ((symbol instanceof PackageSymbol) && isRootPackage(symbol)) {
+	public PackageElement getTopLevelPackage(Element symbol) {
+		if ((symbol instanceof PackageElement) && isRootPackage(symbol)) {
 			return null;
 		}
-		Element parent = (symbol instanceof PackageSymbol) ? ((PackageSymbol) symbol).owner
+		Element parent = (symbol instanceof PackageElement) ? ((PackageElement) symbol).owner
 				: symbol.getEnclosingElement();
 		if (parent != null && isRootPackage(parent)) {
-			if (symbol instanceof PackageSymbol) {
-				return (PackageSymbol) symbol;
+			if (symbol instanceof PackageElement) {
+				return (PackageElement) symbol;
 			} else {
 				return null;
 			}
 		} else {
-			if (parent == null || (parent instanceof PackageSymbol && StringUtils.isBlank(parent.getSimpleName()))) {
-				if (symbol instanceof PackageSymbol) {
-					return (PackageSymbol) symbol;
+			if (parent == null || (parent instanceof PackageElement && StringUtils.isBlank(parent.getSimpleName()))) {
+				if (symbol instanceof PackageElement) {
+					return (PackageElement) symbol;
 				} else {
 					return null;
 				}
@@ -1289,14 +1293,14 @@ public class JSweetContext {
 	/**
 	 * Finds the first (including itself) enclosing package annotated with @Root.
 	 */
-	public PackageSymbol getFirstEnclosingRootPackage(PackageSymbol packageSymbol) {
+	public PackageElement getFirstEnclosingRootPackage(PackageElement packageSymbol) {
 		if (packageSymbol == null) {
 			return null;
 		}
 		if (isRootPackage(packageSymbol)) {
 			return packageSymbol;
 		}
-		return getFirstEnclosingRootPackage((PackageSymbol) packageSymbol.owner);
+		return getFirstEnclosingRootPackage((PackageElement) packageSymbol.owner);
 	}
 
 	private void getRootRelativeJavaName(StringBuilder sb, Element symbol) {
@@ -1519,11 +1523,11 @@ public class JSweetContext {
 		if (isInterface(type)) {
 			interfaces.add(type.getQualifiedName().toString());
 		}
-		if (type instanceof ClassSymbol) {
-			for (Type t : ((ClassSymbol) type).getInterfaces()) {
+		if (type instanceof TypeElement) {
+			for (TypeMirror t : ((TypeElement) type).getInterfaces()) {
 				grabSupportedInterfaceNames(interfaces, t.tsym);
 			}
-			grabSupportedInterfaceNames(interfaces, ((ClassSymbol) type).getSuperclass().tsym);
+			grabSupportedInterfaceNames(interfaces, ((TypeElement) type).getSuperclass().tsym);
 		}
 	}
 
@@ -1534,30 +1538,30 @@ public class JSweetContext {
 		if (type == null) {
 			return;
 		}
-		if (type instanceof ClassSymbol) {
-			superClasses.add(((ClassSymbol) type).getQualifiedName().toString());
-			grabSuperClassNames(superClasses, ((ClassSymbol) type).getSuperclass().tsym);
+		if (type instanceof TypeElement) {
+			superClasses.add(((TypeElement) type).getQualifiedName().toString());
+			grabSuperClassNames(superClasses, ((TypeElement) type).getSuperclass().tsym);
 		}
 	}
 
-	public void grabMethodsToBeImplemented(List<MethodSymbol> methods, TypeElement type) {
+	public void grabMethodsToBeImplemented(List<ExecutableElement> methods, TypeElement type) {
 		if (type == null) {
 			return;
 		}
 		if (isInterface(type)) {
 			for (Element s : type.getEnclosedElements()) {
-				if (s instanceof MethodSymbol) {
-					if (!s.isStatic() && !Util.isOverridingBuiltInJavaObjectMethod((MethodSymbol) s)) {
-						methods.add((MethodSymbol) s);
+				if (s instanceof ExecutableElement) {
+					if (!s.isStatic() && !Util.isOverridingBuiltInJavaObjectMethod((ExecutableElement) s)) {
+						methods.add((ExecutableElement) s);
 					}
 				}
 			}
 		}
-		if (type instanceof ClassSymbol) {
-			for (Type t : ((ClassSymbol) type).getInterfaces()) {
+		if (type instanceof TypeElement) {
+			for (TypeMirror t : ((TypeElement) type).getInterfaces()) {
 				grabMethodsToBeImplemented(methods, t.tsym);
 			}
-			grabMethodsToBeImplemented(methods, ((ClassSymbol) type).getSuperclass().tsym);
+			grabMethodsToBeImplemented(methods, ((TypeElement) type).getSuperclass().tsym);
 		}
 	}
 
@@ -1603,8 +1607,8 @@ public class JSweetContext {
 					// no regular methods or non-empty constructors in maps
 					return true;
 				}
-				if (def instanceof JCBlock) {
-					for (JCStatement s : ((JCBlock) def).stats) {
+				if (def instanceof BlockTree) {
+					for (StatementTree s : ((BlockTree) def).stats) {
 						if (!isAllowedStatementInMap(s)) {
 							return true;
 						}
@@ -1619,17 +1623,17 @@ public class JSweetContext {
 	 * Returns true if given statement can be used in a Java object instantation block
 	 * to be transformed to a JS Object Literal
 	 */
-	private static boolean isAllowedStatementInMap(JCStatement statement) {
-		if (statement instanceof JCExpressionStatement) {
-			JCExpressionStatement exprStat = (JCExpressionStatement) statement;
-			if (exprStat.getExpression() instanceof JCAssign) {
+	private static boolean isAllowedStatementInMap(StatementTree statement) {
+		if (statement instanceof ExpressionStatementTree) {
+			ExpressionStatementTree exprStat = (ExpressionStatementTree) statement;
+			if (exprStat.getExpression() instanceof AssignmentTree) {
 				return true;
 			}
 			if (exprStat.getExpression() instanceof MethodInvocationTree) {
 				MethodInvocationTree inv = (MethodInvocationTree) exprStat.getExpression();
 				String methodName;
-				if (inv.meth instanceof JCFieldAccess) {
-					methodName = ((JCFieldAccess) inv.meth).name.toString();
+				if (inv.meth instanceof MemberSelectTree) {
+					methodName = ((MemberSelectTree) inv.meth).name.toString();
 				} else {
 					methodName = inv.meth.toString();
 				}
@@ -1645,7 +1649,7 @@ public class JSweetContext {
 	/**
 	 * Returns the number of arguments declared by a function interface.
 	 */
-	public int getFunctionalTypeParameterCount(Type type) {
+	public int getFunctionalTypeParameterCount(TypeMirror type) {
 		String name = type.tsym.getSimpleName().toString();
 		String fullName = type.toString();
 		if (Runnable.class.getName().equals(fullName)) {
@@ -1693,8 +1697,8 @@ public class JSweetContext {
 		} else {
 			if (hasAnnotationType(type.tsym, JSweetConfig.ANNOTATION_FUNCTIONAL_INTERFACE)) {
 				for (Element e : type.tsym.getEnclosedElements()) {
-					if (e instanceof MethodSymbol) {
-						return ((MethodSymbol) e).getParameters().size();
+					if (e instanceof ExecutableElement) {
+						return ((ExecutableElement) e).getParameters().size();
 					}
 				}
 				return -1;
@@ -1735,7 +1739,7 @@ public class JSweetContext {
 	 */
 	public boolean hasAnonymousFunction(TypeElement type) {
 		for (Element s : type.getEnclosedElements()) {
-			if (s instanceof MethodSymbol) {
+			if (s instanceof ExecutableElement) {
 				String methodName = s.getSimpleName().toString();
 				if (JSweetConfig.ANONYMOUS_FUNCTION_NAME.equals(methodName) //
 						|| (deprecatedApply && JSweetConfig.ANONYMOUS_DEPRECATED_FUNCTION_NAME.equals(methodName))) {
@@ -1770,14 +1774,14 @@ public class JSweetContext {
 	 * Returns true if the given package is erased (it could be erased because a
 	 * parent package is erased).
 	 */
-	public boolean isPackageErased(PackageSymbol pkg) {
+	public boolean isPackageErased(PackageElement pkg) {
 		if (pkg == null) {
 			return false;
 		}
 		if (hasAnnotationType(pkg, JSweetConfig.ANNOTATION_ERASED)) {
 			return true;
 		} else {
-			return isPackageErased((PackageSymbol) pkg.getEnclosingElement());
+			return isPackageErased((PackageElement) pkg.getEnclosingElement());
 		}
 	}
 

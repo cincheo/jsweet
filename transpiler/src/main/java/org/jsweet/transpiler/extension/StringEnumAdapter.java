@@ -63,7 +63,7 @@ public class StringEnumAdapter extends PrinterAdapter {
 	 * Performs the following initializations:
 	 * 
 	 * <ul>
-	 * <li>Type mapping: eligible enum types -&gt; string</li>
+	 * <li>TypeMirror mapping: eligible enum types -&gt; string</li>
 	 * <li>Adds an annotation manager that will add <code>@Erased</code> to all
 	 * eligible enum declarations</li>
 	 * </ul>
