@@ -50,6 +50,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
@@ -1896,6 +1897,10 @@ public class Util {
 				throw new RuntimeException("cannot call legacy sourcefile field from Javac API", e);
 			}
 		}
+	}
+
+	public boolean isPrimitiveOrVoid(TypeMirror type) {
+		return type != null && (type.getKind() == TypeKind.VOID || type instanceof PrimitiveType);
 	}
 
 }
