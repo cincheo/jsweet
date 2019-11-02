@@ -98,7 +98,7 @@ public class ExtendedElementSupport<T extends Tree> implements ExtendedElement {
 		if (!(getTree() instanceof ExpressionTree)) {
 			return false;
 		}
-		return context.util.isConstant((ExpressionTree) getTree());
+		return context.util.isConstant((ExpressionTree) getTree(), compilationUnit);
 	}
 
 	@Override

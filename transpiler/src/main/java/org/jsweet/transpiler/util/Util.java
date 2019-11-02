@@ -922,9 +922,9 @@ public class Util {
 	/**
 	 * Tells if the given list contains an type which is assignable from type.
 	 */
-	public boolean containsAssignableType(Types types, List<TypeMirror> list, TypeMirror type) {
+	public boolean containsAssignableType(List<? extends TypeMirror> list, TypeMirror type) {
 		for (TypeMirror t : list) {
-			if (types.isAssignable(t, type)) {
+			if (types().isAssignable(t, type)) {
 				return true;
 			}
 		}
@@ -1769,6 +1769,11 @@ public class Util {
 	}
 
 	public SourcePosition getSourcePosition(CompilationUnitTree compilationUnit, Tree tree) {
+		return getSourcePosition(compilationUnit, tree, null);
+	}
+
+	public SourcePosition getSourcePosition(CompilationUnitTree compilationUnit, Tree tree,
+			Name nameOffsetForEndPosition) {
 		// map offsets to line numbers in source file
 		LineMap lineMap = compilationUnit.getLineMap();
 		if (lineMap == null) {
@@ -1779,6 +1784,9 @@ public class Util {
 		long endPosition = sourcePositions().getEndPosition(compilationUnit, tree);
 		if (endPosition == -1) {
 			endPosition = startPosition;
+		}
+		if (nameOffsetForEndPosition != null) {
+			endPosition += nameOffsetForEndPosition.length();
 		}
 
 		return new SourcePosition( //

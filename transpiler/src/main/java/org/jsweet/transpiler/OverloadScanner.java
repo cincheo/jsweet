@@ -261,7 +261,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 									if (isValid && invocation.getArguments() != null) {
 										for (int i = 0; i < invocation.getArguments().size(); i++) {
 											ExpressionTree expr = invocation.getArguments().get(i);
-											if (context.util.isConstant(expr)) {
+											if (context.util.isConstant(expr, compilationUnit)) {
 												defaultValues.put(i, expr);
 											} else {
 												if (!(expr instanceof IdentifierTree

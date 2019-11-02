@@ -27,6 +27,7 @@ import java.util.Stack;
 import java.util.function.Consumer;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.Name;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
@@ -64,13 +65,29 @@ public abstract class AbstractTreeScanner extends TreeScanner<Void, Trees> {
 	 * @param params  problem arguments
 	 */
 	public void report(Tree tree, JSweetProblem problem, Object... params) {
+		report(tree, null, problem, params);
+	}
+
+	/**
+	 * Report a JSweet problem on the given named program element (tree).
+	 * 
+	 * @param tree
+	 *            the program element causing the problem
+	 * @param name
+	 *            the name of that program element
+	 * @param problem
+	 *            the problem to be reported
+	 * @param params
+	 *            problem arguments
+	 */
+	public void report(Tree tree, Name name, JSweetProblem problem, Object... params) {
 		if (logHandler == null) {
 			System.err.println(problem.getMessage(params));
 		} else {
 			if (compilationUnit == null) {
 				logHandler.report(problem, null, problem.getMessage(params));
 			} else {
-				SourcePosition sourcePosition = util().getSourcePosition(compilationUnit, tree);
+				SourcePosition sourcePosition = util().getSourcePosition(compilationUnit, tree, name);
 				logHandler.report(problem, sourcePosition, problem.getMessage(params));
 			}
 		}
