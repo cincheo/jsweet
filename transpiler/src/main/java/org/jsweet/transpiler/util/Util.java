@@ -1832,6 +1832,10 @@ public class Util {
 		}
 		return null;
 	}
+	
+	public CompilationUnitTree getCompilationUnit(Element element) {
+		return trees().getPath(element).getCompilationUnit();
+	}
 
 	/**
 	 * Backward compatibility method delegating to

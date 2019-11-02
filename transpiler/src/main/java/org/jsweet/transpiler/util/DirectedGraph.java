@@ -917,11 +917,12 @@ public class DirectedGraph<T> implements Collection<T> {
 
 		File f = new File("src/main/resources/Test.java");
 		File f2 = new File("src/main/resources/Test2.java");
+		File f3 = new File("src/main/resources/Test3.java");
 
 		try (StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, Locale.getDefault(),
 				Charset.forName("UTF-8"))) {
 			final DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
-			Iterable<? extends JavaFileObject> sources = fileManager.getJavaFileObjectsFromFiles(asList(f, f2));
+			Iterable<? extends JavaFileObject> sources = fileManager.getJavaFileObjectsFromFiles(asList(f, f2, f3));
 			System.out.println("f=" + f);
 			System.out.println("f2=" + f2);
 			System.out.println("fileObjects=" + sources);

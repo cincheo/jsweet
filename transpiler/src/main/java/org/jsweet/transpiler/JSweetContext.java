@@ -153,9 +153,12 @@ public class JSweetContext {
 	 * 
 	 * @see #lookupGlobalMethod(String)
 	 */
-	public void registerGlobalMethod(ClassTree owner, MethodTree method) {
-		String name = method.sym.getEnclosingElement().getQualifiedName().toString();
-		name += "." + method.name;
+	public void registerGlobalMethod(ClassTree owner, MethodTree method, CompilationUnitTree compilationUnit) {
+
+		ExecutableElement methodElement = util.getElementForTree(method, compilationUnit);
+
+		String name = ((TypeElement) methodElement.getEnclosingElement()).getQualifiedName().toString();
+		name += "." + method.getName();
 		name = name.replace(JSweetConfig.GLOBALS_CLASS_NAME + ".", "");
 		globalMethods.put(name, new Tree[] { owner, method });
 	}
@@ -163,8 +166,8 @@ public class JSweetContext {
 	/**
 	 * Looks up a registered method from its fully qualified name.
 	 * 
-	 * @param fullyQualifiedName
-	 *            fully qualified owning type name + "." + method name
+	 * @param fullyQualifiedName fully qualified owning type name + "." + method
+	 *                           name
 	 * @return an array containing the class and method AST objects of any matching
 	 *         method (in theory several methods could match because of overloading
 	 *         but we ignore it here)
@@ -177,8 +180,9 @@ public class JSweetContext {
 	/**
 	 * Registers a decorator annotation in the context.
 	 */
-	public void registerDecoratorAnnotation(ClassTree annotationDeclaration) {
-		decoratorAnnotations.put(annotationDeclaration.sym.getQualifiedName().toString(), annotationDeclaration);
+	public void registerDecoratorAnnotation(ClassTree annotationDeclaration, CompilationUnitTree compilationUnit) {
+		TypeElement annotationElement = util.getElementForTree(annotationDeclaration, compilationUnit);
+		decoratorAnnotations.put(annotationElement.getQualifiedName().toString(), annotationDeclaration);
 	}
 
 	/**
@@ -191,10 +195,9 @@ public class JSweetContext {
 	/**
 	 * Adds a type mapping in the context.
 	 * 
-	 * @param sourceTypeName
-	 *            the fully qualified name of the source type
-	 * @param targetTypeName
-	 *            the fully Qualified name of the type the source type is mapped to
+	 * @param sourceTypeName the fully qualified name of the source type
+	 * @param targetTypeName the fully Qualified name of the type the source type is
+	 *                       mapped to
 	 */
 	public final void addTypeMapping(String sourceTypeName, String targetTypeName) {
 		typesMapping.put(sourceTypeName, targetTypeName);
@@ -229,10 +232,9 @@ public class JSweetContext {
 	/**
 	 * Adds a functional type mapping.
 	 * 
-	 * @param mappingFunction
-	 *            a function that takes the type tree, the type name, and returns a
-	 *            mapped type (either under the form of a string, or of a string, or
-	 *            of another type tree).
+	 * @param mappingFunction a function that takes the type tree, the type name,
+	 *                        and returns a mapped type (either under the form of a
+	 *                        string, or of a string, or of another type tree).
 	 */
 	public final void addTypeMapping(BiFunction<ExtendedElement, String, Object> mappingFunction) {
 		functionalTypesMapping.add(mappingFunction);
@@ -336,8 +338,7 @@ public class JSweetContext {
 	/**
 	 * Creates a new JSweet transpilation context.
 	 * 
-	 * @param options
-	 *            the JSweet transpilation options
+	 * @param options the JSweet transpilation options
 	 */
 	public JSweetContext(JSweetOptions options) {
 		this.options = options;
@@ -387,11 +388,9 @@ public class JSweetContext {
 	 * <li>all fields called aField in all the classes: **.aField</li>
 	 * </ul>
 	 * 
-	 * @param annotationType
-	 *            the annotation type
-	 * @param filters
-	 *            the annotation is activated if one of the filters match and no
-	 *            negative filter matches
+	 * @param annotationType the annotation type
+	 * @param filters        the annotation is activated if one of the filters match
+	 *                       and no negative filter matches
 	 */
 	public final void addAnnotation(Class<? extends Annotation> annotationType, String... filters) {
 		addAnnotation(annotationType.getName(), filters);
@@ -431,13 +430,12 @@ public class JSweetContext {
 	 * <li>!: negates the filter (first character only)</li>
 	 * </ul>
 	 * 
-	 * @param annotationDescriptor
-	 *            the annotation type name, optionally preceded with a @, and
-	 *            optionally defining a value (fully qualified name is not necessary
-	 *            for JSweet annotations)
-	 * @param filters
-	 *            the annotation is activated if one of the filters match and no
-	 *            negative filter matches
+	 * @param annotationDescriptor the annotation type name, optionally preceded
+	 *                             with a @, and optionally defining a value (fully
+	 *                             qualified name is not necessary for JSweet
+	 *                             annotations)
+	 * @param filters              the annotation is activated if one of the filters
+	 *                             match and no negative filter matches
 	 */
 	public final void addAnnotation(String annotationDescriptor, String... filters) {
 		if (!annotationDescriptor.startsWith("@")) {
@@ -541,7 +539,7 @@ public class JSweetContext {
 	private boolean usingJavaRuntime = false;
 
 	public final Locale locale = Locale.getDefault();
-	
+
 	/**
 	 * JSweet transpilation options.
 	 */
@@ -595,17 +593,19 @@ public class JSweetContext {
 	 * Gets or create an overload instance for the given class and method.
 	 */
 	public Overload getOrCreateOverload(TypeElement clazz, ExecutableElement method) {
-		Map<TypeElement, Map<String, Overload>> actualOverloads = method.isStatic() ? staticOverloads : overloads;
+		Map<TypeElement, Map<String, Overload>> actualOverloads = method.getModifiers().contains(Modifier.STATIC)
+				? staticOverloads
+				: overloads;
 		Map<String, Overload> m = actualOverloads.get(clazz);
 		if (m == null) {
 			m = new HashMap<>();
 			actualOverloads.put(clazz, m);
 		}
-		String name = method.name.toString();
+		String name = method.getSimpleName().toString();
 		Overload overload = m.get(name);
 		if (overload == null) {
-			trees.getTree(element)
-			overload = new Overload(this, util.getParentElement(method, Compilation));
+
+			overload = new Overload(this, util.getCompilationUnit(method));
 			overload.methodName = name;
 			m.put(name, overload);
 		}
@@ -616,12 +616,14 @@ public class JSweetContext {
 	 * Gets an overload instance for the given class and method.
 	 */
 	public Overload getOverload(TypeElement clazz, ExecutableElement method) {
-		Map<TypeElement, Map<String, Overload>> actualOverloads = method.isStatic() ? staticOverloads : overloads;
+		Map<TypeElement, Map<String, Overload>> actualOverloads = method.getModifiers().contains(Modifier.STATIC)
+				? staticOverloads
+				: overloads;
 		Map<String, Overload> m = actualOverloads.get(clazz);
 		if (m == null) {
 			return null;
 		}
-		Overload overload = m.get(method.name.toString());
+		Overload overload = m.get(method.getSimpleName().toString());
 		if (overload == null) {
 			return null;
 		}
@@ -641,7 +643,6 @@ public class JSweetContext {
 	 */
 	public Set<TypeElement> classesWithWrongConstructorOverload = new HashSet<>();
 
-
 	/**
 	 * The Java compiler types for fast access.
 	 */
@@ -651,18 +652,17 @@ public class JSweetContext {
 	 * The Java compiler trees for fast access.
 	 */
 	public Trees trees;
-	
+
 	/**
 	 * The Java compiler trees for fast access.
 	 */
 	public Elements elements;
-	
 
 	/**
 	 * Gets the util API, which provides a set of utilities.
 	 */
 	public Util util = new Util(this);
-	
+
 	/**
 	 * A flag to tell if the transpiler is in module mode or not.
 	 */
@@ -719,8 +719,7 @@ public class JSweetContext {
 	/**
 	 * Register a module that is used by the transpiled program.
 	 * 
-	 * @param moduleName
-	 *            the module being used
+	 * @param moduleName the module being used
 	 */
 	public void registerUsedModule(String moduleName) {
 		if (!usedModules.contains(moduleName)) {
@@ -746,12 +745,9 @@ public class JSweetContext {
 	 * import targetName = require("sourceName");
 	 * </pre>
 	 * 
-	 * @param moduleName
-	 *            the module that is importing the name
-	 * @param sourceElement
-	 *            the source element if any (null if not applicable)
-	 * @param targetName
-	 *            the target name being imported
+	 * @param moduleName    the module that is importing the name
+	 * @param sourceElement the source element if any (null if not applicable)
+	 * @param targetName    the target name being imported
 	 */
 	public void registerImportedName(String moduleName, Element sourceElement, String targetName) {
 		Set<String> importedNames = importedNamesInModules.get(moduleName);
@@ -1012,13 +1008,14 @@ public class JSweetContext {
 	/**
 	 * Stores a default method AST for the given type.
 	 */
-	public void addDefaultMethod(CompilationUnitTree compilationUnit, ClassTree type, MethodTree defaultMethod) {
-		Set<Entry<ClassTree, MethodTree>> methods = defaultMethods.get(type.sym);
+	public void addDefaultMethod(CompilationUnitTree compilationUnit, ClassTree classTree, MethodTree defaultMethod) {
+		TypeElement classElement = util.getElementForTree(classTree, compilationUnit);
+		Set<Entry<ClassTree, MethodTree>> methods = defaultMethods.get(classElement);
 		if (methods == null) {
 			methods = new HashSet<>();
-			defaultMethods.put(type.sym, methods);
+			defaultMethods.put(classElement, methods);
 		}
-		methods.add(new AbstractMap.SimpleEntry<>(type, defaultMethod));
+		methods.add(new AbstractMap.SimpleEntry<>(classTree, defaultMethod));
 		defaultMethodsCompilationUnits.put(defaultMethod, compilationUnit);
 	}
 
@@ -1150,16 +1147,16 @@ public class JSweetContext {
 	 * definition package).
 	 */
 	public boolean isRootPackage(Element element) {
-		Element symbol = (Element) element;
-		return hasAnnotationType(symbol, JSweetConfig.ANNOTATION_ROOT) || (symbol instanceof PackageElement
-				&& libPackagePattern.matcher(symbol.getQualifiedName().toString()).matches());
+		return hasAnnotationType(element, JSweetConfig.ANNOTATION_ROOT) || (element instanceof PackageElement
+				&& libPackagePattern.matcher(((PackageElement) element).getQualifiedName().toString()).matches());
 	}
 
 	/**
 	 * Tells if the given type is a Java interface.
 	 */
-	public boolean isInterface(TypeElement typeSymbol) {
-		return (typeSymbol.type.isInterface() || hasAnnotationType(typeSymbol, JSweetConfig.ANNOTATION_INTERFACE));
+	public boolean isInterface(TypeElement typeElement) {
+		return (typeElement.getKind() == ElementKind.INTERFACE
+				|| hasAnnotationType(typeElement, JSweetConfig.ANNOTATION_INTERFACE));
 	}
 
 	/**
@@ -1182,7 +1179,7 @@ public class JSweetContext {
 		if (hasAnnotationFilters()) {
 			String signature = symbol.toString();
 			if (!(symbol instanceof TypeElement) && symbol.getEnclosingElement() != null) {
-				signature = symbol.getEnclosingElement().getQualifiedName().toString() + "." + signature;
+				signature = symbol.getEnclosingElement().asType().toString() + "." + signature;
 			}
 			for (String annotationType : annotationTypes) {
 				Collection<AnnotationFilterDescriptor> filterDescriptors = annotationFilters.get(annotationType);
@@ -1253,7 +1250,8 @@ public class JSweetContext {
 				}
 			}
 			sb.insert(0, name);
-			symbol = (symbol instanceof PackageElement) ? ((PackageElement) symbol).owner : symbol.getEnclosingElement();
+			symbol = (symbol instanceof PackageElement) ? ((PackageElement) symbol).getEnclosingElement()
+					: symbol.getEnclosingElement();
 			if (symbol != null) {
 				getRootRelativeName(nameMapping, sb, symbol);
 			}
@@ -1269,7 +1267,7 @@ public class JSweetContext {
 		if ((symbol instanceof PackageElement) && isRootPackage(symbol)) {
 			return null;
 		}
-		Element parent = (symbol instanceof PackageElement) ? ((PackageElement) symbol).owner
+		Element parent = (symbol instanceof PackageElement) ? ((PackageElement) symbol).getEnclosingElement()
 				: symbol.getEnclosingElement();
 		if (parent != null && isRootPackage(parent)) {
 			if (symbol instanceof PackageElement) {
@@ -1312,7 +1310,8 @@ public class JSweetContext {
 			String name = symbol.getSimpleName().toString();
 
 			sb.insert(0, name);
-			symbol = (symbol instanceof PackageElement) ? ((PackageElement) symbol).owner : symbol.getEnclosingElement();
+			symbol = (symbol instanceof PackageElement) ? ((PackageElement) symbol).owner
+					: symbol.getEnclosingElement();
 			if (symbol != null) {
 				getRootRelativeJavaName(sb, symbol);
 			}
@@ -1323,13 +1322,10 @@ public class JSweetContext {
 	 * Gets the qualified name of a symbol relatively to the root package
 	 * (potentially annotated with <code>jsweet.lang.Root</code>).
 	 * 
-	 * @param nameMapping
-	 *            a map to redirect names
-	 * @param symbol
-	 *            the symbol to get the name of
-	 * @param useJavaNames
-	 *            if true uses plain Java names, if false uses
-	 *            <code>jsweet.lang.Name</code> annotations
+	 * @param nameMapping  a map to redirect names
+	 * @param symbol       the symbol to get the name of
+	 * @param useJavaNames if true uses plain Java names, if false uses
+	 *                     <code>jsweet.lang.Name</code> annotations
 	 * @return
 	 */
 	public String getRootRelativeName(Map<Element, String> nameMapping, Element symbol, boolean useJavaNames) {
@@ -1620,8 +1616,8 @@ public class JSweetContext {
 	}
 
 	/**
-	 * Returns true if given statement can be used in a Java object instantation block
-	 * to be transformed to a JS Object Literal
+	 * Returns true if given statement can be used in a Java object instantation
+	 * block to be transformed to a JS Object Literal
 	 */
 	private static boolean isAllowedStatementInMap(StatementTree statement) {
 		if (statement instanceof ExpressionStatementTree) {

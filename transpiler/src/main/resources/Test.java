@@ -12,6 +12,10 @@ class Pichade {
 
 public class Test extends Pichade {
 
+	static class Zozoz {
+		
+	}
+	
 	public Test() {
 	}
 
