@@ -1,9 +1,14 @@
 package org.jsweet.test.transpiler.util;
 
+import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.stream.Stream;
 
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -13,12 +18,15 @@ import org.jsweet.test.transpiler.AbstractTest;
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetOptions;
 import org.jsweet.transpiler.SourceFile;
+import org.jsweet.transpiler.util.ConsoleTranspilationHandler;
+import org.jsweet.transpiler.util.ErrorCountTranspilationHandler;
 import org.jsweet.transpiler.util.Util;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.util.Trees;
 
 import source.structural.ExtendsClassInSameFile;
 
@@ -26,12 +34,12 @@ public class UtilTest extends AbstractTest {
 
 	private JSweetContext context;
 	private Util util;
-	private JSweetOptions options;
 
 	@Before
-	public void setUp() {
-		options = mock(JSweetOptions.class);
-		context = new JSweetContext(options);
+	public void setUp() throws Exception {
+		transpilerTest().getTranspiler().setupCompiler(new ArrayList<File>(),
+				new ErrorCountTranspilationHandler(new ConsoleTranspilationHandler()));
+		context = transpilerTest().getTranspiler().getContext();
 		util = new Util(context);
 	}
 
@@ -46,7 +54,7 @@ public class UtilTest extends AbstractTest {
 		assertEquals("../..", util.getRelativePath("/a/b/c", "/a"));
 		assertEquals("..", util.getRelativePath("/a/b/c", "/a/b"));
 	}
-	
+
 	@Test
 	public void testIsCoreType() throws Exception {
 		TypeMirror stringType = util.getType(String.class);
@@ -65,14 +73,15 @@ public class UtilTest extends AbstractTest {
 	public void testIsDeclarationOrSubClassDeclaration() throws Exception {
 
 		SourceFile sourceFile = getSourceFile(ExtendsClassInSameFile.class);
-		Pair<CompilationUnitTree, ClassTree> classDeclarationWithCompilUnit = getSourcePublicClassDeclaration(sourceFile);
+		Pair<CompilationUnitTree, ClassTree> classDeclarationWithCompilUnit = getSourcePublicClassDeclaration(
+				sourceFile);
 		TypeMirror classType = getClassType(classDeclarationWithCompilUnit);
-		
+
 		boolean isDeclaration;
 		String searchedClassName = ExtendsClassInSameFile.class.getName();
 
 		logger.info("search class name: " + searchedClassName);
-		isDeclaration = util.isDeclarationOrSubClassDeclaration( classType, searchedClassName);
+		isDeclaration = util.isDeclarationOrSubClassDeclaration(classType, searchedClassName);
 		assertTrue(isDeclaration);
 
 		searchedClassName = ExtendsClassInSameFile.class.getName().replace(".ExtendsClassInSameFile", ".Foo1");
@@ -87,7 +96,9 @@ public class UtilTest extends AbstractTest {
 	}
 
 	private TypeMirror getClassType(Pair<CompilationUnitTree, ClassTree> classDeclarationWithCompilUnit) {
-		TypeMirror classType = trees().getElement(trees().getPath(classDeclarationWithCompilUnit.getKey(), classDeclarationWithCompilUnit.getRight())).asType();
+		TypeMirror classType = trees().getElement(
+				trees().getPath(classDeclarationWithCompilUnit.getKey(), classDeclarationWithCompilUnit.getRight()))
+				.asType();
 		return classType;
 	}
 
@@ -95,7 +106,8 @@ public class UtilTest extends AbstractTest {
 	public void testIsDeclarationOrSubClassDeclarationBySimpleName() throws Exception {
 
 		SourceFile sourceFile = getSourceFile(ExtendsClassInSameFile.class);
-		Pair<CompilationUnitTree, ClassTree> classDeclarationWithCompilUnit = getSourcePublicClassDeclaration(sourceFile);
+		Pair<CompilationUnitTree, ClassTree> classDeclarationWithCompilUnit = getSourcePublicClassDeclaration(
+				sourceFile);
 		TypeMirror classType = getClassType(classDeclarationWithCompilUnit);
 
 		boolean isDeclaration;
