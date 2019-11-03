@@ -17,6 +17,7 @@ import javax.tools.ToolProvider;
 import org.apache.log4j.Logger;
 import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.util.ConsoleTranspilationHandler;
+import org.jsweet.transpiler.util.Util;
 
 import com.sun.source.util.JavacTask;
 import com.sun.source.util.Trees;
@@ -110,6 +111,9 @@ public class JavaCompilationComponents implements AutoCloseable {
 				compilerOptions.optionsAsList, null, sourceFileObjects);
 
 		context.trees = Trees.instance(task);
+		context.elements = task.getElements();
+		context.types = task.getTypes();
+		context.util = new Util(context);
 
 		// TODO [Java11]
 		task.setProcessors(asList());

@@ -3,6 +3,7 @@ package org.jsweet.test.transpiler.util;
 import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
@@ -10,6 +11,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.stream.Stream;
 
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.PackageElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
@@ -26,6 +31,8 @@ import org.junit.Test;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.StatementTree;
 import com.sun.source.util.Trees;
 
 import source.structural.ExtendsClassInSameFile;
@@ -37,7 +44,7 @@ public class UtilTest extends AbstractTest {
 
 	@Before
 	public void setUp() throws Exception {
-		transpilerTest().getTranspiler().setupCompiler(new ArrayList<File>(),
+		transpilerTest().getTranspiler().prepareForJavaFiles(new ArrayList<File>(),
 				new ErrorCountTranspilationHandler(new ConsoleTranspilationHandler()));
 		context = transpilerTest().getTranspiler().getContext();
 		util = new Util(context);
@@ -126,5 +133,110 @@ public class UtilTest extends AbstractTest {
 		logger.info("search class name: " + searchedClassName);
 		isDeclaration = util.isDeclarationOrSubClassDeclarationBySimpleName(classType, searchedClassName);
 		assertFalse(isDeclaration);
+	}
+
+	@Test
+	public void getParentPackageOnNull() throws Exception {
+		PackageElement parent = util.getParentPackage(null);
+		assertNull(parent);
+	}
+
+	@Test
+	public void getParentPackageOnRoot() throws Exception {
+		PackageElement packageElement = context.elements.getPackageElement("first");
+
+		PackageElement parent = util.getParentPackage(packageElement);
+		assertNull(parent);
+	}
+
+	@Test
+	public void getParentPackageOnChildPackage() throws Exception {
+		PackageElement packageElement = context.elements.getPackageElement("first.second");
+
+		PackageElement parent = util.getParentPackage(packageElement);
+		assertEquals(context.elements.getPackageElement("first"), parent);
+	}
+
+	@Test
+	public void getParentPackageOnThirdLevelPackage() throws Exception {
+		PackageElement packageElement = context.elements.getPackageElement("first.second.third");
+
+		PackageElement parent = util.getParentPackage(packageElement);
+		assertEquals(context.elements.getPackageElement("first.second"), parent);
+	}
+
+	@Test
+	public void getQualifiedNameForElementOnNull() throws Exception {
+		Element element = null;
+		String qualifiedName = util.getQualifiedName(element);
+		assertNull(qualifiedName);
+	}
+
+	@Test
+	public void getQualifiedNameForPackageElement() throws Exception {
+		Element element = context.elements.getPackageElement("first.second.third");
+		String qualifiedName = util.getQualifiedName(element);
+		assertEquals("first.second.third", qualifiedName);
+	}
+
+	@Test
+	public void getQualifiedNameForTypeElement() throws Exception {
+		Element element = context.elements.getTypeElement("first.second.Test");
+		String qualifiedName = util.getQualifiedName(element);
+		assertEquals("first.second.Test", qualifiedName);
+	}
+
+	@Test
+	public void getQualifiedNameForRootTypeElement() throws Exception {
+		Element element = context.elements.getTypeElement("Test");
+		String qualifiedName = util.getQualifiedName(element);
+		assertEquals("Test", qualifiedName);
+	}
+
+	@Test
+	public void getQualifiedNameForMethodElement() throws Exception {
+		TypeElement typeElement = context.elements.getTypeElement("first.second.Test");
+		Element element = typeElement.getEnclosedElements().stream()
+				.filter(memberElement -> memberElement.getSimpleName().toString().equals("method1")).findFirst().get();
+		String qualifiedName = util.getQualifiedName(element);
+		assertEquals("first.second.Test.method1", qualifiedName);
+	}
+
+	@Test
+	public void getQualifiedNameForFieldElement() throws Exception {
+		TypeElement typeElement = context.elements.getTypeElement("first.second.Test");
+		Element element = typeElement.getEnclosedElements().stream()
+				.filter(memberElement -> memberElement.getSimpleName().toString().equals("field1")).findFirst().get();
+		String qualifiedName = util.getQualifiedName(element);
+		assertEquals("first.second.Test.field1", qualifiedName);
+	}
+
+	@Test
+	public void getQualifiedNameForMethodParamElement() throws Exception {
+		TypeElement typeElement = context.elements.getTypeElement("first.second.Test");
+		Element element = typeElement.getEnclosedElements().stream() //
+				.filter(memberElement -> memberElement.getSimpleName().toString().equals("method1")) //
+				.map(methodElement -> (ExecutableElement) methodElement).findFirst().get() //
+				.getParameters().get(0);
+		String qualifiedName = util.getQualifiedName(element);
+		assertEquals("first.second.Test.method1.param1", qualifiedName);
+	}
+
+	@Test
+	public void getQualifiedNameForVariableElement() throws Exception {
+		Element varElement = getVariableElement();
+		String qualifiedName = util.getQualifiedName(varElement);
+		assertEquals("first.second.Test.method1.var1", qualifiedName);
+	}
+
+	private Element getVariableElement() {
+		CompilationUnitTree compilationUnit = context.compilationUnits.get(0);
+		ClassTree firstType = (ClassTree) compilationUnit.getTypeDecls().get(0);
+		MethodTree firstMethod = (MethodTree) firstType.getMembers().stream()
+				.filter(memberTree -> memberTree instanceof MethodTree).findFirst().get();
+		StatementTree firstStatement = firstMethod.getBody().getStatements().get(0);
+
+		Element varElement = trees().getElement(trees().getPath(compilationUnit, firstStatement));
+		return varElement;
 	}
 }

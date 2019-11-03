@@ -518,7 +518,7 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 		return this.workingDir;
 	}
 
-	public void initNode(TranspilationHandler transpilationHandler) throws Exception {
+	protected void initNode(TranspilationHandler transpilationHandler) throws Exception {
 		ProcessUtil.initNode();
 
 		File initFile = new File(workingDir, ".node-init");
@@ -674,8 +674,8 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 		}
 	}
 
-	public List<CompilationUnitTree> setupCompiler(List<File> files,
-			ErrorCountTranspilationHandler transpilationHandler) throws IOException {
+	public JSweetContext prepareForJavaFiles(List<File> javaFiles, ErrorCountTranspilationHandler transpilationHandler)
+			throws IOException {
 
 		transpilationHandler.setDisabled(isIgnoreJavaErrors());
 
@@ -688,7 +688,7 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 		javaCompilationOptions.classPath = getClassPath();
 		javaCompilationOptions.encoding = getEncoding();
 		javaCompilationOptions.transpilationHandler = transpilationHandler;
-		javaCompilationComponents = JavaCompilationComponents.prepareFor(files, context, factory,
+		javaCompilationComponents = JavaCompilationComponents.prepareFor(javaFiles, context, factory,
 				javaCompilationOptions);
 
 		Iterable<? extends CompilationUnitTree> compilUnits = javaCompilationComponents.getTask().parse();
@@ -711,7 +711,7 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 					JSweetProblem.BUNDLE_WITH_MODULE.getMessage());
 			return null;
 		}
-		return context.compilationUnits;
+		return context;
 	}
 
 	private String ts2js(ErrorCountTranspilationHandler handler, String tsCode, String targetFileName)
@@ -812,9 +812,8 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 	}
 
 	private void java2ts(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files) throws IOException {
-		List<CompilationUnitTree> compilationUnits = setupCompiler(Arrays.asList(SourceFile.toFiles(files)),
-				transpilationHandler);
-		if (compilationUnits == null) {
+		prepareForJavaFiles(Arrays.asList(SourceFile.toFiles(files)), transpilationHandler);
+		if (context.compilationUnits == null) {
 			return;
 		}
 
@@ -830,15 +829,15 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 		}
 
 		context.sourceFiles = files;
-		factory.createBeforeTranslationScanner(transpilationHandler, context).process(compilationUnits);
+		factory.createBeforeTranslationScanner(transpilationHandler, context).process(context.compilationUnits);
 
 		if (context.useModules) {
-			generateTsFiles(transpilationHandler, files, compilationUnits);
+			generateTsFiles(transpilationHandler, files, context.compilationUnits);
 		} else {
 			if (bundle) {
-				generateTsBundle(transpilationHandler, files, compilationUnits);
+				generateTsBundle(transpilationHandler, files, context.compilationUnits);
 			} else {
-				generateTsFiles(transpilationHandler, files, compilationUnits);
+				generateTsFiles(transpilationHandler, files, context.compilationUnits);
 			}
 		}
 	}

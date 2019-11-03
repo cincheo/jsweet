@@ -1832,7 +1832,7 @@ public class Util {
 		}
 		return null;
 	}
-	
+
 	public CompilationUnitTree getCompilationUnit(Element element) {
 		return trees().getPath(element).getCompilationUnit();
 	}
@@ -1907,4 +1907,45 @@ public class Util {
 		return type != null && (type.getKind() == TypeKind.VOID || type instanceof PrimitiveType);
 	}
 
+	/**
+	 * Returns parent (enclosing) package, for instance it will return
+	 * <code>com.foo</code> if <code>com.foo.bar</code> is given as packageElement.
+	 * <br />
+	 * Will return null if packageElement is null or topmost package
+	 */
+	public PackageElement getParentPackage(PackageElement packageElement) {
+		if (packageElement == null) {
+			return null;
+		}
+
+		String packageFullName = packageElement.getQualifiedName().toString();
+		int lastDotIndex = packageFullName.lastIndexOf('.');
+		if (lastDotIndex == -1) {
+			return null;
+		}
+
+		return getPackageByName(packageFullName.substring(0, lastDotIndex));
+	}
+
+	/**
+	 * Returns qualified name (simple name including parent name with full package
+	 * name). For instance, a method parameter's could have for qualified name:
+	 * my.awesome.package.MyClass.myMethod.myParam
+	 */
+	public String getQualifiedName(Element element) {
+		if (element == null) {
+			return null;
+		}
+
+		if (element instanceof PackageElement || element instanceof TypeElement) {
+			return element.toString();
+		}
+
+		String simpleName = element.getSimpleName().toString();
+		if (element.getEnclosingElement() != null) {
+			return getQualifiedName(element.getEnclosingElement()) + "." + simpleName;
+		} else {
+			return simpleName;
+		}
+	}
 }

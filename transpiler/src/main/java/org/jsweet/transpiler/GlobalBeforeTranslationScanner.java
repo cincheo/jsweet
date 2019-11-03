@@ -67,7 +67,7 @@ public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {
 
 	@Override
 	public Void visitCompilationUnit(CompilationUnitTree compilationUnit, Trees trees) {
-		if (compilationUnit.getPackageName().toString().startsWith(JSweetConfig.LIBS_PACKAGE + ".")) {
+		if (util().getPackageFullNameForCompilationUnit(compilationUnit).startsWith(JSweetConfig.LIBS_PACKAGE + ".")) {
 			return null;
 		}
 		this.compilationUnit = compilationUnit;
@@ -96,7 +96,7 @@ public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {
 		if (!(classElement.getEnclosingElement() instanceof TypeElement)) {
 			if (classElement.getKind() == ElementKind.ANNOTATION_TYPE
 					&& context.hasAnnotationType(classElement, JSweetConfig.ANNOTATION_DECORATOR)) {
-				context.registerDecoratorAnnotation(classDeclaration);
+				context.registerDecoratorAnnotation(classDeclaration, compilationUnit);
 			}
 		}
 
@@ -132,7 +132,7 @@ public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {
 			if (globals && def instanceof MethodTree) {
 				ExecutableElement methodElement = util().getElementForTree(def, compilationUnit);
 				if (methodElement.getModifiers().contains(Modifier.STATIC)) {
-					context.registerGlobalMethod(classDeclaration, (MethodTree) def);
+					context.registerGlobalMethod(classDeclaration, (MethodTree) def, compilationUnit);
 				}
 			}
 		}

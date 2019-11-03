@@ -53,7 +53,6 @@ import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementScanner9;
 import javax.lang.model.util.Elements;
@@ -83,6 +82,7 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.PackageTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.JavacTask;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
@@ -711,6 +711,7 @@ public class DirectedGraph<T> implements Collection<T> {
 
 		@Override
 		public Object visitNewClass(NewClassTree node, Trees p) {
+			Element element = p.getElement(getCurrentPath());
 			return super.visitNewClass(node, p);
 		}
 
@@ -755,9 +756,17 @@ public class DirectedGraph<T> implements Collection<T> {
 		@Override
 		public Object visitMethod(MethodTree node, Trees p) {
 
+			Element element = p.getElement(getCurrentPath());
+			
 			return super.visitMethod(node, p);
 		}
 
+		@Override
+		public Object visitVariable(VariableTree node, Trees p) {
+			Element element = p.getElement(getCurrentPath());
+			return super.visitVariable(node, p);
+		}
+		
 		@Override
 		public Object visitMemberSelect(MemberSelectTree node, Trees p) {
 			try {
@@ -772,6 +781,10 @@ public class DirectedGraph<T> implements Collection<T> {
 				System.out.println("via element ==");
 
 				Element element = p.getElement(getCurrentPath());
+				if (element == null) {
+					System.err.println("NULL ELEMENT!");
+					return null;
+				}
 //			elements().printElements(new OutputStreamWriter(System.out), element);
 
 				TypeMirror typeMirror = element.asType();
@@ -832,7 +845,8 @@ public class DirectedGraph<T> implements Collection<T> {
 			System.out.println("visitPackage ");
 
 			PackageElement pe = (PackageElement) toElement(node, p);
-
+Element ee = pe.getEnclosingElement();
+TypeMirror t = pe.asType();
 
 			
 			return super.visitPackage(node, p);
@@ -936,7 +950,8 @@ public class DirectedGraph<T> implements Collection<T> {
 			javacTask.setProcessors(asList(processor1, processor2));
 			Iterable<? extends CompilationUnitTree> compilUnits = javacTask.parse();
 			javacTask.analyze();
-
+			
+			
 			processor2.scanner.scan(compilUnits, processor2.trees);
 //			for (CompilationUnitTree compilUnit : compilUnits) {
 //				processor2.scanner.scan(processor2.trees.getPath(compilUnit, compilUnit), processor2.trees);

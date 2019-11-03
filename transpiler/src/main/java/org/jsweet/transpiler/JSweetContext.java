@@ -65,9 +65,13 @@ import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.util.DirectedGraph;
 import org.jsweet.transpiler.util.Util;
 
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionStatementTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.StatementTree;
@@ -1163,11 +1167,11 @@ public class JSweetContext {
 	 * Tells if the given symbol is annotated with one of the given annotation
 	 * types.
 	 */
-	public boolean hasAnnotationType(Element symbol, String... annotationTypes) {
+	public boolean hasAnnotationType(Element element, String... annotationTypes) {
 		String[] types = annotationTypes;
 		for (AnnotationManager annotationIntrospector : annotationManagers) {
 			for (String annotationType : types) {
-				Action state = annotationIntrospector.manageAnnotation(symbol, annotationType);
+				Action state = annotationIntrospector.manageAnnotation(element, annotationType);
 				if (state == Action.ADD) {
 					return true;
 				} else if (state == Action.REMOVE) {
@@ -1177,10 +1181,7 @@ public class JSweetContext {
 		}
 
 		if (hasAnnotationFilters()) {
-			String signature = symbol.toString();
-			if (!(symbol instanceof TypeElement) && symbol.getEnclosingElement() != null) {
-				signature = symbol.getEnclosingElement().asType().toString() + "." + signature;
-			}
+			String signature = util.getQualifiedName(element);
 			for (String annotationType : annotationTypes) {
 				Collection<AnnotationFilterDescriptor> filterDescriptors = annotationFilters.get(annotationType);
 				if (filterDescriptors != null) {
@@ -1209,7 +1210,7 @@ public class JSweetContext {
 				}
 			}
 		}
-		return hasActualAnnotationType(symbol, annotationTypes);
+		return hasActualAnnotationType(element, annotationTypes);
 	}
 
 	/**
@@ -1227,33 +1228,33 @@ public class JSweetContext {
 		return name;
 	}
 
-	private void getRootRelativeName(Map<Element, String> nameMapping, StringBuilder sb, Element symbol) {
-		if (useModules && symbol instanceof PackageElement
-				&& !symbol.toString().startsWith(JSweetConfig.LIBS_PACKAGE + ".")) {
+	private void getRootRelativeName(Map<Element, String> nameMapping, StringBuilder sb, Element element) {
+		if (useModules && element instanceof PackageElement
+				&& !element.toString().startsWith(JSweetConfig.LIBS_PACKAGE + ".")) {
 			return;
 		}
-		if (!isRootPackage(symbol)) {
-			if (sb.length() > 0 && !"".equals(symbol.toString())) {
+		if (!isRootPackage(element)) {
+			if (sb.length() > 0 && !"".equals(element.toString())) {
 				sb.insert(0, ".");
 			}
 
-			String name = symbol.getSimpleName().toString();
+			String name = element.getSimpleName().toString();
 
-			if (nameMapping != null && nameMapping.containsKey(symbol)) {
-				name = nameMapping.get(symbol);
+			if (nameMapping != null && nameMapping.containsKey(element)) {
+				name = nameMapping.get(element);
 			} else {
-				if (hasAnnotationType(symbol, JSweetConfig.ANNOTATION_NAME)) {
-					String originalName = getAnnotationValue(symbol, JSweetConfig.ANNOTATION_NAME, String.class, null);
+				if (hasAnnotationType(element, JSweetConfig.ANNOTATION_NAME)) {
+					String originalName = getAnnotationValue(element, JSweetConfig.ANNOTATION_NAME, String.class, null);
 					if (!isBlank(originalName)) {
 						name = originalName;
 					}
 				}
 			}
 			sb.insert(0, name);
-			symbol = (symbol instanceof PackageElement) ? ((PackageElement) symbol).getEnclosingElement()
-					: symbol.getEnclosingElement();
-			if (symbol != null) {
-				getRootRelativeName(nameMapping, sb, symbol);
+			element = (element instanceof PackageElement) ? util.getParentPackage((PackageElement) element)
+					: element.getEnclosingElement();
+			if (element != null) {
+				getRootRelativeName(nameMapping, sb, element);
 			}
 		}
 	}
@@ -1263,22 +1264,22 @@ public class JSweetContext {
 	 * is the one that is enclosed within a root package (see
 	 * <code>jsweet.lang.Root</code>) or the one in the default (unnamed) package.
 	 */
-	public PackageElement getTopLevelPackage(Element symbol) {
-		if ((symbol instanceof PackageElement) && isRootPackage(symbol)) {
+	public PackageElement getTopLevelPackage(Element element) {
+		if ((element instanceof PackageElement) && isRootPackage(element)) {
 			return null;
 		}
-		Element parent = (symbol instanceof PackageElement) ? ((PackageElement) symbol).getEnclosingElement()
-				: symbol.getEnclosingElement();
+		Element parent = (element instanceof PackageElement) ? util.getParentPackage((PackageElement) element)
+				: element.getEnclosingElement();
 		if (parent != null && isRootPackage(parent)) {
-			if (symbol instanceof PackageElement) {
-				return (PackageElement) symbol;
+			if (element instanceof PackageElement) {
+				return (PackageElement) element;
 			} else {
 				return null;
 			}
 		} else {
 			if (parent == null || (parent instanceof PackageElement && StringUtils.isBlank(parent.getSimpleName()))) {
-				if (symbol instanceof PackageElement) {
-					return (PackageElement) symbol;
+				if (element instanceof PackageElement) {
+					return (PackageElement) element;
 				} else {
 					return null;
 				}
@@ -1291,14 +1292,14 @@ public class JSweetContext {
 	/**
 	 * Finds the first (including itself) enclosing package annotated with @Root.
 	 */
-	public PackageElement getFirstEnclosingRootPackage(PackageElement packageSymbol) {
-		if (packageSymbol == null) {
+	public PackageElement getFirstEnclosingRootPackage(PackageElement packageElement) {
+		if (packageElement == null) {
 			return null;
 		}
-		if (isRootPackage(packageSymbol)) {
-			return packageSymbol;
+		if (isRootPackage(packageElement)) {
+			return packageElement;
 		}
-		return getFirstEnclosingRootPackage((PackageElement) packageSymbol.owner);
+		return getFirstEnclosingRootPackage(util.getParentPackage(packageElement));
 	}
 
 	private void getRootRelativeJavaName(StringBuilder sb, Element symbol) {
@@ -1310,7 +1311,7 @@ public class JSweetContext {
 			String name = symbol.getSimpleName().toString();
 
 			sb.insert(0, name);
-			symbol = (symbol instanceof PackageElement) ? ((PackageElement) symbol).owner
+			symbol = (symbol instanceof PackageElement) ? util.getParentPackage((PackageElement) symbol)
 					: symbol.getEnclosingElement();
 			if (symbol != null) {
 				getRootRelativeJavaName(sb, symbol);
@@ -1375,20 +1376,17 @@ public class JSweetContext {
 	 * found on the given symbol.
 	 */
 	@SuppressWarnings("unchecked")
-	public <T> T getAnnotationValue(Element symbol, String annotationType, String propertyName, Class<T> propertyClass,
+	public <T> T getAnnotationValue(Element element, String annotationType, String propertyName, Class<T> propertyClass,
 			T defaultValue) {
 		for (AnnotationManager annotationIntrospector : annotationManagers) {
-			T value = annotationIntrospector.getAnnotationValue(symbol, annotationType, propertyName, propertyClass,
+			T value = annotationIntrospector.getAnnotationValue(element, annotationType, propertyName, propertyClass,
 					defaultValue);
 			if (value != null) {
 				return value;
 			}
 		}
 		if (hasAnnotationFilters()) {
-			String signature = symbol.toString();
-			if (symbol.getEnclosingElement() != null) {
-				signature = symbol.getEnclosingElement().getQualifiedName().toString() + "." + signature;
-			}
+			String signature = util.getQualifiedName(element);
 			Collection<AnnotationFilterDescriptor> filterDescriptors = annotationFilters.get(annotationType);
 			if (filterDescriptors != null) {
 				for (AnnotationFilterDescriptor filterDescriptor : filterDescriptors) {
@@ -1423,7 +1421,7 @@ public class JSweetContext {
 			}
 		}
 
-		AnnotationMirror anno = getAnnotation(symbol, annotationType);
+		AnnotationMirror anno = getAnnotation(element, annotationType);
 		T val = defaultValue;
 		if (anno != null) {
 			T firstVal = getFirstAnnotationValue(anno, propertyName, propertyClass, null);
@@ -1444,10 +1442,10 @@ public class JSweetContext {
 				.getElementValues().entrySet()) {
 			if (propertyName == null || propertyName.equals(valueEntry.getKey().getSimpleName().toString())) {
 				if (propertyClass.isArray()) {
-					List<Object> l = (List<Object>) valueEntry.getValue().getValue();
-					Object array = Array.newInstance(propertyClass.getComponentType(), l.size());
-					for (int i = 0; i < l.size(); i++) {
-						Array.set(array, i, ((Attribute) l.get(i)).getValue());
+					List<AnnotationValue> annotationValues = (List<AnnotationValue>) valueEntry.getValue().getValue();
+					Object array = Array.newInstance(propertyClass.getComponentType(), annotationValues.size());
+					for (int i = 0; i < annotationValues.size(); i++) {
+						Array.set(array, i, annotationValues.get(i).getValue());
 					}
 					return (T) array;
 				} else {
@@ -1458,55 +1456,18 @@ public class JSweetContext {
 		return defaultValue;
 	}
 
-	// /**
-	// * Gets the value of the given annotation property.
-	// *
-	// * @param annotation
-	// * the annotation
-	// * @param propertyName
-	// * the name of the annotation property to get the value of
-	// * @param defaultValue
-	// * the value to return if not found
-	// */
-	// @SuppressWarnings("unchecked")
-	// private static <T> T getAnnotationValue(AnnotationMirror annotation,
-	// String propertyName, T defaultValue) {
-	// for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue>
-	// annoProperty : annotation
-	// .getElementValues().entrySet()) {
-	// if
-	// (annoProperty.getKey().getSimpleName().toString().equals(propertyName)) {
-	// return (T) annoProperty.getValue().getValue();
-	// }
-	// }
-	// return defaultValue;
-	// }
-
 	/**
 	 * Gets the symbol's annotation that correspond to the given annotation type
 	 * name if exists.
 	 */
-	private static AnnotationMirror getAnnotation(Element symbol, String annotationType) {
-		for (Compound a : symbol.getAnnotationMirrors()) {
-			if (annotationType.equals(a.type.toString())) {
-				return a;
+	private AnnotationMirror getAnnotation(Element symbol, String annotationType) {
+		for (AnnotationMirror annotation : symbol.getAnnotationMirrors()) {
+			if (annotationType.equals(annotation.getAnnotationType().toString())) {
+				return annotation;
 			}
 		}
 		return null;
 	}
-
-	// /**
-	// * Gets the annotation tree that matches the given type name.
-	// */
-	// private static JCAnnotation getAnnotation(List<JCAnnotation> annotations,
-	// String annotationType) {
-	// for (JCAnnotation a : annotations) {
-	// if (annotationType.equals(a.type.toString())) {
-	// return a;
-	// }
-	// }
-	// return null;
-	// }
 
 	/**
 	 * Grabs the names of all the support interfaces in the class and interface
@@ -1520,10 +1481,10 @@ public class JSweetContext {
 			interfaces.add(type.getQualifiedName().toString());
 		}
 		if (type instanceof TypeElement) {
-			for (TypeMirror t : ((TypeElement) type).getInterfaces()) {
-				grabSupportedInterfaceNames(interfaces, t.tsym);
+			for (TypeElement interfaceType : util.getInterfaces((TypeElement) type)) {
+				grabSupportedInterfaceNames(interfaces, interfaceType);
 			}
-			grabSupportedInterfaceNames(interfaces, ((TypeElement) type).getSuperclass().tsym);
+			grabSupportedInterfaceNames(interfaces, util.getSuperclass((TypeElement) type));
 		}
 	}
 
@@ -1536,7 +1497,7 @@ public class JSweetContext {
 		}
 		if (type instanceof TypeElement) {
 			superClasses.add(((TypeElement) type).getQualifiedName().toString());
-			grabSuperClassNames(superClasses, ((TypeElement) type).getSuperclass().tsym);
+			grabSuperClassNames(superClasses, util.getSuperclass((TypeElement) type));
 		}
 	}
 
@@ -1547,17 +1508,18 @@ public class JSweetContext {
 		if (isInterface(type)) {
 			for (Element s : type.getEnclosedElements()) {
 				if (s instanceof ExecutableElement) {
-					if (!s.isStatic() && !Util.isOverridingBuiltInJavaObjectMethod((ExecutableElement) s)) {
+					if (!s.getModifiers().contains(Modifier.STATIC)
+							&& !util.isOverridingBuiltInJavaObjectMethod((ExecutableElement) s)) {
 						methods.add((ExecutableElement) s);
 					}
 				}
 			}
 		}
 		if (type instanceof TypeElement) {
-			for (TypeMirror t : ((TypeElement) type).getInterfaces()) {
-				grabMethodsToBeImplemented(methods, t.tsym);
+			for (TypeElement interfaceType : util.getInterfaces((TypeElement) type)) {
+				grabMethodsToBeImplemented(methods, interfaceType);
 			}
-			grabMethodsToBeImplemented(methods, ((TypeElement) type).getSuperclass().tsym);
+			grabMethodsToBeImplemented(methods, util.getSuperclass((TypeElement) type));
 		}
 	}
 
@@ -1566,9 +1528,9 @@ public class JSweetContext {
 	 * names.
 	 */
 	private static boolean hasActualAnnotationType(Element symbol, String... annotationTypes) {
-		for (Compound a : symbol.getAnnotationMirrors()) {
+		for (AnnotationMirror annotation : symbol.getAnnotationMirrors()) {
 			for (String annotationType : annotationTypes) {
-				if (annotationType.equals(a.type.toString())) {
+				if (annotationType.equals(annotation.getAnnotationType().toString())) {
 					return true;
 				}
 			}
@@ -1579,33 +1541,39 @@ public class JSweetContext {
 	/**
 	 * Returns true if this new class expression defines an anonymous class.
 	 */
-	public boolean isAnonymousClass(NewClassTree newClass) {
-		if (newClass.clazz != null && newClass.def != null) {
-			if (hasAnnotationType(newClass.clazz.type.tsym, JSweetConfig.ANNOTATION_OBJECT_TYPE)
-					|| hasAnnotationType(newClass.clazz.type.tsym, JSweetConfig.ANNOTATION_INTERFACE)) {
+	public boolean isAnonymousClass(NewClassTree newClass, CompilationUnitTree compilationUnit) {
+		if (newClass.getIdentifier() != null && newClass.getClassBody() != null) {
+			TypeElement newClassTypeElement = util.getElementForTree(newClass.getIdentifier(), compilationUnit);
+
+			if (hasAnnotationType(newClassTypeElement, JSweetConfig.ANNOTATION_OBJECT_TYPE)
+					|| hasAnnotationType(newClassTypeElement, JSweetConfig.ANNOTATION_INTERFACE)) {
 				return false;
 			}
-			if (newClass.def.defs.size() > 2) {
+			if (newClass.getClassBody().getMembers().size() > 2) {
 				// a map has a constructor (implicit) and an initializer
 				return true;
 			}
-			if (newClass.clazz.type.tsym.getModifiers().contains(Modifier.ABSTRACT)) {
+			if (newClassTypeElement.getModifiers().contains(Modifier.ABSTRACT)) {
 				// maps cannot be abstract
 				return true;
 			}
-			for (Tree def : newClass.def.defs) {
-				if (def instanceof VariableTree) {
+			for (Tree memberTree : newClass.getClassBody().getMembers()) {
+				if (memberTree instanceof VariableTree) {
 					// no variables in maps
 					return true;
 				}
-				if (def instanceof MethodTree && !(((MethodTree) def).sym.isConstructor()
-						&& ((MethodTree) def).sym.getParameters().isEmpty())) {
-					// no regular methods or non-empty constructors in maps
-					return true;
+				if (memberTree instanceof MethodTree) {
+					MethodTree methodTree = (MethodTree) memberTree;
+					ExecutableElement methodElement = util.getElementForTree(methodTree, compilationUnit);
+					if (!(methodElement.getKind() == ElementKind.CONSTRUCTOR
+							&& methodElement.getParameters().isEmpty())) {
+						// no regular methods or non-empty constructors in maps
+						return true;
+					}
 				}
-				if (def instanceof BlockTree) {
-					for (StatementTree s : ((BlockTree) def).stats) {
-						if (!isAllowedStatementInMap(s)) {
+				if (memberTree instanceof BlockTree) {
+					for (StatementTree statementTree : ((BlockTree) memberTree).getStatements()) {
+						if (!isAllowedStatementInMap(statementTree)) {
 							return true;
 						}
 					}
@@ -1613,6 +1581,7 @@ public class JSweetContext {
 			}
 		}
 		return false;
+
 	}
 
 	/**
@@ -1628,10 +1597,10 @@ public class JSweetContext {
 			if (exprStat.getExpression() instanceof MethodInvocationTree) {
 				MethodInvocationTree inv = (MethodInvocationTree) exprStat.getExpression();
 				String methodName;
-				if (inv.meth instanceof MemberSelectTree) {
-					methodName = ((MemberSelectTree) inv.meth).name.toString();
+				if (inv.getMethodSelect() instanceof MemberSelectTree) {
+					methodName = ((MemberSelectTree) inv.getMethodSelect()).getIdentifier().toString();
 				} else {
-					methodName = inv.meth.toString();
+					methodName = inv.getMethodSelect().toString();
 				}
 				if (JSweetConfig.INDEXED_GET_FUCTION_NAME.equals(methodName)
 						|| JSweetConfig.INDEXED_SET_FUCTION_NAME.equals(methodName)) {
@@ -1646,7 +1615,9 @@ public class JSweetContext {
 	 * Returns the number of arguments declared by a function interface.
 	 */
 	public int getFunctionalTypeParameterCount(TypeMirror type) {
-		String name = type.tsym.getSimpleName().toString();
+
+		Element typeElement = types.asElement(type);
+		String name = typeElement.getSimpleName().toString();
 		String fullName = type.toString();
 		if (Runnable.class.getName().equals(fullName)) {
 			return 0;
@@ -1691,8 +1662,8 @@ public class JSweetContext {
 				return -1;
 			}
 		} else {
-			if (hasAnnotationType(type.tsym, JSweetConfig.ANNOTATION_FUNCTIONAL_INTERFACE)) {
-				for (Element e : type.tsym.getEnclosedElements()) {
+			if (hasAnnotationType(typeElement, JSweetConfig.ANNOTATION_FUNCTIONAL_INTERFACE)) {
+				for (Element e : typeElement.getEnclosedElements()) {
 					if (e instanceof ExecutableElement) {
 						return ((ExecutableElement) e).getParameters().size();
 					}
@@ -1714,8 +1685,9 @@ public class JSweetContext {
 		return name.startsWith("java.util.function.") //
 				|| name.equals(Runnable.class.getName()) //
 				|| name.startsWith(JSweetConfig.FUNCTION_CLASSES_PACKAGE + ".") //
-				|| (type.isInterface() && (hasAnnotationType(type, FunctionalInterface.class.getName())
-						|| hasAnonymousFunction(type)));
+				|| (type.getKind() == ElementKind.INTERFACE
+						&& (hasAnnotationType(type, FunctionalInterface.class.getName())
+								|| hasAnonymousFunction(type)));
 	}
 
 	/**
@@ -1726,7 +1698,7 @@ public class JSweetContext {
 		return name.startsWith("java.util.function.") //
 				|| name.equals(Runnable.class.getName()) //
 				|| name.startsWith(JSweetConfig.FUNCTION_CLASSES_PACKAGE + ".") //
-				|| (type.isInterface() && hasAnonymousFunction(type));
+				|| (type.getKind() == ElementKind.INTERFACE && hasAnonymousFunction(type));
 	}
 
 	/**
@@ -1749,17 +1721,19 @@ public class JSweetContext {
 	/**
 	 * Returns true if this class declaration is not to be output by the transpiler.
 	 */
-	public boolean isIgnored(ClassTree classdecl) {
-		if (hasAnnotationType(classdecl.type.tsym, JSweetConfig.ANNOTATION_OBJECT_TYPE)) {
+	public boolean isIgnored(ClassTree classdecl, CompilationUnitTree compilationUnit) {
+		Element classElement = util.getElementForTree(classdecl, compilationUnit);
+
+		if (hasAnnotationType(classElement, JSweetConfig.ANNOTATION_OBJECT_TYPE)) {
 			// object types are ignored
 			return true;
 		}
-		if (hasAnnotationType(classdecl.type.tsym, JSweetConfig.ANNOTATION_ERASED)) {
+		if (hasAnnotationType(classElement, JSweetConfig.ANNOTATION_ERASED)) {
 			// erased types are ignored
 			return true;
 		}
-		if (classdecl.type.tsym.getKind() == ElementKind.ANNOTATION_TYPE
-				&& !hasAnnotationType(classdecl.sym, JSweetConfig.ANNOTATION_DECORATOR)) {
+		if (classElement.getKind() == ElementKind.ANNOTATION_TYPE
+				&& !hasAnnotationType(classElement, JSweetConfig.ANNOTATION_DECORATOR)) {
 			// annotation types are ignored
 			return true;
 		}
@@ -1825,14 +1799,11 @@ public class JSweetContext {
 	 * Tells if the given symbol is ambient (part of a def.* package or within an
 	 * <code>@Ambient</code>-annotated scope).
 	 */
-	public boolean isAmbientDeclaration(Element symbol) {
-		if (symbol instanceof TypeElement
-				? symbol.getQualifiedName().toString().startsWith(JSweetConfig.LIBS_PACKAGE + ".")
-				: symbol.getEnclosingElement().getQualifiedName().toString()
-						.startsWith(JSweetConfig.LIBS_PACKAGE + ".")) {
+	public boolean isAmbientDeclaration(Element element) {
+		if (util.getQualifiedName(element).startsWith(JSweetConfig.LIBS_PACKAGE + ".")) {
 			return true;
 		} else {
-			return isAmbientAnnotatedDeclaration(symbol);
+			return isAmbientAnnotatedDeclaration(element);
 		}
 	}
 

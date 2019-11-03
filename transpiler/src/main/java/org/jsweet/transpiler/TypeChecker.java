@@ -211,8 +211,7 @@ public class TypeChecker {
 			CompilationUnitTree compilationUnit) {
 
 		Element firstArgElement = util().getElementForTree(union.getArguments().get(0), compilationUnit);
-		if (firstArgElement instanceof TypeElement && ((TypeElement) firstArgElement).getQualifiedName().toString()
-				.startsWith(JSweetConfig.UNION_CLASS_NAME)) {
+		if (firstArgElement.asType().toString().startsWith(JSweetConfig.UNION_CLASS_NAME)) {
 
 			List<? extends TypeMirror> typeArguments = ((DeclaredType) firstArgElement.asType()).getTypeArguments();
 

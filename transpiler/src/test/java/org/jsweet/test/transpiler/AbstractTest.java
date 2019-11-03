@@ -135,7 +135,7 @@ public class AbstractTest {
 
 	protected Map<CompilationUnitTree, List<ClassTree>> getSourceClassesDeclarations(SourceFile... sourceFiles)
 			throws IOException {
-		List<CompilationUnitTree> compilUnits = transpilerTest.getTranspiler().setupCompiler(
+		List<CompilationUnitTree> compilUnits = transpilerTest.getTranspiler().prepareForJavaFiles(
 				Stream.of(sourceFiles).map(sourceFile -> sourceFile.getJavaFile()).collect(toList()),
 				new ErrorCountTranspilationHandler(new ConsoleTranspilationHandler()));
 

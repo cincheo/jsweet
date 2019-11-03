@@ -50,7 +50,7 @@ public class ExecutionPathTest extends AbstractTest {
 		List<File> javaFiles = asList(getSourceFile(ExecutionPaths.class).getJavaFile());
 		System.out.println("java files = " + javaFiles);
 
-		List<CompilationUnitTree> compilUnits = transpiler.setupCompiler(javaFiles,
+		List<CompilationUnitTree> compilUnits = transpiler.prepareForJavaFiles(javaFiles,
 				new ErrorCountTranspilationHandler(testTranspilationHandler));
 		util = transpiler.getContext().util;
 		List<ClassTree> typeDeclarations = util.findTypeDeclarationsInCompilationUnits(compilUnits);
