@@ -82,7 +82,9 @@ import org.jsweet.transpiler.util.JSDoc;
 import org.jsweet.transpiler.util.Util;
 
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree.Kind;
 
 /**
@@ -734,7 +736,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						return;
 					}
 					if (t != null && t.type != null && t.type.tsym instanceof TypeElement) {
-						if (!(t instanceof JCTypeApply)) {
+						if (!(t instanceof ParameterizedTypeTree)) {
 							checkType(t.type.tsym);
 						}
 					}
@@ -961,8 +963,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	}
 
 	private void printAnonymousClassTypeArgs(NewClassTree newClass) {
-		if ((newClass.clazz instanceof JCTypeApply)) {
-			JCTypeApply tapply = (JCTypeApply) newClass.clazz;
+		if ((newClass.clazz instanceof ParameterizedTypeTree)) {
+			ParameterizedTypeTree tapply = (ParameterizedTypeTree) newClass.clazz;
 			if (tapply.getTypeArguments() != null && !tapply.getTypeArguments().isEmpty()) {
 				boolean printed = false;
 				print("<");
@@ -1053,8 +1055,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 				return this;
 			}
-			if (typeTree instanceof JCTypeApply) {
-				JCTypeApply typeApply = ((JCTypeApply) typeTree);
+			if (typeTree instanceof ParameterizedTypeTree) {
+				ParameterizedTypeTree typeApply = ((ParameterizedTypeTree) typeTree);
 				String typeName = typeApply.clazz.toString();
 				String mappedTypeName = context.getTypeMappingTarget(typeName);
 				if (mappedTypeName != null && mappedTypeName.endsWith("<>")) {
@@ -1212,8 +1214,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 		}
 
-		if (typeTree instanceof JCTypeApply) {
-			JCTypeApply typeApply = ((JCTypeApply) typeTree);
+		if (typeTree instanceof ParameterizedTypeTree) {
+			ParameterizedTypeTree typeApply = ((ParameterizedTypeTree) typeTree);
 			substituteAndPrintType(typeApply.clazz, arrayComponent, inTypeParameters, false, disableSubstitution);
 			if (!typeApply.arguments.isEmpty() && !"any".equals(getLastPrintedString(3))
 					&& !"Object".equals(getLastPrintedString(6))) {
@@ -4050,7 +4052,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 * Prints a type apply (<code>T<P1,...PN></code>) tree.
 	 */
 	@Override
-	public void visitTypeApply(JCTypeApply typeApply) {
+	public void visitTypeApply(ParameterizedTypeTree typeApply) {
 		substituteAndPrintType(typeApply);
 	}
 
@@ -4322,8 +4324,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 				print("].concat(<any[]>").print(newClass.args.last()).print(")))");
 			} else {
-				if (newClass.clazz instanceof JCTypeApply) {
-					JCTypeApply typeApply = (JCTypeApply) newClass.clazz;
+				if (newClass.clazz instanceof ParameterizedTypeTree) {
+					ParameterizedTypeTree typeApply = (ParameterizedTypeTree) newClass.clazz;
 					mappedType = context.getTypeMappingTarget(typeApply.clazz.type.toString());
 					print("new ");
 					if (mappedType != null) {

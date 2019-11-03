@@ -1,27 +1,22 @@
 package org.jsweet.test.transpiler.util;
 
-import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.stream.Stream;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.jsweet.test.transpiler.AbstractTest;
 import org.jsweet.transpiler.JSweetContext;
-import org.jsweet.transpiler.JSweetOptions;
 import org.jsweet.transpiler.SourceFile;
 import org.jsweet.transpiler.util.ConsoleTranspilationHandler;
 import org.jsweet.transpiler.util.ErrorCountTranspilationHandler;
@@ -29,11 +24,11 @@ import org.jsweet.transpiler.util.Util;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.StatementTree;
-import com.sun.source.util.Trees;
 
 import source.structural.ExtendsClassInSameFile;
 
@@ -227,6 +222,63 @@ public class UtilTest extends AbstractTest {
 		Element varElement = getVariableElement();
 		String qualifiedName = util.getQualifiedName(varElement);
 		assertEquals("first.second.Test.method1.var1", qualifiedName);
+	}
+
+	@Test
+	public void getOperatorTypeOnNull() throws Exception {
+		TypeMirror operatorType = util.getOperatorType(null);
+
+		assertNull(operatorType);
+	}
+
+	@Test
+	public void getOperatorTypeOnInt() throws Exception {
+		MethodTree testMethod = getMethodTree("plusInt");
+		BinaryTree binaryTree = (BinaryTree) testMethod.getBody().getStatements().get(0);
+
+		TypeMirror operatorType = util.getOperatorType(binaryTree);
+
+		assertEquals(util.getType(int.class), operatorType);
+	}
+
+	@Test
+	public void getOperatorTypeOnDouble() throws Exception {
+		MethodTree testMethod = getMethodTree("minusDouble");
+		BinaryTree binaryTree = (BinaryTree) testMethod.getBody().getStatements().get(0);
+
+		TypeMirror operatorType = util.getOperatorType(binaryTree);
+
+		assertEquals(util.getType(double.class), operatorType);
+	}
+
+	@Test
+	public void getOperatorTypeOnString() throws Exception {
+		MethodTree testMethod = getMethodTree("plusString");
+		BinaryTree binaryTree = (BinaryTree) testMethod.getBody().getStatements().get(0);
+
+		TypeMirror operatorType = util.getOperatorType(binaryTree);
+
+		assertEquals(util.getType(String.class), operatorType);
+	}
+
+	@Test
+	public void getOperatorTypeOnStringPlusInt() throws Exception {
+		MethodTree testMethod = getMethodTree("plusStringInt");
+		BinaryTree binaryTree = (BinaryTree) testMethod.getBody().getStatements().get(0);
+
+		TypeMirror operatorType = util.getOperatorType(binaryTree);
+
+		assertEquals(util.getType(String.class), operatorType);
+	}
+
+	private MethodTree getMethodTree(String methodName) {
+		CompilationUnitTree compilationUnit = context.compilationUnits.get(0);
+		ClassTree firstType = (ClassTree) compilationUnit.getTypeDecls().get(0);
+		MethodTree method = (MethodTree) firstType.getMembers().stream()
+				.filter(memberTree -> memberTree instanceof MethodTree
+						&& ((MethodTree) memberTree).getName().toString().equals(methodName))
+				.findFirst().orElse(null);
+		return method;
 	}
 
 	private Element getVariableElement() {

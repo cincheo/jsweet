@@ -80,8 +80,11 @@ import org.jsweet.transpiler.model.MethodInvocationElement;
 import org.jsweet.transpiler.model.NewArrayElement;
 import org.jsweet.transpiler.model.NewClassElement;
 import org.jsweet.transpiler.model.VariableAccessElement;
-import org.jsweet.transpiler.model.support.ForeachLoopElementSupport;
-import org.jsweet.transpiler.util.Util;
+
+import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.EnhancedForLoopTree;
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.ParameterizedTypeTree;
 
 /**
  * An adapter that removes many uses of Java APIs and replace them with
@@ -162,19 +165,20 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 						name) -> name.startsWith("java.")
 								&& types().isSubtype(typeTree.getType(), util().getType(Throwable.class)) ? "Error"
 										: null);
-		// TODO: use standard API
-		// addTypeMapping((typeTree,
-		// name) -> typeTree.asType() instanceof DeclaredType
-		// &&
-		// WeakReference.class.getName().equals(types().getQualifiedName(typeTree.asType()))
-		// ? ((DeclaredType) typeTree.asType()).getTypeArguments().get(0) :
-		// null);
-		addTypeMapping((typeTree,
-				name) -> ExtendedElementFactory.toTree(typeTree) instanceof JCTypeApply && WeakReference.class.getName()
-						.equals(ExtendedElementFactory.toTree(typeTree).type.tsym.getQualifiedName().toString())
-								? ((JCTypeApply) ExtendedElementFactory.toTree(typeTree)).arguments.head
-								: null);
+		addTypeMapping((ExtendedElement typeTree, String name) -> mapWeakReferenceType(typeTree, name));
 		excludedJavaSuperTypes.add(EventObject.class.getName());
+	}
+
+	private Object mapWeakReferenceType(ExtendedElement element, String name) {
+		if (!(ExtendedElementFactory.toTree(element) instanceof ParameterizedTypeTree)) {
+			return null;
+		}
+
+		String typeFullName = util().getQualifiedName(element.getTypeAsElement());
+		if (WeakReference.class.getName().equals(typeFullName)) {
+			return ((ParameterizedTypeTree) ExtendedElementFactory.toTree(element)).getTypeArguments().get(0);
+		}
+		return null;
 	}
 
 	@Override
@@ -1172,7 +1176,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			 */
 			if (invocation.getArgumentCount() == 0) {
 				print(invocation.getTargetExpression(), delegate).print(".splice(0, 1)[0]");
-			} else if (Util.isNumber(invocation.getArgument(0).getType())
+			} else if (util().isNumber(invocation.getArgument(0).getType())
 					&& types().isSubtype(types().erasure(invocation.getTargetExpression().getType()),
 							types().erasure(util().getType(List.class)))) {
 				print(invocation.getTargetExpression(), delegate).print(".splice(")
@@ -1495,7 +1499,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		case "java.lang.Float":
 		case "java.long.Short":
 		case "java.util.Byte":
-		    String argType = newClass.getArgument(0).getType().toString();
+			String argType = newClass.getArgument(0).getType().toString();
 			boolean isCharArgument = Character.class.getName().equals(argType) || "char".equals(argType);
 			if (isCharArgument) {
 				print("new Number(").print(newClass.getArgument(0)).print(".charCodeAt(0)" + ").valueOf()");
@@ -1517,7 +1521,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			if (newClass.getArgumentCount() == 0) {
 				print("[]");
 			} else {
-				if (Util.isNumber(newClass.getArgument(0).getType())
+				if (util().isNumber(newClass.getArgument(0).getType())
 						|| (newClass.getArgument(0) instanceof LiteralElement)) {
 					print("[]");
 				} else {
@@ -1531,11 +1535,9 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		case "java.util.Hashtable":
 		case "java.util.WeakHashMap":
 		case "java.util.LinkedHashMap":
-			if (newClass.getArgumentCount() == 0 ||
-                !(newClass.getArgument(0).getType() instanceof TypeMirror.ClassType) ||
-				!Util.isDeclarationOrSubClassDeclaration(
-                	(TypeMirror.ClassType) newClass.getArgument(0).getType(), Map.class.getName())
-			) {
+			if (newClass.getArgumentCount() == 0 || !(newClass.getArgument(0).getType() instanceof DeclaredType)
+					|| !util().isDeclarationOrSubClassDeclaration((DeclaredType) newClass.getArgument(0).getType(),
+							Map.class.getName())) {
 				print("{}");
 			} else {
 				if (((DeclaredType) newClass.getType()).getTypeArguments().size() == 2 && types().isSameType(
@@ -1582,7 +1584,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			break;
 		case "java.lang.StringBuffer":
 		case "java.lang.StringBuilder":
-			if (newClass.getArgumentCount() == 0 || Util.isNumber(newClass.getArgument(0).getType())) {
+			if (newClass.getArgumentCount() == 0 || util().isNumber(newClass.getArgument(0).getType())) {
 				print("{ str: \"\", toString: function() { return this.str; } }");
 			} else {
 				print("{ str: ").print(newClass.getArgument(0)).print(", toString: function() { return this.str; } }");
@@ -1623,13 +1625,14 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		}
 
 		if (!extendsJava && className.startsWith("java.")) {
-			if (types().isSubtype(newClass.getType(), context.symtab.throwableType)) {
+			TypeMirror throwableType = util().getType(Throwable.class);
+			if (types().isSubtype(newClass.getType(), throwableType)) {
 				print("Object.defineProperty(");
 				print("new Error(");
 				if (newClass.getArgumentCount() > 0) {
 					if (String.class.getName().equals(newClass.getArgument(0).getType().toString())) {
 						print(newClass.getArgument(0));
-					} else if (types().isSubtype(newClass.getArgument(0).getType(), context.symtab.throwableType)) {
+					} else if (types().isSubtype(newClass.getArgument(0).getType(), throwableType)) {
 						print(newClass.getArgument(0)).print(".message");
 					}
 				}
@@ -1662,31 +1665,30 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 
 	@Override
 	public boolean substituteForEachLoop(ForeachLoopElement foreachLoop, boolean targetHasLength, String indexVarName) {
-		EnhancedForLoopTree loop = ((ForeachLoopElementSupport) foreachLoop).getTree();
-		if (!targetHasLength && !isJDKPath(loop.expr.type.toString())
-				&& types().isSubtype(loop.expr.type, types().erasure(util().getType(Iterable.class)))) {
+		EnhancedForLoopTree loop = ExtendedElementFactory.toTree(foreachLoop);
+		TypeMirror expressionType = toType(loop.getExpression());
+		if (!targetHasLength && !isJDKPath(expressionType.toString())
+				&& types().isSubtype(expressionType, types().erasure(util().getType(Iterable.class)))) {
 			printForEachLoop(loop, indexVarName);
 			return true;
 		}
-		// return super.substituteForEachLoop(foreachLoop, targetHasLength,
-		// indexVarName);
 		return false;
 	}
 
 	@Override
 	public boolean eraseSuperClass(TypeElement classdecl, TypeElement superClass) {
 		return superClass.getQualifiedName().toString().startsWith("java.")
-				&& !(superClass.asType().equals(context.symtab.throwableType)
-						|| superClass.asType().equals(context.symtab.exceptionType)
-						|| superClass.asType().equals(context.symtab.runtimeExceptionType)
-						|| superClass.asType().equals(context.symtab.errorType))
-				&& !Util.isSourceElement(superClass);
+				&& !(util().isType(superClass.asType(), Throwable.class)
+						|| util().isType(superClass.asType(), Exception.class)
+						|| util().isType(superClass.asType(), RuntimeException.class)
+						|| util().isType(superClass.asType(), Error.class))
+				&& !util().isSourceElement(superClass);
 	}
 
 	@Override
 	public boolean eraseSuperInterface(TypeElement classdecl, TypeElement superInterface) {
 		return superInterface.getQualifiedName().toString().startsWith("java.")
-				&& !Util.isSourceElement(superInterface);
+				&& !util().isSourceElement(superInterface);
 	}
 
 	@Override
@@ -1695,18 +1697,16 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 	}
 
 	@Override
-	public boolean substituteInstanceof(String exprStr, ExtendedElement expr, TypeMirror typeMirror) {
-		com.sun.tools.javac.code.TypeMirror type = (com.sun.tools.javac.code.TypeMirror) typeMirror;
-		String typeName = type.tsym.getQualifiedName().toString();
-		if (typeName.startsWith("java.") && context.types.isSubtype(type, context.symtab.throwableType)) {
+	public boolean substituteInstanceof(String exprStr, ExtendedElement expr, TypeMirror type) {
+		String typeName = util().getQualifiedName(types().asElement(type));
+		if (typeName.startsWith("java.") && context.types.isSubtype(type, util().getType(Throwable.class))) {
 			print(exprStr, expr);
 			print(" != null && ");
 			print("(");
 			print(exprStr, expr);
 			print("[\"" + ERASED_CLASS_HIERARCHY_FIELD + "\"] && ");
 			print(exprStr, expr);
-			print("[\"" + ERASED_CLASS_HIERARCHY_FIELD + "\"].indexOf(\"" + type.tsym.getQualifiedName().toString()
-					+ "\") >= 0");
+			print("[\"" + ERASED_CLASS_HIERARCHY_FIELD + "\"].indexOf(\"" + typeName + "\") >= 0");
 			print(")");
 			if (context.getBaseThrowables().contains(typeName)) {
 				print(" || ");
@@ -1747,7 +1747,9 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 	@Override
 	public boolean substituteBinaryOperator(BinaryOperatorElement binaryOperator) {
 		if ("+".equals(binaryOperator.getOperator())) {
-			if (types().isSameType(util().getType(String.class), binaryOperator.getOperatorType().getReturnType())) {
+			BinaryTree loop = ExtendedElementFactory.toTree(binaryOperator);
+			TypeMirror binaryOperationType = util().getOperatorType(loop);
+			if (types().isSameType(util().getType(String.class), binaryOperationType)) {
 				if ("Array".equals(
 						extTypesMapping.get(types().erasure(binaryOperator.getLeftHandSide().getType()).toString()))) {
 					print("/* implicit toString */ (a => a?'['+a.join(', ')+']':'null')(")

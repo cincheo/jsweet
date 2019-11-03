@@ -68,6 +68,7 @@ import javax.tools.ToolProvider;
 
 import com.google.common.collect.Iterables;
 import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
@@ -721,6 +722,13 @@ public class DirectedGraph<T> implements Collection<T> {
 		public Void visitNewClass(NewClassTree tree, Trees p) {
 			Element element = p.getElement(getCurrentPath());
 			return super.visitNewClass(tree, p);
+		}
+		
+		@Override
+		public Void visitBinary(BinaryTree node, Trees p) {
+			Element element = p.getElement(getCurrentPath());
+			
+			return super.visitBinary(node, p);
 		}
 
 		@Override

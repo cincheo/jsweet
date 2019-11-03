@@ -118,8 +118,7 @@ public class ExtensionManager {
 			} catch (Exception e) {
 				throw new RuntimeException("unable to create extension description file", e);
 			}
-			Iterable<? extends JavaFileObject> compilationUnits1 = fileManager
-					.getJavaFileObjectsFromFiles(filesToCompile);
+			Iterable<? extends JavaFileObject> compilationUnits1 = fileManager.getJavaFileObjectsFromFiles(filesToCompile);
 			if (!compiler.getTask(null, fileManager, null, optionList, null, compilationUnits1).call()) {
 				throw new RuntimeException("JSweet extension compilation failed");
 			}

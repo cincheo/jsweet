@@ -400,6 +400,14 @@ public class PrinterAdapter {
 		printer.print(string);
 		return this;
 	}
+	
+	/**
+	 * Prints a tree by delegating to the printer.
+	 */
+	protected final PrinterAdapter print(Tree tree) {
+		printer.print(tree);
+		return this;
+	}
 
 	/**
 	 * Prints a name by delegating to the printer.

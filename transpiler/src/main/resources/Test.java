@@ -44,6 +44,8 @@ public class Test extends Pichade {
 		}
 
 		manyArgs(1, 2, 3, 4);
+		
+		Object o = "lala" + l;
 	}
 
 	void manyArgs(int a, int b, int c, int d) {

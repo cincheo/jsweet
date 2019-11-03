@@ -1099,7 +1099,14 @@ public class Util {
 	}
 
 	public boolean isStringType(TypeMirror type) {
-		return type != null && String.class.getName().equals(type.toString());
+		return isType(type, String.class);
+	}
+
+	/**
+	 * Returns true if given type is the type of given class instance
+	 */
+	public boolean isType(TypeMirror type, Class<?> potentielTypeClass) {
+		return type != null && potentielTypeClass != null && types().isSameType(getType(potentielTypeClass), type);
 	}
 
 	/**
@@ -1563,6 +1570,18 @@ public class Util {
 		return null;
 	}
 
+	public TypeMirror getOperatorType(BinaryTree binaryTree) {
+		return getOperatorElement(binaryTree).asType();
+	}
+
+	public ExecutableElement getOperatorElement(BinaryTree binaryTree) {
+		try {
+			return (ExecutableElement) javacInternals().binaryTreeOperatorField.get(binaryTree);
+		} catch (Exception e) {
+			throw new RuntimeException("Cannot call internal Javac API :( please adapt this code if API changed", e);
+		}
+	}
+
 	public boolean isLiteralExpression(ExpressionTree expression) {
 		if (expression == null) {
 			return false;
@@ -1846,7 +1865,7 @@ public class Util {
 			Method erasureRecursiveMethod = javacInternals().typeErasureRecursiveMethod;
 			return (TypeMirror) erasureRecursiveMethod.invoke(javacInternals().typesInstance, type);
 		} catch (Exception e) {
-			throw new RuntimeException("cannot call legacy erasureRecursive method from Javac API", e);
+			throw new RuntimeException("Cannot call internal Javac API :( please adapt this code if API changed", e);
 		}
 	}
 
@@ -1869,17 +1888,22 @@ public class Util {
 		final Method typeErasureRecursiveMethod;
 		final Object typesInstance;
 
+		final Field binaryTreeOperatorField;
+
 		private JavacInternals(Types types) {
 			try {
 				typesClass = Class.forName("com.sun.tools.javac.code.Types");
 				typeClass = Class.forName("com.sun.tools.javac.code.Type");
 				typeErasureRecursiveMethod = typesClass.getMethod("erasureRecursive", typeClass);
 
+				binaryTreeOperatorField = BinaryTree.class.getDeclaredField("operator");
+				binaryTreeOperatorField.trySetAccessible();
+
 				Field typesField = types.getClass().getDeclaredField("types");
 				typesField.trySetAccessible();
 				typesInstance = typesField.get(types);
 			} catch (Exception e) {
-				throw new RuntimeException("Internal Javac API changed :( please adapt this code for new API", e);
+				throw new RuntimeException("Cannot call internal Javac API :( please adapt this code if API changed", e);
 			}
 		}
 
@@ -1898,9 +1922,10 @@ public class Util {
 				Field internalSourceFileField = element.getClass().getDeclaredField("sourcefile");
 				return (JavaFileObject) internalSourceFileField.get(element);
 			} catch (Exception e) {
-				throw new RuntimeException("cannot call legacy sourcefile field from Javac API", e);
+				throw new RuntimeException("Cannot call internal Javac API :( please adapt this code if API changed", e);
 			}
 		}
+
 	}
 
 	public boolean isPrimitiveOrVoid(TypeMirror type) {
