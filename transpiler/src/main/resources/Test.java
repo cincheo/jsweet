@@ -1,5 +1,6 @@
 package pouet;
 
+import static pouet.zou.Test3.you;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,15 +8,15 @@ class Toto {
 }
 
 class Pichade {
-	
+
 }
 
 public class Test extends Pichade {
 
 	static class Zozoz {
-		
+
 	}
-	
+
 	public Test() {
 	}
 
@@ -32,19 +33,24 @@ public class Test extends Pichade {
 		this.toto = new Toto();
 
 		System.out.println(this.x);
-		
+
 		int l;
 		l = 10;
 		l += 1;
-		
+
 		List<String> list = new ArrayList<>();
 		for (String s : list) {
 			System.out.println("sss = " + s);
 		}
+
+		manyArgs(1, 2, 3, 4);
 	}
-	
+
+	void manyArgs(int a, int b, int c, int d) {
+	}
+
 	void varargTest(String[] s, String... ss) {
-		
+
 	}
 
 	public int getX() {

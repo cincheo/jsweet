@@ -78,6 +78,7 @@ import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModuleTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.PackageTree;
 import com.sun.source.tree.Tree;
@@ -693,9 +694,10 @@ public class DirectedGraph<T> implements Collection<T> {
 		}
 	}
 
-	static class Scanner2 extends TreePathScanner<Object, Trees> {
+	static class Scanner2 extends TreePathScanner<Void, Trees> {
 		private int count;
 		private ProcessingEnvironment processingEnvironment;
+		private Trees trees;
 
 		public Scanner2(ProcessingEnvironment processingEnvironment) {
 			this.processingEnvironment = processingEnvironment;
@@ -710,13 +712,19 @@ public class DirectedGraph<T> implements Collection<T> {
 		}
 
 		@Override
-		public Object visitNewClass(NewClassTree node, Trees p) {
-			Element element = p.getElement(getCurrentPath());
-			return super.visitNewClass(node, p);
+		public Void visitModule(ModuleTree tree, Trees p) {
+			this.trees = p;
+			return super.visitModule(tree, p);
 		}
 
 		@Override
-		public Object visitMethodInvocation(MethodInvocationTree tree, Trees p) {
+		public Void visitNewClass(NewClassTree tree, Trees p) {
+			Element element = p.getElement(getCurrentPath());
+			return super.visitNewClass(tree, p);
+		}
+
+		@Override
+		public Void visitMethodInvocation(MethodInvocationTree tree, Trees p) {
 
 			Tree methTree = tree.getMethodSelect();
 			if (methTree instanceof MemberSelectTree) {
@@ -733,48 +741,48 @@ public class DirectedGraph<T> implements Collection<T> {
 		}
 
 		@Override
-		public Object visitUnary(UnaryTree node, Trees p) {
+		public Void visitUnary(UnaryTree tree, Trees p) {
 
-			ExpressionTree e = node.getExpression();
+			ExpressionTree e = tree.getExpression();
 			TreePath tp = p.getPath(getCurrentPath().getCompilationUnit(), e);
 			Element el = p.getElement(tp);
 			TreePath tp2 = p.getPath(el);
 			TreePath tp3 = p.getPath(tp2.getCompilationUnit(), e);
 
-			return super.visitUnary(node, p);
+			return super.visitUnary(tree, p);
 		}
 
 		@Override
-		public Object visitClass(ClassTree node, Trees p) {
+		public Void visitClass(ClassTree tree, Trees p) {
 			System.out.println("== visitClass ==");
-			if (node.getExtendsClause() != null) {
-				System.out.println(toElement(node.getExtendsClause(), p));
+			if (tree.getExtendsClause() != null) {
+				System.out.println(toElement(tree.getExtendsClause()));
 			}
-			return super.visitClass(node, p);
+			return super.visitClass(tree, p);
 		}
 
 		@Override
-		public Object visitMethod(MethodTree node, Trees p) {
+		public Void visitMethod(MethodTree tree, Trees p) {
 
 			Element element = p.getElement(getCurrentPath());
-			
-			return super.visitMethod(node, p);
+
+			return super.visitMethod(tree, p);
 		}
 
 		@Override
-		public Object visitVariable(VariableTree node, Trees p) {
+		public Void visitVariable(VariableTree tree, Trees p) {
 			Element element = p.getElement(getCurrentPath());
-			return super.visitVariable(node, p);
+			return super.visitVariable(tree, p);
 		}
-		
+
 		@Override
-		public Object visitMemberSelect(MemberSelectTree node, Trees p) {
+		public Void visitMemberSelect(MemberSelectTree tree, Trees p) {
 			try {
 				System.out.println("== visitMemberSelect ==");
 
-				System.out.println(node.getKind().asInterface());
-				System.out.println(node.getExpression());
-				System.out.println(node.getIdentifier());
+				System.out.println(tree.getKind().asInterface());
+				System.out.println(tree.getExpression());
+				System.out.println(tree.getIdentifier());
 				System.out.println(p.getTypeMirror(getCurrentPath()));
 				System.out.println(p.getTypeMirror(getCurrentPath()) != null);
 
@@ -816,7 +824,7 @@ public class DirectedGraph<T> implements Collection<T> {
 //			System.out.println(tt);
 				System.out.println("== END visitMemberSelect END ==");
 
-				return super.visitMemberSelect(node, p);
+				return super.visitMemberSelect(tree, p);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				throw new RuntimeException(e);
@@ -824,43 +832,49 @@ public class DirectedGraph<T> implements Collection<T> {
 		}
 
 		@Override
-		public Object visitEnhancedForLoop(EnhancedForLoopTree node, Trees p) {
-			return super.visitEnhancedForLoop(node, p);
+		public Void visitEnhancedForLoop(EnhancedForLoopTree tree, Trees p) {
+			return super.visitEnhancedForLoop(tree, p);
 		}
 
 		@Override
-		public Object visitMemberReference(MemberReferenceTree node, Trees p) {
+		public Void visitMemberReference(MemberReferenceTree tree, Trees p) {
 			System.out.println("visitMemberReference");
-			System.out.println(node.getKind().asInterface());
-			return super.visitMemberReference(node, p);
+			System.out.println(tree.getKind().asInterface());
+			return super.visitMemberReference(tree, p);
 		}
 
 		@Override
-		public Object visitAssignment(AssignmentTree node, Trees p) {
-			return super.visitAssignment(node, p);
+		public Void visitAssignment(AssignmentTree tree, Trees p) {
+			return super.visitAssignment(tree, p);
 		}
 
 		@Override
-		public Object visitPackage(PackageTree node, Trees p) {
+		public Void visitPackage(PackageTree tree, Trees p) {
 			System.out.println("visitPackage ");
 
-			PackageElement pe = (PackageElement) toElement(node, p);
-Element ee = pe.getEnclosingElement();
-TypeMirror t = pe.asType();
+			PackageElement pe = (PackageElement) toElement(tree);
+			Element ee = pe.getEnclosingElement();
+			TypeMirror t = pe.asType();
 
-			
-			return super.visitPackage(node, p);
+			return super.visitPackage(tree, p);
 		}
 
 		@Override
-		public Object visitCompoundAssignment(CompoundAssignmentTree node, Trees p) {
-			return super.visitCompoundAssignment(node, p);
+		public Void visitCompoundAssignment(CompoundAssignmentTree tree, Trees p) {
+			return super.visitCompoundAssignment(tree, p);
 		}
 
 		@Override
-		public Object visitImport(ImportTree node, Trees p) {
+		public Void visitImport(ImportTree tree, Trees p) {
 			System.out.println("visitImport");
-			return super.visitImport(node, p);
+
+			if (tree.getQualifiedIdentifier() instanceof MemberSelectTree) {
+				MemberSelectTree select = (MemberSelectTree) tree.getQualifiedIdentifier();
+
+				System.out.println(select.getExpression());
+			}
+
+			return super.visitImport(tree, p);
 		}
 
 		public int getCount() {
@@ -872,16 +886,17 @@ TypeMirror t = pe.asType();
 		}
 
 		@Override
-		public Object visitCompilationUnit(CompilationUnitTree compilUnit, Trees trees) {
+		public Void visitCompilationUnit(CompilationUnitTree compilUnit, Trees trees) {
+			this.trees = trees;
 			System.out.println(compilUnit.getPackage().getPackageName().toString() + " COMPIL UNIT");
 
-			Element element = toElement(compilUnit, trees);
+			Element element = toElement(compilUnit);
 			Tree t = trees.getTree(element);
 
 			return super.visitCompilationUnit(compilUnit, trees);
 		}
 
-		private Element toElement(Tree tree, Trees trees) {
+		private Element toElement(Tree tree) {
 			return trees.getElement(trees.getPath(getCompilationUnit(), tree));
 		}
 	}
@@ -950,9 +965,11 @@ TypeMirror t = pe.asType();
 			javacTask.setProcessors(asList(processor1, processor2));
 			Iterable<? extends CompilationUnitTree> compilUnits = javacTask.parse();
 			javacTask.analyze();
-			
-			
-			processor2.scanner.scan(compilUnits, processor2.trees);
+
+			if (processor2.scanner != null) {
+				processor2.scanner.scan(compilUnits, processor2.trees);
+				System.out.format("meth count: %d \n", processor2.scanner.getCount());
+			}
 //			for (CompilationUnitTree compilUnit : compilUnits) {
 //				processor2.scanner.scan(processor2.trees.getPath(compilUnit, compilUnit), processor2.trees);
 //			}
@@ -964,8 +981,6 @@ TypeMirror t = pe.asType();
 
 			System.out.format("Classes %d, methods/constructors %d, fields %d\n", scanner1.numberOfClasses,
 					scanner1.numberOfMethods, scanner1.numberOfFields);
-
-			System.out.format("meth count: %d \n", processor2.scanner.getCount());
 
 			for (final Diagnostic<? extends JavaFileObject> diagnostic : diagnostics.getDiagnostics()) {
 				System.out.format("DIAG: %s, line %d in %s\n", diagnostic.getMessage(null), diagnostic.getLineNumber(),

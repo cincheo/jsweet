@@ -1,10 +1,10 @@
 package pouet.zou;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class Test3 {
 	Test3(){
 		
+	}
+	
+	public static void you() {
 	}
 }

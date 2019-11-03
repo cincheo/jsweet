@@ -61,6 +61,10 @@ import org.jsweet.transpiler.model.support.MethodInvocationElementSupport;
 import org.jsweet.transpiler.util.AbstractTreePrinter;
 import org.jsweet.transpiler.util.Util;
 
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.Trees;
+
 /**
  * A printer adapter, which can be overridden to change the default printer
  * behavior. Adapters are composable/chainable objects (decorator pattern).
@@ -883,6 +887,10 @@ public class PrinterAdapter {
 		return context.util;
 	}
 
+	protected Trees trees() {
+		return context.trees;
+	}
+
 	/**
 	 * Print the macro name in the code.
 	 */
@@ -935,5 +943,22 @@ public class PrinterAdapter {
 	 */
 	public final String getHeader(String key) {
 		return context.getHeader(key);
+	}
+
+	protected final CompilationUnitTree getCompilationUnit() {
+		return printer.getCompilationUnit();
+	}
+	
+	protected final PackageElement getPackageElement() {
+		return toElement(getCompilationUnit().getPackage());
+	}
+
+	protected final <T extends Element> T toElement(Tree tree) {
+		return util().getElementForTree(tree, getCompilationUnit());
+	}
+
+	@SuppressWarnings("unchecked")
+	protected final <T extends TypeMirror> T toType(Tree tree) {
+		return (T) util().getTypeForTree(tree, getCompilationUnit());
 	}
 }

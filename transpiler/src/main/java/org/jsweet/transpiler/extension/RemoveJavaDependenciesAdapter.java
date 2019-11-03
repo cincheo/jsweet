@@ -67,7 +67,6 @@ import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
-import com.sun.tools.javac.code.TypeMirror;
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.Java2TypeScriptTranslator;
 import org.jsweet.transpiler.ModuleKind;
@@ -83,10 +82,6 @@ import org.jsweet.transpiler.model.NewClassElement;
 import org.jsweet.transpiler.model.VariableAccessElement;
 import org.jsweet.transpiler.model.support.ForeachLoopElementSupport;
 import org.jsweet.transpiler.util.Util;
-
-import com.sun.tools.javac.tree.Tree.EnhancedForLoopTree;
-import com.sun.tools.javac.tree.Tree.LiteralTree;
-import com.sun.tools.javac.tree.Tree.JCTypeApply;
 
 /**
  * An adapter that removes many uses of Java APIs and replace them with

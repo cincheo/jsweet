@@ -100,23 +100,17 @@ import org.jsweet.transpiler.model.support.NewClassElementSupport;
 import org.jsweet.transpiler.model.support.VariableAccessElementSupport;
 import org.jsweet.transpiler.util.Util;
 
-import com.sun.codemodel.internal.JJavaName;
-import com.sun.tools.javac.code.Element;
-import com.sun.tools.javac.code.Element.TypeElement;
-import com.sun.tools.javac.code.Element.ExecutableElement;
-import com.sun.tools.javac.code.Element.TypeElement;
-import com.sun.tools.javac.code.TypeMirror.MethodType;
-import com.sun.tools.javac.tree.Tree;
-import com.sun.tools.javac.tree.Tree.ClassTree;
-import com.sun.tools.javac.tree.Tree.EnhancedForLoopTree;
-import com.sun.tools.javac.tree.Tree.ExpressionTree;
-import com.sun.tools.javac.tree.Tree.MemberSelectTree;
-import com.sun.tools.javac.tree.Tree.IdentifierTree;
-import com.sun.tools.javac.tree.Tree.ImportTree;
-import com.sun.tools.javac.tree.Tree.MethodInvocationTree;
-import com.sun.tools.javac.tree.Tree.NewClassTree;
-import com.sun.tools.javac.tree.Tree.JCTypeApply;
-import com.sun.tools.javac.tree.Tree.Tag;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.EnhancedForLoopTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.ImportTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ParameterizedTypeTree;
+import com.sun.source.tree.Tree.Kind;
 
 /**
  * This is an adapter for the TypeScript code generator. It overrides the
@@ -255,24 +249,26 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 				|| qualifiedName.endsWith(GLOBALS_PACKAGE_NAME + "." + GLOBALS_CLASS_NAME)) {
 			return null;
 		}
-		if (importDecl.qualid.type != null) {
-			if (context.hasAnnotationType(importDecl.qualid.type.tsym, ANNOTATION_ERASED, ANNOTATION_OBJECT_TYPE)) {
+		if (importElement.getImportedType() != null) {
+			if (context.hasAnnotationType(importElement.getImportedType(), ANNOTATION_ERASED, ANNOTATION_OBJECT_TYPE)) {
 				return null;
 			}
-			if (importDecl.qualid.type.tsym.getKind() == ElementKind.ANNOTATION_TYPE
-					&& !context.hasAnnotationType(importDecl.qualid.type.tsym, JSweetConfig.ANNOTATION_DECORATOR)) {
+			if (importElement.getImportedType().getKind() == ElementKind.ANNOTATION_TYPE
+					&& !context.hasAnnotationType(importElement.getImportedType(), JSweetConfig.ANNOTATION_DECORATOR)) {
 				return null;
 			}
 		}
 		if (importDecl.isStatic()) {
 			if (importDecl.getQualifiedIdentifier() instanceof MemberSelectTree) {
-				MemberSelectTree fa = (MemberSelectTree) importDecl.getQualifiedIdentifier();
-				switch (fa.selected.toString()) {
+				MemberSelectTree staticImportSelect = (MemberSelectTree) importDecl.getQualifiedIdentifier();
+				switch (staticImportSelect.getExpression().toString()) {
 				case "java.lang.Math":
 					return null;
 				}
-				String name = getPrinter().getRootRelativeName(fa.selected.type.tsym, false);
-				String methodName = fa.name.toString();
+
+				TypeElement typeElementForStaticImport = toElement(staticImportSelect.getExpression());
+				String name = getPrinter().getRootRelativeName(typeElementForStaticImport, false);
+				String methodName = staticImportSelect.getIdentifier().toString();
 
 				// function is a top-level global function (no need to import)
 				if (GLOBALS_CLASS_NAME.equals(name)) {
@@ -291,10 +287,9 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 				if (globals) {
 					name = name.substring(0, name.length() - JSweetConfig.GLOBALS_CLASS_NAME.length() - 1);
 				}
-				// function belong to the current package (no need to
-				// import)
-				String current = getPrinter().getRootRelativeName(getPrinter().getCompilationUnit().packge,
-						context.useModules);
+
+				// function belong to the current package (no need to import)
+				String current = getPrinter().getRootRelativeName(getPackageElement(), context.useModules);
 				if (context.useModules) {
 					if (current.equals(name)) {
 						return null;
@@ -304,10 +299,9 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 						return null;
 					}
 				}
-				Element nameSymbol = fa.sym;
+				Element nameSymbol = toElement(staticImportSelect);
 				if (nameSymbol == null) {
-					TypeElement t = fa.selected.type.tsym;
-					nameSymbol = Util.findFirstDeclarationInType(t, methodName);
+					nameSymbol = util().findFirstDeclarationInType(typeElementForStaticImport, methodName);
 				}
 
 				return StringUtils.isBlank(name) ? null
@@ -318,10 +312,11 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 		} else {
 			if (context.useModules) {
 				// check if inner class and do not import
-				if (importDecl.qualid instanceof MemberSelectTree) {
-					MemberSelectTree qualified = (MemberSelectTree) importDecl.qualid;
-					if (qualified.sym instanceof TypeElement
-							&& qualified.sym.getEnclosingElement() instanceof TypeElement) {
+				if (importDecl.getQualifiedIdentifier() instanceof MemberSelectTree) {
+					MemberSelectTree qualified = (MemberSelectTree) importDecl.getQualifiedIdentifier();
+					Element importedElement = toElement(qualified);
+					if (importedElement instanceof TypeElement
+							&& importedElement.getEnclosingElement() instanceof TypeElement) {
 						return null;
 					}
 				}
@@ -337,8 +332,10 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 	private boolean isWithinGlobals(String targetClassName) {
 		if (targetClassName == null
 				|| (targetClassName.equals(UTIL_CLASSNAME) || targetClassName.equals(DEPRECATED_UTIL_CLASSNAME))) {
-			ClassTree c = getPrinter().getParent(ClassTree.class);
-			return c != null && c.sym.getQualifiedName().toString().endsWith("." + GLOBALS_CLASS_NAME);
+			ClassTree parentClassTree = getPrinter().getParent(ClassTree.class);
+			TypeElement parentClassElement = toElement(parentClassTree);
+			return parentClassTree != null
+					&& parentClassElement.getQualifiedName().toString().endsWith("." + GLOBALS_CLASS_NAME);
 		} else {
 			return false;
 		}
@@ -387,17 +384,21 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 			}
 		}
 
+		MethodInvocationTree methodInvocationTree = ((MethodInvocationElementSupport) invocationElement).getTree();
 		if ("super".equals(invocationElement.getMethodName())) {
 			// we omit call to super if class extends nothing or if parent is an
 			// interface
-			if (getPrinter().getParent(ClassTree.class).extending == null //
-					|| context.isInterface(getPrinter().getParent(ClassTree.class).extending.type.tsym)) {
+			ClassTree parentClassTree = getPrinter().getParent(ClassTree.class);
+			if (parentClassTree.getExtendsClause() == null //
+					|| context.isInterface(toElement(parentClassTree.getExtendsClause()))) {
 				return true;
 			}
 			// special case when subclassing a Java exception type
-			if (((MethodInvocationElementSupport) invocationElement).getTree().meth instanceof IdentifierTree) {
-				String superClassName = ((IdentifierTree) ((MethodInvocationElementSupport) invocationElement)
-						.getTree().meth).sym.getEnclosingElement().getQualifiedName().toString();
+			if (methodInvocationTree.getMethodSelect() instanceof IdentifierTree) {
+				IdentifierTree methodSelectIdentifier = (IdentifierTree) methodInvocationTree.getMethodSelect();
+
+				String superClassName = util()
+						.getQualifiedName(toElement(methodSelectIdentifier).getEnclosingElement());
 				if (context.getBaseThrowables().contains(superClassName)) {
 					// ES6 would take the cause, but we ignore it so far for
 					// backward compatibility
@@ -517,8 +518,8 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 					return true;
 
 				case "union":
-					getPrinter().typeChecker.checkUnionTypeAssignment(context.types, getPrinter().getParent(),
-							((MethodInvocationElementSupport) invocationElement).getTree());
+					getPrinter().typeChecker.checkUnionTypeAssignment(getPrinter().getParent(), getCompilationUnit(),
+							methodInvocationTree);
 					print("(<any>");
 					printCastMethodInvocation(invocationElement);
 					print(")");
@@ -595,27 +596,28 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 						report(invocationElement, JSweetProblem.UNTYPED_OBJECT_ODD_PARAMETER_COUNT);
 					}
 					print("{");
-					com.sun.tools.javac.util.List<ExpressionTree> args = ((MethodInvocationElementSupport) invocationElement)
-							.getTree().args;
-					while (args != null && args.head != null) {
-						String key = args.head.toString();
-						if (args.head.getTag() == Tag.LITERAL && key.startsWith("\"")) {
-							key = key.substring(1, key.length() - 1);
-							if (JJavaName.isJavaIdentifier(key)) {
-								print(key);
-							} else {
+					if (methodInvocationTree.getArguments() != null) {
+						for (int i = 0; i < methodInvocationTree.getArguments().size() / 2; i++) {
+							ExpressionTree keyArgTree = methodInvocationTree.getArguments().get(2 * i);
+							String key = keyArgTree.toString();
+							if (util().isLiteralExpression(keyArgTree) && key.startsWith("\"")) {
+								key = key.substring(1, key.length() - 1);
+								// TODO [Java11]
+//							if (JJavaName.isJavaIdentifier(key)) {
+//								print(key);
+//							} else {
 								print("\"" + key + "\"");
+//							}
+							} else {
+								report(invocationElement.getArgument(0), JSweetProblem.UNTYPED_OBJECT_WRONG_KEY, key);
 							}
-						} else {
-							report(invocationElement.getArgument(0), JSweetProblem.UNTYPED_OBJECT_WRONG_KEY,
-									args.head.toString());
-						}
-						print(": ");
-						getPrinter().print(args.tail.head);
-						;
-						args = args.tail.tail;
-						if (args != null && args.head != null) {
+							print(": ");
+
+							ExpressionTree valueArgTree = methodInvocationTree.getArguments().get(2 * i + 1);
+							getPrinter().print(valueArgTree);
+//						if (args != null && args.head != null) {
 							print(",");
+//						}
 						}
 					}
 					print("}");
@@ -1253,8 +1255,9 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 			break;
 		case "equals":
 			if (invocationElement.getTargetExpression() != null && invocationElement.getArgumentCount() == 1) {
-				ExecutableElement methSym = util().findMethodDeclarationInType((TypeElement) invocationElement.getTargetExpression().getTypeAsElement(),
-						targetMethodName, (MethodType) invocationElement.getMethod().asType());
+				ExecutableElement methSym = util().findMethodDeclarationInType(
+						(TypeElement) invocationElement.getTargetExpression().getTypeAsElement(), targetMethodName,
+						(MethodType) invocationElement.getMethod().asType());
 				if (methSym != null
 						&& (Object.class.getName().equals(methSym.getEnclosingElement().toString())
 								|| methSym.getEnclosingElement().isInterface())
@@ -1291,7 +1294,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 			}
 		}
 
-		getPrinter().printDefaultMethodInvocation(((MethodInvocationElementSupport) invocationElement).getTree());
+		getPrinter().printDefaultMethodInvocation(methodInvocationTree);
 
 		return true;
 
@@ -1495,8 +1498,8 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 		if (isMappedType(className)) {
 
 			print("<").print(getTypeMappingTarget(className));
-			if (newClass.clazz instanceof JCTypeApply) {
-				List<ExpressionTree> typeArgs = ((JCTypeApply) newClass.clazz).arguments;
+			if (newClass.clazz instanceof ParameterizedTypeTree) {
+				List<ExpressionTree> typeArgs = ((ParameterizedTypeTree) newClass.clazz).arguments;
 				if (typeArgs.size() > 0) {
 					getPrinter().print("<").printTypeArgList(typeArgs).print(">");
 				}
@@ -1525,17 +1528,18 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 	@Override
 	public boolean substituteIdentifier(IdentifierElement identifierElement) {
 		IdentifierTree identifier = ((IdentifierElementSupport) identifierElement).getTree();
-		if (identifier.type != null) {
+		TypeMirror identifierType = identifierElement.getType();
+		if (identifierType != null) {
 			if (context.getLangTypesSimpleNames().contains(identifier.toString())
-					&& context.getLangTypeMappings().containsKey(identifier.type.toString())) {
-				print(context.getLangTypeMappings().get(identifier.type.toString()));
+					&& context.getLangTypeMappings().containsKey(identifierType.toString())) {
+				print(context.getLangTypeMappings().get(identifierType.toString()));
 				return true;
 			}
-			if (identifier.type.toString().startsWith("java.lang.")) {
-				if (("java.lang." + identifier.toString()).equals(identifier.type.toString())) {
+			if (identifierType.toString().startsWith("java.lang.")) {
+				if (("java.lang." + identifier.toString()).equals(identifierType.toString())) {
 					// it is a java.lang class being referenced, so we expand
 					// its name
-					print(identifier.type.toString());
+					print(identifierType.toString());
 					return true;
 				}
 			}
@@ -1549,11 +1553,11 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 	}
 
 	protected void printForEachLoop(EnhancedForLoopTree loop, String indexVarName) {
-		getPrinter().print("for(" + VAR_DECL_KEYWORD + " " + indexVarName + "=").print(loop.expr)
+		getPrinter().print("for(" + VAR_DECL_KEYWORD + " " + indexVarName + "=").print(loop.getExpression())
 				.print(".iterator();" + indexVarName + ".hasNext();) {").println().startIndent().printIndent();
-		getPrinter().print(VAR_DECL_KEYWORD + " " + loop.var.name.toString() + " = ").print(indexVarName + ".next();")
-				.println();
-		getPrinter().printIndent().print(loop.body);
+		getPrinter().print(VAR_DECL_KEYWORD + " " + loop.getVariable().getName().toString() + " = ")
+				.print(indexVarName + ".next();").println();
+		getPrinter().printIndent().print(loop.getStatement());
 		endIndent().println().printIndent().print("}");
 	}
 
