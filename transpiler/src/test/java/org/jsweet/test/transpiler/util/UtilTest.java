@@ -1,12 +1,14 @@
 package org.jsweet.test.transpiler.util;
 
+import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.net.URL;
+import java.util.List;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -29,6 +31,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.StatementTree;
+import com.sun.source.tree.VariableTree;
 
 import source.structural.ExtendsClassInSameFile;
 
@@ -39,7 +42,16 @@ public class UtilTest extends AbstractTest {
 
 	@Before
 	public void setUp() throws Exception {
-		transpilerTest().getTranspiler().prepareForJavaFiles(new ArrayList<File>(),
+		URL testSourcesDirURL = getClass().getClassLoader().getResource("UtilTest-sources");
+		File utilTestSourcesDir = new File(testSourcesDirURL.toURI());
+
+		List<File> utilTestSourcesFiles = asList( //
+				new File(utilTestSourcesDir, "TestNoPackage.java"), //
+				new File(utilTestSourcesDir, "first/Test.java"), //
+				new File(utilTestSourcesDir, "first/second/Test2.java"), //
+				new File(utilTestSourcesDir, "first/second/third/Test3.java"));
+
+		transpilerTest().getTranspiler().prepareForJavaFiles(utilTestSourcesFiles,
 				new ErrorCountTranspilationHandler(new ConsoleTranspilationHandler()));
 		context = transpilerTest().getTranspiler().getContext();
 		util = new Util(context);
@@ -60,7 +72,7 @@ public class UtilTest extends AbstractTest {
 	@Test
 	public void testIsCoreType() throws Exception {
 		TypeMirror stringType = util.getType(String.class);
-		TypeMirror floatType = util.getType(Float.class);
+		TypeMirror floatType = util.getType(float.class);
 		assertTrue(util.isCoreType(stringType));
 		assertTrue(util.isCoreType(floatType));
 	}
@@ -176,34 +188,34 @@ public class UtilTest extends AbstractTest {
 
 	@Test
 	public void getQualifiedNameForTypeElement() throws Exception {
-		Element element = context.elements.getTypeElement("first.second.Test");
+		Element element = context.elements.getTypeElement("first.second.Test2");
 		String qualifiedName = util.getQualifiedName(element);
-		assertEquals("first.second.Test", qualifiedName);
+		assertEquals("first.second.Test2", qualifiedName);
 	}
 
 	@Test
 	public void getQualifiedNameForRootTypeElement() throws Exception {
-		Element element = context.elements.getTypeElement("Test");
+		Element element = context.elements.getTypeElement("TestNoPackage");
 		String qualifiedName = util.getQualifiedName(element);
-		assertEquals("Test", qualifiedName);
+		assertEquals("TestNoPackage", qualifiedName);
 	}
 
 	@Test
 	public void getQualifiedNameForMethodElement() throws Exception {
-		TypeElement typeElement = context.elements.getTypeElement("first.second.Test");
+		TypeElement typeElement = context.elements.getTypeElement("first.Test");
 		Element element = typeElement.getEnclosedElements().stream()
 				.filter(memberElement -> memberElement.getSimpleName().toString().equals("method1")).findFirst().get();
 		String qualifiedName = util.getQualifiedName(element);
-		assertEquals("first.second.Test.method1", qualifiedName);
+		assertEquals("first.Test.method1", qualifiedName);
 	}
 
 	@Test
 	public void getQualifiedNameForFieldElement() throws Exception {
-		TypeElement typeElement = context.elements.getTypeElement("first.second.Test");
+		TypeElement typeElement = context.elements.getTypeElement("first.second.Test2");
 		Element element = typeElement.getEnclosedElements().stream()
 				.filter(memberElement -> memberElement.getSimpleName().toString().equals("field1")).findFirst().get();
 		String qualifiedName = util.getQualifiedName(element);
-		assertEquals("first.second.Test.field1", qualifiedName);
+		assertEquals("first.second.Test2.field1", qualifiedName);
 	}
 
 	@Test
@@ -254,7 +266,7 @@ public class UtilTest extends AbstractTest {
 	@Test
 	public void getOperatorTypeOnString() throws Exception {
 		MethodTree testMethod = getMethodTree("plusString");
-		BinaryTree binaryTree = (BinaryTree) testMethod.getBody().getStatements().get(0);
+		BinaryTree binaryTree = extractBinaryFromSingleLineTestMethod(testMethod);
 
 		TypeMirror operatorType = util.getOperatorType(binaryTree);
 
@@ -271,8 +283,23 @@ public class UtilTest extends AbstractTest {
 		assertEquals(util.getType(String.class), operatorType);
 	}
 
+	private CompilationUnitTree getMainCompilationUnit() {
+		return getCompilationUnitForClassName("Test");
+	}
+
+	private CompilationUnitTree getCompilationUnitForClassName(String classSimpleName) {
+		return context.compilationUnits.stream() //
+				.filter(compilUnit -> compilUnit.getTypeDecls().stream().anyMatch(
+						typeDecl -> ((ClassTree) typeDecl).getSimpleName().toString().equals(classSimpleName)))
+				.findFirst() //
+				.orElse(null);
+	}
+
 	private MethodTree getMethodTree(String methodName) {
-		CompilationUnitTree compilationUnit = context.compilationUnits.get(0);
+		return getMethodTree(getMainCompilationUnit(), methodName);
+	}
+
+	private MethodTree getMethodTree(CompilationUnitTree compilationUnit, String methodName) {
 		ClassTree firstType = (ClassTree) compilationUnit.getTypeDecls().get(0);
 		MethodTree method = (MethodTree) firstType.getMembers().stream()
 				.filter(memberTree -> memberTree instanceof MethodTree
@@ -282,13 +309,16 @@ public class UtilTest extends AbstractTest {
 	}
 
 	private Element getVariableElement() {
-		CompilationUnitTree compilationUnit = context.compilationUnits.get(0);
-		ClassTree firstType = (ClassTree) compilationUnit.getTypeDecls().get(0);
-		MethodTree firstMethod = (MethodTree) firstType.getMembers().stream()
-				.filter(memberTree -> memberTree instanceof MethodTree).findFirst().get();
-		StatementTree firstStatement = firstMethod.getBody().getStatements().get(0);
+		CompilationUnitTree compilationUnit = getMainCompilationUnit();
+		MethodTree method = getMethodTree("method1");
+		VariableTree var = (VariableTree) method.getBody().getStatements().get(0);
 
-		Element varElement = trees().getElement(trees().getPath(compilationUnit, firstStatement));
+		Element varElement = trees().getElement(trees().getPath(compilationUnit, var));
 		return varElement;
+	}
+
+	private BinaryTree extractBinaryFromSingleLineTestMethod(MethodTree method) {
+		VariableTree var = (VariableTree) method.getBody().getStatements().get(0);
+		return (BinaryTree) var.getInitializer();
 	}
 }

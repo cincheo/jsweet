@@ -5,6 +5,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +20,7 @@ import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.util.ConsoleTranspilationHandler;
 import org.jsweet.transpiler.util.Util;
 
+import com.google.gson.Gson;
 import com.sun.source.util.JavacTask;
 import com.sun.source.util.Trees;
 
@@ -45,6 +47,15 @@ public class JavaCompilationComponents implements AutoCloseable {
 		void put(String name, String value) {
 			optionsAsList.add(name);
 			optionsAsList.add(value);
+		}
+		
+		void put(String singleArgument) {
+			optionsAsList.add(singleArgument);
+		}
+		
+		@Override
+		public String toString() {
+			return getClass().getSimpleName() + ": " + optionsAsList;
 		}
 	}
 
@@ -76,7 +87,7 @@ public class JavaCompilationComponents implements AutoCloseable {
 			}
 		}
 
-		compilerOptions.put("-Xlint", "path");
+		compilerOptions.put("-Xlint:path");
 
 		Charset charset = null;
 		if (encoding != null) {
@@ -94,19 +105,13 @@ public class JavaCompilationComponents implements AutoCloseable {
 		logger.debug("strict mode: " + context.strictMode);
 
 		JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-
-		// TODO [Java11]
-		System.out.println("compiler SupportedOptions !!!!");
-		System.out.println(compiler.isSupportedOption("-cp"));
-		System.out.println(compiler.isSupportedOption("-Xlint"));
-		System.out.println(compiler.isSupportedOption("-bootclasspath"));
-		System.out.println(compiler.isSupportedOption("-encoding"));
 		StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, context.locale, charset);
 
 		List<JavaFileObject> sourceFileObjects = context.util.toJavaFileObjects(fileManager, sourceFiles);
 
 		JSweetDiagnosticHandler diagnosticHandler = factory.createDiagnosticHandler(transpilationHandler, context);
 
+		logger.info("creating JavaCompiler task with options: " + compilerOptions);
 		JavacTask task = (JavacTask) compiler.getTask(null, fileManager, diagnosticHandler,
 				compilerOptions.optionsAsList, null, sourceFileObjects);
 

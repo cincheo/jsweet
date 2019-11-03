@@ -16,8 +16,6 @@
  */
 package org.jsweet.test.transpiler;
 
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
@@ -29,7 +27,6 @@ import java.util.Map.Entry;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.lang.model.element.Modifier;
@@ -39,6 +36,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import org.jsweet.test.transpiler.util.TranspilerTestRunner;
+import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetFactory;
 import org.jsweet.transpiler.ModuleKind;
 import org.jsweet.transpiler.SourceFile;
@@ -135,11 +133,11 @@ public class AbstractTest {
 
 	protected Map<CompilationUnitTree, List<ClassTree>> getSourceClassesDeclarations(SourceFile... sourceFiles)
 			throws IOException {
-		List<CompilationUnitTree> compilUnits = transpilerTest.getTranspiler().prepareForJavaFiles(
+		JSweetContext context = transpilerTest.getTranspiler().prepareForJavaFiles(
 				Stream.of(sourceFiles).map(sourceFile -> sourceFile.getJavaFile()).collect(toList()),
 				new ErrorCountTranspilationHandler(new ConsoleTranspilationHandler()));
 
-		return compilUnits.stream() //
+		return context.compilationUnits.stream() //
 				.collect(toMap( //
 						Function.identity(), //
 						compilUnit -> compilUnit //

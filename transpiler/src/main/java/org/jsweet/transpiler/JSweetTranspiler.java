@@ -135,8 +135,6 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 		if (!SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_1_8)) {
 			throw new RuntimeException("JSweet is currently only supported for JDK 8->11, please use JDK 8->11.");
 		}
-
-		JSweetConfig.initClassPath(null);
 	}
 
 	/**

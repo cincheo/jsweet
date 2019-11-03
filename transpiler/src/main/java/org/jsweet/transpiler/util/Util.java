@@ -39,6 +39,7 @@ import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -133,6 +134,9 @@ public class Util {
 	 * the type cannot be found in the compiler's symbol table).
 	 */
 	public TypeMirror getType(Class<?> clazz) {
+		if (clazz.isPrimitive()) {
+			return types().getPrimitiveType(TypeKind.valueOf(clazz.getName().toUpperCase()));
+		}
 		TypeElement typeElement = getTypeElementByName(context, clazz.getName());
 		return typeElement == null ? null : typeElement.asType();
 	}
@@ -1110,7 +1114,7 @@ public class Util {
 	}
 
 	/**
-	 * Returns true is the type is a core.
+	 * Returns true is the type is a core (String or primitive)
 	 */
 	public boolean isCoreType(TypeMirror type) {
 		if (type == null) {
@@ -1570,8 +1574,11 @@ public class Util {
 		return null;
 	}
 
+	/**
+	 * Returns resulting type for this binary operation
+	 */
 	public TypeMirror getOperatorType(BinaryTree binaryTree) {
-		return getOperatorElement(binaryTree).asType();
+		return getOperatorElement(binaryTree).getReturnType();
 	}
 
 	public ExecutableElement getOperatorElement(BinaryTree binaryTree) {
@@ -1896,14 +1903,18 @@ public class Util {
 				typeClass = Class.forName("com.sun.tools.javac.code.Type");
 				typeErasureRecursiveMethod = typesClass.getMethod("erasureRecursive", typeClass);
 
-				binaryTreeOperatorField = BinaryTree.class.getDeclaredField("operator");
-				binaryTreeOperatorField.trySetAccessible();
+				binaryTreeOperatorField = Stream
+						.of(Class.forName("com.sun.tools.javac.tree.JCTree").getDeclaredClasses())
+						.filter(innerClass -> innerClass.getSimpleName().equals("JCBinary")) //
+						.findFirst().get() //
+						.getField("operator");
 
 				Field typesField = types.getClass().getDeclaredField("types");
 				typesField.trySetAccessible();
 				typesInstance = typesField.get(types);
 			} catch (Exception e) {
-				throw new RuntimeException("Cannot call internal Javac API :( please adapt this code if API changed", e);
+				throw new RuntimeException("Cannot call internal Javac API :( please adapt this code if API changed",
+						e);
 			}
 		}
 
@@ -1922,7 +1933,8 @@ public class Util {
 				Field internalSourceFileField = element.getClass().getDeclaredField("sourcefile");
 				return (JavaFileObject) internalSourceFileField.get(element);
 			} catch (Exception e) {
-				throw new RuntimeException("Cannot call internal Javac API :( please adapt this code if API changed", e);
+				throw new RuntimeException("Cannot call internal Javac API :( please adapt this code if API changed",
+						e);
 			}
 		}
 

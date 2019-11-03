@@ -72,11 +72,6 @@ import com.martiansoftware.jsap.stringparsers.FileStringParser;
         Force the Java compiler to use a specific encoding (UTF-8, UTF-16, ...).
         (default: UTF-8)
 
-  [--jdkHome <jdkHome>]
-        Set the JDK home directory to be used to find the Java compiler. If not
-        set, the transpiler will try to use the JAVA_HOME environment variable.
-        Note that the expected JDK version is greater or equals to version 8.
-
   (-i|--input) input1:input2:...:inputN 
         An input directory (or column-separated input directories) containing
         Java files to be transpiled. Java files will be recursively looked up in
@@ -191,6 +186,7 @@ import com.martiansoftware.jsap.stringparsers.FileStringParser;
  * </pre>
  * 
  * @author Renaud Pawlak
+ * @author Louis Grignon
  */
 public class JSweetCommandLineLauncher {
 
@@ -235,8 +231,6 @@ public class JSweetCommandLineLauncher {
 			if (jsapArgs.getBoolean("veryVerbose")) {
 				LogManager.getLogger("org.jsweet").setLevel(Level.ALL);
 			}
-
-			JSweetConfig.initClassPath(jsapArgs.getString("jdkHome"));
 
 			JSweetTranspilationTask transpilationTask = new JSweetTranspilationTask(jsapArgs);
 			transpilationTask.run();
@@ -295,15 +289,6 @@ public class JSweetCommandLineLauncher {
 		optionArg.setRequired(false);
 		optionArg.setDefault("UTF-8");
 		optionArg.setHelp("Force the Java compiler to use a specific encoding (UTF-8, UTF-16, ...).");
-		jsap.registerParameter(optionArg);
-
-		// JDK home directory
-		optionArg = new FlaggedOption("jdkHome");
-		optionArg.setLongFlag("jdkHome");
-		optionArg.setStringParser(JSAP.STRING_PARSER);
-		optionArg.setRequired(false);
-		optionArg.setHelp(
-				"Set the JDK home directory to be used to find the Java compiler. If not set, the transpiler will try to use the JAVA_HOME environment variable. Note that the expected JDK version is greater or equals to version 8.");
 		jsap.registerParameter(optionArg);
 
 		// Input directories
