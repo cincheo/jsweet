@@ -11,7 +11,7 @@ public class Test  {
 	String string2 = "b";
 	
 	void method1(String param1) {
-		List<String> val1;
+		List<String> var1;
 	}
 	
 	public static void main(String[] args) {

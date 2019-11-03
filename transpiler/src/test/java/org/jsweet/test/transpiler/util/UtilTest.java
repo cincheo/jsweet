@@ -30,7 +30,6 @@ import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.VariableTree;
 
 import source.structural.ExtendsClassInSameFile;
@@ -220,20 +219,20 @@ public class UtilTest extends AbstractTest {
 
 	@Test
 	public void getQualifiedNameForMethodParamElement() throws Exception {
-		TypeElement typeElement = context.elements.getTypeElement("first.second.Test");
+		TypeElement typeElement = context.elements.getTypeElement("first.Test");
 		Element element = typeElement.getEnclosedElements().stream() //
 				.filter(memberElement -> memberElement.getSimpleName().toString().equals("method1")) //
 				.map(methodElement -> (ExecutableElement) methodElement).findFirst().get() //
 				.getParameters().get(0);
 		String qualifiedName = util.getQualifiedName(element);
-		assertEquals("first.second.Test.method1.param1", qualifiedName);
+		assertEquals("first.Test.method1.param1", qualifiedName);
 	}
 
 	@Test
 	public void getQualifiedNameForVariableElement() throws Exception {
 		Element varElement = getVariableElement();
 		String qualifiedName = util.getQualifiedName(varElement);
-		assertEquals("first.second.Test.method1.var1", qualifiedName);
+		assertEquals("first.Test.method1.var1", qualifiedName);
 	}
 
 	@Test
@@ -246,7 +245,7 @@ public class UtilTest extends AbstractTest {
 	@Test
 	public void getOperatorTypeOnInt() throws Exception {
 		MethodTree testMethod = getMethodTree("plusInt");
-		BinaryTree binaryTree = (BinaryTree) testMethod.getBody().getStatements().get(0);
+		BinaryTree binaryTree = extractBinaryFromSingleLineTestMethod(testMethod);
 
 		TypeMirror operatorType = util.getOperatorType(binaryTree);
 
@@ -256,7 +255,7 @@ public class UtilTest extends AbstractTest {
 	@Test
 	public void getOperatorTypeOnDouble() throws Exception {
 		MethodTree testMethod = getMethodTree("minusDouble");
-		BinaryTree binaryTree = (BinaryTree) testMethod.getBody().getStatements().get(0);
+		BinaryTree binaryTree = extractBinaryFromSingleLineTestMethod(testMethod);
 
 		TypeMirror operatorType = util.getOperatorType(binaryTree);
 
@@ -276,7 +275,7 @@ public class UtilTest extends AbstractTest {
 	@Test
 	public void getOperatorTypeOnStringPlusInt() throws Exception {
 		MethodTree testMethod = getMethodTree("plusStringInt");
-		BinaryTree binaryTree = (BinaryTree) testMethod.getBody().getStatements().get(0);
+		BinaryTree binaryTree = extractBinaryFromSingleLineTestMethod(testMethod);
 
 		TypeMirror operatorType = util.getOperatorType(binaryTree);
 

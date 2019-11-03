@@ -1578,10 +1578,16 @@ public class Util {
 	 * Returns resulting type for this binary operation
 	 */
 	public TypeMirror getOperatorType(BinaryTree binaryTree) {
+		if (binaryTree == null) {
+			return null;
+		}
 		return getOperatorElement(binaryTree).getReturnType();
 	}
 
 	public ExecutableElement getOperatorElement(BinaryTree binaryTree) {
+		if (binaryTree == null) {
+			return null;
+		}
 		try {
 			return (ExecutableElement) javacInternals().binaryTreeOperatorField.get(binaryTree);
 		} catch (Exception e) {
