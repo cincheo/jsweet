@@ -44,7 +44,6 @@ import org.jsweet.transpiler.extension.RemoveJavaDependenciesFactory;
 import org.jsweet.transpiler.util.ProcessUtil;
 import org.jsweet.transpiler.util.Util;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import source.blocksgame.Ball;
@@ -63,8 +62,6 @@ import source.blocksgame.util.Point;
 import source.blocksgame.util.Rectangle;
 import source.blocksgame.util.Vector;
 import source.calculus.MathApi;
-import source.overload.Overload;
-import source.structural.AbstractClass;
 import source.transpiler.CanvasDrawing;
 import source.transpiler.Extended;
 import source.transpiler.PrefixExtension;
@@ -76,6 +73,7 @@ public class TranspilerTests extends AbstractTest {
 	private File outDir;
 	private File gameDir;
 	private File calculusDir;
+	private Util util;
 
 	@Before
 	public void init() throws Throwable {
@@ -83,79 +81,8 @@ public class TranspilerTests extends AbstractTest {
 		gameDir = new File(TEST_DIRECTORY_NAME + "/" + Ball.class.getPackage().getName().replace(".", "/"));
 		calculusDir = new File(TEST_DIRECTORY_NAME + "/" + MathApi.class.getPackage().getName().replace(".", "/"));
 		FileUtils.deleteQuietly(outDir);
-	}
 
-	@Ignore
-	@Test
-	public void testTranspilerWatchMode() {
-		TestTranspilationHandler logHandler = new TestTranspilationHandler();
-		try {
-			File overload = getSourceFile(Overload.class).getJavaFile();
-			File abstractClass = getSourceFile(AbstractClass.class).getJavaFile();
-			JSweetTranspiler transpiler = new JSweetTranspiler(new JSweetFactory());
-			transpiler.setTscWatchMode(true);
-			transpiler.setGenerateSourceMaps(true);
-			long t = System.currentTimeMillis();
-			transpiler.transpile(logHandler, new SourceFile(overload), new SourceFile(abstractClass));
-			t = System.currentTimeMillis() - t;
-			assertEquals("There should be no problems", 0, logHandler.reportedProblems.size());
-			assertTrue("Wrong transpiler state", transpiler.isTscWatchMode());
-			assertEquals("Wrong transpiler state", 2, transpiler.getWatchedFiles().length);
-			assertEquals("Wrong transpiler state", overload, transpiler.getWatchedFile(overload).getJavaFile());
-
-			Thread.sleep(Math.max(4000, t * 5));
-
-			assertTrue("File not generated", transpiler.getWatchedFile(overload).getJsFile().exists());
-
-			long ts1 = transpiler.getWatchedFile(overload).getJsFileLastTranspiled();
-
-			transpiler.getWatchedFile(overload).getTsFile().setLastModified(System.currentTimeMillis());
-
-			Thread.sleep(Math.max(2000, t * 4));
-
-			assertTrue("File not regenerated", transpiler.getWatchedFile(overload).getJsFileLastTranspiled() != ts1);
-
-			transpiler.transpile(logHandler, new SourceFile(overload));
-			assertEquals("There should be no problems", 0, logHandler.reportedProblems.size());
-			assertTrue("Wrong transpiler state", transpiler.isTscWatchMode());
-			assertEquals("Wrong transpiler state", 2, transpiler.getWatchedFiles().length);
-			assertEquals("Wrong transpiler state", overload, transpiler.getWatchedFile(overload).getJavaFile());
-
-			Thread.sleep(Math.max(2000, t * 4));
-
-			assertTrue("File not regenerated", transpiler.getWatchedFile(overload).getJsFileLastTranspiled() != ts1);
-
-			transpiler.resetTscWatchMode();
-
-			transpiler.transpile(logHandler, new SourceFile(overload));
-			assertEquals("There should be no problems", 0, logHandler.reportedProblems.size());
-			assertTrue("Wrong transpiler state", transpiler.isTscWatchMode());
-			assertEquals("Wrong transpiler state", 1, transpiler.getWatchedFiles().length);
-			assertEquals("Wrong transpiler state", overload, transpiler.getWatchedFile(overload).getJavaFile());
-
-			Thread.sleep(Math.max(1000, t * 2));
-
-			assertTrue("File not regenerated", transpiler.getWatchedFile(overload).getJsFileLastTranspiled() != ts1);
-
-			transpiler.setTscWatchMode(false);
-			SourceFile sf = new SourceFile(overload);
-			transpiler.transpile(logHandler, sf);
-			assertEquals("There should be no problems", 0, logHandler.reportedProblems.size());
-			assertTrue("Wrong transpiler state", !transpiler.isTscWatchMode());
-			assertTrue("Wrong transpiler state", transpiler.getWatchedFiles() == null);
-
-			ts1 = sf.getJsFileLastTranspiled();
-
-			sf.getTsFile().setLastModified(System.currentTimeMillis());
-
-			Thread.sleep(Math.max(1000, t * 2));
-
-			assertTrue("File regenerated", sf.getJsFileLastTranspiled() == ts1);
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail("Exception occured while running test");
-		}
+		util = transpilerTest().getTranspiler().getContext().util;
 	}
 
 	@Test
@@ -174,14 +101,15 @@ public class TranspilerTests extends AbstractTest {
 
 		assertTrue(process.exitValue() == 0);
 		files.clear();
-		Util.addFiles(".ts", outDir, files);
+
+		util.addFiles(".ts", outDir, files);
 		assertTrue(files.size() > 1);
 		assertTrue(files.stream().anyMatch(f -> f.getName().equals("UselessClass.ts")));
 		files.clear();
-		Util.addFiles(".js", outDir, files);
+		util.addFiles(".js", outDir, files);
 		assertTrue(files.size() > 1);
 		files.clear();
-		Util.addFiles(".js.map", outDir, files);
+		util.addFiles(".js.map", outDir, files);
 		assertTrue(files.size() > 1);
 
 		FileUtils.deleteQuietly(outDir);
@@ -198,14 +126,14 @@ public class TranspilerTests extends AbstractTest {
 
 		assertTrue(process.exitValue() == 0);
 		files.clear();
-		Util.addFiles(".ts", outDir, files);
+		util.addFiles(".ts", outDir, files);
 		assertTrue(files.size() > 1);
 		assertFalse(files.stream().anyMatch(f -> f.getName().equals("UselessClass.ts")));
 		files.clear();
-		Util.addFiles(".js", outDir, files);
+		util.addFiles(".js", outDir, files);
 		assertTrue(files.size() > 1);
 		files.clear();
-		Util.addFiles(".js.map", outDir, files);
+		util.addFiles(".js.map", outDir, files);
 		assertTrue(files.size() > 1);
 
 		FileUtils.deleteQuietly(outDir);
@@ -223,7 +151,7 @@ public class TranspilerTests extends AbstractTest {
 
 		assertTrue(process.exitValue() == 0);
 		files.clear();
-		Util.addFiles(".ts", outDir, files);
+		util.addFiles(".ts", outDir, files);
 		assertTrue(files.size() == 3);
 		assertTrue(files.stream().anyMatch(f -> f.getName().equals("UselessClass.ts")));
 
@@ -240,7 +168,7 @@ public class TranspilerTests extends AbstractTest {
 
 		assertTrue(process.exitValue() == 0);
 		files.clear();
-		Util.addFiles(".ts", outDir, files);
+		util.addFiles(".ts", outDir, files);
 		assertTrue(files.size() == 3);
 		assertTrue(files.stream().anyMatch(f -> f.getName().equals("UselessClass.ts")));
 
@@ -257,7 +185,7 @@ public class TranspilerTests extends AbstractTest {
 
 		assertTrue(process.exitValue() == 0);
 		files.clear();
-		Util.addFiles(".ts", outDir, files);
+		util.addFiles(".ts", outDir, files);
 		assertTrue(files.size() == 3);
 		assertTrue(files.stream().anyMatch(f -> f.getName().equals("UselessClass.ts")));
 
@@ -282,7 +210,7 @@ public class TranspilerTests extends AbstractTest {
 
 		assertTrue(process.exitValue() == 0);
 		LinkedList<File> files = new LinkedList<>();
-		Util.addFiles(".ts", outDir, files);
+		util.addFiles(".ts", outDir, files);
 		assertTrue("cant find useless class in " + files,
 				files.stream().anyMatch(f -> f.getName().equals("UselessClass.ts")));
 		assertTrue("cant find MathApi class in " + files,
@@ -476,7 +404,8 @@ public class TranspilerTests extends AbstractTest {
 	public void testConfigurationFile() {
 		SourceFile f = getSourceFile(CanvasDrawing.class);
 		File configurationFile = new File(f.getJavaFile().getParentFile(), "configuration-nobundle.json");
-		TranspilerTestRunner transpilerTest = new TranspilerTestRunner(configurationFile, getCurrentTestOutDir(), new JSweetFactory());
+		TranspilerTestRunner transpilerTest = new TranspilerTestRunner(configurationFile, getCurrentTestOutDir(),
+				new JSweetFactory());
 		assertTrue(transpilerTest.getTranspiler().getHeaderFile().getPath().endsWith("header.txt"));
 		assertFalse(transpilerTest.getTranspiler().isBundle());
 		transpilerTest.transpile(logHandler -> {

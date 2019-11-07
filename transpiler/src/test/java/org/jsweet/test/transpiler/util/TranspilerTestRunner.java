@@ -76,7 +76,7 @@ public class TranspilerTestRunner {
 			File baseTsOutputDir, //
 			JSweetFactory factory) {
 		this.baseTsOutputDir = baseTsOutputDir;
-		
+
 		boolean verbose = System.getenv("JSWEET_VERBOSE") == null
 				|| BooleanUtils.toBoolean(System.getenv("JSWEET_VERBOSE"));
 
@@ -209,6 +209,10 @@ public class TranspilerTestRunner {
 			}
 		}
 
+	}
+
+	public void close() throws Exception {
+		transpiler.close();
 	}
 
 }

@@ -944,9 +944,9 @@ public class Util {
 	 * @return the '/'-separated path
 	 * @see #getRelativePath(String, String)
 	 */
-	public String getRelativePath(PackageElement fromSymbol, PackageElement toSymbol) {
-		return getRelativePath("/" + fromSymbol.getQualifiedName().toString().replace('.', '/'),
-				"/" + toSymbol.getQualifiedName().toString().replace('.', '/'));
+	public String getRelativePath(Element fromSymbol, Element toSymbol) {
+		return getRelativePath("/" + getQualifiedName(fromSymbol).replace('.', '/'),
+				"/" + getQualifiedName(toSymbol).replace('.', '/'));
 	}
 
 	/**
@@ -1523,7 +1523,7 @@ public class Util {
 	 * 100% coverage we would need a much more complicated implementation that is
 	 * probably not worth it.
 	 */
-	public List<ClassTree> getSortedClassDeclarations(List<Tree> decls, CompilationUnitTree compilationUnit) {
+	public List<ClassTree> getSortedClassDeclarations(List<? extends Tree> decls, CompilationUnitTree compilationUnit) {
 		// return (List<ClassTree>)(Object)decls;
 		List<ClassTree> classDecls = decls.stream().filter(d -> d instanceof ClassTree).map(d -> (ClassTree) d)
 				.collect(Collectors.toList());
@@ -1911,7 +1911,7 @@ public class Util {
 
 				binaryTreeOperatorField = Stream
 						.of(Class.forName("com.sun.tools.javac.tree.JCTree").getDeclaredClasses())
-						.filter(innerClass -> innerClass.getSimpleName().equals("JCBinary")) //
+						.filter(innerClass -> innerClass.getSimpleName().equals("BinaryTree")) //
 						.findFirst().get() //
 						.getField("operator");
 

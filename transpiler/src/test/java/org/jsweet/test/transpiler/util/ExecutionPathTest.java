@@ -4,19 +4,17 @@ import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
 
 import java.io.File;
 import java.util.List;
 
 import org.jsweet.test.transpiler.AbstractTest;
 import org.jsweet.test.transpiler.TestTranspilationHandler;
-import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetFactory;
-import org.jsweet.transpiler.JSweetOptions;
 import org.jsweet.transpiler.JSweetTranspiler;
 import org.jsweet.transpiler.util.ErrorCountTranspilationHandler;
 import org.jsweet.transpiler.util.Util;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -39,23 +37,29 @@ import source.syntax.ExecutionPaths;
 @SuppressWarnings("unchecked")
 public class ExecutionPathTest extends AbstractTest {
 
-	private ClassTree executionPathClassDecl;
-	
 	private Util util;
+	private JSweetTranspiler transpiler;
+	
+	private ClassTree executionPathClassDecl;
 
 	@Before
 	public void setUp() throws Throwable {
-		JSweetTranspiler transpiler = new JSweetTranspiler(new JSweetFactory());
+		transpiler = new JSweetTranspiler(new JSweetFactory());
 		TestTranspilationHandler testTranspilationHandler = new TestTranspilationHandler();
 		List<File> javaFiles = asList(getSourceFile(ExecutionPaths.class).getJavaFile());
 		System.out.println("java files = " + javaFiles);
 
 		List<CompilationUnitTree> compilUnits = transpiler.prepareForJavaFiles(javaFiles,
-				new ErrorCountTranspilationHandler(testTranspilationHandler));
+				new ErrorCountTranspilationHandler(testTranspilationHandler)).compilationUnits;
 		util = transpiler.getContext().util;
 		List<ClassTree> typeDeclarations = util.findTypeDeclarationsInCompilationUnits(compilUnits);
 		System.out.println("types=" + typeDeclarations.size());
 		executionPathClassDecl = typeDeclarations.get(0);
+	}
+
+	@After
+	public void tearDown() throws Exception {
+		transpiler.close();
 	}
 
 	@Test

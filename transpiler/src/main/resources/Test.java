@@ -4,7 +4,7 @@ import static pouet.zou.Test3.you;
 import java.util.ArrayList;
 import java.util.List;
 
-class Toto {
+class Toto<T, V> {
 }
 
 class Pichade {
@@ -30,7 +30,7 @@ public class Test extends Pichade {
 
 	void blah() {
 		this.x = 5;
-		this.toto = new Toto();
+		this.toto = new Toto<String, Boolean>();
 
 		System.out.println(this.x);
 

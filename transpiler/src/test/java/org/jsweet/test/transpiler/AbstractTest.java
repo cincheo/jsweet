@@ -43,6 +43,7 @@ import org.jsweet.transpiler.SourceFile;
 import org.jsweet.transpiler.util.ConsoleTranspilationHandler;
 import org.jsweet.transpiler.util.ErrorCountTranspilationHandler;
 import org.jsweet.transpiler.util.EvaluationResult;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestName;
@@ -87,7 +88,7 @@ public class AbstractTest {
 	private TranspilerTestRunner transpilerTest;
 
 	protected static final String TMPOUT_DIR = "tempOut";
-	
+
 	protected Types types() {
 		return transpilerTest.types();
 	}
@@ -108,6 +109,11 @@ public class AbstractTest {
 		File baseTsOutDir = getCurrentTestOutDir();
 		FileUtils.deleteQuietly(baseTsOutDir);
 		transpilerTest = new TranspilerTestRunner(baseTsOutDir, new JSweetFactory());
+	}
+
+	@After
+	public void tearDownAbstractTest() throws Exception {
+		transpilerTest.close();
 	}
 
 	protected File getCurrentTestOutDir() {

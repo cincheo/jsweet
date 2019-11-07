@@ -28,6 +28,7 @@ import java.util.function.Consumer;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Name;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
@@ -443,6 +444,11 @@ public abstract class AbstractTreeScanner extends TreeScanner<Void, Trees> {
 	@SuppressWarnings("unchecked")
 	protected <T extends Element> T toElement(Tree tree) {
 		return (T) context.trees.getElement(context.trees.getPath(getCompilationUnit(), tree));
+	}
+	
+	protected TypeMirror toType(Tree tree) {
+		Element element = toElement(tree);
+		return element == null ? null : element.asType();
 	}
 
 }

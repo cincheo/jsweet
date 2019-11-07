@@ -123,7 +123,7 @@ public class ApiTests extends AbstractTest {
 			assertTrue(t1 - t0 >= PromisesAsyncAwait.WAIT_BETWEEN_STEPS_MS);
 			assertTrue(t2 - t1 >= PromisesAsyncAwait.WAIT_BETWEEN_STEPS_MS);
 
-			assertEquals(new Integer(42), result.get("r1"));
+			assertEquals(Integer.valueOf(42), result.get("r1"));
 			assertEquals("my answer", result.get("r2"));
 			assertEquals("supermessage", result.get("e"));
 
@@ -139,7 +139,7 @@ public class ApiTests extends AbstractTest {
 			assertTrue(t1 - t0 >= PromisesAsyncAwait.WAIT_BETWEEN_STEPS_MS);
 			assertTrue(t2 - t1 >= PromisesAsyncAwait.WAIT_BETWEEN_STEPS_MS);
 
-			assertEquals(new Integer(42), result.get("2_r1"));
+			assertEquals(Integer.valueOf(42), result.get("2_r1"));
 			assertEquals("my answer", result.get("2_r2"));
 			assertEquals("supermessage", result.get("2_e"));
 			
