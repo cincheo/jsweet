@@ -446,9 +446,10 @@ public abstract class AbstractTreeScanner extends TreeScanner<Void, Trees> {
 		return (T) context.trees.getElement(context.trees.getPath(getCompilationUnit(), tree));
 	}
 	
-	protected TypeMirror toType(Tree tree) {
+	@SuppressWarnings("unchecked")
+	protected <T extends TypeMirror> T toType(Tree tree) {
 		Element element = toElement(tree);
-		return element == null ? null : element.asType();
+		return element == null ? null : (T) element.asType();
 	}
 
 }

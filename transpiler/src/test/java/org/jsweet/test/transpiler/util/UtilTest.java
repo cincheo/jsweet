@@ -29,6 +29,7 @@ import org.junit.Test;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.VariableTree;
 
@@ -319,5 +320,10 @@ public class UtilTest extends AbstractTest {
 	private BinaryTree extractBinaryFromSingleLineTestMethod(MethodTree method) {
 		VariableTree var = (VariableTree) method.getBody().getStatements().get(0);
 		return (BinaryTree) var.getInitializer();
+	}
+
+	private LambdaExpressionTree extractLambdaFromSingleLineTestMethod(MethodTree method) {
+		VariableTree var = (VariableTree) method.getBody().getStatements().get(0);
+		return (LambdaExpressionTree) var.getInitializer();
 	}
 }

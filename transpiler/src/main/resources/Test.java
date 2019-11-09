@@ -11,6 +11,11 @@ class Pichade {
 
 }
 
+@interface Niec {
+	String foo();
+}
+
+@Niec(foo = "bar")
 public class Test extends Pichade {
 
 	static class Zozoz {
@@ -18,6 +23,7 @@ public class Test extends Pichade {
 	}
 
 	public Test() {
+		Runnable r = () -> System.out.println("yo");
 	}
 
 	private int x;

@@ -2,6 +2,7 @@ package first;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class Test  {
 	
@@ -32,5 +33,12 @@ public class Test  {
 
 	void minusDouble() {
 		Object o = 5.0 - int2;
+	}
+	
+	public Test() {
+	}
+	
+	void isMethodTestMethod() {
+		Runnable r = () -> System.out.println("blop");
 	}
 }
