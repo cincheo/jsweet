@@ -14,6 +14,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -81,6 +82,25 @@ public class UtilTest extends AbstractTest {
 	public void testIsStringType() throws Exception {
 		TypeMirror stringType = util.getType(String.class);
 		assertTrue(util.isStringType(stringType));
+	}
+
+
+	@Test
+	public void testIsStringTypeOnOtherClass() throws Exception {
+		TypeMirror stringType = util.getType(Object.class);
+		assertFalse(util.isStringType(stringType));
+	}
+
+	@Test
+	public void testIsVoidType() throws Exception {
+		TypeMirror type = util.getType(Void.class);
+		assertTrue(util.isVoidType(type));
+	}
+
+	@Test
+	public void testIsVoidTypeOnOtherClass() throws Exception {
+		TypeMirror type = util.getType(int.class);
+		assertFalse(util.isVoidType(type));
 	}
 
 	@Test

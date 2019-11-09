@@ -1106,6 +1106,10 @@ public class Util {
 		return isType(type, String.class);
 	}
 
+	public boolean isVoidType(TypeMirror type) {
+		return isType(type, Void.class) || type.getKind() == TypeKind.VOID;
+	}
+
 	/**
 	 * Returns true if given type is the type of given class instance
 	 */
@@ -1804,7 +1808,7 @@ public class Util {
 	public long getStartPosition(Tree tree, CompilationUnitTree compilationUnit) {
 		return sourcePositions().getStartPosition(compilationUnit, tree);
 	}
-	
+
 	public SourcePosition getSourcePosition(Tree tree, CompilationUnitTree compilationUnit) {
 		return getSourcePosition(tree, null, compilationUnit);
 	}
@@ -1915,7 +1919,7 @@ public class Util {
 
 				binaryTreeOperatorField = Stream
 						.of(Class.forName("com.sun.tools.javac.tree.JCTree").getDeclaredClasses())
-						.filter(innerClass -> innerClass.getSimpleName().equals("BinaryTree")) //
+						.filter(innerClass -> innerClass.getSimpleName().equals("JCBinary")) //
 						.findFirst().get() //
 						.getField("operator");
 

@@ -443,7 +443,7 @@ public abstract class AbstractTreeScanner extends TreeScanner<Void, Trees> {
 
 	@SuppressWarnings("unchecked")
 	protected <T extends Element> T toElement(Tree tree) {
-		return (T) context.trees.getElement(context.trees.getPath(getCompilationUnit(), tree));
+		return tree == null ? null : (T) context.trees.getElement(context.trees.getPath(getCompilationUnit(), tree));
 	}
 	
 	@SuppressWarnings("unchecked")
