@@ -1801,19 +1801,23 @@ public class Util {
 		return false;
 	}
 
-	public SourcePosition getSourcePosition(CompilationUnitTree compilationUnit, Tree tree) {
-		return getSourcePosition(compilationUnit, tree, null);
+	public long getStartPosition(Tree tree, CompilationUnitTree compilationUnit) {
+		return sourcePositions().getStartPosition(compilationUnit, tree);
+	}
+	
+	public SourcePosition getSourcePosition(Tree tree, CompilationUnitTree compilationUnit) {
+		return getSourcePosition(tree, null, compilationUnit);
 	}
 
-	public SourcePosition getSourcePosition(CompilationUnitTree compilationUnit, Tree tree,
-			Name nameOffsetForEndPosition) {
+	public SourcePosition getSourcePosition(Tree tree, Name nameOffsetForEndPosition,
+			CompilationUnitTree compilationUnit) {
 		// map offsets to line numbers in source file
 		LineMap lineMap = compilationUnit.getLineMap();
 		if (lineMap == null) {
 			return null;
 		}
 		// find offset of the specified AST node
-		long startPosition = sourcePositions().getStartPosition(compilationUnit, tree);
+		long startPosition = getStartPosition(tree, compilationUnit);
 		long endPosition = sourcePositions().getEndPosition(compilationUnit, tree);
 		if (endPosition == -1) {
 			endPosition = startPosition;

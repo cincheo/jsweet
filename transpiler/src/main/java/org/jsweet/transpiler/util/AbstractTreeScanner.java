@@ -88,7 +88,7 @@ public abstract class AbstractTreeScanner extends TreeScanner<Void, Trees> {
 			if (compilationUnit == null) {
 				logHandler.report(problem, null, problem.getMessage(params));
 			} else {
-				SourcePosition sourcePosition = util().getSourcePosition(compilationUnit, tree, name);
+				SourcePosition sourcePosition = util().getSourcePosition(tree, name, compilationUnit);
 				logHandler.report(problem, sourcePosition, problem.getMessage(params));
 			}
 		}
@@ -268,7 +268,7 @@ public abstract class AbstractTreeScanner extends TreeScanner<Void, Trees> {
 			str = str.substring(0, Math.min(str.length() - 1, 30));
 			System.err.print("   [" + stack.get(i).getClass().getSimpleName() + "] " + str
 					+ (str.length() < intialLength ? "..." : "") + " ("
-					+ util().getSourcePosition(compilationUnit, tree));
+					+ util().getSourcePosition(tree, compilationUnit));
 			System.err.println(")");
 		}
 	}

@@ -55,6 +55,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
@@ -90,6 +91,7 @@ import org.jsweet.transpiler.util.JSDoc;
 import org.jsweet.transpiler.util.Util;
 
 import com.sun.source.tree.ArrayTypeTree;
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.BreakTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -320,15 +322,27 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 		private boolean decoratorScope = false;
 
+		private final JSweetContext context;
+		private final CompilationUnitTree compilationUnit;
+
+		private ClassScope(JSweetContext context, CompilationUnitTree compilationUnit) {
+			this.context = context;
+			this.compilationUnit = compilationUnit;
+		}
+
 		public String getName() {
 			return name;
 		}
 
-		protected MethodTree getMainMethod() {
+		public MethodTree getMainMethod() {
 			return mainMethod;
 		}
 
-		protected boolean isInterfaceScope() {
+		public ExecutableElement getMainMethodElement() {
+			return context.util.getElementForTree(mainMethod, compilationUnit);
+		}
+
+		public boolean isInterfaceScope() {
 			return interfaceScope;
 		}
 
@@ -462,7 +476,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 * @see #exitScope()
 	 */
 	public void enterScope() {
-		scope.push(new ClassScope());
+		scope.push(new ClassScope(context, getCompilationUnit()));
 	}
 
 	/**
@@ -614,7 +628,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 * Prints a compilation unit tree.
 	 */
 	@Override
-	public Void visitCompilationUnit(CompilationUnitTree compilationUnit, Trees trees) {
+	public Void visitCompilationUnit(final CompilationUnitTree compilationUnit, final Trees trees) {
 
 		PackageElement packageElement = toElement(compilationUnit.getPackage());
 		if (context.isPackageErased(packageElement)) {
@@ -697,7 +711,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 
 			@Override
-			public Void visitIdentifier(IdentifierTree identifier, Trees trees) {
+			public Void visitIdentifier(final IdentifierTree identifier, final Trees trees) {
 				PackageElement compilationUnitPackageElement = toElement(compilationUnit.getPackage());
 				Element identifierElement = toElement(identifier);
 				if (identifierElement instanceof PackageElement) {
@@ -753,7 +767,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 
 			@Override
-			public Void visitMethodInvocation(MethodInvocationTree invocation, Trees trees) {
+			public Void visitMethodInvocation(final MethodInvocationTree invocation, final Trees trees) {
 				PackageElement compilationUnitPackageElement = toElement(compilationUnit.getPackage());
 
 				// TODO: same for static variables
@@ -1341,7 +1355,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	}
 
 	@Override
-	public Void visitClass(ClassTree classTree, Trees trees) {
+	public Void visitClass(final ClassTree classTree, final Trees trees) {
 		TypeElement classTypeElement = toElement(classTree);
 		if (context.isIgnored(classTree, compilationUnit)) {
 			getAdapter().afterType(classTypeElement);
@@ -1650,13 +1664,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				Element memberElement = toElement(def);
 				if (memberElement != null && (def instanceof MethodTree || def instanceof VariableTree)
 						&& memberElement.getModifiers().contains(Modifier.STATIC)) {
-				continue;
+					continue;
 				}
 			}
 			if (getScope().interfaceScope && def instanceof MethodTree) {
 				// object method should not be defined otherwise they will have
 				// to be implemented
-				if (util().isOverridingBuiltInJavaObjectMethod(((MethodTree) def).sym)) {
+				if (util().isOverridingBuiltInJavaObjectMethod(toElement(def))) {
 					continue;
 				}
 			}
@@ -1665,12 +1679,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				continue;
 			}
 			if (def instanceof VariableTree) {
-				if (getScope().enumScope && ((VariableTree) def).sym.getKind() != ElementKind.ENUM_CONSTANT) {
+				if (getScope().enumScope && toElement(def).getKind() != ElementKind.ENUM_CONSTANT) {
 					getScope().isComplexEnum = true;
 					continue;
 				}
 				if (!((VariableTree) def).getModifiers().getFlags().contains(Modifier.STATIC)
-						&& ((VariableTree) def).init == null) {
+						&& ((VariableTree) def).getInitializer() == null) {
 					hasUninitializedFields = true;
 				}
 			}
@@ -1703,20 +1717,27 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (!getScope().interfaceScope && classTree.getModifiers().getFlags().contains(Modifier.ABSTRACT)) {
 			List<ExecutableElement> methods = new ArrayList<>();
 			for (TypeMirror t : implementedInterfaces) {
-				context.grabMethodsToBeImplemented(methods, t.tsym);
+				context.grabMethodsToBeImplemented(methods, (TypeElement) types().asElement(t));
 			}
-			methods.sort((m1, m2) -> m1.getSimpleName().compareTo(m2.getSimpleName()));
-			Map<Name, String> signatures = new HashMap<>();
+
+			methods.sort( //
+					(ExecutableElement m1, ExecutableElement m2) //
+					-> m1.getSimpleName().toString().compareTo(m2.getSimpleName().toString()));
+
+			Map<String, String> signatures = new HashMap<>();
 			for (ExecutableElement meth : methods) {
-				if (meth.type instanceof MethodType && !context.hasAnnotationType(meth, JSweetConfig.ANNOTATION_ERASED)
-						&& !isMappedOrErasedType(meth.owner)) {
+				if (meth.getKind() == ElementKind.METHOD
+						&& !context.hasAnnotationType(meth, JSweetConfig.ANNOTATION_ERASED)
+						&& !isMappedOrErasedType(util().getParentElement(meth, TypeElement.class))) {
+
 					// do not generate default abstract method for already
 					// generated methods
-					if (getScope().generatedMethodNames.contains(meth.name.toString())) {
+					if (getScope().generatedMethodNames.contains(meth.getSimpleName().toString())) {
 						continue;
 					}
-					ExecutableElement s = Util.findMethodDeclarationInType(classTypeElement,
-							meth.getSimpleName().toString(), (MethodType) meth.type, true);
+					ExecutableType methodType = (ExecutableType) meth.asType();
+					ExecutableElement s = util().findMethodDeclarationInType(classTypeElement,
+							meth.getSimpleName().toString(), methodType, true);
 					if (Object.class.getName().equals(s.getEnclosingElement().toString())) {
 						s = null;
 					}
@@ -1733,16 +1754,17 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					if (printAbstractDeclaration) {
 						Overload o = context.getOverload(classTypeElement, meth);
 						if (o != null && o.methods.size() > 1 && !o.isValid) {
-							if (!meth.type.equals(o.coreMethod.type)) {
+							if (!methodType.equals(toType(o.coreMethod))) {
 								printAbstractDeclaration = false;
 							}
 						}
 					}
 					if (s == null || printAbstractDeclaration) {
-						String signature = getContext().types.erasure(meth.type).toString();
-						if (!(signatures.containsKey(meth.name) && signatures.get(meth.name).equals(signature))) {
+						String signature = getContext().types.erasure(methodType).toString();
+						String methodName = meth.getSimpleName().toString();
+						if (!(signatures.containsKey(methodName) && signatures.get(methodName).equals(signature))) {
 							printAbstractMethodDeclaration(meth);
-							signatures.put(meth.name, signature);
+							signatures.put(methodName, signature);
 						}
 					}
 				}
@@ -1763,8 +1785,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 				int anonymousClassIndex = scope.size() > 1 ? getScope(1).anonymousClasses.indexOf(classTree) : -1;
 				if (anonymousClassIndex != -1) {
-					for (int i = 0; i < getScope(1).anonymousClassesConstructors.get(anonymousClassIndex).args
-							.length(); i++) {
+					for (int i = 0; i < getScope(1).anonymousClassesConstructors.get(anonymousClassIndex).getArguments()
+							.size(); i++) {
 						if (!hasArgs) {
 							hasArgs = true;
 						} else {
@@ -1783,29 +1805,32 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 
 				print(") {").startIndent().println();
-				if (classTree.extending != null && !getScope().removedSuperclass
-						&& !context.isInterface(classTree.extending.type.tsym)) {
-					printIndent().print("super(");
-					boolean hasArg = false;
-					if (getScope().innerClassNotStatic) {
-						TypeElement s = classTree.extending.type.tsym;
-						if (s.getEnclosingElement() instanceof TypeElement && !s.isStatic()) {
-							print(PARENT_CLASS_FIELD_NAME);
-							hasArg = true;
-						}
-					}
-					if (anonymousClassIndex != -1) {
-						for (int i = 0; i < getScope(1).anonymousClassesConstructors.get(anonymousClassIndex).args
-								.length(); i++) {
-							if (hasArg) {
-								print(", ");
-							} else {
+				if (classTree.getExtendsClause() != null && !getScope().removedSuperclass) {
+					TypeElement superTypeElement = toElement(classTree.getExtendsClause());
+					if (!context.isInterface(superTypeElement)) {
+						printIndent().print("super(");
+						boolean hasArg = false;
+						if (getScope().innerClassNotStatic) {
+							if (superTypeElement.getEnclosingElement() instanceof TypeElement //
+									&& !superTypeElement.getModifiers().contains(Modifier.STATIC)) {
+								print(PARENT_CLASS_FIELD_NAME);
 								hasArg = true;
 							}
-							print("__arg" + i);
 						}
+						if (anonymousClassIndex != -1) {
+							for (int i = 0; i < getScope(1).anonymousClassesConstructors.get(anonymousClassIndex)
+									.getArguments().size(); i++) {
+								if (hasArg) {
+									print(", ");
+								} else {
+									hasArg = true;
+								}
+								print("__arg" + i);
+							}
+						}
+						print(");").println();
 					}
-					print(");").println();
+
 				}
 				printInstanceInitialization(classTree, null);
 				endIndent().printIndent().print("}").println().println();
@@ -1826,19 +1851,22 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 		if (!globals) {
 			endIndent().printIndent().print("}");
+
 			if (!getScope().interfaceScope && !getScope().declareClassScope && !getScope().enumScope
-					&& !(getScope().enumWrapperClassScope && classTypeElement.isAnonymous())) {
-				if (!classTypeElement.isAnonymous()) {
+					&& !(getScope().enumWrapperClassScope
+							&& classTypeElement.getNestingKind() == NestingKind.ANONYMOUS)) {
+				if (classTypeElement.getNestingKind() != NestingKind.ANONYMOUS) {
 					println().printIndent()
-							.print(getScope().enumWrapperClassScope ? classTypeElement.getSimpleName().toString() : name)
+							.print(getScope().enumWrapperClassScope ? classTypeElement.getSimpleName().toString()
+									: name)
 							.print("[\"" + CLASS_NAME_IN_CONSTRUCTOR + "\"] = ")
 							.print("\"" + classTypeElement.getQualifiedName().toString() + "\";");
 				}
 				Set<String> interfaces = new HashSet<>();
 				context.grabSupportedInterfaceNames(interfaces, classTypeElement);
 				if (!interfaces.isEmpty()) {
-					println().printIndent()
-							.print(getScope().enumWrapperClassScope ? classTypeElement.getSimpleName().toString() : name)
+					println().printIndent().print(
+							getScope().enumWrapperClassScope ? classTypeElement.getSimpleName().toString() : name)
 							.print("[\"" + INTERFACES_FIELD_NAME + "\"] = ");
 					print("[");
 					for (String itf : interfaces) {
@@ -1856,18 +1884,20 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		// enum class for complex enum
 		if (getScope().isComplexEnum) {
 			println().println().printIndent();
-			visitClassDef(classTree);
+			visitClass(classTree, trees);
 		}
 
 		boolean nameSpace = false;
 
 		if (getScope().interfaceScope) {
 			// print static members of interfaces
-			for (Tree def : classTree.defs) {
-				if ((def instanceof MethodTree && ((MethodTree) def).sym.isStatic())
-						|| (def instanceof VariableTree && ((VariableTree) def).sym.isStatic())) {
-					if (def instanceof VariableTree && context.hasAnnotationType(((VariableTree) def).sym,
-							ANNOTATION_STRING_TYPE, JSweetConfig.ANNOTATION_ERASED)) {
+			for (Tree def : classTree.getMembers()) {
+				Element memberElement = toElement(def);
+				if ((def instanceof MethodTree || def instanceof VariableTree)
+						&& memberElement.getModifiers().contains(Modifier.STATIC)) {
+
+					if (def instanceof VariableTree && context.hasAnnotationType(memberElement, ANNOTATION_STRING_TYPE,
+							JSweetConfig.ANNOTATION_ERASED)) {
 						continue;
 					}
 					if (!nameSpace) {
@@ -1899,10 +1929,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		// inner, anonymous and local classes in a namespace
 		// ======================
 		// print valid inner classes
-		for (Tree def : Util.getSortedClassDeclarations(classTree.defs)) {
+		for (Tree def : util().getSortedClassDeclarations(classTree.getMembers(), compilationUnit)) {
 			if (def instanceof ClassTree) {
 				ClassTree cdef = (ClassTree) def;
-				if (context.isIgnored(cdef)) {
+				if (context.isIgnored(cdef, compilationUnit)) {
 					continue;
 				}
 				if (!nameSpace) {
@@ -1959,15 +1989,17 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			println().printIndent().print(classTypeElement.getSimpleName().toString())
 					.print("[\"" + ENUM_WRAPPER_CLASS_WRAPPERS + "\"] = [");
 			int index = 0;
-			for (Tree tree : classTree.defs) {
-				if (tree instanceof VariableTree && ((VariableTree) tree).sym.getKind() == ElementKind.ENUM_CONSTANT) {
+			for (Tree tree : classTree.getMembers()) {
+				Element memberElement = toElement(tree);
+
+				if (tree instanceof VariableTree && memberElement.getKind() == ElementKind.ENUM_CONSTANT) {
 					VariableTree varDecl = (VariableTree) tree;
 					// enum fields are not part of the enum auxiliary class but
 					// will initialize the enum values
-					NewClassTree newClass = (NewClassTree) varDecl.init;
+					NewClassTree newClass = (NewClassTree) varDecl.getInitializer();
 					ClassTree clazz = classTree;
 					try {
-						int anonymousClassIndex = getScope().anonymousClasses.indexOf(newClass.def);
+						int anonymousClassIndex = getScope().anonymousClasses.indexOf(newClass.getClassBody());
 						if (anonymousClassIndex >= 0) {
 							print("new ")
 									.print(clazz.getSimpleName().toString() + "." + clazz.getSimpleName().toString()
@@ -1978,11 +2010,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 									.print("(");
 						}
 						print("" + (index++) + ", ");
-						print("\"" + varDecl.sym.name.toString() + "\"");
-						if (!newClass.args.isEmpty()) {
+						print("\"" + memberElement.getSimpleName().toString() + "\"");
+						if (!newClass.getArguments().isEmpty()) {
 							print(", ");
 						}
-						printArgList(null, newClass.args).print(")");
+						printArgList(null, newClass.getArguments()).print(")");
 						print(", ");
 					} catch (Exception e) {
 						logger.error(e.getMessage(), e);
@@ -1994,13 +2026,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 
 		if (getScope().mainMethod != null && getScope().mainMethod.getParameters().size() < 2
-				&& getScope().mainMethod.sym.getEnclosingElement().equals(classTypeElement)) {
+				&& getScope().getMainMethodElement().getEnclosingElement().equals(classTypeElement)) {
 			String mainClassName = getQualifiedTypeName(classTypeElement, globals, true);
 			String mainMethodQualifier = mainClassName;
 			if (!isBlank(mainClassName)) {
 				mainMethodQualifier = mainClassName + ".";
 			}
-			context.entryFiles.add(new File(compilationUnit.sourcefile.getName()));
+			context.entryFiles.add(new File(compilationUnit.getSourceFile().getName()));
 			context.addFooterStatement(mainMethodQualifier + JSweetConfig.MAIN_FUNCTION_NAME + "("
 					+ (getScope().mainMethod.getParameters().isEmpty() ? "" : "null") + ");");
 		}
@@ -2017,7 +2049,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		print("(");
 		if (method.getParameters() != null && !method.getParameters().isEmpty()) {
 			for (VariableElement var : method.getParameters()) {
-				print(var.name.toString()).print("?: any");
+				print(var.getSimpleName().toString()).print("?: any");
 				print(", ");
 			}
 			removeLastChars(2);
@@ -2027,7 +2059,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	}
 
 	private String getTSMethodName(MethodTree methodDecl) {
-		String name = context.getActualName(methodDecl.sym);
+		ExecutableElement methodElement = toElement(methodDecl);
+		String name = context.getActualName(methodElement);
 		switch (name) {
 		case "<init>":
 			return "constructor";
@@ -2051,49 +2084,54 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	private boolean printCoreMethodDelegate = false;
 
 	protected boolean isDebugMode(MethodTree methodDecl) {
+		ExecutableElement methodElement = toElement(methodDecl);
 		return methodDecl != null && !getScope().constructor && context.options.isDebugMode()
-				&& !(context.hasAnnotationType(methodDecl.sym, JSweetConfig.ANNOTATION_NO_DEBUG) || context
-						.hasAnnotationType(methodDecl.sym.getEnclosingElement(), JSweetConfig.ANNOTATION_NO_DEBUG));
+				&& !(context.hasAnnotationType(methodElement, JSweetConfig.ANNOTATION_NO_DEBUG) || context
+						.hasAnnotationType(methodElement.getEnclosingElement(), JSweetConfig.ANNOTATION_NO_DEBUG));
 	}
 
 	private boolean isInterfaceMethod(ClassTree parent, MethodTree method) {
-		return context.isInterface(parent.sym) && !method.sym.isStatic();
+		ExecutableElement methodElement = toElement(method);
+		TypeElement parentElement = toElement(parent);
+		return context.isInterface(parentElement) && !methodElement.getModifiers().contains(Modifier.STATIC);
 	}
 
-	/**
-	 * Prints a method tree.
-	 */
 	@Override
-	public void visitMethodDef(MethodTree methodDecl) {
+	public Void visitMethod(final MethodTree methodTree, final Trees trees) {
+		ExecutableElement methodElement = toElement(methodTree);
 
-		if (context.hasAnnotationType(methodDecl.sym, JSweetConfig.ANNOTATION_ERASED)) {
+		if (context.hasAnnotationType(methodElement, JSweetConfig.ANNOTATION_ERASED)) {
 			// erased elements are ignored
-			return;
+			return null;
 		}
 
 		ClassTree parent = (ClassTree) getParent();
 
-		if (parent != null && methodDecl.pos == parent.pos && !getScope().enumWrapperClassScope) {
-			return;
+		long methodStartPosition = util().getStartPosition(methodTree, getCompilationUnit());
+		Long parentStartPosition = parent != null ? util().getStartPosition(parent, getCompilationUnit()) : null;
+
+		if (parentStartPosition != null && parentStartPosition.equals(methodStartPosition)
+				&& !getScope().enumWrapperClassScope) {
+			return null;
 		}
 
-		if (JSweetConfig.INDEXED_GET_FUCTION_NAME.equals(methodDecl.getName().toString())
-				&& methodDecl.getParameters().size() == 1) {
-			print("[").print(methodDecl.getParameters().head).print("]: ");
-			substituteAndPrintType(methodDecl.restype).print(";");
-			return;
+		if (JSweetConfig.INDEXED_GET_FUCTION_NAME.equals(methodTree.getName().toString())
+				&& methodTree.getParameters().size() == 1) {
+			print("[").print(methodTree.getParameters().get(0)).print("]: ");
+			substituteAndPrintType(methodTree.getReturnType()).print(";");
+			return null;
 		}
 
-		getScope().constructor = methodDecl.sym.isConstructor();
+		getScope().constructor = methodElement.getKind() == ElementKind.CONSTRUCTOR;
 		if (getScope().enumScope) {
 			if (getScope().constructor) {
-				if (parent != null && parent.pos != methodDecl.pos) {
+				if (parentStartPosition != null && parent.pos != methodTree.pos) {
 					getScope().isComplexEnum = true;
 				}
 			} else {
 				getScope().isComplexEnum = true;
 			}
-			return;
+			return null;
 		}
 
 		// do not generate definition if parent class already declares method to avoid
@@ -2103,9 +2141,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				&& parent.getExtendsClause().type instanceof ClassType) {
 			ClassType superClassType = (ClassType) parent.getExtendsClause().type;
 			ExecutableElement superMethod = Util.findMethodDeclarationInType(superClassType.tsym,
-					methodDecl.getName().toString(), (MethodType) methodDecl.type);
+					methodTree.getName().toString(), (MethodType) methodTree.type);
 			if (superMethod != null) {
-				return;
+				return null;
 			}
 		}
 
@@ -2113,14 +2151,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		boolean inOverload = false;
 		boolean inCoreWrongOverload = false;
 		if (parent != null) {
-			overload = context.getOverload(parent.sym, methodDecl.sym);
+			overload = context.getOverload(parent.sym, methodElement);
 			inOverload = overload != null && overload.methods.size() > 1;
 			if (inOverload) {
 				if (!overload.isValid) {
 					if (!printCoreMethodDelegate) {
-						if (overload.coreMethod.equals(methodDecl)) {
+						if (overload.coreMethod.equals(methodTree)) {
 							inCoreWrongOverload = true;
-							if (!isInterfaceMethod(parent, methodDecl) && !methodDecl.sym.isConstructor()
+							if (!isInterfaceMethod(parent, methodTree) && !methodElement.isConstructor()
 									&& parent.sym.equals(overload.coreMethod.sym.getEnclosingElement())) {
 								printCoreMethodDelegate = true;
 								visitMethodDef(overload.coreMethod);
@@ -2128,62 +2166,62 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 								printCoreMethodDelegate = false;
 							}
 						} else {
-							if (methodDecl.sym.isConstructor()) {
-								return;
+							if (methodElement.isConstructor()) {
+								return null;
 							}
 							boolean addCoreMethod = false;
 							addCoreMethod = !overload.printed
 									&& overload.coreMethod.sym.getEnclosingElement() != parent.sym
 									&& (!overload.coreMethod.sym.getModifiers().contains(Modifier.ABSTRACT)
-											|| isInterfaceMethod(parent, methodDecl)
+											|| isInterfaceMethod(parent, methodTree)
 											|| !context.types.isSubtype(parent.sym.type,
 													overload.coreMethod.sym.getEnclosingElement().type));
 							if (!overload.printed && !addCoreMethod && overload.coreMethod.type instanceof MethodType) {
 								addCoreMethod = Util.findMethodDeclarationInType(parent.sym,
-										methodDecl.getName().toString(), (MethodType) overload.coreMethod.type) == null;
+										methodTree.getName().toString(), (MethodType) overload.coreMethod.type) == null;
 							}
 							if (addCoreMethod) {
 								visitMethodDef(overload.coreMethod);
 								overload.printed = true;
-								if (!isInterfaceMethod(parent, methodDecl)) {
+								if (!isInterfaceMethod(parent, methodTree)) {
 									println().println().printIndent();
 								}
 							}
-							if (isInterfaceMethod(parent, methodDecl)) {
-								return;
+							if (isInterfaceMethod(parent, methodTree)) {
+								return null;
 							}
 						}
 					}
 				} else {
-					if (!overload.coreMethod.equals(methodDecl)) {
-						return;
+					if (!overload.coreMethod.equals(methodTree)) {
+						return null;
 					}
 				}
 			}
 		}
 
-		boolean ambient = context.hasAnnotationType(methodDecl.sym, JSweetConfig.ANNOTATION_AMBIENT);
+		boolean ambient = context.hasAnnotationType(methodElement, JSweetConfig.ANNOTATION_AMBIENT);
 
 		if (inOverload && !inCoreWrongOverload && (ambient || isDefinitionScope)) {
 			// do not generate method stubs for definitions
-			return;
+			return null;
 		}
 
-		if (isDebugMode(methodDecl)) {
-			printMethodModifiers(methodDecl, parent, getScope().constructor, inOverload, overload);
-			print(getTSMethodName(methodDecl)).print("(");
-			printArgList(null, methodDecl.params);
+		if (isDebugMode(methodTree)) {
+			printMethodModifiers(methodTree, parent, getScope().constructor, inOverload, overload);
+			print(getTSMethodName(methodTree)).print("(");
+			printArgList(null, methodTree.params);
 			print(") : ");
-			substituteAndPrintType(methodDecl.getReturnType());
+			substituteAndPrintType(methodTree.getReturnType());
 			print(" {").println();
 			startIndent().printIndent();
-			if (!context.types.isSameType(context.symtab.voidType, methodDecl.sym.getReturnType())) {
+			if (!context.types.isSameType(context.symtab.voidType, methodElement.getReturnType())) {
 				print("return ");
 			}
-			print("__debug_exec('" + parent.sym.getQualifiedName() + "', '" + methodDecl.getName() + "', ");
-			if (!methodDecl.params.isEmpty()) {
+			print("__debug_exec('" + parent.sym.getQualifiedName() + "', '" + methodTree.getName() + "', ");
+			if (!methodTree.params.isEmpty()) {
 				print("[");
-				for (VariableTree param : methodDecl.params) {
+				for (VariableTree param : methodTree.params) {
 					print("'" + param.getName() + "', ");
 				}
 				removeLastChars(2);
@@ -2192,16 +2230,16 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				print("undefined");
 			}
 			print(", this, arguments, ");
-			if (methodDecl.sym.isStatic()) {
-				print(methodDecl.sym.getEnclosingElement().getSimpleName().toString());
+			if (methodElement.isStatic()) {
+				print(methodElement.getEnclosingElement().getSimpleName().toString());
 			} else {
 				print("this");
 			}
-			print("." + GENERATOR_PREFIX + getTSMethodName(methodDecl) + "(");
-			for (VariableTree param : methodDecl.params) {
+			print("." + GENERATOR_PREFIX + getTSMethodName(methodTree) + "(");
+			for (VariableTree param : methodTree.params) {
 				print(context.getActualName(param.sym) + ", ");
 			}
-			if (!methodDecl.params.isEmpty()) {
+			if (!methodTree.params.isEmpty()) {
 				removeLastChars(2);
 			}
 			print("));");
@@ -2209,80 +2247,80 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			print("}").println().println().printIndent();
 		}
 
-		print(methodDecl.mods);
+		print(methodTree.mods);
 
-		if (methodDecl.mods.getFlags().contains(Modifier.NATIVE)) {
+		if (methodTree.mods.getFlags().contains(Modifier.NATIVE)) {
 			if (!getScope().declareClassScope && !ambient && !getScope().interfaceScope) {
-				report(methodDecl, methodDecl.name, JSweetProblem.NATIVE_MODIFIER_IS_NOT_ALLOWED, methodDecl.name);
+				report(methodTree, methodTree.name, JSweetProblem.NATIVE_MODIFIER_IS_NOT_ALLOWED, methodTree.name);
 			}
 		} else {
 			if (getScope().declareClassScope && !getScope().constructor && !getScope().interfaceScope
-					&& !methodDecl.mods.getFlags().contains(Modifier.DEFAULT)) {
-				report(methodDecl, methodDecl.name, JSweetProblem.INVALID_METHOD_BODY_IN_INTERFACE, methodDecl.name,
+					&& !methodTree.mods.getFlags().contains(Modifier.DEFAULT)) {
+				report(methodTree, methodTree.name, JSweetProblem.INVALID_METHOD_BODY_IN_INTERFACE, methodTree.name,
 						parent == null ? "<no class>" : parent.name);
 			}
 		}
 
-		if (methodDecl.name.toString().equals("constructor")) {
-			report(methodDecl, methodDecl.name, JSweetProblem.CONSTRUCTOR_MEMBER);
+		if (methodTree.name.toString().equals("constructor")) {
+			report(methodTree, methodTree.name, JSweetProblem.CONSTRUCTOR_MEMBER);
 		}
 		if (parent != null) {
-			VariableElement v = Util.findFieldDeclaration(parent.sym, methodDecl.name);
+			VariableElement v = Util.findFieldDeclaration(parent.sym, methodTree.name);
 			if (v != null && context.getFieldNameMapping(v) == null) {
 				if (isDefinitionScope) {
-					return;
+					return null;
 				} else {
-					report(methodDecl, methodDecl.name, JSweetProblem.METHOD_CONFLICTS_FIELD, methodDecl.name, v.owner);
+					report(methodTree, methodTree.name, JSweetProblem.METHOD_CONFLICTS_FIELD, methodTree.name, v.owner);
 				}
 			}
 		}
-		if (JSweetConfig.MAIN_FUNCTION_NAME.equals(methodDecl.name.toString())
-				&& methodDecl.mods.getFlags().contains(Modifier.STATIC)
-				&& !context.hasAnnotationType(methodDecl.sym, JSweetConfig.ANNOTATION_DISABLED)) {
+		if (JSweetConfig.MAIN_FUNCTION_NAME.equals(methodTree.name.toString())
+				&& methodTree.mods.getFlags().contains(Modifier.STATIC)
+				&& !context.hasAnnotationType(methodElement, JSweetConfig.ANNOTATION_DISABLED)) {
 			// ignore main methods in inner classes
 			if (scope.size() == 1 || (scope.size() == 2 && getScope().enumWrapperClassScope)) {
-				getScope().mainMethod = methodDecl;
+				getScope().mainMethod = methodTree;
 			}
 		}
 
 		boolean globals = parent == null ? false : JSweetConfig.GLOBALS_CLASS_NAME.equals(parent.name.toString());
-		globals = globals || (getScope().interfaceScope && methodDecl.mods.getFlags().contains(Modifier.STATIC));
+		globals = globals || (getScope().interfaceScope && methodTree.mods.getFlags().contains(Modifier.STATIC));
 		if (!(inOverload && !inCoreWrongOverload)) {
-			printDocComment(methodDecl);
+			printDocComment(methodTree);
 		}
 
 		if (parent == null) {
-			printAsyncKeyword(methodDecl);
+			printAsyncKeyword(methodTree);
 
 			print("function ");
 		} else if (globals) {
-			if (getScope().constructor && methodDecl.sym.isPrivate() && methodDecl.getParameters().isEmpty()) {
-				return;
+			if (getScope().constructor && methodElement.isPrivate() && methodTree.getParameters().isEmpty()) {
+				return null;
 			}
 			if (getScope().constructor) {
-				report(methodDecl, methodDecl.name, JSweetProblem.GLOBAL_CONSTRUCTOR_DEF);
-				return;
+				report(methodTree, methodTree.name, JSweetProblem.GLOBAL_CONSTRUCTOR_DEF);
+				return null;
 			}
-			if (context.lookupDecoratorAnnotation((parent.sym.getQualifiedName() + "." + methodDecl.name)
+			if (context.lookupDecoratorAnnotation((parent.sym.getQualifiedName() + "." + methodTree.name)
 					.replace(JSweetConfig.GLOBALS_CLASS_NAME + ".", "")) != null) {
 				if (!getScope().decoratorScope) {
-					return;
+					return null;
 				}
 			}
 
-			if (!methodDecl.mods.getFlags().contains(Modifier.STATIC)) {
-				report(methodDecl, methodDecl.name, JSweetProblem.GLOBALS_CAN_ONLY_HAVE_STATIC_MEMBERS);
-				return;
+			if (!methodTree.mods.getFlags().contains(Modifier.STATIC)) {
+				report(methodTree, methodTree.name, JSweetProblem.GLOBALS_CAN_ONLY_HAVE_STATIC_MEMBERS);
+				return null;
 			}
 
-			if (context.hasAnnotationType(methodDecl.sym, JSweetConfig.ANNOTATION_MODULE)) {
+			if (context.hasAnnotationType(methodElement, JSweetConfig.ANNOTATION_MODULE)) {
 				getContext().addExportedElement(
-						context.getAnnotationValue(methodDecl.sym, JSweetConfig.ANNOTATION_MODULE, String.class, null),
-						methodDecl.sym, getCompilationUnit());
+						context.getAnnotationValue(methodElement, JSweetConfig.ANNOTATION_MODULE, String.class, null),
+						methodElement, getCompilationUnit());
 			}
 
 			if (context.useModules) {
-				if (!methodDecl.mods.getFlags().contains(Modifier.PRIVATE)) {
+				if (!methodTree.mods.getFlags().contains(Modifier.PRIVATE)) {
 					print("export ");
 				}
 			} else {
@@ -2294,26 +2332,26 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				print("declare ");
 			}
 
-			printAsyncKeyword(methodDecl);
+			printAsyncKeyword(methodTree);
 
 			print("function ");
 		} else {
-			printMethodModifiers(methodDecl, parent, getScope().constructor, inOverload, overload);
+			printMethodModifiers(methodTree, parent, getScope().constructor, inOverload, overload);
 
-			printAsyncKeyword(methodDecl);
+			printAsyncKeyword(methodTree);
 
 			if (ambient) {
-				report(methodDecl, methodDecl.name, JSweetProblem.WRONG_USE_OF_AMBIENT, methodDecl.name);
+				report(methodTree, methodTree.name, JSweetProblem.WRONG_USE_OF_AMBIENT, methodTree.name);
 			}
 		}
 		if (parent == null || !context.isFunctionalType(parent.sym)) {
-			if (isDebugMode(methodDecl)) {
+			if (isDebugMode(methodTree)) {
 				print("*").print(GENERATOR_PREFIX);
 			}
 			if (inOverload && !overload.isValid && !inCoreWrongOverload) {
-				print(getOverloadMethodName(methodDecl.sym));
+				print(getOverloadMethodName(methodElement));
 			} else {
-				String tsMethodName = getTSMethodName(methodDecl);
+				String tsMethodName = getTSMethodName(methodTree);
 				getScope().generatedMethodNames.add(tsMethodName);
 				if (doesMemberNameRequireQuotes(tsMethodName)) {
 					print("'" + tsMethodName + "'");
@@ -2322,33 +2360,33 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 			}
 		}
-		if ((methodDecl.typarams != null && !methodDecl.typarams.isEmpty())
-				|| (getContext().getWildcards(methodDecl.sym) != null)) {
+		if ((methodTree.typarams != null && !methodTree.typarams.isEmpty())
+				|| (getContext().getWildcards(methodElement) != null)) {
 			inTypeParameters = true;
 			print("<");
-			if (methodDecl.typarams != null && !methodDecl.typarams.isEmpty()) {
-				printArgList(null, methodDecl.typarams);
-				if (getContext().getWildcards(methodDecl.sym) != null) {
+			if (methodTree.typarams != null && !methodTree.typarams.isEmpty()) {
+				printArgList(null, methodTree.typarams);
+				if (getContext().getWildcards(methodElement) != null) {
 					print(", ");
 				}
 			}
-			if (getContext().getWildcards(methodDecl.sym) != null) {
-				printArgList(null, getContext().getWildcards(methodDecl.sym), this::substituteAndPrintType);
+			if (getContext().getWildcards(methodElement) != null) {
+				printArgList(null, getContext().getWildcards(methodElement), this::substituteAndPrintType);
 			}
 			print(">");
 			inTypeParameters = false;
 		}
 		print("(");
-		printMethodArgs(methodDecl, overload, inOverload, inCoreWrongOverload, getScope());
+		printMethodArgs(methodTree, overload, inOverload, inCoreWrongOverload, getScope());
 		print(")");
-		printMethodReturnDeclaration(methodDecl, inCoreWrongOverload);
-		if (inCoreWrongOverload && isInterfaceMethod(parent, methodDecl)) {
+		printMethodReturnDeclaration(methodTree, inCoreWrongOverload);
+		if (inCoreWrongOverload && isInterfaceMethod(parent, methodTree)) {
 			print(";");
-			return;
+			return null;
 		}
-		if (methodDecl.getBody() == null && !(inCoreWrongOverload && !getScope().declareClassScope)
-				|| (methodDecl.mods.getFlags().contains(Modifier.DEFAULT) && !getScope().defaultMethodScope)) {
-			if (!getScope().interfaceScope && methodDecl.getModifiers().getFlags().contains(Modifier.ABSTRACT)
+		if (methodTree.getBody() == null && !(inCoreWrongOverload && !getScope().declareClassScope)
+				|| (methodTree.mods.getFlags().contains(Modifier.DEFAULT) && !getScope().defaultMethodScope)) {
+			if (!getScope().interfaceScope && methodTree.getModifiers().getFlags().contains(Modifier.ABSTRACT)
 					&& inOverload && !overload.isValid) {
 				print(" {");
 				// runtime error if we go there...
@@ -2359,15 +2397,15 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 		} else {
 			if (!getScope().declareClassScope && getScope().interfaceScope) {
-				if (!methodDecl.mods.getFlags().contains(Modifier.STATIC)) {
-					report(methodDecl, methodDecl.name, JSweetProblem.INVALID_METHOD_BODY_IN_INTERFACE, methodDecl.name,
+				if (!methodTree.mods.getFlags().contains(Modifier.STATIC)) {
+					report(methodTree, methodTree.name, JSweetProblem.INVALID_METHOD_BODY_IN_INTERFACE, methodTree.name,
 							parent == null ? "<no class>" : parent.name);
 				}
 			}
 			if (getScope().declareClassScope) {
 				if (!getScope().constructor
-						|| (methodDecl.getBody() != null && methodDecl.getBody().getStatements().isEmpty())) {
-					report(methodDecl, methodDecl.name, JSweetProblem.INVALID_METHOD_BODY_IN_INTERFACE, methodDecl.name,
+						|| (methodTree.getBody() != null && methodTree.getBody().getStatements().isEmpty())) {
+					report(methodTree, methodTree.name, JSweetProblem.INVALID_METHOD_BODY_IN_INTERFACE, methodTree.name,
 							parent == null ? "<no class>" : parent.name);
 				}
 				print(";");
@@ -2375,7 +2413,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (inCoreWrongOverload) {
 					print(" {").println().startIndent().printIndent();
 
-					printCoreOverloadMethod(methodDecl, parent, overload);
+					printCoreOverloadMethod(methodTree, parent, overload);
 
 					print(" else throw new Error('invalid overload');");
 					endIndent().println().printIndent().print("}");
@@ -2383,25 +2421,25 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					print(" ").print("{").println().startIndent();
 
 					String replacedBody = null;
-					if (context.hasAnnotationType(methodDecl.sym, JSweetConfig.ANNOTATION_REPLACE)) {
-						replacedBody = (String) context.getAnnotationValue(methodDecl.sym,
+					if (context.hasAnnotationType(methodElement, JSweetConfig.ANNOTATION_REPLACE)) {
+						replacedBody = (String) context.getAnnotationValue(methodElement,
 								JSweetConfig.ANNOTATION_REPLACE, String.class, null);
 					}
 					int position = getCurrentPosition();
 					if (replacedBody == null || BODY_MARKER.matcher(replacedBody).find()) {
-						enter(methodDecl.getBody());
-						if (!methodDecl.getBody().stats.isEmpty()
-								&& methodDecl.getBody().stats.head.toString().startsWith("super(")) {
-							printBlockStatement(methodDecl.getBody().stats.head);
+						enter(methodTree.getBody());
+						if (!methodTree.getBody().stats.isEmpty()
+								&& methodTree.getBody().stats.head.toString().startsWith("super(")) {
+							printBlockStatement(methodTree.getBody().stats.head);
 							if (parent != null) {
-								printInstanceInitialization(parent, methodDecl.sym);
+								printInstanceInitialization(parent, methodElement);
 							}
-							printBlockStatements(methodDecl.getBody().stats.tail);
+							printBlockStatements(methodTree.getBody().stats.tail);
 						} else {
 							if (parent != null) {
-								printInstanceInitialization(parent, methodDecl.sym);
+								printInstanceInitialization(parent, methodElement);
 							}
-							printBlockStatements(methodDecl.getBody().stats);
+							printBlockStatements(methodTree.getBody().stats);
 						}
 						exit();
 						if (replacedBody != null) {
@@ -2411,13 +2449,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							replacedBody = BASE_INDENT_MARKER.matcher(replacedBody).replaceAll(getIndentString());
 							replacedBody = INDENT_MARKER.matcher(replacedBody).replaceAll(INDENT);
 							replacedBody = METHOD_NAME_MARKER.matcher(replacedBody)
-									.replaceAll(methodDecl.getName().toString());
+									.replaceAll(methodTree.getName().toString());
 							replacedBody = CLASS_NAME_MARKER.matcher(replacedBody)
 									.replaceAll(parent.sym.getQualifiedName().toString());
 						}
 					}
 					if (replacedBody != null) {
-						if (methodDecl.sym.isConstructor()) {
+						if (methodElement.isConstructor()) {
 							getScope().hasDeclaredConstructor = true;
 						}
 						printIndent().print(replacedBody).println();

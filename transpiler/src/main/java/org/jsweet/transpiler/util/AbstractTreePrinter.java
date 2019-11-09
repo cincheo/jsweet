@@ -130,7 +130,7 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 		super.enter(tree);
 		positionStack.push(new Position(getCurrentPosition(), currentLine, currentColumn));
 		if (compilationUnit != null && inSourceMap(tree)) {
-			SourcePosition sourcePosition = util().getSourcePosition(compilationUnit, tree);
+			SourcePosition sourcePosition = util().getSourcePosition(tree, compilationUnit);
 			Position startPosition = sourcePosition.getStartPosition();
 
 			sourceMap.addEntry(startPosition, positionStack.peek());
@@ -157,7 +157,7 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	protected void exit() {
 		Tree tree = stack.peek();
 		if (compilationUnit != null && tree instanceof BlockTree) {
-			SourcePosition sourcePosition = util().getSourcePosition(compilationUnit, tree);
+			SourcePosition sourcePosition = util().getSourcePosition(tree, compilationUnit);
 			Position endPosition = sourcePosition.getEndPosition();
 
 			sourceMap.addEntry(endPosition, new Position(getCurrentPosition(), currentLine, currentColumn));
