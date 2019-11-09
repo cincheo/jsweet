@@ -37,6 +37,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +48,8 @@ import java.util.function.BiFunction;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -1390,8 +1393,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 		} else {
 			if (context.lookupDecoratorAnnotation(typeElement.getQualifiedName().toString()) != null) {
-				Tree[] globalDecoratorFunction = context
-						.lookupGlobalMethod(typeElement.getQualifiedName().toString());
+				Tree[] globalDecoratorFunction = context.lookupGlobalMethod(typeElement.getQualifiedName().toString());
 				if (globalDecoratorFunction == null) {
 					report(classdecl, JSweetProblem.CANNOT_FIND_GLOBAL_DECORATOR_FUNCTION,
 							typeElement.getQualifiedName());
@@ -1403,34 +1405,34 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					getScope().decoratorScope = false;
 				}
 				exitScope();
-				return;
+				return null;
 			}
 		}
 
 		HashSet<Entry<ClassTree, MethodTree>> defaultMethods = null;
-		boolean globals = JSweetConfig.GLOBALS_CLASS_NAME.equals(classdecl.name.toString());
-		if (globals && classdecl.extending != null) {
+		boolean globals = JSweetConfig.GLOBALS_CLASS_NAME.equals(classdecl.getSimpleName().toString());
+		if (globals && classdecl.getExtendsClause() != null) {
 			report(classdecl, JSweetProblem.GLOBALS_CLASS_CANNOT_HAVE_SUPERCLASS);
 		}
 		List<TypeMirror> implementedInterfaces = new ArrayList<>();
 
 		if (!globals) {
-			if (classdecl.extending != null && JSweetConfig.GLOBALS_CLASS_NAME
-					.equals(classdecl.extending.type.tsym.getSimpleName().toString())) {
+			if (classdecl.getExtendsClause() != null && JSweetConfig.GLOBALS_CLASS_NAME
+					.equals(toElement(classdecl.getExtendsClause()).getSimpleName().toString())) {
 				report(classdecl, JSweetProblem.GLOBALS_CLASS_CANNOT_BE_SUBCLASSED);
-				return;
+				return null;
 			}
 			if (!(classdecl.getKind() == Kind.ENUM && scope.size() > 1 && getScope(1).isComplexEnum)) {
 				printDocComment(classdecl);
 			} else {
 				print("/** @ignore */").println().printIndent();
 			}
-			print(classdecl.mods);
+			print(classdecl.getModifiers());
 
 			if (!isTopLevelScope() || context.useModules || isAnonymousClass() || isInnerClass() || isLocalClass()) {
 				print("export ");
 			}
-			if (context.isInterface(classdecl.sym)) {
+			if (context.isInterface(typeElement)) {
 				print("interface ");
 				getScope().interfaceScope = true;
 			} else {
@@ -1439,7 +1441,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						print("declare ");
 					}
 					if (scope.size() > 1 && getScope(1).isComplexEnum) {
-						if (Util.hasAbstractMethod(classdecl.sym)) {
+						if (util().hasAbstractMethod(typeElement)) {
 							print("abstract ");
 						}
 						print("class ");
@@ -1453,7 +1455,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						print("declare ");
 					}
 					defaultMethods = new HashSet<>();
-					Util.findDefaultMethodsInType(defaultMethods, context, classdecl.sym);
+					util().findDefaultMethodsInType(defaultMethods, context, typeElement);
 					if (classdecl.getModifiers().getFlags().contains(Modifier.ABSTRACT)) {
 						print("abstract ");
 					}
@@ -1463,21 +1465,25 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 			print(name + (getScope().enumWrapperClassScope ? ENUM_WRAPPER_CLASS_SUFFIX : ""));
 
-			if (classdecl.typarams != null && classdecl.typarams.size() > 0) {
-				print("<").printArgList(null, classdecl.typarams).print(">");
+			if (classdecl.getTypeParameters() != null && classdecl.getTypeParameters().size() > 0) {
+				print("<").printArgList(null, classdecl.getTypeParameters()).print(">");
 			} else if (isAnonymousClass() && classdecl.getModifiers().getFlags().contains(Modifier.STATIC)) {
 				NewClassTree newClass = getScope(1).anonymousClassesConstructors
 						.get(getScope(1).anonymousClasses.indexOf(classdecl));
 				printAnonymousClassTypeArgs(newClass);
 			}
 			TypeMirror mixin = null;
-			if (context.hasAnnotationType(classdecl.sym, JSweetConfig.ANNOTATION_MIXIN)) {
-				mixin = context.getAnnotationValue(classdecl.sym, JSweetConfig.ANNOTATION_MIXIN, TypeMirror.class,
-						null);
-				for (Compound c : classdecl.sym.getAnnotationMirrors()) {
-					if (JSweetConfig.ANNOTATION_MIXIN.equals(c.type.toString())) {
-						String targetName = getRootRelativeName(((Attribute.Class) c.values.head.snd).classType.tsym);
-						String mixinName = getRootRelativeName(classdecl.sym);
+			if (context.hasAnnotationType(typeElement, JSweetConfig.ANNOTATION_MIXIN)) {
+				mixin = context.getAnnotationValue(typeElement, JSweetConfig.ANNOTATION_MIXIN, TypeMirror.class, null);
+				for (AnnotationMirror c : typeElement.getAnnotationMirrors()) {
+					if (JSweetConfig.ANNOTATION_MIXIN.equals(c.getAnnotationType().toString())) {
+
+						Entry<ExecutableElement, AnnotationValue> annotationValuesEntry = c.getElementValues()
+								.entrySet().iterator().next();
+						AnnotationValue annotationValue =  annotationValuesEntry.getValue();
+						Element annotationValueElement = toElement(annotationValue);
+						String targetName = getRootRelativeName(annotationValueElement.asType());
+						String mixinName = getRootRelativeName(typeElement);
 						if (!mixinName.equals(targetName)) {
 							report(classdecl, JSweetProblem.WRONG_MIXIN_NAME, mixinName, targetName);
 						} else {
