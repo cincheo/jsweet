@@ -99,6 +99,7 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ContinueTree;
 import com.sun.source.tree.EnhancedForLoopTree;
+import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.IdentifierTree;
@@ -2712,7 +2713,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	protected void printVariableInitialization(ClassTree clazz, VariableTree var) {
 		VariableElement varElement = toElement(var);
-		
+
 		String name = var.getName().toString();
 		if (context.getFieldNameMapping(varElement) != null) {
 			name = context.getFieldNameMapping(varElement);
@@ -2730,8 +2731,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		} else if (var.getInitializer() == null) {
 			if (doesMemberNameRequireQuotes(name)) {
 				printIndent().print("if(").print("this['").print(name).print("']").print("===undefined) ")
-						.print("this['").print(name).print("'] = ").print(util().getTypeInitialValue(varElement.asType())).print(";")
-						.println();
+						.print("this['").print(name).print("'] = ")
+						.print(util().getTypeInitialValue(varElement.asType())).print(";").println();
 			} else {
 				printIndent().print("if(").print("this.").print(name).print("===undefined) this.").print(name)
 						.print(" = ").print(util().getTypeInitialValue(varElement.asType())).print(";").println();
@@ -2742,22 +2743,24 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	protected void printInstanceInitialization(ClassTree clazz, ExecutableElement method) {
 		if (method == null || method.getKind() == ElementKind.CONSTRUCTOR) {
 			getScope().hasDeclaredConstructor = true;
-			
+
 			TypeElement typeElement = toElement(clazz);
 			// this workaround will not work on all browsers (see
 			// https://github.com/Microsoft/TypeScript-wiki/blob/master/Breaking-Changes.md#extending-built-ins-like-error-array-and-map-may-no-longer-work)
-			if (context.types.isAssignable(typeElement.asType(), context.symtab.throwableType)) {
-				printIndent().print("(<any>Object).setPrototypeOf(this, " + getClassName(clazz.sym) + ".prototype);")
+			if (context.types.isAssignable(typeElement.asType(), util().getType(Throwable.class))) {
+				printIndent().print("(<any>Object).setPrototypeOf(this, " + getClassName(typeElement) + ".prototype);")
 						.println();
 			}
 			if (getScope().innerClassNotStatic && !getScope().enumWrapperClassScope) {
 				printIndent().print("this." + PARENT_CLASS_FIELD_NAME + " = " + PARENT_CLASS_FIELD_NAME + ";")
 						.println();
 			}
-			for (Tree member : clazz.defs) {
+			for (Tree member : clazz.getMembers()) {
 				if (member instanceof VariableTree) {
 					VariableTree var = (VariableTree) member;
-					if (!varElement.isStatic() && !context.hasAnnotationType(varElement, JSweetConfig.ANNOTATION_ERASED)) {
+					VariableElement varElement = toElement(var);
+					if (!varElement.getModifiers().contains(Modifier.STATIC)
+							&& !context.hasAnnotationType(varElement, JSweetConfig.ANNOTATION_ERASED)) {
 						printVariableInitialization(clazz, var);
 					}
 				} else if (member instanceof BlockTree) {
@@ -2765,7 +2768,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					if (!block.isStatic()) {
 						printIndent().print("(() => {").startIndent().println();
 						stack.push(block);
-						printBlockStatements(block.stats);
+						printBlockStatements(block.getStatements());
 						stack.pop();
 						endIndent().printIndent().print("})();").println();
 					}
@@ -2784,24 +2787,25 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 		for (int j = 0; j < method.getParameters().size(); j++) {
 			if (args.get(j) instanceof VariableTree) {
-				if (method.getParameters().get(j).name.equals(((VariableTree) args.get(j)).name)) {
+				if (method.getParameters().get(j).getName().equals(((VariableTree) args.get(j)).getName())) {
 					continue;
 				} else {
 					printIndent().print(VAR_DECL_KEYWORD + " ")
-							.print(avoidJSKeyword(method.getParameters().get(j).name.toString())).print(" : ")
-							.print("any").print(Util.isVarargs(method.getParameters().get(j)) ? "[]" : "").print(" = ")
-							.print("__args[" + j + "]").print(";").println();
+							.print(avoidJSKeyword(method.getParameters().get(j).getName().toString())).print(" : ")
+							.print("any").print(util().isVarargs(method.getParameters().get(j)) ? "[]" : "")
+							.print(" = ").print("__args[" + j + "]").print(";").println();
 				}
 			} else {
-				if (method.getParameters().get(j).name.toString().equals(args.get(j).toString())) {
+				if (method.getParameters().get(j).getName().toString().equals(args.get(j).toString())) {
 					continue;
 				} else {
-					getScope().inlinedConstructorArgs = method.getParameters().stream().map(p -> p.sym.name.toString())
+					getScope().inlinedConstructorArgs = method.getParameters().stream()
+							.map((VariableTree p) -> toElement(p).getSimpleName().toString())
 							.collect(Collectors.toList());
 					printIndent().print(VAR_DECL_KEYWORD + " ")
-							.print(avoidJSKeyword(method.getParameters().get(j).name.toString())).print(" : ")
-							.print("any").print(Util.isVarargs(method.getParameters().get(j)) ? "[]" : "").print(" = ")
-							.print(args.get(j)).print(";").println();
+							.print(avoidJSKeyword(method.getParameters().get(j).getName().toString())).print(" : ")
+							.print("any").print(util().isVarargs(method.getParameters().get(j)) ? "[]" : "")
+							.print(" = ").print(args.get(j)).print(";").println();
 					getScope().inlinedConstructorArgs = null;
 				}
 			}
@@ -2809,56 +2813,58 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (method.getBody() != null) {
 			boolean skipFirst = false;
 			boolean initialized = false;
-			if (!method.getBody().stats.isEmpty() && method.getBody().stats.get(0).toString().startsWith("this(")) {
+			List<? extends StatementTree> statements = method.getBody().getStatements();
+			if (!statements.isEmpty() && statements.get(0).toString().startsWith("this(")) {
 				skipFirst = true;
-				MethodInvocationTree inv = (MethodInvocationTree) ((ExpressionStatementTree) method.getBody().stats
-						.get(0)).expr;
-				ExecutableElement ms = Util.findMethodDeclarationInType(
+				MethodInvocationTree inv = (MethodInvocationTree) ((ExpressionStatementTree) statements.get(0))
+						.getExpression();
+				ExecutableElement ms = util().findMethodDeclarationInType(
 						(TypeElement) overload.getCoreMethodElement().getEnclosingElement(), inv);
 				for (MethodTree md : overload.methods) {
-					if (md.sym.equals(ms)) {
+					if (toElement(md).equals(ms)) {
 						printIndent();
 						initialized = true;
-						printInlinedMethod(overload, md, inv.args);
+						printInlinedMethod(overload, md, inv.getArguments());
 						println();
 					}
 				}
 
 			}
+			ExecutableElement methodElement = toElement(method);
 			String replacedBody = null;
-			if (context.hasAnnotationType(method.sym, JSweetConfig.ANNOTATION_REPLACE)) {
-				replacedBody = context.getAnnotationValue(method.sym, JSweetConfig.ANNOTATION_REPLACE, String.class,
+			if (context.hasAnnotationType(methodElement, JSweetConfig.ANNOTATION_REPLACE)) {
+				replacedBody = context.getAnnotationValue(methodElement, JSweetConfig.ANNOTATION_REPLACE, String.class,
 						null);
 			}
 			int position = getCurrentPosition();
 			if (replacedBody == null || BODY_MARKER.matcher(replacedBody).find()) {
 				enter(method.getBody());
-				com.sun.tools.javac.util.List<StatementTree> stats = skipFirst ? method.getBody().stats.tail
-						: method.getBody().stats;
-				if (!stats.isEmpty() && stats.head.toString().startsWith("super(")) {
-					printBlockStatement(stats.head);
+				List<? extends StatementTree> actualStatements = skipFirst ? statements.subList(1, statements.size())
+						: statements;
+				if (!actualStatements.isEmpty() && actualStatements.get(0).toString().startsWith("super(")) {
+					printBlockStatement(actualStatements.get(0));
 					printFieldInitializations();
 					if (!initialized) {
-						printInstanceInitialization(getParent(ClassTree.class), method.sym);
+						printInstanceInitialization(getParent(ClassTree.class), methodElement);
 					}
-					if (!stats.tail.isEmpty()) {
+					if (!actualStatements.tail.isEmpty()) {
 						printIndent().print("((").print(") => {").startIndent().println();
-						printBlockStatements(stats.tail);
+						printBlockStatements(actualStatements.tail);
 						endIndent().printIndent().print("})(").print(");").println();
 					}
 				} else {
 					if (!initialized) {
-						printInstanceInitialization(getParent(ClassTree.class), method.sym);
+						printInstanceInitialization(getParent(ClassTree.class), methodElement);
 					}
-					if (!stats.isEmpty() || !method.sym.isConstructor()) {
+					if (!actualStatements.isEmpty() || !methodElement.isConstructor()) {
 						printIndent();
 					}
-					if (!method.sym.isConstructor()) {
+					if (!methodElement.isConstructor()) {
 						print("return <any>");
 					}
-					if (!stats.isEmpty() || !method.sym.isConstructor()) {
+					if (!actualStatements.isEmpty() || !methodElement.isConstructor()) {
 						print("((").print(") => {").startIndent().println();
-						printBlockStatements(stats);
+						printBlockStatements(actualStatements);
 						endIndent().printIndent().print("})(").print(");").println();
 					}
 				}
@@ -2873,17 +2879,17 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					replacedBody = INDENT_MARKER.matcher(replacedBody).replaceAll(INDENT);
 					replacedBody = METHOD_NAME_MARKER.matcher(replacedBody).replaceAll(method.getName().toString());
 					replacedBody = CLASS_NAME_MARKER.matcher(replacedBody)
-							.replaceAll(method.sym.getEnclosingElement().getQualifiedName().toString());
+							.replaceAll(methodElement.getEnclosingElement().getQualifiedName().toString());
 				}
 			}
 			if (replacedBody != null) {
-				if (method.sym.isConstructor()) {
+				if (methodElement.isConstructor()) {
 					getScope().hasDeclaredConstructor = true;
 				}
 				printIndent().print(replacedBody).println();
 			}
 		} else {
-			String returnValue = Util.getTypeInitialValue(method.sym.getReturnType());
+			String returnValue = Util.getTypeInitialValue(methodElement.getReturnType());
 			if (returnValue != null) {
 				print(" return ").print(returnValue).print("; ");
 			}
