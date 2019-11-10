@@ -723,11 +723,11 @@ public class DirectedGraph<T> implements Collection<T> {
 			Element element = p.getElement(getCurrentPath());
 			return super.visitNewClass(tree, p);
 		}
-		
+
 		@Override
 		public Void visitBinary(BinaryTree node, Trees p) {
 			Element element = p.getElement(getCurrentPath());
-			
+
 			return super.visitBinary(node, p);
 		}
 
@@ -906,6 +906,10 @@ public class DirectedGraph<T> implements Collection<T> {
 
 		private Element toElement(Tree tree) {
 			return trees.getElement(trees.getPath(getCompilationUnit(), tree));
+		}
+
+		private TypeMirror toType(Tree tree) {
+			return toElement(tree).asType();
 		}
 	}
 
