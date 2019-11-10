@@ -11,9 +11,12 @@ import java.net.URL;
 import java.util.List;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -29,7 +32,6 @@ import org.junit.Test;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.VariableTree;
 
@@ -82,7 +84,6 @@ public class UtilTest extends AbstractTest {
 		TypeMirror stringType = util.getType(String.class);
 		assertTrue(util.isStringType(stringType));
 	}
-
 
 	@Test
 	public void testIsStringTypeOnOtherClass() throws Exception {
@@ -302,6 +303,42 @@ public class UtilTest extends AbstractTest {
 		assertEquals(util.getType(String.class), operatorType);
 	}
 
+	@Test
+	public void getFirstTypeArgumentAsElementOnNull() throws Exception {
+		assertNull(util.getFirstTypeArgumentAsElement(null));
+	}
+
+	@Test
+	public void getFirstTypeArgumentAsElementOnNonParameterizedType() throws Exception {
+		TypeElement element = context.elements.getTypeElement("first.Test");
+		assertNull(util.getFirstTypeArgumentAsElement((DeclaredType) element.asType()));
+	}
+
+	@Test
+	public void getFirstTypeArgumentAsElement() throws Exception {
+		TypeElement element = context.elements.getTypeElement("first.ParameterizedType");
+		TypeParameterElement typeArgumentElement = util.getFirstTypeArgumentAsElement((DeclaredType) element.asType());
+		assertEquals(ElementKind.TYPE_PARAMETER, typeArgumentElement.getKind());
+		assertEquals("TFirst", typeArgumentElement.getSimpleName().toString());
+	}
+
+	@Test
+	public void isInSameSourceFileForNull() throws Exception {
+		assertFalse(util.isInSameSourceFile(null, getVariableElement()));
+		assertFalse(util.isInSameSourceFile(getMainCompilationUnit(), null));
+	}
+
+	@Test
+	public void isInSameSourceFileTest() throws Exception {
+		assertTrue(util.isInSameSourceFile(getMainCompilationUnit(), getVariableElement()));
+	}
+
+	@Test
+	public void isInSameSourceFileForElementOutsideCompilationUnit() throws Exception {
+		Element elementFromOtherCompilUnit = context.elements.getTypeElement("first.second.Test2");		
+		assertFalse(util.isInSameSourceFile(getMainCompilationUnit(), elementFromOtherCompilUnit));
+	}
+
 	private CompilationUnitTree getMainCompilationUnit() {
 		return getCompilationUnitForClassName("Test");
 	}
@@ -315,16 +352,26 @@ public class UtilTest extends AbstractTest {
 	}
 
 	private MethodTree getMethodTree(String methodName) {
-		return getMethodTree(getMainCompilationUnit(), methodName);
+		return getMethodTree(getMainCompilationUnit(), "Test", methodName);
 	}
 
-	private MethodTree getMethodTree(CompilationUnitTree compilationUnit, String methodName) {
-		ClassTree firstType = (ClassTree) compilationUnit.getTypeDecls().get(0);
+	private MethodTree getMethodTree(CompilationUnitTree compilationUnit, String classSimpleName, String methodName) {
+
+		ClassTree firstType = getClassTree(compilationUnit, classSimpleName);
 		MethodTree method = (MethodTree) firstType.getMembers().stream()
 				.filter(memberTree -> memberTree instanceof MethodTree
 						&& ((MethodTree) memberTree).getName().toString().equals(methodName))
 				.findFirst().orElse(null);
 		return method;
+	}
+
+	private ClassTree getClassTree(CompilationUnitTree compilationUnit, String classSimpleName) {
+		return compilationUnit.getTypeDecls().stream() //
+				.filter(tree -> tree instanceof ClassTree) //
+				.map(tree -> (ClassTree) tree) //
+				.filter(classTree -> classTree.getSimpleName().toString().equals(classSimpleName)) //
+				.findFirst() //
+				.get();
 	}
 
 	private Element getVariableElement() {
@@ -341,8 +388,4 @@ public class UtilTest extends AbstractTest {
 		return (BinaryTree) var.getInitializer();
 	}
 
-	private LambdaExpressionTree extractLambdaFromSingleLineTestMethod(MethodTree method) {
-		VariableTree var = (VariableTree) method.getBody().getStatements().get(0);
-		return (LambdaExpressionTree) var.getInitializer();
-	}
 }

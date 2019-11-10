@@ -345,7 +345,7 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	/**
 	 * Prints a comma-separated list of subtrees.
 	 */
-	public AbstractTreePrinter printArgList(List<TypeMirror> assignedTypes, List<? extends Tree> args,
+	public AbstractTreePrinter printArgList(List<? extends TypeMirror> assignedTypes, List<? extends Tree> args,
 			Consumer<Tree> printer) {
 		int i = 0;
 		for (Tree arg : args) {
@@ -418,7 +418,7 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 		return this;
 	}
 
-	public AbstractTreePrinter printArgList(List<TypeMirror> assignedTypes, List<? extends Tree> args) {
+	public AbstractTreePrinter printArgList(List<? extends TypeMirror> assignedTypes, List<? extends Tree> args) {
 		return printArgList(assignedTypes, args, null);
 	}
 

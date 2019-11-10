@@ -73,14 +73,10 @@ public abstract class AbstractTreeScanner extends TreeScanner<Void, Trees> {
 	/**
 	 * Report a JSweet problem on the given named program element (tree).
 	 * 
-	 * @param tree
-	 *            the program element causing the problem
-	 * @param name
-	 *            the name of that program element
-	 * @param problem
-	 *            the problem to be reported
-	 * @param params
-	 *            problem arguments
+	 * @param tree    the program element causing the problem
+	 * @param name    the name of that program element
+	 * @param problem the problem to be reported
+	 * @param params  problem arguments
 	 */
 	public void report(Tree tree, Name name, JSweetProblem problem, Object... params) {
 		if (logHandler == null) {
@@ -446,21 +442,28 @@ public abstract class AbstractTreeScanner extends TreeScanner<Void, Trees> {
 	protected <T extends Element> T toElement(Tree tree) {
 		return tree == null ? null : (T) context.trees.getElement(context.trees.getPath(getCompilationUnit(), tree));
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	protected <T extends TypeMirror> T toType(Tree tree) {
 		Element element = toElement(tree);
 		return element == null ? null : (T) element.asType();
 	}
-	
+
+	/**
+	 * if this tree has a type (toType(tree) doesnt return null), returns the
+	 * corresponding TypeElement
+	 */
 	protected TypeElement toTypeElement(Tree tree) {
 		TypeMirror treeType = toType(tree);
 		return treeType == null ? null : (TypeElement) types().asElement(treeType);
 	}
-	
+
 	protected TypeElement toTypeElement(Element element) {
 		TypeMirror elementType = element.asType();
 		return elementType == null ? null : (TypeElement) types().asElement(elementType);
 	}
 
+	protected ExtendedElement createExtendedElement(Tree tree) {
+		return ExtendedElementFactory.INSTANCE.create(getCompilationUnit(), tree, getContext());
+	}
 }

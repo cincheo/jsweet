@@ -4,7 +4,7 @@ import static pouet.zou.Test3.you;
 import java.util.ArrayList;
 import java.util.List;
 
-class Toto<T, V> {
+class Toto<TFirst, TSecond> {
 }
 
 class Pichade {

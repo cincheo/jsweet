@@ -48,6 +48,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
@@ -162,7 +163,9 @@ public class Util {
 			// hack to know if it is a source file or a class file
 			JavaFileObject sourceFile = javacInternals().getSourceFileObjectFromElement(clazz);
 			if (sourceFile != null
-					&& sourceFile.getClass().getName().equals("com.sun.tools.javac.file.RegularFileObject")) {
+					&& (sourceFile.getClass().getName().equals("com.sun.tools.javac.file.RegularFileObject")
+							|| sourceFile.getClass().getName()
+									.equals("com.sun.tools.javac.file.PathFileObject$SimpleFileObject"))) {
 				return true;
 			}
 		}
@@ -182,7 +185,16 @@ public class Util {
 				return javacInternals().getSourceFileObjectFromElement(clazz).getName();
 			}
 		}
-		return getSourceFilePath(element);
+		return getSourceFilePath(element.getEnclosingElement());
+	}
+
+	public boolean isInSameSourceFile(CompilationUnitTree compilationUnitTree, Element element) {
+		if (compilationUnitTree == null || element == null) {
+			return false;
+		}
+		assert isSourceElement(element) : "unsupported element type (from a class file and not a source file)";
+
+		return getSourceFilePath(element).equals(compilationUnitTree.getSourceFile().getName());
 	}
 
 	/**
@@ -1494,6 +1506,14 @@ public class Util {
 		}
 	}
 
+	public TypeParameterElement getFirstTypeArgumentAsElement(DeclaredType type) {
+		if (type == null || type.getTypeArguments().isEmpty()) {
+			return null;
+		}
+		TypeMirror firstTypeArg = type.getTypeArguments().get(0);
+		return (TypeParameterElement) types().asElement(firstTypeArg);
+	}
+
 	/**
 	 * Returns true if the given class declares an abstract method.
 	 */
@@ -1998,5 +2018,12 @@ public class Util {
 		} else {
 			return simpleName;
 		}
+	}
+
+	public <T> T last(List<T> list) {
+		if (list == null || list.isEmpty()) {
+			return null;
+		}
+		return list.get(list.size() - 1);
 	}
 }

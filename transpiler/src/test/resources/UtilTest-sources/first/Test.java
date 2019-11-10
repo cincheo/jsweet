@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
+class ParameterizedType<TFirst, TSecond> {
+}
+
 public class Test  {
 	
 	int int1 = 1;
