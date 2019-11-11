@@ -537,9 +537,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		super(logHandler, context, compilationUnit, adapter, fillSourceMap);
 	}
 
-	private static java.util.List<Class<?>> statementsWithNoSemis = Arrays
-			.asList(new Class<?>[] { IfTree.class, ForLoopTree.class, EnhancedForLoopTree.class, SwitchTree.class });
-
 	private static String mapConstructorType(String typeName) {
 		if (CONSTRUCTOR_TYPE_MAPPING.containsKey(typeName)) {
 			return CONSTRUCTOR_TYPE_MAPPING.get(typeName);
@@ -732,7 +729,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						stack.pop();
 					}
 				}
-				
+
 				return returnNothing();
 			}
 
@@ -800,7 +797,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						}
 					}
 				}
-				
+
 				return returnNothing();
 			}
 
@@ -1566,7 +1563,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (!removeIterable && !JSweetConfig.isJDKReplacementMode()
 						&& !(JSweetConfig.OBJECT_CLASSNAME.equals(superType.toString())
 								|| Object.class.getName().equals(superType.toString()))
-						&& !(mixin != null && context.types.isSameType(mixin, superType))
+						&& !(mixin != null && types().isSameType(mixin, superType))
 						&& !(getAdapter().eraseSuperClass(classTypeElement, superTypeElement))) {
 
 					if (!getScope().interfaceScope && context.isInterface(superTypeElement)) {
@@ -2078,7 +2075,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		exitScope();
 
 		getAdapter().afterType(classTypeElement);
-		
+
 		return returnNothing();
 	}
 
@@ -2215,7 +2212,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 									&& overload.getCoreMethodElement().getEnclosingElement() != parentElement
 									&& (!overload.getCoreMethodElement().getModifiers().contains(Modifier.ABSTRACT)
 											|| isInterfaceMethod(parent, methodTree)
-											|| !context.types.isSubtype(parentElement.asType(),
+											|| !types().isSubtype(parentElement.asType(),
 													overload.getCoreMethodElement().getEnclosingElement().asType()));
 							if (!overload.printed && !addCoreMethod
 									&& overload.getCoreMethodElement().getKind() == ElementKind.METHOD) {
@@ -2521,7 +2518,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 			}
 		}
-		
+
 		return returnNothing();
 	}
 
@@ -2785,7 +2782,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			TypeElement typeElement = toElement(clazz);
 			// this workaround will not work on all browsers (see
 			// https://github.com/Microsoft/TypeScript-wiki/blob/master/Breaking-Changes.md#extending-built-ins-like-error-array-and-map-may-no-longer-work)
-			if (context.types.isAssignable(typeElement.asType(), util().getType(Throwable.class))) {
+			if (types().isAssignable(typeElement.asType(), util().getType(Throwable.class))) {
 				printIndent().print("(<any>Object).setPrototypeOf(this, " + getClassName(typeElement) + ".prototype);")
 						.println();
 			}
@@ -3007,7 +3004,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 								if (contextChange) {
 									locals.pop();
 								}
-								
+
 								return returnNothing();
 							}
 
@@ -3043,9 +3040,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			removeLastIndent();
 			return;
 		}
-		if (!statementsWithNoSemis.contains(statement.getClass())) {
+		if (!isStatementWithNoSemiColon(statement)) {
 			if (statement instanceof LabeledStatementTree) {
-				if (!statementsWithNoSemis.contains(((LabeledStatementTree) statement).getStatement().getClass())) {
+				if (!isStatementWithNoSemiColon(((LabeledStatementTree) statement).getStatement())) {
 					print(";");
 				}
 			} else {
@@ -3062,8 +3059,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		StringBuilder nameBuilder = new StringBuilder(method.getSimpleName().toString());
 		nameBuilder.append("$");
 		for (VariableElement paramElement : method.getParameters()) {
-			nameBuilder.append(
-					context.types.erasure(paramElement.asType()).toString().replace('.', '_').replace("[]", "_A"));
+			nameBuilder.append(types().erasure(paramElement.asType()).toString().replace('.', '_').replace("[]", "_A"));
 			nameBuilder.append("$");
 		}
 		if (!method.getParameters().isEmpty()) {
@@ -3128,7 +3124,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (!globals) {
 			endIndent().printIndent().print("}");
 		}
-		
+
 		return returnNothing();
 	}
 
@@ -3440,7 +3436,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 			}
 		}
-		
+
 		return returnNothing();
 	}
 
@@ -3469,7 +3465,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		print("(");
 		super.visitParenthesized(parens, trees);
 		print(")");
-		
+
 		return returnNothing();
 	}
 
@@ -3684,7 +3680,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 			}
 		}
-		
+
 		return returnNothing();
 	}
 
@@ -3867,10 +3863,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (!util().hasVarargs(methSym) //
 				|| !arguments.isEmpty() && (toType(util().last(arguments)).getKind() != TypeKind.ARRAY
 						// we dont use apply if var args type differ
-						|| !context.types.erasure(((ArrayType) toType(util().last(arguments))).getComponentType())
-								.equals(context.types
-										.erasure(((ArrayType) util().last(methSym.getParameters()).asType())
-												.getComponentType())))) {
+						|| !types().erasure(((ArrayType) toType(util().last(arguments))).getComponentType())
+								.equals(types().erasure(((ArrayType) util().last(methSym.getParameters()).asType())
+										.getComponentType())))) {
 			applyVarargs = false;
 		}
 
@@ -4297,7 +4292,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 			}
 		}
-		
+
 		return returnNothing();
 	}
 
@@ -4307,7 +4302,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	@Override
 	public Void visitParameterizedType(ParameterizedTypeTree typeApply, Trees trees) {
 		substituteAndPrintType(typeApply);
-		
+
 		return returnNothing();
 	}
 
@@ -4575,9 +4570,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			if (newClass.getArguments().size() == 0 || !util().hasVarargs(methSym) //
 					|| toType(util().last(newClass.getArguments())).getKind() != TypeKind.ARRAY
 					// we dont use apply if var args type differ
-					|| !context.types
-							.erasure(((ArrayType) toType(util().last(newClass.getArguments()))).getComponentType())
-							.equals(context.types.erasure(
+					|| !types().erasure(((ArrayType) toType(util().last(newClass.getArguments()))).getComponentType())
+							.equals(types().erasure(
 									((ArrayType) util().last(methSym.getParameters()).asType()).getComponentType()))) {
 				applyVarargs = false;
 			}
@@ -4702,7 +4696,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		default:
 		}
 		print(s);
-		
+
 		return returnNothing();
 	}
 
@@ -4735,7 +4729,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 			return true;
 		});
-		if (!getAdapter().substituteForEachLoop(new ForeachLoopElementSupport(getCompilationUnit(), foreachLoop, getContext()), hasLength[0],
+		if (!getAdapter().substituteForEachLoop(
+				new ForeachLoopElementSupport(getCompilationUnit(), foreachLoop, getContext()), hasLength[0],
 				indexVarName)) {
 			boolean noVariable = foreachLoop.getExpression() instanceof IdentifierTree
 					|| foreachLoop.getExpression() instanceof MemberSelectTree;
@@ -4752,8 +4747,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						.println().printIndent();
 				print("for(" + VAR_DECL_KEYWORD + " " + indexVarName + "=0; " + indexVarName + " < " + arrayVarName
 						+ ".length; " + indexVarName + "++) {").println().startIndent().printIndent();
-				print(VAR_DECL_KEYWORD + " " + foreachLoop.getVariable().getName().toString() + " = " + arrayVarName + "["
-						+ indexVarName + "];").println();
+				print(VAR_DECL_KEYWORD + " " + foreachLoop.getVariable().getName().toString() + " = " + arrayVarName
+						+ "[" + indexVarName + "];").println();
 			}
 			visitBeforeForEachBody(foreachLoop);
 			printIndent().print(foreachLoop.getStatement());
@@ -4762,7 +4757,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				endIndent().println().printIndent().print("}");
 			}
 		}
-		
+
 		return returnNothing();
 	}
 
@@ -4786,7 +4781,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		default:
 			print(type.toString());
 		}
-		
+
 		return returnNothing();
 	}
 
@@ -4794,15 +4789,16 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		return !context.options.isDisableSinglePrecisionFloats()
 				&& context.options.getEcmaTargetVersion().higherThan(EcmaScriptComplianceLevel.ES3);
 	}
-	
+
 	@Override
 	public Void visitBinary(BinaryTree binary, Trees trees) {
-		if (!getAdapter().substituteBinaryOperator(new BinaryOperatorElementSupport(getCompilationUnit(), binary, getContext()))) {
+		if (!getAdapter().substituteBinaryOperator(
+				new BinaryOperatorElementSupport(getCompilationUnit(), binary, getContext()))) {
 			String op = util().toOperator(binary.getKind());
 			boolean forceParens = false;
 			boolean booleanOp = false;
-			if (context.types.isSameType(util().getType(boolean.class),
-					context.types.unboxedType(toType(binary.getLeftOperand())))) {
+			if (types().isSameType(util().getType(boolean.class),
+					types().unboxedType(toType(binary.getLeftOperand())))) {
 				booleanOp = true;
 				if ("^".equals(op)) {
 					forceParens = true;
@@ -4813,12 +4809,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					return returnNothing();
 				}
 			}
-			
+
 			TypeMirror binaryType = toType(binary);
 			TypeElement leftTypeElement = toTypeElement(binary.getLeftOperand());
 			TypeElement rightTypeElement = toTypeElement(binary.getRightOperand());
 			TypeElement stringTypeElement = (TypeElement) types().asElement(util().getType(String.class));
-			
+
 			boolean closeParen = false;
 			boolean truncate = false;
 			if (util().isIntegral(binaryType) && binary.getKind() == Kind.DIVIDE) {
@@ -4838,8 +4834,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					|| util().isComparisonOperator(binary.getKind());
 			boolean actualCharWrapping = false;
 			if (charWrapping
-					&& context.types.isSameType(util().getType(char.class),
-							context.types.unboxedType(toType(binary.getLeftOperand())))
+					&& types().isSameType(util().getType(char.class),
+							types().unboxedType(toType(binary.getLeftOperand())))
 					&& rightTypeElement != stringTypeElement) {
 				actualCharWrapping = true;
 				if (binary.getLeftOperand() instanceof LiteralTree) {
@@ -4869,8 +4865,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 			if ("==".equals(op) || "!=".equals(op)) {
 				if (charWrapping
-						&& context.types.isSameType(util().getType(char.class),
-								context.types.unboxedType(rightTypeElement.asType()))
+						&& types().isSameType(util().getType(char.class),
+								types().unboxedType(rightTypeElement.asType()))
 						&& leftTypeElement != stringTypeElement) {
 					actualCharWrapping = true;
 				}
@@ -4882,7 +4878,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					op += "=";
 					break;
 				case STRICT:
-					if (!(util().isNullLiteral(binary.getLeftOperand()) || util().isNullLiteral(binary.getRightOperand()))) {
+					if (!(util().isNullLiteral(binary.getLeftOperand())
+							|| util().isNullLiteral(binary.getRightOperand()))) {
 						op += "=";
 					}
 					break;
@@ -4893,9 +4890,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 			space().print(op).space();
 			if (charWrapping
-					&& context.types.isSameType(context.symtab.charType,
-							context.types.unboxedTypeOrType(binary.getRightOperand().type))
-					&& !(binary.getLeftOperand().type.tsym == context.symtab.stringType.tsym)) {
+					&& types().isSameType(util().getType(char.class), types().unboxedType(rightTypeElement.asType()))
+					&& !(leftTypeElement == stringTypeElement)) {
 				if (binary.getRightOperand() instanceof LiteralTree) {
 					printBinaryRightOperand(binary);
 					print(".charCodeAt(0)");
@@ -4920,6 +4916,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				print("|0)");
 			}
 		}
+
+		return returnNothing();
 	}
 
 	protected void printBinaryRightOperand(BinaryTree binary) {
@@ -4934,34 +4932,36 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 * Prints an <code>if</code> tree.
 	 */
 	@Override
-	public void visitIf(IfTree ifStatement) {
-		print("if").print(ifStatement.cond).print(" ");
-		print(ifStatement.thenpart);
-		if (!(ifStatement.thenpart instanceof BlockTree)) {
-			if (!statementsWithNoSemis.contains(ifStatement.thenpart.getClass())) {
+	public Void visitIf(IfTree ifStatement, Trees trees) {
+		print("if").print(ifStatement.getCondition()).print(" ");
+		print(ifStatement.getThenStatement());
+		if (!(ifStatement.getThenStatement() instanceof BlockTree)) {
+			if (!isStatementWithNoSemiColon(ifStatement.getThenStatement())) {
 				print(";");
 			}
 		}
-		if (ifStatement.elsepart != null) {
+		if (ifStatement.getElseStatement() != null) {
 			print(" else ");
-			print(ifStatement.elsepart);
-			if (!(ifStatement.elsepart instanceof BlockTree)) {
-				if (!statementsWithNoSemis.contains(ifStatement.elsepart.getClass())) {
+			print(ifStatement.getElseStatement());
+			if (!(ifStatement.getElseStatement() instanceof BlockTree)) {
+				if (!isStatementWithNoSemiColon(ifStatement.getElseStatement())) {
 					print(";");
 				}
 			}
 		}
+
+		return returnNothing();
 	}
 
 	/**
 	 * Prints a <code>return</code> tree.
 	 */
 	@Override
-	public void visitReturn(ReturnTree returnStatement) {
+	public Void visitReturn(ReturnTree returnStatement, Trees trees) {
 		print("return");
 		if (returnStatement.getExpression() != null) {
 			Tree parentFunction = getFirstParent(MethodTree.class, LambdaExpressionTree.class);
-			if (returnStatement.getExpression().type == null) {
+			if (toType(returnStatement.getExpression()) == null) {
 				report(returnStatement, JSweetProblem.CANNOT_ACCESS_THIS,
 						parentFunction == null ? returnStatement.toString() : parentFunction.toString());
 				return returnNothing();
@@ -4970,7 +4970,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			TypeMirror returnType = null;
 			if (parentFunction != null) {
 				if (parentFunction instanceof MethodTree) {
-					returnType = ((MethodTree) parentFunction).restype.type;
+					returnType = toType(((MethodTree) parentFunction).getReturnType());
 				} else {
 					// TODO: this cannot work! Calculate the return type of the
 					// lambda
@@ -4983,59 +4983,63 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				print(returnStatement.getExpression());
 			}
 		}
+
+		return returnNothing();
 	}
 
 	private boolean staticInitializedAssignment = false;
 
 	private VariableElement getStaticInitializedField(Tree expr) {
-		if (expr instanceof IdentifierTree) {
-			return context.lazyInitializedStatics.contains(((IdentifierTree) expr).sym)
-					? (VariableElement) ((IdentifierTree) expr).sym
-					: null;
-		} else if (expr instanceof MemberSelectTree) {
-			return context.lazyInitializedStatics.contains(((MemberSelectTree) expr).sym)
-					? (VariableElement) ((MemberSelectTree) expr).sym
-					: null;
-		} else {
-			return returnNothing();
+		Element element = toElement(expr);
+		if (element instanceof VariableElement && context.lazyInitializedStatics.contains(element)) {
+			return (VariableElement) element;
 		}
+
+		return null;
 	}
 
 	/**
 	 * Prints an assignment operator tree (<code>+=, -=, *=, ...</code>).
 	 */
 	@Override
-	public void visitAssignop(CompoundAssignmentTree assignOp) {
-		if (!getAdapter().substituteAssignmentWithOperator(new AssignmentWithOperatorElementSupport(assignOp))) {
-			boolean expand = staticInitializedAssignment = (getStaticInitializedField(assignOp.getVariable()) != null);
-			boolean expandChar = context.types.isSameType(context.symtab.charType,
-					context.types.unboxedTypeOrType(assignOp.getVariable().type));
-			print(assignOp.getVariable());
-			staticInitializedAssignment = false;
-			String op = assignOp.operator.getName().toString();
+	public Void visitCompoundAssignment(CompoundAssignmentTree assignOpTree, Trees trees) {
+		if (!getAdapter().substituteAssignmentWithOperator(
+				new AssignmentWithOperatorElementSupport(getCompilationUnit(), assignOpTree, getContext()))) {
+			boolean expand = staticInitializedAssignment = (getStaticInitializedField(
+					assignOpTree.getVariable()) != null);
 
-			if (context.types.isSameType(context.symtab.booleanType,
-					context.types.unboxedTypeOrType(assignOp.getVariable().type))) {
-				if ("|".equals(op)) {
-					print(" = ").print(assignOp.getExpression()).print(" || ").print(assignOp.getVariable());
-					return;
-				} else if ("&".equals(op)) {
-					print(" = ").print(assignOp.getExpression()).print(" && ").print(assignOp.getVariable());
-					return;
+			TypeMirror variableType = toType(assignOpTree.getVariable());
+			TypeMirror expressionType = toType(assignOpTree.getExpression());
+
+			boolean expandChar = types().isSameType(util().getType(char.class), types().unboxedType(variableType));
+			print(assignOpTree.getVariable());
+			staticInitializedAssignment = false;
+
+			TypeMirror operatorType = util().getOperatorType(assignOpTree);
+			String assignmentOperator = util().toOperator(assignOpTree.getKind());
+			String operator = assignmentOperator.replace("=", "");
+
+			if (types().isSameType(util().getType(boolean.class), types().unboxedType(variableType))) {
+				if ("|".equals(operator)) {
+					print(" = ").print(assignOpTree.getExpression()).print(" || ").print(assignOpTree.getVariable());
+					return returnNothing();
+				} else if ("&".equals(operator)) {
+					print(" = ").print(assignOpTree.getExpression()).print(" && ").print(assignOpTree.getVariable());
+					return returnNothing();
 				}
 			}
 
-			boolean castToIntegral = "/".equals(op) //
-					&& util().isIntegral(assignOp.getVariable().type) //
-					&& util().isIntegral(assignOp.getExpression().type);
+			boolean castToIntegral = "/".equals(operator) //
+					&& util().isIntegral(variableType) //
+					&& util().isIntegral(expressionType);
 
 			if (expandChar) {
 				print(" = String.fromCharCode(")
-						.substituteAndPrintAssignedExpression(context.symtab.intType, assignOp.getVariable())
-						.print(" " + op + " ")
-						.substituteAndPrintAssignedExpression(context.symtab.intType, assignOp.getExpression())
+						.substituteAndPrintAssignedExpression(util().getType(int.class), assignOpTree.getVariable())
+						.print(" " + operator + " ")
+						.substituteAndPrintAssignedExpression(util().getType(int.class), assignOpTree.getExpression())
 						.print(")");
-				return;
+				return returnNothing();
 			}
 
 			if (expand || castToIntegral) {
@@ -5045,33 +5049,35 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					print("(n => n<0?Math.ceil(n):Math.floor(n))(");
 				}
 
-				print(assignOp.getVariable());
-				print(" " + op + " ");
-				if (context.types.isSameType(context.symtab.charType,
-						context.types.unboxedTypeOrType(assignOp.getExpression().type))) {
-					substituteAndPrintAssignedExpression(context.symtab.intType, assignOp.getExpression());
+				print(assignOpTree.getVariable());
+				print(" " + operator + " ");
+				if (types().isSameType(util().getType(char.class), types().unboxedType(expressionType))) {
+					substituteAndPrintAssignedExpression(util().getType(int.class), assignOpTree.getExpression());
 				} else {
-					printAssignWithOperatorRightOperand(assignOp);
+					printAssignWithOperatorRightOperand(assignOpTree);
 				}
 
 				if (castToIntegral) {
 					print(")");
 				}
 
-				return;
+				return returnNothing();
 			}
 
-			print(" " + op + "= ");
-			if (context.types.isSameType(context.symtab.charType,
-					context.types.unboxedTypeOrType(assignOp.getExpression().type))) {
+			print(" " + operator + "= ");
+			if (types().isSameType(util().getType(char.class), types().unboxedType(expressionType))) {
 				// TypeMirror lhsType = assignOp.getVariable().type;
-				boolean isLeftOperandString = (assignOp.getVariable().type.tsym == context.symtab.stringType.tsym);
-				TypeMirror rightPromotedType = isLeftOperandString ? context.symtab.charType : context.symtab.intType;
-				substituteAndPrintAssignedExpression(rightPromotedType, assignOp.getExpression());
+				boolean isLeftOperandString = (types().asElement(variableType) == types()
+						.asElement(util().getType(String.class)));
+				TypeMirror rightPromotedType = isLeftOperandString ? util().getType(char.class)
+						: util().getType(int.class);
+				substituteAndPrintAssignedExpression(rightPromotedType, assignOpTree.getExpression());
 			} else {
-				printAssignWithOperatorRightOperand(assignOp);
+				printAssignWithOperatorRightOperand(assignOpTree);
 			}
 		}
+
+		return returnNothing();
 	}
 
 	protected void printAssignWithOperatorRightOperand(CompoundAssignmentTree assignOp) {
@@ -5082,36 +5088,40 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 * Prints a <code>condition?trueExpr:falseExpr</code> tree.
 	 */
 	@Override
-	public void visitConditional(ConditionalExpressionTree conditional) {
-		print(conditional.cond);
+	public Void visitConditionalExpression(ConditionalExpressionTree conditional, Trees trees) {
+		print(conditional.getCondition());
 		print("?");
 		if (!substituteAssignedExpression(
 				rootConditionalAssignedTypes.isEmpty() ? null : rootConditionalAssignedTypes.peek(),
-				conditional.truepart)) {
-			print(conditional.truepart);
+				conditional.getTrueExpression())) {
+			print(conditional.getTrueExpression());
 		}
 		print(":");
 		if (!substituteAssignedExpression(
 				rootConditionalAssignedTypes.isEmpty() ? null : rootConditionalAssignedTypes.peek(),
-				conditional.falsepart)) {
-			print(conditional.falsepart);
+				conditional.getFalseExpression())) {
+			print(conditional.getFalseExpression());
 		}
 		if (!rootConditionalAssignedTypes.isEmpty()) {
 			rootConditionalAssignedTypes.pop();
 		}
+
+		return returnNothing();
 	}
 
 	/**
 	 * Prints a <code>for</code> loop tree.
 	 */
 	@Override
-	public void visitForLoop(ForLoopTree forLoop) {
-		print("for(").printArgList(null, forLoop.init).print("; ").print(forLoop.cond).print("; ")
-				.printArgList(null, forLoop.step).print(") ");
+	public Void visitForLoop(ForLoopTree forLoopTree, Trees trees) {
+		print("for(").printArgList(null, forLoopTree.getInitializer()).print("; ").print(forLoopTree.getCondition())
+				.print("; ").printArgList(null, forLoopTree.getUpdate()).print(") ");
 		print("{");
-		visitBeforeForBody(forLoop);
-		print(forLoop.body).print(";");
+		visitBeforeForBody(forLoopTree);
+		print(forLoopTree.getStatement()).print(";");
 		print("}");
+
+		return returnNothing();
 	}
 
 	protected void visitBeforeForBody(ForLoopTree forLoop) {
@@ -5121,29 +5131,32 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 * Prints a <code>continue</code> tree.
 	 */
 	@Override
-	public void visitContinue(ContinueTree continueStatement) {
+	public Void visitContinue(ContinueTree continueStatement, Trees trees) {
 		print("continue");
-		if (continueStatement.label != null) {
-			print(" ").print(continueStatement.label.toString());
+		if (continueStatement.getLabel() != null) {
+			print(" ").print(continueStatement.getLabel().toString());
 		}
+
+		return returnNothing();
 	}
 
 	/**
 	 * Prints a <code>break</code> tree.
 	 */
 	@Override
-	public void visitBreak(BreakTree breakStatement) {
+	public Void visitBreak(BreakTree breakStatement, Trees trees) {
 		print("break");
-		if (breakStatement.label != null) {
-			print(" ").print(breakStatement.label.toString());
+		if (breakStatement.getLabel() != null) {
+			print(" ").print(breakStatement.getLabel().toString());
 		}
+		return returnNothing();
 	}
 
 	/**
 	 * Prints a labeled statement tree.
 	 */
 	@Override
-	public void visitLabelled(LabeledStatementTree labelledStatement) {
+	public Void visitLabeledStatement(LabeledStatementTree labelledStatement, Trees trees) {
 		Tree parent = getParent(MethodTree.class);
 		if (parent == null) {
 			parent = getParent(BlockTree.class);
@@ -5152,55 +5165,60 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 		}
 		boolean[] used = { false };
-		new TreeScanner() {
+		new TreeScanner<Void, Trees>() {
 			@Override
-			public void visitBreak(BreakTree b) {
-				if (b.label != null && labelledStatement.label.equals(b.label)) {
+			public Void visitBreak(BreakTree b, Trees trees) {
+				if (b.getLabel() != null && labelledStatement.getLabel().equals(b.getLabel())) {
 					used[0] = true;
 				}
+				return returnNothing();
 			}
 
 			@Override
-			public void visitContinue(JCContinue c) {
-				if (c.label != null && labelledStatement.label.equals(c.label)) {
+			public Void visitContinue(ContinueTree c, Trees trees) {
+				if (c.getLabel() != null && labelledStatement.getLabel().equals(c.getLabel())) {
 					used[0] = true;
 				}
+				return returnNothing();
 			}
-		}.scan(parent);
+		}.scan(parent, trees);
 		if (!used[0]) {
 			print("/*");
 		}
-		print(labelledStatement.label.toString()).print(":");
+		print(labelledStatement.getLabel().toString()).print(":");
 		if (!used[0]) {
 			print("*/");
 		}
 		print(" ");
-		print(labelledStatement.body);
+		print(labelledStatement.getStatement());
+		
+		return returnNothing();
 	}
 
 	/**
 	 * Prints an array type tree.
 	 */
 	@Override
-	public void visitTypeArray(ArrayTypeTree arrayType) {
-		print(arrayType.elemtype).print("[]");
+	public Void visitArrayType(ArrayTypeTree arrayType, Trees trees) {
+		print(arrayType.getType()).print("[]");
+		return returnNothing();
 	}
-
+	
 	/**
 	 * Prints a new array tree.
 	 */
 	@Override
-	public void visitNewArray(JCNewArray newArray) {
+	public Void visitNewArray(NewArrayTree newArray, Trees trees) {
 		if (newArray.elemtype != null) {
 			typeChecker.checkType(newArray, null, newArray.elemtype);
 		}
-		if (newArray.dims != null && !newArray.dims.isEmpty()) {
-			if (newArray.dims.size() == 1) {
-				if (newArray.dims.head instanceof LiteralTree
-						&& ((int) ((LiteralTree) newArray.dims.head).value) <= 10) {
+		if (newArray.getDimensions() != null && !newArray.getDimensions().isEmpty()) {
+			if (newArray.getDimensions().size() == 1) {
+				if (newArray.getDimensions().head instanceof LiteralTree
+						&& ((int) ((LiteralTree) newArray.getDimensions().head).value) <= 10) {
 					boolean hasElements = false;
 					print("[");
-					for (int i = 0; i < (int) ((LiteralTree) newArray.dims.head).value; i++) {
+					for (int i = 0; i < (int) ((LiteralTree) newArray.getDimensions().head).value; i++) {
 						print(util().getTypeInitialValue(newArray.elemtype.type) + ", ");
 						hasElements = true;
 					}
@@ -5210,7 +5228,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					print("]");
 				} else {
 					print("(s => { let a=[]; while(s-->0) a.push(" + util().getTypeInitialValue(newArray.elemtype.type)
-							+ "); return a; })(").print(newArray.dims.head).print(")");
+							+ "); return a; })(").print(newArray.getDimensions().head).print(")");
 				}
 			} else {
 				print("<any> (function(dims) { " + VAR_DECL_KEYWORD
@@ -5219,7 +5237,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						+ " array = []; for(" + VAR_DECL_KEYWORD
 						+ " i = 0; i < dims[0]; i++) { array.push(allocate(dims.slice(1))); } return array; }}; return allocate(dims);})");
 				print("([");
-				printArgList(null, newArray.dims);
+				printArgList(null, newArray.getDimensions());
 				print("])");
 			}
 		} else {
@@ -5250,7 +5268,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 * Prints a unary operator tree.
 	 */
 	@Override
-	public void visitUnary(JCUnary unary) {
+	public Void visitUnary(JCUnary unary, Trees trees) {
 		if (!getAdapter().substituteUnaryOperator(new UnaryOperatorElementSupport(unary))) {
 			if (!inRollback) {
 				StatementTree statement = null;
@@ -5304,11 +5322,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 * Prints a <code>switch</code> tree.
 	 */
 	@Override
-	public void visitSwitch(SwitchTree switchStatement) {
+	public Void visitSwitch(SwitchTree switchStatement, Trees trees) {
 		print("switch(");
 		print(switchStatement.selector);
-		if (context.types.isSameType(context.symtab.charType,
-				context.types.unboxedTypeOrType(switchStatement.selector.type))) {
+		if (types().isSameType(util().getType(char.class), types().unboxedTypeOrType(switchStatement.selector.type))) {
 			print(".charCodeAt(0)");
 		}
 		print(") {").println();
@@ -5326,22 +5343,22 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 * Prints a <code>case</code> tree.
 	 */
 	@Override
-	public void visitCase(CaseTree caseStatement) {
+	public Void visitCase(CaseTree caseStatement, Trees trees) {
 		if (caseStatement.pat != null) {
 			print("case ");
 			if (!getAdapter().substituteCaseStatementPattern(new CaseElementSupport(caseStatement),
 					ExtendedElementFactory.INSTANCE.create(caseStatement.pat))) {
 				if (caseStatement.pat.type.isPrimitive()
-						|| context.types.isSameType(context.symtab.stringType, caseStatement.pat.type)) {
+						|| types().isSameType(util().getType(String.class), caseStatement.pat.type)) {
 					if (caseStatement.pat instanceof IdentifierTree) {
 						Object value = ((VariableElement) ((IdentifierTree) caseStatement.pat).sym).getConstValue();
-						if (context.types.isSameType(context.symtab.stringType, caseStatement.pat.type)) {
+						if (types().isSameType(util().getType(String.class), caseStatement.pat.type)) {
 							print("\"" + value + "\" /* " + caseStatement.pat + " */");
 						} else {
 							print("" + value + " /* " + caseStatement.pat + " */");
 						}
 					} else {
-						if (context.types.isSameType(context.symtab.charType, caseStatement.pat.type)) {
+						if (types().isSameType(util().getType(char.class), caseStatement.pat.type)) {
 							ExpressionTree caseExpression = caseStatement.pat;
 							if (caseExpression instanceof JCTypeCast) {
 								caseExpression = ((JCTypeCast) caseExpression).getExpression();
@@ -5381,9 +5398,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 * Prints a type cast tree.
 	 */
 	@Override
-	public void visitTypeCast(JCTypeCast cast) {
+	public Void visitTypeCast(JCTypeCast cast, Trees trees) {
 		if (substituteAssignedExpression(cast.type, cast.getExpression())) {
-			return;
+			return returnNothing();
 		}
 		if (util().isIntegral(cast.type)) {
 			if (cast.type.getKind() == TypeKind.LONG) {
@@ -5424,7 +5441,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 * Prints a <code>do - while</code> loop tree.
 	 */
 	@Override
-	public void visitDoLoop(DoWhileLoopTree doWhileLoop) {
+	public Void visitDoLoop(DoWhileLoopTree doWhileLoop, Trees trees) {
 		print("do ");
 		print("{");
 		visitBeforeDoWhileBody(doWhileLoop);
@@ -5444,7 +5461,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 * Prints a <code>while</code> loop tree.
 	 */
 	@Override
-	public void visitWhileLoop(WhileLoopTree whileLoop) {
+	public Void visitWhileLoop(WhileLoopTree whileLoo, Trees treesp) {
 		print("while(").print(whileLoop.cond).print(") ");
 		print("{");
 		visitBeforeWhileBody(whileLoop);
@@ -5459,7 +5476,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 * Prints a variable assignment tree.
 	 */
 	@Override
-	public void visitAssign(AssignmentTree assign) {
+	public Void visitAssign(AssignmentTree assign, Trees trees) {
 		if (!getAdapter().substituteAssignment(new AssignmentElementSupport(assign))) {
 			staticInitializedAssignment = getStaticInitializedField(assign.getVariable()) != null;
 			print(assign.getVariable()).print(isAnnotationScope ? ": " : " = ");
@@ -5474,7 +5491,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 * Prints a <code>try</code> tree.
 	 */
 	@Override
-	public void visitTry(TryTree tryStatement) {
+	public Void visitTry(TryTree tryStatement, Trees trees) {
 		boolean resourced = tryStatement.resources != null && !tryStatement.resources.isEmpty();
 		if (resourced) {
 			for (Tree resource : tryStatement.resources) {
@@ -5532,7 +5549,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 * Prints a <code>catch</code> tree.
 	 */
 	@Override
-	public void visitCatch(CatchTree catcher) {
+	public Void visitCatch(CatchTree catcher, Trees trees) {
 		print(" catch(").print(catcher.param.getName().toString()).print(") ");
 		print(catcher.body);
 	}
@@ -5541,7 +5558,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 * Prints a lambda expression tree.
 	 */
 	@Override
-	public void visitLambda(LambdaExpressionTree lamba) {
+	public Void visitLambdaExpression(LambdaExpressionTree lamba, Trees trees) {
 		boolean regularFunction = false;
 		if (getParent() instanceof MethodInvocationTree
 				&& ((MethodInvocationTree) getParent()).getMethodSelect().toString().endsWith("function")
@@ -5604,7 +5621,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 * Prints a reference tree.
 	 */
 	@Override
-	public void visitReference(JCMemberReference memberReference) {
+	public Void visitReference(JCMemberReference memberReference, Trees trees) {
 		String memberReferenceSimpleName = memberReference.getExpression().type.tsym.getSimpleName().toString();
 		boolean printAsInstanceMethod = !memberReference.sym.getModifiers().contains(Modifier.STATIC)
 				&& !"<init>".equals(memberReference.getName().toString())
@@ -5647,7 +5664,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			print(memberReference.getName().toString());
 		} else {
 			if ("<init>".equals(memberReference.getName().toString())) {
-				if (context.types.isArray(memberReference.getExpression().type)) {
+				if (types().isArray(memberReference.getExpression().type)) {
 					print("new Array<");
 					substituteAndPrintType(((ArrayTypeTree) memberReference.getExpression()).elemtype);
 					print(">");
@@ -5690,7 +5707,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 * Prints a type parameter tree.
 	 */
 	@Override
-	public void visitTypeParameter(JCTypeParameter typeParameter) {
+	public Void visitTypeParameter(JCTypeParameter typeParameter, Trees trees) {
 		print(typeParameter.getName().toString());
 		if (typeParameter.bounds != null && !typeParameter.bounds.isEmpty()) {
 			print(" extends ");
@@ -5703,11 +5720,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	/** Prints a <code>synchronized</code> tree. */
 	@Override
-	public void visitSynchronized(SynchronizedTree sync) {
+	public Void visitSynchronized(SynchronizedTree sync, Trees trees) {
 		report(sync, JSweetProblem.SYNCHRONIZATION);
-		if (sync.body != null) {
-			print(sync.body);
+		if (sync.getBlock() != null) {
+			print(sync.getBlock());
 		}
+
+		return returnNothing();
 	}
 
 	/**
@@ -5729,18 +5748,18 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	}
 
 	private void printInstanceOf(String exprStr, Tree expr, TypeMirror type, boolean checkFirstArrayElement) {
-		if (!(getParent() instanceof JCParens)) {
+		if (!(getParent() instanceof ParenthesizedTree)) {
 			print("(");
 		}
-		if (checkFirstArrayElement
-				|| !getAdapter().substituteInstanceof(exprStr, ExtendedElementFactory.INSTANCE.create(expr), type)) {
+		if (checkFirstArrayElement || !getAdapter().substituteInstanceof(exprStr, createExtendedElement(expr), type)) {
+			TypeElement typeElement = (TypeElement) types().asElement(type);
 			if (TYPE_MAPPING.containsKey(type.toString())) {
 				print("typeof ");
 				print(exprStr, expr);
 				if (checkFirstArrayElement)
 					print("[0]");
 				print(" === ").print("'" + TYPE_MAPPING.get(type.toString()).toLowerCase() + "'");
-			} else if (type.tsym.isEnum()) {
+			} else if (typeElement.getKind() == ElementKind.ENUM) {
 				print("typeof ");
 				print(exprStr, expr);
 				if (checkFirstArrayElement)
@@ -5749,7 +5768,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			} else if (type.toString().startsWith(JSweetConfig.FUNCTION_CLASSES_PACKAGE + ".")
 					|| type.toString().startsWith("java.util.function.")
 					|| Runnable.class.getName().equals(type.toString())
-					|| context.hasAnnotationType(type.tsym, JSweetConfig.ANNOTATION_FUNCTIONAL_INTERFACE)) {
+					|| context.hasAnnotationType(typeElement, JSweetConfig.ANNOTATION_FUNCTIONAL_INTERFACE)) {
 				print("typeof ");
 				print(exprStr, expr);
 				if (checkFirstArrayElement)
@@ -5767,7 +5786,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				print(exprStr, expr);
 				if (checkFirstArrayElement)
 					print("[0]");
-				if (context.isInterface(type.tsym)) {
+				if (context.isInterface(typeElement)) {
 					print(" != null && ");
 					print("(");
 					print(exprStr, expr);
@@ -5778,7 +5797,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					if (checkFirstArrayElement)
 						print("[0]");
 					print("[\"" + INTERFACES_FIELD_NAME + "\"].indexOf(\"")
-							.print(type.tsym.getQualifiedName().toString()).print("\") >= 0");
+							.print(typeElement.getQualifiedName().toString()).print("\") >= 0");
 					print(" || ");
 					print(exprStr, expr);
 					if (checkFirstArrayElement)
@@ -5792,8 +5811,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					if (checkFirstArrayElement)
 						print("[0]");
 					print(".constructor[\"" + INTERFACES_FIELD_NAME + "\"].indexOf(\"")
-							.print(type.tsym.getQualifiedName().toString()).print("\") >= 0");
-					if (CharSequence.class.getName().equals(type.tsym.getQualifiedName().toString())) {
+							.print(typeElement.getQualifiedName().toString()).print("\") >= 0");
+					if (CharSequence.class.getName().equals(typeElement.getQualifiedName().toString())) {
 						print(" || typeof ");
 						print(exprStr, expr);
 						if (checkFirstArrayElement)
@@ -5802,11 +5821,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					}
 					print(")");
 				} else {
-					if (type.tsym instanceof TypeVariableSymbol
-							|| Object.class.getName().equals(type.tsym.getQualifiedName().toString())) {
+					if (typeElement instanceof TypeParameterElement
+							|| Object.class.getName().equals(typeElement.getQualifiedName().toString())) {
 						print(" != null");
 					} else {
-						String qualifiedName = getQualifiedTypeName(type.tsym, false, false);
+						String qualifiedName = getQualifiedTypeName(typeElement, false, false);
 						if (qualifiedName.startsWith("{")) {
 							qualifiedName = "Object";
 						}
@@ -5830,11 +5849,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 								print(".length==0 || ");
 								print(exprStr, expr);
 								print("[0] == null ||");
-								if (t.elemtype instanceof ArrayType) {
+								if (t.getComponentType() instanceof ArrayType) {
 									print(exprStr, expr);
 									print("[0] instanceof Array");
 								} else {
-									printInstanceOf(exprStr, expr, t.elemtype, true);
+									printInstanceOf(exprStr, expr, t.getComponentType(), true);
 								}
 								print(")");
 							}
@@ -5843,7 +5862,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 			}
 		}
-		if (!(getParent() instanceof JCParens)) {
+		if (!(getParent() instanceof ParenthesizedTree)) {
 			print(")");
 		}
 	}
@@ -6072,5 +6091,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	private static final Void returnNothing() {
 		return null;
+	}
+
+	private boolean isStatementWithNoSemiColon(Tree tree) {
+		return (tree instanceof IfTree || tree instanceof ForLoopTree || tree instanceof EnhancedForLoopTree
+				|| tree instanceof SwitchTree);
 	}
 }

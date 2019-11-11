@@ -32,6 +32,8 @@ import org.junit.Test;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.VariableTree;
 
@@ -258,7 +260,7 @@ public class UtilTest extends AbstractTest {
 
 	@Test
 	public void getOperatorTypeOnNull() throws Exception {
-		TypeMirror operatorType = util.getOperatorType(null);
+		TypeMirror operatorType = util.getOperatorType((BinaryTree) null);
 
 		assertNull(operatorType);
 	}
@@ -304,6 +306,53 @@ public class UtilTest extends AbstractTest {
 	}
 
 	@Test
+	public void getOperatorForCompoundAssignmentTypeOnNull() throws Exception {
+		TypeMirror operatorType = util.getOperatorType((CompoundAssignmentTree) null);
+
+		assertNull(operatorType);
+	}
+
+	@Test
+	public void getOperatorForCompoundAssignmentTypeOnInt() throws Exception {
+		MethodTree testMethod = getMethodTree("plusAssignmentInt");
+		CompoundAssignmentTree assignmentTree = extractCompoundAssignmentFromSingleLineTestMethod(testMethod);
+
+		TypeMirror operatorType = util.getOperatorType(assignmentTree);
+
+		assertEquals(util.getType(int.class), operatorType);
+	}
+
+	@Test
+	public void getOperatorForCompoundAssignmentTypeOnDouble() throws Exception {
+		MethodTree testMethod = getMethodTree("minusAssignmentDouble");
+		CompoundAssignmentTree assignmentTree = extractCompoundAssignmentFromSingleLineTestMethod(testMethod);
+
+		TypeMirror operatorType = util.getOperatorType(assignmentTree);
+
+		assertEquals(util.getType(double.class), operatorType);
+	}
+
+	@Test
+	public void getOperatorForCompoundAssignmentTypeOnString() throws Exception {
+		MethodTree testMethod = getMethodTree("plusAssignmentString");
+		CompoundAssignmentTree assignmentTree = extractCompoundAssignmentFromSingleLineTestMethod(testMethod);
+
+		TypeMirror operatorType = util.getOperatorType(assignmentTree);
+
+		assertEquals(util.getType(String.class), operatorType);
+	}
+
+	@Test
+	public void getOperatorForCompoundAssignmentTypeOnStringPlusInt() throws Exception {
+		MethodTree testMethod = getMethodTree("plusAssignmentStringInt");
+		CompoundAssignmentTree assignmentTree = extractCompoundAssignmentFromSingleLineTestMethod(testMethod);
+
+		TypeMirror operatorType = util.getOperatorType(assignmentTree);
+		
+		assertEquals(util.getType(String.class), operatorType);
+	}
+
+	@Test
 	public void getFirstTypeArgumentAsElementOnNull() throws Exception {
 		assertNull(util.getFirstTypeArgumentAsElement(null));
 	}
@@ -335,7 +384,7 @@ public class UtilTest extends AbstractTest {
 
 	@Test
 	public void isInSameSourceFileForElementOutsideCompilationUnit() throws Exception {
-		Element elementFromOtherCompilUnit = context.elements.getTypeElement("first.second.Test2");		
+		Element elementFromOtherCompilUnit = context.elements.getTypeElement("first.second.Test2");
 		assertFalse(util.isInSameSourceFile(getMainCompilationUnit(), elementFromOtherCompilUnit));
 	}
 
@@ -386,6 +435,11 @@ public class UtilTest extends AbstractTest {
 	private BinaryTree extractBinaryFromSingleLineTestMethod(MethodTree method) {
 		VariableTree var = (VariableTree) method.getBody().getStatements().get(0);
 		return (BinaryTree) var.getInitializer();
+	}
+
+	private CompoundAssignmentTree extractCompoundAssignmentFromSingleLineTestMethod(MethodTree method) {
+		ExpressionStatementTree expressionTree = (ExpressionStatementTree) method.getBody().getStatements().get(0);
+		return (CompoundAssignmentTree) expressionTree.getExpression();
 	}
 
 }

@@ -73,6 +73,7 @@ import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.DoWhileLoopTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionTree;
@@ -1608,12 +1609,33 @@ public class Util {
 		return getOperatorElement(binaryTree).getReturnType();
 	}
 
+	/**
+	 * Returns resulting type for this operation
+	 */
+	public TypeMirror getOperatorType(CompoundAssignmentTree compoundAssignmentTree) {
+		if (compoundAssignmentTree == null) {
+			return null;
+		}
+		return getOperatorElement(compoundAssignmentTree).getReturnType();
+	}
+
 	public ExecutableElement getOperatorElement(BinaryTree binaryTree) {
 		if (binaryTree == null) {
 			return null;
 		}
 		try {
 			return (ExecutableElement) javacInternals().binaryTreeOperatorField.get(binaryTree);
+		} catch (Exception e) {
+			throw new RuntimeException("Cannot call internal Javac API :( please adapt this code if API changed", e);
+		}
+	}
+
+	public ExecutableElement getOperatorElement(CompoundAssignmentTree assignmentTree) {
+		if (assignmentTree == null) {
+			return null;
+		}
+		try {
+			return (ExecutableElement) javacInternals().assignOpOperatorField.get(assignmentTree);
 		} catch (Exception e) {
 			throw new RuntimeException("Cannot call internal Javac API :( please adapt this code if API changed", e);
 		}
@@ -1931,6 +1953,8 @@ public class Util {
 
 		final Field binaryTreeOperatorField;
 
+		final Field assignOpOperatorField;
+
 		private JavacInternals(Types types) {
 			try {
 				typesClass = Class.forName("com.sun.tools.javac.code.Types");
@@ -1940,6 +1964,11 @@ public class Util {
 				binaryTreeOperatorField = Stream
 						.of(Class.forName("com.sun.tools.javac.tree.JCTree").getDeclaredClasses())
 						.filter(innerClass -> innerClass.getSimpleName().equals("JCBinary")) //
+						.findFirst().get() //
+						.getField("operator");
+
+				assignOpOperatorField = Stream.of(Class.forName("com.sun.tools.javac.tree.JCTree").getDeclaredClasses())
+						.filter(innerClass -> innerClass.getSimpleName().equals("JCAssignOp")) //
 						.findFirst().get() //
 						.getField("operator");
 
