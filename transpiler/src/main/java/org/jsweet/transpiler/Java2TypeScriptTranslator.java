@@ -74,7 +74,6 @@ import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.OverloadScanner.Overload;
 import org.jsweet.transpiler.extension.PrinterAdapter;
 import org.jsweet.transpiler.model.ExtendedElement;
-import org.jsweet.transpiler.model.ExtendedElementFactory;
 import org.jsweet.transpiler.model.MethodInvocationElement;
 import org.jsweet.transpiler.model.support.ArrayAccessElementSupport;
 import org.jsweet.transpiler.model.support.AssignmentElementSupport;
@@ -89,9 +88,7 @@ import org.jsweet.transpiler.model.support.NewClassElementSupport;
 import org.jsweet.transpiler.model.support.UnaryOperatorElementSupport;
 import org.jsweet.transpiler.util.AbstractTreePrinter;
 import org.jsweet.transpiler.util.JSDoc;
-import org.jsweet.transpiler.util.Util;
 
-import com.google.common.collect.Lists;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ArrayTypeTree;
@@ -137,6 +134,9 @@ import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TryTree;
+import com.sun.source.tree.TypeCastTree;
+import com.sun.source.tree.TypeParameterTree;
+import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
@@ -1437,7 +1437,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 		if (getScope().declareClassScope) {
 			if (context.hasAnnotationType(classTypeElement, JSweetConfig.ANNOTATION_DECORATOR)) {
-				print("declare function ").print(name).print("(...args: any[]);").println();
+				print("declare function ").print(name).print("(...getExpression()s: any[]);").println();
 				exitScope();
 				return returnNothing();
 			}
@@ -4636,8 +4636,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	@Override
 	public AbstractTreePrinter printConstructorArgList(NewClassTree newClass, boolean localClass) {
-
-		TypeMirror classType = toType(newClass.getIdentifier());
 		TypeElement classTypeElement = toTypeElement(newClass.getIdentifier());
 
 		boolean printed = false;
@@ -4715,7 +4713,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 */
 	@Override
 	public Void visitEnhancedForLoop(EnhancedForLoopTree foreachLoop, Trees trees) {
-		Tree t;
 		String indexVarName = "index" + util().getId();
 		boolean[] hasLength = { false };
 		TypeElement targetType = toTypeElement(foreachLoop.getExpression());
@@ -5015,7 +5012,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			print(assignOpTree.getVariable());
 			staticInitializedAssignment = false;
 
-			TypeMirror operatorType = util().getOperatorType(assignOpTree);
 			String assignmentOperator = util().toOperator(assignOpTree.getKind());
 			String operator = assignmentOperator.replace("=", "");
 
@@ -5191,7 +5187,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 		print(" ");
 		print(labelledStatement.getStatement());
-		
+
 		return returnNothing();
 	}
 
@@ -5203,23 +5199,24 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		print(arrayType.getType()).print("[]");
 		return returnNothing();
 	}
-	
+
 	/**
 	 * Prints a new array tree.
 	 */
 	@Override
 	public Void visitNewArray(NewArrayTree newArray, Trees trees) {
-		if (newArray.elemtype != null) {
-			typeChecker.checkType(newArray, null, newArray.elemtype);
+		if (newArray.getType() != null) {
+			typeChecker.checkType(newArray, null, newArray.getType(), getCompilationUnit());
 		}
 		if (newArray.getDimensions() != null && !newArray.getDimensions().isEmpty()) {
+			TypeMirror newArrayElementType = toType(newArray.getType());
 			if (newArray.getDimensions().size() == 1) {
-				if (newArray.getDimensions().head instanceof LiteralTree
-						&& ((int) ((LiteralTree) newArray.getDimensions().head).value) <= 10) {
+				if (newArray.getDimensions().get(0) instanceof LiteralTree
+						&& ((int) ((LiteralTree) newArray.getDimensions().get(0)).getValue()) <= 10) {
 					boolean hasElements = false;
 					print("[");
-					for (int i = 0; i < (int) ((LiteralTree) newArray.getDimensions().head).value; i++) {
-						print(util().getTypeInitialValue(newArray.elemtype.type) + ", ");
+					for (int i = 0; i < (int) ((LiteralTree) newArray.getDimensions().get(0)).getValue(); i++) {
+						print(util().getTypeInitialValue(newArrayElementType) + ", ");
 						hasElements = true;
 					}
 					if (hasElements) {
@@ -5227,13 +5224,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					}
 					print("]");
 				} else {
-					print("(s => { let a=[]; while(s-->0) a.push(" + util().getTypeInitialValue(newArray.elemtype.type)
-							+ "); return a; })(").print(newArray.getDimensions().head).print(")");
+					print("(s => { let a=[]; while(s-->0) a.push(" + util().getTypeInitialValue(newArrayElementType)
+							+ "); return a; })(").print(newArray.getDimensions().get(0)).print(")");
 				}
 			} else {
 				print("<any> (function(dims) { " + VAR_DECL_KEYWORD
 						+ " allocate = function(dims) { if(dims.length==0) { return "
-						+ util().getTypeInitialValue(newArray.elemtype.type) + "; } else { " + VAR_DECL_KEYWORD
+						+ util().getTypeInitialValue(newArrayElementType) + "; } else { " + VAR_DECL_KEYWORD
 						+ " array = []; for(" + VAR_DECL_KEYWORD
 						+ " i = 0; i < dims[0]; i++) { array.push(allocate(dims.slice(1))); } return array; }}; return allocate(dims);})");
 				print("([");
@@ -5242,8 +5239,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 		} else {
 			print("[");
-			if (newArray.elems != null && !newArray.elems.isEmpty()) {
-				for (ExpressionTree e : newArray.elems) {
+			if (newArray.getInitializers() != null && !newArray.getInitializers().isEmpty()) {
+				for (ExpressionTree e : newArray.getInitializers()) {
 					if (!rootArrayAssignedTypes.isEmpty()) {
 						if (!substituteAssignedExpression(rootArrayAssignedTypes.peek(), e)) {
 							print(e);
@@ -5260,6 +5257,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 			print("]");
 		}
+
+		return returnNothing();
 	}
 
 	protected boolean inRollback = false;
@@ -5268,18 +5267,19 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 * Prints a unary operator tree.
 	 */
 	@Override
-	public Void visitUnary(JCUnary unary, Trees trees) {
-		if (!getAdapter().substituteUnaryOperator(new UnaryOperatorElementSupport(unary))) {
+	public Void visitUnary(UnaryTree unary, Trees trees) {
+		if (!getAdapter()
+				.substituteUnaryOperator(new UnaryOperatorElementSupport(getCompilationUnit(), unary, getContext()))) {
+
+			String operatorAsString = util().toOperator(unary.getKind());
 			if (!inRollback) {
 				StatementTree statement = null;
 				VariableElement[] staticInitializedField = { null };
-				switch (unary.getTag()) {
-				case POSTDEC:
-				case POSTINC:
-				case PREDEC:
-				case PREINC:
+				switch (operatorAsString) {
+				case "--":
+				case "++":
 					staticInitializedAssignment = (staticInitializedField[0] = getStaticInitializedField(
-							unary.arg)) != null;
+							unary.getExpression())) != null;
 					if (staticInitializedAssignment) {
 						statement = getParent(StatementTree.class);
 					}
@@ -5292,30 +5292,25 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 										+ STATIC_INITIALIZATION_SUFFIX + "();")
 								.println().printIndent();
 						inRollback = true;
-						scan(tree);
+						scan(tree, trees);
 					});
 				}
 			} else {
 				inRollback = false;
 			}
-			switch (unary.getTag()) {
-			case POS:
-				print("+").print(unary.arg);
-				break;
-			case NEG:
-				print("-").print(unary.arg);
-				break;
-			case POSTDEC:
-			case POSTINC:
-				print(unary.arg);
-				print(unary.operator.getName().toString());
+			switch (unary.getKind()) {
+			case POSTFIX_DECREMENT:
+			case POSTFIX_INCREMENT:
+				print(unary.getExpression());
+				print(operatorAsString);
 				break;
 			default:
-				print(unary.operator.getName().toString());
-				print(unary.arg);
+				print(operatorAsString);
+				print(unary.getExpression());
 				break;
 			}
 		}
+		return returnNothing();
 	}
 
 	/**
@@ -5324,16 +5319,19 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	@Override
 	public Void visitSwitch(SwitchTree switchStatement, Trees trees) {
 		print("switch(");
-		print(switchStatement.selector);
-		if (types().isSameType(util().getType(char.class), types().unboxedTypeOrType(switchStatement.selector.type))) {
+		print(switchStatement.getExpression());
+		if (types().isSameType(util().getType(char.class),
+				types().unboxedType(toType(switchStatement.getExpression())))) {
 			print(".charCodeAt(0)");
 		}
 		print(") {").println();
-		for (CaseTree caseStatement : switchStatement.cases) {
+		for (CaseTree caseStatement : switchStatement.getCases()) {
 			printIndent();
 			print(caseStatement);
 		}
 		printIndent().print("}");
+
+		return returnNothing();
 	}
 
 	protected void printCaseStatementPattern(ExpressionTree pattern) {
@@ -5343,39 +5341,44 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 * Prints a <code>case</code> tree.
 	 */
 	@Override
-	public Void visitCase(CaseTree caseStatement, Trees trees) {
-		if (caseStatement.pat != null) {
+	public Void visitCase(CaseTree caseTree, Trees trees) {
+		if (caseTree.getExpression() != null) {
+			TypeMirror expressionType = toType(caseTree.getExpression());
+
 			print("case ");
-			if (!getAdapter().substituteCaseStatementPattern(new CaseElementSupport(caseStatement),
-					ExtendedElementFactory.INSTANCE.create(caseStatement.pat))) {
-				if (caseStatement.pat.type.isPrimitive()
-						|| types().isSameType(util().getType(String.class), caseStatement.pat.type)) {
-					if (caseStatement.pat instanceof IdentifierTree) {
-						Object value = ((VariableElement) ((IdentifierTree) caseStatement.pat).sym).getConstValue();
-						if (types().isSameType(util().getType(String.class), caseStatement.pat.type)) {
-							print("\"" + value + "\" /* " + caseStatement.pat + " */");
+			if (!getAdapter().substituteCaseStatementPattern(
+					new CaseElementSupport(getCompilationUnit(), caseTree, getContext()),
+					createExtendedElement(caseTree.getExpression()))) {
+				if (util().isPrimitiveOrVoid(expressionType)
+						|| types().isSameType(util().getType(String.class), expressionType)) {
+					if (caseTree.getExpression() instanceof IdentifierTree) {
+						VariableElement varElement = toElement((IdentifierTree) caseTree.getExpression());
+						Object value = varElement.getConstantValue();
+						if (types().isSameType(util().getType(String.class), expressionType)) {
+							print("\"" + value + "\" /* " + caseTree.getExpression() + " */");
 						} else {
-							print("" + value + " /* " + caseStatement.pat + " */");
+							print("" + value + " /* " + caseTree.getExpression() + " */");
 						}
 					} else {
-						if (types().isSameType(util().getType(char.class), caseStatement.pat.type)) {
-							ExpressionTree caseExpression = caseStatement.pat;
-							if (caseExpression instanceof JCTypeCast) {
-								caseExpression = ((JCTypeCast) caseExpression).getExpression();
+						if (types().isSameType(util().getType(char.class), expressionType)) {
+							ExpressionTree caseExpression = caseTree.getExpression();
+							if (caseExpression instanceof TypeCastTree) {
+								caseExpression = ((TypeCastTree) caseExpression).getExpression();
 							}
 
 							if (caseExpression instanceof LiteralTree) {
-								print("" + ((LiteralTree) caseExpression).value + " /* " + caseStatement.pat + " */");
+								print("" + ((LiteralTree) caseExpression).getValue() + " /* " + caseTree.getExpression()
+										+ " */");
 							} else {
 								print(caseExpression);
 							}
 
 						} else {
-							print(caseStatement.pat);
+							print(caseTree.getExpression());
 						}
 					}
 				} else {
-					print(getRootRelativeName(caseStatement.pat.type.tsym) + "." + caseStatement.pat);
+					print(getRootRelativeName(types().asElement(expressionType)) + "." + caseTree.getExpression());
 				}
 			}
 		} else {
@@ -5383,75 +5386,85 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 		print(":");
 		println().startIndent();
-		for (StatementTree statement : caseStatement.stats) {
+		for (StatementTree statement : caseTree.getStatements()) {
 			printIndent();
 			print(statement);
-			if (!statementsWithNoSemis.contains(statement.getClass())) {
+			if (!isStatementWithNoSemiColon(statement)) {
 				print(";");
 			}
 			println();
 		}
 		endIndent();
+
+		return returnNothing();
 	}
 
 	/**
 	 * Prints a type cast tree.
 	 */
 	@Override
-	public Void visitTypeCast(JCTypeCast cast, Trees trees) {
-		if (substituteAssignedExpression(cast.type, cast.getExpression())) {
+	public Void visitTypeCast(TypeCastTree cast, Trees trees) {
+		TypeMirror fromType = toType(cast.getExpression());
+		Element fromTypeElement = types().asElement(fromType);
+		TypeMirror toType = toType(cast.getType());
+		Element toTypeElement = types().asElement(toType);
+
+		if (substituteAssignedExpression(toType, cast.getExpression())) {
 			return returnNothing();
 		}
-		if (util().isIntegral(cast.type)) {
-			if (cast.type.getKind() == TypeKind.LONG) {
+		if (util().isIntegral(toType)) {
+			if (toType.getKind() == TypeKind.LONG) {
 				print("(n => n<0?Math.ceil(n):Math.floor(n))(");
 			} else {
 				print("(");
 			}
 		}
-		if (!context.hasAnnotationType(cast.clazz.type.tsym, ANNOTATION_ERASED, ANNOTATION_OBJECT_TYPE,
+		if (!context.hasAnnotationType(toTypeElement, ANNOTATION_ERASED, ANNOTATION_OBJECT_TYPE,
 				ANNOTATION_FUNCTIONAL_INTERFACE)) {
 			// Java is more permissive than TypeScript when casting type
 			// variables
-			if (cast.getExpression().type.getKind() == TypeKind.TYPEVAR) {
+			if (fromType.getKind() == TypeKind.TYPEVAR) {
 				print("<any>");
 			} else {
 				print("<");
-				substituteAndPrintType(cast.clazz).print(">");
+				substituteAndPrintType(cast.getType()).print(">");
 				// Java always allows casting when an interface or a type param
 				// is involved
 				// (that's weak!!)
-				if (cast.getExpression().type.tsym.isInterface() || cast.type.tsym.isInterface()
-						|| cast.clazz.type.getKind() == TypeKind.TYPEVAR) {
+				if (fromTypeElement.getKind() == ElementKind.INTERFACE
+						|| toTypeElement.getKind() == ElementKind.INTERFACE || toType.getKind() == TypeKind.TYPEVAR) {
 					print("<any>");
 				}
 			}
 		}
 		print(cast.getExpression());
-		if (util().isIntegral(cast.type)) {
-			if (cast.type.getKind() == TypeKind.LONG) {
+		if (util().isIntegral(toType)) {
+			if (toType.getKind() == TypeKind.LONG) {
 				print(")");
 			} else {
 				print("|0)");
 			}
 		}
+		return returnNothing();
 	}
 
 	/**
 	 * Prints a <code>do - while</code> loop tree.
 	 */
 	@Override
-	public Void visitDoLoop(DoWhileLoopTree doWhileLoop, Trees trees) {
+	public Void visitDoWhileLoop(DoWhileLoopTree doWhileLoop, Trees trees) {
 		print("do ");
 		print("{");
 		visitBeforeDoWhileBody(doWhileLoop);
-		if (doWhileLoop.body instanceof BlockTree) {
-			print(doWhileLoop.body);
+		if (doWhileLoop.getStatement() instanceof BlockTree) {
+			print(doWhileLoop.getStatement());
 		} else {
-			print(doWhileLoop.body).print(";");
+			print(doWhileLoop.getStatement()).print(";");
 		}
 		print("}");
-		print(" while(").print(doWhileLoop.cond).print(")");
+		print(" while(").print(doWhileLoop.getCondition()).print(")");
+
+		return returnNothing();
 	}
 
 	protected void visitBeforeDoWhileBody(DoWhileLoopTree doWhileLoop) {
@@ -5461,12 +5474,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 * Prints a <code>while</code> loop tree.
 	 */
 	@Override
-	public Void visitWhileLoop(WhileLoopTree whileLoo, Trees treesp) {
-		print("while(").print(whileLoop.cond).print(") ");
+	public Void visitWhileLoop(WhileLoopTree whileLoop, Trees trees) {
+		print("while(").print(whileLoop.getCondition()).print(") ");
 		print("{");
 		visitBeforeWhileBody(whileLoop);
-		print(whileLoop.body);
+		print(whileLoop.getStatement());
 		print("}");
+
+		return returnNothing();
 	}
 
 	protected void visitBeforeWhileBody(WhileLoopTree whileLoop) {
@@ -5476,15 +5491,18 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 * Prints a variable assignment tree.
 	 */
 	@Override
-	public Void visitAssign(AssignmentTree assign, Trees trees) {
-		if (!getAdapter().substituteAssignment(new AssignmentElementSupport(assign))) {
+	public Void visitAssignment(AssignmentTree assign, Trees trees) {
+		if (!getAdapter()
+				.substituteAssignment(new AssignmentElementSupport(getCompilationUnit(), assign, getContext()))) {
 			staticInitializedAssignment = getStaticInitializedField(assign.getVariable()) != null;
 			print(assign.getVariable()).print(isAnnotationScope ? ": " : " = ");
-			if (!substituteAssignedExpression(assign.getVariable().type, assign.getExpression())) {
+			if (!substituteAssignedExpression(toType(assign.getVariable()), assign.getExpression())) {
 				print(assign.getExpression());
 			}
 			staticInitializedAssignment = false;
 		}
+
+		return returnNothing();
 	}
 
 	/**
@@ -5492,57 +5510,62 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 */
 	@Override
 	public Void visitTry(TryTree tryStatement, Trees trees) {
-		boolean resourced = tryStatement.resources != null && !tryStatement.resources.isEmpty();
+		boolean resourced = tryStatement.getResources() != null && !tryStatement.getResources().isEmpty();
 		if (resourced) {
-			for (Tree resource : tryStatement.resources) {
+			for (Tree resource : tryStatement.getResources()) {
 				print(resource).println(";").printIndent();
 			}
-		} else if (tryStatement.catchers.isEmpty() && tryStatement.finalizer == null) {
+		} else if (tryStatement.getCatches().isEmpty() && tryStatement.getFinallyBlock() == null) {
 			report(tryStatement, JSweetProblem.TRY_WITHOUT_CATCH_OR_FINALLY);
 		}
-		print("try ").print(tryStatement.body);
-		if (tryStatement.catchers.size() > 1) {
+		print("try ").print(tryStatement.getBlock());
+		if (tryStatement.getCatches().size() > 1) {
 			print(" catch(__e) {").startIndent();
-			for (CatchTree catcher : tryStatement.catchers) {
+			for (CatchTree catcher : tryStatement.getCatches()) {
 				println().printIndent().print("if");
-				printInstanceOf("__e", null, catcher.param.type);
+				printInstanceOf("__e", null, toType(catcher.getParameter()));
 				print(" {").startIndent().println().printIndent();
 				// if (!context.options.isUseJavaApis() &&
 				// catcher.param.type.toString().startsWith("java.")) {
 				// print(catcher.param).print(" = ").print("__e;").println();
 				// } else {
-				print(catcher.param).print(" = <");
-				substituteAndPrintType(catcher.param.getType());
+				print(catcher.getParameter()).print(" = <");
+				substituteAndPrintType(catcher.getParameter().getType());
 				print(">__e;").println();
 				// }
-				printBlockStatements(catcher.body.getStatements());
+				printBlockStatements(catcher.getBlock().getStatements());
 				endIndent().println().printIndent().print("}");
 			}
 			endIndent().println().printIndent().print("}");
-		} else if (tryStatement.catchers.size() == 1) {
-			print(tryStatement.catchers.head);
+		} else if (tryStatement.getCatches().size() == 1) {
+			print(tryStatement.getCatches().get(0));
 		}
-		if (resourced || tryStatement.finalizer != null) {
+		if (resourced || tryStatement.getFinallyBlock() != null) {
 			print(" finally {");
 			if (resourced) {
 				// resources are closed in reverse order, before finally block is executed
 				startIndent();
-				for (Tree resource : tryStatement.resources.reverse()) {
+
+				List<? extends Tree> reversedResources = new ArrayList<>(tryStatement.getResources());
+				Collections.reverse(reversedResources);
+				for (Tree resource : reversedResources) {
 					if (resource instanceof VariableTree) {
 						println().printIndent().print(((VariableTree) resource).getName() + ".close();");
 					}
 				}
 				endIndent();
 			}
-			if (tryStatement.finalizer != null) {
+			if (tryStatement.getFinallyBlock() != null) {
 				startIndent();// .printIndent();
-				for (StatementTree statement : tryStatement.finalizer.getStatements()) {
+				for (StatementTree statement : tryStatement.getFinallyBlock().getStatements()) {
 					println().printIndent().print(statement).print(";");
 				}
 				endIndent();
 			}
 			println().printIndent().print("}"); // closes finally block
 		}
+
+		return returnNothing();
 	}
 
 	/**
@@ -5550,8 +5573,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 */
 	@Override
 	public Void visitCatch(CatchTree catcher, Trees trees) {
-		print(" catch(").print(catcher.param.getName().toString()).print(") ");
-		print(catcher.body);
+		print(" catch(").print(catcher.getParameter().getName().toString()).print(") ");
+		print(catcher.getBlock());
+
+		return returnNothing();
 	}
 
 	/**
@@ -5564,8 +5589,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				&& ((MethodInvocationTree) getParent()).getMethodSelect().toString().endsWith("function")
 				&& getParentOfParent() instanceof MethodInvocationTree
 				&& ((MethodInvocationTree) getParentOfParent()).getMethodSelect().toString().endsWith("$noarrow")) {
-			MethodInvocationElement invocation = (MethodInvocationElement) ExtendedElementFactory.INSTANCE
-					.create(getParent());
+			MethodInvocationElement invocation = (MethodInvocationElement) createExtendedElement(getParent());
 			if (JSweetConfig.UTIL_CLASSNAME.equals(invocation.getMethod().getEnclosingElement().toString())) {
 				regularFunction = true;
 			}
@@ -5586,56 +5610,57 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				i--;
 			}
 			if (i >= 0 && getStack().get(i).getKind() != Kind.LAMBDA_EXPRESSION && statement != null) {
-				util().fillAllVariablesInScope(varDefs, getStack(), lamba, getStack().get(i));
+				util().fillAllVariablesInScope(varDefs, getStack(), lamba, getStack().get(i), getCompilationUnit());
 			}
 			finalVars.retainAll(varDefs.values());
 		}
 		if (!finalVars.isEmpty()) {
 			print("((");
 			for (VariableElement var : finalVars) {
-				print(var.getName().toString()).print(",");
+				print(var.getSimpleName().toString()).print(",");
 			}
 			removeLastChar();
 			print(") => {").println().startIndent().printIndent().print("return ");
 		}
 		getScope().skipTypeAnnotations = true;
 		if (regularFunction) {
-			print("function(").printArgList(null, lamba.params).print(") ");
+			print("function(").printArgList(null, lamba.getParameters()).print(") ");
 		} else {
-			print("(").printArgList(null, lamba.params).print(") => ");
+			print("(").printArgList(null, lamba.getParameters()).print(") => ");
 		}
 		getScope().skipTypeAnnotations = false;
-		print(lamba.body);
+		print(lamba.getBody());
 
 		if (!finalVars.isEmpty()) {
 			endIndent().println().printIndent().print("})(");
 			for (VariableElement var : finalVars) {
-				print(var.getName().toString()).print(",");
+				print(var.getSimpleName().toString()).print(",");
 			}
 			removeLastChar();
 			print(")");
 		}
+
+		return returnNothing();
 	}
 
-	/**
-	 * Prints a reference tree.
-	 */
 	@Override
-	public Void visitReference(JCMemberReference memberReference, Trees trees) {
-		String memberReferenceSimpleName = memberReference.getExpression().type.tsym.getSimpleName().toString();
-		boolean printAsInstanceMethod = !memberReference.sym.getModifiers().contains(Modifier.STATIC)
+	public Void visitMemberReference(MemberReferenceTree memberReference, Trees trees) {
+		Element element = toElement(memberReference);
+		TypeElement qualifierTypeElement = toTypeElement(memberReference.getQualifierExpression());
+		String memberReferenceSimpleName = qualifierTypeElement.getSimpleName().toString();
+		boolean printAsInstanceMethod = !element.getModifiers().contains(Modifier.STATIC)
 				&& !"<init>".equals(memberReference.getName().toString())
 				&& !JSweetConfig.GLOBALS_CLASS_NAME.equals(memberReferenceSimpleName);
-		boolean exprIsInstance = memberReference.getExpression().toString().equals("this")
-				|| memberReference.getExpression().toString().equals("super")
-				|| (memberReference.getExpression() instanceof IdentifierTree
-						&& ((IdentifierTree) memberReference.getExpression()).sym instanceof VariableElement)
-				|| (memberReference.getExpression() instanceof MemberSelectTree
-						&& ((MemberSelectTree) memberReference.getExpression()).sym instanceof VariableElement);
+		boolean exprIsInstance = memberReference.getQualifierExpression().toString().equals("this")
+				|| memberReference.getQualifierExpression().toString().equals("super")
+				|| (memberReference.getQualifierExpression() instanceof IdentifierTree && toElement(
+						(IdentifierTree) memberReference.getQualifierExpression()) instanceof VariableElement)
+				|| (memberReference.getQualifierExpression() instanceof MemberSelectTree && toElement(
+						(MemberSelectTree) memberReference.getQualifierExpression()) instanceof VariableElement);
 
-		if (memberReference.sym instanceof ExecutableElement) {
-			ExecutableElement method = (ExecutableElement) memberReference.sym;
-			if (getParent() instanceof JCTypeCast) {
+		if (element instanceof ExecutableElement) {
+			ExecutableElement method = toElement(memberReference);
+			if (getParent() instanceof TypeCastTree) {
 				print("(");
 			}
 			print("(");
@@ -5647,7 +5672,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 			if (method.getParameters() != null) {
 				for (VariableElement var : method.getParameters()) {
-					print(var.getName().toString());
+					print(var.getSimpleName().toString());
 					print(",");
 					argumentsPrinted++;
 				}
@@ -5659,35 +5684,34 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			print(" => { return ");
 		}
 
-		if (JSweetConfig.GLOBALS_CLASS_NAME
-				.equals(memberReference.getExpression().type.tsym.getSimpleName().toString())) {
+		if (JSweetConfig.GLOBALS_CLASS_NAME.equals(qualifierTypeElement.getSimpleName().toString())) {
 			print(memberReference.getName().toString());
 		} else {
 			if ("<init>".equals(memberReference.getName().toString())) {
-				if (types().isArray(memberReference.getExpression().type)) {
+				if (toType(memberReference.getQualifierExpression()).getKind() == TypeKind.ARRAY) {
 					print("new Array<");
-					substituteAndPrintType(((ArrayTypeTree) memberReference.getExpression()).elemtype);
+					substituteAndPrintType(((ArrayTypeTree) memberReference.getQualifierExpression()).getType());
 					print(">");
 				} else {
-					print("new ").print(memberReference.getExpression());
+					print("new ").print(memberReference.getQualifierExpression());
 				}
 			} else {
 				if (printAsInstanceMethod && !exprIsInstance) {
 					print("instance$").print(memberReferenceSimpleName);
 				} else {
-					print(memberReference.getExpression());
+					print(memberReference.getQualifierExpression());
 				}
 				print(".").print(memberReference.getName().toString());
 			}
 		}
 
-		if (memberReference.sym instanceof ExecutableElement) {
-			ExecutableElement method = (ExecutableElement) memberReference.sym;
+		if (element instanceof ExecutableElement) {
+			ExecutableElement method = (ExecutableElement) element;
 
 			print("(");
 			if (method.getParameters() != null) {
 				for (VariableElement var : method.getParameters()) {
-					print(var.getName().toString());
+					print(var.getSimpleName().toString());
 					print(",");
 				}
 				if (!method.getParameters().isEmpty()) {
@@ -5696,26 +5720,29 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 			print(")");
 			print(" }");
-			if (getParent() instanceof JCTypeCast) {
+			if (getParent() instanceof TypeCastTree) {
 				print(")");
 			}
 		}
 
+		return returnNothing();
 	}
 
 	/**
 	 * Prints a type parameter tree.
 	 */
 	@Override
-	public Void visitTypeParameter(JCTypeParameter typeParameter, Trees trees) {
+	public Void visitTypeParameter(TypeParameterTree typeParameter, Trees trees) {
 		print(typeParameter.getName().toString());
-		if (typeParameter.bounds != null && !typeParameter.bounds.isEmpty()) {
+		if (typeParameter.getBounds() != null && !typeParameter.getBounds().isEmpty()) {
 			print(" extends ");
-			for (ExpressionTree e : typeParameter.bounds) {
+			for (Tree e : typeParameter.getBounds()) {
 				substituteAndPrintType(e).print(" & ");
 			}
 			removeLastChars(3);
 		}
+
+		return returnNothing();
 	}
 
 	/** Prints a <code>synchronized</code> tree. */

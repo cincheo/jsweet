@@ -83,6 +83,7 @@ import com.sun.source.tree.ModuleTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.PackageTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.JavacTask;
@@ -732,6 +733,15 @@ public class DirectedGraph<T> implements Collection<T> {
 		}
 
 		@Override
+		public Void visitTypeCast(TypeCastTree node, Trees p) {
+			System.out.println(node.getType());
+			TypeMirror t = toType(node);
+			TypeMirror t2 = toType(node.getType());
+			TypeMirror t3 = toType(node.getExpression());
+			return super.visitTypeCast(node, p);
+		}
+
+		@Override
 		public Void visitMethodInvocation(MethodInvocationTree tree, Trees p) {
 
 			Tree methTree = tree.getMethodSelect();
@@ -909,7 +919,8 @@ public class DirectedGraph<T> implements Collection<T> {
 		}
 
 		private TypeMirror toType(Tree tree) {
-			return toElement(tree).asType();
+			Element e =toElement(tree);
+			return e == null ? null : e.asType();
 		}
 	}
 
