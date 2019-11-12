@@ -30,6 +30,7 @@ import source.api.ArrayBuffers;
 import source.api.Booleans;
 import source.api.CastMethods;
 import source.api.Characters;
+import source.api.Dates;
 import source.api.Equals;
 import source.api.ErasingJava;
 import source.api.ExpressionBuilderTest;
@@ -258,13 +259,21 @@ public class ApiTests extends AbstractTest {
 			Assert.assertEquals(30, (int) r.get("result2"));
 		}, getSourceFile(ExpressionBuilderTest2.class));
 	}
-
+	
 	@Test
 	public void testEquals() {
 		eval(ModuleKind.none, (logHandler, r) -> {
 			logHandler.assertNoProblems();
 			Assert.assertEquals("false,true,false,true,false,true,false,false,true", r.get("trace"));
 		}, getSourceFile(Equals.class));
+	}
+
+	@Test
+	public void testDates() {
+		eval(ModuleKind.none, (logHandler, r) -> {
+			logHandler.assertNoProblems();
+			Assert.assertEquals("2020-1-1 1:00:00 AM", r.get("localeString"));
+		}, getSourceFile(Dates.class));
 	}
 
 }

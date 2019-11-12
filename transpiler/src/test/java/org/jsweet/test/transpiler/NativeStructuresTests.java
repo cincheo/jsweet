@@ -9,6 +9,7 @@ import org.jsweet.transpiler.JSweetFactory;
 import org.jsweet.transpiler.ModuleKind;
 import org.jsweet.transpiler.extension.PrinterAdapter;
 import org.jsweet.transpiler.extension.RemoveJavaDependenciesAdapter;
+import org.jsweet.transpiler.extension.RemoveJavaDependenciesES6Adapter;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -16,6 +17,7 @@ import org.junit.Test;
 import source.nativestructures.ArraysSort;
 import source.nativestructures.Collections;
 import source.nativestructures.Dates;
+import source.nativestructures.ES6Sets;
 import source.nativestructures.Exceptions;
 import source.nativestructures.ExtendsJDK;
 import source.nativestructures.ExtendsJDKAnonymous;
@@ -75,6 +77,19 @@ public class NativeStructuresTests extends AbstractTest {
 		eval((logHandler, result) -> {
 			logHandler.assertNoProblems();
 		}, getSourceFile(Sets.class));
+	}
+
+	@Test
+	public void testES6Sets() {
+		TranspilerTestRunner transpilerTest = new TranspilerTestRunner(getCurrentTestOutDir(), new JSweetFactory() {
+			@Override
+			public PrinterAdapter createAdapter(JSweetContext context) {
+				return new RemoveJavaDependenciesES6Adapter(super.createAdapter(context));
+			}
+		});
+		transpilerTest.eval((logHandler, result) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(ES6Sets.class));
 	}
 
 	@Test

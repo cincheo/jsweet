@@ -108,7 +108,12 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		init();
 	}
 
-	private void init() {
+	protected void init() {
+	    initTypesMapping();
+		addTypeMappings(extTypesMapping);
+    }
+
+	protected void initTypesMapping() {
 		addTypeMapping(Class.class.getName(), "any");
 		context.getLangTypeMappings().put(RuntimeException.class.getName(), "Error");
 		context.getBaseThrowables().add(RuntimeException.class.getName());
@@ -159,7 +164,6 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 
 		extTypesMapping.put(Method.class.getName(), "{ owner: any, name: string, fn : Function }");
 
-		addTypeMappings(extTypesMapping);
 		addTypeMapping(
 				(typeTree,
 						name) -> name.startsWith("java.")
