@@ -1,11 +1,9 @@
 package org.jsweet.transpiler;
 
-import static java.util.Arrays.asList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +18,6 @@ import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.util.ConsoleTranspilationHandler;
 import org.jsweet.transpiler.util.Util;
 
-import com.google.gson.Gson;
 import com.sun.source.util.JavacTask;
 import com.sun.source.util.Trees;
 
@@ -119,9 +116,6 @@ public class JavaCompilationComponents implements AutoCloseable {
 		context.elements = task.getElements();
 		context.types = task.getTypes();
 		context.util = new Util(context);
-
-		// TODO [Java11]
-		task.setProcessors(asList());
 
 		return new JavaCompilationComponents(fileManager, compiler, sourceFileObjects, task);
 	}

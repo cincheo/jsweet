@@ -1255,8 +1255,8 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 						(ExecutableType) invocationElement.getMethod().asType());
 				if (methSym != null
 						&& (Object.class.getName().equals(methSym.getEnclosingElement().toString())
-								|| methSym.getEnclosingElement().getKind() == ElementKind.INTERFACE)
-						|| invocationElement.getTargetExpression().getTypeAsElement().getKind() == ElementKind.INTERFACE
+								|| util().isInterface(methSym.getEnclosingElement()))
+						|| util().isInterface(types().asElement(invocationElement.getTargetType()))
 						|| invocationElement.getTargetExpression().getType().getKind() == TypeKind.TYPEVAR) {
 					printMacroName(targetMethodName);
 					print("(<any>((o1: any, o2: any) => { if(o1 && o1.equals) { return o1.equals(o2); } else { return o1 === o2; } })(");

@@ -189,10 +189,10 @@ public class OverloadScanner extends AbstractTreeScanner {
 
 						if (i == 0) {
 							boolean abstract1 = m1.getModifiers().getFlags().contains(Modifier.ABSTRACT)
-									|| (m1Element.getEnclosingElement().getKind() == ElementKind.INTERFACE
+									|| (util.isInterface(m1Element.getEnclosingElement())
 											&& !m1.getModifiers().getFlags().contains(Modifier.DEFAULT));
 							boolean abstract2 = m2.getModifiers().getFlags().contains(Modifier.ABSTRACT)
-									|| (m2Element.getEnclosingElement().getKind() == ElementKind.INTERFACE
+									|| (util.isInterface(m2Element.getEnclosingElement())
 											&& !m2.getModifiers().getFlags().contains(Modifier.DEFAULT));
 							if (abstract1 && !abstract2) {
 								i++;

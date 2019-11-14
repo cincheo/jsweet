@@ -1131,11 +1131,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		return this;
 	}
 
-	@SuppressWarnings("unlikely-arg-type")
 	private AbstractTreePrinter substituteAndPrintType(Tree typeTree, boolean arrayComponent, boolean inTypeParameters,
 			boolean completeRawTypes, boolean disableSubstitution) {
 
 		Element typeElement = toElement(typeTree);
+		TypeMirror typeType = toType(typeTree);
 		if (typeElement instanceof TypeParameterElement) {
 			if (getAdapter().typeVariablesToErase.contains(typeElement)) {
 				return print("any");
@@ -1150,7 +1150,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				// object type...
 				return print("any");
 			}
-			String typeFullName = util().getQualifiedName(typeElement);
+
+			String typeFullName = typeElement == null ? typeType.toString() : util().getQualifiedName(typeElement);
 			if (Runnable.class.getName().equals(typeFullName)) {
 				if (arrayComponent) {
 					print("(");
@@ -1299,7 +1300,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						print(mappedType.substring(0, mappedType.length() - 2));
 					} else {
 						print(mappedType);
-						if (completeRawTypes && !((TypeElement) typeElement).getTypeParameters().isEmpty()
+						if (completeRawTypes && typeElement != null
+								&& !((TypeElement) typeElement).getTypeParameters().isEmpty()
 								&& !context.getTypeMappingTarget(typeFullName).equals("any")) {
 							printAnyTypeArguments(((TypeElement) typeElement).getTypeParameters().size());
 						}
@@ -3247,9 +3249,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				return returnNothing();
 			}
 
-			globals = globals
-					|| (parent instanceof ClassTree && (toElement((ClassTree) parent).getKind() == ElementKind.INTERFACE
-							|| getScope().interfaceScope && varElement.getModifiers().contains(Modifier.STATIC)));
+			globals = globals || (parent instanceof ClassTree && ((ClassTree) parent).getKind() == Kind.INTERFACE)
+					|| (getScope().interfaceScope && varElement.getModifiers().contains(Modifier.STATIC));
 
 			if (parent instanceof ClassTree) {
 				printDocComment(varTree);
@@ -3349,7 +3350,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							}
 						} else {
 							TypeElement varTypeElement = toElement(varTree.getType());
-							if (context.hasAnnotationType(varTypeElement, ANNOTATION_STRING_TYPE)
+							if (varTypeElement != null
+									&& context.hasAnnotationType(varTypeElement, ANNOTATION_STRING_TYPE)
 									&& varTypeElement.getKind() != ElementKind.ENUM) {
 								print("\"");
 								print(context.getAnnotationValue(varTypeElement, ANNOTATION_STRING_TYPE, String.class,
@@ -5431,8 +5433,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				// Java always allows casting when an interface or a type param
 				// is involved
 				// (that's weak!!)
-				if (fromTypeElement.getKind() == ElementKind.INTERFACE
-						|| toTypeElement.getKind() == ElementKind.INTERFACE || toType.getKind() == TypeKind.TYPEVAR) {
+				if (util().isInterface(fromTypeElement) || util().isInterface(toTypeElement)
+						|| toType.getKind() == TypeKind.TYPEVAR) {
 					print("<any>");
 				}
 			}
@@ -5957,9 +5959,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			return false;
 		}
 		TypeElement expressionTypeElement = toTypeElement(expression);
+		TypeMirror expressionType = toType(expression);
 		Element assignedTypeElement = types().asElement(assignedType);
-		if (assignedTypeElement.getKind() == ElementKind.INTERFACE
-				&& expressionTypeElement.getKind() == ElementKind.ENUM) {
+		if (util().isInterface(assignedTypeElement) && expressionTypeElement.getKind() == ElementKind.ENUM) {
 			String relTarget = getRootRelativeName(expressionTypeElement);
 			print(relTarget).print("[\"" + Java2TypeScriptTranslator.ENUM_WRAPPER_CLASS_WRAPPERS + "\"][")
 					.print(expression).print("]");
@@ -5973,19 +5975,19 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			rootArrayAssignedTypes.push(((ArrayType) assignedType).getComponentType());
 			return false;
 		}
-		if (assignedType.getKind() == TypeKind.CHAR && expressionTypeElement.asType().getKind() != TypeKind.CHAR) {
+		if (assignedType.getKind() == TypeKind.CHAR && expressionType.getKind() != TypeKind.CHAR) {
 			print("String.fromCharCode(").print(expression).print(")");
 			return true;
-		} else if (util().isNumber(assignedType) && expressionTypeElement.asType().getKind() == TypeKind.CHAR) {
+		} else if (util().isNumber(assignedType) && expressionType.getKind() == TypeKind.CHAR) {
 			print("(").print(expression).print(").charCodeAt(0)");
 			return true;
 		} else if (singlePrecisionFloats() && assignedType.getKind() == TypeKind.FLOAT
-				&& expressionTypeElement.asType().getKind() == TypeKind.DOUBLE) {
+				&& expressionType.getKind() == TypeKind.DOUBLE) {
 			print("(<any>Math).fround(").print(expression).print(")");
 			return true;
 		} else {
 			if (expression instanceof LambdaExpressionTree) {
-				if (assignedTypeElement.getKind() == ElementKind.INTERFACE
+				if (util().isInterface(assignedTypeElement)
 						&& !context.isFunctionalType((TypeElement) assignedTypeElement)) {
 					LambdaExpressionTree lambda = (LambdaExpressionTree) expression;
 					ExecutableElement method = (ExecutableElement) assignedTypeElement.getEnclosedElements().get(0);

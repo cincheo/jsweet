@@ -790,6 +790,8 @@ public class DirectedGraph<T> implements Collection<T> {
 		@Override
 		public Void visitVariable(VariableTree tree, Trees p) {
 			Element element = p.getElement(getCurrentPath());
+			TypeMirror elementType = element.asType();
+			Element typeelement = toElement(tree.getType());
 			return super.visitVariable(tree, p);
 		}
 

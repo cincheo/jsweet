@@ -206,7 +206,7 @@ public class StaticInitilializerAnalyzer extends TreePathScanner<Void, Trees> {
 	}
 
 	private Element toElement(Tree tree) {
-		return context.trees.getElement(context.trees.getPath(currentTopLevel, tree));
+		return context.util.getElementForTree(tree, currentTopLevel);
 	}
 
 }

@@ -42,6 +42,7 @@ public class JavaEval extends RuntimeEval {
 		logger.info("parsing: " + compilationComponents.getSourceFileObjects());
 		ExecutableElement mainMethod = null;
 		Iterable<? extends CompilationUnitTree> compilationUnits = compilationComponents.getTask().parse();
+		compilationComponents.getTask().analyze();
 		MainMethodFinder mainMethodFinder = new MainMethodFinder();
 		try {
 			mainMethodFinder.scan(compilationUnits, context.trees);

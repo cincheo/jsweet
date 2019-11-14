@@ -18,10 +18,13 @@
  */
 package org.jsweet.transpiler.model.support;
 
+import static org.jsweet.transpiler.model.ExtendedElementFactory.toTree;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeMirror;
 
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.ExtendedElement;
@@ -86,4 +89,9 @@ public class MethodInvocationElementSupport extends ExtendedElementSupport<Metho
 		}
 	}
 
+	@Override
+	public TypeMirror getTargetType() {
+		ExtendedElement targetExpression = getTargetExpression();
+		return targetExpression == null ? null : util().getTypeForTree(toTree(targetExpression), compilationUnit);
+	}
 }

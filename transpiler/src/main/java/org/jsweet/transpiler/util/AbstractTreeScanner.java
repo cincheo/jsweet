@@ -438,15 +438,12 @@ public abstract class AbstractTreeScanner extends TreeScanner<Void, Trees> {
 		return null;
 	}
 
-	@SuppressWarnings("unchecked")
 	protected <T extends Element> T toElement(Tree tree) {
-		return tree == null ? null : (T) context.trees.getElement(context.trees.getPath(getCompilationUnit(), tree));
+		return util().getElementForTree(tree, getCompilationUnit());
 	}
 
-	@SuppressWarnings("unchecked")
 	protected <T extends TypeMirror> T toType(Tree tree) {
-		Element element = toElement(tree);
-		return element == null ? null : (T) element.asType();
+		return util().getTypeForTree(tree, getCompilationUnit());
 	}
 
 	/**

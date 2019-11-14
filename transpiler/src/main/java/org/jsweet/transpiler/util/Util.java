@@ -66,6 +66,7 @@ import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.SourcePosition;
 
+import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.BreakTree;
@@ -88,6 +89,7 @@ import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.SwitchTree;
@@ -141,6 +143,15 @@ public class Util {
 		}
 		TypeElement typeElement = getTypeElementByName(context, clazz.getName());
 		return typeElement == null ? null : typeElement.asType();
+	}
+
+	private TypeMirror getPrimitiveType(TypeKind kind) {
+		assert kind != null;
+		if (kind == TypeKind.VOID) {
+			return types().getNoType(kind);
+		}
+
+		return types().getPrimitiveType(kind);
 	}
 
 	private static long id = 121;
@@ -1900,8 +1911,23 @@ public class Util {
 		return (T) trees().getElement(trees().getPath(compilationUnit, tree));
 	}
 
-	public TypeMirror getTypeForTree(Tree tree, CompilationUnitTree compilationUnit) {
-		return getElementForTree(tree, compilationUnit).asType();
+	@SuppressWarnings("unchecked")
+	public <T extends TypeMirror> T getTypeForTree(Tree tree, CompilationUnitTree compilationUnit) {
+		if (tree == null) {
+			return null;
+		}
+
+		switch (tree.getKind()) {
+		case ARRAY_TYPE:
+			TypeMirror componentType = getTypeForTree(((ArrayTypeTree) tree).getType(), compilationUnit);
+			return (T) types().getArrayType(componentType);
+		case PRIMITIVE_TYPE:
+			TypeKind primitiveKind = ((PrimitiveTypeTree) tree).getPrimitiveTypeKind();
+			return (T) getPrimitiveType(primitiveKind);
+		default:
+			Element element = getElementForTree(tree, compilationUnit);
+			return element == null ? null : (T) element.asType();
+		}
 	}
 
 	@SuppressWarnings("unchecked")
@@ -2054,5 +2080,9 @@ public class Util {
 			return null;
 		}
 		return list.get(list.size() - 1);
+	}
+
+	public boolean isInterface(Element typeElement) {
+		return typeElement != null && typeElement.getKind() == ElementKind.INTERFACE;
 	}
 }

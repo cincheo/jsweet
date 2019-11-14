@@ -688,7 +688,7 @@ public class JSweetContext {
 	 * The compilation units that correspond to the source files.
 	 */
 	public List<CompilationUnitTree> compilationUnits;
-	
+
 	private List<String> usedModules = new ArrayList<>();
 
 	/**
@@ -1159,8 +1159,7 @@ public class JSweetContext {
 	 * Tells if the given type is a Java interface.
 	 */
 	public boolean isInterface(TypeElement typeElement) {
-		return (typeElement.getKind() == ElementKind.INTERFACE
-				|| hasAnnotationType(typeElement, JSweetConfig.ANNOTATION_INTERFACE));
+		return util.isInterface(typeElement) || hasAnnotationType(typeElement, JSweetConfig.ANNOTATION_INTERFACE);
 	}
 
 	/**
@@ -1168,6 +1167,10 @@ public class JSweetContext {
 	 * types.
 	 */
 	public boolean hasAnnotationType(Element element, String... annotationTypes) {
+		if (element == null) {
+			return false;
+		}
+
 		String[] types = annotationTypes;
 		for (AnnotationManager annotationIntrospector : annotationManagers) {
 			for (String annotationType : types) {
@@ -1685,9 +1688,8 @@ public class JSweetContext {
 		return name.startsWith("java.util.function.") //
 				|| name.equals(Runnable.class.getName()) //
 				|| name.startsWith(JSweetConfig.FUNCTION_CLASSES_PACKAGE + ".") //
-				|| (type.getKind() == ElementKind.INTERFACE
-						&& (hasAnnotationType(type, FunctionalInterface.class.getName())
-								|| hasAnonymousFunction(type)));
+				|| (util.isInterface(type) && (hasAnnotationType(type, FunctionalInterface.class.getName())
+						|| hasAnonymousFunction(type)));
 	}
 
 	/**
@@ -1698,7 +1700,7 @@ public class JSweetContext {
 		return name.startsWith("java.util.function.") //
 				|| name.equals(Runnable.class.getName()) //
 				|| name.startsWith(JSweetConfig.FUNCTION_CLASSES_PACKAGE + ".") //
-				|| (type.getKind() == ElementKind.INTERFACE && hasAnonymousFunction(type));
+				|| (util.isInterface(type) && hasAnonymousFunction(type));
 	}
 
 	/**
@@ -1751,7 +1753,7 @@ public class JSweetContext {
 		if (hasAnnotationType(pkg, JSweetConfig.ANNOTATION_ERASED)) {
 			return true;
 		} else {
-			return isPackageErased((PackageElement) pkg.getEnclosingElement());
+			return isPackageErased(util.getParentPackage(pkg));
 		}
 	}
 

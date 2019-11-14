@@ -109,9 +109,9 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 	}
 
 	protected void init() {
-	    initTypesMapping();
+		initTypesMapping();
 		addTypeMappings(extTypesMapping);
-    }
+	}
 
 	protected void initTypesMapping() {
 		addTypeMapping(Class.class.getName(), "any");
