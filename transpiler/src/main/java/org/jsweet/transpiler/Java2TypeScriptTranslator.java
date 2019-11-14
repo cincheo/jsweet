@@ -4797,7 +4797,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			boolean forceParens = false;
 			boolean booleanOp = false;
 			if (types().isSameType(util().getType(boolean.class),
-					types().unboxedType(toType(binary.getLeftOperand())))) {
+					util().unboxedTypeOrType(toType(binary.getLeftOperand())))) {
 				booleanOp = true;
 				if ("^".equals(op)) {
 					forceParens = true;
@@ -4810,9 +4810,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 
 			TypeMirror binaryType = toType(binary);
-			TypeElement leftTypeElement = toTypeElement(binary.getLeftOperand());
-			TypeElement rightTypeElement = toTypeElement(binary.getRightOperand());
-			TypeElement stringTypeElement = (TypeElement) types().asElement(util().getType(String.class));
+			TypeMirror leftType = toType(binary.getLeftOperand());
+			TypeMirror rightType = toType(binary.getRightOperand());
+			TypeMirror stringType = util().getType(String.class);
 
 			boolean closeParen = false;
 			boolean truncate = false;
@@ -4834,8 +4834,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			boolean actualCharWrapping = false;
 			if (charWrapping
 					&& types().isSameType(util().getType(char.class),
-							types().unboxedType(toType(binary.getLeftOperand())))
-					&& rightTypeElement != stringTypeElement) {
+							util().unboxedTypeOrType(toType(binary.getLeftOperand())))
+					&& !types().isSameType(rightType, stringType)) {
 				actualCharWrapping = true;
 				if (binary.getLeftOperand() instanceof LiteralTree) {
 					printBinaryLeftOperand(binary);
@@ -4863,10 +4863,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 			}
 			if ("==".equals(op) || "!=".equals(op)) {
-				if (charWrapping
-						&& types().isSameType(util().getType(char.class),
-								types().unboxedType(rightTypeElement.asType()))
-						&& leftTypeElement != stringTypeElement) {
+				if (charWrapping && types().isSameType(util().getType(char.class), util().unboxedTypeOrType(rightType))
+						&& !types().isSameType(leftType, stringType)) {
 					actualCharWrapping = true;
 				}
 			}
@@ -4888,9 +4886,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 
 			space().print(op).space();
-			if (charWrapping
-					&& types().isSameType(util().getType(char.class), types().unboxedType(rightTypeElement.asType()))
-					&& !(leftTypeElement == stringTypeElement)) {
+			if (charWrapping && types().isSameType(util().getType(char.class), util().unboxedTypeOrType(rightType))
+					&& !types().isSameType(leftType, stringType)) {
 				if (binary.getRightOperand() instanceof LiteralTree) {
 					printBinaryRightOperand(binary);
 					print(".charCodeAt(0)");
@@ -5010,14 +5007,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			TypeMirror variableType = toType(assignOpTree.getVariable());
 			TypeMirror expressionType = toType(assignOpTree.getExpression());
 
-			boolean expandChar = types().isSameType(util().getType(char.class), types().unboxedType(variableType));
+			boolean expandChar = types().isSameType(util().getType(char.class), util().unboxedTypeOrType(variableType));
 			print(assignOpTree.getVariable());
 			staticInitializedAssignment = false;
 
 			String assignmentOperator = util().toOperator(assignOpTree.getKind());
 			String operator = assignmentOperator.replace("=", "");
 
-			if (types().isSameType(util().getType(boolean.class), types().unboxedType(variableType))) {
+			if (types().isSameType(util().getType(boolean.class), util().unboxedTypeOrType(variableType))) {
 				if ("|".equals(operator)) {
 					print(" = ").print(assignOpTree.getExpression()).print(" || ").print(assignOpTree.getVariable());
 					return returnNothing();
@@ -5049,7 +5046,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 				print(assignOpTree.getVariable());
 				print(" " + operator + " ");
-				if (types().isSameType(util().getType(char.class), types().unboxedType(expressionType))) {
+				if (types().isSameType(util().getType(char.class), util().unboxedTypeOrType(expressionType))) {
 					substituteAndPrintAssignedExpression(util().getType(int.class), assignOpTree.getExpression());
 				} else {
 					printAssignWithOperatorRightOperand(assignOpTree);
@@ -5063,7 +5060,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 
 			print(" " + operator + "= ");
-			if (types().isSameType(util().getType(char.class), types().unboxedType(expressionType))) {
+			if (types().isSameType(util().getType(char.class), util().unboxedTypeOrType(expressionType))) {
 				// TypeMirror lhsType = assignOp.getVariable().type;
 				boolean isLeftOperandString = (types().asElement(variableType) == types()
 						.asElement(util().getType(String.class)));
@@ -5323,7 +5320,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		print("switch(");
 		print(switchStatement.getExpression());
 		if (types().isSameType(util().getType(char.class),
-				types().unboxedType(toType(switchStatement.getExpression())))) {
+				util().unboxedTypeOrType(toType(switchStatement.getExpression())))) {
 			print(".charCodeAt(0)");
 		}
 		print(") {").println();

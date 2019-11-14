@@ -72,15 +72,15 @@ public class ExtendedElementSupport<T extends Tree> implements ExtendedElement {
 	 * Gets the type that corresponds to this element, if any.
 	 */
 	public TypeMirror getType() {
-		return context.trees.getTypeMirror(treePath);
+		return util().getTypeForTree(tree, compilationUnit);
 	}
 
 	/**
 	 * Gets this element's type, as a standard element.
 	 */
 	public Element getTypeAsElement() {
-		TypeMirror typeMirror = element.asType();
-		return context.types.asElement(typeMirror);
+		TypeMirror type = getType();
+		return type == null ? null : types().asElement(type);
 	}
 
 	@Override

@@ -1684,6 +1684,9 @@ public class JSweetContext {
 	 * the TypeScript way).
 	 */
 	public boolean isFunctionalType(TypeElement type) {
+		if (type == null) {
+			return false;
+		}
 		String name = type.getQualifiedName().toString();
 		return name.startsWith("java.util.function.") //
 				|| name.equals(Runnable.class.getName()) //

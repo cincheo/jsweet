@@ -66,7 +66,6 @@ import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.SourcePosition;
 
-import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.BreakTree;
@@ -89,7 +88,6 @@ import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.SwitchTree;
@@ -143,15 +141,6 @@ public class Util {
 		}
 		TypeElement typeElement = getTypeElementByName(context, clazz.getName());
 		return typeElement == null ? null : typeElement.asType();
-	}
-
-	private TypeMirror getPrimitiveType(TypeKind kind) {
-		assert kind != null;
-		if (kind == TypeKind.VOID) {
-			return types().getNoType(kind);
-		}
-
-		return types().getPrimitiveType(kind);
 	}
 
 	private static long id = 121;
@@ -1917,17 +1906,13 @@ public class Util {
 			return null;
 		}
 
-		switch (tree.getKind()) {
-		case ARRAY_TYPE:
-			TypeMirror componentType = getTypeForTree(((ArrayTypeTree) tree).getType(), compilationUnit);
-			return (T) types().getArrayType(componentType);
-		case PRIMITIVE_TYPE:
-			TypeKind primitiveKind = ((PrimitiveTypeTree) tree).getPrimitiveTypeKind();
-			return (T) getPrimitiveType(primitiveKind);
-		default:
-			Element element = getElementForTree(tree, compilationUnit);
-			return element == null ? null : (T) element.asType();
+		TypeMirror typeMirror = trees().getTypeMirror(trees().getPath(compilationUnit, tree));
+		if (typeMirror != null) {
+			return (T) typeMirror;
 		}
+
+		Element element = getElementForTree(tree, compilationUnit);
+		return element == null ? null : (T) element.asType();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -1951,82 +1936,11 @@ public class Util {
 	 */
 	public TypeMirror erasureRecursive(TypeMirror type) {
 		try {
-			Method erasureRecursiveMethod = javacInternals().typeErasureRecursiveMethod;
+			Method erasureRecursiveMethod = javacInternals().typesErasureRecursiveMethod;
 			return (TypeMirror) erasureRecursiveMethod.invoke(javacInternals().typesInstance, type);
 		} catch (Exception e) {
 			throw new RuntimeException("Cannot call internal Javac API :( please adapt this code if API changed", e);
 		}
-	}
-
-	/**
-	 * should not be used, backward compatibility purpose only
-	 */
-	private JavacInternals javacInternals() {
-		return JavacInternals.instance(types());
-	}
-
-	/**
-	 * should not be used, backward compatibility purpose only
-	 */
-	private static class JavacInternals {
-
-		private static JavacInternals instance;
-
-		final Class<?> typesClass;
-		final Class<?> typeClass;
-		final Method typeErasureRecursiveMethod;
-		final Object typesInstance;
-
-		final Field binaryTreeOperatorField;
-
-		final Field assignOpOperatorField;
-
-		private JavacInternals(Types types) {
-			try {
-				typesClass = Class.forName("com.sun.tools.javac.code.Types");
-				typeClass = Class.forName("com.sun.tools.javac.code.Type");
-				typeErasureRecursiveMethod = typesClass.getMethod("erasureRecursive", typeClass);
-
-				binaryTreeOperatorField = Stream
-						.of(Class.forName("com.sun.tools.javac.tree.JCTree").getDeclaredClasses())
-						.filter(innerClass -> innerClass.getSimpleName().equals("JCBinary")) //
-						.findFirst().get() //
-						.getField("operator");
-
-				assignOpOperatorField = Stream.of(Class.forName("com.sun.tools.javac.tree.JCTree").getDeclaredClasses())
-						.filter(innerClass -> innerClass.getSimpleName().equals("JCAssignOp")) //
-						.findFirst().get() //
-						.getField("operator");
-
-				Field typesField = types.getClass().getDeclaredField("types");
-				typesField.trySetAccessible();
-				typesInstance = typesField.get(types);
-			} catch (Exception e) {
-				throw new RuntimeException("Cannot call internal Javac API :( please adapt this code if API changed",
-						e);
-			}
-		}
-
-		static JavacInternals instance(Types types) {
-			if (instance == null) {
-				instance = new JavacInternals(types);
-			}
-			return instance;
-		}
-
-		JavaFileObject getSourceFileObjectFromElement(TypeElement element) {
-			try {
-				if (element == null) {
-					return null;
-				}
-				Field internalSourceFileField = element.getClass().getDeclaredField("sourcefile");
-				return (JavaFileObject) internalSourceFileField.get(element);
-			} catch (Exception e) {
-				throw new RuntimeException("Cannot call internal Javac API :( please adapt this code if API changed",
-						e);
-			}
-		}
-
 	}
 
 	public boolean isPrimitiveOrVoid(TypeMirror type) {
@@ -2084,5 +1998,87 @@ public class Util {
 
 	public boolean isInterface(Element typeElement) {
 		return typeElement != null && typeElement.getKind() == ElementKind.INTERFACE;
+	}
+
+	public TypeMirror unboxedTypeOrType(TypeMirror type) {
+		try {
+			Method unboxedTypeOrTypeMethod = javacInternals().typesUnboxedTypeOrTypeMethod;
+			return (TypeMirror) unboxedTypeOrTypeMethod.invoke(javacInternals().typesInstance, type);
+		} catch (Exception e) {
+			throw new RuntimeException("Cannot call internal Javac API :( please adapt this code if API changed", e);
+		}
+	}
+
+	/**
+	 * should not be used, backward compatibility purpose only
+	 */
+	private JavacInternals javacInternals() {
+		return JavacInternals.instance(types());
+	}
+
+	/**
+	 * should not be used, backward compatibility purpose only
+	 */
+	private static class JavacInternals {
+
+		private static JavacInternals instance;
+
+		final Class<?> typesClass;
+		final Class<?> typeClass;
+		final Method typesErasureRecursiveMethod;
+		final Method typesUnboxedTypeOrTypeMethod;
+		final Object typesInstance;
+
+		final Field binaryTreeOperatorField;
+
+		final Field assignOpOperatorField;
+
+		private JavacInternals(Types types) {
+			try {
+				typesClass = Class.forName("com.sun.tools.javac.code.Types");
+				typeClass = Class.forName("com.sun.tools.javac.code.Type");
+				typesErasureRecursiveMethod = typesClass.getMethod("erasureRecursive", typeClass);
+				typesUnboxedTypeOrTypeMethod = typesClass.getMethod("unboxedTypeOrType", typeClass);
+
+				binaryTreeOperatorField = Stream
+						.of(Class.forName("com.sun.tools.javac.tree.JCTree").getDeclaredClasses())
+						.filter(innerClass -> innerClass.getSimpleName().equals("JCBinary")) //
+						.findFirst().get() //
+						.getField("operator");
+
+				assignOpOperatorField = Stream.of(Class.forName("com.sun.tools.javac.tree.JCTree").getDeclaredClasses())
+						.filter(innerClass -> innerClass.getSimpleName().equals("JCAssignOp")) //
+						.findFirst().get() //
+						.getField("operator");
+
+				Field typesField = types.getClass().getDeclaredField("types");
+				typesField.trySetAccessible();
+				typesInstance = typesField.get(types);
+			} catch (Exception e) {
+				throw new RuntimeException("Cannot call internal Javac API :( please adapt this code if API changed",
+						e);
+			}
+		}
+
+		static JavacInternals instance(Types types) {
+			if (instance == null) {
+				instance = new JavacInternals(types);
+			}
+			return instance;
+		}
+
+		JavaFileObject getSourceFileObjectFromElement(TypeElement element) {
+			try {
+				if (element == null) {
+					return null;
+				}
+				Field internalSourceFileField = element.getClass().getDeclaredField("sourcefile");
+				return (JavaFileObject) internalSourceFileField.get(element);
+			} catch (Exception e) {
+				throw new RuntimeException("Cannot call internal Javac API :( please adapt this code if API changed",
+						e);
+			}
+		}
+
 	}
 }
