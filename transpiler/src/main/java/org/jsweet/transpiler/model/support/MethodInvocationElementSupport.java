@@ -31,6 +31,7 @@ import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.MethodInvocationElement;
 
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
@@ -70,7 +71,14 @@ public class MethodInvocationElementSupport extends ExtendedElementSupport<Metho
 
 	@Override
 	public String getMethodName() {
-		return getMethod().getSimpleName().toString();
+		Tree methodTree = tree.getMethodSelect();
+		if (methodTree instanceof IdentifierTree) {
+			return methodTree.toString();
+		} else if (methodTree instanceof MemberSelectTree) {
+			return ((MemberSelectTree) methodTree).getIdentifier().toString();
+		} else {
+			return null;
+		}
 	}
 
 	@Override
