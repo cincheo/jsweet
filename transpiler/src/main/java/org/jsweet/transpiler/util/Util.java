@@ -1895,11 +1895,49 @@ public class Util {
 		return context.elements;
 	}
 
+	/**
+	 * Returns an Element corresponding to given tree (for given compilationUnit).
+	 * Will return null if no element matches tree.
+	 * 
+	 * For instance:
+	 * <ul>
+	 * <li>getElementForTree(VariableTree, ...) would likely return a
+	 * VariableElement.
+	 * <li>getElementForTree(NewClassTree, ...) would, on the other hand, return a
+	 * TypeElement.
+	 * </ul>
+	 */
 	@SuppressWarnings("unchecked")
 	public <T extends Element> T getElementForTree(Tree tree, CompilationUnitTree compilationUnit) {
 		return (T) trees().getElement(trees().getPath(compilationUnit, tree));
 	}
 
+	/**
+	 * If given tree has a corresponding element (getElementForTree(tree,
+	 * compilationUnit) doesn't return null), it will return its type
+	 * (ExecutableType for an ExecutableElement, DeclaredType for a TypeElement,
+	 * ...)
+	 */
+	@SuppressWarnings("unchecked")
+	public <T extends TypeMirror> T getElementTypeForTree(Tree tree, CompilationUnitTree compilationUnit) {
+		Element element = getElementForTree(tree, compilationUnit);
+		return element == null ? null : (T) element.asType();
+	}
+
+	/**
+	 * If this tree has a type (getTypeForTree(tree, compilationUnit) doesn't return
+	 * null), returns the corresponding TypeElement, if any, otherwise null.
+	 */
+	public TypeElement getTypeElementForTree(Tree tree, CompilationUnitTree compilationUnit) {
+		TypeMirror treeType = getTypeForTree(tree, compilationUnit);
+		return treeType == null ? null : (TypeElement) types().asElement(treeType);
+	}
+
+	/**
+	 * Returns type associated with given tree
+	 * 
+	 * @see Trees#getTypeMirror(com.sun.source.util.TreePath)
+	 */
 	@SuppressWarnings("unchecked")
 	public <T extends TypeMirror> T getTypeForTree(Tree tree, CompilationUnitTree compilationUnit) {
 		if (tree == null) {
@@ -1907,12 +1945,7 @@ public class Util {
 		}
 
 		TypeMirror typeMirror = trees().getTypeMirror(trees().getPath(compilationUnit, tree));
-		if (typeMirror != null) {
-			return (T) typeMirror;
-		}
-
-		Element element = getElementForTree(tree, compilationUnit);
-		return element == null ? null : (T) element.asType();
+		return (T) typeMirror;
 	}
 
 	@SuppressWarnings("unchecked")

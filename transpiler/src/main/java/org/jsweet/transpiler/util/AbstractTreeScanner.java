@@ -438,21 +438,32 @@ public abstract class AbstractTreeScanner extends TreeScanner<Void, Trees> {
 		return null;
 	}
 
+	/**
+	 * @see Util#getElementForTree(Tree, CompilationUnitTree)
+	 */
 	protected <T extends Element> T toElement(Tree tree) {
 		return util().getElementForTree(tree, getCompilationUnit());
 	}
 
+	/**
+	 * @see Util#getElementTypeForTree(Tree, CompilationUnitTree)
+	 */
+	protected <T extends Element> T toElementType(Tree tree) {
+		return util().getElementTypeForTree(tree, getCompilationUnit());
+	}
+
+	/**
+	 * @see Util#getTypeForTree(Tree, CompilationUnitTree)
+	 */
 	protected <T extends TypeMirror> T toType(Tree tree) {
 		return util().getTypeForTree(tree, getCompilationUnit());
 	}
 
 	/**
-	 * if this tree has a type (toType(tree) doesnt return null), returns the
-	 * corresponding TypeElement
+	 * @see Util#getTypeElementForTree(Tree, CompilationUnitTree)
 	 */
 	protected TypeElement toTypeElement(Tree tree) {
-		TypeMirror treeType = toType(tree);
-		return treeType == null ? null : (TypeElement) types().asElement(treeType);
+		return util().getTypeElementForTree(tree, getCompilationUnit());
 	}
 
 	protected TypeElement toTypeElement(Element element) {

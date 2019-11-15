@@ -3560,6 +3560,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (!getAdapter().substitute(createExtendedElement(memberSelectTree))) {
 			Element selectedElement = toElement(memberSelectTree.getExpression());
 			TypeElement selectedTypeElement = toTypeElement(memberSelectTree.getExpression());
+			Element memberElement = toElement(memberSelectTree);
 			TypeMirror memberType = toType(memberSelectTree);
 			TypeElement memberTypeElement = toTypeElement(memberSelectTree);
 			if (selectedElement instanceof PackageElement) {
@@ -3631,17 +3632,17 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			} else {
 				String selected = memberSelectTree.getExpression().toString();
 				if (!selected.equals(GLOBALS_CLASS_NAME)) {
-					if (selected.equals("super") && (selectedElement instanceof VariableElement)) {
+					if (selected.equals("super") && (memberElement instanceof VariableElement)) {
 						print("this.");
 					} else if (getScope().innerClassNotStatic
 							&& ("this".equals(selected) || selected.endsWith(".this"))) {
 						printInnerClassAccess(memberSelectTree.getIdentifier().toString(), ElementKind.FIELD);
 					} else {
 						boolean accessSubstituted = false;
-						if (selectedElement instanceof VariableElement) {
-							VariableElement varElement = (VariableElement) selectedElement;
+						if (memberElement instanceof VariableElement) {
+							VariableElement varElement = (VariableElement) memberElement;
 							if (varElement.getModifiers().contains(Modifier.STATIC)
-									&& varElement.getEnclosingElement() != selectedElement) {
+									&& varElement.getEnclosingElement() != memberElement) {
 								accessSubstituted = true;
 								print(getRootRelativeName(varElement.getEnclosingElement())).print(".");
 							}
@@ -3653,14 +3654,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 
 				String fieldName = null;
-				if (selectedElement instanceof VariableElement
-						&& context.getFieldNameMapping((VariableElement) selectedElement) != null) {
-					fieldName = context.getFieldNameMapping((VariableElement) selectedElement);
+				if (memberElement instanceof VariableElement
+						&& context.getFieldNameMapping((VariableElement) memberElement) != null) {
+					fieldName = context.getFieldNameMapping((VariableElement) memberElement);
 				} else {
-					fieldName = getIdentifier(selectedElement);
+					fieldName = getIdentifier(memberElement);
 				}
-				if (selectedElement instanceof TypeElement) {
-					if (context.hasClassNameMapping((TypeElement) selectedElement)) {
+				if (memberElement instanceof TypeElement) {
+					if (context.hasClassNameMapping((TypeElement) memberElement)) {
 						fieldName = context.getClassNameMapping((TypeElement) selectedElement);
 					}
 				}
@@ -3674,8 +3675,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				} else {
 					print(fieldName);
 				}
-				if (selectedElement instanceof VariableElement
-						&& isLazyInitialized((VariableElement) selectedElement)) {
+				if (memberElement instanceof VariableElement
+						&& isLazyInitialized((VariableElement) memberElement)) {
 					if (!staticInitializedAssignment) {
 						print(STATIC_INITIALIZATION_SUFFIX + "()");
 					}
@@ -4568,7 +4569,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (typeChecker.checkType(newClass, null, newClass.getIdentifier(), getCompilationUnit())) {
 
 			boolean applyVarargs = true;
-			ExecutableElement methSym = (ExecutableElement) toElement(newClass.getIdentifier());
+			ExecutableElement methSym = (ExecutableElement) toElement(newClass);
 			if (newClass.getArguments().size() == 0 || !util().hasVarargs(methSym) //
 					|| toType(util().last(newClass.getArguments())).getKind() != TypeKind.ARRAY
 					// we dont use apply if var args type differ
@@ -4662,7 +4663,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			printed = true;
 		}
 
-		ExecutableType methodType = toType(newClass);
+		ExecutableType methodType = toElementType(newClass);
 
 		printArgList(methodType == null ? null : methodType.getParameterTypes(), newClass.getArguments());
 		int index = getScope().anonymousClasses.indexOf(newClass.getClassBody());
