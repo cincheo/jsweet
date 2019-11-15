@@ -1359,7 +1359,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				return substituteAndPrintType(((ArrayTypeTree) typeTree).getType(), true, inTypeParameters,
 						completeRawTypes, disableSubstitution).print("[]");
 			}
-			if (completeRawTypes && ((TypeElement) typeElement).getTypeParameters() != null
+			if (completeRawTypes && (typeElement instanceof TypeElement)
+					&& ((TypeElement) typeElement).getTypeParameters() != null
 					&& !((TypeElement) typeElement).getTypeParameters().isEmpty()) {
 				// raw type case (Java warning)
 				print(typeTree);
@@ -3675,8 +3676,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				} else {
 					print(fieldName);
 				}
-				if (memberElement instanceof VariableElement
-						&& isLazyInitialized((VariableElement) memberElement)) {
+				if (memberElement instanceof VariableElement && isLazyInitialized((VariableElement) memberElement)) {
 					if (!staticInitializedAssignment) {
 						print(STATIC_INITIALIZATION_SUFFIX + "()");
 					}

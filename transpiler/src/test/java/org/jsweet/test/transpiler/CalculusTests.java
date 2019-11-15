@@ -80,7 +80,7 @@ public class CalculusTests extends AbstractTest {
 			Assert.assertTrue((int) r.get("c") < 0);
 		}, getSourceFile(Longs.class));
 	}
-
+ 
 	@Test
 	public void testBoxing() {
 		eval(ModuleKind.none, (logHandler, r) -> {

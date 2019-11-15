@@ -448,7 +448,7 @@ public abstract class AbstractTreeScanner extends TreeScanner<Void, Trees> {
 	/**
 	 * @see Util#getElementTypeForTree(Tree, CompilationUnitTree)
 	 */
-	protected <T extends Element> T toElementType(Tree tree) {
+	protected <T extends TypeMirror> T toElementType(Tree tree) {
 		return util().getElementTypeForTree(tree, getCompilationUnit());
 	}
 
