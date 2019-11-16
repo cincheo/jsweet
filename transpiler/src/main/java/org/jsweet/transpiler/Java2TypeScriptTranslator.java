@@ -3643,7 +3643,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						if (memberElement instanceof VariableElement) {
 							VariableElement varElement = (VariableElement) memberElement;
 							if (varElement.getModifiers().contains(Modifier.STATIC)
-									&& varElement.getEnclosingElement() != memberElement) {
+									&& varElement.getEnclosingElement() != selectedElement) {
 								accessSubstituted = true;
 								print(getRootRelativeName(varElement.getEnclosingElement())).print(".");
 							}
@@ -5357,6 +5357,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						if (types().isSameType(util().getType(String.class), expressionType)) {
 							print("\"" + value + "\" /* " + caseTree.getExpression() + " */");
 						} else {
+							if (value != null && value.getClass() == Character.class) {
+								value = (int) ((Character) value);
+							}
+
 							print("" + value + " /* " + caseTree.getExpression() + " */");
 						}
 					} else {
@@ -5367,8 +5371,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							}
 
 							if (caseExpression instanceof LiteralTree) {
-								print("" + ((LiteralTree) caseExpression).getValue() + " /* " + caseTree.getExpression()
-										+ " */");
+								Object value = ((LiteralTree) caseExpression).getValue();
+								if (value instanceof Character) {
+									value = Character.getNumericValue((Character) value);
+								}
+								print(value + " /* " + caseTree.getExpression() + " */");
 							} else {
 								print(caseExpression);
 							}
