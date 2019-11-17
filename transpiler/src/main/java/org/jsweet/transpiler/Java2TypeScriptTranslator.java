@@ -650,8 +650,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				importedName, importedClass);
 	}
 
-	private boolean isMappedOrErasedType(TypeElement typeElement) {
-		return context.isMappedType(typeElement.getQualifiedName().toString())
+	private boolean isMappedOrErasedType(Element typeElement) {
+		return context.isMappedType(util().getQualifiedName(typeElement))
 				|| context.hasAnnotationType(typeElement, JSweetConfig.ANNOTATION_ERASED);
 	}
 
@@ -2143,8 +2143,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 		ClassTree parent = (ClassTree) getParent();
 
-		boolean isDefaultConstructor = methodTree.getName().toString().equals(CONSTRUCTOR_METHOD_NAME) // 
-				&& methodTree.getBody().toString().replace("\n", "").replace("\r", "").replace(" ", "").equals("{super();}");
+		boolean isDefaultConstructor = methodTree.getName().toString().equals(CONSTRUCTOR_METHOD_NAME) //
+				&& methodTree.getBody().toString().replace("\n", "").replace("\r", "").replace(" ", "")
+						.equals("{super();}");
 		if (!getScope().enumWrapperClassScope && isDefaultConstructor) {
 			return returnNothing();
 		}
@@ -2602,14 +2603,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			print(" : any");
 		} else {
 			if (methodTree.getReturnType() != null) {
-				TypeElement returnTypeElement = toElement(methodTree.getReturnType());
+				Element returnTypeElement = toElement(methodTree.getReturnType());
 				TypeMirror returnType = toType(methodTree.getReturnType());
 				if (returnType.getKind() != TypeKind.VOID) {
 
 					print(" : ");
 
 					boolean promisify = isAsyncMethod(methodTree)
-							&& !returnTypeElement.getQualifiedName().toString().endsWith(".Promise");
+							&& !util().getQualifiedName(returnTypeElement).endsWith(".Promise");
 					if (promisify) {
 						print(" Promise< ");
 					}
@@ -3067,7 +3068,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		return nameBuilder.toString();
 	}
 
-	private void checkType(TypeElement type) {
+	private void checkType(Element type) {
 		if (type instanceof TypeElement && !isMappedOrErasedType(type)) {
 			String name = type.getSimpleName().toString();
 			ModuleImportDescriptor moduleImport = getModuleImportDescriptor(name, (TypeElement) type);
@@ -3346,7 +3347,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 								print("[]");
 							}
 						} else {
-							TypeElement varTypeElement = toElement(varTree.getType());
+							Element varTypeElement = toElement(varTree.getType());
 							if (varTypeElement != null
 									&& context.hasAnnotationType(varTypeElement, ANNOTATION_STRING_TYPE)
 									&& varTypeElement.getKind() != ElementKind.ENUM) {
@@ -5598,7 +5599,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 		}
 		Map<String, VariableElement> varAccesses = new HashMap<>();
-		util().fillAllVariableAccesses(varAccesses, lamba);
+		util().fillAllVariableAccesses(varAccesses, lamba, getCompilationUnit());
 		Collection<VariableElement> finalVars = new ArrayList<>(varAccesses.values());
 		if (!varAccesses.isEmpty()) {
 			Map<String, VariableElement> varDefs = new HashMap<>();
@@ -5959,7 +5960,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (assignedType == null) {
 			return false;
 		}
-		TypeElement expressionTypeElement = toTypeElement(expression);
+		Element expressionTypeElement = toTypeElement(expression);
 		TypeMirror expressionType = toType(expression);
 		Element assignedTypeElement = types().asElement(assignedType);
 		if (util().isInterface(assignedTypeElement) && expressionTypeElement.getKind() == ElementKind.ENUM) {
@@ -6053,14 +6054,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 					}
 					// raw generic type
-					if (!toTypeElement(newClass).getTypeParameters().isEmpty()
-							&& newClass.getTypeArguments().isEmpty()) {
+					TypeElement newClassElement = toTypeElement(newClass);
+					if (!newClassElement.getTypeParameters().isEmpty() && newClass.getTypeArguments().isEmpty()) {
 						print("<any>(").print(expression).print(")");
 						return true;
 					}
 				}
 			} else if (!(expression instanceof LambdaExpressionTree || expression instanceof MemberReferenceTree)
-					&& context.isFunctionalType((TypeElement) assignedTypeElement)) {
+					&& context.isFunctionalType(assignedTypeElement)) {
 				// disallow typing to force objects to be passed as function
 				// (may require runtime checks later on)
 				print("<any>(").print(expression).print(")");

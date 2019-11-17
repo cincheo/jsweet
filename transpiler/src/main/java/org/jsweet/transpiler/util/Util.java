@@ -100,6 +100,7 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePathScanner;
+import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
 
 /**
@@ -476,11 +477,11 @@ public class Util {
 	 * Fills the given map with all the variables beeing accessed within the given
 	 * code tree.
 	 */
-	public void fillAllVariableAccesses(final Map<String, VariableElement> vars, final Tree tree) {
-		new TreePathScanner<Void, Trees>() {
+	public void fillAllVariableAccesses(final Map<String, VariableElement> vars, final Tree tree, final CompilationUnitTree compilationUnit) {
+		new TreeScanner<Void, Trees>() {
 			@Override
 			public Void visitIdentifier(IdentifierTree identifierTree, Trees trees) {
-				Element element = trees.getElement(getCurrentPath());
+				Element element = getElementForTree(identifierTree, compilationUnit);
 				if (element.getKind() == ElementKind.LOCAL_VARIABLE) {
 					putVar(vars, (VariableElement) element);
 				}
@@ -1596,7 +1597,7 @@ public class Util {
 			}
 		}
 		if (clazz.getSuperclass() != null) {
-			return findInnerClassDeclaration((TypeElement) clazz.getSuperclass(), name);
+			return findInnerClassDeclaration((TypeElement) types().asElement(clazz.getSuperclass()), name);
 		}
 		return null;
 	}
@@ -1929,10 +1930,13 @@ public class Util {
 	/**
 	 * If this tree has a type (getTypeForTree(tree, compilationUnit) doesn't return
 	 * null), returns the corresponding TypeElement, if any, otherwise null.
+	 * 
+	 * Can return TypeElement or TypeParameterElement
 	 */
-	public TypeElement getTypeElementForTree(Tree tree, CompilationUnitTree compilationUnit) {
+	@SuppressWarnings("unchecked")
+	public <T extends Element> T getTypeElementForTree(Tree tree, CompilationUnitTree compilationUnit) {
 		TypeMirror treeType = getTypeForTree(tree, compilationUnit);
-		return treeType == null ? null : (TypeElement) types().asElement(treeType);
+		return treeType == null ? null : (T) types().asElement(treeType);
 	}
 
 	/**

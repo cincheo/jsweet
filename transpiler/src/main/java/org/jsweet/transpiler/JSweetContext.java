@@ -1683,16 +1683,17 @@ public class JSweetContext {
 	 * Returns true if the given type symbol corresponds to a functional type (in
 	 * the TypeScript way).
 	 */
-	public boolean isFunctionalType(TypeElement type) {
-		if (type == null) {
+	public boolean isFunctionalType(Element typeElement) {
+		if (typeElement == null) {
 			return false;
 		}
-		String name = type.getQualifiedName().toString();
+		String name = util.getQualifiedName(typeElement);
 		return name.startsWith("java.util.function.") //
 				|| name.equals(Runnable.class.getName()) //
 				|| name.startsWith(JSweetConfig.FUNCTION_CLASSES_PACKAGE + ".") //
-				|| (util.isInterface(type) && (hasAnnotationType(type, FunctionalInterface.class.getName())
-						|| hasAnonymousFunction(type)));
+				|| (util.isInterface(typeElement)
+						&& (hasAnnotationType(typeElement, FunctionalInterface.class.getName())
+								|| hasAnonymousFunction(typeElement)));
 	}
 
 	/**
@@ -1710,7 +1711,7 @@ public class JSweetContext {
 	 * Tells if the given type has a anonymous function (instances can be used as
 	 * lambdas).
 	 */
-	public boolean hasAnonymousFunction(TypeElement type) {
+	public boolean hasAnonymousFunction(Element type) {
 		for (Element s : type.getEnclosedElements()) {
 			if (s instanceof ExecutableElement) {
 				String methodName = s.getSimpleName().toString();

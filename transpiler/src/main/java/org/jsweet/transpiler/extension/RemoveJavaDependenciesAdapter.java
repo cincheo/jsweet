@@ -1702,7 +1702,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 
 	@Override
 	public boolean substituteInstanceof(String exprStr, ExtendedElement expr, TypeMirror type) {
-		String typeName = util().getQualifiedName(types().asElement(type));
+		String typeName = util().getQualifiedName(type);
 		if (typeName.startsWith("java.") && context.types.isSubtype(type, util().getType(Throwable.class))) {
 			print(exprStr, expr);
 			print(" != null && ");
