@@ -31,6 +31,7 @@ import static org.jsweet.JSweetConfig.TS_IDENTIFIER_FORBIDDEN_CHARS;
 import static org.jsweet.JSweetConfig.TUPLE_CLASSES_PACKAGE;
 import static org.jsweet.JSweetConfig.UNION_CLASS_NAME;
 import static org.jsweet.JSweetConfig.UTIL_PACKAGE;
+import static org.jsweet.transpiler.util.Util.CONSTRUCTOR_METHOD_NAME;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -904,10 +905,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					if (tree != null) {
 						Element treeElement = toElement(tree);
 						if (!(treeElement instanceof TypeElement)) {
-							TypeMirror treeType = treeElement.asType();
-							if (treeType != null) {
-								treeElement = types().asElement(treeType);
-							}
+							treeElement = toTypeElement(tree);
 						}
 						if (treeElement instanceof TypeElement) {
 							if (!(tree instanceof ParameterizedTypeTree)) {
@@ -2100,7 +2098,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		ExecutableElement methodElement = toElement(methodDecl);
 		String name = context.getActualName(methodElement);
 		switch (name) {
-		case "<init>":
+		case CONSTRUCTOR_METHOD_NAME:
 			return "constructor";
 		case JSweetConfig.ANONYMOUS_FUNCTION_NAME:
 		case JSweetConfig.ANONYMOUS_STATIC_FUNCTION_NAME:
@@ -2145,11 +2143,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 		ClassTree parent = (ClassTree) getParent();
 
-		long methodStartPosition = util().getStartPosition(methodTree, getCompilationUnit());
-		Long parentStartPosition = parent != null ? util().getStartPosition(parent, getCompilationUnit()) : null;
-
-		if (parentStartPosition != null && parentStartPosition.equals(methodStartPosition)
-				&& !getScope().enumWrapperClassScope) {
+		boolean isDefaultConstructor = methodTree.getName().toString().equals(CONSTRUCTOR_METHOD_NAME) // 
+				&& methodTree.getBody().toString().replace("\n", "").replace("\r", "").replace(" ", "").equals("{super();}");
+		if (!getScope().enumWrapperClassScope && isDefaultConstructor) {
 			return returnNothing();
 		}
 
@@ -2163,7 +2159,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		getScope().constructor = methodElement.getKind() == ElementKind.CONSTRUCTOR;
 		if (getScope().enumScope) {
 			if (getScope().constructor) {
-				if (parentStartPosition != null && !parentStartPosition.equals(methodStartPosition)) {
+				if (!isDefaultConstructor) {
 					getScope().isComplexEnum = true;
 				}
 			} else {
@@ -5656,7 +5652,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		TypeElement qualifierTypeElement = toTypeElement(memberReference.getQualifierExpression());
 		String memberReferenceSimpleName = qualifierTypeElement.getSimpleName().toString();
 		boolean printAsInstanceMethod = !element.getModifiers().contains(Modifier.STATIC)
-				&& !"<init>".equals(memberReference.getName().toString())
+				&& !CONSTRUCTOR_METHOD_NAME.equals(memberReference.getName().toString())
 				&& !JSweetConfig.GLOBALS_CLASS_NAME.equals(memberReferenceSimpleName);
 		boolean exprIsInstance = memberReference.getQualifierExpression().toString().equals("this")
 				|| memberReference.getQualifierExpression().toString().equals("super")
@@ -5694,7 +5690,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (JSweetConfig.GLOBALS_CLASS_NAME.equals(qualifierTypeElement.getSimpleName().toString())) {
 			print(memberReference.getName().toString());
 		} else {
-			if ("<init>".equals(memberReference.getName().toString())) {
+			if (CONSTRUCTOR_METHOD_NAME.equals(memberReference.getName().toString())) {
 				if (toType(memberReference.getQualifierExpression()).getKind() == TypeKind.ARRAY) {
 					print("new Array<");
 					substituteAndPrintType(((ArrayTypeTree) memberReference.getQualifierExpression()).getType());

@@ -110,6 +110,8 @@ import com.sun.source.util.Trees;
  */
 public class Util {
 
+	public static final String CONSTRUCTOR_METHOD_NAME = "<init>";
+	
 	private final static Logger logger = Logger.getLogger(Util.class);
 
 	protected JSweetContext context;
