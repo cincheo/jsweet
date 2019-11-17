@@ -28,6 +28,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -1359,7 +1360,8 @@ public class Util {
 	 * @return null if not found
 	 */
 	public PackageElement getPackageByName(String qualifiedName) {
-		return elements().getPackageElement(qualifiedName);
+		Iterator<? extends PackageElement> matchingPackagesIterator = elements().getAllPackageElements(qualifiedName).iterator();
+		return matchingPackagesIterator.hasNext() ? matchingPackagesIterator.next() : null;
 	}
 
 	/**
