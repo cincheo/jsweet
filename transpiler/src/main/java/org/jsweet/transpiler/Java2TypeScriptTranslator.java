@@ -2173,7 +2173,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		// } cannot be overriden with { scale(number) } only)
 		if (getScope().isDeclareClassScope() && parent.getExtendsClause() != null) {
 
-			TypeElement superTypeElement = toType(parent.getExtendsClause());
+			TypeElement superTypeElement = toTypeElement(parent.getExtendsClause());
 
 			ExecutableElement superMethod = util().findMethodDeclarationInType(superTypeElement,
 					methodTree.getName().toString(), toType(methodTree));
