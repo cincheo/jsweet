@@ -49,7 +49,6 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
@@ -113,7 +112,7 @@ import com.sun.source.util.Trees;
 public class Util {
 
 	public static final String CONSTRUCTOR_METHOD_NAME = "<init>";
-	
+
 	private final static Logger logger = Logger.getLogger(Util.class);
 
 	protected JSweetContext context;
@@ -478,7 +477,8 @@ public class Util {
 	 * Fills the given map with all the variables beeing accessed within the given
 	 * code tree.
 	 */
-	public void fillAllVariableAccesses(final Map<String, VariableElement> vars, final Tree tree, final CompilationUnitTree compilationUnit) {
+	public void fillAllVariableAccesses(final Map<String, VariableElement> vars, final Tree tree,
+			final CompilationUnitTree compilationUnit) {
 		new TreeScanner<Void, Trees>() {
 			@Override
 			public Void visitIdentifier(IdentifierTree identifierTree, Trees trees) {
@@ -1360,7 +1360,8 @@ public class Util {
 	 * @return null if not found
 	 */
 	public PackageElement getPackageByName(String qualifiedName) {
-		Iterator<? extends PackageElement> matchingPackagesIterator = elements().getAllPackageElements(qualifiedName).iterator();
+		Iterator<? extends PackageElement> matchingPackagesIterator = elements().getAllPackageElements(qualifiedName)
+				.iterator();
 		return matchingPackagesIterator.hasNext() ? matchingPackagesIterator.next() : null;
 	}
 
@@ -1512,12 +1513,19 @@ public class Util {
 		}
 	}
 
-	public TypeParameterElement getFirstTypeArgumentAsElement(DeclaredType type) {
+	public Element getFirstTypeArgumentAsElement(DeclaredType type) {
 		if (type == null || type.getTypeArguments().isEmpty()) {
 			return null;
 		}
 		TypeMirror firstTypeArg = type.getTypeArguments().get(0);
-		return (TypeParameterElement) types().asElement(firstTypeArg);
+		return types().asElement(firstTypeArg);
+	}
+
+	public TypeMirror getFirstTypeArgument(DeclaredType type) {
+		if (type == null || type.getTypeArguments().isEmpty()) {
+			return null;
+		}
+		return type.getTypeArguments().get(0);
 	}
 
 	/**
@@ -2042,11 +2050,14 @@ public class Util {
 	}
 
 	public TypeMirror unboxedTypeOrType(TypeMirror type) {
+		if (isPrimitiveOrVoid(type)) {
+			return type;
+		}
+
 		try {
-			Method unboxedTypeOrTypeMethod = javacInternals().typesUnboxedTypeOrTypeMethod;
-			return (TypeMirror) unboxedTypeOrTypeMethod.invoke(javacInternals().typesInstance, type);
+			return types().unboxedType(type);
 		} catch (Exception e) {
-			throw new RuntimeException("Cannot call internal Javac API :( please adapt this code if API changed", e);
+			return type;
 		}
 	}
 
@@ -2067,7 +2078,6 @@ public class Util {
 		final Class<?> typesClass;
 		final Class<?> typeClass;
 		final Method typesErasureRecursiveMethod;
-		final Method typesUnboxedTypeOrTypeMethod;
 		final Object typesInstance;
 
 		final Field binaryTreeOperatorField;
@@ -2079,7 +2089,6 @@ public class Util {
 				typesClass = Class.forName("com.sun.tools.javac.code.Types");
 				typeClass = Class.forName("com.sun.tools.javac.code.Type");
 				typesErasureRecursiveMethod = typesClass.getMethod("erasureRecursive", typeClass);
-				typesUnboxedTypeOrTypeMethod = typesClass.getMethod("unboxedTypeOrType", typeClass);
 
 				binaryTreeOperatorField = Stream
 						.of(Class.forName("com.sun.tools.javac.tree.JCTree").getDeclaredClasses())

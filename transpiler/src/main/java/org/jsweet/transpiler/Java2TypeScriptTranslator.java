@@ -1132,7 +1132,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	private AbstractTreePrinter substituteAndPrintType(Tree typeTree, boolean arrayComponent, boolean inTypeParameters,
 			boolean completeRawTypes, boolean disableSubstitution) {
 
-		Element typeElement = toElement(typeTree);
+		Element typeElement = toTypeElement(typeTree);
 		TypeMirror typeType = toType(typeTree);
 		if (typeElement instanceof TypeParameterElement) {
 			if (getAdapter().typeVariablesToErase.contains(typeElement)) {
@@ -1149,7 +1149,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				return print("any");
 			}
 
-			String typeFullName = typeElement == null ? typeType.toString() : util().getQualifiedName(typeElement);
+			String typeFullName = util().getQualifiedName(typeType);
 			if (Runnable.class.getName().equals(typeFullName)) {
 				if (arrayComponent) {
 					print("(");
@@ -1163,7 +1163,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			if (typeTree instanceof ParameterizedTypeTree) {
 				ParameterizedTypeTree typeApply = ((ParameterizedTypeTree) typeTree);
 				TypeElement parametrizedTypeElement = toElement(typeApply.getType());
-				String typeName = parametrizedTypeElement.toString();
+				String typeName = parametrizedTypeElement.getSimpleName().toString();
 				String mappedTypeName = context.getTypeMappingTarget(typeName);
 				if (mappedTypeName != null && mappedTypeName.endsWith("<>")) {
 					print(typeName.substring(0, mappedTypeName.length() - 2));
@@ -3573,8 +3573,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 
 			if ("class".equals(memberSelectTree.getIdentifier().toString())) {
-				if (memberType.getKind() == TypeKind.DECLARED
-						&& util().getFirstTypeArgumentAsElement((DeclaredType) memberType) != null) {
+				if (memberType.getKind() == TypeKind.DECLARED //
+						&& util().getFirstTypeArgumentAsElement((DeclaredType) memberType) != null //
+						&& util().isInterface(util().getFirstTypeArgumentAsElement((DeclaredType) memberType))) {
 
 					print("\"").print(context
 							.getRootRelativeJavaName(util().getFirstTypeArgumentAsElement((DeclaredType) memberType)))
@@ -5370,7 +5371,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							if (caseExpression instanceof LiteralTree) {
 								Object value = ((LiteralTree) caseExpression).getValue();
 								if (value instanceof Character) {
-									value = Character.getNumericValue((Character) value);
+									int charCodePoint = Character.codePointAt(value.toString(), 0);
+									value = charCodePoint;
 								}
 								print(value + " /* " + caseTree.getExpression() + " */");
 							} else {
