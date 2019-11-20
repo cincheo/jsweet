@@ -15,7 +15,6 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
@@ -366,7 +365,7 @@ public class UtilTest extends AbstractTest {
 	@Test
 	public void getFirstTypeArgumentAsElement() throws Exception {
 		TypeElement element = context.elements.getTypeElement("first.ParameterizedType");
-		TypeParameterElement typeArgumentElement = util.getFirstTypeArgumentAsElement((DeclaredType) element.asType());
+		Element typeArgumentElement = util.getFirstTypeArgumentAsElement((DeclaredType) element.asType());
 		assertEquals(ElementKind.TYPE_PARAMETER, typeArgumentElement.getKind());
 		assertEquals("TFirst", typeArgumentElement.getSimpleName().toString());
 	}

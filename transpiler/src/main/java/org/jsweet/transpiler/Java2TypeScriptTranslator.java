@@ -848,10 +848,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			print("namespace ").print(rootRelativePackageName).print(" {").startIndent().println();
 		}
 
-		for (Tree def : compilationUnit.getTypeDecls()) {
-			if (!(def instanceof ClassTree)) {
-				print(def);
-			}
+		for (ImportTree def : compilationUnit.getImports()) {
+			print(def);
 		}
 
 		for (ClassTree def : util().getSortedClassDeclarations(compilationUnit.getTypeDecls(), compilationUnit)) {
@@ -2827,7 +2825,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				} else {
 					printIndent().print(VAR_DECL_KEYWORD + " ")
 							.print(avoidJSKeyword(method.getParameters().get(j).getName().toString())).print(" : ")
-							.print("any").print(util().isVarargs(method.getParameters().get(j)) ? "[]" : "")
+							.print("any").print(util().isVarargs(method.getParameters().get(j), getCompilationUnit()) ? "[]" : "")
 							.print(" = ").print("__args[" + j + "]").print(";").println();
 				}
 			} else {
@@ -2839,7 +2837,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							.collect(Collectors.toList());
 					printIndent().print(VAR_DECL_KEYWORD + " ")
 							.print(avoidJSKeyword(method.getParameters().get(j).getName().toString())).print(" : ")
-							.print("any").print(util().isVarargs(method.getParameters().get(j)) ? "[]" : "")
+							.print("any").print(util().isVarargs(method.getParameters().get(j), getCompilationUnit()) ? "[]" : "")
 							.print(" = ").print(args.get(j)).print(";").println();
 					getScope().inlinedConstructorArgs = null;
 				}
@@ -3321,7 +3319,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 			}
 
-			if (util().isVarargs(varTree)) {
+			if (util().isVarargs(varTree, getCompilationUnit())) {
 				print("...");
 			}
 
@@ -3331,7 +3329,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				print(name);
 			}
 
-			if (!util().isVarargs(varTree) && (getScope().isEraseVariableTypes() || (getScope().interfaceScope
+			if (!util().isVarargs(varTree, getCompilationUnit()) && (getScope().isEraseVariableTypes() || (getScope().interfaceScope
 					&& context.hasAnnotationType(varElement, JSweetConfig.ANNOTATION_OPTIONAL)))) {
 				print("?");
 			}
@@ -3343,7 +3341,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					} else {
 						if (getScope().isEraseVariableTypes()) {
 							print("any");
-							if (util().isVarargs(varTree)) {
+							if (util().isVarargs(varTree, getCompilationUnit())) {
 								print("[]");
 							}
 						} else {
@@ -3557,10 +3555,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	public Void visitMemberSelect(MemberSelectTree memberSelectTree, Trees trees) {
 		if (!getAdapter().substitute(createExtendedElement(memberSelectTree))) {
 			Element selectedElement = toElement(memberSelectTree.getExpression());
-			TypeElement selectedTypeElement = toTypeElement(memberSelectTree.getExpression());
+			Element selectedTypeElement = toTypeElement(memberSelectTree.getExpression());
 			Element memberElement = toElement(memberSelectTree);
 			TypeMirror memberType = toType(memberSelectTree);
-			TypeElement memberTypeElement = toTypeElement(memberSelectTree);
+			Element memberTypeElement = toTypeElement(memberSelectTree);
 			if (selectedElement instanceof PackageElement) {
 				if (context.isRootPackage(selectedElement)) {
 					if (memberTypeElement != null) {
@@ -4043,9 +4041,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					if (arg instanceof IdentifierTree && toElement((IdentifierTree) arg) instanceof VariableElement) {
 						VariableElement var = toElement((IdentifierTree) arg);
 						if (var.getEnclosingElement() instanceof ExecutableElement) {
-							ExecutableElement varOwner = (ExecutableElement) var.getEnclosingElement();
-							if (varOwner.isVarArgs() && varOwner.getParameters().size() > 0
-									&& util().last(varOwner.getParameters()) == var) {
+							if (util().isVarargs(var)) {
 								print("...");
 							}
 						}

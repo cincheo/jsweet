@@ -867,8 +867,23 @@ public class Util {
 	/**
 	 * Tells if this parameter declaration is varargs.
 	 */
-	public boolean isVarargs(VariableTree varDecl) {
-		return varDecl.toString().contains("...");
+	public boolean isVarargs(VariableTree varDecl, CompilationUnitTree compilationUnitTree) {
+		VariableElement varElement = getElementForTree(varDecl, compilationUnitTree);
+		return isVarargs(varElement);
+	}
+
+	/**
+	 * Tells if this variable is a varargs parameter element
+	 */
+	public boolean isVarargs(VariableElement varElement) {
+		Element varOwner = varElement.getEnclosingElement();
+		if (!(varOwner instanceof ExecutableElement)) {
+			return false;
+		}
+		ExecutableElement methodElement = (ExecutableElement) varOwner;
+		return methodElement.isVarArgs() //
+				&& methodElement.getParameters().size() > 0 //
+				&& last(methodElement.getParameters()) == varElement;
 	}
 
 	/**
@@ -1946,6 +1961,10 @@ public class Util {
 	@SuppressWarnings("unchecked")
 	public <T extends Element> T getTypeElementForTree(Tree tree, CompilationUnitTree compilationUnit) {
 		TypeMirror treeType = getTypeForTree(tree, compilationUnit);
+		if (treeType != null && treeType.getKind() == TypeKind.PACKAGE) {
+			return (T) getPackageByName(treeType.toString());
+		}
+
 		return treeType == null ? null : (T) types().asElement(treeType);
 	}
 
