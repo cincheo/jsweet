@@ -149,7 +149,19 @@ public class JSweetContext {
 	protected Set<String> langTypesSimpleNames = new HashSet<String>();
 	protected Set<String> baseThrowables = new HashSet<String>();
 
-	private Map<String, Tree[]> globalMethods = new HashMap<>();
+	public static class GlobalMethodInfos {
+		public final ClassTree classTree;
+		public final MethodTree methodTree;
+		public final CompilationUnitTree compilationUnitTree;
+
+		private GlobalMethodInfos(ClassTree classTree, MethodTree methodTree, CompilationUnitTree compilationUnitTree) {
+			this.classTree = classTree;
+			this.methodTree = methodTree;
+			this.compilationUnitTree = compilationUnitTree;
+		}
+	}
+
+	private Map<String, GlobalMethodInfos> globalMethods = new HashMap<>();
 	private Map<String, ClassTree> decoratorAnnotations = new HashMap<>();
 
 	/**
@@ -164,7 +176,7 @@ public class JSweetContext {
 		String name = ((TypeElement) methodElement.getEnclosingElement()).getQualifiedName().toString();
 		name += "." + method.getName();
 		name = name.replace(JSweetConfig.GLOBALS_CLASS_NAME + ".", "");
-		globalMethods.put(name, new Tree[] { owner, method });
+		globalMethods.put(name, new GlobalMethodInfos(owner, method, compilationUnit));
 	}
 
 	/**
@@ -177,7 +189,7 @@ public class JSweetContext {
 	 *         but we ignore it here)
 	 * @see #registerGlobalMethod(MethodTree)
 	 */
-	public Tree[] lookupGlobalMethod(String fullyQualifiedName) {
+	public GlobalMethodInfos lookupGlobalMethod(String fullyQualifiedName) {
 		return globalMethods.get(fullyQualifiedName);
 	}
 

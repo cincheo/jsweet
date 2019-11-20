@@ -956,12 +956,21 @@ public class Util {
 		}
 	}
 
+	private final static List<TypeKind> IS_ASSIGABLE_FORBBIDEN_TYPES = asList(TypeKind.EXECUTABLE, TypeKind.PACKAGE,
+			TypeKind.MODULE);
+
 	/**
 	 * Tells if the given list contains an type which is assignable from type.
 	 */
 	public boolean containsAssignableType(List<? extends TypeMirror> list, TypeMirror type) {
 		for (TypeMirror t : list) {
-			if (types().isAssignable(t, type)) {
+			if (t == type) {
+				return true;
+			}
+
+			if (!IS_ASSIGABLE_FORBBIDEN_TYPES.contains(t.getKind()) //
+					&& !IS_ASSIGABLE_FORBBIDEN_TYPES.contains(type.getKind()) //
+					&& types().isAssignable(t, type)) {
 				return true;
 			}
 		}

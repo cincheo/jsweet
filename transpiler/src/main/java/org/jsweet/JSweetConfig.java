@@ -18,16 +18,11 @@
  */
 package org.jsweet;
 
-import java.io.File;
 import java.io.InputStream;
-import java.lang.reflect.Method;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -38,7 +33,7 @@ import org.apache.log4j.Logger;
 @SuppressWarnings("serial")
 public abstract class JSweetConfig {
 
-	private static Logger logger = Logger.getLogger(JSweetConfig.class);
+	protected static Logger logger = Logger.getLogger(JSweetConfig.class);
 
 	private JSweetConfig() {
 	}
@@ -82,8 +77,7 @@ public abstract class JSweetConfig {
 	public static String MAVEN_JAVA_OVERRIDE_ARTIFACT = "jsweet-core-strict";
 
 	/**
-	 * The constant for the JSweet lib package (where the definitions need to
-	 * be).
+	 * The constant for the JSweet lib package (where the definitions need to be).
 	 */
 	public final static String LIBS_PACKAGE = "def";
 	private final static String JAVA_PACKAGE = "java";
@@ -111,8 +105,8 @@ public abstract class JSweetConfig {
 	public static final String DEPRECATED_UTIL_CLASSNAME = UTIL_PACKAGE + ".Globals";
 	public static final String UTIL_CLASSNAME = UTIL_PACKAGE + ".Lang";
 	/**
-	 * The constant for the interface name that contains all the generated
-	 * string types (short name).
+	 * The constant for the interface name that contains all the generated string
+	 * types (short name).
 	 */
 	public static final String STRING_TYPES_INTERFACE_NAME = "StringTypes";
 	/** The constant for the function classes package. */
@@ -146,14 +140,14 @@ public abstract class JSweetConfig {
 	public static final String EXTENSION_DIR = "jsweet_extension";
 
 	/**
-	 * Default name of the directory where the TypeScript definition files can
-	 * be found.
+	 * Default name of the directory where the TypeScript definition files can be
+	 * found.
 	 */
 	public static final String TS_LIBS_DIR_NAME = "typings";
 
 	/**
-	 * The constant for main functions (translate to global code, which is
-	 * executed when the file is loaded).
+	 * The constant for main functions (translate to global code, which is executed
+	 * when the file is loaded).
 	 */
 	public static final String MAIN_FUNCTION_NAME = "main";
 
@@ -169,79 +163,98 @@ public abstract class JSweetConfig {
 	public static final String OBJECT_CLASSNAME = JSweetConfig.LANG_PACKAGE_ALT + ".Object";
 
 	/**
-	 * Fully-qualified name for the JSweet <code>@Disabled</code> annotation (see JSweet core API).
+	 * Fully-qualified name for the JSweet <code>@Disabled</code> annotation (see
+	 * JSweet core API).
 	 */
 	public static final String ANNOTATION_DISABLED = JSweetConfig.LANG_PACKAGE + ".Disabled";
 	/**
-	 * Fully-qualified name for the JSweet <code>@Erased</code> annotation (see JSweet core API).
+	 * Fully-qualified name for the JSweet <code>@Erased</code> annotation (see
+	 * JSweet core API).
 	 */
 	public static final String ANNOTATION_ERASED = JSweetConfig.LANG_PACKAGE + ".Erased";
 	/**
-	 * Fully-qualified name for the JSweet <code>@Async</code> annotation (see JSweet core API).
+	 * Fully-qualified name for the JSweet <code>@Async</code> annotation (see
+	 * JSweet core API).
 	 */
 	public static final String ANNOTATION_ASYNC = JSweetConfig.LANG_PACKAGE + ".Async";
 	/**
-	 * Fully-qualified name for the JSweet <code>@SyntacticIterable</code> annotation (see JSweet core API).
+	 * Fully-qualified name for the JSweet <code>@SyntacticIterable</code>
+	 * annotation (see JSweet core API).
 	 */
 	public static final String ANNOTATION_SYNTACTIC_ITERABLE = JSweetConfig.LANG_PACKAGE + ".SyntacticIterable";
 	/**
-	 * Fully-qualified name for the JSweet <code>@Ambient</code> annotation (see JSweet core API).
+	 * Fully-qualified name for the JSweet <code>@Ambient</code> annotation (see
+	 * JSweet core API).
 	 */
 	public static final String ANNOTATION_AMBIENT = JSweetConfig.LANG_PACKAGE + ".Ambient";
 	/**
-	 * Fully-qualified name for the JSweet <code>@Mixin</code> annotation (see JSweet core API).
+	 * Fully-qualified name for the JSweet <code>@Mixin</code> annotation (see
+	 * JSweet core API).
 	 */
 	public static final String ANNOTATION_MIXIN = JSweetConfig.LANG_PACKAGE + ".Mixin";
 	/**
-	 * Fully-qualified name for the JSweet <code>@ObjectType</code> annotation (see JSweet core API).
+	 * Fully-qualified name for the JSweet <code>@ObjectType</code> annotation (see
+	 * JSweet core API).
 	 */
 	public static final String ANNOTATION_OBJECT_TYPE = JSweetConfig.LANG_PACKAGE + ".ObjectType";
 	/**
-	 * Fully-qualified name for the JSweet <code>@Module</code> annotation (see JSweet core API).
+	 * Fully-qualified name for the JSweet <code>@Module</code> annotation (see
+	 * JSweet core API).
 	 */
 	public static final String ANNOTATION_MODULE = JSweetConfig.LANG_PACKAGE + ".Module";
 	/**
-	 * Fully-qualified name for the JSweet <code>@Interface</code> annotation (see JSweet core API).
+	 * Fully-qualified name for the JSweet <code>@Interface</code> annotation (see
+	 * JSweet core API).
 	 */
 	public static final String ANNOTATION_INTERFACE = JSweetConfig.LANG_PACKAGE + ".Interface";
 	/**
-	 * Fully-qualified name for the JSweet <code>@Optional</code> annotation (see JSweet core API).
+	 * Fully-qualified name for the JSweet <code>@Optional</code> annotation (see
+	 * JSweet core API).
 	 */
 	public static final String ANNOTATION_OPTIONAL = JSweetConfig.LANG_PACKAGE + ".Optional";
 	/**
-	 * Fully-qualified name for the JSweet <code>@StringType</code> annotation (see JSweet core API).
+	 * Fully-qualified name for the JSweet <code>@StringType</code> annotation (see
+	 * JSweet core API).
 	 */
 	public static final String ANNOTATION_STRING_TYPE = JSweetConfig.LANG_PACKAGE + ".StringType";
 	/**
-	 * Fully-qualified name for the JSweet <code>@Root</code> annotation (see JSweet core API).
+	 * Fully-qualified name for the JSweet <code>@Root</code> annotation (see JSweet
+	 * core API).
 	 */
 	public static final String ANNOTATION_ROOT = JSweetConfig.LANG_PACKAGE + ".Root";
 	/**
-	 * Fully-qualified name for the JSweet <code>@Name</code> annotation (see JSweet core API).
+	 * Fully-qualified name for the JSweet <code>@Name</code> annotation (see JSweet
+	 * core API).
 	 */
 	public static final String ANNOTATION_NAME = JSweetConfig.LANG_PACKAGE + ".Name";
 	/**
-	 * Fully-qualified name for the JSweet <code>@Decorator</code> annotation (see JSweet core API).
+	 * Fully-qualified name for the JSweet <code>@Decorator</code> annotation (see
+	 * JSweet core API).
 	 */
 	public static final String ANNOTATION_DECORATOR = JSweetConfig.LANG_PACKAGE + ".Decorator";
 	/**
-	 * Fully-qualified name for the JSweet <code>@Replace</code> annotation (see JSweet core API).
+	 * Fully-qualified name for the JSweet <code>@Replace</code> annotation (see
+	 * JSweet core API).
 	 */
 	public static final String ANNOTATION_REPLACE = JSweetConfig.LANG_PACKAGE + ".Replace";
 	/**
-	 * Fully-qualified name for the JSweet <code>@Generator</code> annotation (see JSweet core API).
+	 * Fully-qualified name for the JSweet <code>@Generator</code> annotation (see
+	 * JSweet core API).
 	 */
 	public static final String ANNOTATION_GENERATOR = JSweetConfig.LANG_PACKAGE + ".Generator";
 	/**
-	 * Fully-qualified name for the JSweet <code>@SNoDebug</code> annotation (see JSweet core API).
+	 * Fully-qualified name for the JSweet <code>@SNoDebug</code> annotation (see
+	 * JSweet core API).
 	 */
 	public static final String ANNOTATION_NO_DEBUG = JSweetConfig.LANG_PACKAGE + ".NoDebug";
 	/**
-	 * Fully-qualified name for the JSweet <code>@WrapParameters</code> annotation (see JSweet core API).
+	 * Fully-qualified name for the JSweet <code>@WrapParameters</code> annotation
+	 * (see JSweet core API).
 	 */
 	public static final String ANNOTATION_WRAP_PARAMETERS = JSweetConfig.LANG_PACKAGE + ".WrapParameters";
 	/**
-	 * Fully-qualified name for the built-in Java {@link FunctionalInterface} annotation.
+	 * Fully-qualified name for the built-in Java {@link FunctionalInterface}
+	 * annotation.
 	 */
 	public static final String ANNOTATION_FUNCTIONAL_INTERFACE = FunctionalInterface.class.getName();
 
@@ -322,8 +335,8 @@ public abstract class JSweetConfig {
 	};
 
 	/**
-	 * This map contains the TS keywords that are taken into account in strict
-	 * mode (within classes).
+	 * This map contains the TS keywords that are taken into account in strict mode
+	 * (within classes).
 	 */
 	public static final Set<String> TS_STRICT_MODE_KEYWORDS = new HashSet<String>() {
 		{
@@ -345,8 +358,7 @@ public abstract class JSweetConfig {
 	};
 
 	/**
-	 * This map contains the TS keywords that are taken into account at top
-	 * level.
+	 * This map contains the TS keywords that are taken into account at top level.
 	 */
 	public static final Set<String> TS_TOP_LEVEL_KEYWORDS = new HashSet<String>() {
 		{

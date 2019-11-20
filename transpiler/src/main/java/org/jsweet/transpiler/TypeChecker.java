@@ -22,7 +22,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
@@ -210,8 +209,8 @@ public class TypeChecker {
 	private boolean checkUnionTypeAssignment(Tree parent, TypeMirror assigned, MethodInvocationTree union,
 			CompilationUnitTree compilationUnit) {
 
-		Element firstArgElement = util().getElementForTree(union.getArguments().get(0), compilationUnit);
-		if (firstArgElement.asType().toString().startsWith(JSweetConfig.UNION_CLASS_NAME)) {
+		TypeElement firstArgElement = util().getTypeElementForTree(union.getArguments().get(0), compilationUnit);
+		if (util().getQualifiedName(firstArgElement).startsWith(JSweetConfig.UNION_CLASS_NAME)) {
 
 			List<? extends TypeMirror> typeArguments = ((DeclaredType) firstArgElement.asType()).getTypeArguments();
 
@@ -222,7 +221,7 @@ public class TypeChecker {
 			}
 		} else {
 			// simple type -> union type
-			String typeName = firstArgElement.asType().toString();
+			String typeName = util().getQualifiedName(firstArgElement);
 			if ((JSweetConfig.LANG_PACKAGE_ALT + ".Function").equals(typeName)
 					|| (JSweetConfig.LANG_PACKAGE + ".Function").equals(typeName)) {
 				// HACK: type checking is ignored here!

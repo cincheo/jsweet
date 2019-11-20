@@ -72,6 +72,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.jsweet.JSweetConfig;
+import org.jsweet.transpiler.JSweetContext.GlobalMethodInfos;
 import org.jsweet.transpiler.OverloadScanner.Overload;
 import org.jsweet.transpiler.extension.PrinterAdapter;
 import org.jsweet.transpiler.model.ExtendedElement;
@@ -1442,17 +1443,20 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 		} else {
 			if (context.lookupDecoratorAnnotation(classTypeElement.getQualifiedName().toString()) != null) {
-				Tree[] globalDecoratorFunction = context
+				GlobalMethodInfos globalDecoratorFunction = context
 						.lookupGlobalMethod(classTypeElement.getQualifiedName().toString());
 				if (globalDecoratorFunction == null) {
 					report(classTree, JSweetProblem.CANNOT_FIND_GLOBAL_DECORATOR_FUNCTION,
 							classTypeElement.getQualifiedName());
 				} else {
+					CompilationUnitTree previousCompilUnit = getCompilationUnit();
 					getScope().decoratorScope = true;
-					enter(globalDecoratorFunction[0]);
-					print(globalDecoratorFunction[1]);
+					compilationUnit = globalDecoratorFunction.compilationUnitTree; 
+					enter(globalDecoratorFunction.classTree);
+					print(globalDecoratorFunction.methodTree);
 					exit();
 					getScope().decoratorScope = false;
+					compilationUnit = previousCompilUnit; 
 				}
 				exitScope();
 				return returnNothing();
