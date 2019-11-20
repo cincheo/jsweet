@@ -5961,7 +5961,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		Element expressionTypeElement = toTypeElement(expression);
 		TypeMirror expressionType = toType(expression);
 		Element assignedTypeElement = types().asElement(assignedType);
-		if (util().isInterface(assignedTypeElement) && expressionTypeElement.getKind() == ElementKind.ENUM) {
+		if (util().isInterface(assignedTypeElement) && expressionTypeElement != null && expressionTypeElement.getKind() == ElementKind.ENUM) {
 			String relTarget = getRootRelativeName(expressionTypeElement);
 			print(relTarget).print("[\"" + Java2TypeScriptTranslator.ENUM_WRAPPER_CLASS_WRAPPERS + "\"][")
 					.print(expression).print("]");
