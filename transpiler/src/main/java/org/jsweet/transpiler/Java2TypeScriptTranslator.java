@@ -1437,7 +1437,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 		if (getScope().declareClassScope) {
 			if (context.hasAnnotationType(classTypeElement, JSweetConfig.ANNOTATION_DECORATOR)) {
-				print("declare function ").print(name).print("(...getExpression()s: any[]);").println();
+				print("declare function ").print(name).print("(...args: any[]);").println();
 				exitScope();
 				return returnNothing();
 			}
@@ -3171,7 +3171,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	private boolean isLazyInitialized(VariableElement var) {
 		return var.getModifiers().contains(Modifier.STATIC) && context.lazyInitializedStatics.contains(var)
-				&& /* enum fields are not lazy initialized */ !(var.getKind() == ElementKind.ENUM
+				&& /* enum fields are not lazy initialized */ !(util().isPartOfAnEnum(var)
 						&& var.getEnclosingElement().equals(toTypeElement(var)));
 	}
 
@@ -3352,7 +3352,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							Element varTypeElement = toElement(varTree.getType());
 							if (varTypeElement != null
 									&& context.hasAnnotationType(varTypeElement, ANNOTATION_STRING_TYPE)
-									&& varTypeElement.getKind() != ElementKind.ENUM) {
+									&& !util().isPartOfAnEnum(varTypeElement)) {
 								print("\"");
 								print(context.getAnnotationValue(varTypeElement, ANNOTATION_STRING_TYPE, String.class,
 										varTypeElement.getSimpleName().toString()).toString());
@@ -3761,7 +3761,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						Element methodOwner = util().getParentElement(methSym, TypeElement.class);
 						if (!JSweetConfig.GLOBALS_CLASS_NAME.equals(methodOwner.getSimpleName().toString())) {
 							print("" + methodOwner.getSimpleName());
-							if (methodOwner.getKind() == ElementKind.ENUM) {
+							if (util().isPartOfAnEnum(methodOwner)) {
 								print(Java2TypeScriptTranslator.ENUM_WRAPPER_CLASS_SUFFIX);
 							}
 							if (!anonymous) {
@@ -4173,7 +4173,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 									if (!StringUtils.isEmpty(prefix)) {
 										print(context.getRootRelativeName(null, varEnclosingElement));
 										if (lazyInitializedStatic
-												&& varEnclosingElement.getKind() == ElementKind.ENUM) {
+												&& util().isPartOfAnEnum(varEnclosingElement)) {
 											print(ENUM_WRAPPER_CLASS_SUFFIX);
 										}
 										print(".");
@@ -4182,7 +4182,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 									if (!varEnclosingElement.getSimpleName().toString().equals(GLOBALS_PACKAGE_NAME)) {
 										print(varEnclosingElement.getSimpleName().toString());
 										if (lazyInitializedStatic
-												&& varEnclosingElement.getKind() == ElementKind.ENUM) {
+												&& util().isPartOfAnEnum(varEnclosingElement)) {
 											print(ENUM_WRAPPER_CLASS_SUFFIX);
 										}
 										print(".");
@@ -5792,7 +5792,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (checkFirstArrayElement)
 					print("[0]");
 				print(" === ").print("'" + TYPE_MAPPING.get(type.toString()).toLowerCase() + "'");
-			} else if (typeElement.getKind() == ElementKind.ENUM) {
+			} else if (util().isPartOfAnEnum(typeElement)) {
 				print("typeof ");
 				print(exprStr, expr);
 				if (checkFirstArrayElement)
@@ -5965,7 +5965,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		Element expressionTypeElement = toTypeElement(expression);
 		TypeMirror expressionType = toType(expression);
 		Element assignedTypeElement = types().asElement(assignedType);
-		if (util().isInterface(assignedTypeElement) && expressionTypeElement != null && expressionTypeElement.getKind() == ElementKind.ENUM) {
+		if (util().isInterface(assignedTypeElement) && expressionTypeElement != null && util().isPartOfAnEnum(expressionTypeElement)) {
 			String relTarget = getRootRelativeName(expressionTypeElement);
 			print(relTarget).print("[\"" + Java2TypeScriptTranslator.ENUM_WRAPPER_CLASS_WRAPPERS + "\"][")
 					.print(expression).print("]");
@@ -6116,7 +6116,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 			}
 		}
-		if (type.getKind() == ElementKind.ENUM) {
+		if (util().isPartOfAnEnum(type)) {
 			qualifiedName += ENUM_WRAPPER_CLASS_SUFFIX;
 		}
 		return qualifiedName;

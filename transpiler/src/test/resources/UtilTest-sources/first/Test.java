@@ -8,6 +8,10 @@ class ParameterizedType<TFirst, TSecond> {
 }
 
 public class Test {
+	
+	static enum InnerEnum {
+		A, B;
+	}
 
 	double double1 = 1;
 	int int1 = 1;

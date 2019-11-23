@@ -2159,4 +2159,15 @@ public class Util {
 		}
 
 	}
+
+	/**
+	 * Returns true if given element is part of an enum: either an Enum element, or an enum constant 
+	 */
+	public boolean isPartOfAnEnum(Element element) {
+		if (element == null) {
+			return false;
+		}
+
+		return element.getKind() == ElementKind.ENUM || element.getKind() == ElementKind.ENUM_CONSTANT;
+	}
 }

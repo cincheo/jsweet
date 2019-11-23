@@ -347,7 +347,7 @@ public class UtilTest extends AbstractTest {
 		CompoundAssignmentTree assignmentTree = extractCompoundAssignmentFromSingleLineTestMethod(testMethod);
 
 		TypeMirror operatorType = util.getOperatorType(assignmentTree);
-		
+
 		assertEquals(util.getType(String.class), operatorType);
 	}
 
@@ -385,6 +385,28 @@ public class UtilTest extends AbstractTest {
 	public void isInSameSourceFileForElementOutsideCompilationUnit() throws Exception {
 		Element elementFromOtherCompilUnit = context.elements.getTypeElement("first.second.Test2");
 		assertFalse(util.isInSameSourceFile(getMainCompilationUnit(), elementFromOtherCompilUnit));
+	}
+
+	@Test
+	public void isEnumOrNull() throws Exception {
+		assertFalse(util.isPartOfAnEnum(null));
+	}
+
+	@Test
+	public void isEnumTest() throws Exception {
+		Element element = context.elements.getTypeElement("first.Test.InnerEnum");
+		assertTrue(util.isPartOfAnEnum(element));
+	}
+
+	@Test
+	public void isEnumOnEnumItem() throws Exception {
+		Element element = context.elements.getTypeElement("first.Test.InnerEnum");
+		for (Element itemElement : element.getEnclosedElements()) {
+			String enclosedElementName = itemElement.getSimpleName().toString();
+			if (enclosedElementName.equals("A") || enclosedElementName.equals("B")) {
+				assertTrue(util.isPartOfAnEnum(itemElement));
+			}
+		}
 	}
 
 	private CompilationUnitTree getMainCompilationUnit() {

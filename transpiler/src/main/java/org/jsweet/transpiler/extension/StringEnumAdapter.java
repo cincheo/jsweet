@@ -53,7 +53,7 @@ public class StringEnumAdapter extends PrinterAdapter {
 	private boolean isStringEnum(Element element) {
 		// note: this function could be improved to exclude enums that have
 		// fields or methods other than the enum constants
-		return element.getKind() == ElementKind.ENUM && hasAnnotationType(element, JSweetConfig.ANNOTATION_STRING_TYPE);
+		return util().isPartOfAnEnum(element) && hasAnnotationType(element, JSweetConfig.ANNOTATION_STRING_TYPE);
 	}
 
 	/**

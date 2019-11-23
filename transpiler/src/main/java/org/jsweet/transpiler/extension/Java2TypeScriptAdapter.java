@@ -1447,8 +1447,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 			}
 
 			// enum objects wrapping
-			if (targetType != null && targetType.getKind() == ElementKind.ENUM
-					&& fieldAccessElement.getKind() != ElementKind.ENUM
+			if (targetType != null && targetType.getKind() == ElementKind.ENUM && !util().isPartOfAnEnum(fieldAccessElement)
 					&& !"this".equals(fieldAccess.getExpression().toString()) && !"class".equals(targetFieldName)) {
 				String relTarget = getRootRelativeName((Element) targetType);
 				getPrinter().print(relTarget)
