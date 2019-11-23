@@ -21,8 +21,8 @@ package org.jsweet.transpiler;
 import java.io.File;
 import java.util.Locale;
 
-import javax.tools.Diagnostic.Kind;
 import javax.tools.Diagnostic;
+import javax.tools.Diagnostic.Kind;
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileObject;
 

@@ -1170,7 +1170,7 @@ public class JSweetContext {
 	/**
 	 * Tells if the given type is a Java interface.
 	 */
-	public boolean isInterface(TypeElement typeElement) {
+	public boolean isInterface(Element typeElement) {
 		return util.isInterface(typeElement) || hasAnnotationType(typeElement, JSweetConfig.ANNOTATION_INTERFACE);
 	}
 
@@ -1198,7 +1198,7 @@ public class JSweetContext {
 		if (hasAnnotationFilters()) {
 
 			String signature = getElementSignatureForAnnotationFilters(element);
-			
+
 			for (String annotationType : annotationTypes) {
 				Collection<AnnotationFilterDescriptor> filterDescriptors = annotationFilters.get(annotationType);
 				if (filterDescriptors != null) {
@@ -1561,6 +1561,21 @@ public class JSweetContext {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Returns true if this new class expression defines an anonymous class which is
+	 * contained in a static method.
+	 */
+	public boolean isStaticAnonymousClass(NewClassTree newClass, CompilationUnitTree compilationUnit) {
+		if (!isAnonymousClass(newClass, compilationUnit)) {
+			return false;
+		}
+
+		Element newClassElement = util.getElementForTree(newClass, compilationUnit);
+		ExecutableElement parentMethodElement = util.getParentElement(newClassElement, ExecutableElement.class);
+		return parentMethodElement != null
+				&& parentMethodElement.getModifiers().contains(Modifier.STATIC);
 	}
 
 	/**

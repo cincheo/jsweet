@@ -19,7 +19,6 @@
 package org.jsweet.transpiler.extension;
 
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 
 import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.model.CaseElement;

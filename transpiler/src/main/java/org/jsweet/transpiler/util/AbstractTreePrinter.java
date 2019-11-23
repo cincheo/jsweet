@@ -23,7 +23,6 @@ import java.util.Stack;
 import java.util.function.Consumer;
 
 import javax.lang.model.element.Element;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
 
@@ -248,7 +247,7 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 		return print(adaptedIdentifier);
 	}
 
-	public String getQualifiedTypeName(TypeElement type, boolean globals, boolean ignoreLangTypes) {
+	public String getQualifiedTypeName(Element type, boolean globals, boolean ignoreLangTypes) {
 		return getRootRelativeName(type);
 	}
 
