@@ -1994,8 +1994,8 @@ public class Util {
 
 	@SuppressWarnings("unchecked")
 	public <T extends Element> T getParentElement(Element element, Class<T> parentElementClass) {
-		Element parent = element.getEnclosingElement();
-		while (parent != null) {
+		Element parent = element;
+		while ((parent = parent.getEnclosingElement()) != null) {
 			if (parentElementClass.isAssignableFrom(parent.getClass())) {
 				return (T) parent;
 			}

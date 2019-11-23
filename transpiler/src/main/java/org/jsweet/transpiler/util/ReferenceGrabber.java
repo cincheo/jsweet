@@ -29,7 +29,7 @@ import org.jsweet.transpiler.JSweetContext;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.NewClassTree;
-import com.sun.source.util.TreePathScanner;
+import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
 
 /**
@@ -38,16 +38,18 @@ import com.sun.source.util.Trees;
  * @author Renaud Pawlak
  * @author Louis Grignon
  */
-public class ReferenceGrabber extends TreePathScanner<Void, Trees> {
+public class ReferenceGrabber extends TreeScanner<Void, Trees> {
 
 	/**
 	 * The grabbed references.
 	 */
 	public final Set<TypeMirror> referencedTypes = new HashSet<>();
 	private final JSweetContext context;
+	private final CompilationUnitTree compilationUnit;
 
-	public ReferenceGrabber(JSweetContext context) {
+	public ReferenceGrabber(JSweetContext context, CompilationUnitTree compilationUnit) {
 		this.context = context;
+		this.compilationUnit = compilationUnit;
 	}
 
 	/**
@@ -55,7 +57,7 @@ public class ReferenceGrabber extends TreePathScanner<Void, Trees> {
 	 */
 	@Override
 	public Void visitNewClass(NewClassTree newClass, Trees trees) {
-		add(context.util.getTypeForTree(newClass.getIdentifier(), getCompilationUnit()));
+		add(context.util.getTypeForTree(newClass.getIdentifier(), compilationUnit));
 
 		return super.visitNewClass(newClass, trees);
 	}
@@ -65,7 +67,7 @@ public class ReferenceGrabber extends TreePathScanner<Void, Trees> {
 	 */
 	@Override
 	public Void visitMemberSelect(MemberSelectTree memberSelectTree, Trees trees) {
-		TypeMirror typeOfSelected = context.util.getTypeForTree(memberSelectTree.getExpression(), getCompilationUnit());
+		TypeMirror typeOfSelected = context.util.getTypeForTree(memberSelectTree.getExpression(), compilationUnit);
 		if (typeOfSelected != null && typeOfSelected.getKind() == TypeKind.DECLARED) {
 			add(typeOfSelected);
 		}
@@ -74,9 +76,5 @@ public class ReferenceGrabber extends TreePathScanner<Void, Trees> {
 
 	private void add(TypeMirror type) {
 		referencedTypes.add(type);
-	}
-
-	private CompilationUnitTree getCompilationUnit() {
-		return getCurrentPath().getCompilationUnit();
 	}
 }

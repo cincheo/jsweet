@@ -56,7 +56,7 @@ import com.sun.source.util.Trees;
 public class StaticInitilializerAnalyzer extends TreePathScanner<Void, Trees> {
 
 	private JSweetContext context;
-	private CompilationUnitTree currentTopLevel;
+	private CompilationUnitTree currentCompilationUnit;
 	private int pass = 1;
 	private static final Logger logger = Logger.getLogger(StaticInitilializerAnalyzer.class);
 	/**
@@ -85,10 +85,11 @@ public class StaticInitilializerAnalyzer extends TreePathScanner<Void, Trees> {
 
 	private DirectedGraph<CompilationUnitTree> getGraph() {
 		if (context.useModules) {
-			DirectedGraph<CompilationUnitTree> graph = staticInitializersDependencies.get(currentTopLevel.getPackage());
+			DirectedGraph<CompilationUnitTree> graph = staticInitializersDependencies
+					.get(currentCompilationUnit.getPackage());
 			if (graph == null) {
 				graph = new DirectedGraph<>();
-				staticInitializersDependencies.put(currentTopLevel.getPackage(), graph);
+				staticInitializersDependencies.put(currentCompilationUnit.getPackage(), graph);
 			}
 			return graph;
 		} else {
@@ -101,7 +102,7 @@ public class StaticInitilializerAnalyzer extends TreePathScanner<Void, Trees> {
 	@Override
 	public Void visitCompilationUnit(CompilationUnitTree compilationUnit, Trees trees) {
 
-		currentTopLevel = compilationUnit;
+		currentCompilationUnit = compilationUnit;
 		if (pass == 1) {
 			getGraph().add(compilationUnit);
 		} else {
@@ -133,7 +134,7 @@ public class StaticInitilializerAnalyzer extends TreePathScanner<Void, Trees> {
 		}
 
 		super.visitCompilationUnit(compilationUnit, trees);
-		currentTopLevel = null;
+		currentCompilationUnit = null;
 
 		return null;
 	}
@@ -147,14 +148,14 @@ public class StaticInitilializerAnalyzer extends TreePathScanner<Void, Trees> {
 	@Override
 	public Void visitClass(ClassTree classTree, Trees trees) {
 		if (pass == 1) {
-			typesToCompilationUnits.put((TypeElement) toElement(classTree), currentTopLevel);
+			typesToCompilationUnits.put((TypeElement) toElement(classTree), currentCompilationUnit);
 		} else {
 			if (classTree.getExtendsClause() != null) {
 				CompilationUnitTree target = typesToCompilationUnits.get(toElement(classTree.getExtendsClause()));
 				if (target != null && getGraph().contains(target)) {
-					logger.debug("adding inheritance dependency: " + currentTopLevel.getSourceFile() + " -> "
+					logger.debug("adding inheritance dependency: " + currentCompilationUnit.getSourceFile() + " -> "
 							+ target.getSourceFile());
-					getGraph().addEdge(target, currentTopLevel);
+					getGraph().addEdge(target, currentCompilationUnit);
 				}
 			}
 
@@ -178,19 +179,20 @@ public class StaticInitilializerAnalyzer extends TreePathScanner<Void, Trees> {
 	}
 
 	private void acceptReferences(Tree tree) {
-		ReferenceGrabber refGrabber = new ReferenceGrabber(context);
+		ReferenceGrabber refGrabber = new ReferenceGrabber(context, currentCompilationUnit);
 		refGrabber.scan(tree, context.trees);
 		for (TypeMirror referencedType : refGrabber.referencedTypes) {
 			TypeElement referencedTypeElement = (TypeElement) context.types.asElement(referencedType);
-			PackageElement referencedPackageElement = (PackageElement) referencedTypeElement.getEnclosingElement();
-			PackageElement currentPackageElement = (PackageElement) toElement(currentTopLevel.getPackage());
-			
+			PackageElement referencedPackageElement = context.util.getParentElement(referencedTypeElement,
+					PackageElement.class);
+			PackageElement currentPackageElement = (PackageElement) toElement(currentCompilationUnit.getPackage());
+
 			if (!context.useModules || (Objects.equals(currentPackageElement, referencedPackageElement))) {
 				CompilationUnitTree target = typesToCompilationUnits.get(referencedTypeElement);
-				if (target != null && !currentTopLevel.equals(target) && getGraph().contains(target)) {
-					logger.debug("adding static initializer dependency: " + currentTopLevel.getSourceFile() + " -> "
-							+ target.getSourceFile());
-					getGraph().addEdge(target, currentTopLevel);
+				if (target != null && !currentCompilationUnit.equals(target) && getGraph().contains(target)) {
+					logger.debug("adding static initializer dependency: " + currentCompilationUnit.getSourceFile()
+							+ " -> " + target.getSourceFile());
+					getGraph().addEdge(target, currentCompilationUnit);
 				}
 			}
 		}
@@ -206,7 +208,7 @@ public class StaticInitilializerAnalyzer extends TreePathScanner<Void, Trees> {
 	}
 
 	private Element toElement(Tree tree) {
-		return context.util.getElementForTree(tree, currentTopLevel);
+		return context.util.getElementForTree(tree, currentCompilationUnit);
 	}
 
 }
