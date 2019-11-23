@@ -1196,7 +1196,9 @@ public class JSweetContext {
 		}
 
 		if (hasAnnotationFilters()) {
-			String signature = util.getQualifiedName(element);
+
+			String signature = getElementSignatureForAnnotationFilters(element);
+			
 			for (String annotationType : annotationTypes) {
 				Collection<AnnotationFilterDescriptor> filterDescriptors = annotationFilters.get(annotationType);
 				if (filterDescriptors != null) {
@@ -1226,6 +1228,14 @@ public class JSweetContext {
 			}
 		}
 		return hasActualAnnotationType(element, annotationTypes);
+	}
+
+	private String getElementSignatureForAnnotationFilters(Element element) {
+		String signature = element.toString();
+		if (!(element instanceof TypeElement) && element.getEnclosingElement() != null) {
+			signature = util.getQualifiedName(element.getEnclosingElement()) + "." + signature;
+		}
+		return signature;
 	}
 
 	/**
@@ -1401,7 +1411,7 @@ public class JSweetContext {
 			}
 		}
 		if (hasAnnotationFilters()) {
-			String signature = util.getQualifiedName(element);
+			String signature = getElementSignatureForAnnotationFilters(element);
 			Collection<AnnotationFilterDescriptor> filterDescriptors = annotationFilters.get(annotationType);
 			if (filterDescriptors != null) {
 				for (AnnotationFilterDescriptor filterDescriptor : filterDescriptors) {
