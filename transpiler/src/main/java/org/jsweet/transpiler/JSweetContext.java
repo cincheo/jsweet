@@ -651,7 +651,7 @@ public class JSweetContext {
 	 */
 	public boolean isInvalidOverload(ExecutableElement method) {
 		Overload overload = getOverload((TypeElement) method.getEnclosingElement(), method);
-		return overload != null && overload.methods.size() > 1 && !overload.isValid;
+		return overload != null && overload.getMethodsCount() > 1 && !overload.isValid;
 	}
 
 	/**

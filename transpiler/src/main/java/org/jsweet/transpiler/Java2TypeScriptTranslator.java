@@ -1612,12 +1612,18 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (context.hasAnnotationType(classTypeElement, JSweetConfig.ANNOTATION_SYNTACTIC_ITERABLE)) {
 					for (Tree implementsTree : classTree.getImplementsClause()) {
 						TypeElement implementsElement = toElement(implementsTree);
-						if (implementsElement.getQualifiedName().toString().equals(Iterable.class.getName())
-								// erase Java interfaces
-								|| context.isFunctionalType(implementsElement) //
-								|| getAdapter().eraseSuperInterface(classTypeElement, implementsElement)) {
+						if (implementsElement.getQualifiedName().toString().equals(Iterable.class.getName())) {
 							implementing.remove(implementsTree);
 						}
+					}
+				}
+
+				for (Tree implementsTree : classTree.getImplementsClause()) {
+					TypeElement implementsElement = toElement(implementsTree);
+					// erase Java interfaces
+					if (context.isFunctionalType(implementsElement) //
+							|| getAdapter().eraseSuperInterface(classTypeElement, implementsElement)) {
+						implementing.remove(implementsTree);
 					}
 				}
 
@@ -1803,8 +1809,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 					if (printAbstractDeclaration) {
 						Overload o = context.getOverload(classTypeElement, meth);
-						if (o != null && o.methods.size() > 1 && !o.isValid) {
-							if (!methodType.equals(toType(o.coreMethod))) {
+						if (o != null && o.getMethodsCount() > 1 && !o.isValid) {
+							if (!methodType.equals(o.getCoreEntry().methodType)) {
 								printAbstractDeclaration = false;
 							}
 						}
@@ -2159,8 +2165,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		ClassTree parent = (ClassTree) getParent();
 
 		boolean isDefaultConstructor = methodTree.getName().toString().equals(CONSTRUCTOR_METHOD_NAME) //
-				&& methodTree.getBody().toString().replace("\n", "").replace("\r", "").replace(" ", "")
-						.equals("{super();}");
+				&& methodTree.getParameters().isEmpty() && methodTree.getBody().toString().replace("\n", "")
+						.replace("\r", "").replace(" ", "").equals("{super();}");
 		if (!getScope().enumWrapperClassScope && isDefaultConstructor) {
 			return returnNothing();
 		}
@@ -2204,7 +2210,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (parent != null) {
 			TypeElement parentElement = toElement(parent);
 			overload = context.getOverload(parentElement, methodElement);
-			inOverload = overload != null && overload.methods.size() > 1;
+			inOverload = overload != null && overload.getMethodsCount() > 1;
 			if (inOverload) {
 				if (!overload.isValid) {
 					if (!printCoreMethodDelegate) {
@@ -2539,7 +2545,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	private void printCoreOverloadMethod(MethodTree methodDecl, ClassTree parent, Overload overload) {
 		boolean wasPrinted = false;
-		for (int i = 0; i < overload.methods.size(); i++) {
+		for (int i = 0; i < overload.getMethodsCount(); i++) {
 			MethodTree method = overload.methods.get(i);
 
 			ExecutableElement methodElement = toElement(method);
@@ -4009,7 +4015,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					if (!target.getQualifiedName().toString().startsWith(JSweetConfig.LIBS_PACKAGE + ".")) {
 						// invalid overload type parameters are erased
 						Overload overload = context.getOverload(target, methSym);
-						boolean inOverload = overload != null && overload.methods.size() > 1;
+						boolean inOverload = overload != null && overload.getMethodsCount() > 1;
 						if (!(inOverload && !overload.isValid)) {
 							printAnyTypeArguments(methSym.getTypeParameters().size());
 						}
@@ -4677,6 +4683,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 			printed = true;
 		} else if ((classTypeElement.getEnclosingElement() instanceof TypeElement
+				&& !classTypeElement.getModifiers().contains(Modifier.STATIC)
 				&& !context.isStaticAnonymousClass(newClass, getCompilationUnit()))) {
 			print("this");
 			ClassTree parent = getParent(ClassTree.class);

@@ -18,6 +18,8 @@
  */
 package org.jsweet.transpiler;
 
+import static java.util.stream.Collectors.toList;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -37,6 +39,7 @@ import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.util.AbstractTreeScanner;
 import org.jsweet.transpiler.util.Util;
 
+import com.google.common.collect.Iterables;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionStatementTree;
@@ -68,29 +71,80 @@ public class OverloadScanner extends AbstractTreeScanner {
 
 	private int pass = 1;
 
+	public static class OverloadMethodEntry {
+		public final CompilationUnitTree compilationUnit;
+		public final ClassTree enclosingClassTree;
+		public final MethodTree methodTree;
+		public final ExecutableElement methodElement;
+		public final TypeMirror methodType;
+
+		protected OverloadMethodEntry(CompilationUnitTree compilationUnit, ClassTree enclosingClassTree,
+				MethodTree methodTree, ExecutableElement methodElement, TypeMirror methodType) {
+			this.compilationUnit = compilationUnit;
+			this.enclosingClassTree = enclosingClassTree;
+			this.methodTree = methodTree;
+			this.methodElement = methodElement;
+			this.methodType = methodType;
+		}
+
+		@Override
+		public int hashCode() {
+			return methodTree.hashCode();
+		}
+
+		@Override
+		public boolean equals(Object other) {
+			return other instanceof OverloadMethodEntry && methodTree == ((OverloadMethodEntry) other).methodTree;
+		}
+	}
+
 	/**
 	 * Gathers methods overloading each other.
 	 * 
 	 * @author Renaud Pawlak
+	 * @author Louis Grignon
 	 */
 	public static class Overload {
 		/**
 		 * The method name.
 		 */
 		public String methodName;
+
+		private final List<OverloadMethodEntry> entries = new ArrayList<>();
+
 		/**
 		 * The methods carrying the same name.
 		 */
-		public List<MethodTree> methods = new ArrayList<>();
+		public Iterable<MethodTree> getMethods() {
+			return entries.stream().map(entry -> entry.methodTree).collect(toList());
+		}
+
+		public MethodTree getMethodAt(int i) {
+			return entries.get(i).methodTree;
+		}
+
 		/**
 		 * Tells if this overload is valid wrt to JSweet conventions.
 		 */
 		public boolean isValid = true;
+
+		private OverloadMethodEntry coreEntry;
+
+		/**
+		 * @see #getCoreEntry()
+		 */
+		public MethodTree getCoreMethod() {
+			return coreEntry == null ? null : coreEntry.methodTree;
+		}
+		
 		/**
 		 * The core method of the overload, that is to say the one holding the
 		 * implementation.
-		 */
-		public MethodTree coreMethod;
+		 */		
+		public OverloadMethodEntry getCoreEntry() {
+			return coreEntry;
+		}
+
 		/**
 		 * The default values for the parameters of the core method.
 		 */
@@ -117,21 +171,25 @@ public class OverloadScanner extends AbstractTreeScanner {
 		@Override
 		public String toString() {
 			StringBuilder sb = new StringBuilder(
-					"overload(" + methodName + ")[" + methods.size() + "," + isValid + "]");
-			if (methods.size() > 1) {
-				for (MethodTree method : methods) {
-					ExecutableElement methodElement = context.util.getElementForTree(method, compilationUnit);
+					"overload(" + methodName + ")[" + getMethodsCount() + "," + isValid + "]");
+			if (getMethodsCount() > 1) {
+				for (OverloadMethodEntry entry : entries) {
+					ExecutableElement methodElement = context.util.getElementForTree(entry.methodTree, compilationUnit);
 					sb.append("\n      # " + methodElement.getEnclosingElement() + "." + methodElement);
 				}
 			}
 			return sb.toString();
 		}
 
+		public int getMethodsCount() {
+			return entries.size();
+		}
+
 		/**
 		 * Returns parameter count of the method having the fewer parameters.
 		 */
 		public int getSmallerParameterCount() {
-			return methods.get(methods.size() - 1).getParameters().size();
+			return getMethodAt(getMethodsCount() - 1).getParameters().size();
 		}
 
 		/**
@@ -148,13 +206,16 @@ public class OverloadScanner extends AbstractTreeScanner {
 		 * Checks the validity of the overload and calculates the default values.
 		 */
 		public void calculate() {
-			if (methods.size() < 2) {
-				coreMethod = methods.get(0);
+			if (getMethodsCount() < 2) {
+				coreEntry = entries.get(0);
 				return;
 			}
-			methods.sort((m1, m2) -> {
-				Element m1Element = util.getElementForTree(m1, compilationUnit);
-				Element m2Element = util.getElementForTree(m2, compilationUnit);
+			entries.sort((OverloadMethodEntry m1Entry, OverloadMethodEntry m2Entry) -> {
+				MethodTree m1 = m1Entry.methodTree;
+				MethodTree m2 = m2Entry.methodTree;
+
+				ExecutableElement m1Element = m1Entry.methodElement;
+				ExecutableElement m2Element = m2Entry.methodElement;
 				int i = m2.getParameters().size() - m1.getParameters().size();
 				if (i == 0) {
 					isValid = false;
@@ -211,16 +272,16 @@ public class OverloadScanner extends AbstractTreeScanner {
 				}
 				return i;
 			});
-			coreMethod = methods.get(0);
+			coreEntry = entries.get(0);
 
-			TypeMirror coreMethodType = util.getTypeForTree(coreMethod, compilationUnit);
+			TypeMirror coreMethodType = coreEntry.methodType;
 			coreMethodType = util.erasureRecursive(coreMethodType);
-			for (MethodTree m : new ArrayList<>(methods)) {
-				if (m == coreMethod) {
+			for (OverloadMethodEntry currentEntry : new ArrayList<>(entries)) {
+				if (currentEntry == coreEntry) {
 					continue;
 				}
-				if (coreMethodType.toString().equals(util.getTypeForTree(m, compilationUnit).toString())) {
-					methods.remove(m);
+				if (coreMethodType.toString().equals(currentEntry.methodType.toString())) {
+					entries.remove(currentEntry);
 				}
 			}
 
@@ -228,10 +289,11 @@ public class OverloadScanner extends AbstractTreeScanner {
 				defaultValues = new HashMap<>();
 			}
 
-			if (methods.size() > 1 && isValid) {
-				for (MethodTree methodDecl : methods) {
+			if (getMethodsCount() > 1 && isValid) {
+				for (OverloadMethodEntry entry : entries) {
+					MethodTree methodDecl = entry.methodTree;
 					if (methodDecl.getBody() != null && methodDecl.getBody().getStatements().size() == 1) {
-						if (!methodDecl.equals(coreMethod)) {
+						if (entry != coreEntry) {
 							List<? extends StatementTree> statements = methodDecl.getBody().getStatements();
 							MethodInvocationTree invocation = null;
 							StatementTree stat = statements.get(0);
@@ -291,7 +353,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 
 			Element searchedMethodElement = util.getElementForTree(searchedMethod, compilationUnit);
 			TypeMirror searchedMethodType = util.erasureRecursive(util.getTypeForTree(searchedMethod, compilationUnit));
-			for (MethodTree thisMethod : this.methods) {
+			for (MethodTree thisMethod : getMethods()) {
 				Element thisMethodElement = util.getElementForTree(thisMethod, compilationUnit);
 				TypeMirror thisMethodType = util.erasureRecursive(util.getTypeForTree(thisMethod, compilationUnit));
 
@@ -306,10 +368,14 @@ public class OverloadScanner extends AbstractTreeScanner {
 			return false;
 		}
 
-		private void safeAdd(MethodTree method) {
-			if (!this.methods.contains(method) && !hasMethodType(method)) {
-				this.methods.add(method);
+		private void safeAdd(OverloadMethodEntry methodEntry) {
+			if (!entries.contains(methodEntry) && !hasMethodType(methodEntry.methodTree)) {
+				entries.add(methodEntry);
 			}
+		}
+
+		private MethodTree[] clone(Iterable<MethodTree> initialList) {
+			return Iterables.toArray(initialList, MethodTree.class);
 		}
 
 		/**
@@ -317,10 +383,12 @@ public class OverloadScanner extends AbstractTreeScanner {
 		 */
 		public void merge(Overload subOverload) {
 			// merge default methods
-			for (MethodTree overloadMethod : methods) {
+			for (OverloadMethodEntry overloadMethodEntry : entries) {
+				MethodTree overloadMethod = overloadMethodEntry.methodTree;
 				if (overloadMethod.getModifiers().getFlags().contains(Modifier.DEFAULT)) {
 					boolean overriden = false;
-					for (MethodTree subOverloadMethod : new ArrayList<>(subOverload.methods)) {
+
+					for (MethodTree subOverloadMethod : clone(subOverload.getMethods())) {
 						if (subOverloadMethod.getParameters().size() == overloadMethod.getParameters().size()) {
 							overriden = true;
 							for (int i = 0; i < subOverloadMethod.getParameters().size(); i++) {
@@ -336,15 +404,17 @@ public class OverloadScanner extends AbstractTreeScanner {
 						}
 					}
 					if (!overriden) {
-						subOverload.safeAdd(overloadMethod);
+						subOverload.safeAdd(overloadMethodEntry);
 					}
 				}
 			}
 			// merge other methods
 			boolean merge = false;
-			for (MethodTree subOverloadMethod : new ArrayList<>(subOverload.methods)) {
+			for (OverloadMethodEntry subOverloadEntry : new ArrayList<>(subOverload.entries)) {
+				MethodTree subOverloadMethod = subOverloadEntry.methodTree;
 				boolean overrides = false;
-				for (MethodTree overloadMethod : new ArrayList<>(methods)) {
+				for (OverloadMethodEntry overloadEntry : new ArrayList<>(entries)) {
+					MethodTree overloadMethod = overloadEntry.methodTree;
 					if (subOverloadMethod.getParameters().size() == overloadMethod.getParameters().size()) {
 						overrides = true;
 						for (int i = 0; i < subOverloadMethod.getParameters().size(); i++) {
@@ -361,17 +431,24 @@ public class OverloadScanner extends AbstractTreeScanner {
 				merge = merge || !overrides;
 			}
 
-			merge = merge || methods.size() > 1;
+			merge = merge || getMethodsCount() > 1;
 
 			if (merge) {
-				for (MethodTree m : methods) {
-					subOverload.safeAdd(m);
+				for (OverloadMethodEntry overloadEntry : entries) {
+					subOverload.safeAdd(overloadEntry);
 				}
 			}
 		}
 
 		public ExecutableElement getCoreMethodElement() {
-			return util.getElementForTree(coreMethod, compilationUnit);
+			return coreEntry.methodElement;
+		}
+
+		public void register(CompilationUnitTree compilationUnit, ClassTree enclosingClassTree, MethodTree methodTree) {
+
+			ExecutableElement methodElement = util.getElementForTree(methodTree, compilationUnit);
+			this.entries.add(new OverloadMethodEntry(compilationUnit, enclosingClassTree, methodTree, methodElement,
+					methodElement.asType()));
 		}
 	}
 
@@ -428,7 +505,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 		}
 		Overload overload = context.getOrCreateOverload(enclosingClassElement, methodElement);
 		if (pass == 1) {
-			overload.methods.add(method);
+			overload.register(getCompilationUnit(), enclosingClassdecl, method);
 		} else {
 			if (methodElement.getKind() != ElementKind.CONSTRUCTOR) {
 				inspectSuperTypes(enclosingClassElement, overload, method);
@@ -458,7 +535,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 		}
 		for (Overload overload : context.getAllOverloads()) {
 			overload.calculate();
-			if (overload.methods.size() > 1 && !overload.isValid) {
+			if (overload.getMethodsCount() > 1 && !overload.isValid) {
 				if (overload.getCoreMethodElement().getKind() == ElementKind.CONSTRUCTOR) {
 					context.classesWithWrongConstructorOverload
 							.add((TypeElement) overload.getCoreMethodElement().getEnclosingElement());
