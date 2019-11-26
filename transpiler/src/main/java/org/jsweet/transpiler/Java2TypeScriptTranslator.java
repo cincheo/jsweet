@@ -74,6 +74,7 @@ import org.apache.log4j.Logger;
 import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.JSweetContext.GlobalMethodInfos;
 import org.jsweet.transpiler.OverloadScanner.Overload;
+import org.jsweet.transpiler.OverloadScanner.OverloadMethodEntry;
 import org.jsweet.transpiler.extension.PrinterAdapter;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.MethodInvocationElement;
@@ -2214,13 +2215,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			if (inOverload) {
 				if (!overload.isValid) {
 					if (!printCoreMethodDelegate) {
-						if (overload.coreMethod.equals(methodTree)) {
+						if (overload.getCoreMethod().equals(methodTree)) {
 							inCoreWrongOverload = true;
 							if (!isInterfaceMethod(parent, methodTree)
 									&& methodElement.getKind() != ElementKind.CONSTRUCTOR
 									&& parentElement.equals(overload.getCoreMethodElement().getEnclosingElement())) {
 								printCoreMethodDelegate = true;
-								visitMethod(overload.coreMethod, trees);
+								visitMethod(overload.getCoreMethod(), trees);
 								println().println().printIndent();
 								printCoreMethodDelegate = false;
 							}
@@ -2242,7 +2243,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 										(ExecutableType) overload.getCoreMethodElement().asType()) == null;
 							}
 							if (addCoreMethod) {
-								visitMethod(overload.coreMethod, trees);
+								visitMethod(overload.getCoreMethod(), trees);
 								overload.printed = true;
 								if (!isInterfaceMethod(parent, methodTree)) {
 									println().println().printIndent();
@@ -2254,7 +2255,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						}
 					}
 				} else {
-					if (!overload.coreMethod.equals(methodTree)) {
+					if (!overload.getCoreMethod().equals(methodTree)) {
 						return returnNothing();
 					}
 				}
@@ -2545,10 +2546,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	private void printCoreOverloadMethod(MethodTree methodDecl, ClassTree parent, Overload overload) {
 		boolean wasPrinted = false;
-		for (int i = 0; i < overload.getMethodsCount(); i++) {
-			MethodTree method = overload.methods.get(i);
+		for (OverloadMethodEntry overloadMethodEntry : overload.getEntries()) {
+			MethodTree method = overloadMethodEntry.methodTree;
 
-			ExecutableElement methodElement = toElement(method);
+			ExecutableElement methodElement = overloadMethodEntry.methodElement;
 			if (context.isInterface((TypeElement) methodElement.getEnclosingElement())
 					&& !method.getModifiers().getFlags().contains(Modifier.DEFAULT)
 					&& !method.getModifiers().getFlags().contains(Modifier.STATIC)) {
@@ -2563,14 +2564,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 			wasPrinted = true;
 			print("if(");
-			printMethodParamsTest(overload, method);
+			printMethodParamsTest(overload, overloadMethodEntry);
 			print(") ");
 			if (methodElement.getKind() == ElementKind.CONSTRUCTOR) {
 				printInlinedMethod(overload, method, methodDecl.getParameters());
 			} else {
 				if (parentElement != methodElement.getEnclosingElement()
-						&& context.getOverload((TypeElement) methodElement.getEnclosingElement(),
-								methodElement).coreMethod == method) {
+						&& context.getOverload((TypeElement) methodElement.getEnclosingElement(), methodElement)
+								.getCoreMethod() == method) {
 					print("{").println().startIndent().printIndent();
 
 					if ((method.getBody() == null || (method.getModifiers().getFlags().contains(Modifier.DEFAULT)
@@ -2582,7 +2583,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						print("super" + tsMethodAccess);
 						print("(");
 						for (int j = 0; j < method.getParameters().size(); j++) {
-							print(avoidJSKeyword(overload.coreMethod.getParameters().get(j).getName().toString()))
+							print(avoidJSKeyword(overload.getCoreMethod().getParameters().get(j).getName().toString()))
 									.print(", ");
 						}
 						if (!method.getParameters().isEmpty()) {
@@ -2605,7 +2606,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					}
 					print(getOverloadMethodName(methodElement)).print("(");
 					for (int j = 0; j < method.getParameters().size(); j++) {
-						print(avoidJSKeyword(overload.coreMethod.getParameters().get(j).getName().toString()))
+						print(avoidJSKeyword(overload.getCoreMethod().getParameters().get(j).getName().toString()))
 								.print(", ");
 					}
 					if (!method.getParameters().isEmpty()) {
@@ -2734,7 +2735,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	protected void printMethodModifiers(MethodTree methodDecl, ClassTree parent, boolean constructor,
 			boolean inOverload, Overload overload) {
 		if (methodDecl.getModifiers().getFlags().contains(Modifier.PUBLIC)
-				|| (inOverload && overload.coreMethod.equals(methodDecl))) {
+				|| (inOverload && overload.getCoreMethod().equals(methodDecl))) {
 			if (!getScope().interfaceScope) {
 				print("public ");
 			}
@@ -2743,11 +2744,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			if (!constructor) {
 				if (!getScope().innerClass) {
 					if (!getScope().interfaceScope) {
-						if (!(inOverload && overload.coreMethod.equals(methodDecl) || getScope().hasInnerClass)) {
+						if (!(inOverload && overload.getCoreMethod().equals(methodDecl) || getScope().hasInnerClass)) {
 							print("/*private*/ ");
 						}
 					} else {
-						if (!(inOverload && overload.coreMethod.equals(methodDecl))) {
+						if (!(inOverload && overload.getCoreMethod().equals(methodDecl))) {
 							report(methodDecl, methodDecl.getName(), JSweetProblem.INVALID_PRIVATE_IN_INTERFACE,
 									methodDecl.getName(), parent == null ? "<no class>" : parent.getSimpleName());
 						}
@@ -2879,11 +2880,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						.getExpression();
 				ExecutableElement ms = util().findMethodDeclarationInType(
 						(TypeElement) overload.getCoreMethodElement().getEnclosingElement(), inv);
-				for (MethodTree md : overload.methods) {
-					if (toElement(md).equals(ms)) {
+				for (OverloadMethodEntry overloadMethodEntry : overload.getEntries()) {
+					if (overloadMethodEntry.methodElement.equals(ms)) {
 						printIndent();
 						initialized = true;
-						printInlinedMethod(overload, md, inv.getArguments());
+						printInlinedMethod(overload, overloadMethodEntry.methodTree, inv.getArguments());
 						println();
 					}
 				}
@@ -3102,20 +3103,28 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 	}
 
-	private void printMethodParamsTest(Overload overload, MethodTree method) {
+	private void printMethodParamsTest(Overload overload, OverloadMethodEntry methodEntry) {
+
+		MethodTree method = methodEntry.methodTree;
+
 		int i = 0;
 		for (; i < method.getParameters().size(); i++) {
 			print("(");
-			printInstanceOf(avoidJSKeyword(overload.coreMethod.getParameters().get(i).getName().toString()), null,
-					toType(method.getParameters().get(i)));
-			checkType(toElement(method.getParameters().get(i)));
+			VariableTree parameter = method.getParameters().get(i);
+
+			TypeMirror paramType = util().getTypeForTree(parameter, methodEntry.compilationUnit);
+			Element paramTypeElement = util().getTypeElementForTree(parameter, methodEntry.compilationUnit);
+
+			printInstanceOf(avoidJSKeyword(overload.getCoreMethod().getParameters().get(i).getName().toString()), null,
+					paramType);
+			checkType(paramTypeElement);
 			print(" || ").print(
-					avoidJSKeyword(overload.coreMethod.getParameters().get(i).getName().toString()) + " === null")
+					avoidJSKeyword(overload.getCoreMethod().getParameters().get(i).getName().toString()) + " === null")
 					.print(")");
 			print(" && ");
 		}
-		for (; i < overload.coreMethod.getParameters().size(); i++) {
-			print(avoidJSKeyword(overload.coreMethod.getParameters().get(i).getName().toString()))
+		for (; i < overload.getCoreMethod().getParameters().size(); i++) {
+			print(avoidJSKeyword(overload.getCoreMethod().getParameters().get(i).getName().toString()))
 					.print(" === undefined");
 			print(" && ");
 		}
@@ -5896,7 +5905,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							|| Object.class.getName().equals(util().getQualifiedName(typeElement))) {
 						print(" != null");
 					} else {
-						String qualifiedName = getQualifiedTypeName(typeElement, false, false);
+						if (typeElement == null && type.getKind() == TypeKind.ARRAY) {
+							typeElement = types().asElement(((ArrayType) type).getComponentType());
+						}
+						
+						String qualifiedName = typeElement == null ? getAdapter().getMappedType(type)
+								: getQualifiedTypeName(typeElement, false, false);
 						if (qualifiedName.startsWith("{")) {
 							qualifiedName = "Object";
 						}

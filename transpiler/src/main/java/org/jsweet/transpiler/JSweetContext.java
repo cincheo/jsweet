@@ -621,7 +621,7 @@ public class JSweetContext {
 		Overload overload = m.get(name);
 		if (overload == null) {
 
-			overload = new Overload(this, util.getCompilationUnit(method));
+			overload = new Overload(this);
 			overload.methodName = name;
 			m.put(name, overload);
 		}

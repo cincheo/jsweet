@@ -39,7 +39,6 @@ import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.util.AbstractTreeScanner;
 import org.jsweet.transpiler.util.Util;
 
-import com.google.common.collect.Iterables;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionStatementTree;
@@ -136,11 +135,11 @@ public class OverloadScanner extends AbstractTreeScanner {
 		public MethodTree getCoreMethod() {
 			return coreEntry == null ? null : coreEntry.methodTree;
 		}
-		
+
 		/**
 		 * The core method of the overload, that is to say the one holding the
 		 * implementation.
-		 */		
+		 */
 		public OverloadMethodEntry getCoreEntry() {
 			return coreEntry;
 		}
@@ -157,15 +156,13 @@ public class OverloadScanner extends AbstractTreeScanner {
 
 		private final List<String> parameterNames = new ArrayList<>();
 		private final JSweetContext context;
-		private final CompilationUnitTree compilationUnit;
 		private final Util util;
 		private final Types types;
 
-		public Overload(JSweetContext context, CompilationUnitTree compilationUnit) {
+		public Overload(JSweetContext context) {
 			this.context = context;
 			this.util = context.util;
 			this.types = context.types;
-			this.compilationUnit = compilationUnit;
 		}
 
 		@Override
@@ -174,7 +171,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 					"overload(" + methodName + ")[" + getMethodsCount() + "," + isValid + "]");
 			if (getMethodsCount() > 1) {
 				for (OverloadMethodEntry entry : entries) {
-					ExecutableElement methodElement = context.util.getElementForTree(entry.methodTree, compilationUnit);
+					ExecutableElement methodElement = entry.methodElement;
 					sb.append("\n      # " + methodElement.getEnclosingElement() + "." + methodElement);
 				}
 			}
@@ -221,9 +218,9 @@ public class OverloadScanner extends AbstractTreeScanner {
 					isValid = false;
 					for (int j = 0; j < m1.getParameters().size(); j++) {
 						TypeMirror m1ParamType = types
-								.erasure(util.getTypeForTree(m1.getParameters().get(j), compilationUnit));
+								.erasure(util.getTypeForTree(m1.getParameters().get(j), m1Entry.compilationUnit));
 						TypeMirror m2ParamType = types
-								.erasure(util.getTypeForTree(m2.getParameters().get(j), compilationUnit));
+								.erasure(util.getTypeForTree(m2.getParameters().get(j), m2Entry.compilationUnit));
 						if (types.isAssignable(m1ParamType, m2ParamType)) {
 							i--;
 						}
@@ -310,7 +307,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 							if (invocation == null) {
 								isValid = false;
 							} else {
-								ExecutableElement methodElement = util.getElementForTree(methodDecl, compilationUnit);
+								ExecutableElement methodElement = entry.methodElement;
 								ExecutableElement invokedMethodElement = context.util.findMethodDeclarationInType(
 										(TypeElement) methodElement.getEnclosingElement(), invocation);
 								if (invokedMethodElement != null
@@ -323,7 +320,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 									if (isValid && invocation.getArguments() != null) {
 										for (int i = 0; i < invocation.getArguments().size(); i++) {
 											ExpressionTree expr = invocation.getArguments().get(i);
-											if (context.util.isConstant(expr, compilationUnit)) {
+											if (context.util.isConstant(expr, entry.compilationUnit)) {
 												defaultValues.put(i, expr);
 											} else {
 												if (!(expr instanceof IdentifierTree
@@ -349,13 +346,13 @@ public class OverloadScanner extends AbstractTreeScanner {
 			}
 		}
 
-		private boolean hasMethodType(MethodTree searchedMethod) {
+		private boolean hasMethodType(OverloadMethodEntry searchedMethodEntry) {
 
-			Element searchedMethodElement = util.getElementForTree(searchedMethod, compilationUnit);
-			TypeMirror searchedMethodType = util.erasureRecursive(util.getTypeForTree(searchedMethod, compilationUnit));
-			for (MethodTree thisMethod : getMethods()) {
-				Element thisMethodElement = util.getElementForTree(thisMethod, compilationUnit);
-				TypeMirror thisMethodType = util.erasureRecursive(util.getTypeForTree(thisMethod, compilationUnit));
+			Element searchedMethodElement = searchedMethodEntry.methodElement;
+			TypeMirror searchedMethodType = util.erasureRecursive(searchedMethodEntry.methodType);
+			for (OverloadMethodEntry thisMethodEntry : getEntries()) {
+				Element thisMethodElement = thisMethodEntry.methodElement;
+				TypeMirror thisMethodType = util.erasureRecursive(thisMethodEntry.methodType);
 
 				boolean match = thisMethodType.toString().equals(searchedMethodType.toString());
 				if (match && thisMethodElement.getEnclosingElement() != searchedMethodElement.getEnclosingElement()) {
@@ -369,13 +366,9 @@ public class OverloadScanner extends AbstractTreeScanner {
 		}
 
 		private void safeAdd(OverloadMethodEntry methodEntry) {
-			if (!entries.contains(methodEntry) && !hasMethodType(methodEntry.methodTree)) {
+			if (!entries.contains(methodEntry) && !hasMethodType(methodEntry)) {
 				entries.add(methodEntry);
 			}
-		}
-
-		private MethodTree[] clone(Iterable<MethodTree> initialList) {
-			return Iterables.toArray(initialList, MethodTree.class);
 		}
 
 		/**
@@ -388,14 +381,16 @@ public class OverloadScanner extends AbstractTreeScanner {
 				if (overloadMethod.getModifiers().getFlags().contains(Modifier.DEFAULT)) {
 					boolean overriden = false;
 
-					for (MethodTree subOverloadMethod : clone(subOverload.getMethods())) {
+					for (OverloadMethodEntry subOverloadMethodEntry : subOverload.getEntries()) {
+						MethodTree subOverloadMethod = subOverloadMethodEntry.methodTree;
 						if (subOverloadMethod.getParameters().size() == overloadMethod.getParameters().size()) {
 							overriden = true;
 							for (int i = 0; i < subOverloadMethod.getParameters().size(); i++) {
-								TypeMirror overloadParamType = util
-										.getTypeForTree(overloadMethod.getParameters().get(i), compilationUnit);
-								TypeMirror subOverloadParamType = util
-										.getTypeForTree(subOverloadMethod.getParameters().get(i), compilationUnit);
+								TypeMirror overloadParamType = util.getTypeForTree(
+										overloadMethod.getParameters().get(i), overloadMethodEntry.compilationUnit);
+								TypeMirror subOverloadParamType = util.getTypeForTree(
+										subOverloadMethod.getParameters().get(i),
+										subOverloadMethodEntry.compilationUnit);
 
 								if (!types.isAssignable(overloadParamType, subOverloadParamType)) {
 									overriden = false;
@@ -419,9 +414,9 @@ public class OverloadScanner extends AbstractTreeScanner {
 						overrides = true;
 						for (int i = 0; i < subOverloadMethod.getParameters().size(); i++) {
 							TypeMirror overloadParamType = util.getTypeForTree(overloadMethod.getParameters().get(i),
-									compilationUnit);
-							TypeMirror subOverloadParamType = util
-									.getTypeForTree(subOverloadMethod.getParameters().get(i), compilationUnit);
+									overloadEntry.compilationUnit);
+							TypeMirror subOverloadParamType = util.getTypeForTree(
+									subOverloadMethod.getParameters().get(i), subOverloadEntry.compilationUnit);
 							if (!types.isAssignable(overloadParamType, subOverloadParamType)) {
 								overrides = false;
 							}
@@ -438,6 +433,10 @@ public class OverloadScanner extends AbstractTreeScanner {
 					subOverload.safeAdd(overloadEntry);
 				}
 			}
+		}
+
+		public Iterable<OverloadMethodEntry> getEntries() {
+			return entries;
 		}
 
 		public ExecutableElement getCoreMethodElement() {
