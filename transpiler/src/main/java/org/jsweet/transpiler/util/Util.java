@@ -1262,7 +1262,7 @@ public class Util {
 		case UNSIGNED_RIGHT_SHIFT:
 			return ">>>";
 		case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT:
-			return ">>>>=";
+			return ">>>=";
 		default:
 			return null;
 		}

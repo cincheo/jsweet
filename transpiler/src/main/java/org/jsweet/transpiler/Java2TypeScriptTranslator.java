@@ -5905,12 +5905,18 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							|| Object.class.getName().equals(util().getQualifiedName(typeElement))) {
 						print(" != null");
 					} else {
-						if (typeElement == null && type.getKind() == TypeKind.ARRAY) {
-							typeElement = types().asElement(((ArrayType) type).getComponentType());
+						
+						String qualifiedName;
+						if (typeElement == null) {
+							if (type.getKind() == TypeKind.ARRAY) {
+								qualifiedName = "Array";
+							} else {
+								qualifiedName = getAdapter().getMappedType(type);	
+							}
+						} else {
+							qualifiedName = getQualifiedTypeName(typeElement, false, false);
 						}
 						
-						String qualifiedName = typeElement == null ? getAdapter().getMappedType(type)
-								: getQualifiedTypeName(typeElement, false, false);
 						if (qualifiedName.startsWith("{")) {
 							qualifiedName = "Object";
 						}

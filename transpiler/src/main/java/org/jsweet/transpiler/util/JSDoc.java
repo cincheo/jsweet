@@ -119,7 +119,7 @@ public class JSDoc {
 			isMapped = true;
 			qualifiedName = context.getTypeMappingTarget(qualifiedName);
 		}
-		if (!isMapped && !context.util.isPrimitiveOrVoid(type)) {
+		if (!isMapped && !context.util.isPrimitiveOrVoid(type) && context.types.asElement(type) != null) {
 			qualifiedName = context.getRootRelativeName(null, context.types.asElement(type));
 		}
 		if ("Array".equals(qualifiedName) && typeTree instanceof ParameterizedTypeTree) {

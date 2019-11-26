@@ -217,7 +217,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		String targetMethodName = invocation.getMethodName();
 		String targetClassName = invocation.getMethod().getEnclosingElement().toString();
 		ExtendedElement targetExpression = invocation.getTargetExpression();
-		if (targetExpression != null) {
+		if (targetExpression != null && targetExpression.getTypeAsElement() != null) {
 			targetClassName = targetExpression.getTypeAsElement().toString();
 		}
 		TypeMirror jdkSuperclass = context.getJdkSuperclass(targetClassName, excludedJavaSuperTypes);
