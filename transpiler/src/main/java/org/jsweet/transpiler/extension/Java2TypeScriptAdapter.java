@@ -338,7 +338,12 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 	@Override
 	public boolean substituteMethodInvocation(MethodInvocationElement invocationElement) {
 
-		Element targetType = invocationElement.getMethod().getEnclosingElement();
+		Element targetTypeElement = util().getMethodOwner(invocationElement.getMethod());
+		TypeMirror targetType = null;
+		if (targetTypeElement != null) {
+			targetType = targetTypeElement.asType();
+		}
+
 		// This is some sort of hack to avoid invoking erased methods.
 		// If the containing class is erased, we still invoke it because we
 		// don't know if the class may be provided externally.
@@ -352,11 +357,16 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 			print("null");
 			return true;
 		}
+
 		if (invocationElement.getTargetExpression() != null) {
-			targetType = invocationElement.getTargetExpression().getTypeAsElement();
+			targetType = invocationElement.getTargetExpression().getType();
+			if (invocationElement.getTargetExpression().getTypeAsElement() != null) {
+				targetTypeElement = invocationElement.getTargetExpression().getTypeAsElement();
+			}
 		}
 		String targetMethodName = invocationElement.getMethodName();
-		String targetClassName = targetType.toString();
+		String targetClassName = targetType != null && targetType.getKind() == TypeKind.ARRAY ? "Array"
+				: targetTypeElement.toString();
 
 		if ("println".equals(targetMethodName) || "printf".equals(targetMethodName)
 				|| "print".equals(targetMethodName)) {
@@ -409,10 +419,10 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 			}
 		}
 
-		if (targetType != null && targetType.getKind() == ElementKind.ENUM
+		if (targetTypeElement != null && targetTypeElement.getKind() == ElementKind.ENUM
 				&& (invocationElement.getTargetExpression() != null
 						&& !"this".equals(invocationElement.getTargetExpression().toString()))) {
-			String relTarget = getRootRelativeName((Element) targetType);
+			String relTarget = getRootRelativeName((Element) targetTypeElement);
 			switch (targetMethodName) {
 			case "name":
 				printMacroName("Enum." + targetMethodName);
@@ -843,24 +853,24 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 			// expand macros
 			switch (targetMethodName) {
 			case "getMessage":
-				if (targetType instanceof TypeElement) {
-					if (types().isAssignable(targetType.asType(), util().getType(Throwable.class))) {
+				if (targetTypeElement instanceof TypeElement) {
+					if (types().isAssignable(targetTypeElement.asType(), util().getType(Throwable.class))) {
 						printTarget(invocationElement.getTargetExpression()).print(".message");
 						return true;
 					}
 				}
 				break;
 			case "getCause":
-				if (targetType instanceof TypeElement) {
-					if (types().isAssignable(targetType.asType(), util().getType(Throwable.class))) {
+				if (targetTypeElement instanceof TypeElement) {
+					if (types().isAssignable(targetTypeElement.asType(), util().getType(Throwable.class))) {
 						print("(<Error>null)");
 						return true;
 					}
 				}
 				break;
 			case "printStackTrace":
-				if (targetType instanceof TypeElement) {
-					if (types().isAssignable(targetType.asType(), util().getType(Throwable.class))) {
+				if (targetTypeElement instanceof TypeElement) {
+					if (types().isAssignable(targetTypeElement.asType(), util().getType(Throwable.class))) {
 						print("console.error(").print(invocationElement.getTargetExpression()).print(".message, ")
 								.print(invocationElement.getTargetExpression()).print(")");
 						return true;
@@ -1447,7 +1457,8 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 			}
 
 			// enum objects wrapping
-			if (targetType != null && targetType.getKind() == ElementKind.ENUM && !util().isPartOfAnEnum(fieldAccessElement)
+			if (targetType != null && targetType.getKind() == ElementKind.ENUM
+					&& !util().isPartOfAnEnum(fieldAccessElement)
 					&& !"this".equals(fieldAccess.getExpression().toString()) && !"class".equals(targetFieldName)) {
 				String relTarget = getRootRelativeName((Element) targetType);
 				getPrinter().print(relTarget)

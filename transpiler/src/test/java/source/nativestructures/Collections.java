@@ -217,7 +217,7 @@ public class Collections implements Cloneable, Serializable {
 
 		java.util.Collections.reverse(l3);
 
-		trace.push("" + l3 + "");
+		trace.push("listAfterReverse=" + l3 + "");
 
 		Stack<String> stack = new Stack<>();
 		stack.push("aa");
@@ -262,7 +262,7 @@ public class Collections implements Cloneable, Serializable {
 
 		l.addAll(1, ll);
 
-		trace.push("" + l + "");
+		trace.push("listAfterAddAll=" + l + "");
 
 		Deque<String> dq = new LinkedList<>();
 
@@ -318,7 +318,7 @@ public class Collections implements Cloneable, Serializable {
 
 		list = Arrays.asList("a", "b", "c", "d", "e", "f", "g");
 
-		trace.push("" + list.containsAll(list2));
+		trace.push("list.containsAll(list2)=" + list.containsAll(list2));
 
 		trace.push("" + java.util.Collections.disjoint(list, list2));
 

@@ -3569,6 +3569,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (!foundInParent) {
 			while (getScope(level++).innerClassNotStatic) {
 				parent = getParent(ClassTree.class, parent);
+				parentTypeElement = toElement(parent);
 				if (parent != null && util().findFirstDeclarationInClassAndSuperClasses(parentTypeElement,
 						accessedElementName, kind, methodArgsCount) != null) {
 					foundInParent = true;
@@ -3590,6 +3591,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	public Void visitMemberSelect(MemberSelectTree memberSelectTree, Trees trees) {
 		if (!getAdapter().substitute(createExtendedElement(memberSelectTree))) {
 			Element selectedElement = toElement(memberSelectTree.getExpression());
+			TypeMirror selectedType = toType(memberSelectTree.getExpression());
 			Element selectedTypeElement = toTypeElement(memberSelectTree.getExpression());
 			Element memberElement = toElement(memberSelectTree);
 			TypeMirror memberType = toType(memberSelectTree);
@@ -3614,16 +3616,16 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							.getRootRelativeJavaName(util().getFirstTypeArgumentAsElement((DeclaredType) memberType)))
 							.print("\"");
 				} else {
-					String name = selectedElement.toString();
+					String name = selectedTypeElement == null ? selectedType.toString()
+							: selectedTypeElement.toString();
 					if (context.isMappedType(name)) {
 						String target = context.getTypeMappingTarget(name);
 						if (CONSTRUCTOR_TYPE_MAPPING.containsKey(target)) {
 							print(mapConstructorType(target));
 						} else {
-							print("\"")
-									.print(context.getRootRelativeJavaName(util()
-											.getFirstTypeArgumentAsElement((DeclaredType) selectedElement.asType())))
-									.print("\"");
+							Element firstTypeArgumentAsElement = util()
+									.getFirstTypeArgumentAsElement((DeclaredType) memberType);
+							print("\"").print(context.getRootRelativeJavaName(firstTypeArgumentAsElement)).print("\"");
 						}
 					} else {
 						if (CONSTRUCTOR_TYPE_MAPPING.containsKey(name)) {
@@ -3957,7 +3959,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						ExpressionTree selected = ((MemberSelectTree) methodInvocationTree.getMethodSelect())
 								.getExpression();
 						Element selectedTypeElement = toTypeElement(selected);
-						if (!GLOBALS_CLASS_NAME.equals(selectedTypeElement.getSimpleName().toString())) {
+						if (selectedTypeElement == null || !GLOBALS_CLASS_NAME.equals(selectedTypeElement.getSimpleName().toString())) {
 							if (getScope().innerClassNotStatic
 									&& ("this".equals(selected.toString()) || selected.toString().endsWith(".this"))) {
 								printInnerClassAccess(methSym.getSimpleName().toString(), methSym.getKind(),
@@ -3967,7 +3969,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							}
 						} else {
 							if (context.useModules) {
-								if (!util().isInSameSourceFile(getCompilationUnit(), selectedTypeElement)) {
+								if (selectedTypeElement == null || !util().isInSameSourceFile(getCompilationUnit(), selectedTypeElement)) {
 									// TODO: when using several qualified
 									// Globals classes, we
 									// need to disambiguate (use qualified
@@ -5905,18 +5907,18 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							|| Object.class.getName().equals(util().getQualifiedName(typeElement))) {
 						print(" != null");
 					} else {
-						
+
 						String qualifiedName;
 						if (typeElement == null) {
 							if (type.getKind() == TypeKind.ARRAY) {
 								qualifiedName = "Array";
 							} else {
-								qualifiedName = getAdapter().getMappedType(type);	
+								qualifiedName = getAdapter().getMappedType(type);
 							}
 						} else {
 							qualifiedName = getQualifiedTypeName(typeElement, false, false);
 						}
-						
+
 						if (qualifiedName.startsWith("{")) {
 							qualifiedName = "Object";
 						}

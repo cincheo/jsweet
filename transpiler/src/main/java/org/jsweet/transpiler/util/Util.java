@@ -2161,7 +2161,8 @@ public class Util {
 	}
 
 	/**
-	 * Returns true if given element is part of an enum: either an Enum element, or an enum constant 
+	 * Returns true if given element is part of an enum: either an Enum element, or
+	 * an enum constant
 	 */
 	public boolean isPartOfAnEnum(Element element) {
 		if (element == null) {
@@ -2169,5 +2170,16 @@ public class Util {
 		}
 
 		return element.getKind() == ElementKind.ENUM || element.getKind() == ElementKind.ENUM_CONSTANT;
+	}
+
+	public Element getMethodOwner(ExecutableElement methodElement) {
+		Element targetType = methodElement.getEnclosingElement();
+		if (targetType != null) {
+			return targetType;
+		}
+
+		TypeMirror ownerType = ((ExecutableType) methodElement.asType()).getReceiverType();
+
+		return ownerType == null ? null : types().asElement(ownerType);
 	}
 }

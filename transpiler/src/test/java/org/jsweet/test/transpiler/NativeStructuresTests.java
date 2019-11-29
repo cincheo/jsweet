@@ -60,11 +60,12 @@ public class NativeStructuresTests extends AbstractTest {
 		eval((logHandler, result) -> {
 			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
 			assertEquals("1,a,1,b,3,4,d,a,d,0,0,0,a,a,2,a,true,false,3,c,c,a,b,c,a,b,c,b,1,c,b,a,b,c,a,0,"
-					+ "true,true,it,true,1,array[a,b,c],0,false,true,array[a,b,c],array[c,b,a],[c, b, a],[aa, bb, cc],-3,-3,cc,[aa, bb],array[a,a,a],array[a,b,a],[a, d, e, b, c],"
+					+ "true,true,it,true,1,array[a,b,c],0,false,true,array[a,b,c],array[c,b,a],listAfterReverse=[c, b, a],[aa, bb, cc],-3,-3,cc,[aa, bb],array[a,a,a],array[a,b,a],"
+					+ "listAfterAddAll=[a, d, e, b, c],"
 			// queues
 					+ "false,[c, a, b],c,[a, b],b,[a],a,null,true,null,"
 			// removeAll, retainAll, containsAll, disjoint
-					+ "[a, b, c],[d, e, f],false,true,false,true," //
+					+ "[a, b, c],[d, e, f],false,list.containsAll(list2)=true,false,true," //
 					+ "[nyan, nyan, nyan, nyan, nyan, nyan, nyan]," //
 			// arrayList copy constructor
 					+ "a2.size=2,a2[0]=foo,a2[1]=bar", //
@@ -113,8 +114,7 @@ public class NativeStructuresTests extends AbstractTest {
 		eval((logHandler, result) -> {
 			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
 			assertEquals("1,2," + //
-					"overloadWithClass0:10,overloadWithClass1:foo"
-			, result.get("trace"));
+			"overloadWithClass0:10,overloadWithClass1:foo", result.get("trace"));
 		}, getSourceFile(OverloadWithNative.class));
 	}
 
@@ -125,7 +125,7 @@ public class NativeStructuresTests extends AbstractTest {
 			assertEquals("test,test,finally,test2,test3", result.get("trace"));
 		}, getSourceFile(Exceptions.class));
 	}
-	
+
 	@Test
 	public void testMaps() {
 		eval((logHandler, result) -> {
