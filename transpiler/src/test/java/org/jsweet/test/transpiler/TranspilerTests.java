@@ -82,7 +82,7 @@ public class TranspilerTests extends AbstractTest {
 		calculusDir = new File(TEST_DIRECTORY_NAME + "/" + MathApi.class.getPackage().getName().replace(".", "/"));
 		FileUtils.deleteQuietly(outDir);
 
-		util = transpilerTest().getTranspiler().getContext().util;
+		util = new Util(null);
 	}
 
 	@Test

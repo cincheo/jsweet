@@ -2166,7 +2166,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 		ClassTree parent = (ClassTree) getParent();
 
-		if (!getScope().enumWrapperClassScope && util().getStartPosition(methodTree, getCompilationUnit()) == util().getStartPosition(parent, getCompilationUnit())) {
+		if (!getScope().enumWrapperClassScope //
+				&& (parent != null
+						&& util().getStartPosition(methodTree, getCompilationUnit()) == util().getStartPosition(parent,
+								getCompilationUnit())
+						|| util().isDefaultConstructor(methodTree, getCompilationUnit()))) {
 			return returnNothing();
 		}
 
@@ -2180,7 +2184,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		getScope().constructor = methodElement.getKind() == ElementKind.CONSTRUCTOR;
 		if (getScope().enumScope) {
 			if (getScope().constructor) {
-				if (parent != null && util().getStartPosition(methodTree, getCompilationUnit()) != util().getStartPosition(parent, getCompilationUnit())) {
+				if (parent != null && util().getStartPosition(methodTree, getCompilationUnit()) != util()
+						.getStartPosition(parent, getCompilationUnit())) {
 					getScope().isComplexEnum = true;
 				}
 			} else {
@@ -6201,7 +6206,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (!context.isAnonymousClass(newClass, compilationUnit)) {
 			return false;
 		}
-		
+
 		BlockTree parentBlock = getParent(BlockTree.class);
 		if (parentBlock != null && parentBlock.isStatic()) {
 			return true;
