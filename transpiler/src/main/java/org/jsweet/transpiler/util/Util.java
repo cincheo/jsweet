@@ -2182,4 +2182,22 @@ public class Util {
 
 		return ownerType == null ? null : types().asElement(ownerType);
 	}
+
+	public boolean isDefaultConstructor(MethodTree methodTree, CompilationUnitTree compilationUnit) {
+		if (!methodTree.getName().toString().equals(CONSTRUCTOR_METHOD_NAME)) {
+			return false;
+		}
+		if (methodTree.getParameters().size() > 0) {
+			return false;
+		}
+
+		Element methodElement = getElementForTree(methodTree, compilationUnit);
+		if (methodElement.getAnnotationMirrors().size() > 0) {
+			return false;
+		}
+		
+		return methodTree.getBody().toString().replace("\n", "").replace("\r", "").replace(" ", "")
+				.equals("{super();}");
+
+	}
 }

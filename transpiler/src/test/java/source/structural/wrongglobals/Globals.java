@@ -5,6 +5,7 @@ import static jsweet.util.Lang.object;
 public class Globals extends SuperClass {
 
 	public Globals() {
+		System.out.println("pouet");
 	}
 	
 	public void m() {
