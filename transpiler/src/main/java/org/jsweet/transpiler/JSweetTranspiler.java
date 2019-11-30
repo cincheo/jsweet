@@ -551,7 +551,7 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 			// this will lead to performances issues if having multiple versions
 			// of JSweet installed
 			if (ProcessUtil.isExecutableInstalledGloballyWithNpm("tsc")) {
-				ProcessUtil.uninstallGlobalNodePackage("typescript");	
+				ProcessUtil.uninstallGlobalNodePackage("typescript");
 			}
 			ProcessUtil.installGlobalNodePackage("typescript", TSC_VERSION);
 			FileUtils.writeStringToFile(tscVersionFile, TSC_VERSION);
@@ -689,8 +689,13 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 		javaCompilationComponents = JavaCompilationComponents.prepareFor(javaFiles, context, factory,
 				javaCompilationOptions);
 
-		Iterable<? extends CompilationUnitTree> compilUnits = javaCompilationComponents.getTask().parse();
-		javaCompilationComponents.getTask().analyze();
+		Iterable<? extends CompilationUnitTree> compilUnits;
+		if (javaFiles.size() > 0) {
+			compilUnits = javaCompilationComponents.getTask().parse();
+			javaCompilationComponents.getTask().analyze();
+		} else {
+			compilUnits = new ArrayList<CompilationUnitTree>();
+		}
 
 		transpilationHandler.setDisabled(false);
 		context.compilationUnits = util().iterableToList(compilUnits);
