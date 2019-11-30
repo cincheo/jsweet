@@ -3646,6 +3646,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					boolean foundInParent = false;
 					while (getScope(level++).innerClassNotStatic) {
 						parent = getParent(ClassTree.class, parent);
+						parentTypeElement = toElement(parent);
 						if (parent != null && parentTypeElement.equals(selectedTypeElement)) {
 							foundInParent = true;
 							break;
