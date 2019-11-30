@@ -18,7 +18,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.sun.source.doctree.ReturnTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.BreakTree;
 import com.sun.source.tree.CaseTree;
@@ -28,6 +27,7 @@ import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TryTree;
@@ -234,7 +234,7 @@ public class ExecutionPathTest extends AbstractTest {
 			Tree currentNode = path.get(i);
 			Class<?> expectedNodeClass = expectedPath.get(i);
 
-			if (!expectedNodeClass.isAssignableFrom(currentNode.getClass())) {
+			if (!expectedNodeClass.isInstance(currentNode)) {
 				return false;
 			}
 		}
