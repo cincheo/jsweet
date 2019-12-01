@@ -25,6 +25,7 @@ import java.util.Set;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
@@ -209,10 +210,12 @@ public class TypeChecker {
 	private boolean checkUnionTypeAssignment(Tree parent, TypeMirror assigned, MethodInvocationTree union,
 			CompilationUnitTree compilationUnit) {
 
-		TypeElement firstArgElement = util().getTypeElementForTree(union.getArguments().get(0), compilationUnit);
-		if (util().getQualifiedName(firstArgElement).startsWith(JSweetConfig.UNION_CLASS_NAME)) {
+		TypeElement firstArgTypeElement = util().getTypeElementForTree(union.getArguments().get(0), compilationUnit);
+		if (firstArgTypeElement != null
+				&& util().getQualifiedName(firstArgTypeElement).startsWith(JSweetConfig.UNION_CLASS_NAME)) {
 
-			List<? extends TypeMirror> typeArguments = ((DeclaredType) firstArgElement.asType()).getTypeArguments();
+			VariableElement unionVariableElement = util().getElementForTree(union.getArguments().get(0), compilationUnit);
+			List<? extends TypeMirror> typeArguments = ((DeclaredType) unionVariableElement.asType()).getTypeArguments();
 
 			// union type -> simple type
 			if (!util().containsAssignableType(typeArguments, assigned)) {
@@ -221,8 +224,8 @@ public class TypeChecker {
 			}
 		} else {
 			// simple type -> union type
-			String typeName = util().getQualifiedName(firstArgElement);
-			if ((JSweetConfig.LANG_PACKAGE_ALT + ".Function").equals(typeName)
+			String typeName = util().getQualifiedName(firstArgTypeElement);
+			if (typeName != null && (JSweetConfig.LANG_PACKAGE_ALT + ".Function").equals(typeName)
 					|| (JSweetConfig.LANG_PACKAGE + ".Function").equals(typeName)) {
 				// HACK: type checking is ignored here!
 				// TODO: test better (see Backbone test)
@@ -231,8 +234,9 @@ public class TypeChecker {
 				// }));
 				return true;
 			}
-			if (assigned instanceof DeclaredType && !util()
-					.containsAssignableType(((DeclaredType) assigned).getTypeArguments(), firstArgElement.asType())) {
+			if (assigned instanceof DeclaredType
+					&& !util().containsAssignableType(((DeclaredType) assigned).getTypeArguments(),
+							util().getTypeForTree(union.getArguments().get(0), compilationUnit))) {
 				translator.report(parent, JSweetProblem.UNION_TYPE_MISMATCH);
 				return false;
 			}

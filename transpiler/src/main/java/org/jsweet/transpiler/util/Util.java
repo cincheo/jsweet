@@ -965,7 +965,7 @@ public class Util {
 	 */
 	public boolean containsAssignableType(List<? extends TypeMirror> list, TypeMirror type) {
 		for (TypeMirror t : list) {
-			if (t == type) {
+			if (types().isSameType(t, type)) {
 				return true;
 			}
 

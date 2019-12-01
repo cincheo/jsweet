@@ -1552,8 +1552,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						Entry<? extends ExecutableElement, ? extends AnnotationValue> annotationValuesEntry = getFirst(
 								c.getElementValues().entrySet(), null);
 
-						TypeElement valueTypeElement = (TypeElement) types()
-								.asElement(annotationValuesEntry.getKey().asType());
+						AnnotationValue mixinClassAnnotationValue = annotationValuesEntry.getValue();
+						TypeMirror mixinClassType = (TypeMirror) mixinClassAnnotationValue.getValue();
+						TypeElement valueTypeElement = (TypeElement) types().asElement(mixinClassType);
 						String targetName = getRootRelativeName(valueTypeElement);
 						String mixinName = getRootRelativeName(classTypeElement);
 						if (!mixinName.equals(targetName)) {
@@ -5714,8 +5715,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	@Override
 	public Void visitMemberReference(MemberReferenceTree memberReference, Trees trees) {
 		Element element = toElement(memberReference);
-		TypeElement qualifierTypeElement = toTypeElement(memberReference.getQualifierExpression());
-		String memberReferenceSimpleName = qualifierTypeElement.getSimpleName().toString();
+		String memberReferenceSimpleName;
+		if (memberReference.getQualifierExpression() instanceof ArrayTypeTree) {
+			memberReferenceSimpleName = "Array";
+		} else {
+			memberReferenceSimpleName = toTypeElement(memberReference.getQualifierExpression()).getSimpleName()
+					.toString();
+		}
 		boolean printAsInstanceMethod = !element.getModifiers().contains(Modifier.STATIC)
 				&& !CONSTRUCTOR_METHOD_NAME.equals(memberReference.getName().toString())
 				&& !JSweetConfig.GLOBALS_CLASS_NAME.equals(memberReferenceSimpleName);
@@ -5752,7 +5758,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			print(" => { return ");
 		}
 
-		if (JSweetConfig.GLOBALS_CLASS_NAME.equals(qualifierTypeElement.getSimpleName().toString())) {
+		if (JSweetConfig.GLOBALS_CLASS_NAME.equals(memberReferenceSimpleName)) {
 			print(memberReference.getName().toString());
 		} else {
 			if (CONSTRUCTOR_METHOD_NAME.equals(memberReference.getName().toString())) {
