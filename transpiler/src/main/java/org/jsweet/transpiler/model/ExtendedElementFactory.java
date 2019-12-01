@@ -94,6 +94,9 @@ public class ExtendedElementFactory {
 		}
 		Trees trees = context.trees;
 		TreePath treePath = trees.getPath(compilationUnit, tree);
+		if (treePath == null) {
+			return null;
+		}
 		Element element = trees.getElement(treePath);
 		switch (tree.getKind()) {
 		case METHOD_INVOCATION:

@@ -32,7 +32,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 import java.util.function.Function;
@@ -64,6 +63,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.JSweetContext;
+import org.jsweet.transpiler.JSweetContext.DefaultMethodEntry;
 import org.jsweet.transpiler.SourcePosition;
 
 import com.sun.source.tree.BinaryTree;
@@ -99,6 +99,7 @@ import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.util.SourcePositions;
+import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
@@ -822,7 +823,7 @@ public class Util {
 	 * Fills the given set with all the default methods found in the current type
 	 * and super interfaces.
 	 */
-	public void findDefaultMethodsInType(Set<Entry<ClassTree, MethodTree>> defaultMethods, JSweetContext context,
+	public void findDefaultMethodsInType(Set<DefaultMethodEntry> defaultMethods, JSweetContext context,
 			TypeElement typeElement) {
 		if (context.getDefaultMethods(typeElement) != null) {
 			defaultMethods.addAll(context.getDefaultMethods(typeElement));
@@ -1418,7 +1419,9 @@ public class Util {
 	public boolean hasTypeParameters(ExecutableElement methodSymbol) {
 		if (methodSymbol != null && methodSymbol.getParameters().size() > 0) {
 			for (VariableElement p : methodSymbol.getParameters()) {
-				if (p.getKind() == ElementKind.TYPE_PARAMETER) {
+				TypeMirror paramType = p.asType();
+				if (p.getKind() == ElementKind.TYPE_PARAMETER
+						|| paramType.getKind() == TypeKind.TYPEVAR) {
 					return true;
 				}
 			}
@@ -1946,7 +1949,11 @@ public class Util {
 	 */
 	@SuppressWarnings("unchecked")
 	public <T extends Element> T getElementForTree(Tree tree, CompilationUnitTree compilationUnit) {
-		return (T) trees().getElement(trees().getPath(compilationUnit, tree));
+		TreePath treePath = trees().getPath(compilationUnit, tree);
+		if (treePath == null) {
+			return null;
+		}
+		return (T) trees().getElement(treePath);
 	}
 
 	/**
@@ -1988,7 +1995,11 @@ public class Util {
 			return null;
 		}
 
-		TypeMirror typeMirror = trees().getTypeMirror(trees().getPath(compilationUnit, tree));
+		TreePath treePath = trees().getPath(compilationUnit, tree);
+		if (treePath == null) {
+			return null;
+		}
+		TypeMirror typeMirror = trees().getTypeMirror(treePath);
 		return (T) typeMirror;
 	}
 
@@ -2195,7 +2206,7 @@ public class Util {
 		if (methodElement.getAnnotationMirrors().size() > 0) {
 			return false;
 		}
-		
+
 		return methodTree.getBody().toString().replace("\n", "").replace("\r", "").replace(" ", "")
 				.equals("{super();}");
 

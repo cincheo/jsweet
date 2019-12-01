@@ -24,7 +24,6 @@ import java.io.File;
 import java.io.PrintStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
-import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -50,6 +49,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
@@ -1011,28 +1011,41 @@ public class JSweetContext {
 		return b.toString();
 	}
 
-	private Map<TypeElement, Set<Entry<ClassTree, MethodTree>>> defaultMethods = new HashMap<>();
-	private Map<MethodTree, CompilationUnitTree> defaultMethodsCompilationUnits = new HashMap<>();
+	private final Map<TypeElement, Set<DefaultMethodEntry>> defaultMethods = new HashMap<>();
+	private final Map<MethodTree, CompilationUnitTree> defaultMethodsCompilationUnits = new HashMap<>();
+
+	public static class DefaultMethodEntry {
+		public final CompilationUnitTree compilationUnit;
+		public final ClassTree enclosingClassTree;
+		public final MethodTree methodTree;
+		public final ExecutableElement methodElement;
+		public final ExecutableType methodType;
+
+		protected DefaultMethodEntry(CompilationUnitTree compilationUnit, ClassTree enclosingClassTree,
+				MethodTree methodTree, ExecutableElement methodElement) {
+			this.compilationUnit = compilationUnit;
+			this.enclosingClassTree = enclosingClassTree;
+			this.methodTree = methodTree;
+			this.methodElement = methodElement;
+			this.methodType = (ExecutableType) methodElement.asType();
+		}
+
+		@Override
+		public int hashCode() {
+			return methodTree.hashCode();
+		}
+
+		@Override
+		public boolean equals(Object other) {
+			return other instanceof DefaultMethodEntry && methodTree == ((DefaultMethodEntry) other).methodTree;
+		}
+	}
 
 	/**
 	 * Gets the default methods declared in the given type.
 	 */
-	public Set<Entry<ClassTree, MethodTree>> getDefaultMethods(TypeElement type) {
+	public Set<DefaultMethodEntry> getDefaultMethods(TypeElement type) {
 		return defaultMethods.get(type);
-	}
-
-	/**
-	 * Stores a default method AST for the given type.
-	 */
-	public void addDefaultMethod(CompilationUnitTree compilationUnit, ClassTree classTree, MethodTree defaultMethod) {
-		TypeElement classElement = util.getElementForTree(classTree, compilationUnit);
-		Set<Entry<ClassTree, MethodTree>> methods = defaultMethods.get(classElement);
-		if (methods == null) {
-			methods = new HashSet<>();
-			defaultMethods.put(classElement, methods);
-		}
-		methods.add(new AbstractMap.SimpleEntry<>(classTree, defaultMethod));
-		defaultMethodsCompilationUnits.put(defaultMethod, compilationUnit);
 	}
 
 	/**
@@ -1040,6 +1053,21 @@ public class JSweetContext {
 	 */
 	public CompilationUnitTree getDefaultMethodCompilationUnit(MethodTree defaultMethod) {
 		return defaultMethodsCompilationUnits.get(defaultMethod);
+	}
+
+	/**
+	 * Stores a default method AST for the given type.
+	 */
+	public void addDefaultMethod(CompilationUnitTree compilationUnit, ClassTree classTree, MethodTree defaultMethod) {
+		TypeElement classElement = util.getElementForTree(classTree, compilationUnit);
+		Set<DefaultMethodEntry> methods = defaultMethods.get(classElement);
+		if (methods == null) {
+			methods = new HashSet<>();
+			defaultMethods.put(classElement, methods);
+		}
+		ExecutableElement methodElement = util.getElementForTree(defaultMethod, compilationUnit);
+		methods.add(new DefaultMethodEntry(compilationUnit, classTree, defaultMethod, methodElement));
+		defaultMethodsCompilationUnits.put(defaultMethod, compilationUnit);
 	}
 
 	private Map<VariableElement, String> fieldNameMapping = new HashMap<>();
@@ -1835,4 +1863,26 @@ public class JSweetContext {
 		}
 	}
 
+	private final Map<Tree, CompilationUnitTree> compilationUnitsMapping = new HashMap<>();
+
+	public void registerTreeCompilationUnit(Tree tree, CompilationUnitTree compilationUnit) {
+		compilationUnitsMapping.put(tree, compilationUnit);
+	}
+
+	public void registerMethodTreeCompilationUnit(MethodTree methodTree, CompilationUnitTree compilationUnit) {
+		registerTreeCompilationUnit(methodTree, compilationUnit);
+		registerTreeCompilationUnit(methodTree.getReturnType(), compilationUnit);
+		for (VariableTree parameterTree : methodTree.getParameters()) {
+			registerTreeCompilationUnit(parameterTree, compilationUnit);
+		}
+	}
+
+	/**
+	 * Returns compilation unit for given tree if a specific mapping has been
+	 * defined, or null otherwise
+	 */
+	public CompilationUnitTree getCompilationUnitForTree(Tree tree) {
+		CompilationUnitTree compilationUnit = compilationUnitsMapping.get(tree);
+		return compilationUnit;
+	}
 }

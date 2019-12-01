@@ -72,6 +72,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.jsweet.JSweetConfig;
+import org.jsweet.transpiler.JSweetContext.DefaultMethodEntry;
 import org.jsweet.transpiler.JSweetContext.GlobalMethodInfos;
 import org.jsweet.transpiler.OverloadScanner.Overload;
 import org.jsweet.transpiler.OverloadScanner.OverloadMethodEntry;
@@ -86,7 +87,6 @@ import org.jsweet.transpiler.model.support.CaseElementSupport;
 import org.jsweet.transpiler.model.support.CompilationUnitElementSupport;
 import org.jsweet.transpiler.model.support.ForeachLoopElementSupport;
 import org.jsweet.transpiler.model.support.ImportElementSupport;
-import org.jsweet.transpiler.model.support.MethodInvocationElementSupport;
 import org.jsweet.transpiler.model.support.NewClassElementSupport;
 import org.jsweet.transpiler.model.support.UnaryOperatorElementSupport;
 import org.jsweet.transpiler.util.AbstractTreePrinter;
@@ -143,6 +143,7 @@ import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
+import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
 
@@ -1044,8 +1045,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	private void printDocComment(Tree tree, boolean newline) {
 		if (compilationUnit != null) {
-			String docComment = trees().getDocComment(trees().getPath(compilationUnit, tree));
-			String commentText = JSDoc.adaptDocComment(context, getCompilationUnit(), tree, docComment);
+			TreePath treePath = getTreePath(tree);
+			String docComment = trees().getDocComment(treePath);
+			String commentText = JSDoc.adaptDocComment(context, treePath.getCompilationUnit(), tree, docComment);
 
 			Element element = toElement(tree);
 			if (element != null) {
@@ -1475,7 +1477,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 		}
 
-		HashSet<Entry<ClassTree, MethodTree>> defaultMethods = null;
+		HashSet<DefaultMethodEntry> defaultMethods = null;
 		boolean globals = JSweetConfig.GLOBALS_CLASS_NAME.equals(classTree.getSimpleName().toString());
 		if (globals && classTree.getExtendsClause() != null) {
 			report(classTree, JSweetProblem.GLOBALS_CLASS_CANNOT_HAVE_SUPERCLASS);
@@ -1659,16 +1661,16 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 		if (defaultMethods != null && !defaultMethods.isEmpty()) {
 			getScope().defaultMethodScope = true;
-			for (Entry<ClassTree, MethodTree> entry : defaultMethods) {
+			for (DefaultMethodEntry entry : defaultMethods) {
 
-				ExecutableElement methodElement = toElement(entry.getValue());
-				ExecutableType methodType = toType(entry.getValue());
 				ExecutableElement methodElementMatch = util().findMethodDeclarationInType(classTypeElement,
-						entry.getValue().getName().toString(), methodType);
-				if (methodElementMatch == null || methodElementMatch == methodElement) {
+						entry.methodTree.getName().toString(), entry.methodType);
+				if (methodElementMatch == null || methodElementMatch == entry.methodElement) {
 					getAdapter().typeVariablesToErase
 							.addAll(((TypeElement) methodElementMatch.getEnclosingElement()).getTypeParameters());
-					printIndent().print(entry.getValue()).println();
+
+					registerMethodTreeCompilationUnit(entry.methodTree, entry.compilationUnit);
+					printIndent().print(entry.methodTree).println();
 					getAdapter().typeVariablesToErase
 							.removeAll(((TypeElement) methodElementMatch.getEnclosingElement()).getTypeParameters());
 				}
@@ -3115,8 +3117,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			print("(");
 			VariableTree parameter = method.getParameters().get(i);
 
-			TypeMirror paramType = util().getTypeForTree(parameter, methodEntry.compilationUnit);
-			Element paramTypeElement = util().getTypeElementForTree(parameter, methodEntry.compilationUnit);
+			TypeMirror paramType = util().getTypeForTree(parameter, methodEntry.methodCompilationUnit);
+			Element paramTypeElement = util().getTypeElementForTree(parameter, methodEntry.methodCompilationUnit);
 
 			printInstanceOf(avoidJSKeyword(overload.getCoreMethod().getParameters().get(i).getName().toString()), null,
 					paramType);
@@ -3356,7 +3358,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 			}
 
-			if (util().isVarargs(varTree, getCompilationUnit())) {
+			if (util().isVarargs(varTree, getCompilationUnitForTree(varTree))) {
 				print("...");
 			}
 
@@ -3366,24 +3368,27 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				print(name);
 			}
 
-			if (!util().isVarargs(varTree, getCompilationUnit())
+			if (!util().isVarargs(varTree, getCompilationUnitForTree(varTree))
 					&& (getScope().isEraseVariableTypes() || (getScope().interfaceScope
 							&& context.hasAnnotationType(varElement, JSweetConfig.ANNOTATION_OPTIONAL)))) {
 				print("?");
 			}
 			if (!getScope().skipTypeAnnotations && !getScope().enumWrapperClassScope) {
-				if (typeChecker.checkType(varTree, varTree.getName(), varTree.getType(), getCompilationUnit())) {
+				if (typeChecker.checkType(varTree, varTree.getName(), varTree.getType(),
+						getCompilationUnitForTree(varTree))) {
 					print(" : ");
 					if (confictInDefinitionScope) {
 						print("any");
 					} else {
 						if (getScope().isEraseVariableTypes()) {
 							print("any");
-							if (util().isVarargs(varTree, getCompilationUnit())) {
+							if (util().isVarargs(varTree, getCompilationUnitForTree(varTree))) {
 								print("[]");
 							}
 						} else {
-							Element varTypeElement = toElement(varTree.getType());
+							CompilationUnitTree compilationUnit = getCompilationUnitForTree(varTree);
+							registerTreeCompilationUnit(varTree.getType(), compilationUnit);
+							Element varTypeElement = util().getElementForTree(varTree.getType(), compilationUnit);
 							if (varTypeElement != null
 									&& context.hasAnnotationType(varTypeElement, ANNOTATION_STRING_TYPE)
 									&& !util().isPartOfAnEnum(varTypeElement)) {
@@ -3739,8 +3744,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (debugMode) {
 			print("__debug_result(yield ");
 		}
-		getAdapter().substituteMethodInvocation(
-				new MethodInvocationElementSupport(getCompilationUnit(), methodInvocationTree, getContext()));
+		getAdapter().substituteMethodInvocation(createExtendedElement(methodInvocationTree));
 		if (debugMode) {
 			print(")");
 		}
@@ -5009,6 +5013,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		print("return");
 		if (returnStatement.getExpression() != null) {
 			Tree parentFunction = getFirstParent(MethodTree.class, LambdaExpressionTree.class);
+
+			// needed when print method from another compilation unit
+			registerTreeCompilationUnit(returnStatement, getCompilationUnitForTree(parentFunction));
+			registerTreeCompilationUnit(returnStatement.getExpression(), getCompilationUnitForTree(parentFunction));
+
 			if (toType(returnStatement.getExpression()) == null) {
 				report(returnStatement, JSweetProblem.CANNOT_ACCESS_THIS,
 						parentFunction == null ? returnStatement.toString() : parentFunction.toString());
@@ -6138,7 +6147,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			} else if (expression instanceof MethodInvocationTree) {
 				// disable type checking when the method returns a type variable
 				// because it may to be correctly set in the invocation
-				ExecutableElement m = toElement(((MethodInvocationTree) expression).getMethodSelect());
+				ExpressionTree methodSelectTree = ((MethodInvocationTree) expression).getMethodSelect();
+				registerTreeCompilationUnit(methodSelectTree, getCompilationUnitForTree(expression));
+				ExecutableElement m = toElement(methodSelectTree);
 				if (m != null && m.getReturnType().getKind() == TypeKind.TYPEVAR
 						&& types().asElement(m.getReturnType()).getEnclosingElement() == m) {
 					print("<any>(").print(expression).print(")");

@@ -468,13 +468,6 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 	}
 
 	/**
-	 * Gets the current compilation unit.
-	 */
-	public CompilationUnitTree getCompilationUnit() {
-		return compilationUnit;
-	}
-
-	/**
 	 * Tells if this printer tries to preserve the original line numbers of the Java
 	 * input.
 	 */
