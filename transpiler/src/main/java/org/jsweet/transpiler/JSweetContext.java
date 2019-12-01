@@ -19,6 +19,7 @@
 package org.jsweet.transpiler;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import java.io.File;
 import java.io.PrintStream;
@@ -1261,7 +1262,10 @@ public class JSweetContext {
 	private String getElementSignatureForAnnotationFilters(Element element) {
 		String signature = element.toString();
 		if (!(element instanceof TypeElement) && element.getEnclosingElement() != null) {
-			signature = util.getQualifiedName(element.getEnclosingElement()) + "." + signature;
+			String enclosingQualifiedName = util.getQualifiedName(element.getEnclosingElement());
+			if (isNotBlank(enclosingQualifiedName)) {
+				signature = enclosingQualifiedName + "." + signature;
+			}
 		}
 		return signature;
 	}
