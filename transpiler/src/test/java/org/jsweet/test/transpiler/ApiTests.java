@@ -16,6 +16,7 @@
  */
 package org.jsweet.test.transpiler;
 
+import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -143,12 +144,11 @@ public class ApiTests extends AbstractTest {
 			assertEquals(Integer.valueOf(42), result.get("2_r1"));
 			assertEquals("my answer", result.get("2_r2"));
 			assertEquals("supermessage", result.get("2_e"));
-			
+
 			assertTrue(result.get("subMethod1"));
 			assertTrue(result.get("subMethod2"));
 			assertEquals("subMethod2", result.get("resultSubMethod2"));
-			
-			
+
 		}, getSourceFile(PromisesAsyncAwait.class));
 	}
 
@@ -259,7 +259,7 @@ public class ApiTests extends AbstractTest {
 			Assert.assertEquals(30, (int) r.get("result2"));
 		}, getSourceFile(ExpressionBuilderTest2.class));
 	}
-	
+
 	@Test
 	public void testEquals() {
 		eval(ModuleKind.none, (logHandler, r) -> {
@@ -272,7 +272,7 @@ public class ApiTests extends AbstractTest {
 	public void testDates() {
 		eval(ModuleKind.none, (logHandler, r) -> {
 			logHandler.assertNoProblems();
-			Assert.assertEquals("2020-1-1 01:00:00", r.get("localeString"));
+			assertTrue(asList("2020-1-1 01:00:00", "2020-1-1 12:00:00 AM").contains(r.get("localeString")));
 		}, getSourceFile(Dates.class));
 	}
 
