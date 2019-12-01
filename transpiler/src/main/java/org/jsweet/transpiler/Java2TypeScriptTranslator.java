@@ -2653,16 +2653,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 	}
 
-	@Override
-	public Void visitModifiers(ModifiersTree modifiers, Trees trees) {
-		// we don't want the abstract keyword in definition files
-		if (getScope().isDeclareClassScope() && modifiers.getFlags().contains(Modifier.ABSTRACT)) {
-			modifiers.getFlags().remove(Modifier.ABSTRACT);
-		}
-
-		return super.visitModifiers(modifiers, trees);
-	}
-
 	/**
 	 * Print async keyword for given method if relevant. Prints nothing if method
 	 * shouldn't be async
