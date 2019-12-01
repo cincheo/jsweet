@@ -1,4 +1,4 @@
-# JSweet: a Java to JavaScript transpiler [![Build Status](https://travis-ci.org/cincheo/jsweet.svg?branch=master)](https://travis-ci.org/cincheo/jsweet) [ ![Download](https://api.bintray.com/packages/jsweet/maven/jsweet-transpiler/images/download.svg?version=2.2.0) ](https://bintray.com/jsweet/maven/jsweet-transpiler/2.2.0/link)
+# JSweet: a Java to JavaScript transpiler [![Build Status](https://travis-ci.org/cincheo/jsweet.svg?branch=master)](https://travis-ci.org/cincheo/jsweet) [ ![Download](https://api.bintray.com/packages/jsweet/maven/jsweet-transpiler/images/download.svg?version=3.0.0) ](https://bintray.com/jsweet/maven/jsweet-transpiler/3.0.0/link)
 
 JSweet leverages TypeScript to write rich and responsive Web applications in Java through the use of JavaScript libraries and frameworks. With JSweet, Java programs are transpiled (source-to-source compiled) to TypeScript and JavaScript for being run in browsers, mobile Web views, or in Node.js. 
 
@@ -87,6 +87,7 @@ More with the [live sandbox](http://www.jsweet.org/jsweet-live-sandbox/).
 - Support for bundles to run the generated programs in the most simple way.
 - Support for JavaScript modules (commonjs, amd, umd). JSweet programs *can* run in a browser or in Node.js.
 - Support for various EcmaScript target versions (ES3 to ES6).
+- Support for async/await idiom
 - ...
 
 For more details, go to the [language specifications](https://github.com/cincheo/jsweet/blob/master/doc/jsweet-language-specifications.md) ([PDF](https://github.com/cincheo/jsweet/raw/master/doc/jsweet-language-specifications.pdf)).
