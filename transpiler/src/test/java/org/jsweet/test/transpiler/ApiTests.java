@@ -21,6 +21,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.List;
+
 import org.jsweet.transpiler.ModuleKind;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -272,7 +274,10 @@ public class ApiTests extends AbstractTest {
 	public void testDates() {
 		eval(ModuleKind.none, (logHandler, r) -> {
 			logHandler.assertNoProblems();
-			assertTrue(asList("2020-1-1 01:00:00", "2020-1-1 12:00:00 AM").contains(r.get("localeString")));
+			String localeString = r.get("localeString");
+			List<String> expected = asList("2020-1-1 01:00:00", "2020-1-1 12:00:00 AM");
+			assertTrue("date is not ok: " + localeString + " is not one of " + expected,
+					expected.contains(localeString));
 		}, getSourceFile(Dates.class));
 	}
 
