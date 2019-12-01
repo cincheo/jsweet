@@ -3613,7 +3613,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			if ("class".equals(memberSelectTree.getIdentifier().toString())) {
 				if (memberType.getKind() == TypeKind.DECLARED //
 						&& util().getFirstTypeArgumentAsElement((DeclaredType) memberType) != null //
-						&& util().isInterface(util().getFirstTypeArgumentAsElement((DeclaredType) memberType))) {
+						&& context.isInterface(util().getFirstTypeArgumentAsElement((DeclaredType) memberType))) {
 
 					print("\"").print(context
 							.getRootRelativeJavaName(util().getFirstTypeArgumentAsElement((DeclaredType) memberType)))
@@ -5971,7 +5971,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 */
 	@Override
 	public Void visitInstanceOf(InstanceOfTree instanceOf, Trees trees) {
-		printInstanceOf(null, instanceOf.getExpression(), toType(instanceOf.getExpression()));
+		printInstanceOf(null, instanceOf.getExpression(), toType(instanceOf.getType()));
 		return returnNothing();
 	}
 
