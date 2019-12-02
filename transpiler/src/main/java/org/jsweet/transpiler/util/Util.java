@@ -1420,8 +1420,7 @@ public class Util {
 		if (methodSymbol != null && methodSymbol.getParameters().size() > 0) {
 			for (VariableElement p : methodSymbol.getParameters()) {
 				TypeMirror paramType = p.asType();
-				if (p.getKind() == ElementKind.TYPE_PARAMETER
-						|| paramType.getKind() == TypeKind.TYPEVAR) {
+				if (p.getKind() == ElementKind.TYPE_PARAMETER || paramType.getKind() == TypeKind.TYPEVAR) {
 					return true;
 				}
 			}
@@ -1947,12 +1946,20 @@ public class Util {
 	 * TypeElement.
 	 * </ul>
 	 */
-	@SuppressWarnings("unchecked")
 	public <T extends Element> T getElementForTree(Tree tree, CompilationUnitTree compilationUnit) {
 		TreePath treePath = trees().getPath(compilationUnit, tree);
 		if (treePath == null) {
 			return null;
 		}
+		return getElementForTreePath(treePath);
+	}
+
+	/**
+	 * Returns the element corresponding to given treePath or null if treePath is
+	 * null or matches no element
+	 */
+	@SuppressWarnings("unchecked")
+	public <T extends Element> T getElementForTreePath(TreePath treePath) {
 		return (T) trees().getElement(treePath);
 	}
 
@@ -1969,14 +1976,34 @@ public class Util {
 	}
 
 	/**
+	 * If given tree has a corresponding element (getElementForTree(tree,
+	 * compilationUnit) doesn't return null), it will return its type
+	 * (ExecutableType for an ExecutableElement, DeclaredType for a TypeElement,
+	 * ...)
+	 */
+	@SuppressWarnings("unchecked")
+	public <T extends TypeMirror> T getElementTypeForTreePath(TreePath treePath) {
+		Element element = getElementForTreePath(treePath);
+		return element == null ? null : (T) element.asType();
+	}
+
+	/**
 	 * If this tree has a type (getTypeForTree(tree, compilationUnit) doesn't return
 	 * null), returns the corresponding TypeElement, if any, otherwise null.
 	 * 
 	 * Can return TypeElement or TypeParameterElement
 	 */
-	@SuppressWarnings("unchecked")
 	public <T extends Element> T getTypeElementForTree(Tree tree, CompilationUnitTree compilationUnit) {
-		TypeMirror treeType = getTypeForTree(tree, compilationUnit);
+		TreePath treePath = TreePath.getPath(compilationUnit, tree);
+		return getTypeElementForTreePath(treePath);
+	}
+
+	/**
+	 * @see #getTypeElementForTreePath(TreePath)
+	 */
+	@SuppressWarnings("unchecked")
+	public <T extends Element> T getTypeElementForTreePath(TreePath treePath) {
+		TypeMirror treeType = getTypeForTreePath(treePath);
 		if (treeType != null && treeType.getKind() == TypeKind.PACKAGE) {
 			return (T) getPackageByName(treeType.toString());
 		}
@@ -1988,14 +2015,24 @@ public class Util {
 	 * Returns type associated with given tree
 	 * 
 	 * @see Trees#getTypeMirror(com.sun.source.util.TreePath)
+	 * @see #getTypeForTreePath(TreePath)
 	 */
-	@SuppressWarnings("unchecked")
 	public <T extends TypeMirror> T getTypeForTree(Tree tree, CompilationUnitTree compilationUnit) {
 		if (tree == null) {
 			return null;
 		}
 
 		TreePath treePath = trees().getPath(compilationUnit, tree);
+		return getTypeForTreePath(treePath);
+	}
+
+	/**
+	 * Returns type associated with given tree
+	 * 
+	 * @see Trees#getTypeMirror(com.sun.source.util.TreePath)
+	 */
+	@SuppressWarnings("unchecked")
+	public <T extends TypeMirror> T getTypeForTreePath(TreePath treePath) {
 		if (treePath == null) {
 			return null;
 		}

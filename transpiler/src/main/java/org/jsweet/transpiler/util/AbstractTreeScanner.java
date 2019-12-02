@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Stack;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Name;
@@ -50,7 +51,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
-import com.sun.source.util.TreeScanner;
+import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
 
 /**
@@ -59,7 +60,7 @@ import com.sun.source.util.Trees;
  * @author Renaud Pawlak
  * @author Louis Grignon
  */
-public abstract class AbstractTreeScanner extends TreeScanner<Void, Trees> {
+public abstract class AbstractTreeScanner extends TreePathScanner<Void, Trees> {
 
 	private TranspilationHandler logHandler;
 
@@ -487,92 +488,32 @@ public abstract class AbstractTreeScanner extends TreeScanner<Void, Trees> {
 	 * @see Util#getElementForTree(Tree, CompilationUnitTree)
 	 */
 	protected <T extends Element> T toElement(Tree tree) {
-		T element = util().getElementForTree(tree, getCompilationUnitForTree(tree));
-		if (element != null) {
-			return element;
-		}
-
-		for (CompilationUnitTree compilationUnit : getPossibleCompilationUnitsForTree(tree)) {
-			element = util().getElementForTree(tree, compilationUnit);
-			if (element != null) {
-				return element;
-			}
-		}
-
-		return null;
+		return getFromTreePath(tree, treePath -> util().getElementForTreePath(treePath));
 	}
 
 	/**
 	 * @see Util#getElementTypeForTree(Tree, CompilationUnitTree)
 	 */
 	protected <T extends TypeMirror> T toElementType(Tree tree) {
-		T element = util().getElementTypeForTree(tree, getCompilationUnitForTree(tree));
-		if (element != null) {
-			return element;
-		}
-
-		for (CompilationUnitTree compilationUnit : getPossibleCompilationUnitsForTree(tree)) {
-			element = util().getElementTypeForTree(tree, compilationUnit);
-			if (element != null) {
-				return element;
-			}
-		}
-
-		return null;
+		return getFromTreePath(tree, treePath -> util().getElementTypeForTreePath(treePath));
 	}
 
 	/**
 	 * @see Util#getTypeForTree(Tree, CompilationUnitTree)
 	 */
 	protected <T extends TypeMirror> T toType(Tree tree) {
-		T element = util().getTypeForTree(tree, getCompilationUnitForTree(tree));
-		if (element != null) {
-			return element;
-		}
-
-		for (CompilationUnitTree compilationUnit : getPossibleCompilationUnitsForTree(tree)) {
-			element = util().getTypeForTree(tree, compilationUnit);
-			if (element != null) {
-				return element;
-			}
-		}
-
-		return null;
+		return getFromTreePath(tree, treePath -> util().getTypeForTreePath(treePath));
 	}
 
 	protected TreePath getTreePath(Tree tree) {
-		TreePath treePath = trees().getPath(getCompilationUnitForTree(tree), tree);
-		if (treePath != null) {
-			return treePath;
-		}
-
-		for (CompilationUnitTree compilationUnit : getPossibleCompilationUnitsForTree(tree)) {
-			treePath = trees().getPath(compilationUnit, tree);
-			if (treePath != null) {
-				return treePath;
-			}
-		}
-
-		return null;
+		return getFromTreePath(tree, Function.identity());
 	}
 
 	/**
 	 * @see Util#getTypeElementForTree(Tree, CompilationUnitTree)
 	 */
 	protected <T extends Element> T toTypeElement(Tree tree) {
-		T element = util().getTypeElementForTree(tree, getCompilationUnitForTree(tree));
-		if (element != null) {
-			return element;
-		}
-
-		for (CompilationUnitTree compilationUnit : getPossibleCompilationUnitsForTree(tree)) {
-			element = util().getTypeElementForTree(tree, compilationUnit);
-			if (element != null) {
-				return element;
-			}
-		}
-
-		return null;
+		return getFromTreePath(tree, treePath -> util().getTypeElementForTreePath(treePath));
 	}
 
 	protected TypeElement toTypeElement(Element element) {
@@ -591,6 +532,42 @@ public abstract class AbstractTreeScanner extends TreeScanner<Void, Trees> {
 			element = (T) ExtendedElementFactory.INSTANCE.create(compilationUnit, tree, getContext());
 			if (element != null) {
 				return element;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * This method is optimized to convert given tree to T from its path. The
+	 * transform method might return null
+	 */
+	protected <T> T getFromTreePath(Tree tree, Function<TreePath, T> transform) {
+		T result = null;
+		TreePath currentPath = getCurrentPath();
+		TreePath treePath = currentPath == null ? null : TreePath.getPath(currentPath, tree);
+		if (treePath != null) {
+			result = transform.apply(treePath);
+		}
+		if (result != null) {
+			return result;
+		}
+
+		treePath = TreePath.getPath(getCompilationUnitForTree(tree), tree);
+		if (treePath != null) {
+			result = transform.apply(treePath);
+		}
+		if (result != null) {
+			return result;
+		}
+
+		for (CompilationUnitTree compilationUnit : getPossibleCompilationUnitsForTree(tree)) {
+			treePath = TreePath.getPath(compilationUnit, tree);
+			if (treePath != null) {
+				result = transform.apply(treePath);
+			}
+			if (result != null) {
+				return result;
 			}
 		}
 
