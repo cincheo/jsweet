@@ -39,7 +39,7 @@ import javax.lang.model.type.TypeVariable;
 
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.ExtendedElement;
-import org.jsweet.transpiler.model.support.ExtendedElementSupport;
+import org.jsweet.transpiler.model.ExtendedElementFactory;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -47,6 +47,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
 
 /**
  * A utility class to print JSDoc comments from regular Java comments.
@@ -102,9 +103,10 @@ public class JSDoc {
 		}
 		boolean isMapped = false;
 		if (typeTree != null) {
+			ExtendedElement extendedElement = ExtendedElementFactory.INSTANCE
+					.create(TreePath.getPath(compilationUnit, typeTree), context);
 			for (BiFunction<ExtendedElement, String, Object> mapping : context.getFunctionalTypeMappings()) {
-				Object mapped = mapping.apply(new ExtendedElementSupport<Tree>(compilationUnit, typeTree, context),
-						qualifiedName);
+				Object mapped = mapping.apply(extendedElement, qualifiedName);
 				if (mapped instanceof String) {
 					isMapped = true;
 					qualifiedName = (String) mapped;
@@ -142,7 +144,7 @@ public class JSDoc {
 	/**
 	 * Replaces Java links by JSDoc links in a doc text.
 	 */
-	public static String replaceLinks(JSweetContext context, String text, CompilationUnitTree compilationUnit) {
+	private static String replaceLinks(JSweetContext context, String text) {
 		Matcher linkMatcher = linkPattern.matcher(text);
 		boolean result = linkMatcher.find();
 		int lastMatch = 0;
@@ -153,7 +155,7 @@ public class JSDoc {
 				sb.append(linkMatcher.group(1));
 				TypeElement type = context.util.getTypeElementByName(context, linkMatcher.group(2));
 				sb.append(type == null ? linkMatcher.group(2)
-						: getMappedDocType(context, null, type.asType(), compilationUnit));
+						: getMappedDocType(context, null, type.asType(), context.util.getCompilationUnit(type)));
 				sb.append(linkMatcher.group(3));
 				lastMatch = linkMatcher.end();
 				result = linkMatcher.find();
@@ -185,14 +187,14 @@ public class JSDoc {
 	 * @param commentText the comment text if any (null when no comment)
 	 * @return the adapted comment (null will remove the JavaDoc comment)
 	 */
-	public static String adaptDocComment(JSweetContext context, CompilationUnitTree compilationUnit, Tree tree,
-			String commentText) {
+	public static String adaptDocComment(JSweetContext context, TreePath treePath, Tree tree, String commentText) {
 		if (tree instanceof ClassTree) {
 			MethodTree mainConstructor = null;
 			for (Tree member : ((ClassTree) tree).getMembers()) {
 				if (member instanceof MethodTree) {
 
-					ExecutableElement methodElement = context.util.getElementForTree(member, compilationUnit);
+					TreePath memberTreePath = TreePath.getPath(treePath, member);
+					ExecutableElement methodElement = context.util.getElementForTreePath(memberTreePath);
 
 					if (methodElement.getKind() == ElementKind.CONSTRUCTOR
 							&& ((MethodTree) member).getModifiers().getFlags().contains(Modifier.PUBLIC)) {
@@ -204,8 +206,8 @@ public class JSDoc {
 				}
 			}
 			if (mainConstructor != null) {
-				String docComment = context.trees
-						.getDocComment(context.trees.getPath(compilationUnit, mainConstructor));
+				TreePath mainConstructorTreePath = TreePath.getPath(treePath, mainConstructor);
+				String docComment = context.trees.getDocComment(mainConstructorTreePath);
 				String author = null;
 				if (docComment != null) {
 					List<String> commentLines = commentText == null ? null
@@ -223,17 +225,17 @@ public class JSDoc {
 					}
 				}
 				if (commentText != null) {
-					commentText = replaceLinks(context, commentText, compilationUnit);
+					commentText = replaceLinks(context, commentText);
 					List<String> commentLines = new ArrayList<>(Arrays.asList(commentText.split("\n")));
-					applyForMethod(context, mainConstructor, commentLines, compilationUnit);
+					applyForMethod(context, mainConstructor, mainConstructorTreePath, commentLines);
 					ClassTree clazz = (ClassTree) tree;
-					TypeElement classElement = context.util.getElementForTree(clazz, compilationUnit);
+					TypeElement classElement = context.util.getElementForTreePath(treePath);
 					if (classElement.getKind() == ElementKind.ENUM) {
 						commentLines.add(" @enum");
 					}
 					if (clazz.getExtendsClause() != null) {
 						commentLines.add(" @extends " + getMappedDocType(context, clazz.getExtendsClause(),
-								classElement.getSuperclass(), compilationUnit));
+								classElement.getSuperclass(), treePath.getCompilationUnit()));
 					}
 					if (author != null) {
 						commentLines.add(author);
@@ -242,24 +244,24 @@ public class JSDoc {
 				}
 			}
 		}
-		Element element = context.util.getElementForTree(tree, compilationUnit);
+		Element element = context.util.getElementForTreePath(treePath);
 		List<String> commentLines = null;
 		if (commentText == null) {
 			if (tree instanceof MethodTree && context.hasAnnotationType(element, Override.class.getName())) {
 				commentText = "";
 				commentLines = new ArrayList<>();
-				applyForMethod(context, (MethodTree) tree, commentLines, compilationUnit);
+				applyForMethod(context, (MethodTree) tree, treePath, commentLines);
 			}
 		}
 		if (commentText == null) {
 			return null;
 		}
-		commentText = replaceLinks(context, commentText, compilationUnit);
+		commentText = replaceLinks(context, commentText);
 		commentLines = new ArrayList<>(Arrays.asList(commentText.split("\n")));
 		if (tree instanceof MethodTree) {
 			MethodTree method = (MethodTree) tree;
 			if (element.getKind() != ElementKind.CONSTRUCTOR) {
-				applyForMethod(context, method, commentLines, compilationUnit);
+				applyForMethod(context, method, treePath, commentLines);
 			} else {
 				// erase constructor comments because jsDoc uses class comments
 				return null;
@@ -271,17 +273,21 @@ public class JSDoc {
 				for (Tree def : clazz.getMembers()) {
 					if (def instanceof VariableTree) {
 						VariableTree var = (VariableTree) def;
-						VariableElement varElement = context.util.getElementForTree(var, compilationUnit);
+						TreePath varTreePath = TreePath.getPath(treePath, var);
+						VariableElement varElement = context.util.getElementForTreePath(varTreePath);
 						if (varElement.getModifiers() != null && varElement.getModifiers().contains(Modifier.PUBLIC)
 								&& varElement.getModifiers().contains(Modifier.STATIC)) {
-							commentLines.add("@property {" + getMappedDocType(context, var.getType(),
-									context.util.getTypeForTree(var.getType(), compilationUnit), compilationUnit) + "} "
-									+ var.getName().toString());
+							commentLines
+									.add("@property {"
+											+ getMappedDocType(context, var.getType(),
+													context.util.getTypeForTreePath(
+															TreePath.getPath(varTreePath, var.getType())),
+													varTreePath.getCompilationUnit())
+											+ "} " + var.getName().toString());
 
-							String varComment = context.trees
-									.getDocComment(context.trees.getPath(compilationUnit, var));
+							String varComment = context.trees.getDocComment(varTreePath);
 							if (varComment != null) {
-								varComment = replaceLinks(context, varComment, compilationUnit);
+								varComment = replaceLinks(context, varComment);
 								commentLines.addAll(new ArrayList<>(Arrays.asList(varComment.split("\n"))));
 							}
 						}
@@ -289,8 +295,9 @@ public class JSDoc {
 				}
 			}
 			if (clazz.getExtendsClause() != null) {
+				TreePath extendsTreePath = TreePath.getPath(treePath, clazz.getExtendsClause());
 				commentLines.add(" @extends " + getMappedDocType(context, clazz.getExtendsClause(),
-						context.util.getTypeForTree(clazz.getExtendsClause(), compilationUnit), compilationUnit));
+						context.util.getTypeForTreePath(extendsTreePath), treePath.getCompilationUnit()));
 			}
 			commentLines.add(" @class");
 		}
@@ -298,8 +305,14 @@ public class JSDoc {
 		return String.join("\n", commentLines);
 	}
 
-	private static void applyForMethod(JSweetContext context, MethodTree method, List<String> commentLines,
-			CompilationUnitTree compilationUnit) {
+	private static void applyForMethod( //
+			JSweetContext context, //
+			MethodTree method, //
+			TreePath methodTreePath, //
+			List<String> commentLines) {
+
+		ExecutableElement methodElement = context.util.getElementForTreePath(methodTreePath);
+
 		Set<String> params = new HashSet<>();
 		boolean hasReturn = false;
 		for (int i = 0; i < commentLines.size(); i++) {
@@ -309,19 +322,23 @@ public class JSDoc {
 				params.add(name);
 				VariableTree parameter = context.util.findParameter(method, name);
 				if (parameter != null) {
+					TreePath parameterTypeTreePath = TreePath.getPath(methodTreePath, parameter.getType());
 					commentLines.set(i,
-							m.group(1) + "{" + getMappedDocType(context, parameter.getType(),
-									context.util.getTypeForTree(parameter.getType(), compilationUnit), compilationUnit)
+							m.group(1) + "{"
+									+ getMappedDocType(context, parameter.getType(),
+											context.util.getTypeForTreePath(parameterTypeTreePath),
+											methodTreePath.getCompilationUnit())
 									+ "} " + m.group(2) + m.group(3));
 				}
 			} else if ((m = returnPattern.matcher(commentLines.get(i))).matches()) {
 				hasReturn = true;
 				if (method.getReturnType() != null) {
+					TreePath returnTypeTreePath = TreePath.getPath(methodTreePath, method.getReturnType());
 					commentLines.set(i,
 							m.group(1) + "{"
 									+ getMappedDocType(context, method.getReturnType(),
-											context.util.getTypeForTree(method.getReturnType(), compilationUnit),
-											compilationUnit)
+											context.util.getTypeForTreePath(returnTypeTreePath),
+											returnTypeTreePath.getCompilationUnit())
 									+ "} " + m.group(2));
 				}
 			}
@@ -329,20 +346,20 @@ public class JSDoc {
 		for (VariableTree parameter : method.getParameters()) {
 			String name = parameter.getName().toString();
 			if (!params.contains(name)) {
-				commentLines.add(" @param {"
-						+ getMappedDocType(context, parameter.getType(),
-								context.util.getTypeForTree(parameter.getType(), compilationUnit), compilationUnit)
-						+ "} " + name);
+				TreePath parameterTypeTreePath = TreePath.getPath(methodTreePath, parameter.getType());
+				commentLines.add(" @param {" + getMappedDocType(context, parameter.getType(),
+						context.util.getTypeForTreePath(parameterTypeTreePath),
+						parameterTypeTreePath.getCompilationUnit()) + "} " + name);
 			}
 		}
 
-		ExecutableElement methodElement = context.util.getElementForTree(method, compilationUnit);
 		if (!hasReturn && !(method.getReturnType() == null
-				|| context.util.getTypeForTree(method.getReturnType(), compilationUnit).getKind() == TypeKind.VOID)
+				|| context.util.getTypeForTreePath(TreePath.getPath(methodTreePath, method.getReturnType()))
+						.getKind() == TypeKind.VOID)
 				&& methodElement.getKind() != ElementKind.CONSTRUCTOR) {
-			commentLines.add(" @return {"
-					+ getMappedDocType(context, method.getReturnType(),
-							context.util.getTypeForTree(method.getReturnType(), compilationUnit), compilationUnit)
+			TreePath returnTypeTreePath = TreePath.getPath(methodTreePath, method.getReturnType());
+			commentLines.add(" @return {" + getMappedDocType(context, method.getReturnType(),
+					context.util.getTypeForTreePath(returnTypeTreePath), returnTypeTreePath.getCompilationUnit())
 					+ "}");
 		}
 		if (methodElement.getModifiers().contains(Modifier.PRIVATE)) {

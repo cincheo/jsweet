@@ -23,6 +23,7 @@ import static org.jsweet.transpiler.model.ExtendedElementFactory.toTree;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeMirror;
 
@@ -30,11 +31,11 @@ import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.MethodInvocationElement;
 
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 
 /**
  * See {@link MethodInvocationElement}.
@@ -45,9 +46,9 @@ import com.sun.source.tree.Tree;
 public class MethodInvocationElementSupport extends ExtendedElementSupport<MethodInvocationTree>
 		implements MethodInvocationElement {
 
-	public MethodInvocationElementSupport(CompilationUnitTree compilationUnit, MethodInvocationTree tree,
+	public MethodInvocationElementSupport(TreePath treePath, MethodInvocationTree tree, Element element,
 			JSweetContext context) {
-		super(compilationUnit, tree, context);
+		super(treePath, tree, element, context);
 	}
 
 	public List<ExtendedElement> getArguments() {

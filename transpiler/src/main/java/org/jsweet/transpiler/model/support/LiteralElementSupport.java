@@ -18,11 +18,13 @@
  */
 package org.jsweet.transpiler.model.support;
 
+import javax.lang.model.element.Element;
+
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.LiteralElement;
 
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.LiteralTree;
+import com.sun.source.util.TreePath;
 
 /**
  * See {@link LiteralElement}.
@@ -32,8 +34,8 @@ import com.sun.source.tree.LiteralTree;
  */
 public class LiteralElementSupport extends ExtendedElementSupport<LiteralTree> implements LiteralElement {
 
-	public LiteralElementSupport(CompilationUnitTree compilationUnit, LiteralTree tree, JSweetContext context) {
-		super(compilationUnit, tree, context);
+	public LiteralElementSupport(TreePath treePath, LiteralTree tree, Element element, JSweetContext context) {
+		super(treePath, tree, element, context);
 	}
 
 	public Object getValue() {

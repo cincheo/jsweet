@@ -266,7 +266,7 @@ public abstract class AbstractTreeScanner extends TreePathScanner<Void, Trees> {
 		}
 		enter(tree);
 		try {
-			tree.accept(this, trees);
+			super.scan(tree, trees);
 		} catch (RollbackException rollback) {
 			if (rollback.getTarget() == tree) {
 				onRollbacked(tree);
@@ -402,7 +402,20 @@ public abstract class AbstractTreeScanner extends TreePathScanner<Void, Trees> {
 	 * @see #getStack()
 	 */
 	public ExtendedElement getParentElement() {
-		return ExtendedElementFactory.INSTANCE.create(compilationUnit, getParent(), context);
+		return ExtendedElementFactory.INSTANCE.create(getParentPath(), context);
+	}
+
+	protected TreePath getParentPath() {
+		Tree parent = getParent();
+		if (parent == null) {
+			return null;
+		}
+
+		TreePath path = getCurrentPath();
+		while (path != null && (path = path.getParentPath()) != null && path.getLeaf() != parent) {
+		}
+
+		return path;
 	}
 
 	/**
@@ -523,19 +536,10 @@ public abstract class AbstractTreeScanner extends TreePathScanner<Void, Trees> {
 
 	@SuppressWarnings("unchecked")
 	protected <T extends ExtendedElement> T createExtendedElement(Tree tree) {
-		T element = (T) ExtendedElementFactory.INSTANCE.create(getCompilationUnitForTree(tree), tree, getContext());
-		if (element != null) {
-			return element;
+		if (tree == null) {
+			return null;
 		}
-
-		for (CompilationUnitTree compilationUnit : getPossibleCompilationUnitsForTree(tree)) {
-			element = (T) ExtendedElementFactory.INSTANCE.create(compilationUnit, tree, getContext());
-			if (element != null) {
-				return element;
-			}
-		}
-
-		return null;
+		return (T) ExtendedElementFactory.INSTANCE.create(getTreePath(tree), getContext());
 	}
 
 	/**

@@ -18,6 +18,8 @@
  */
 package org.jsweet.transpiler.model.support;
 
+import java.util.Objects;
+
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
@@ -52,13 +54,17 @@ public class ExtendedElementSupport<T extends Tree> implements ExtendedElement {
 	/**
 	 * Creates an extended element, wrapping the given javac tree node.
 	 */
-	public ExtendedElementSupport(CompilationUnitTree compilationUnit, T tree, JSweetContext context) {
-		this.compilationUnit = compilationUnit;
+	public ExtendedElementSupport(TreePath treePath, T tree, Element element, JSweetContext context) {
+		Objects.requireNonNull(treePath);
+		Objects.requireNonNull(tree);
+		Objects.requireNonNull(context);
+
 		this.context = context;
 
 		this.tree = tree;
-		this.treePath = context.trees.getPath(compilationUnit, tree);
-		this.element = context.trees.getElement(treePath);
+		this.compilationUnit = treePath.getCompilationUnit();
+		this.treePath = treePath;
+		this.element = element;
 	}
 
 	/**
@@ -107,7 +113,14 @@ public class ExtendedElementSupport<T extends Tree> implements ExtendedElement {
 	}
 
 	protected ExtendedElement createElement(Tree tree) {
-		return ExtendedElementFactory.INSTANCE.create(compilationUnit, tree, context);
+		TreePath treePath = TreePath.getPath(this.treePath, tree);
+		if (treePath == null) {
+			treePath = TreePath.getPath(compilationUnit, tree);
+		}
+		if (treePath == null) {
+			return null;
+		}
+		return ExtendedElementFactory.INSTANCE.create(treePath, context);
 	}
 
 	protected Util util() {

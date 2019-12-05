@@ -446,6 +446,7 @@ public class UtilTest extends AbstractTest {
 
 	private Element getVariableElement() {
 		CompilationUnitTree compilationUnit = getMainCompilationUnit();
+		
 		MethodTree method = getMethodTree("method1");
 		VariableTree var = (VariableTree) method.getBody().getStatements().get(0);
 

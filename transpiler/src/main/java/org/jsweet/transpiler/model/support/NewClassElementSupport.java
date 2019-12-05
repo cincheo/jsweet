@@ -21,14 +21,15 @@ package org.jsweet.transpiler.model.support;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.NewClassElement;
 
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.util.TreePath;
 
 /**
  * See {@link NewClassElement}.
@@ -38,8 +39,8 @@ import com.sun.source.tree.NewClassTree;
  */
 public class NewClassElementSupport extends ExtendedElementSupport<NewClassTree> implements NewClassElement {
 
-	public NewClassElementSupport(CompilationUnitTree compilationUnit, NewClassTree tree, JSweetContext context) {
-		super(compilationUnit, tree, context);
+	public NewClassElementSupport(TreePath treePath, NewClassTree tree, Element element, JSweetContext context) {
+		super(treePath, tree, element, context);
 	}
 
 	public List<ExtendedElement> getArguments() {

@@ -79,16 +79,6 @@ import org.jsweet.transpiler.OverloadScanner.OverloadMethodEntry;
 import org.jsweet.transpiler.extension.PrinterAdapter;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.MethodInvocationElement;
-import org.jsweet.transpiler.model.support.ArrayAccessElementSupport;
-import org.jsweet.transpiler.model.support.AssignmentElementSupport;
-import org.jsweet.transpiler.model.support.AssignmentWithOperatorElementSupport;
-import org.jsweet.transpiler.model.support.BinaryOperatorElementSupport;
-import org.jsweet.transpiler.model.support.CaseElementSupport;
-import org.jsweet.transpiler.model.support.CompilationUnitElementSupport;
-import org.jsweet.transpiler.model.support.ForeachLoopElementSupport;
-import org.jsweet.transpiler.model.support.ImportElementSupport;
-import org.jsweet.transpiler.model.support.NewClassElementSupport;
-import org.jsweet.transpiler.model.support.UnaryOperatorElementSupport;
 import org.jsweet.transpiler.util.AbstractTreePrinter;
 import org.jsweet.transpiler.util.JSDoc;
 
@@ -656,8 +646,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	}
 
 	private ModuleImportDescriptor getModuleImportDescriptor(String importedName, TypeElement importedClass) {
-		return getAdapter().getModuleImportDescriptor(new CompilationUnitElementSupport(compilationUnit, context),
-				importedName, importedClass);
+		return getAdapter().getModuleImportDescriptor(createExtendedElement(compilationUnit), importedName,
+				importedClass);
 	}
 
 	private boolean isMappedOrErasedType(Element typeElement) {
@@ -996,8 +986,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						}
 						TypeElement importedClass = (TypeElement) qualifiedElement;
 						String qualId = importTree.getQualifiedIdentifier().toString();
-						String adaptedQualId = getAdapter()
-								.needsImport(new ImportElementSupport(compilationUnit, importTree, context), qualId);
+						String adaptedQualId = getAdapter().needsImport(createExtendedElement(importTree), qualId);
 						if (globals || adaptedQualId != null) {
 							ModuleImportDescriptor moduleImport = getModuleImportDescriptor(importedName,
 									importedClass);
@@ -1046,7 +1035,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (compilationUnit != null) {
 			TreePath treePath = getTreePath(tree);
 			String docComment = trees().getDocComment(treePath);
-			String commentText = JSDoc.adaptDocComment(context, treePath.getCompilationUnit(), tree, docComment);
+			String commentText = JSDoc.adaptDocComment(context, treePath, tree, docComment);
 
 			Element element = toElement(tree);
 			if (element != null) {
@@ -3509,8 +3498,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			report(importTree, JSweetProblem.WILDCARD_IMPORT);
 			return returnNothing();
 		}
-		String adaptedQualId = getAdapter()
-				.needsImport(new ImportElementSupport(getCompilationUnit(), importTree, context), qualId);
+		String adaptedQualId = getAdapter().needsImport(createExtendedElement(importTree), qualId);
 		if (adaptedQualId != null && adaptedQualId.contains(".")) {
 			if (!(importTree.isStatic() && !qualId.contains("." + JSweetConfig.GLOBALS_CLASS_NAME + ".")
 					&& !qualId.contains("." + JSweetConfig.STRING_TYPES_INTERFACE_NAME + "."))) {
@@ -4595,8 +4583,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			if (context.hasAnnotationType(classTypeElement, JSweetConfig.ANNOTATION_OBJECT_TYPE)) {
 				print("{}");
 			} else {
-				getAdapter()
-						.substituteNewClass(new NewClassElementSupport(getCompilationUnit(), newClass, getContext()));
+				getAdapter().substituteNewClass(createExtendedElement(newClass));
 			}
 		}
 
@@ -4748,8 +4735,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	@Override
 	public Void visitArrayAccess(ArrayAccessTree arrayAccess, Trees trees) {
-		if (!getAdapter().substituteArrayAccess(
-				new ArrayAccessElementSupport(getCompilationUnit(), arrayAccess, getContext()))) {
+		if (!getAdapter().substituteArrayAccess(createExtendedElement(arrayAccess))) {
 			print(arrayAccess.getExpression()).print("[")
 					.substituteAndPrintAssignedExpression(util().getType(int.class), arrayAccess.getIndex()).print("]");
 		}
@@ -4774,9 +4760,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 			return true;
 		});
-		if (!getAdapter().substituteForEachLoop(
-				new ForeachLoopElementSupport(getCompilationUnit(), foreachLoop, getContext()), hasLength[0],
-				indexVarName)) {
+		if (!getAdapter().substituteForEachLoop(createExtendedElement(foreachLoop), hasLength[0], indexVarName)) {
 			boolean noVariable = foreachLoop.getExpression() instanceof IdentifierTree
 					|| foreachLoop.getExpression() instanceof MemberSelectTree;
 			if (noVariable) {
@@ -4837,8 +4821,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	@Override
 	public Void visitBinary(BinaryTree binary, Trees trees) {
-		if (!getAdapter().substituteBinaryOperator(
-				new BinaryOperatorElementSupport(getCompilationUnit(), binary, getContext()))) {
+		if (!getAdapter().substituteBinaryOperator(createExtendedElement(binary))) {
 			String op = util().toOperator(binary.getKind());
 			boolean forceParens = false;
 			boolean booleanOp = false;
@@ -5050,8 +5033,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 */
 	@Override
 	public Void visitCompoundAssignment(CompoundAssignmentTree assignOpTree, Trees trees) {
-		if (!getAdapter().substituteAssignmentWithOperator(
-				new AssignmentWithOperatorElementSupport(getCompilationUnit(), assignOpTree, getContext()))) {
+		if (!getAdapter().substituteAssignmentWithOperator(createExtendedElement(assignOpTree))) {
 			boolean expand = staticInitializedAssignment = (getStaticInitializedField(
 					assignOpTree.getVariable()) != null);
 
@@ -5318,8 +5300,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 */
 	@Override
 	public Void visitUnary(UnaryTree unary, Trees trees) {
-		if (!getAdapter()
-				.substituteUnaryOperator(new UnaryOperatorElementSupport(getCompilationUnit(), unary, getContext()))) {
+		if (!getAdapter().substituteUnaryOperator(createExtendedElement(unary))) {
 
 			String operatorAsString = util().toOperator(unary.getKind());
 			if (!inRollback) {
@@ -5396,8 +5377,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			TypeMirror expressionType = toType(caseTree.getExpression());
 
 			print("case ");
-			if (!getAdapter().substituteCaseStatementPattern(
-					new CaseElementSupport(getCompilationUnit(), caseTree, getContext()),
+			if (!getAdapter().substituteCaseStatementPattern(createExtendedElement(caseTree),
 					createExtendedElement(caseTree.getExpression()))) {
 				if (util().isPrimitiveOrVoid(expressionType)
 						|| types().isSameType(util().getType(String.class), expressionType)) {
@@ -5550,8 +5530,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 */
 	@Override
 	public Void visitAssignment(AssignmentTree assign, Trees trees) {
-		if (!getAdapter()
-				.substituteAssignment(new AssignmentElementSupport(getCompilationUnit(), assign, getContext()))) {
+		if (!getAdapter().substituteAssignment(createExtendedElement(assign))) {
 			staticInitializedAssignment = getStaticInitializedField(assign.getVariable()) != null;
 			print(assign.getVariable()).print(isAnnotationScope ? ": " : " = ");
 			if (!substituteAssignedExpression(toType(assign.getVariable()), assign.getExpression())) {

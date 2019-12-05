@@ -18,12 +18,14 @@
  */
 package org.jsweet.transpiler.model.support;
 
+import javax.lang.model.element.Element;
+
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.BinaryOperatorElement;
 import org.jsweet.transpiler.model.ExtendedElement;
 
 import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.util.TreePath;
 
 /**
  * See {@link BinaryOperatorElement}.
@@ -33,8 +35,8 @@ import com.sun.source.tree.CompilationUnitTree;
  */
 public class BinaryOperatorElementSupport extends ExtendedElementSupport<BinaryTree> implements BinaryOperatorElement {
 
-	public BinaryOperatorElementSupport(CompilationUnitTree compilationUnit, BinaryTree tree, JSweetContext context) {
-		super(compilationUnit, tree, context);
+	public BinaryOperatorElementSupport(TreePath treePath, BinaryTree tree, Element element, JSweetContext context) {
+		super(treePath, tree, element, context);
 	}
 
 	@Override

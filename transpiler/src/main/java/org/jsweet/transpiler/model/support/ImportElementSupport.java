@@ -24,9 +24,9 @@ import javax.lang.model.element.TypeElement;
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.ImportElement;
 
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 
 /**
  * See {@link ImportElement}.
@@ -36,8 +36,8 @@ import com.sun.source.tree.Tree;
  */
 public class ImportElementSupport extends ExtendedElementSupport<ImportTree> implements ImportElement {
 
-	public ImportElementSupport(CompilationUnitTree compilationUnit, ImportTree tree, JSweetContext context) {
-		super(compilationUnit, tree, context);
+	public ImportElementSupport(TreePath treePath, ImportTree tree, Element element, JSweetContext context) {
+		super(treePath, tree, element, context);
 	}
 
 	@Override

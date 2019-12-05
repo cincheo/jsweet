@@ -2014,7 +2014,6 @@ public class Util {
 	/**
 	 * Returns type associated with given tree
 	 * 
-	 * @see Trees#getTypeMirror(com.sun.source.util.TreePath)
 	 * @see #getTypeForTreePath(TreePath)
 	 */
 	public <T extends TypeMirror> T getTypeForTree(Tree tree, CompilationUnitTree compilationUnit) {
@@ -2023,6 +2022,18 @@ public class Util {
 		}
 
 		TreePath treePath = trees().getPath(compilationUnit, tree);
+		return getTypeForTreePath(treePath);
+	}
+
+	/**
+	 * @see #getTypeForTreePath(TreePath)
+	 */
+	public <T extends TypeMirror> T getTypeForTree(Tree tree, TreePath parentTreePath) {
+		if (tree == null || parentTreePath == null) {
+			return null;
+		}
+
+		TreePath treePath = TreePath.getPath(parentTreePath, tree);
 		return getTypeForTreePath(treePath);
 	}
 

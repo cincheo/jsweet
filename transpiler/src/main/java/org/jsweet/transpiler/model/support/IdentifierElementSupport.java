@@ -23,8 +23,8 @@ import javax.lang.model.element.Element;
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.IdentifierElement;
 
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.util.TreePath;
 
 /**
  * See {@link IdentifierElement}.
@@ -34,8 +34,8 @@ import com.sun.source.tree.IdentifierTree;
  */
 public class IdentifierElementSupport extends ExtendedElementSupport<IdentifierTree> implements IdentifierElement {
 
-	public IdentifierElementSupport(CompilationUnitTree compilationUnit, IdentifierTree tree, JSweetContext context) {
-		super(compilationUnit, tree, context);
+	public IdentifierElementSupport(TreePath treePath, IdentifierTree tree, Element element, JSweetContext context) {
+		super(treePath, tree, element, context);
 	}
 
 	@Override

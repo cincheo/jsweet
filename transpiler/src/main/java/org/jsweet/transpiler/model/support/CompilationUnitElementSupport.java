@@ -18,12 +18,14 @@
  */
 package org.jsweet.transpiler.model.support;
 
+import javax.lang.model.element.Element;
 import javax.lang.model.element.PackageElement;
 
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.CompilationUnitElement;
 
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.util.TreePath;
 
 /**
  * See {@link CompilationUnitElement}.
@@ -34,8 +36,9 @@ import com.sun.source.tree.CompilationUnitTree;
 public class CompilationUnitElementSupport extends ExtendedElementSupport<CompilationUnitTree>
 		implements CompilationUnitElement {
 
-	public CompilationUnitElementSupport(CompilationUnitTree compilationUnit, JSweetContext context) {
-		super(compilationUnit, compilationUnit, context);
+	public CompilationUnitElementSupport(TreePath treePath, CompilationUnitTree tree, Element element,
+			JSweetContext context) {
+		super(treePath, tree, element, context);
 	}
 
 	@Override

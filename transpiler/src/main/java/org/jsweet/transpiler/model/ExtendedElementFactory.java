@@ -88,32 +88,29 @@ public class ExtendedElementFactory {
 	 * element can be mapped back to a javac tree using the
 	 * {@link #toTree(ExtendedElement)} method.
 	 */
-	public ExtendedElement create(CompilationUnitTree compilationUnit, Tree tree, JSweetContext context) {
-		if (tree == null) {
-			return null;
-		}
-		Trees trees = context.trees;
-		TreePath treePath = trees.getPath(compilationUnit, tree);
+	public ExtendedElement create(TreePath treePath, JSweetContext context) {
 		if (treePath == null) {
 			return null;
 		}
+		Trees trees = context.trees;
+		Tree tree = treePath.getLeaf();
 		Element element = trees.getElement(treePath);
 		switch (tree.getKind()) {
 		case METHOD_INVOCATION:
-			return new MethodInvocationElementSupport(compilationUnit, (MethodInvocationTree) tree, context);
+			return new MethodInvocationElementSupport(treePath, (MethodInvocationTree) tree, element, context);
 		case MEMBER_SELECT:
 			if (element instanceof VariableElement) {
-				return new VariableAccessElementSupport(compilationUnit, (VariableElement) element, tree, context);
+				return new VariableAccessElementSupport(treePath, tree, (VariableElement) element, context);
 			} else {
-				return new ExtendedElementSupport<>(compilationUnit, tree, context);
+				return new ExtendedElementSupport<>(treePath, tree, element, context);
 			}
 		case NEW_CLASS:
-			return new NewClassElementSupport(compilationUnit, (NewClassTree) tree, context);
+			return new NewClassElementSupport(treePath, (NewClassTree) tree, element, context);
 		case IDENTIFIER:
 			if (element instanceof VariableElement) {
-				return new VariableAccessElementSupport(compilationUnit, (VariableElement) element, tree, context);
+				return new VariableAccessElementSupport(treePath, tree, (VariableElement) element, context);
 			} else {
-				return new IdentifierElementSupport(compilationUnit, (IdentifierTree) tree, context);
+				return new IdentifierElementSupport(treePath, (IdentifierTree) tree, element, context);
 			}
 		case BOOLEAN_LITERAL:
 		case CHAR_LITERAL:
@@ -123,21 +120,21 @@ public class ExtendedElementFactory {
 		case LONG_LITERAL:
 		case NULL_LITERAL:
 		case STRING_LITERAL:
-			return new LiteralElementSupport(compilationUnit, (LiteralTree) tree, context);
+			return new LiteralElementSupport(treePath, (LiteralTree) tree, element, context);
 		case CASE:
-			return new CaseElementSupport(compilationUnit, (CaseTree) tree, context);
+			return new CaseElementSupport(treePath, (CaseTree) tree, element, context);
 		case NEW_ARRAY:
-			return new NewArrayElementSupport(compilationUnit, (NewArrayTree) tree, context);
+			return new NewArrayElementSupport(treePath, (NewArrayTree) tree, element, context);
 		case ARRAY_ACCESS:
-			return new ArrayAccessElementSupport(compilationUnit, (ArrayAccessTree) tree, context);
+			return new ArrayAccessElementSupport(treePath, (ArrayAccessTree) tree, element, context);
 		case ENHANCED_FOR_LOOP:
-			return new ForeachLoopElementSupport(compilationUnit, (EnhancedForLoopTree) tree, context);
+			return new ForeachLoopElementSupport(treePath, (EnhancedForLoopTree) tree, element, context);
 		case ASSIGNMENT:
-			return new AssignmentElementSupport(compilationUnit, (AssignmentTree) tree, context);
+			return new AssignmentElementSupport(treePath, (AssignmentTree) tree, element, context);
 		case IMPORT:
-			return new ImportElementSupport(compilationUnit, (ImportTree) tree, context);
+			return new ImportElementSupport(treePath, (ImportTree) tree, element, context);
 		case COMPILATION_UNIT:
-			return new CompilationUnitElementSupport((CompilationUnitTree) tree, context);
+			return new CompilationUnitElementSupport(treePath, (CompilationUnitTree) tree, element, context);
 		case MINUS:
 		case PLUS:
 		case MULTIPLY:
@@ -157,7 +154,7 @@ public class ExtendedElementFactory {
 		case NOT_EQUAL_TO:
 		case REMAINDER:
 		case UNSIGNED_RIGHT_SHIFT:
-			return new BinaryOperatorElementSupport(compilationUnit, (BinaryTree) tree, context);
+			return new BinaryOperatorElementSupport(treePath, (BinaryTree) tree, element, context);
 		case POSTFIX_DECREMENT:
 		case PREFIX_DECREMENT:
 		case POSTFIX_INCREMENT:
@@ -166,9 +163,9 @@ public class ExtendedElementFactory {
 		case UNARY_PLUS:
 		case BITWISE_COMPLEMENT:
 		case LOGICAL_COMPLEMENT:
-			return new UnaryOperatorElementSupport(compilationUnit, (UnaryTree) tree, context);
+			return new UnaryOperatorElementSupport(treePath, (UnaryTree) tree, element, context);
 		default:
-			return new ExtendedElementSupport<>(compilationUnit, tree, context);
+			return new ExtendedElementSupport<>(treePath, tree, element, context);
 		}
 	}
 

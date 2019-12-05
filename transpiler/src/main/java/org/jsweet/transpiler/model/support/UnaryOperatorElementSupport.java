@@ -18,12 +18,14 @@
  */
 package org.jsweet.transpiler.model.support;
 
+import javax.lang.model.element.Element;
+
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.UnaryOperatorElement;
 
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.UnaryTree;
+import com.sun.source.util.TreePath;
 
 /**
  * See {@link UnaryOperatorElement}.
@@ -33,8 +35,8 @@ import com.sun.source.tree.UnaryTree;
  */
 public class UnaryOperatorElementSupport extends ExtendedElementSupport<UnaryTree> implements UnaryOperatorElement {
 
-	public UnaryOperatorElementSupport(CompilationUnitTree compilationUnit, UnaryTree tree, JSweetContext context) {
-		super(compilationUnit, tree, context);
+	public UnaryOperatorElementSupport(TreePath treePath, UnaryTree tree, Element element, JSweetContext context) {
+		super(treePath, tree, element, context);
 	}
 
 	@Override

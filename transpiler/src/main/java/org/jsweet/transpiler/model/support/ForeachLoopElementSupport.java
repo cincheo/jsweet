@@ -18,14 +18,15 @@
  */
 package org.jsweet.transpiler.model.support;
 
+import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
 
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.ForeachLoopElement;
 
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.EnhancedForLoopTree;
+import com.sun.source.util.TreePath;
 
 /**
  * See {@link ForeachLoopElement}.
@@ -36,9 +37,9 @@ import com.sun.source.tree.EnhancedForLoopTree;
 public class ForeachLoopElementSupport extends ExtendedElementSupport<EnhancedForLoopTree>
 		implements ForeachLoopElement {
 
-	public ForeachLoopElementSupport(CompilationUnitTree compilationUnit, EnhancedForLoopTree tree,
+	public ForeachLoopElementSupport(TreePath treePath, EnhancedForLoopTree tree, Element element,
 			JSweetContext context) {
-		super(compilationUnit, tree, context);
+		super(treePath, tree, element, context);
 	}
 
 	@Override

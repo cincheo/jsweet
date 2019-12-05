@@ -25,9 +25,9 @@ import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.VariableAccessElement;
 
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 
 /**
  * See {@link VariableAccessElement}.
@@ -39,12 +39,8 @@ public class VariableAccessElementSupport extends ExtendedElementSupport<Tree> i
 
 	private VariableElement variableElement;
 
-	public VariableAccessElementSupport( //
-			CompilationUnitTree compilationUnit, //
-			VariableElement variableElement, //
-			Tree tree, //
-			JSweetContext context) {
-		super(compilationUnit, tree, context);
+	public VariableAccessElementSupport(TreePath treePath, Tree tree, VariableElement variableElement, JSweetContext context) {
+		super(treePath, tree, variableElement, context);
 		this.variableElement = variableElement;
 	}
 

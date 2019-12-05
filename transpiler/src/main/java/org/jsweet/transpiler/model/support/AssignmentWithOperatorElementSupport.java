@@ -18,13 +18,15 @@
  */
 package org.jsweet.transpiler.model.support;
 
+import javax.lang.model.element.Element;
+
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.AssignmentWithOperatorElement;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.VariableAccessElement;
 
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.util.TreePath;
 
 /**
  * See {@link AssignmentWithOperatorElement}.
@@ -33,8 +35,9 @@ import com.sun.source.tree.CompoundAssignmentTree;
  */
 public class AssignmentWithOperatorElementSupport extends ExtendedElementSupport<CompoundAssignmentTree> implements AssignmentWithOperatorElement {
 
-	public AssignmentWithOperatorElementSupport(CompilationUnitTree compilationUnit, CompoundAssignmentTree tree, JSweetContext context) {
-		super(compilationUnit, tree, context);
+	public AssignmentWithOperatorElementSupport(TreePath treePath, CompoundAssignmentTree tree, Element element,
+			JSweetContext context) {
+		super(treePath, tree, element, context);
 	}
 
 	@Override
