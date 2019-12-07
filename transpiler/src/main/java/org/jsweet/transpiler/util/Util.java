@@ -2063,7 +2063,11 @@ public class Util {
 	}
 
 	public CompilationUnitTree getCompilationUnit(Element element) {
-		return trees().getPath(element).getCompilationUnit();
+		TreePath treePath = trees().getPath(element);
+		if (treePath == null) {
+			return null;
+		}
+		return treePath.getCompilationUnit();
 	}
 
 	/**

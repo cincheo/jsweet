@@ -24,6 +24,7 @@ import javax.lang.model.element.VariableElement;
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.support.ArrayAccessElementSupport;
 import org.jsweet.transpiler.model.support.AssignmentElementSupport;
+import org.jsweet.transpiler.model.support.AssignmentWithOperatorElementSupport;
 import org.jsweet.transpiler.model.support.BinaryOperatorElementSupport;
 import org.jsweet.transpiler.model.support.CaseElementSupport;
 import org.jsweet.transpiler.model.support.CompilationUnitElementSupport;
@@ -43,6 +44,7 @@ import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.ImportTree;
@@ -129,6 +131,18 @@ public class ExtendedElementFactory {
 			return new ArrayAccessElementSupport(treePath, (ArrayAccessTree) tree, element, context);
 		case ENHANCED_FOR_LOOP:
 			return new ForeachLoopElementSupport(treePath, (EnhancedForLoopTree) tree, element, context);
+		case AND_ASSIGNMENT:
+		case DIVIDE_ASSIGNMENT:
+		case LEFT_SHIFT_ASSIGNMENT:
+		case MINUS_ASSIGNMENT:
+		case MULTIPLY_ASSIGNMENT:
+		case OR_ASSIGNMENT:
+		case PLUS_ASSIGNMENT:
+		case REMAINDER_ASSIGNMENT:
+		case RIGHT_SHIFT_ASSIGNMENT:
+		case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT:
+		case XOR_ASSIGNMENT:
+			return new AssignmentWithOperatorElementSupport(treePath, (CompoundAssignmentTree) tree, element, context);
 		case ASSIGNMENT:
 			return new AssignmentElementSupport(treePath, (AssignmentTree) tree, element, context);
 		case IMPORT:
