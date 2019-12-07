@@ -166,7 +166,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 
 		addTypeMapping(
 				(typeTree,
-						name) -> name.startsWith("java.")
+						name) -> name.startsWith("java.") && typeTree.getType() != null
 								&& types().isSubtype(typeTree.getType(), util().getType(Throwable.class)) ? "Error"
 										: null);
 		addTypeMapping((ExtendedElement typeTree, String name) -> mapWeakReferenceType(typeTree, name));

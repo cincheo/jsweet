@@ -78,7 +78,7 @@ public class ExtendedElementSupport<T extends Tree> implements ExtendedElement {
 	 * Gets the type that corresponds to this element, if any.
 	 */
 	public TypeMirror getType() {
-		return util().getTypeForTree(tree, compilationUnit);
+		return util().getTypeForTreePath(treePath);
 	}
 
 	/**
