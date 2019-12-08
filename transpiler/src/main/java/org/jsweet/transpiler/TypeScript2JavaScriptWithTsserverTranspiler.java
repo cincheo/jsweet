@@ -117,6 +117,8 @@ public class TypeScript2JavaScriptWithTsserverTranspiler extends TypeScript2Java
 
 					SourcePosition originalPosition = new SourcePosition(fileInError, null,
 							new Position(error.getStartLocation().getLine(), error.getStartLocation().getOffset()));
+					logger.error("TypeScript error: " + error.getFullText() + " at " + originalPosition.getFile() + "("
+							+ originalPosition.getStartLine() + ")");
 					SourcePosition position = SourceFile.findOriginPosition(originalPosition, tsSourceFiles);
 					if (position == null) {
 						transpilationHandler.report(JSweetProblem.INTERNAL_TSC_ERROR, originalPosition,

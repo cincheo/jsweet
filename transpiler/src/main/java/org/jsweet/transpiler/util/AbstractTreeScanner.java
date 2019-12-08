@@ -548,6 +548,9 @@ public abstract class AbstractTreeScanner extends TreePathScanner<Void, Trees> {
 	 */
 	protected <T> T getFromTreePath(Tree tree, Function<TreePath, T> transform) {
 		T result = null;
+		if (tree == null) {
+			return result;
+		}
 		TreePath currentPath = getCurrentPath();
 		TreePath treePath = currentPath == null ? null : TreePath.getPath(currentPath, tree);
 		if (treePath != null) {

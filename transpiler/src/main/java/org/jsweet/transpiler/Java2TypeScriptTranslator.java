@@ -2155,13 +2155,17 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			return returnNothing();
 		}
 
-		ClassTree parent = (ClassTree) getParent();
+		final ClassTree parent = (ClassTree) getParent();
+		TypeElement parentElement = toElement(parent);
 
 		if (!getScope().enumWrapperClassScope //
-				&& (parent != null
-						&& util().getStartPosition(methodTree, getCompilationUnit()) == util().getStartPosition(parent,
+				&& //
+				(parent != null //
+						&& (util().getStartPosition(methodTree, getCompilationUnit()) == util().getStartPosition(parent,
 								getCompilationUnit())
-						|| util().isDefaultConstructor(methodTree, getCompilationUnit()))) {
+								|| (!getScope().declareClassScope
+										|| (parentElement != null && context.isInterface(parentElement)))
+										&& util().isDefaultConstructor(methodTree, getCompilationUnit())))) {
 			return returnNothing();
 		}
 
@@ -2188,7 +2192,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		// do not generate definition if parent class already declares method to avoid
 		// wrong override error with overloads ({ scale(number); scale(number, number);
 		// } cannot be overriden with { scale(number) } only)
-		if (getScope().isDeclareClassScope() && parent.getExtendsClause() != null) {
+		if (getScope().isDeclareClassScope() && parent.getExtendsClause() != null && !getScope().constructor) {
 
 			TypeElement superTypeElement = toTypeElement(parent.getExtendsClause());
 
@@ -2203,7 +2207,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		boolean inOverload = false;
 		boolean inCoreWrongOverload = false;
 		if (parent != null) {
-			TypeElement parentElement = toElement(parent);
 			overload = context.getOverload(parentElement, methodElement);
 			inOverload = overload != null && overload.getMethodsCount() > 1;
 			if (inOverload) {
@@ -2275,7 +2278,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			if (!util().isVoidType(methodElement.getReturnType())) {
 				print("return ");
 			}
-			TypeElement parentElement = toElement(parent);
 			print("__debug_exec('" + (parentElement == null ? "null" : parentElement.getQualifiedName()) + "', '"
 					+ methodTree.getName() + "', ");
 			if (!methodTree.getParameters().isEmpty()) {
@@ -2326,7 +2328,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			report(methodTree, methodTree.getName(), JSweetProblem.CONSTRUCTOR_MEMBER);
 		}
 		if (parent != null) {
-			TypeElement parentElement = toElement(parent);
 			VariableElement v = util().findFieldDeclaration(parentElement, methodTree.getName());
 			if (v != null && context.getFieldNameMapping(v) == null) {
 				if (isDefinitionScope) {
@@ -2367,7 +2368,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				report(methodTree, methodTree.getName(), JSweetProblem.GLOBAL_CONSTRUCTOR_DEF);
 				return returnNothing();
 			}
-			TypeElement parentElement = toElement(parent);
 			if (context.lookupDecoratorAnnotation((parentElement.getQualifiedName() + "." + methodTree.getName())
 					.replace(JSweetConfig.GLOBALS_CLASS_NAME + ".", "")) != null) {
 				if (!getScope().decoratorScope) {
@@ -6123,11 +6123,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				// because it may to be correctly set in the invocation
 				ExpressionTree methodSelectTree = ((MethodInvocationTree) expression).getMethodSelect();
 				registerTreeCompilationUnit(methodSelectTree, getCompilationUnitForTree(expression));
-				ExecutableElement m = toElement(methodSelectTree);
-				if (m != null && m.getReturnType().getKind() == TypeKind.TYPEVAR
-						&& types().asElement(m.getReturnType()).getEnclosingElement() == m) {
-					print("<any>(").print(expression).print(")");
-					return true;
+				Element m = toElement(methodSelectTree);
+				if (m instanceof ExecutableElement) {
+					ExecutableElement methodElement = (ExecutableElement) m;
+					if (methodElement.getReturnType().getKind() == TypeKind.TYPEVAR
+							&& types().asElement(methodElement.getReturnType()).getEnclosingElement() == m) {
+						print("<any>(").print(expression).print(")");
+						return true;
+					}
 				}
 			}
 			return false;

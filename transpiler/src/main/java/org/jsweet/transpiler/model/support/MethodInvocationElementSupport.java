@@ -86,7 +86,8 @@ public class MethodInvocationElementSupport extends ExtendedElementSupport<Metho
 	public ExecutableElement getMethod() {
 		Tree methTree = tree.getMethodSelect();
 		TreePath treePath = TreePath.getPath(this.treePath, methTree);
-		return (ExecutableElement) trees().getElement(treePath);
+		Element methodElement = trees().getElement(treePath);
+		return (ExecutableElement) methodElement;
 	}
 
 	@Override
