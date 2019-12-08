@@ -2140,6 +2140,49 @@ public class Util {
 		return typeElement != null && typeElement.getKind() == ElementKind.INTERFACE;
 	}
 
+	/**
+	 * Returns true if given element is part of an enum: either an Enum element, or
+	 * an enum constant
+	 */
+	public boolean isPartOfAnEnum(Element element) {
+		if (element == null) {
+			return false;
+		}
+
+		return element.getKind() == ElementKind.ENUM || element.getKind() == ElementKind.ENUM_CONSTANT;
+	}
+
+	public Element getMethodOwner(ExecutableElement methodElement) {
+		Element targetType = methodElement.getEnclosingElement();
+		if (targetType != null) {
+			return targetType;
+		}
+
+		TypeMirror ownerType = ((ExecutableType) methodElement.asType()).getReceiverType();
+
+		return ownerType == null ? null : types().asElement(ownerType);
+	}
+
+	public boolean isGeneratedConstructor(MethodTree methodTree, ClassTree parentClassTree,
+			ExecutableElement methodElement) {
+		if (!methodTree.getName().toString().equals(CONSTRUCTOR_METHOD_NAME)) {
+			return false;
+		}
+		if (methodElement.getAnnotationMirrors().size() > 0) {
+			return false;
+		}
+
+		try {
+			int methodPos = (int) javacInternals().treePosField.get(methodTree);
+			int parentClassPos = (int) javacInternals().treePosField.get(parentClassTree);
+
+			return methodPos == parentClassPos;
+		} catch (Exception e) {
+			throw new RuntimeException("Cannot call internal Javac API :( please adapt this code if API changed", e);
+		}
+
+	}
+
 	public TypeMirror unboxedTypeOrType(TypeMirror type) {
 		if (isPrimitiveOrVoid(type)) {
 			return type;
@@ -2172,8 +2215,8 @@ public class Util {
 		final Object typesInstance;
 
 		final Field binaryTreeOperatorField;
-
 		final Field assignOpOperatorField;
+		final Field treePosField;
 
 		private JavacInternals(Types types) {
 			try {
@@ -2181,13 +2224,14 @@ public class Util {
 				typeClass = Class.forName("com.sun.tools.javac.code.Type");
 				typesErasureRecursiveMethod = typesClass.getMethod("erasureRecursive", typeClass);
 
-				binaryTreeOperatorField = Stream
-						.of(Class.forName("com.sun.tools.javac.tree.JCTree").getDeclaredClasses())
+				Class<?> JCTreeClass = Class.forName("com.sun.tools.javac.tree.JCTree");
+
+				binaryTreeOperatorField = Stream.of(JCTreeClass.getDeclaredClasses())
 						.filter(innerClass -> innerClass.getSimpleName().equals("JCBinary")) //
 						.findFirst().get() //
 						.getField("operator");
 
-				assignOpOperatorField = Stream.of(Class.forName("com.sun.tools.javac.tree.JCTree").getDeclaredClasses())
+				assignOpOperatorField = Stream.of(JCTreeClass.getDeclaredClasses())
 						.filter(innerClass -> innerClass.getSimpleName().equals("JCAssignOp")) //
 						.findFirst().get() //
 						.getField("operator");
@@ -2195,6 +2239,8 @@ public class Util {
 				Field typesField = types.getClass().getDeclaredField("types");
 				typesField.trySetAccessible();
 				typesInstance = typesField.get(types);
+
+				treePosField = JCTreeClass.getDeclaredField("pos");
 			} catch (Exception e) {
 				throw new RuntimeException("Cannot call internal Javac API :( please adapt this code if API changed",
 						e);
@@ -2220,47 +2266,6 @@ public class Util {
 						e);
 			}
 		}
-
-	}
-
-	/**
-	 * Returns true if given element is part of an enum: either an Enum element, or
-	 * an enum constant
-	 */
-	public boolean isPartOfAnEnum(Element element) {
-		if (element == null) {
-			return false;
-		}
-
-		return element.getKind() == ElementKind.ENUM || element.getKind() == ElementKind.ENUM_CONSTANT;
-	}
-
-	public Element getMethodOwner(ExecutableElement methodElement) {
-		Element targetType = methodElement.getEnclosingElement();
-		if (targetType != null) {
-			return targetType;
-		}
-
-		TypeMirror ownerType = ((ExecutableType) methodElement.asType()).getReceiverType();
-
-		return ownerType == null ? null : types().asElement(ownerType);
-	}
-
-	public boolean isDefaultConstructor(MethodTree methodTree, CompilationUnitTree compilationUnit) {
-		if (!methodTree.getName().toString().equals(CONSTRUCTOR_METHOD_NAME)) {
-			return false;
-		}
-		if (methodTree.getParameters().size() > 0) {
-			return false;
-		}
-
-		Element methodElement = getElementForTree(methodTree, compilationUnit);
-		if (methodElement.getAnnotationMirrors().size() > 0) {
-			return false;
-		}
-
-		return methodTree.getBody().toString().replace("\n", "").replace("\r", "").replace(" ", "")
-				.equals("{super();}");
 
 	}
 }

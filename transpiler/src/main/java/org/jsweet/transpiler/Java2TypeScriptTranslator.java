@@ -2159,13 +2159,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		TypeElement parentElement = toElement(parent);
 
 		if (!getScope().enumWrapperClassScope //
-				&& //
-				(parent != null //
-						&& (util().getStartPosition(methodTree, getCompilationUnit()) == util().getStartPosition(parent,
-								getCompilationUnit())
-								|| (!getScope().declareClassScope
-										|| (parentElement != null && context.isInterface(parentElement)))
-										&& util().isDefaultConstructor(methodTree, getCompilationUnit())))) {
+				&& parent != null //
+				&& util().isGeneratedConstructor(methodTree, parent, methodElement) //
+		) {
 			return returnNothing();
 		}
 
