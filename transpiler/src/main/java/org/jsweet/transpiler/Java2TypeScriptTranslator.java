@@ -6179,7 +6179,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	private boolean isStatementWithNoSemiColon(Tree tree) {
 		return (tree instanceof IfTree || tree instanceof ForLoopTree || tree instanceof EnhancedForLoopTree
-				|| tree instanceof SwitchTree);
+				|| tree instanceof SwitchTree || tree instanceof TryTree);
 	}
 
 	/**
