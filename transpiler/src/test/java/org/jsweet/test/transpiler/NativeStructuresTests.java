@@ -25,6 +25,7 @@ import source.nativestructures.ExtendsJDKInterface;
 import source.nativestructures.ExtendsJDKRegular;
 import source.nativestructures.Input;
 import source.nativestructures.Iterators;
+import source.nativestructures.Lists;
 import source.nativestructures.MapExtended;
 import source.nativestructures.Maps;
 import source.nativestructures.NativeArrays;
@@ -71,6 +72,15 @@ public class NativeStructuresTests extends AbstractTest {
 					+ "a2.size=2,a2[0]=foo,a2[1]=bar", //
 					result.get("trace"));
 		}, getSourceFile(Collections.class));
+	}
+
+	@Test
+	public void testLists() {
+		eval((logHandler, result) -> {
+			logHandler.assertNoProblems();
+			assertEquals("LinkedList___first__value", result.get("LinkedList_peekFirst"));
+			assertEquals("LinkedList___third__value", result.get("LinkedList_peekLast"));
+		}, getSourceFile(Lists.class));
 	}
 
 	@Test

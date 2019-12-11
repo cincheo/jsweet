@@ -1166,9 +1166,17 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			return true;
 		case "peek":
 		case "lastElement":
+		case "peekLast":
 			printMacroName(targetMethodName);
-			print("((s) => { return s[s.length-1]; })(");
-			printTargetForParameter(invocation.getTargetExpression(), delegate).print(")");
+			print("(a => a.length==0 ? null : a[a.length-1])(");
+			printTargetForParameter(invocation.getTargetExpression(), delegate);
+			print(")");
+			return true;
+		case "peekFirst":
+			printMacroName(targetMethodName);
+			print("(a => a.length==0 ? null : a[0])(");
+			printTargetForParameter(invocation.getTargetExpression(), delegate);
+			print(")");
 			return true;
 		case "remove":
 		case "removeFirst": // in Deque
