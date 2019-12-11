@@ -79,6 +79,10 @@ public class Keywords {
 		trace.push(constructor);
 		String delete = "abc";
 		assert delete == "abc";
+		
+		var varKeyword = "coucou";
+		varKeyword = "otherForVarKeyword";
+		$export("varKeyword", varKeyword);
 	}
 
 }
