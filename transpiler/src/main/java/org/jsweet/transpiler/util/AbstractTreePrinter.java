@@ -475,16 +475,16 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 		return fillSourceMap;
 	}
 
-	public String getRootRelativeName(Element symbol) {
+	public String getRootRelativeName(Element element) {
 		return context.getRootRelativeName(
 				context.useModules ? context.getImportedElements(compilationUnit.getSourceFile().getName()) : null,
-				symbol);
+				element);
 	}
 
-	public String getRootRelativeName(Element symbol, boolean useJavaNames) {
+	public String getRootRelativeName(Element element, boolean useJavaNames) {
 		return context.getRootRelativeName(
 				context.useModules ? context.getImportedElements(compilationUnit.getSourceFile().getName()) : null,
-				symbol, useJavaNames);
+				element, useJavaNames);
 	}
 
 	public int getIndent() {

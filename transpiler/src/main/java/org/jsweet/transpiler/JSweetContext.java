@@ -1286,8 +1286,9 @@ public class JSweetContext {
 	}
 
 	private void getRootRelativeName(Map<Element, String> nameMapping, StringBuilder sb, Element element) {
-		if (useModules && element instanceof PackageElement
-				&& !element.toString().startsWith(JSweetConfig.LIBS_PACKAGE + ".")) {
+		if (element == null //
+				|| useModules && element instanceof PackageElement
+						&& !element.toString().startsWith(JSweetConfig.LIBS_PACKAGE + ".")) {
 			return;
 		}
 		if (!isRootPackage(element)) {
@@ -1322,7 +1323,7 @@ public class JSweetContext {
 	 * <code>jsweet.lang.Root</code>) or the one in the default (unnamed) package.
 	 */
 	public PackageElement getTopLevelPackage(Element element) {
-		if ((element instanceof PackageElement) && isRootPackage(element)) {
+		if (element == null || (element instanceof PackageElement) && isRootPackage(element)) {
 			return null;
 		}
 		Element parent = (element instanceof PackageElement) ? util.getParentPackage((PackageElement) element)

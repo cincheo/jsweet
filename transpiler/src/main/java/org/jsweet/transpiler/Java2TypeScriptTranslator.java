@@ -666,9 +666,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			return returnNothing();
 		}
 
-		isDefinitionScope = packageElement.getQualifiedName().toString().startsWith(JSweetConfig.LIBS_PACKAGE + ".");
+		String packageFullName = util().getPackageFullNameForCompilationUnit(compilationUnit);
+		isDefinitionScope = packageFullName.startsWith(JSweetConfig.LIBS_PACKAGE + ".");
 
-		if (context.hasAnnotationType(packageElement, JSweetConfig.ANNOTATION_MODULE)) {
+		if (packageElement != null && context.hasAnnotationType(packageElement, JSweetConfig.ANNOTATION_MODULE)) {
 			context.addExportedElement(
 					context.getAnnotationValue(packageElement, JSweetConfig.ANNOTATION_MODULE, String.class, null),
 					packageElement, getCompilationUnit());
@@ -693,10 +694,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 		setCompilationUnit(compilationUnit);
 
-		String packge = packageElement.toString();
-
-		boolean globalModule = JSweetConfig.GLOBALS_PACKAGE_NAME.equals(packge)
-				|| packge.endsWith("." + JSweetConfig.GLOBALS_PACKAGE_NAME);
+		boolean globalModule = JSweetConfig.GLOBALS_PACKAGE_NAME.equals(packageFullName)
+				|| packageFullName.endsWith("." + JSweetConfig.GLOBALS_PACKAGE_NAME);
 		String rootRelativePackageName = "";
 		if (!globalModule) {
 			rootRelativePackageName = getRootRelativeName(packageElement);

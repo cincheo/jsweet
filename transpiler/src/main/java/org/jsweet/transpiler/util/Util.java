@@ -88,6 +88,7 @@ import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.PackageTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.SwitchTree;
@@ -1394,7 +1395,12 @@ public class Util {
 	 * Returns given compilation unit's package full name
 	 */
 	public String getPackageFullNameForCompilationUnit(CompilationUnitTree compilationUnitTree) {
-		return compilationUnitTree.getPackage().getPackageName().toString();
+		PackageTree compilUnitPackage = compilationUnitTree.getPackage();
+		if (compilUnitPackage == null) {
+			return "";
+		}
+		
+		return compilUnitPackage.getPackageName().toString();
 	}
 
 	/**
@@ -1947,6 +1953,9 @@ public class Util {
 	 * </ul>
 	 */
 	public <T extends Element> T getElementForTree(Tree tree, CompilationUnitTree compilationUnit) {
+		if (tree == null) {
+			return null;
+		}
 		TreePath treePath = trees().getPath(compilationUnit, tree);
 		if (treePath == null) {
 			return null;
