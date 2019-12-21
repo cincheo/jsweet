@@ -4,6 +4,7 @@ import java.lang.reflect.Constructor;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.jsweet.transpiler.JavaCompilationComponents.JavaCompilerOptions;
 import org.jsweet.transpiler.extension.Java2TypeScriptAdapter;
 import org.jsweet.transpiler.extension.PrinterAdapter;
 import org.jsweet.transpiler.extension.RemoveJavaDependenciesAdapter;
@@ -154,4 +155,7 @@ public class JSweetFactory {
 		return new JSweetDiagnosticHandler(transpilationHandler, context);
 	}
 
+	public JavaCompilerOptions finalizeJavaCompilerOptions(JavaCompilerOptions options) {
+		return options;
+	}
 }

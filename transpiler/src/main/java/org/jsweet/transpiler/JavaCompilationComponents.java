@@ -38,15 +38,15 @@ public class JavaCompilationComponents implements AutoCloseable {
 		this.task = task;
 	}
 
-	private static class JavaCompilerOptions {
-		List<String> optionsAsList = new ArrayList<>();
+	public static class JavaCompilerOptions {
+		protected List<String> optionsAsList = new ArrayList<>();
 
-		void put(String name, String value) {
+		public void put(String name, String value) {
 			optionsAsList.add(name);
 			optionsAsList.add(value);
 		}
 		
-		void put(String singleArgument) {
+		public void put(String singleArgument) {
 			optionsAsList.add(singleArgument);
 		}
 		
@@ -108,6 +108,8 @@ public class JavaCompilationComponents implements AutoCloseable {
 
 		JSweetDiagnosticHandler diagnosticHandler = factory.createDiagnosticHandler(transpilationHandler, context);
 
+		compilerOptions = factory.finalizeJavaCompilerOptions(compilerOptions);
+		
 		logger.info("creating JavaCompiler task with options: " + compilerOptions);
 		JavacTask task = (JavacTask) compiler.getTask(null, fileManager, diagnosticHandler,
 				compilerOptions.optionsAsList, null, sourceFileObjects);

@@ -235,10 +235,11 @@ public class OverloadScanner extends AbstractTreeScanner {
 				if (i == 0) {
 					isValid = false;
 					for (int j = 0; j < m1.getParameters().size(); j++) {
+
 						TypeMirror m1ParamType = types
-								.erasure(util.getTypeForTree(m1.getParameters().get(j), m1Entry.classCompilationUnit));
+								.erasure(util.getTypeForTree(m1.getParameters().get(j), m1Entry.methodCompilationUnit));
 						TypeMirror m2ParamType = types
-								.erasure(util.getTypeForTree(m2.getParameters().get(j), m2Entry.classCompilationUnit));
+								.erasure(util.getTypeForTree(m2.getParameters().get(j), m2Entry.methodCompilationUnit));
 						if (types.isAssignable(m1ParamType, m2ParamType)) {
 							i--;
 						}
