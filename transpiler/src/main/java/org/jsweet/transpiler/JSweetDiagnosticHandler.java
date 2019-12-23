@@ -62,7 +62,7 @@ public class JSweetDiagnosticHandler implements DiagnosticListener<JavaFileObjec
 	protected void reportJavaError(Diagnostic<? extends JavaFileObject> diagnostic, Locale locale) {
 		transpilationHandler.report(JSweetProblem.INTERNAL_JAVA_ERROR, //
 				new SourcePosition( //
-						new File(diagnostic.getSource().getName()), //
+						new File(diagnostic.getSource() == null ? "." : diagnostic.getSource().getName()), //
 						null, //
 						(int) diagnostic.getLineNumber(), //
 						(int) diagnostic.getColumnNumber() //

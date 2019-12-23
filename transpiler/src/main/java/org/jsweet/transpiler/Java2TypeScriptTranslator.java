@@ -18,7 +18,6 @@
  */
 package org.jsweet.transpiler;
 
-import static com.google.common.collect.Iterables.getFirst;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.jsweet.JSweetConfig.ANNOTATION_ERASED;
@@ -32,6 +31,7 @@ import static org.jsweet.JSweetConfig.TUPLE_CLASSES_PACKAGE;
 import static org.jsweet.JSweetConfig.UNION_CLASS_NAME;
 import static org.jsweet.JSweetConfig.UTIL_PACKAGE;
 import static org.jsweet.transpiler.util.Util.CONSTRUCTOR_METHOD_NAME;
+import static org.jsweet.transpiler.util.Util.firstOrDefault;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -1536,8 +1536,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				for (AnnotationMirror c : classTypeElement.getAnnotationMirrors()) {
 					if (JSweetConfig.ANNOTATION_MIXIN.equals(c.getAnnotationType().toString())) {
 
-						Entry<? extends ExecutableElement, ? extends AnnotationValue> annotationValuesEntry = getFirst(
-								c.getElementValues().entrySet(), null);
+						Entry<? extends ExecutableElement, ? extends AnnotationValue> annotationValuesEntry = firstOrDefault(
+								c.getElementValues().entrySet());
 
 						AnnotationValue mixinClassAnnotationValue = annotationValuesEntry.getValue();
 						TypeMirror mixinClassType = (TypeMirror) mixinClassAnnotationValue.getValue();

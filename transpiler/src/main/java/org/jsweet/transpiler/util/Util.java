@@ -203,6 +203,10 @@ public class Util {
 		return getSourceFilePath(element).equals(compilationUnitTree.getSourceFile().getName());
 	}
 
+	public static <T> T firstOrDefault(Iterable<T> iterable) {
+		return iterable.iterator().next();
+	}
+	
 	/**
 	 * Gets the tree that corresponds to the given element (this is a slow
 	 * implementation - do not use intensively).
