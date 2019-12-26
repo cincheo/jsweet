@@ -82,7 +82,7 @@ import com.google.debugging.sourcemap.SourceMapGenerator;
 import com.google.debugging.sourcemap.SourceMapGeneratorFactory;
 import com.google.debugging.sourcemap.SourceMapGeneratorV3;
 import com.google.debugging.sourcemap.SourceMapping;
-import com.google.debugging.sourcemap.proto.Mapping.OriginalMapping;
+import com.google.debugging.sourcemap.OriginalMapping;
 import com.google.gson.Gson;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;

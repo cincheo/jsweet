@@ -12,6 +12,7 @@ import org.jsweet.transpiler.util.ProcessUtil;
 
 import ts.TypeScriptException;
 import ts.TypeScriptNoContentAvailableException;
+import ts.client.ExternalFile;
 import ts.client.ITypeScriptServiceClient;
 import ts.client.ScriptKindName;
 import ts.client.TypeScriptServiceClient;
@@ -21,7 +22,6 @@ import ts.client.diagnostics.DiagnosticEvent;
 import ts.client.diagnostics.IDiagnostic;
 import ts.client.projectinfo.ProjectInfo;
 import ts.cmd.tsc.CompilerOptions;
-import ts.internal.client.protocol.OpenExternalProjectRequestArgs.ExternalFile;
 
 public class TypeScript2JavaScriptWithTsserverTranspiler extends TypeScript2JavaScriptTranspiler {
 
