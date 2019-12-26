@@ -596,7 +596,7 @@ public class Document extends Node {
     native public HTMLPhraseElement createElement(jsweet.util.StringTypes.tt tagName);
     native public HTMLPhraseElement createElement(jsweet.util.StringTypes.u tagName);
     native public HTMLUListElement createElement(jsweet.util.StringTypes.ul tagName);
-    native public HTMLPhraseElement createElement(jsweet.util.StringTypes.var tagName);
+    native public HTMLPhraseElement createElement(jsweet.util.StringTypes.Var tagName);
     native public HTMLVideoElement createElement(jsweet.util.StringTypes.video tagName);
     native public MSHTMLWebViewElement createElement(jsweet.util.StringTypes.x_ms_webview tagName);
     native public HTMLBlockElement createElement(jsweet.util.StringTypes.xmp tagName);
@@ -839,7 +839,7 @@ public class Document extends Node {
     native public NodeListOf<HTMLPhraseElement> getElementsByTagName(jsweet.util.StringTypes.u tagname);
     native public NodeListOf<HTMLUListElement> getElementsByTagName(jsweet.util.StringTypes.ul tagname);
     native public NodeListOf<SVGUseElement> getElementsByTagName(jsweet.util.StringTypes.use tagname);
-    native public NodeListOf<HTMLPhraseElement> getElementsByTagName(jsweet.util.StringTypes.var tagname);
+    native public NodeListOf<HTMLPhraseElement> getElementsByTagName(jsweet.util.StringTypes.Var tagname);
     native public NodeListOf<HTMLVideoElement> getElementsByTagName(jsweet.util.StringTypes.video tagname);
     native public NodeListOf<SVGViewElement> getElementsByTagName(jsweet.util.StringTypes.view tagname);
     native public NodeListOf<HTMLElement> getElementsByTagName(jsweet.util.StringTypes.wbr tagname);
