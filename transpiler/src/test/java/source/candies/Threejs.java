@@ -5,21 +5,21 @@ import static def.dom.Globals.requestAnimationFrame;
 import static def.dom.Globals.window;
 import static jsweet.util.Lang.union;
 
-import def.threejs.three.BoxGeometry;
-import def.threejs.three.Color;
-import def.threejs.three.DirectionalLight;
-import def.threejs.three.Geometry;
-import def.threejs.three.Intersection;
-import def.threejs.three.Light;
-import def.threejs.three.Mesh;
-import def.threejs.three.MeshLambertMaterial;
-import def.threejs.three.MeshLambertMaterialParameters;
-import def.threejs.three.PerspectiveCamera;
-import def.threejs.three.Raycaster;
-import def.threejs.three.Raycaster.Coords;
-import def.threejs.three.Scene;
-import def.threejs.three.Vector2;
-import def.threejs.three.WebGLRenderer;
+import def.threejs.THREE.BoxGeometry;
+import def.threejs.THREE.Color;
+import def.threejs.THREE.DirectionalLight;
+import def.threejs.THREE.Geometry;
+import def.threejs.THREE.Intersection;
+import def.threejs.THREE.Light;
+import def.threejs.THREE.Mesh;
+import def.threejs.THREE.MeshLambertMaterial;
+import def.threejs.THREE.MeshLambertMaterialParameters;
+import def.threejs.THREE.PerspectiveCamera;
+import def.threejs.THREE.Raycaster;
+import def.threejs.THREE.Raycaster.Coords;
+import def.threejs.THREE.Scene;
+import def.threejs.THREE.Vector2;
+import def.threejs.THREE.WebGLRenderer;
 import def.dom.Event;
 import def.dom.HTMLElement;
 import def.dom.MouseEvent;
@@ -146,9 +146,9 @@ public class Threejs {
 
 		theta += 0.1;
 
-		camera.position.x = radius * Math.sin(def.threejs.three.Math.degToRad(theta));
-		camera.position.y = radius * Math.sin(def.threejs.three.Math.degToRad(theta));
-		camera.position.z = radius * Math.cos(def.threejs.three.Math.degToRad(theta));
+		camera.position.x = radius * Math.sin(def.threejs.THREE.Math.degToRad(theta));
+		camera.position.y = radius * Math.sin(def.threejs.THREE.Math.degToRad(theta));
+		camera.position.z = radius * Math.cos(def.threejs.THREE.Math.degToRad(theta));
 		camera.lookAt(scene.position);
 
 		camera.updateMatrixWorld(true);

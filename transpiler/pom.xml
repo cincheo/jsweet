@@ -78,14 +78,18 @@
 					<target>${java.version}</target>
 					<encoding>${project.build.sourceEncoding}</encoding>
 					<compilerArgs>
+
 					</compilerArgs>
 				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.22.2</version>
+				<version>3.0.0-M4</version>
 				<configuration>
+					<forkCount>0</forkCount>
+					<reuseForks>false</reuseForks>
+					 <useSystemClassLoader>false</useSystemClassLoader>
 					<includes>
 						<include>**/*.java</include>
 					</includes>
@@ -245,7 +249,7 @@
 			<groupId>org.jsweet</groupId>
 			<artifactId>jsweet-core</artifactId>
 			<version>6.1.0-SNAPSHOT</version>
-			<scope>test</scope>
+			<scope>compile</scope>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
@@ -321,8 +325,8 @@
 		<dependency>
 			<groupId>org.jsweet.candies</groupId>
 			<artifactId>threejs</artifactId>
-			<version>75-20171101</version>
-			<scope>test</scope>
+			<version>89.20191209.7</version>
+			<scope>compile</scope>
 			<optional>true</optional>
 		</dependency>
 		<dependency>

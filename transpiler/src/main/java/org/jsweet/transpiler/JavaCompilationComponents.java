@@ -75,6 +75,7 @@ public class JavaCompilationComponents implements AutoCloseable {
 
 		JavaCompilerOptions compilerOptions = new JavaCompilerOptions();
 		if (classPath != null) {
+			compilerOptions.put("--module-path", classPath);
 			compilerOptions.put("-cp", classPath);
 			for (String s : classPath.split(File.pathSeparator)) {
 				if (s.contains(JSweetConfig.MAVEN_JAVA_OVERRIDE_ARTIFACT)) {

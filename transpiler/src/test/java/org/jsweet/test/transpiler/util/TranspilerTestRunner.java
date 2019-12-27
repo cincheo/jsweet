@@ -1,13 +1,19 @@
 package org.jsweet.test.transpiler.util;
 
+import static java.util.stream.Collectors.joining;
 import static org.junit.Assert.fail;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.Arrays;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import javax.lang.model.util.Types;
 
@@ -80,6 +86,26 @@ public class TranspilerTestRunner {
 		boolean verbose = System.getenv("JSWEET_VERBOSE") == null
 				|| BooleanUtils.toBoolean(System.getenv("JSWEET_VERBOSE"));
 
+		String classPath = System.getProperty("java.class.path");
+
+		// adds classloader URLs to class path because java.class.path property doesn't
+		// include every artifacts :o/
+		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+		if (classLoader instanceof URLClassLoader) {
+			URL[] urls = ((URLClassLoader) classLoader).getURLs();
+			classPath += File.pathSeparator + Stream.of(urls).map(url -> {
+				try {
+					return new File(url.toURI()).getCanonicalPath();
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+			}).collect(joining(File.pathSeparator));
+		}
+
+		String modulePath = System.getProperty("jdk.module.path");
+		logger.info("classPath: " + classPath);
+		logger.info("modulePath: " + modulePath);
+
 		transpiler = new JSweetTranspiler( //
 				configurationFile, //
 				factory, //
@@ -87,7 +113,7 @@ public class TranspilerTestRunner {
 				baseTsOutputDir, //
 				null, //
 				new File(JSweetTranspiler.TMP_WORKING_DIR_NAME + "/candies/js"), //
-				System.getProperty("java.class.path"));
+				classPath);
 		transpiler.setEcmaTargetVersion(EcmaScriptComplianceLevel.ES6);
 		transpiler.setEncoding("UTF-8");
 		transpiler.setSkipTypeScriptChecks(true);
