@@ -93,8 +93,8 @@ public class PrinterAdapter {
 	}
 
 	/**
-	 * Creates a new adapter that will try delegate to the given parent adapter when
-	 * not implementing its own behavior.
+	 * Creates a new adapter that will try delegate to the given parent adapter
+	 * when not implementing its own behavior.
 	 * 
 	 * @param parentAdapter
 	 *            cannot be null: if no parent you must use the
@@ -123,21 +123,23 @@ public class PrinterAdapter {
 	}
 
 	/**
-	 * Adds a type mapping so that this adapter substitutes the source type with the
-	 * target type during the transpilation process.
+	 * Adds a type mapping so that this adapter substitutes the source type with
+	 * the target type during the transpilation process.
 	 * 
 	 * @param sourceTypeName
 	 *            the fully qualified name of the type to be substituted
 	 * @param targetTypeName
-	 *            the fully Qualified name of the type the source type is mapped to
+	 *            the fully Qualified name of the type the source type is mapped
+	 *            to
 	 */
 	protected final void addTypeMapping(String sourceTypeName, String targetTypeName) {
 		context.addTypeMapping(sourceTypeName, targetTypeName);
 	}
 
 	/**
-	 * Adds a set of name-based type mappings. This method is equivalent to calling
-	 * {@link #addTypeMapping(String, String)} for each entry of the given map.
+	 * Adds a set of name-based type mappings. This method is equivalent to
+	 * calling {@link #addTypeMapping(String, String)} for each entry of the
+	 * given map.
 	 */
 	protected final void addTypeMappings(Map<String, String> nameMappings) {
 		context.addTypeMappings(nameMappings);
@@ -173,17 +175,17 @@ public class PrinterAdapter {
 	 * with a target type during the transpilation process.
 	 * 
 	 * @param mappingFunction
-	 *            a function that takes the type tree, the type name, and returns a
-	 *            substitution (either under the form of a string, or of a string,
-	 *            or of another type tree).
+	 *            a function that takes the type tree, the type name, and
+	 *            returns a substitution (either under the form of a string, or
+	 *            of a string, or of another type tree).
 	 */
 	public void addTypeMapping(BiFunction<ExtendedElement, String, Object> mappingFunction) {
 		context.addTypeMapping(mappingFunction);
 	}
 
 	/**
-	 * Gets the string that corresponds to the given type, taking into account all
-	 * type mappings.
+	 * Gets the string that corresponds to the given type, taking into account
+	 * all type mappings.
 	 * 
 	 * <p>
 	 * Some type mappings are set by default, some are added in the context by
@@ -245,15 +247,16 @@ public class PrinterAdapter {
 	 * </pre>
 	 * 
 	 * <p>
-	 * Filters are simplified regular expressions matching on the Java AST. Special
-	 * characters are the following:
+	 * Filters are simplified regular expressions matching on the Java AST.
+	 * Special characters are the following:
 	 * 
 	 * <ul>
-	 * <li>*: matches any token/identifier in the signature of the AST element</li>
-	 * <li>**: matches any list of tokens in signature of the AST element (same as
-	 * ..)</li>
-	 * <li>..: matches any list of tokens in signature of the AST element (same as
-	 * **)</li>
+	 * <li>*: matches any token/identifier in the signature of the AST element
+	 * </li>
+	 * <li>**: matches any list of tokens in signature of the AST element (same
+	 * as ..)</li>
+	 * <li>..: matches any list of tokens in signature of the AST element (same
+	 * as **)</li>
 	 * <li>!: negates the filter (first character only)</li>
 	 * </ul>
 	 * 
@@ -283,9 +286,9 @@ public class PrinterAdapter {
 	/**
 	 * Adds an annotation on the AST through global filters.
 	 * 
-	 * The annotation to be added is described by its type and by a value, which is
-	 * passed as is to the annotation's value. If the annotation type does not
-	 * accept a value parameter, no annotations will be added.
+	 * The annotation to be added is described by its type and by a value, which
+	 * is passed as is to the annotation's value. If the annotation type does
+	 * not accept a value parameter, no annotations will be added.
 	 * 
 	 * @see #addAnnotation(String, String...)
 	 */
@@ -295,8 +298,8 @@ public class PrinterAdapter {
 	}
 
 	/**
-	 * Adds an annotation manager that will tune (add or remove) annotations on the
-	 * AST. Lastly added managers have precedence over firstly added ones.
+	 * Adds an annotation manager that will tune (add or remove) annotations on
+	 * the AST. Lastly added managers have precedence over firstly added ones.
 	 */
 	public final void addAnnotationManager(AnnotationManager annotationManager) {
 		context.addAnnotationManager(annotationManager);
@@ -315,8 +318,8 @@ public class PrinterAdapter {
 	}
 
 	/**
-	 * Gets the first value of the 'value' property for the given annotation type if
-	 * found on the given element.
+	 * Gets the first value of the 'value' property for the given annotation
+	 * type if found on the given element.
 	 * 
 	 * To change the behavior of this method in a composable way, use
 	 * {@link #addAnnotation(Class, String...)} or
@@ -340,16 +343,16 @@ public class PrinterAdapter {
 	}
 
 	/**
-	 * Gets the first value of the given property for the given annotation type if
-	 * found on the given element.
+	 * Gets the first value of the given property for the given annotation type
+	 * if found on the given element.
 	 * 
 	 * @param element
 	 *            the element holding the annotation
 	 * @param annotationType
 	 *            the fully qualified name of the value property type
 	 * @param propertyName
-	 *            the name of the property in the annotation (<code>null</code> will
-	 *            look up the <code>value</code> property)
+	 *            the name of the property in the annotation (<code>null</code>
+	 *            will look up the <code>value</code> property)
 	 * @param propertyClass
 	 *            the expected class of the property (String.class,
 	 *            TypeMirror.class, Number.class, and arrays such as
@@ -375,8 +378,8 @@ public class PrinterAdapter {
 	 * </pre>
 	 * 
 	 * <p>
-	 * Filters are simplified regular expressions matching on the Java AST. Special
-	 * characters are the following:
+	 * Filters are simplified regular expressions matching on the Java AST.
+	 * Special characters are the following:
 	 * 
 	 * <ul>
 	 * <li>*: matches any character in the signature of the AST element</li>
@@ -385,8 +388,8 @@ public class PrinterAdapter {
 	 * 
 	 * @param annotationDescriptor
 	 *            the annotation type name, optionally preceded with a @, and
-	 *            optionally defining a value (fully qualified name is not necessary
-	 *            for JSweet annotations)
+	 *            optionally defining a value (fully qualified name is not
+	 *            necessary for JSweet annotations)
 	 * @param filters
 	 *            the annotation is activated if one of the filters match and no
 	 *            negative filter matches
@@ -732,8 +735,8 @@ public class PrinterAdapter {
 	}
 
 	/**
-	 * This method implements the default behavior to generate module imports. It
-	 * may be overridden by subclasses to implement specific behaviors.
+	 * This method implements the default behavior to generate module imports.
+	 * It may be overridden by subclasses to implement specific behaviors.
 	 * 
 	 * @param currentCompilationUnit
 	 *            the currently transpiled compilation unit
@@ -776,7 +779,8 @@ public class PrinterAdapter {
 						pathToImportedClass.replace('\\', '/'));
 			}
 		}
-		return null;
+		return parentAdapter == null ? null
+				: parentAdapter.getModuleImportDescriptor(currentCompilationUnit, importedName, importedClass);
 
 	}
 
@@ -817,16 +821,17 @@ public class PrinterAdapter {
 	 * Gets the printer on which rely the adapter (this is not recommended).
 	 * 
 	 * <p>
-	 * Accessing the printer with this method allows the user to access the internal
-	 * javac API directly ({@link com.sun.tools.javac}), which is non-standard and
-	 * may get deprecated in future Java versions. As a consequence, to write
-	 * sustainable adapters, it is not recommended to use the printer API.
+	 * Accessing the printer with this method allows the user to access the
+	 * internal javac API directly ({@link com.sun.tools.javac}), which is
+	 * non-standard and may get deprecated in future Java versions. As a
+	 * consequence, to write sustainable adapters, it is not recommended to use
+	 * the printer API.
 	 * 
 	 * <p>
-	 * Instead, use the adapter's API directly, which relies on an abstraction of
-	 * the AST: {@link javax.lang.model} and {@link org.jsweet.transpiler.model}. If
-	 * some feature seems to be missing, please contact JSweet.org to help improving
-	 * this API.
+	 * Instead, use the adapter's API directly, which relies on an abstraction
+	 * of the AST: {@link javax.lang.model} and
+	 * {@link org.jsweet.transpiler.model}. If some feature seems to be missing,
+	 * please contact JSweet.org to help improving this API.
 	 */
 	public AbstractTreePrinter getPrinter() {
 		return printer;
@@ -984,8 +989,8 @@ public class PrinterAdapter {
 	}
 
 	/**
-	 * Tells if the given element is ambient (part of a def.* package or within an
-	 * <code>@Ambient</code>-annotated scope).
+	 * Tells if the given element is ambient (part of a def.* package or within
+	 * an <code>@Ambient</code>-annotated scope).
 	 */
 	public final boolean isAmbientDeclaration(Element element) {
 		return context.isAmbientDeclaration((com.sun.tools.javac.code.Symbol) element);
@@ -999,20 +1004,21 @@ public class PrinterAdapter {
 	}
 
 	/**
-	 * This method sets a header to the currently printed file. This header can be
-	 * TypeScript code, but use with caution since it may raise compilation errors.
+	 * This method sets a header to the currently printed file. This header can
+	 * be TypeScript code, but use with caution since it may raise compilation
+	 * errors.
 	 * 
 	 * <p>
-	 * Several headers can be added to the same file. Note that a new line will be
-	 * automatically added at the end of the last header (if any), but not between
-	 * each header. Headers will be printer in the order they have been added to the
-	 * file. Headers are reset for each new file.
+	 * Several headers can be added to the same file. Note that a new line will
+	 * be automatically added at the end of the last header (if any), but not
+	 * between each header. Headers will be printer in the order they have been
+	 * added to the file. Headers are reset for each new file.
 	 * 
 	 * @param key
 	 *            a key to identify the header (see {@link #getHeader(String)})
 	 * @param header
-	 *            any string that will be printed at the beginning of the file (only
-	 *            when not in bundle mode)
+	 *            any string that will be printed at the beginning of the file
+	 *            (only when not in bundle mode)
 	 * 
 	 * @see #getHeader(String)
 	 */
