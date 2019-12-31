@@ -25,6 +25,7 @@ import javax.lang.model.element.Element;
 import org.jsweet.transpiler.extension.PrinterAdapter;
 import org.jsweet.transpiler.model.MethodInvocationElement;
 import org.jsweet.transpiler.model.NewClassElement;
+import org.jsweet.transpiler.model.VariableAccessElement;
 
 /**
  * This optional adapter tunes the JavaScript generation to map the Java's
@@ -58,6 +59,30 @@ public class BigDecimalAdapter extends PrinterAdapter {
 		}
 		// delegate to the adapter chain
 		return super.substituteNewClass(newClass);
+	}
+	
+	@Override
+	public boolean substituteVariableAccess(VariableAccessElement variableAccess) {
+		if (variableAccess.getTargetExpression() != null) {
+			Element targetType = variableAccess.getTargetExpression().getTypeAsElement();
+			if (BigDecimal.class.getName().equals(targetType.toString())) {
+				switch (variableAccess.getVariableName()) {
+				case "ZERO":
+					printMacroName(variableAccess.getVariableName());
+					print("new Big(0)");
+					return true;
+				case "ONE":
+					printMacroName(variableAccess.getVariableName());
+					print("new Big(1)");
+					return true;
+				case "TEN":
+					printMacroName(variableAccess.getVariableName());
+					print("new Big(10)");
+					return true;
+				}
+			}
+		}
+		return super.substituteVariableAccess(variableAccess);
 	}
 
 	@Override
@@ -103,6 +128,10 @@ public class BigDecimalAdapter extends PrinterAdapter {
 					printMacroName(invocation.getMethodName());
 					print(invocation.getTargetExpression()).print(".eq(").print(invocation.getArguments().get(0))
 							.print(")");
+					return true;
+				case "valueOf":
+					printMacroName(invocation.getMethodName());
+					print("new Big(").print(invocation.getArguments().get(0)).print(")");
 					return true;
 				case "signum":
 					printMacroName(invocation.getMethodName());

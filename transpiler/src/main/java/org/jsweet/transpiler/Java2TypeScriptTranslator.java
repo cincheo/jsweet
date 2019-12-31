@@ -711,7 +711,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 								String actualName = context.getAnnotationValue(qualified.sym,
 										JSweetConfig.ANNOTATION_MODULE, String.class, null);
 								useModule(true, null, importDecl, targetName, actualName,
-										((PackageSymbol) qualified.sym));
+										((Symbol) qualified.sym));
 							}
 						} else {
 							// static import case (imported fields and methods)
@@ -777,39 +777,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 
 		if (context.useModules) {
-			TreeScanner usedTypesScanner = new TreeScanner() {
-
-				private HashSet<String> names = new HashSet<>();
-
-				private void checkType(TypeSymbol type) {
-					if (type instanceof ClassSymbol && !isMappedOrErasedType(type)) {
-						String name = type.getSimpleName().toString();
-						if (!names.contains(name)) {
-							names.add(name);
-							ModuleImportDescriptor moduleImport = getModuleImportDescriptor(name, (ClassSymbol) type);
-							if (moduleImport != null) {
-								useModule(false, moduleImport.getTargetPackage(), null, moduleImport.getImportedName(),
-										moduleImport.getPathToImportedClass(), null);
-							}
-						}
-					}
-				}
-
-				@Override
-				public void scan(JCTree t) {
-					if (t instanceof JCImport) {
-						return;
-					}
-					if (t != null && t.type != null && t.type.tsym instanceof ClassSymbol) {
-						if (!(t instanceof JCTypeApply)) {
-							checkType(t.type.tsym);
-						}
-					}
-					super.scan(t);
-				}
-
-			};
-			usedTypesScanner.scan(compilationUnit);
+			new UsedTypesScanner().scan(compilationUnit);
 		}
 
 		// require root modules when using fully qualified names or reserved
@@ -1594,6 +1562,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (s == null || s == entry.getValue().sym) {
 					getAdapter().typeVariablesToErase
 							.addAll(((ClassSymbol) s.getEnclosingElement()).getTypeParameters());
+					// scan for used types to generate imports
+					if (context.useModules) {
+						new UsedTypesScanner().scan(entry.getValue());					
+					}
 					printIndent().print(entry.getValue()).println();
 					getAdapter().typeVariablesToErase
 							.removeAll(((ClassSymbol) s.getEnclosingElement()).getTypeParameters());
@@ -5837,4 +5809,39 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		return qualifiedName;
 	}
 
+	class UsedTypesScanner extends TreeScanner {
+
+		private HashSet<String> names = new HashSet<>();
+
+		private void checkType(TypeSymbol type) {
+			if (type instanceof ClassSymbol /*&& !isMappedOrErasedType(type)*/) {
+				String name = type.getSimpleName().toString();
+				if (!names.contains(name)) {
+					names.add(name);
+					ModuleImportDescriptor moduleImport = getModuleImportDescriptor(name, (ClassSymbol) type);
+					if (moduleImport != null) {
+						useModule(false, moduleImport.getTargetPackage(), null, moduleImport.getImportedName(),
+								moduleImport.getPathToImportedClass(), null);
+					}
+				}
+			}
+		}
+
+		@Override
+		public void scan(JCTree t) {
+			if (t instanceof JCImport) {
+				return;
+			}
+			if (t != null && t.type != null && t.type.tsym instanceof ClassSymbol) {
+				if (!(t instanceof JCTypeApply)) {
+					checkType(t.type.tsym);
+				}
+			}
+			super.scan(t);
+		}
+
+	}
+
+	
 }
+
