@@ -749,38 +749,43 @@ public class PrinterAdapter {
 	 */
 	public ModuleImportDescriptor getModuleImportDescriptor(CompilationUnitElement currentCompilationUnit,
 			String importedName, TypeElement importedClass) {
-		if (util().isSourceElement(importedClass)
-				&& !importedClass.getQualifiedName().toString().startsWith(JSweetConfig.LIBS_PACKAGE + ".")) {
-			String importedModule = util().getSourceFilePath(importedClass);
-			if (importedModule.equals(currentCompilationUnit.getSourceFilePath())) {
-				return null;
-			}
-			Element parent = importedClass.getEnclosingElement();
-			while (!(parent instanceof PackageSymbol)) {
-				importedName = parent.getSimpleName().toString();
-				parent = parent.getEnclosingElement();
-			}
-			while (importedClass.getEnclosingElement() instanceof ClassSymbol) {
-				importedClass = (ClassSymbol) importedClass.getEnclosingElement();
-			}
-
-			if (parent != null && !hasAnnotationType(importedClass, JSweetConfig.ANNOTATION_ERASED)) {
-				// '@' represents a common root in case there is no common root
-				// package => pathToImportedClass cannot be null because of the
-				// common '@' root
-				String pathToImportedClass = util().getRelativePath(
-						"@/" + currentCompilationUnit.getPackage().toString().replace('.', '/'),
-						"@/" + importedClass.toString().replace('.', '/'));
-				if (!pathToImportedClass.startsWith(".")) {
-					pathToImportedClass = "./" + pathToImportedClass;
+		if (parentAdapter != null) {
+			return parentAdapter.getModuleImportDescriptor(currentCompilationUnit, importedName, importedClass);
+		} else {
+			if (util().isSourceElement(importedClass)
+					&& !importedClass.getQualifiedName().toString().startsWith(JSweetConfig.LIBS_PACKAGE + ".")) {
+				String importedModule = util().getSourceFilePath(importedClass);
+				if (importedModule.equals(currentCompilationUnit.getSourceFilePath())) {
+					return null;
+				}
+				Element parent = importedClass.getEnclosingElement();
+				while (!(parent instanceof PackageSymbol)) {
+					importedName = parent.getSimpleName().toString();
+					parent = parent.getEnclosingElement();
+				}
+				while (importedClass.getEnclosingElement() instanceof ClassSymbol) {
+					importedClass = (ClassSymbol) importedClass.getEnclosingElement();
 				}
 
-				return new ModuleImportDescriptor((PackageElement) parent, importedName,
-						pathToImportedClass.replace('\\', '/'));
+				if (parent != null && !hasAnnotationType(importedClass, JSweetConfig.ANNOTATION_ERASED)) {
+					// '@' represents a common root in case there is no common
+					// root
+					// package => pathToImportedClass cannot be null because of
+					// the
+					// common '@' root
+					String pathToImportedClass = util().getRelativePath(
+							"@/" + currentCompilationUnit.getPackage().toString().replace('.', '/'),
+							"@/" + importedClass.toString().replace('.', '/'));
+					if (!pathToImportedClass.startsWith(".")) {
+						pathToImportedClass = "./" + pathToImportedClass;
+					}
+
+					return new ModuleImportDescriptor((PackageElement) parent, importedName,
+							pathToImportedClass.replace('\\', '/'));
+				}
 			}
+			return null;
 		}
-		return parentAdapter == null ? null
-				: parentAdapter.getModuleImportDescriptor(currentCompilationUnit, importedName, importedClass);
 
 	}
 
