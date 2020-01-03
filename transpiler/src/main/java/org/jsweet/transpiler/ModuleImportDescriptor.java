@@ -33,9 +33,23 @@ public class ModuleImportDescriptor {
 		this.pathToImportedClass = pathToImportedClass;
 	}
 
+	public ModuleImportDescriptor(boolean direct, PackageElement targetPackage, String importedName,
+			String pathToImportedClass) {
+		this(targetPackage, importedName, pathToImportedClass);
+		this.direct = direct;
+	}
+
+	private boolean direct = false;
 	private PackageElement targetPackage;
 	private String importedName;
 	private String pathToImportedClass;
+
+	/**
+	 * True for a direct import.
+	 */
+	public boolean isDirect() {
+		return direct;
+	}
 
 	/**
 	 * Gets the package of the element being imported.
