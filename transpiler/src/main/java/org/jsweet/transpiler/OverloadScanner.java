@@ -96,7 +96,8 @@ public class OverloadScanner extends AbstractTreeScanner {
 		public Map<Integer, JCTree> defaultValues;
 
 		/**
-		 * A flag to tell if this overload was printed out (used by the printer).
+		 * A flag to tell if this overload was printed out (used by the
+		 * printer).
 		 */
 		public boolean printed = false;
 
@@ -126,14 +127,16 @@ public class OverloadScanner extends AbstractTreeScanner {
 		 * 
 		 * @param index
 		 *            the parameter's index
-		 * @return a unique parameter name that reflects the overloaded parameter
+		 * @return a unique parameter name that reflects the overloaded
+		 *         parameter
 		 */
 		public String getParameterName(int index) {
 			return parameterNames.get(index);
 		}
 
 		/**
-		 * Checks the validity of the overload and calculates the default values.
+		 * Checks the validity of the overload and calculates the default
+		 * values.
 		 */
 		public void calculate(Types types, Symtab symtab) {
 			if (methods.size() < 2) {

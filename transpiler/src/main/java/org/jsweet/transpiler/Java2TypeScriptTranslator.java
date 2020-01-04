@@ -2467,6 +2467,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					}
 					print(getOverloadMethodName(method.sym)).print("(");
 					for (int j = 0; j < method.getParameters().size(); j++) {
+						if (j == method.getParameters().size() - 1 && Util.hasVarargs(overload.coreMethod.sym)) {
+							print("<any>");
+						}
 						print(avoidJSKeyword(overload.coreMethod.getParameters().get(j).name.toString())).print(", ");
 					}
 					if (!method.getParameters().isEmpty()) {
@@ -2554,13 +2557,21 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			print((isAnonymousClass() ? "" : "protected ") + ENUM_WRAPPER_CLASS_NAME + " : string, ");
 			paramPrinted = true;
 		}
+		// boolean forceVarargs = overload.forceVarargs() ||
+		// Util.hasVarargs(overload.coreMethod.sym);
 		int i = 0;
 		for (JCVariableDecl param : methodDecl.getParameters()) {
+			// if (forceVarargs && inCoreWrongOverload && i ==
+			// methodDecl.getParameters().size() - 1) {
+			// print("..." + param.getName().toString());
+			// print(" : any[]");
+			// } else {
 			if (isWrapped) {
 				print(param.getName().toString());
 			} else {
 				print(param);
 			}
+			// }
 			if (inOverload && overload.isValid && overload.defaultValues.get(i) != null) {
 				print(" = ").print(overload.defaultValues.get(i));
 			}
@@ -3769,7 +3780,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					}
 					if (methSym != null) {
 						if (context.isInvalidOverload(methSym) && !methSym.getParameters().isEmpty()
-								&& !Util.hasTypeParameters(methSym) && !Util.hasVarargs(methSym)
+								&& !Util.hasTypeParameters(
+										methSym) /*
+													 * && !Util.hasVarargs(methSym)
+													 */
 								&& getParent(JCMethodDecl.class) != null
 								&& !getParent(JCMethodDecl.class).sym.isDefault()) {
 							if (context.isInterface((TypeSymbol) methSym.getEnclosingElement())) {

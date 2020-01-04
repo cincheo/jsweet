@@ -747,6 +747,13 @@ public class Util {
 	}
 
 	/**
+	 * Tells if this parameter declaration is varargs.
+	 */
+	public static boolean isVarargs(VarSymbol varSym) {
+		return (varSym.flags_field & Flags.VARARGS) == Flags.VARARGS;
+	}
+	
+	/**
 	 * Gets the file from a Java file object.
 	 */
 	public static File toFile(JavaFileObject javaFileObject) {
