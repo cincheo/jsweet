@@ -9,10 +9,11 @@ public class Dates {
 	public static void main(String[] args) {
 
 		double JANUARY = 0;
-		Date d = new Date(Date.UTC(2020, JANUARY, 01, 0, 0, 0));
+		Date d = new Date(Date.UTC(2020, JANUARY, 01, 1, 0, 0));
 
 		String localeString = d.toLocaleString("fr", new DateTimeFormatOptions() {
 			{
+				$set("timeZone", "UTC");
 			}
 		});
 
