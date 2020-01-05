@@ -7,10 +7,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.Arrays;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -122,6 +120,9 @@ public class TranspilerTestRunner {
 		transpiler.setUseTsserver(true);
 		transpiler.setVerbose(verbose);
 
+		if (verbose) {
+			logger.info("remove transpiler working dir: " + transpiler.getWorkingDirectory());
+		}
 		FileUtils.deleteQuietly(transpiler.getWorkingDirectory());
 	}
 
@@ -151,7 +152,9 @@ public class TranspilerTestRunner {
 			logger.info("*** module kind: " + moduleKind + (transpiler.isBundle() ? " (with bundle)" : "") + " ***");
 			TestTranspilationHandler logHandler = new TestTranspilationHandler();
 			transpiler.setModuleKind(moduleKind);
-			transpiler.setTsOutputDir(getTsOutputDir(moduleKind, transpiler.isBundle()));
+			File tsOutputDir = getTsOutputDir(moduleKind, transpiler.isBundle());
+			transpiler.setTsOutputDir(tsOutputDir);
+
 			transpiler.transpile(logHandler, files);
 			if (assertions != null) {
 				assertions.accept(logHandler);

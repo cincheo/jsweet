@@ -70,7 +70,7 @@ public class CandiesTests extends AbstractTest {
 
 	@Test
 	public void testThreejs() {
-		transpile(TestTranspilationHandler::assertNoProblems, getSourceFile(Threejs.class));
+		transpile(ModuleKind.none, TestTranspilationHandler::assertNoProblems, getSourceFile(Threejs.class));
 	}
 
 	@Test
@@ -85,7 +85,8 @@ public class CandiesTests extends AbstractTest {
 
 	@Test
 	public void testBabylonjs() {
-		transpile(TestTranspilationHandler::assertNoProblems, getSourceFile(Babylonjs.class), new SourceFile(new File(TEST_DIRECTORY_NAME + "/source/candies/module_defs.java")));
+		transpile(TestTranspilationHandler::assertNoProblems, getSourceFile(Babylonjs.class),
+				new SourceFile(new File(TEST_DIRECTORY_NAME + "/source/candies/module_defs.java")));
 	}
 
 	@Test

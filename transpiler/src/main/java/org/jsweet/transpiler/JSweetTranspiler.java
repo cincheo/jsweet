@@ -503,7 +503,7 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 		logger.debug("compile classpath: " + classPath);
 		logger.debug("runtime classpath: " + System.getProperty("java.class.path"));
 		logger.debug("extension directory: " + extensionDirectory.getAbsolutePath());
-		this.candiesProcessor = new CandyProcessor(this.workingDir, classPath, extractedCandyJavascriptDir);
+		this.candiesProcessor = new CandyProcessor(this.workingDir, this.tsOutputDir, classPath, extractedCandyJavascriptDir);
 
 		new ExtensionManager(extensionDirectory.getAbsolutePath()).checkAndCompileExtension(this.workingDir, classPath);
 	}
@@ -1339,6 +1339,7 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 	 */
 	public void setTsOutputDir(File tsOutputDir) {
 		this.tsOutputDir = tsOutputDir;
+		this.candiesProcessor.setTsOutputDir(tsOutputDir);
 	}
 
 	/*

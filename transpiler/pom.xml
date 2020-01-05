@@ -241,7 +241,7 @@
 			<groupId>org.osgi</groupId>
 			<artifactId>org.osgi.core</artifactId>
 			<version>4.3.0</version>
-			<scope>provided</scope>
+			<scope>compile</scope>
 		</dependency>
 
 		<!-- Test-only dependencies for testing candies -->
@@ -325,7 +325,7 @@
 		<dependency>
 			<groupId>org.jsweet.candies</groupId>
 			<artifactId>threejs</artifactId>
-			<version>89.20191209.7</version>
+			<version>89.20200104.9</version>
 			<scope>compile</scope>
 			<optional>true</optional>
 		</dependency>
