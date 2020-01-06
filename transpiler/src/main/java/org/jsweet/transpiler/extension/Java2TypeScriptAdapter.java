@@ -1259,21 +1259,24 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 			break;
 		case "equals":
 			if (invocationElement.getTargetExpression() != null && invocationElement.getArgumentCount() == 1) {
-				ExecutableElement methSym = util().findMethodDeclarationInType( //
-						(TypeElement) invocationElement.getTargetExpression().getTypeAsElement(), //
-						targetMethodName, //
-						(ExecutableType) invocationElement.getMethod().asType());
-				if (methSym != null
-						&& (Object.class.getName().equals(methSym.getEnclosingElement().toString())
-								|| util().isInterface(methSym.getEnclosingElement()))
-						|| util().isInterface(types().asElement(invocationElement.getTargetType()))
-						|| invocationElement.getTargetExpression().getType().getKind() == TypeKind.TYPEVAR) {
-					printMacroName(targetMethodName);
-					print("(<any>((o1: any, o2: any) => { if(o1 && o1.equals) { return o1.equals(o2); } else { return o1 === o2; } })(");
-					printTarget(invocationElement.getTargetExpression()).print(",")
-							.print(invocationElement.getArgument(0));
-					print("))");
-					return true;
+				Element invocationTargetTypeElement = invocationElement.getTargetExpression().getTypeAsElement();
+				if (invocationTargetTypeElement instanceof TypeElement) {
+					ExecutableElement methSym = util().findMethodDeclarationInType( //
+							(TypeElement) invocationTargetTypeElement, //
+							targetMethodName, //
+							(ExecutableType) invocationElement.getMethod().asType());
+					if (methSym != null
+							&& (Object.class.getName().equals(methSym.getEnclosingElement().toString())
+									|| util().isInterface(methSym.getEnclosingElement()))
+							|| util().isInterface(types().asElement(invocationElement.getTargetType()))
+							|| invocationElement.getTargetExpression().getType().getKind() == TypeKind.TYPEVAR) {
+						printMacroName(targetMethodName);
+						print("(<any>((o1: any, o2: any) => { if(o1 && o1.equals) { return o1.equals(o2); } else { return o1 === o2; } })(");
+						printTarget(invocationElement.getTargetExpression()).print(",")
+								.print(invocationElement.getArgument(0));
+						print("))");
+						return true;
+					}
 				}
 			}
 			break;
