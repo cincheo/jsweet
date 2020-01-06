@@ -95,6 +95,7 @@ public class TranspilerTests extends AbstractTest {
 		}, null, "-cp", System.getProperty("java.class.path"), //
 				JSweetCommandLineLauncher.class.getName(), //
 				"--tsout", outDir.getPath(), //
+				"--targetVersion", "ES6", //
 				"--jsout", outDir.getPath(), //
 				"--sourceMap", //
 				"-i", gameDir.getAbsolutePath());
@@ -120,6 +121,7 @@ public class TranspilerTests extends AbstractTest {
 				JSweetCommandLineLauncher.class.getName(), //
 				"--tsout", outDir.getPath(), //
 				"--jsout", outDir.getPath(), //
+				"--targetVersion", "ES6", //
 				"--sourceMap", //
 				"-i", gameDir.getAbsolutePath(), //
 				"--excludes", "UselessClass.java:dummy");
@@ -144,6 +146,7 @@ public class TranspilerTests extends AbstractTest {
 				JSweetCommandLineLauncher.class.getName(), //
 				"--tsout", outDir.getPath(), //
 				"--jsout", outDir.getPath(), //
+				"--targetVersion", "ES6", //
 				"--sourceMap", //
 				"--factoryClassName", "org.jsweet.transpiler.extension.RemoveJavaDependenciesFactory", //
 				"-i", gameDir.getAbsolutePath(), //
@@ -164,7 +167,7 @@ public class TranspilerTests extends AbstractTest {
 				"--sourceMap", //
 				"--factoryClassName", "org.jsweet.transpiler.extension.RemoveJavaDependenciesFactory", //
 				"-i", gameDir.getAbsolutePath(), //
-				"--includes", "UselessClass.java:dummy", "--targetVersion", "ES5");
+				"--includes", "UselessClass.java:dummy", "--targetVersion", "ES6");
 
 		assertTrue(process.exitValue() == 0);
 		files.clear();
@@ -178,10 +181,11 @@ public class TranspilerTests extends AbstractTest {
 				JSweetCommandLineLauncher.class.getName(), //
 				"--tsout", outDir.getPath(), //
 				"--jsout", outDir.getPath(), //
+				"--targetVersion", "ES6", //
 				"--sourceMap", //
 				"--factoryClassName", "org.jsweet.transpiler.extension.RemoveJavaDependenciesFactory", //
 				"-i", gameDir.getAbsolutePath(), //
-				"--includes", "UselessClass.java:dummy", "--targetVersion", "ES3");
+				"--includes", "UselessClass.java:dummy");
 
 		assertTrue(process.exitValue() == 0);
 		files.clear();
@@ -203,6 +207,7 @@ public class TranspilerTests extends AbstractTest {
 				JSweetCommandLineLauncher.class.getName(), //
 				"--tsout", outDir.getPath(), //
 				"--jsout", outDir.getPath(), //
+				"--targetVersion", "ES6", //
 				"--factoryClassName", RemoveJavaDependenciesFactory.class.getName(), //
 				"--sourceMap", //
 				"--verbose", //
