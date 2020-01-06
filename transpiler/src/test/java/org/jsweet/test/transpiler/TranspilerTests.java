@@ -92,7 +92,7 @@ public class TranspilerTests extends AbstractTest {
 
 		process = ProcessUtil.runCommand("java", line -> {
 			System.out.println(line);
-		}, null, "-cp", System.getProperty("java.class.path"), //
+		}, null, "-cp", TranspilerTestRunner.getTestClassPath(), //
 				JSweetCommandLineLauncher.class.getName(), //
 				"--tsout", outDir.getPath(), //
 				"--targetVersion", "ES6", //
@@ -117,7 +117,7 @@ public class TranspilerTests extends AbstractTest {
 
 		process = ProcessUtil.runCommand("java", line -> {
 			System.out.println(line);
-		}, null, "-cp", System.getProperty("java.class.path"), //
+		}, null, "-cp", TranspilerTestRunner.getTestClassPath(), //
 				JSweetCommandLineLauncher.class.getName(), //
 				"--tsout", outDir.getPath(), //
 				"--jsout", outDir.getPath(), //
@@ -142,7 +142,7 @@ public class TranspilerTests extends AbstractTest {
 
 		process = ProcessUtil.runCommand("java", line -> {
 			System.out.println(line);
-		}, null, "-cp", System.getProperty("java.class.path"), //
+		}, null, "-cp", TranspilerTestRunner.getTestClassPath(), //
 				JSweetCommandLineLauncher.class.getName(), //
 				"--tsout", outDir.getPath(), //
 				"--jsout", outDir.getPath(), //
@@ -160,7 +160,7 @@ public class TranspilerTests extends AbstractTest {
 
 		process = ProcessUtil.runCommand("java", line -> {
 			System.out.println(line);
-		}, null, "-cp", System.getProperty("java.class.path"), //
+		}, null, "-cp", TranspilerTestRunner.getTestClassPath(), //
 				JSweetCommandLineLauncher.class.getName(), //
 				"--tsout", outDir.getPath(), //
 				"--jsout", outDir.getPath(), //
@@ -177,7 +177,7 @@ public class TranspilerTests extends AbstractTest {
 
 		process = ProcessUtil.runCommand("java", line -> {
 			System.out.println(line);
-		}, null, "-cp", System.getProperty("java.class.path"), //
+		}, null, "-cp", TranspilerTestRunner.getTestClassPath(), //
 				JSweetCommandLineLauncher.class.getName(), //
 				"--tsout", outDir.getPath(), //
 				"--jsout", outDir.getPath(), //
@@ -203,7 +203,7 @@ public class TranspilerTests extends AbstractTest {
 
 		process = ProcessUtil.runCommand("java", line -> {
 			System.out.println(line);
-		}, null, "-cp", System.getProperty("java.class.path"), //
+		}, null, "-cp", TranspilerTestRunner.getTestClassPath(), //
 				JSweetCommandLineLauncher.class.getName(), //
 				"--tsout", outDir.getPath(), //
 				"--jsout", outDir.getPath(), //
@@ -227,7 +227,7 @@ public class TranspilerTests extends AbstractTest {
 		Process process;
 		process = ProcessUtil.runCommand("java", line -> {
 			System.out.println(line);
-		}, null, "-cp", System.getProperty("java.class.path"), //
+		}, null, "-cp", TranspilerTestRunner.getTestClassPath(), //
 				JSweetCommandLineLauncher.class.getName(), //
 				"--tsout", outDir.getPath(), //
 				"--jsout", outDir.getPath(), //

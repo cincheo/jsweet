@@ -75,15 +75,7 @@ public class TranspilerTestRunner {
 		this(null, tsOutputDir, factory);
 	}
 
-	public TranspilerTestRunner( //
-			File configurationFile, //
-			File baseTsOutputDir, //
-			JSweetFactory factory) {
-		this.baseTsOutputDir = baseTsOutputDir;
-
-		boolean verbose = System.getenv("JSWEET_VERBOSE") == null
-				|| BooleanUtils.toBoolean(System.getenv("JSWEET_VERBOSE"));
-
+	public static String getTestClassPath() {
 		String classPath = System.getProperty("java.class.path");
 
 		// adds classloader URLs to class path because java.class.path property doesn't
@@ -100,6 +92,19 @@ public class TranspilerTestRunner {
 			}).collect(joining(File.pathSeparator));
 		}
 
+		return classPath;
+	}
+
+	public TranspilerTestRunner( //
+			File configurationFile, //
+			File baseTsOutputDir, //
+			JSweetFactory factory) {
+		this.baseTsOutputDir = baseTsOutputDir;
+
+		boolean verbose = System.getenv("JSWEET_VERBOSE") == null
+				|| BooleanUtils.toBoolean(System.getenv("JSWEET_VERBOSE"));
+
+		String classPath = getTestClassPath();
 		String modulePath = System.getProperty("jdk.module.path");
 		logger.info("classPath: " + classPath);
 		logger.info("modulePath: " + modulePath);
