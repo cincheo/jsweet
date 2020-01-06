@@ -82,7 +82,7 @@ public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {
 		if (isNotBlank(docComment)) {
 			context.docComments.put(classElement, docComment);
 		}
-
+		
 		TypeMirror superClassType = context.types.erasure(classElement.getSuperclass());
 		if (superClassType.toString().startsWith("java.") && !superClassType.toString().equals(Object.class.getName())
 				&& !types().isSubtype(classElement.asType(), util().getType(Throwable.class))

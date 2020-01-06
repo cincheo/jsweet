@@ -1525,6 +1525,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			} else if (isAnonymousClass()) {
 				NewClassTree newClass = getScope(1).anonymousClassesConstructors
 						.get(getScope(1).anonymousClasses.indexOf(classTree));
+
 				if (isStaticAnonymousClass(newClass, getCompilationUnit())) {
 					printAnonymousClassTypeArgs(newClass);
 				}
@@ -6195,8 +6196,20 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			return true;
 		}
 
+		ExecutableElement parentMethodElement = null;
 		Element newClassElement = util().getElementForTree(newClass, compilationUnit);
-		ExecutableElement parentMethodElement = util().getParentElement(newClassElement, ExecutableElement.class);
-		return parentMethodElement != null && parentMethodElement.getModifiers().contains(Modifier.STATIC);
+		do {
+			if (newClassElement.getModifiers().contains(Modifier.STATIC)) {
+				return false;
+			}
+			parentMethodElement = util().getParentElement(newClassElement, ExecutableElement.class);
+			if (parentMethodElement == null) {
+				return false;
+			}
+			if (parentMethodElement.getModifiers().contains(Modifier.STATIC)) {
+				return true;
+			}
+		} while ((newClassElement = util().getParentElement(parentMethodElement, TypeElement.class)) != null);
+		return false;
 	}
 }
