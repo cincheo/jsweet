@@ -3782,7 +3782,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						if (context.isInvalidOverload(methSym) && !methSym.getParameters().isEmpty()
 								&& !Util.hasTypeParameters(
 										methSym) /*
-													 * && !Util.hasVarargs(methSym)
+													 * &&
+													 * !Util.hasVarargs(methSym)
 													 */
 								&& getParent(JCMethodDecl.class) != null
 								&& !getParent(JCMethodDecl.class).sym.isDefault()) {
@@ -5864,7 +5865,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				return;
 			}
 			if (t != null && t.type != null && t.type.tsym instanceof ClassSymbol) {
-				if (!(t instanceof JCTypeApply)) {
+				if (!(t instanceof JCTypeApply)
+						// hack to include only explicit type declarations in AST
+						&& (t instanceof JCIdent && t.toString().equals(t.type.tsym.getSimpleName().toString()))) {
 					checkType(t.type.tsym);
 				}
 			}
