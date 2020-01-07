@@ -46,6 +46,7 @@ public class StaticAnonymousClass<T> {
 					@Override
 					public void m2(T next) {
 						nextEntry = next;
+						System.out.println(nextEntry);
 					}
 				};
 			}

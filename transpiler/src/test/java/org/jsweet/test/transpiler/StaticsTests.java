@@ -22,9 +22,12 @@ import source.statics.AnonymousClasses;
 import source.statics.Classes;
 import source.statics.DefaultValues;
 import source.statics.InnerClasses;
+import source.statics.NestedAnonymousClassesWithParams;
 import source.statics.StaticsInInterfaces;
 import source.statics.StaticInitializer;
 import source.statics.StaticInitializerWithNoFields;
+
+import static org.junit.Assert.assertEquals;
 
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -38,13 +41,21 @@ public class StaticsTests extends AbstractTest {
 			h.assertNoProblems();
 		}, getSourceFile(InnerClasses.class));
 	}
-
+	
 	@Test
 	public void testAnonymousClasses() {
 		eval((h, r) -> {
 			h.assertNoProblems();
 			Assert.assertTrue(r.get("m"));
 		}, getSourceFile(AnonymousClasses.class));
+	}
+
+	@Test
+	public void testNestedAnonymousClassesWithParams() {
+		eval((transpilationHandler, result) -> {
+			transpilationHandler.assertNoProblems();
+			assertEquals("TestParam1", result.get("methodInterface2_val"));
+		}, getSourceFile(NestedAnonymousClassesWithParams.class));
 	}
 
 	@Test

@@ -34,8 +34,6 @@ import source.generics.Wildcards;
 
 public class GenericsTests extends AbstractTest {
 
-	
-	
 	@Test
 	public void testInstantiationWithGenerics() {
 		// TODO: qualified names do not work with modules :(

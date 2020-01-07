@@ -4341,14 +4341,31 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			getScope().anonymousClassesConstructors.add(newClass);
 			LinkedHashSet<VariableElement> finalVars = new LinkedHashSet<>();
 			getScope().finalVariables.add(finalVars);
+
+			Element newClassTypeElement = toElement(newClass.getClassBody());
 			new TreeScanner<Void, Trees>() {
 				@Override
 				public Void visitIdentifier(IdentifierTree var, Trees trees) {
 					if (toElement(var) instanceof VariableElement) {
 						VariableElement varElement = toElement(var);
-						if (varElement.getEnclosingElement() instanceof ExecutableElement && varElement
-								.getEnclosingElement().getEnclosingElement() == toElement(getParent(ClassTree.class))) {
-							finalVars.add(varElement);
+						if (varElement.getEnclosingElement() instanceof ExecutableElement) {
+							Element methodEnclosingTypeElement = varElement.getEnclosingElement().getEnclosingElement();
+
+							// search through method owners to match anonymous class to know if var (method param) is declared in anonymous class
+							// if so, we do not need it as an anonymous class param
+							boolean finalVariableFromThisClass = false;
+							Element wrappingTypeElement = methodEnclosingTypeElement;
+							do {
+								if (wrappingTypeElement == newClassTypeElement) {
+									finalVariableFromThisClass = true;
+									break;
+								}
+								wrappingTypeElement = wrappingTypeElement.getEnclosingElement();
+							} while (wrappingTypeElement != null);
+							
+							if (!finalVariableFromThisClass) {
+								finalVars.add(varElement);
+							}
 						}
 					}
 
@@ -4699,8 +4716,15 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			if (printed || !newClass.getArguments().isEmpty()) {
 				print(", ");
 			}
-			for (VariableElement v : getScope().finalVariables.get(index)) {
-				print(v.getSimpleName().toString());
+			for (VariableElement paramToBeTransmittedToAnonymous : getScope().finalVariables.get(index)) {
+
+				Element paramEnclosingTypeElement = paramToBeTransmittedToAnonymous.getEnclosingElement()
+						.getEnclosingElement();
+				Element anonymousClassEnclosingTypeElement = toElement(getParent(ClassTree.class));
+				if (anonymousClassEnclosingTypeElement != paramEnclosingTypeElement) {
+					print("this.");
+				}
+				print(paramToBeTransmittedToAnonymous.getSimpleName().toString());
 				print(", ");
 			}
 			removeLastChars(2);
