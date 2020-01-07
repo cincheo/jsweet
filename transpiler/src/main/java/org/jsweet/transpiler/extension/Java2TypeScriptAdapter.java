@@ -75,6 +75,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jsweet.JSweetConfig;
@@ -364,6 +365,16 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 				targetTypeElement = invocationElement.getTargetExpression().getTypeAsElement();
 			}
 		}
+		
+		// resolve target type if generic (upper bound) 
+		if (targetType.getKind() == TypeKind.TYPEVAR) {
+			TypeVariable typeVariableType = (TypeVariable) targetType;
+			if (!util().isNullType(typeVariableType.getUpperBound())) {
+				targetType = typeVariableType.getUpperBound();
+				targetTypeElement = types().asElement(targetType);
+			}
+		}
+		
 		String targetMethodName = invocationElement.getMethodName();
 		String targetClassName = targetType != null && targetType.getKind() == TypeKind.ARRAY ? "Array"
 				: targetTypeElement.toString();

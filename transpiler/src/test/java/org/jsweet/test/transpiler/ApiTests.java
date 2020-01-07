@@ -264,9 +264,11 @@ public class ApiTests extends AbstractTest {
 
 	@Test
 	public void testEquals() {
-		eval(ModuleKind.none, (logHandler, r) -> {
+		eval(ModuleKind.none, (logHandler, result) -> {
 			logHandler.assertNoProblems();
-			Assert.assertEquals("false,true,false,true,false,true,false,false,true", r.get("trace"));
+			assertEquals("false,true,false,true,false,true,false,false,true", result.get("trace"));
+			assertEquals("true", result.get("testWithGenerics0").toString());
+			assertEquals("false", result.get("testWithGenerics1").toString());
 		}, getSourceFile(Equals.class));
 	}
 

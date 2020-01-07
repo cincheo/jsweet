@@ -316,7 +316,6 @@ public class CandyProcessor {
 						File destinationFileInNodeModules = new File(nodeModuleDir,
 								FilenameUtils.getName(FilenameUtils.getFullPathNoEndSeparator(entry.getName())) + File.separator
 										+ FilenameUtils.getName(entry.getName()));
-						logger.info("===> " + destinationFileInNodeModules);
 						extractEntry(jarFile, entry, destinationFileInNodeModules);
 					} else {
 						out = null;

@@ -2281,4 +2281,8 @@ public class Util {
 		}
 
 	}
+
+	public boolean isNullType(TypeMirror type) {
+		return type == null || type.getKind() == TypeKind.NULL;
+	}
 }

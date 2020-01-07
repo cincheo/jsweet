@@ -20,6 +20,16 @@ public class Equals {
 		MyObject2 o = new MyObject2("a");
 		trace.push("" + equals(o, o));
 		$export("trace", trace.join(","));
+
+		boolean areEqual = Equals.<MyObject2>testWithGenerics(o, o);
+		$export("testWithGenerics0", areEqual);
+		areEqual = Equals.<MyObject2>testWithGenerics(o, null);
+		$export("testWithGenerics1", areEqual);
+	}
+
+	static <T> boolean testWithGenerics(T left, T right) {
+		boolean equals = left.equals(right);
+		return equals;
 	}
 
 	public static boolean equals(Object a, Object b) {
@@ -71,12 +81,11 @@ class MyObject3 {
 		}
 		return data.equals(((MyObject3) obj).data);
 	}
-	
-}
 
+}
 
 interface MyInterface {
 
-    void m();
-    
+	void m();
+
 }
