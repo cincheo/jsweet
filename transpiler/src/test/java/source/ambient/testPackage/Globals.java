@@ -1,4 +1,4 @@
-package source.ambient.three;
+package source.ambient.testPackage;
 
 import jsweet.lang.Ambient;
 
