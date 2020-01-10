@@ -71,6 +71,8 @@ import source.structural.TwoClassesInSameFile;
 import source.structural.WrappedParametersOwner;
 import source.structural.WrongConstructsInInterfaces;
 import source.structural.WrongThisAccessOnStatic;
+import source.structural.fieldmethodclash.Person;
+import source.structural.fieldmethodclash.User;
 import source.structural.globalclasses.Globals;
 import source.structural.globalclasses.a.ClassWithStaticMethod;
 import source.structural.globalclasses.a.GlobalsConstructor;
@@ -116,6 +118,29 @@ public class StructuralTests extends AbstractTest {
 		}, getSourceFile(PrivateFieldNameClashes.class));
 	}
 
+	@Test
+	public void testPrivateFieldMethodNameClashes() {
+		transpile(ModuleKind.none, logHandler -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(Person.class), getSourceFile(User.class));
+	}
+
+	@Test
+	public void testPublicFieldMethodNameClashes() {
+		transpile(ModuleKind.none, logHandler -> {
+			logHandler.assertReportedProblems(JSweetProblem.METHOD_CONFLICTS_FIELD);
+		}, getSourceFile(source.structural.publicfieldmethodclash.Person.class),
+				getSourceFile(source.structural.publicfieldmethodclash.User.class));
+	}
+
+	@Test
+	public void testPublicFieldMethodNameClashesNameOverride() {
+		transpile(ModuleKind.none, logHandler -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(source.structural.publicfieldmethodclash.Person2.class),
+				getSourceFile(source.structural.publicfieldmethodclash.User2.class));
+	}
+	
 	@Test
 	public void testTwoClassesInSameFile() {
 		transpile(logHandler -> {
@@ -189,13 +214,13 @@ public class StructuralTests extends AbstractTest {
 	public void testInheritance() {
 		eval((logHandler, r) -> {
 			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-			assertEquals(true, r.<Boolean>get("X"));
-			assertEquals(true, r.<Boolean>get("Y"));
-			assertEquals("s1", r.<Boolean>get("s1b"));
-			assertEquals("s2", r.<Boolean>get("s2b"));
-			assertEquals(false, r.<Boolean>get("itfo"));
-			assertEquals("s1", r.<Boolean>get("s1o"));
-			assertEquals("s2", r.<Boolean>get("s2o"));
+			assertEquals(true, r.<Boolean> get("X"));
+			assertEquals(true, r.<Boolean> get("Y"));
+			assertEquals("s1", r.<Boolean> get("s1b"));
+			assertEquals("s2", r.<Boolean> get("s2b"));
+			assertEquals(false, r.<Boolean> get("itfo"));
+			assertEquals("s1", r.<Boolean> get("s1o"));
+			assertEquals("s2", r.<Boolean> get("s2o"));
 		}, getSourceFile(Inheritance.class));
 	}
 
@@ -233,7 +258,7 @@ public class StructuralTests extends AbstractTest {
 		eval((logHandler, result) -> {
 			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
 
-			assertEquals(68, result.<Number>get("overload_int_called").intValue());
+			assertEquals(68, result.<Number> get("overload_int_called").intValue());
 			assertEquals("68;PARAMSTR", result.get("overload_int_string_called"));
 
 		}, getSourceFile(AbstractClassWithOverload.class));
