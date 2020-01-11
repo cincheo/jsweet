@@ -883,10 +883,34 @@ public class PrinterAdapter {
 	}
 
 	/**
+	 * Manually substitutes the super class of a given type.
+	 * <p/>
+	 * This method should print " extends X" and return true to force the
+	 * substitution of the extends clause of a given class. This is a low-level
+	 * operation and it is not encouraged to use it except for very specific
+	 * contexts.
+	 */
+	public boolean substituteExtends(TypeElement type) {
+		return parentAdapter == null ? false : parentAdapter.substituteExtends(type);
+	}
+
+	/**
 	 * Tells if a super interface has to be erased in the generated source.
 	 */
 	public boolean eraseSuperInterface(TypeElement type, TypeElement superInterface) {
 		return parentAdapter == null ? false : parentAdapter.eraseSuperInterface(type, superInterface);
+	}
+
+	/**
+	 * Manually substitutes the super interfaces of a given type.
+	 * <p/>
+	 * This method should print " implements X,Y,Z" and return true to force the
+	 * substitution of the implements clause of a given class. This is a
+	 * low-level operation and it is not encouraged to use it except for very
+	 * specific contexts.
+	 */
+	public boolean substituteImplements(TypeElement type) {
+		return parentAdapter == null ? false : parentAdapter.substituteImplements(type);
 	}
 
 	/**
@@ -929,6 +953,15 @@ public class PrinterAdapter {
 		}
 	}
 
+	/**
+	 * This method is called before starting printing the body of a type.
+	 */
+	public void beforeTypeBody(TypeElement type) {
+		if (parentAdapter != null) {
+			parentAdapter.beforeTypeBody(type);
+		}
+	}
+	
 	/**
 	 * Adapts the JavaDoc comment for a given element.
 	 * 

@@ -18,6 +18,8 @@
  */
 package org.jsweet.transpiler.model.support;
 
+import java.util.List;
+
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
@@ -50,6 +52,15 @@ public class UtilSupport implements Util {
 			}
 		}
 		return type.toString();
+	}
+
+	@Override
+	public List<? extends TypeMirror> getTypeArguments(TypeMirror type) {
+		if (type instanceof DeclaredType) {
+			return ((DeclaredType) type).getTypeArguments();
+		} else {
+			return null;
+		}
 	}
 
 	@Override
@@ -133,5 +144,5 @@ public class UtilSupport implements Util {
 	public String getRelativePath(String fromPath, String toPath) {
 		return org.jsweet.transpiler.util.Util.getRelativePath(fromPath, toPath);
 	}
-	
+
 }

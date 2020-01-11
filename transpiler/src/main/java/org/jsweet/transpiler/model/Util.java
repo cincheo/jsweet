@@ -1,5 +1,7 @@
 package org.jsweet.transpiler.model;
 
+import java.util.List;
+
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 
@@ -21,6 +23,11 @@ public interface Util {
 	 */
 	TypeMirror getType(Class<?> clazz);
 
+	/**
+	 * Gets the type arguments of a given type (if any).
+	 */
+	List<? extends TypeMirror> getTypeArguments(TypeMirror type);
+	
 	/**
 	 * Tells if the given type is a number.
 	 */

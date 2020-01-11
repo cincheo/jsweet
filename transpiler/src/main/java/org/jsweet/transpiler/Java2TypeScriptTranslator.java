@@ -1488,76 +1488,82 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					removeIterable = true;
 				}
 
-				if (!removeIterable && !JSweetConfig.isJDKReplacementMode()
-						&& !(JSweetConfig.OBJECT_CLASSNAME.equals(classdecl.extending.type.toString())
-								|| Object.class.getName().equals(classdecl.extending.type.toString()))
-						&& !(mixin != null && context.types.isSameType(mixin, classdecl.extending.type))
-						&& !(getAdapter().eraseSuperClass(classdecl.sym,
-								(ClassSymbol) classdecl.extending.type.tsym))) {
-					if (!getScope().interfaceScope && context.isInterface(classdecl.extending.type.tsym)) {
-						extendsInterface = true;
-						print(" implements ");
-						implementedInterfaces.add(classdecl.extending.type);
+				if (!getAdapter().substituteExtends(classdecl.sym)) {
+					if (!removeIterable && !JSweetConfig.isJDKReplacementMode()
+							&& !(JSweetConfig.OBJECT_CLASSNAME.equals(classdecl.extending.type.toString())
+									|| Object.class.getName().equals(classdecl.extending.type.toString()))
+							&& !(mixin != null && context.types.isSameType(mixin, classdecl.extending.type))
+							&& !(getAdapter().eraseSuperClass(classdecl.sym,
+									(ClassSymbol) classdecl.extending.type.tsym))) {
+						if (!getScope().interfaceScope && context.isInterface(classdecl.extending.type.tsym)) {
+							extendsInterface = true;
+							print(" implements ");
+							implementedInterfaces.add(classdecl.extending.type);
+						} else {
+							print(" extends ");
+						}
+						if (getScope().enumWrapperClassScope && getScope(1).anonymousClasses.contains(classdecl)) {
+							print(classdecl.extending.toString() + ENUM_WRAPPER_CLASS_SUFFIX);
+						} else {
+							disableTypeSubstitution = !getAdapter().isSubstituteSuperTypes();
+							substituteAndPrintType(classdecl.extending);
+							disableTypeSubstitution = false;
+						}
+						if (context.classesWithWrongConstructorOverload.contains(classdecl.sym)) {
+							getScope().hasConstructorOverloadWithSuperClass = true;
+						}
 					} else {
-						print(" extends ");
+						getScope().removedSuperclass = true;
 					}
-					if (getScope().enumWrapperClassScope && getScope(1).anonymousClasses.contains(classdecl)) {
-						print(classdecl.extending.toString() + ENUM_WRAPPER_CLASS_SUFFIX);
-					} else {
-						disableTypeSubstitution = !getAdapter().isSubstituteSuperTypes();
-						substituteAndPrintType(classdecl.extending);
-						disableTypeSubstitution = false;
-					}
-					if (context.classesWithWrongConstructorOverload.contains(classdecl.sym)) {
-						getScope().hasConstructorOverloadWithSuperClass = true;
-					}
-				} else {
-					getScope().removedSuperclass = true;
 				}
 			}
 
 			// print IMPLEMENTS
-			if (classdecl.implementing != null && !classdecl.implementing.isEmpty() && !getScope().enumScope) {
-				List<JCExpression> implementing = new ArrayList<>(classdecl.implementing);
+			if (!getAdapter().substituteImplements(classdecl.sym)) {
+				if (classdecl.implementing != null && !classdecl.implementing.isEmpty() && !getScope().enumScope) {
+					List<JCExpression> implementing = new ArrayList<>(classdecl.implementing);
 
-				if (context.hasAnnotationType(classdecl.sym, JSweetConfig.ANNOTATION_SYNTACTIC_ITERABLE)) {
+					if (context.hasAnnotationType(classdecl.sym, JSweetConfig.ANNOTATION_SYNTACTIC_ITERABLE)) {
+						for (JCExpression itf : classdecl.implementing) {
+							if (itf.type.tsym.getQualifiedName().toString().equals(Iterable.class.getName())) {
+								implementing.remove(itf);
+							}
+						}
+					}
+					// erase Java interfaces
 					for (JCExpression itf : classdecl.implementing) {
-						if (itf.type.tsym.getQualifiedName().toString().equals(Iterable.class.getName())) {
+						if (context.isFunctionalType(itf.type.tsym)
+								|| getAdapter().eraseSuperInterface(classdecl.sym, (ClassSymbol) itf.type.tsym)) {
 							implementing.remove(itf);
 						}
 					}
-				}
-				// erase Java interfaces
-				for (JCExpression itf : classdecl.implementing) {
-					if (context.isFunctionalType(itf.type.tsym)
-							|| getAdapter().eraseSuperInterface(classdecl.sym, (ClassSymbol) itf.type.tsym)) {
-						implementing.remove(itf);
-					}
-				}
 
-				if (!implementing.isEmpty()) {
-					if (!extendsInterface) {
-						if (getScope().interfaceScope) {
-							print(" extends ");
+					if (!implementing.isEmpty()) {
+						if (!extendsInterface) {
+							if (getScope().interfaceScope) {
+								print(" extends ");
+							} else {
+								print(" implements ");
+							}
 						} else {
-							print(" implements ");
+							print(", ");
 						}
-					} else {
-						print(", ");
+						for (JCExpression itf : implementing) {
+							disableTypeSubstitution = !getAdapter().isSubstituteSuperTypes();
+							substituteAndPrintType(itf);
+							disableTypeSubstitution = false;
+							implementedInterfaces.add(itf.type);
+							print(", ");
+						}
+						removeLastChars(2);
 					}
-					for (JCExpression itf : implementing) {
-						disableTypeSubstitution = !getAdapter().isSubstituteSuperTypes();
-						substituteAndPrintType(itf);
-						disableTypeSubstitution = false;
-						implementedInterfaces.add(itf.type);
-						print(", ");
-					}
-					removeLastChars(2);
 				}
 			}
 			print(" {").println().startIndent();
 		}
 
+		getAdapter().beforeTypeBody(classdecl.sym);
+		
 		if (getScope().innerClassNotStatic && !getScope().interfaceScope && !getScope().enumScope
 				&& !getScope().enumWrapperClassScope) {
 			printIndent().print("public " + PARENT_CLASS_FIELD_NAME + ": any;").println();
@@ -2212,8 +2218,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (isDefinitionScope) {
 					return;
 				} else {
-					if(methodDecl.name.toString().equals(context.getActualName(v))) {
-						report(methodDecl, methodDecl.name, JSweetProblem.METHOD_CONFLICTS_FIELD, methodDecl.name, v.owner);
+					if (methodDecl.name.toString().equals(context.getActualName(v))) {
+						report(methodDecl, methodDecl.name, JSweetProblem.METHOD_CONFLICTS_FIELD, methodDecl.name,
+								v.owner);
 					}
 				}
 			}
@@ -5868,7 +5875,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 			if (t != null && t.type != null && t.type.tsym instanceof ClassSymbol) {
 				if (!(t instanceof JCTypeApply)
-						// hack to include only explicit type declarations in AST
+						// hack to include only explicit type declarations in
+						// AST
 						&& (t instanceof JCIdent && t.toString().equals(t.type.tsym.getSimpleName().toString()))) {
 					checkType(t.type.tsym);
 				}
