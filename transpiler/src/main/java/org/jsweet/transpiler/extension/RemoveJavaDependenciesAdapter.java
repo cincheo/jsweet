@@ -58,8 +58,10 @@ import java.util.Stack;
 import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.LinkedHashSet;
 import java.util.Vector;
 import java.util.WeakHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -121,6 +123,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		extTypesMapping.put(List.class.getName(), "Array");
 		extTypesMapping.put(AbstractList.class.getName(), "Array");
 		extTypesMapping.put(ArrayList.class.getName(), "Array");
+		extTypesMapping.put(CopyOnWriteArrayList.class.getName(), "Array");
 		extTypesMapping.put(Iterable.class.getName(), "Array");
 		extTypesMapping.put(LinkedList.class.getName(), "Array");
 		extTypesMapping.put(Collection.class.getName(), "Array");
@@ -131,6 +134,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		extTypesMapping.put(Stack.class.getName(), "Array");
 		extTypesMapping.put(HashSet.class.getName(), "Array");
 		extTypesMapping.put(TreeSet.class.getName(), "Array");
+		extTypesMapping.put(LinkedHashSet.class.getName(), "Array");
 		extTypesMapping.put(Vector.class.getName(), "Array");
 		extTypesMapping.put(Enumeration.class.getName(), "any");
 		extTypesMapping.put(Iterator.class.getName(), "any");
@@ -254,12 +258,14 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			case "java.util.Deque":
 			case "java.util.LinkedList":
 			case "java.util.ArrayList":
+			case "java.util.concurrent.CopyOnWriteArrayList":
 			case "java.util.Stack":
 			case "java.util.Vector":
 			case "java.util.Set":
 			case "java.util.EnumSet":
 			case "java.util.HashSet":
 			case "java.util.TreeSet":
+			case "java.util.LinkedHashSet":
 				if (substituteMethodInvocationOnArray(invocation, targetMethodName, targetClassName, delegate)) {
 					return true;
 				}
