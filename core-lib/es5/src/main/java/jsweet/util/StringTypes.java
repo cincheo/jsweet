@@ -1960,8 +1960,8 @@ public interface StringTypes {
 	 * 
 	 * @exclude
 	 */
-	@jsweet.lang.StringType
-	public interface var {
+	@jsweet.lang.StringType("var")
+	public interface Var {
 	}
 
 	/**
@@ -1969,8 +1969,8 @@ public interface StringTypes {
 	 * 
 	 * @exclude
 	 */
-	@jsweet.lang.StringType
-	public static jsweet.util.StringTypes.var var = null;
+	@jsweet.lang.StringType("var")
+	public static jsweet.util.StringTypes.Var Var = null;
 
 	/**
 	 * Generated to type the string "video".
