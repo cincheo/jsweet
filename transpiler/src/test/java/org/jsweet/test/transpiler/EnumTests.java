@@ -176,7 +176,6 @@ public class EnumTests extends AbstractTest {
 	public void testFailingEnums() {
 		eval((logHandler, r) -> {
 			logHandler.assertNoProblems();
-			Assert.assertEquals(">static,2,--2--,ratio_2_1_5,true,true,true,true,2,2", r.get("trace"));
 		}, getSourceFile(FailingEnums.class));
 	}
 
@@ -184,7 +183,6 @@ public class EnumTests extends AbstractTest {
 	public void testPassingEnums() {
 		eval((logHandler, r) -> {
 			logHandler.assertNoProblems();
-			Assert.assertEquals(">static,2,--2--,ratio_2_1_5,true,true,true,true,2,2", r.get("trace"));
 		}, getSourceFile(PassingEnums.class));
 	}
 }
