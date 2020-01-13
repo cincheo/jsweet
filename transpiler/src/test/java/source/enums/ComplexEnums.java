@@ -54,36 +54,6 @@ public class ComplexEnums {
 
 	}
 
-	public static enum ToStringEnum {
-		E1 {
-			@Override
-			public String toString() {
-				return "E1.toString()";
-			}
-		},
-		E2 {
-			@Override
-			public String toString() {
-				return "E2.toString()";
-			}
-		}
-	}
-
-	public static enum ToStringInnerEnum {
-		E1("E1.toString()"),
-		E2("E2.toString()");
-
-		private String toString;
-
-		ToStringInnerEnum(String toString) {
-			this.toString = toString;
-		}
-
-		@Override
-		public String toString() {
-			return toString;
-		}
-	}
 }
 
 /** 

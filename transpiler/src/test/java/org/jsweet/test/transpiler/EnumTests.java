@@ -26,20 +26,10 @@ import org.jsweet.transpiler.extension.Java2TypeScriptAdapter;
 import org.jsweet.transpiler.extension.PrinterAdapter;
 import org.jsweet.transpiler.extension.StringEnumAdapter;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
-import source.enums.ComplexEnumWithAbstractMethods;
-import source.enums.ComplexEnums;
-import source.enums.ComplexEnumsWithInterface;
-import source.enums.ComplexInnerEnums;
-import source.enums.EnumInSamePackage;
-import source.enums.EnumWithPropOfSameType;
-import source.enums.EnumWithStatics;
-import source.enums.Enums;
-import source.enums.EnumsImplementingInterfaces;
-import source.enums.ErasedEnum;
-import source.enums.MyComplexEnum2;
-import source.enums.StringEnums;
+import source.enums.*;
 import source.enums.other.ComplexEnumsAccess;
 import source.enums.other.EnumInOtherPackage;
 
@@ -179,5 +169,23 @@ public class EnumTests extends AbstractTest {
 			logHandler.assertNoProblems();
 		}, getSourceFile(EnumWithPropOfSameType.class));
 	}
-	
+
+
+	@Test
+	@Ignore
+	public void testFailingEnums() {
+		eval((logHandler, r) -> {
+			logHandler.assertNoProblems();
+			Assert.assertEquals(">static,2,--2--,ratio_2_1_5,true,true,true,true,2,2", r.get("trace"));
+		}, getSourceFile(FailingEnums.class));
+	}
+
+	@Test
+	public void testPassingEnums() {
+		eval((logHandler, r) -> {
+			logHandler.assertNoProblems();
+			Assert.assertEquals(">static,2,--2--,ratio_2_1_5,true,true,true,true,2,2", r.get("trace"));
+		}, getSourceFile(PassingEnums.class));
+	}
 }
+
