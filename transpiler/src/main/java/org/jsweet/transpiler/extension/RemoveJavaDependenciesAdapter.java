@@ -30,37 +30,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.text.Collator;
-import java.util.AbstractList;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Deque;
-import java.util.EnumSet;
-import java.util.Enumeration;
-import java.util.EventObject;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Queue;
-import java.util.Set;
-import java.util.Stack;
-import java.util.TimeZone;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.LinkedHashSet;
-import java.util.Vector;
-import java.util.WeakHashMap;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.lang.model.element.Modifier;
@@ -146,6 +116,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		extTypesMapping.put(TreeMap.class.getName(), "any");
 		extTypesMapping.put(WeakHashMap.class.getName(), "any");
 		extTypesMapping.put(LinkedHashMap.class.getName(), "any");
+		extTypesMapping.put(EnumMap.class.getName(), "any");
 		extTypesMapping.put(Hashtable.class.getName(), "any");
 		extTypesMapping.put(Comparator.class.getName(), "any");
 		extTypesMapping.put(Exception.class.getName(), "Error");
@@ -1553,6 +1524,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		case "java.util.Hashtable":
 		case "java.util.WeakHashMap":
 		case "java.util.LinkedHashMap":
+		case "java.util.EnumMap":
 			if (newClass.getArgumentCount() == 0 || !(newClass.getArgument(0).getType() instanceof DeclaredType)
 					|| !util().isDeclarationOrSubClassDeclaration((DeclaredType) newClass.getArgument(0).getType(),
 							Map.class.getName())) {
