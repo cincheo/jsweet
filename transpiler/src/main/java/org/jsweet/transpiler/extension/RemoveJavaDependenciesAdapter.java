@@ -104,6 +104,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		extTypesMapping.put(Queue.class.getName(), "Array");
 		extTypesMapping.put(Stack.class.getName(), "Array");
 		extTypesMapping.put(HashSet.class.getName(), "Array");
+		extTypesMapping.put(SortedSet.class.getName(), "Array");
 		extTypesMapping.put(TreeSet.class.getName(), "Array");
 		extTypesMapping.put(LinkedHashSet.class.getName(), "Array");
 		extTypesMapping.put(Vector.class.getName(), "Array");
@@ -237,6 +238,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			case "java.util.Set":
 			case "java.util.EnumSet":
 			case "java.util.HashSet":
+			case "java.util.SortedSet":
 			case "java.util.TreeSet":
 			case "java.util.LinkedHashSet":
 				if (substituteMethodInvocationOnArray(invocation, targetMethodName, targetClassName, delegate)) {
