@@ -1327,6 +1327,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	@Override
 	public void visitClassDef(JCClassDecl classdecl) {
+		if (getAdapter().substituteType(classdecl.sym)) {
+			getAdapter().afterType(classdecl.sym);
+			return;
+		}
 		if (context.isIgnored(classdecl)) {
 			getAdapter().afterType(classdecl.sym);
 			return;
@@ -1563,7 +1567,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 
 		getAdapter().beforeTypeBody(classdecl.sym);
-		
+
 		if (getScope().innerClassNotStatic && !getScope().interfaceScope && !getScope().enumScope
 				&& !getScope().enumWrapperClassScope) {
 			printIndent().print("public " + PARENT_CLASS_FIELD_NAME + ": any;").println();
