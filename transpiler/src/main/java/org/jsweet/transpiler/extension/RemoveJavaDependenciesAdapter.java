@@ -100,6 +100,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		extTypesMapping.put(Set.class.getName(), "Array");
 		extTypesMapping.put(EnumSet.class.getName(), "Array");
 		extTypesMapping.put(Deque.class.getName(), "Array");
+		extTypesMapping.put(ArrayDeque.class.getName(), "Array");
 		extTypesMapping.put(Queue.class.getName(), "Array");
 		extTypesMapping.put(Stack.class.getName(), "Array");
 		extTypesMapping.put(HashSet.class.getName(), "Array");
@@ -227,6 +228,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			case "java.util.AbstractCollection":
 			case "java.util.Queue":
 			case "java.util.Deque":
+			case "java.util.ArrayDeque":
 			case "java.util.LinkedList":
 			case "java.util.ArrayList":
 			case "java.util.concurrent.CopyOnWriteArrayList":
