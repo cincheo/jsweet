@@ -24,7 +24,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 
 import org.jsweet.JSweetConfig;
@@ -81,6 +83,14 @@ public class OverloadScanner extends AbstractTreeScanner {
 		 * The methods carrying the same name.
 		 */
 		public List<JCMethodDecl> methods = new ArrayList<>();
+
+		/**
+		 * The methods carrying the same name.
+		 */
+		public List<ExecutableElement> getMethods() {
+			return methods.stream().map(m -> m.sym).collect(Collectors.toList());
+		}
+
 		/**
 		 * Tells if this overload is valid wrt to JSweet conventions.
 		 */
@@ -90,6 +100,15 @@ public class OverloadScanner extends AbstractTreeScanner {
 		 * implementation.
 		 */
 		public JCMethodDecl coreMethod;
+
+		/**
+		 * The core method of the overload, that is to say the one holding the
+		 * implementation.
+		 */
+		public ExecutableElement getCoreMethod() {
+			return coreMethod.sym;
+		}
+
 		/**
 		 * The default values for the parameters of the core method.
 		 */

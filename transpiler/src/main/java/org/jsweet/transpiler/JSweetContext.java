@@ -46,6 +46,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -560,7 +561,7 @@ public class JSweetContext extends Context {
 	 * @see OverloadScanner
 	 * @see OverloadScanner.Overload
 	 */
-	private Map<ClassSymbol, Map<String, Overload>> overloads = new HashMap<>();
+	private Map<TypeElement, Map<String, Overload>> overloads = new HashMap<>();
 
 	/**
 	 * A cache of static method overloads.
@@ -568,19 +569,19 @@ public class JSweetContext extends Context {
 	 * @see OverloadScanner
 	 * @see OverloadScanner.Overload
 	 */
-	private Map<ClassSymbol, Map<String, Overload>> staticOverloads = new HashMap<>();
+	private Map<TypeElement, Map<String, Overload>> staticOverloads = new HashMap<>();
 
 	/**
 	 * Dump all the overloads gathered by {@link OverloadScanner}.
 	 */
 	public void dumpOverloads(PrintStream out) {
-		for (Entry<ClassSymbol, Map<String, Overload>> e1 : overloads.entrySet()) {
+		for (Entry<TypeElement, Map<String, Overload>> e1 : overloads.entrySet()) {
 			out.println("*** " + e1.getKey());
 			for (Entry<String, Overload> e2 : e1.getValue().entrySet()) {
 				out.println("  - " + e2.getValue());
 			}
 		}
-		for (Entry<ClassSymbol, Map<String, Overload>> e1 : staticOverloads.entrySet()) {
+		for (Entry<TypeElement, Map<String, Overload>> e1 : staticOverloads.entrySet()) {
 			out.println("*** " + e1.getKey() + " [STATIC]");
 			for (Entry<String, Overload> e2 : e1.getValue().entrySet()) {
 				out.println("  - " + e2.getValue());
@@ -601,8 +602,10 @@ public class JSweetContext extends Context {
 	/**
 	 * Gets or create an overload instance for the given class and method.
 	 */
-	public Overload getOrCreateOverload(ClassSymbol clazz, MethodSymbol method) {
-		Map<ClassSymbol, Map<String, Overload>> actualOverloads = method.isStatic() ? staticOverloads : overloads;
+	public Overload getOrCreateOverload(TypeElement type, ExecutableElement executable) {
+		ClassSymbol clazz = (ClassSymbol)type;
+		MethodSymbol method = (MethodSymbol)executable;
+		Map<TypeElement, Map<String, Overload>> actualOverloads = method.isStatic() ? staticOverloads : overloads;
 		Map<String, Overload> m = actualOverloads.get(clazz);
 		if (m == null) {
 			m = new HashMap<>();
@@ -621,8 +624,10 @@ public class JSweetContext extends Context {
 	/**
 	 * Gets an overload instance for the given class and method.
 	 */
-	public Overload getOverload(ClassSymbol clazz, MethodSymbol method) {
-		Map<ClassSymbol, Map<String, Overload>> actualOverloads = method.isStatic() ? staticOverloads : overloads;
+	public Overload getOverload(TypeElement type, ExecutableElement executable) {
+		ClassSymbol clazz = (ClassSymbol)type;
+		MethodSymbol method = (MethodSymbol)executable;
+		Map<TypeElement, Map<String, Overload>> actualOverloads = method.isStatic() ? staticOverloads : overloads;
 		Map<String, Overload> m = actualOverloads.get(clazz);
 		if (m == null) {
 			return null;
@@ -633,11 +638,11 @@ public class JSweetContext extends Context {
 		}
 		return overload;
 	}
-
+	
 	/**
 	 * Tells if that method is part of an invalid overload in its declaring class.
 	 */
-	public boolean isInvalidOverload(MethodSymbol method) {
+	public boolean isInvalidOverload(ExecutableElement method) {
 		Overload overload = getOverload((ClassSymbol) method.getEnclosingElement(), method);
 		return overload != null && overload.methods.size() > 1 && !overload.isValid;
 	}
@@ -645,7 +650,7 @@ public class JSweetContext extends Context {
 	/**
 	 * Contains the classes that have a wrong constructor overload.
 	 */
-	public Set<ClassSymbol> classesWithWrongConstructorOverload = new HashSet<>();
+	public Set<TypeElement> classesWithWrongConstructorOverload = new HashSet<>();
 
 	/**
 	 * The Java compiler symbol table for fast access.
