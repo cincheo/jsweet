@@ -3404,7 +3404,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						// (imports create unavoidable dependencies!)
 						context.importedTopPackages.add(namePath[0]);
 					} else {
-						print("import ").print(name).print(" = ").print(adaptedQualId).print(";").println();
+						if (!context.getImportedNames(compilationUnit.getSourceFile().getName()).contains(name)) {
+							print("import ").print(name).print(" = ").print(adaptedQualId).print(";").println();
+							context.registerImportedName(compilationUnit.getSourceFile().getName(), null, name);
+						}
 					}
 				}
 			}
