@@ -1586,7 +1586,20 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							.addAll(((ClassSymbol) s.getEnclosingElement()).getTypeParameters());
 					// scan for used types to generate imports
 					if (context.useModules) {
-						new UsedTypesScanner().scan(entry.getValue());
+						UsedTypesScanner scanner = new UsedTypesScanner();
+						JCMethodDecl method = entry.getValue();
+						if(!context.hasAnnotationType(method.sym, JSweetConfig.ANNOTATION_ERASED)) {
+							if(context.hasAnnotationType(method.sym, JSweetConfig.ANNOTATION_REPLACE)) {
+								// do not scan the method body
+								scanner.scan(method.params);
+								scanner.scan(method.restype);
+								scanner.scan(method.thrown);
+								scanner.scan(method.typarams);
+								scanner.scan(method.recvparam);
+							} else {
+								scanner.scan(method);
+							}
+						}
 					}
 					printIndent().print(entry.getValue()).println();
 					getAdapter().typeVariablesToErase
