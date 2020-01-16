@@ -115,6 +115,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		extTypesMapping.put(Properties.class.getName(), "any");
 		extTypesMapping.put(AbstractMap.class.getName(), "any");
 		extTypesMapping.put(HashMap.class.getName(), "any");
+		extTypesMapping.put(NavigableMap.class.getName(), "any");
 		extTypesMapping.put(TreeMap.class.getName(), "any");
 		extTypesMapping.put(WeakHashMap.class.getName(), "any");
 		extTypesMapping.put(LinkedHashMap.class.getName(), "any");
@@ -251,6 +252,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			case "java.util.Map":
 			case "java.util.AbstractMap":
 			case "java.util.HashMap":
+			case "java.util.NavigableMap":
 			case "java.util.TreeMap":
 			case "java.util.Hashtable":
 			case "java.util.WeakHashMap":
@@ -1524,6 +1526,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			substitute = true;
 			break;
 		case "java.util.HashMap":
+		case "java.util.NavigableMap":
 		case "java.util.TreeMap":
 		case "java.util.Hashtable":
 		case "java.util.WeakHashMap":
