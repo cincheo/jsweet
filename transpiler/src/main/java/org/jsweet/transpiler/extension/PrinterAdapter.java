@@ -57,6 +57,7 @@ import org.jsweet.transpiler.model.NewClassElement;
 import org.jsweet.transpiler.model.UnaryOperatorElement;
 import org.jsweet.transpiler.model.Util;
 import org.jsweet.transpiler.model.VariableAccessElement;
+import org.jsweet.transpiler.model.support.CompilationUnitElementSupport;
 import org.jsweet.transpiler.model.support.ExtendedElementSupport;
 import org.jsweet.transpiler.model.support.MethodInvocationElementSupport;
 import org.jsweet.transpiler.model.support.UtilSupport;
@@ -92,6 +93,13 @@ public class PrinterAdapter {
 		this.parentAdapter = null;
 	}
 
+	/**
+	 * Returns the current compilation unit.
+	 */
+	public CompilationUnitElement getCompilationUnit() {
+		return new CompilationUnitElementSupport(printer.getCompilationUnit());
+	}
+	
 	/**
 	 * Creates a new adapter that will try delegate to the given parent adapter
 	 * when not implementing its own behavior.

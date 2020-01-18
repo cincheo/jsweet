@@ -29,6 +29,8 @@ import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.Util;
 
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 
 /**
  * See {@link Util}.
@@ -106,6 +108,30 @@ public class UtilSupport implements Util {
 			return context.symtab.throwableType;
 		case "java.util.List":
 			return context.symtab.listType;
+		}
+		return null;
+	}
+
+	@Override
+	public TypeMirror getType(String fullyQualifiedName) {
+		TypeMirror result = null;
+		try {
+			Class<?> clazz = Class.forName(fullyQualifiedName);
+			result = getType(clazz);
+			if (result != null) {
+				return result;
+			}
+		} catch (Exception e) {
+			// swallow
+		}
+		for (JCCompilationUnit cu : context.compilationUnits) {
+			for (JCTree t : cu.getTypeDecls()) {
+				if (t.type.asElement() instanceof TypeElement) {
+					if (t.type.asElement().toString().equals(fullyQualifiedName)) {
+						return t.type;
+					}
+				}
+			}
 		}
 		return null;
 	}

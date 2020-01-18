@@ -20,14 +20,25 @@ public interface Util {
 	/**
 	 * Gets the type from an existing runtime class when possible (return null
 	 * when the type cannot be found in the compiler's symbol table).
+	 * <p/>
+	 * This method only looks up well-known Java types.
 	 */
 	TypeMirror getType(Class<?> clazz);
+
+	/**
+	 * Gets the source type from the fully qualified name when possible (return
+	 * null when the type cannot be found).
+	 * <p/>
+	 * This method looks up well-known Java types and all the types that are in
+	 * the complied source files.
+	 */
+	TypeMirror getType(String fullyQualifiedName);
 
 	/**
 	 * Gets the type arguments of a given type (if any).
 	 */
 	List<? extends TypeMirror> getTypeArguments(TypeMirror type);
-	
+
 	/**
 	 * Tells if the given type is a number.
 	 */
@@ -47,7 +58,7 @@ public interface Util {
 	 * Tells if the given type is an integral type (int, long, byte).
 	 */
 	boolean isIntegral(TypeMirror type);
-	
+
 	/**
 	 * Tells if the given element is part of the transpiled sources.
 	 */
@@ -88,6 +99,5 @@ public interface Util {
 	 *            the path to reach
 	 */
 	String getRelativePath(String fromPath, String toPath);
-	
-	
+
 }

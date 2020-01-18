@@ -607,7 +607,6 @@ public class JSweetTranspiler implements JSweetOptions {
 		context = factory.createContext(this);
 		context.setUsingJavaRuntime(forceJavaRuntime ? isUsingJavaRuntime
 				: (candiesProcessor == null ? false : candiesProcessor.isUsingJavaRuntime()));
-		adapter = factory.createAdapter(context);
 		options = Options.instance(context);
 		if (classPath != null) {
 			options.put(Option.CLASSPATH, classPath);
@@ -737,6 +736,8 @@ public class JSweetTranspiler implements JSweetOptions {
 		transpilationHandler.setDisabled(isIgnoreJavaErrors());
 
 		List<JCCompilationUnit> compilationUnits = compiler.enterTrees(compiler.parseFiles(fileObjects));
+		context.compilationUnits = compilationUnits.toArray(new JCCompilationUnit[compilationUnits.size()]);
+
 		if (transpilationHandler.getErrorCount() > 0) {
 			logger.warn("errors during parse tree");
 			return null;
@@ -757,7 +758,6 @@ public class JSweetTranspiler implements JSweetOptions {
 		// compiler.close(true);
 
 		transpilationHandler.setDisabled(false);
-		context.compilationUnits = compilationUnits.toArray(new JCCompilationUnit[compilationUnits.size()]);
 
 		if (transpilationHandler.getErrorCount() > 0) {
 			return null;
@@ -773,6 +773,9 @@ public class JSweetTranspiler implements JSweetOptions {
 					JSweetProblem.BUNDLE_WITH_MODULE.getMessage());
 			return null;
 		}
+		
+		adapter = factory.createAdapter(context);
+		
 		return compilationUnits;
 	}
 
