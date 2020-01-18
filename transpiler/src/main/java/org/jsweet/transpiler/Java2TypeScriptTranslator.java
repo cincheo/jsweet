@@ -575,6 +575,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	private PackageSymbol topLevelPackage;
 
+	public void useModule(ModuleImportDescriptor moduleImport) {
+		useModule(false, moduleImport.isDirect(), moduleImport.getTargetPackage(), null, moduleImport.getImportedName(),
+				moduleImport.getPathToImportedClass(), null);
+	}
+
 	private void useModule(boolean require, boolean direct, PackageElement targetPackage, JCTree sourceTree,
 			String targetName, String moduleName, Symbol sourceElement) {
 		if (context.useModules) {
@@ -1588,8 +1593,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					if (context.useModules) {
 						UsedTypesScanner scanner = new UsedTypesScanner();
 						JCMethodDecl method = entry.getValue();
-						if(!context.hasAnnotationType(method.sym, JSweetConfig.ANNOTATION_ERASED)) {
-							if(context.hasAnnotationType(method.sym, JSweetConfig.ANNOTATION_REPLACE)) {
+						if (!context.hasAnnotationType(method.sym, JSweetConfig.ANNOTATION_ERASED)) {
+							if (context.hasAnnotationType(method.sym, JSweetConfig.ANNOTATION_REPLACE)) {
 								// do not scan the method body
 								scanner.scan(method.params);
 								scanner.scan(method.restype);
@@ -3528,6 +3533,16 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							if (varSym.isStatic() && varSym.owner != Util.getAccessedSymbol(fieldAccess.selected)) {
 								accessSubstituted = true;
 								print(getRootRelativeName(varSym.owner)).print(".");
+								if (context.useModules) {
+									if (varSym.owner instanceof TypeElement) {
+										ModuleImportDescriptor moduleImport = getAdapter().getModuleImportDescriptor(
+												new CompilationUnitElementSupport(compilationUnit),
+												varSym.owner.getSimpleName().toString(), (TypeElement) varSym.owner);
+										if (moduleImport != null) {
+											useModule(moduleImport);
+										}
+									}
+								}
 							}
 						}
 						if (!accessSubstituted) {
@@ -4000,7 +4015,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	@Override
 	public void visitIdent(JCIdent ident) {
 		String name = ident.toString();
-
 		if (getScope().inlinedConstructorArgs != null) {
 			if (ident.sym instanceof VarSymbol && getScope().inlinedConstructorArgs.contains(name)) {
 				print("__args[" + getScope().inlinedConstructorArgs.indexOf(name) + "]");
