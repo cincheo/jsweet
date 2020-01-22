@@ -407,7 +407,9 @@ public class OverloadScanner extends AbstractTreeScanner {
 		}
 		Overload overload = context.getOrCreateOverload(enclosingClassdecl.sym, method.sym);
 		if (pass == 1) {
-			overload.methods.add(method);
+			if(!overload.methods.contains(method)) {
+				overload.methods.add(method);
+			}
 		} else {
 			if (!method.sym.isConstructor()) {
 				inspectSuperTypes(enclosingClassdecl.sym, overload, method);
