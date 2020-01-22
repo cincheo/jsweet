@@ -22,6 +22,7 @@ public class ComplexEnums {
 		assert A.i == 2;
 		assert $insert("ComplexEnums.A['__class']") == "source.enums.ComplexEnums.A";
 		assert $insert("ComplexEnums.InnerEnum['__class']") == "source.enums.ComplexEnums.InnerEnum";
+		assert MyComplexEnum.getByValue(1.5f) == MyComplexEnum.RATIO_3_2;
 		trace.push("" + InnerEnum.E3.getMode());
 		trace.push("" + A.i);
 
@@ -81,9 +82,28 @@ enum MyComplexEnum {
 		aNonStaticMethod();
 		this.aNonStaticMethod();
 		aStaticMethod2();
+		name();
 		return value;
 	}
 
+	public static MyComplexEnum getByValue(Float f) {
+		for (MyComplexEnum e : values()) {
+			if (e.value == f) {
+				return e;
+			}
+		}
+		return null;
+	}	
+
+	public static MyComplexEnum getByValue2(Float f) {
+		for (MyComplexEnum e : MyComplexEnum.values()) {
+			if (e.value == f) {
+				return e;
+			}
+		}
+		return null;
+	}	
+	
 	public static void aStaticMethod() {
 		ComplexEnums.trace.push("static");
 	}

@@ -135,7 +135,8 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 	/**
 	 * Creates a root adapter (with no parent).
 	 *
-	 * @param context the transpilation context
+	 * @param context
+	 *            the transpilation context
 	 */
 	public Java2TypeScriptAdapter(JSweetContext context) {
 		super(context);
@@ -143,12 +144,12 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 	}
 
 	/**
-	 * Creates a new adapter that will try delegate to the given parent adapter when
-	 * not implementing its own behavior.
+	 * Creates a new adapter that will try delegate to the given parent adapter
+	 * when not implementing its own behavior.
 	 *
-	 * @param parentAdapter cannot be null: if no parent you must use the
-	 *                      {@link #AbstractPrinterAdapter(JSweetContext)}
-	 *                      constructor
+	 * @param parentAdapter
+	 *            cannot be null: if no parent you must use the
+	 *            {@link #AbstractPrinterAdapter(JSweetContext)} constructor
 	 */
 	public Java2TypeScriptAdapter(PrinterAdapter parent) {
 		super(parent);
@@ -428,6 +429,12 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 				print(relTarget).print("[").print(relTarget).print("[").print(invocationElement.getTargetExpression())
 						.print("]").print("]");
 				return true;
+			case "values":
+				printMacroName("Enum." + targetMethodName);
+				print("function() { " + VAR_DECL_KEYWORD + " result: number[] = []; for(" + VAR_DECL_KEYWORD
+						+ " val in ").print(relTarget).print(
+								") { if(!isNaN(<any>val)) { result.push(parseInt(val,10)); } } return result; }()");
+				return true;
 			case "valueOf":
 				printMacroName("Enum." + targetMethodName);
 				if (invocationElement.getArgumentCount() == 1) {
@@ -436,12 +443,6 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 					return true;
 				}
 				break;
-			case "values":
-				printMacroName("Enum." + targetMethodName);
-				print("function() { " + VAR_DECL_KEYWORD + " result: number[] = []; for(" + VAR_DECL_KEYWORD
-						+ " val in ").print(relTarget).print(
-								") { if(!isNaN(<any>val)) { result.push(parseInt(val,10)); } } return result; }()");
-				return true;
 			case "equals":
 				printMacroName("Enum." + targetMethodName);
 				print("(<any>(").print(invocationElement.getTargetExpression()).print(") === <any>(")
@@ -462,6 +463,19 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 					.print(invocationElement.getTargetExpression()).print("].").print(invocationElement.getMethodName())
 					.print("(").printArgList(invocationElement.getArguments()).print(")");
 			return true;
+		}
+
+		// enum static methods
+		if (targetType != null && targetType.getKind() == ElementKind.ENUM) {
+			String relTarget = getRootRelativeName((Symbol) targetType);
+			switch (targetMethodName) {
+			case "values":
+				printMacroName("Enum." + targetMethodName);
+				print("function() { " + VAR_DECL_KEYWORD + " result: number[] = []; for(" + VAR_DECL_KEYWORD
+						+ " val in ").print(relTarget).print(
+								") { if(!isNaN(<any>val)) { result.push(parseInt(val,10)); } } return result; }()");
+				return true;
+			}
 		}
 
 		if (targetClassName != null && targetMethodName != null) {
@@ -1351,7 +1365,8 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 	}
 
 	/**
-	 * @param enclosingElement is required for functional (ie dynamic) type mappings
+	 * @param enclosingElement
+	 *            is required for functional (ie dynamic) type mappings
 	 */
 	public boolean substituteAndPrintType(ExtendedElement enclosingElement, TypeElement type) {
 		String typeFullName = type.toString();
