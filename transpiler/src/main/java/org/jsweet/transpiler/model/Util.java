@@ -18,6 +18,12 @@ public interface Util {
 	String getQualifiedName(TypeMirror type);
 
 	/**
+	 * If the given type is a capture and has an upper bound, returns it, else
+	 * return the given type unchanged.
+	 */
+	TypeMirror getUpperBound(TypeMirror type);
+
+	/**
 	 * Gets the type from an existing runtime class when possible (return null
 	 * when the type cannot be found in the compiler's symbol table).
 	 * <p/>

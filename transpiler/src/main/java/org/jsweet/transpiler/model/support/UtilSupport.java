@@ -29,6 +29,7 @@ import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.Util;
 
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.Type.CapturedType;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 
@@ -54,6 +55,15 @@ public class UtilSupport implements Util {
 			}
 		}
 		return type.toString();
+	}
+
+	@Override
+	public TypeMirror getUpperBound(TypeMirror type) {
+		if (type instanceof CapturedType && ((CapturedType) type).bound != null) {
+			return ((CapturedType) type).bound;
+		} else {
+			return type;
+		}
 	}
 
 	@Override
