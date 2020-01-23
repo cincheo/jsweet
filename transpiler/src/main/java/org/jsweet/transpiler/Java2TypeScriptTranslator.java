@@ -2232,6 +2232,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                             boolean addCoreMethod = false;
                             addCoreMethod = !overload.printed
                                     && overload.getCoreMethodElement().getEnclosingElement() != parentElement
+                                    && !overload.getCoreMethodElement().getModifiers().contains(Modifier.DEFAULT)
                                     && (!overload.getCoreMethodElement().getModifiers().contains(Modifier.ABSTRACT)
                                             || isInterfaceMethod(parent, methodTree)
                                             || !types().isSubtype(parentElement.asType(),
@@ -2565,7 +2566,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             print("if(");
             printMethodParamsTest(overload, overloadMethodEntry);
             print(") ");
-            if (methodElement.getKind() == ElementKind.CONSTRUCTOR) {
+            if (methodElement.getKind() == ElementKind.CONSTRUCTOR
+                    || (methodElement.getModifiers().contains(Modifier.DEFAULT) && method.equals(overload.getCoreMethod()))) {
                 printInlinedMethod(overload, method, methodDecl.getParameters());
             } else {
                 if (parentElement != methodElement.getEnclosingElement()
@@ -4002,7 +4004,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     }
                     if (methSym != null) {
                         if (context.isInvalidOverload(methSym) && !methSym.getParameters().isEmpty()
-                                && !util().hasTypeParameters(methSym) && getParent(MethodTree.class) != null
+                                && !util().hasTypeParameters(methSym)
+                                && getParent(MethodTree.class) != null
                                 && !getParent(MethodTree.class).getModifiers().getFlags().contains(Modifier.DEFAULT)) {
                             if (context.isInterface((TypeElement) methSym.getEnclosingElement())) {
                                 removeLastChar('.');
@@ -4032,7 +4035,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                 print(">");
             } else {
                 // force type arguments to any because they are inferred to
-                // {} by default
+                // {} by default
                 if (methSym != null && !methSym.getTypeParameters().isEmpty()) {
                     TypeElement target = (TypeElement) methSym.getEnclosingElement();
                     if (!target.getQualifiedName().toString().startsWith(JSweetConfig.LIBS_PACKAGE + ".")) {

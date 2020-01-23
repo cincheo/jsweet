@@ -85,6 +85,8 @@ import source.overload.WrongOverloadWithSpecialParameters;
 import source.overload.WrongOverloads;
 import source.overload.WrongOverloadsWithDefaultMethods;
 import source.overload.WrongOverloadsWithNonCoreMethod;
+import source.overload.default_methods.AClassImplementingInterfaceWithDefaultOverloadedMethods;
+import source.overload.default_methods.AnInterfaceWithDefaultOverloadedMethods;
 import source.overload.visitor.A1;
 import source.overload.visitor.A2;
 import source.overload.visitor.A3;
@@ -97,9 +99,9 @@ public class OverloadTests extends AbstractTest {
 	public void testOverload() {
 		eval((logHandler, result) -> {
 			logHandler.assertNoProblems();
-			assertEquals("default1", result.<String>get("res1"));
-			assertEquals("s11", result.<String>get("res2"));
-			assertEquals("s22", result.<String>get("res3"));
+			assertEquals("default1", result.<String> get("res1"));
+			assertEquals("s11", result.<String> get("res2"));
+			assertEquals("s22", result.<String> get("res3"));
 		}, getSourceFile(Overload.class));
 	}
 
@@ -385,6 +387,14 @@ public class OverloadTests extends AbstractTest {
 				getSourceFile(ImplementationB13.class), //
 				getSourceFile(ImplementationB14.class), //
 				getSourceFile(ImplementationB15.class));
+	}
+
+	@Test
+	public void testOverloadWithDefaultMethods() {
+		eval((logHandler, result) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(AnInterfaceWithDefaultOverloadedMethods.class),
+				getSourceFile(AClassImplementingInterfaceWithDefaultOverloadedMethods.class));
 	}
 
 }
