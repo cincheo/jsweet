@@ -2142,6 +2142,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							boolean addCoreMethod = false;
 							addCoreMethod = !overload.printed
 									&& overload.coreMethod.sym.getEnclosingElement() != parent.sym
+									&& !overload.coreMethod.sym.getModifiers().contains(Modifier.DEFAULT)
 									&& (!overload.coreMethod.sym.getModifiers().contains(Modifier.ABSTRACT)
 											|| isInterfaceMethod(parent, methodDecl)
 											|| !context.types.isSubtype(parent.sym.type,
@@ -2458,7 +2459,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			print("if(");
 			printMethodParamsTest(overload, method);
 			print(") ");
-			if (method.sym.isConstructor()) {
+			if (method.sym.isConstructor()
+					|| (method.sym.getModifiers().contains(Modifier.DEFAULT) && method.equals(overload.coreMethod))) {
 				printInlinedMethod(overload, method, methodDecl.getParameters());
 			} else {
 				if (parent.sym != method.sym.getEnclosingElement() && context
@@ -3825,7 +3827,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					if (methSym != null) {
 						if (context.isInvalidOverload(methSym) && !methSym.getParameters().isEmpty()
 								&& !Util.hasTypeParameters(
-										methSym) /*
+										methSym) && !methSym.isDefault() /*
 													 * &&
 													 * !Util.hasVarargs(methSym)
 													 */
