@@ -3302,7 +3302,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					print("; ");
 				}
 				print("return ").print(prefix).print(name).print("; }");
-				if (!globals) {
+				if (!globals && context.bundleMode) {
 					String qualifiedClassName = getQualifiedTypeName(clazz.sym, globals, true);
 					context.addTopFooterStatement((isBlank(qualifiedClassName) ? "" : qualifiedClassName + ".") + name
 							+ STATIC_INITIALIZATION_SUFFIX + "();");
