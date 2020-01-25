@@ -99,7 +99,7 @@ public class PrinterAdapter {
 	public CompilationUnitElement getCompilationUnit() {
 		return new CompilationUnitElementSupport(printer.getCompilationUnit());
 	}
-	
+
 	/**
 	 * Creates a new adapter that will try delegate to the given parent adapter
 	 * when not implementing its own behavior.
@@ -699,6 +699,25 @@ public class PrinterAdapter {
 	}
 
 	/**
+	 * Substitutes an assigned expression if necessary.
+	 * <p>
+	 * Expressions are assigned to a type when used in an assignment expression
+	 * (=) or as function arguments. JSweet implements a default behavior to
+	 * adapt the expression when necessary (for instance to implement implicit
+	 * type conversion that would be necessary in TypeScript). One can override
+	 * or extend the default behavior by overriding this method.
+	 * 
+	 * @param type
+	 *            the type the expression is being assigned to
+	 * @param assignedExpression
+	 *            the assigned expression
+	 * @return true if the expression has been substituted
+	 */
+	public boolean substituteAssignedExpression(TypeMirror type, ExtendedElement assignedExpression) {
+		return parentAdapter == null ? false : parentAdapter.substituteAssignedExpression(type, assignedExpression);
+	}
+
+	/**
 	 * Upcalled by the transpiler to forward to the right subtitution method
 	 * depending on the actual extended element type.
 	 */
@@ -818,7 +837,7 @@ public class PrinterAdapter {
 	public boolean substituteType(TypeElement type) {
 		return parentAdapter == null ? false : parentAdapter.substituteType(type);
 	}
-	
+
 	/**
 	 * Substitutes the value of a <em>field assignment</em> expression.
 	 * 
@@ -980,7 +999,7 @@ public class PrinterAdapter {
 			parentAdapter.beforeTypeBody(type);
 		}
 	}
-	
+
 	/**
 	 * Adapts the JavaDoc comment for a given element.
 	 * 
