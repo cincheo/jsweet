@@ -85,16 +85,16 @@ public class JSDoc {
 		if (typeTree instanceof JCTypeApply) {
 			qualifiedName = ((JCTypeApply) typeTree).clazz.type.toString();
 		}
-		if (type instanceof TypeVar) {
-			TypeVar typeVar = (TypeVar) typeTree.type;
-			if (typeVar.getUpperBound() == null) {
-				return "*";
-			} else {
-				return getMappedDocType(context, null, typeVar.getUpperBound());
-			}
-		}
 		boolean isMapped = false;
 		if (typeTree != null) {
+			if (type instanceof TypeVar) {
+				TypeVar typeVar = (TypeVar) typeTree.type;
+				if (typeVar.getUpperBound() == null) {
+					return "*";
+				} else {
+					return getMappedDocType(context, null, typeVar.getUpperBound());
+				}
+			}
 			for (BiFunction<ExtendedElement, String, Object> mapping : context.getFunctionalTypeMappings()) {
 				Object mapped = mapping.apply(new ExtendedElementSupport<JCTree>(typeTree), qualifiedName);
 				if (mapped instanceof String) {
