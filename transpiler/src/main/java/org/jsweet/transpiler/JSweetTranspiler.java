@@ -769,9 +769,11 @@ public class JSweetTranspiler implements JSweetOptions {
 		context.useRequireForModules = moduleKind != ModuleKind.es2015;
 
 		if (context.useModules && bundle) {
-			transpilationHandler.report(JSweetProblem.BUNDLE_WITH_MODULE, null,
-					JSweetProblem.BUNDLE_WITH_MODULE.getMessage());
-			return null;
+			context.useModules = false;
+			context.moduleBundleMode = true;
+			//transpilationHandler.report(JSweetProblem.BUNDLE_WITH_MODULE, null,
+			//		JSweetProblem.BUNDLE_WITH_MODULE.getMessage());
+			//return null;
 		}
 		
 		adapter = factory.createAdapter(context);

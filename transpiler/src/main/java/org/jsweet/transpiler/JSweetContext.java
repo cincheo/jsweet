@@ -699,6 +699,8 @@ public class JSweetContext extends Context {
 	 */
 	public boolean bundleMode = false;
 
+	public boolean moduleBundleMode = false;
+	
 	/**
 	 * Holds all the static fields that are lazy intitialized.
 	 */
