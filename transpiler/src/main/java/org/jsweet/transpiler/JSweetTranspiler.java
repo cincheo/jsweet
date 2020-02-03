@@ -139,7 +139,7 @@ public class JSweetTranspiler implements JSweetOptions {
 	 * (WARNING: so far, having multiple JSweet versions for the same user account
 	 * may lead to performance issues - could be fixed if necessary).
 	 */
-	public static final String TSC_VERSION = "2.1";
+	public static final String TSC_VERSION = "3.7";
 
 	static {
 		if (!SystemUtils.IS_JAVA_1_8) {
@@ -1091,6 +1091,8 @@ public class JSweetTranspiler implements JSweetOptions {
 			sb.append(line).append("\n");
 			lineCount++;
 		}
+
+		ArrayList<SourceFile> bundledFiles = new ArrayList<>();
 		for (int i = 0; i < orderedCompilationUnits.size(); i++) {
 			JCCompilationUnit cu = orderedCompilationUnits.get(i);
 			if (isModuleDefsFile(cu)) {
@@ -1111,7 +1113,8 @@ public class JSweetTranspiler implements JSweetOptions {
 			printer.print(cu);
 			printer.sourceMap.shiftOutputPositions(lineCount);
 			files[permutation[i]].setSourceMap(printer.sourceMap);
-
+			bundledFiles.add(files[permutation[i]]);
+			
 			sb.append(printer.getOutput());
 			lineCount += (printer.getCurrentLine() - 1);
 
@@ -1133,6 +1136,12 @@ public class JSweetTranspiler implements JSweetOptions {
 		String outputFilePath = outputFile.getPath();
 		PrintWriter out = new PrintWriter(outputFilePath);
 		try {
+			String headers = context.getHeaders();
+			out.print(headers);
+			lineCount = StringUtils.countMatches(headers, "\n");
+			for(SourceFile f : bundledFiles) {
+				f.getSourceMap().shiftOutputPositions(lineCount);
+			}
 			out.println(sb.toString());
 			if (!definitionBundle) {
 				out.print(context.getGlobalsMappingString());
