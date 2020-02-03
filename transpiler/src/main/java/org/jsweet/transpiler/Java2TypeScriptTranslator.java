@@ -144,6 +144,7 @@ import com.sun.tools.javac.tree.JCTree.JCThrow;
 import com.sun.tools.javac.tree.JCTree.JCTry;
 import com.sun.tools.javac.tree.JCTree.JCTypeApply;
 import com.sun.tools.javac.tree.JCTree.JCTypeCast;
+import com.sun.tools.javac.tree.JCTree.JCTypeIntersection;
 import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.JCTree.JCUnary;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
@@ -1082,6 +1083,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	@SuppressWarnings("unlikely-arg-type")
 	private AbstractTreePrinter substituteAndPrintType(JCTree typeTree, boolean arrayComponent,
 			boolean inTypeParameters, boolean completeRawTypes, boolean disableSubstitution) {
+		if (typeTree instanceof JCTypeIntersection) {
+			for (JCTree t : ((JCTypeIntersection) typeTree).bounds) {
+				substituteAndPrintType(t, arrayComponent, inTypeParameters, completeRawTypes, disableSubstitution);
+				print(" & ");
+			}
+			removeLastChars(3);
+			return this;
+		}
 		if (typeTree.type.tsym instanceof TypeVariableSymbol) {
 			if (getAdapter().typeVariablesToErase.contains(typeTree.type.tsym)) {
 				return print("any");
