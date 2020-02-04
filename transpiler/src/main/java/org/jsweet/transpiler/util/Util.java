@@ -1056,6 +1056,8 @@ public class Util {
 		case XOR_ASSIGNMENT:
 		case LEFT_SHIFT:
 		case RIGHT_SHIFT:
+		case UNSIGNED_RIGHT_SHIFT:
+		case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT:
 		case OR:
 		case XOR:
 			return true;
