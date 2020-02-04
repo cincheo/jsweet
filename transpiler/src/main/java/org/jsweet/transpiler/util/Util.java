@@ -1288,7 +1288,7 @@ public class Util {
 	/**
 	 * Returns the literal for a given type inital value.
 	 */
-	public static String getTypeInitialValue(Type type) {
+	public static String getTypeInitialValue(TypeMirror type) {
 		if (type == null) {
 			return "null";
 		}

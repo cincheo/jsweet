@@ -23,6 +23,7 @@ import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
 import org.jsweet.transpiler.JSweetContext;
@@ -180,5 +181,22 @@ public class UtilSupport implements Util {
 	public String getRelativePath(String fromPath, String toPath) {
 		return org.jsweet.transpiler.util.Util.getRelativePath(fromPath, toPath);
 	}
+	
+	@Override
+	public String getTypeInitialValue(TypeMirror type) {
+		if (type == null) {
+			return "null";
+		}
+		if (isNumber(type)) {
+			return "0";
+		} else if (type.getKind() == TypeKind.BOOLEAN) {
+			return "false";
+		} else if (type.getKind() == TypeKind.VOID) {
+			return null;
+		} else {
+			return "null";
+		}
+	}
+	
 
 }

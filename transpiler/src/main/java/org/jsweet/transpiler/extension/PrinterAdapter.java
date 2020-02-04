@@ -32,6 +32,7 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
@@ -740,7 +741,19 @@ public class PrinterAdapter {
 	 */
 	public boolean substituteVariableAccess(VariableAccessElement variableAccess) {
 		return parentAdapter == null ? false : parentAdapter.substituteVariableAccess(variableAccess);
+	}
 
+	/**
+	 * Called if the initializer of a variable is undefined (in order to force a
+	 * default value).
+	 * 
+	 * @param variable
+	 *            the variable to return an initializer for
+	 * @return an initializer expression, null to keep undefined
+	 */
+	public String getVariableInitialValue(VariableElement variable) {
+		return parentAdapter == null ? util().getTypeInitialValue(variable.asType())
+				: parentAdapter.getVariableInitialValue(variable);
 	}
 
 	/**

@@ -106,4 +106,9 @@ public interface Util {
 	 */
 	String getRelativePath(String fromPath, String toPath);
 
+	/**
+	 * Returns the literal for a given type initial value.
+	 */
+	String getTypeInitialValue(TypeMirror type);
+
 }

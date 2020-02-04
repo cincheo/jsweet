@@ -2693,11 +2693,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		} else if (var.init == null) {
 			if (doesMemberNameRequireQuotes(name)) {
 				printIndent().print("if(").print("this['").print(name).print("']").print("===undefined) ")
-						.print("this['").print(name).print("'] = ").print(Util.getTypeInitialValue(var.type)).print(";")
+						.print("this['").print(name).print("'] = ").print(getAdapter().getVariableInitialValue(var.sym)).print(";")
 						.println();
 			} else {
 				printIndent().print("if(").print("this.").print(name).print("===undefined) this.").print(name)
-						.print(" = ").print(Util.getTypeInitialValue(var.type)).print(";").println();
+						.print(" = ").print(getAdapter().getVariableInitialValue(var.sym)).print(";").println();
 			}
 		}
 	}
@@ -2863,7 +2863,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						name = context.getFieldNameMapping(field.sym);
 					}
 					printIndent().print("if(").print("this.").print(name).print("===undefined) ").print("this.")
-							.print(name).print(" = ").print(Util.getTypeInitialValue(field.type)).print(";").println();
+							.print(name).print(" = ").print(getAdapter().getVariableInitialValue(field.sym)).print(";").println();
 				}
 			}
 		}
@@ -3340,7 +3340,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				// var initialization is not allowed in definition
 				if (!isDefinitionScope && !(ambient || (isTopLevelScope() && isDefinitionScope))
 						&& varDecl.sym.isStatic() && varDecl.init == null) {
-					print(" = ").print(Util.getTypeInitialValue(varDecl.sym.type));
+					print(" = ").print(getAdapter().getVariableInitialValue(varDecl.sym));
 				}
 			}
 		}
