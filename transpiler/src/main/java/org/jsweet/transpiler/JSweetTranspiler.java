@@ -136,8 +136,8 @@ public class JSweetTranspiler implements JSweetOptions {
 
 	/**
 	 * The TypeScript version to be installed/used with this version of JSweet
-	 * (WARNING: so far, having multiple JSweet versions for the same user account
-	 * may lead to performance issues - could be fixed if necessary).
+	 * (WARNING: so far, having multiple JSweet versions for the same user
+	 * account may lead to performance issues - could be fixed if necessary).
 	 */
 	public static final String TSC_VERSION = "3.7";
 
@@ -186,10 +186,11 @@ public class JSweetTranspiler implements JSweetOptions {
 	private final static Logger logger = Logger.getLogger(JSweetTranspiler.class);
 
 	/**
-	 * The name of the file generated in the root package to avoid the TypeScript
-	 * compiler to skip empty directories.
+	 * The name of the file generated in the root package to avoid the
+	 * TypeScript compiler to skip empty directories.
 	 * 
-	 * @deprecated Use {@link TypeScript2JavaScriptWithTscTranspiler#TSCROOTFILE}
+	 * @deprecated Use
+	 *             {@link TypeScript2JavaScriptWithTscTranspiler#TSCROOTFILE}
 	 *             instead
 	 */
 	public final static String TSCROOTFILE = TypeScript2JavaScriptWithTscTranspiler.TSCROOTFILE;
@@ -245,8 +246,9 @@ public class JSweetTranspiler implements JSweetOptions {
 	 * Manually sets the transpiler to use (or not use) a Java runtime.
 	 * 
 	 * <p>
-	 * Calling this method is usually not needed since JSweet auto-detects the J4TS
-	 * candy. Use only to manually force the transpiler in a mode or another.
+	 * Calling this method is usually not needed since JSweet auto-detects the
+	 * J4TS candy. Use only to manually force the transpiler in a mode or
+	 * another.
 	 */
 	public void setUsingJavaRuntime(boolean usingJavaRuntime) {
 		forceJavaRuntime = true;
@@ -270,10 +272,11 @@ public class JSweetTranspiler implements JSweetOptions {
 	 * 
 	 * <p>
 	 * TypeScript and JavaScript output directories are set to
-	 * <code>System.getProperty("java.io.tmpdir")</code>. The classpath is set to
-	 * <code>System.getProperty("java.class.path")</code>.
+	 * <code>System.getProperty("java.io.tmpdir")</code>. The classpath is set
+	 * to <code>System.getProperty("java.class.path")</code>.
 	 * 
-	 * @param factory the factory used to create the transpiler objects
+	 * @param factory
+	 *            the factory used to create the transpiler objects
 	 */
 	public JSweetTranspiler(JSweetFactory factory) {
 		this(factory, new File(System.getProperty("java.io.tmpdir")), null, null,
@@ -283,17 +286,17 @@ public class JSweetTranspiler implements JSweetOptions {
 	/**
 	 * Creates a JSweet transpiler.
 	 * 
-	 * @param factory                       the factory used to create the
-	 *                                      transpiler objects
-	 * @param tsOutputDir                   the directory where TypeScript files are
-	 *                                      written
-	 * @param jsOutputDir                   the directory where JavaScript files are
-	 *                                      written
-	 * @param extractedCandiesJavascriptDir see
-	 *                                      {@link #getExtractedCandyJavascriptDir()}
-	 * @param classPath                     the classpath as a string (check out
-	 *                                      system-specific requirements for Java
-	 *                                      classpathes)
+	 * @param factory
+	 *            the factory used to create the transpiler objects
+	 * @param tsOutputDir
+	 *            the directory where TypeScript files are written
+	 * @param jsOutputDir
+	 *            the directory where JavaScript files are written
+	 * @param extractedCandiesJavascriptDir
+	 *            see {@link #getExtractedCandyJavascriptDir()}
+	 * @param classPath
+	 *            the classpath as a string (check out system-specific
+	 *            requirements for Java classpathes)
 	 */
 	public JSweetTranspiler(JSweetFactory factory, File tsOutputDir, File jsOutputDir,
 			File extractedCandiesJavascriptDir, String classPath) {
@@ -407,19 +410,19 @@ public class JSweetTranspiler implements JSweetOptions {
 	/**
 	 * Creates a JSweet transpiler.
 	 * 
-	 * @param factory                       the factory used to create the
-	 *                                      transpiler objects
-	 * @param workingDir                    the working directory (uses default one
-	 *                                      if null)
-	 * @param tsOutputDir                   the directory where TypeScript files are
-	 *                                      written
-	 * @param jsOutputDir                   the directory where JavaScript files are
-	 *                                      written
-	 * @param extractedCandiesJavascriptDir see
-	 *                                      {@link #getExtractedCandyJavascriptDir()}
-	 * @param classPath                     the classpath as a string (check out
-	 *                                      system-specific requirements for Java
-	 *                                      classpaths)
+	 * @param factory
+	 *            the factory used to create the transpiler objects
+	 * @param workingDir
+	 *            the working directory (uses default one if null)
+	 * @param tsOutputDir
+	 *            the directory where TypeScript files are written
+	 * @param jsOutputDir
+	 *            the directory where JavaScript files are written
+	 * @param extractedCandiesJavascriptDir
+	 *            see {@link #getExtractedCandyJavascriptDir()}
+	 * @param classPath
+	 *            the classpath as a string (check out system-specific
+	 *            requirements for Java classpaths)
 	 */
 	public JSweetTranspiler(JSweetFactory factory, File workingDir, File tsOutputDir, File jsOutputDir,
 			File extractedCandiesJavascriptDir, String classPath) {
@@ -429,21 +432,21 @@ public class JSweetTranspiler implements JSweetOptions {
 	/**
 	 * Creates a JSweet transpiler.
 	 * 
-	 * @param configurationFile             the configurationFile (uses default one
-	 *                                      if null)
-	 * @param factory                       the factory used to create the
-	 *                                      transpiler objects
-	 * @param workingDir                    the working directory (uses default one
-	 *                                      if null)
-	 * @param tsOutputDir                   the directory where TypeScript files are
-	 *                                      written
-	 * @param jsOutputDir                   the directory where JavaScript files are
-	 *                                      written
-	 * @param extractedCandiesJavascriptDir see
-	 *                                      {@link #getExtractedCandyJavascriptDir()}
-	 * @param classPath                     the classpath as a string (check out
-	 *                                      system-specific requirements for Java
-	 *                                      classpaths)
+	 * @param configurationFile
+	 *            the configurationFile (uses default one if null)
+	 * @param factory
+	 *            the factory used to create the transpiler objects
+	 * @param workingDir
+	 *            the working directory (uses default one if null)
+	 * @param tsOutputDir
+	 *            the directory where TypeScript files are written
+	 * @param jsOutputDir
+	 *            the directory where JavaScript files are written
+	 * @param extractedCandiesJavascriptDir
+	 *            see {@link #getExtractedCandyJavascriptDir()}
+	 * @param classPath
+	 *            the classpath as a string (check out system-specific
+	 *            requirements for Java classpaths)
 	 */
 	public JSweetTranspiler(File configurationFile, JSweetFactory factory, File workingDir, File tsOutputDir,
 			File jsOutputDir, File extractedCandiesJavascriptDir, String classPath) {
@@ -454,21 +457,21 @@ public class JSweetTranspiler implements JSweetOptions {
 	/**
 	 * Creates a JSweet transpiler.
 	 * 
-	 * @param configurationFile             the configurationFile (uses default one
-	 *                                      if null)
-	 * @param factory                       the factory used to create the
-	 *                                      transpiler objects
-	 * @param workingDir                    the working directory (uses default one
-	 *                                      if null)
-	 * @param tsOutputDir                   the directory where TypeScript files are
-	 *                                      written
-	 * @param jsOutputDir                   the directory where JavaScript files are
-	 *                                      written
-	 * @param extractedCandiesJavascriptDir see
-	 *                                      {@link #getExtractedCandyJavascriptDir()}
-	 * @param classPath                     the classpath as a string (check out
-	 *                                      system-specific requirements for Java
-	 *                                      classpaths)
+	 * @param configurationFile
+	 *            the configurationFile (uses default one if null)
+	 * @param factory
+	 *            the factory used to create the transpiler objects
+	 * @param workingDir
+	 *            the working directory (uses default one if null)
+	 * @param tsOutputDir
+	 *            the directory where TypeScript files are written
+	 * @param jsOutputDir
+	 *            the directory where JavaScript files are written
+	 * @param extractedCandiesJavascriptDir
+	 *            see {@link #getExtractedCandyJavascriptDir()}
+	 * @param classPath
+	 *            the classpath as a string (check out system-specific
+	 *            requirements for Java classpaths)
 	 */
 	public JSweetTranspiler(File baseDirectory, File configurationFile, JSweetFactory factory, File workingDir,
 			File tsOutputDir, File jsOutputDir, File extractedCandiesJavascriptDir, String classPath) {
@@ -576,7 +579,8 @@ public class JSweetTranspiler implements JSweetOptions {
 	 * Sets one or more directories that contain TypeScript definition files
 	 * (sub-directories are scanned recursively to find all .d.ts files).
 	 * 
-	 * @param tsDefDirs a list of directories to scan for .d.ts files
+	 * @param tsDefDirs
+	 *            a list of directories to scan for .d.ts files
 	 */
 	public void setTsDefDirs(File... tsDefDirs) {
 		clearTsDefDirs();
@@ -584,10 +588,11 @@ public class JSweetTranspiler implements JSweetOptions {
 	}
 
 	/**
-	 * Adds a directory that contains TypeScript definition files (sub-directories
-	 * are scanned recursively to find all .d.ts files).
+	 * Adds a directory that contains TypeScript definition files
+	 * (sub-directories are scanned recursively to find all .d.ts files).
 	 * 
-	 * @param tsDefDir a directory to scan for .d.ts files
+	 * @param tsDefDir
+	 *            a directory to scan for .d.ts files
 	 */
 	public void addTsDefDir(File tsDefDir) {
 		if (!tsDefDirs.contains(tsDefDir)) {
@@ -659,10 +664,13 @@ public class JSweetTranspiler implements JSweetOptions {
 	 * <p>
 	 * This function automatically transpile the source files if needed.
 	 * 
-	 * @param transpilationHandler the transpilation handler
-	 * @param sourceFiles          the source files to be evaluated
+	 * @param transpilationHandler
+	 *            the transpilation handler
+	 * @param sourceFiles
+	 *            the source files to be evaluated
 	 * @return an object that holds the evaluation result
-	 * @throws Exception when an internal error occurs
+	 * @throws Exception
+	 *             when an internal error occurs
 	 */
 	public EvaluationResult eval(TranspilationHandler transpilationHandler, SourceFile... sourceFiles)
 			throws Exception {
@@ -672,16 +680,19 @@ public class JSweetTranspiler implements JSweetOptions {
 	/**
 	 * Evaluates the given source files with the given evaluation engine.
 	 * <p>
-	 * If given engine name is "Java", this function looks up for the classes in the
-	 * classpath and run the main methods when found.
+	 * If given engine name is "Java", this function looks up for the classes in
+	 * the classpath and run the main methods when found.
 	 * 
-	 * @param engineName           the engine name: either "Java" or any valid and
-	 *                             installed JavaScript engine.
-	 * @param transpilationHandler the log handler
-	 * @param sourceFiles          the source files to be evaluated (transpiled
-	 *                             first if needed)
+	 * @param engineName
+	 *            the engine name: either "Java" or any valid and installed
+	 *            JavaScript engine.
+	 * @param transpilationHandler
+	 *            the log handler
+	 * @param sourceFiles
+	 *            the source files to be evaluated (transpiled first if needed)
 	 * @return the evaluation result
-	 * @throws Exception when an internal error occurs
+	 * @throws Exception
+	 *             when an internal error occurs
 	 */
 	public EvaluationResult eval(String engineName, TranspilationHandler transpilationHandler,
 			SourceFile... sourceFiles) throws Exception {
@@ -771,13 +782,14 @@ public class JSweetTranspiler implements JSweetOptions {
 		if (context.useModules && bundle) {
 			context.useModules = false;
 			context.moduleBundleMode = true;
-			//transpilationHandler.report(JSweetProblem.BUNDLE_WITH_MODULE, null,
-			//		JSweetProblem.BUNDLE_WITH_MODULE.getMessage());
-			//return null;
+			// transpilationHandler.report(JSweetProblem.BUNDLE_WITH_MODULE,
+			// null,
+			// JSweetProblem.BUNDLE_WITH_MODULE.getMessage());
+			// return null;
 		}
-		
+
 		adapter = factory.createAdapter(context);
-		
+
 		return compilationUnits;
 	}
 
@@ -803,12 +815,14 @@ public class JSweetTranspiler implements JSweetOptions {
 	}
 
 	/**
-	 * Transpiles the given Java source files. When the transpiler is in watch mode
-	 * ({@link #setTscWatchMode(boolean)}), the first invocation to this method
-	 * determines the files to be watched by the Tsc process.
+	 * Transpiles the given Java source files. When the transpiler is in watch
+	 * mode ({@link #setTscWatchMode(boolean)}), the first invocation to this
+	 * method determines the files to be watched by the Tsc process.
 	 * 
-	 * @param transpilationHandler the log handler
-	 * @param files                the files to be transpiled
+	 * @param transpilationHandler
+	 *            the log handler
+	 * @param files
+	 *            the files to be transpiled
 	 * @throws IOException
 	 */
 	synchronized public void transpile(TranspilationHandler transpilationHandler, SourceFile... files)
@@ -1116,7 +1130,7 @@ public class JSweetTranspiler implements JSweetOptions {
 			printer.sourceMap.shiftOutputPositions(lineCount);
 			files[permutation[i]].setSourceMap(printer.sourceMap);
 			bundledFiles.add(files[permutation[i]]);
-			
+
 			sb.append(printer.getOutput());
 			lineCount += (printer.getCurrentLine() - 1);
 
@@ -1141,7 +1155,7 @@ public class JSweetTranspiler implements JSweetOptions {
 			String headers = context.getHeaders();
 			out.print(headers);
 			lineCount = StringUtils.countMatches(headers, "\n");
-			for(SourceFile f : bundledFiles) {
+			for (SourceFile f : bundledFiles) {
 				f.getSourceMap().shiftOutputPositions(lineCount);
 			}
 			out.println(sb.toString());
@@ -1198,18 +1212,21 @@ public class JSweetTranspiler implements JSweetOptions {
 
 	/**
 	 * Returns the watched files when the transpiler is in watch mode. See
-	 * {@link #setTscWatchMode(boolean)}. The watched file list corresponds to the
-	 * one given at the first invocation of
-	 * {@link #transpile(TranspilationHandler, SourceFile...)} after the transpiler
-	 * was set to watch mode. All subsequent invocations of
-	 * {@link #transpile(TranspilationHandler, SourceFile...)} will not change the
-	 * initial watched files. In order to change the watch files, invoke
+	 * {@link #setTscWatchMode(boolean)}. The watched file list corresponds to
+	 * the one given at the first invocation of
+	 * {@link #transpile(TranspilationHandler, SourceFile...)} after the
+	 * transpiler was set to watch mode. All subsequent invocations of
+	 * {@link #transpile(TranspilationHandler, SourceFile...)} will not change
+	 * the initial watched files. In order to change the watch files, invoke
 	 * {@link #resetTscWatchMode()} and call
-	 * {@link #transpile(TranspilationHandler, SourceFile...)} with a new file list.
+	 * {@link #transpile(TranspilationHandler, SourceFile...)} with a new file
+	 * list.
 	 */
 	synchronized public SourceFile[] getWatchedFiles() {
-		// TODO : watch mode isn't implemented with tsserver transpiler, either we
-		// remove watch mode (only used for tests if I'm right), or provide a dummy
+		// TODO : watch mode isn't implemented with tsserver transpiler, either
+		// we
+		// remove watch mode (only used for tests if I'm right), or provide a
+		// dummy
 		// implementation for tsserver
 		return ((TypeScript2JavaScriptWithTscTranspiler) ts2jsTranspiler).getWatchedFiles().toArray(new SourceFile[0]);
 	}
@@ -1232,15 +1249,16 @@ public class JSweetTranspiler implements JSweetOptions {
 	}
 
 	/**
-	 * Enables or disable this transpiler watch mode. When watch mode is enabled,
-	 * the first invocation to
-	 * {@link #transpile(TranspilationHandler, SourceFile...)} will start the Tsc
-	 * watch process, which regenerates the JavaScript files when one of the input
-	 * file changes.
+	 * Enables or disable this transpiler watch mode. When watch mode is
+	 * enabled, the first invocation to
+	 * {@link #transpile(TranspilationHandler, SourceFile...)} will start the
+	 * Tsc watch process, which regenerates the JavaScript files when one of the
+	 * input file changes.
 	 * 
-	 * @param tscWatchMode true: enables the watch mode (do nothing is already
-	 *                     enabled), false: disables the watch mode and stops the
-	 *                     current Tsc watching process
+	 * @param tscWatchMode
+	 *            true: enables the watch mode (do nothing is already enabled),
+	 *            false: disables the watch mode and stops the current Tsc
+	 *            watching process
 	 * @see #getWatchedFile(File)
 	 */
 	synchronized public void setTscWatchMode(boolean tscWatchMode) {
@@ -1378,9 +1396,9 @@ public class JSweetTranspiler implements JSweetOptions {
 	}
 
 	/**
-	 * Sets the flag that tells if the transpiler preserves the generated TypeScript
-	 * source line numbers wrt the Java original source file (allows for Java
-	 * debugging through js.map files).
+	 * Sets the flag that tells if the transpiler preserves the generated
+	 * TypeScript source line numbers wrt the Java original source file (allows
+	 * for Java debugging through js.map files).
 	 * 
 	 * @deprecated use {@link #setGenerateSourceMaps(boolean)} instead
 	 */
@@ -1390,8 +1408,8 @@ public class JSweetTranspiler implements JSweetOptions {
 	}
 
 	/**
-	 * Sets the flag that tells if the transpiler allows for Java debugging through
-	 * js.map files.
+	 * Sets the flag that tells if the transpiler allows for Java debugging
+	 * through js.map files.
 	 */
 	public void setGenerateSourceMaps(boolean generateSourceMaps) {
 		this.generateSourceMaps = generateSourceMaps;
@@ -1447,8 +1465,8 @@ public class JSweetTranspiler implements JSweetOptions {
 	}
 
 	/**
-	 * Resets the watch mode (clears the watched files and restarts the Tsc process
-	 * on the next invocation of
+	 * Resets the watch mode (clears the watched files and restarts the Tsc
+	 * process on the next invocation of
 	 * {@link #transpile(TranspilationHandler, SourceFile...)}).
 	 */
 	synchronized public void resetTscWatchMode() {
@@ -1466,7 +1484,8 @@ public class JSweetTranspiler implements JSweetOptions {
 	/**
 	 * Sets target ECMA script version for generated JavaScript
 	 * 
-	 * @param ecmaTargetVersion The target version
+	 * @param ecmaTargetVersion
+	 *            The target version
 	 */
 	public void setEcmaTargetVersion(EcmaScriptComplianceLevel ecmaTargetVersion) {
 		this.ecmaTargetVersion = ecmaTargetVersion;
@@ -1500,15 +1519,16 @@ public class JSweetTranspiler implements JSweetOptions {
 	}
 
 	/**
-	 * Sets the module strategy when transpiling to code using JavaScript modules.
+	 * Sets the module strategy when transpiling to code using JavaScript
+	 * modules.
 	 */
 	public void setModuleResolution(ModuleResolution moduleResolution) {
 		this.moduleResolution = moduleResolution;
 	}
 
 	/**
-	 * Tells tsc to skip some checks in order to reduce load time, useful in unit
-	 * tests where transpiler is invoked many times
+	 * Tells tsc to skip some checks in order to reduce load time, useful in
+	 * unit tests where transpiler is invoked many times
 	 */
 	public void setSkipTypeScriptChecks(boolean skipTypeScriptChecks) {
 		this.skipTypeScriptChecks = skipTypeScriptChecks;
@@ -1573,8 +1593,9 @@ public class JSweetTranspiler implements JSweetOptions {
 
 	/**
 	 * Sets this transpiler to skip the root directories (packages annotated
-	 * with @jsweet.lang.Root) so that the generated file hierarchy starts at the
-	 * root directories rather than including the entire directory structure.
+	 * with @jsweet.lang.Root) so that the generated file hierarchy starts at
+	 * the root directories rather than including the entire directory
+	 * structure.
 	 */
 	public void setNoRootDirectories(boolean noRootDirectories) {
 		this.noRootDirectories = noRootDirectories;
@@ -1591,8 +1612,8 @@ public class JSweetTranspiler implements JSweetOptions {
 	}
 
 	/**
-	 * Sets the transpiler to ignore the 'assert' statements or generate appropriate
-	 * code.
+	 * Sets the transpiler to ignore the 'assert' statements or generate
+	 * appropriate code.
 	 */
 	public void setIgnoreAssertions(boolean ignoreAssertions) {
 		this.ignoreAssertions = ignoreAssertions;
@@ -1656,10 +1677,13 @@ public class JSweetTranspiler implements JSweetOptions {
 	/**
 	 * Transpiles the given Java AST.
 	 * 
-	 * @param transpilationHandler the log handler
-	 * @param tree                 the AST to be transpiled
-	 * @param targetFileName       the name of the file (without any extension)
-	 *                             where to put the transpilation output
+	 * @param transpilationHandler
+	 *            the log handler
+	 * @param tree
+	 *            the AST to be transpiled
+	 * @param targetFileName
+	 *            the name of the file (without any extension) where to put the
+	 *            transpilation output
 	 * @throws IOException
 	 */
 	public String transpile(ErrorCountTranspilationHandler handler, JCTree tree, String targetFileName)

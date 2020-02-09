@@ -602,8 +602,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 				if (!context.moduleBundleMode && sourceElement instanceof ClassSymbol
 						&& Util.isSourceElement(sourceElement)
-						&& !(sourceElement instanceof TypeSymbol && context.referenceAnalyzer
-								.isDependent(compilationUnit, (TypeSymbol) sourceElement))) {
+						&& !(sourceElement instanceof TypeSymbol && context.referenceAnalyzer != null
+								&& context.referenceAnalyzer.isDependent(compilationUnit,
+										(TypeSymbol) sourceElement))) {
 
 					// import as footer statements to avoid cyclic dependencies
 					// as much as possible
@@ -5930,7 +5931,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					ModuleImportDescriptor moduleImport = getModuleImportDescriptor(name, (ClassSymbol) type);
 					if (moduleImport != null) {
 						useModule(false, moduleImport.isDirect(), moduleImport.getTargetPackage(), null,
-								moduleImport.getImportedName(), moduleImport.getPathToImportedClass(), type);
+								moduleImport.getImportedName(), moduleImport.getPathToImportedClass(),
+								(Symbol) moduleImport.getImportedClass());
 					}
 				}
 			}

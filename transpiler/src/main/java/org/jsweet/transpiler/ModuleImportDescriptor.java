@@ -19,6 +19,7 @@
 package org.jsweet.transpiler;
 
 import javax.lang.model.element.PackageElement;
+import javax.lang.model.element.TypeElement;
 
 /**
  * This class describes a module import.
@@ -39,10 +40,24 @@ public class ModuleImportDescriptor {
 		this.direct = direct;
 	}
 
+	public ModuleImportDescriptor(boolean direct, PackageElement targetPackage, String importedName,
+			String pathToImportedClass, TypeElement importedClass) {
+		this(targetPackage, importedName, pathToImportedClass);
+		this.direct = direct;
+	}
+
 	private boolean direct = false;
 	private PackageElement targetPackage;
 	private String importedName;
 	private String pathToImportedClass;
+	private TypeElement importedClass;
+
+	/**
+	 * Returns the imported class if any.
+	 */
+	public TypeElement getImportedClass() {
+		return importedClass;
+	}
 
 	/**
 	 * True for a direct import.
