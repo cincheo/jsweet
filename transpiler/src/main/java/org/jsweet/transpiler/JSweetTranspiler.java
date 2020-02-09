@@ -900,6 +900,8 @@ public class JSweetTranspiler implements JSweetOptions {
 		factory.createBeforeTranslationScanner(transpilationHandler, context).process(compilationUnits);
 
 		if (context.useModules) {
+			StaticInitilializerAnalyzer analizer = new StaticInitilializerAnalyzer(context);
+			analizer.process(compilationUnits);
 			generateTsFiles(transpilationHandler, files, compilationUnits);
 		} else {
 			if (bundle) {

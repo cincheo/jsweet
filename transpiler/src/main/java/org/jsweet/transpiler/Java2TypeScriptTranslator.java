@@ -600,22 +600,34 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				// qualName.replace(".", "_")... this would work in the general
 				// case...
 
-				if (direct) {
-					context.addHeader("import." + targetName, "import " + targetName + " = " + moduleName + ";\n");
+				if (!context.moduleBundleMode && !(sourceElement instanceof TypeSymbol
+						&& context.referenceAnalyzer.isDependent(compilationUnit, (TypeSymbol) sourceElement))) {
+
+					// import as footer statements to avoid cyclic dependencies
+					// as much as possible
+					// note that the better way to avoid cyclic dependency
+					// issues is to create bundles
+					context.addTopFooterStatement("import { " + targetName + " } from '" + moduleName + "';\n");
+
 				} else {
 
-					boolean fullImport = require || GLOBALS_CLASS_NAME.equals(targetName);
-					if (fullImport) {
-						if (context.useRequireForModules) {
-							context.addHeader("import." + targetName,
-									"import " + targetName + " = require(\"" + moduleName + "\");\n");
+					if (direct) {
+						context.addHeader("import." + targetName, "import " + targetName + " = " + moduleName + ";\n");
+					} else {
+
+						boolean fullImport = require || GLOBALS_CLASS_NAME.equals(targetName);
+						if (fullImport) {
+							if (context.useRequireForModules) {
+								context.addHeader("import." + targetName,
+										"import " + targetName + " = require(\"" + moduleName + "\");\n");
+							} else {
+								context.addHeader("import." + targetName,
+										"import * as " + targetName + " from '" + moduleName + "';\n");
+							}
 						} else {
 							context.addHeader("import." + targetName,
-									"import * as " + targetName + " from '" + moduleName + "';\n");
+									"import { " + targetName + " } from '" + moduleName + "';\n");
 						}
-					} else {
-						context.addHeader("import." + targetName,
-								"import { " + targetName + " } from '" + moduleName + "';\n");
 					}
 				}
 			}
@@ -914,7 +926,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			printIndent();
 			if (isDefinitionScope) {
 				print("declare ");
-			} else if(context.moduleBundleMode) {
+			} else if (context.moduleBundleMode) {
 				print("export ");
 			}
 			print("namespace ").print(rootRelativePackageName).print(" {").startIndent().println();
@@ -1436,7 +1448,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 			print(classdecl.mods);
 
-			if (!isTopLevelScope() || context.useModules || context.moduleBundleMode || isAnonymousClass() || isInnerClass() || isLocalClass()) {
+			if (!isTopLevelScope() || context.useModules || context.moduleBundleMode || isAnonymousClass()
+					|| isInnerClass() || isLocalClass()) {
 				print("export ");
 			}
 			if (context.isInterface(classdecl.sym)) {
@@ -2693,8 +2706,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		} else if (var.init == null) {
 			if (doesMemberNameRequireQuotes(name)) {
 				printIndent().print("if(").print("this['").print(name).print("']").print("===undefined) ")
-						.print("this['").print(name).print("'] = ").print(getAdapter().getVariableInitialValue(var.sym)).print(";")
-						.println();
+						.print("this['").print(name).print("'] = ").print(getAdapter().getVariableInitialValue(var.sym))
+						.print(";").println();
 			} else {
 				printIndent().print("if(").print("this.").print(name).print("===undefined) this.").print(name)
 						.print(" = ").print(getAdapter().getVariableInitialValue(var.sym)).print(";").println();
@@ -2863,7 +2876,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						name = context.getFieldNameMapping(field.sym);
 					}
 					printIndent().print("if(").print("this.").print(name).print("===undefined) ").print("this.")
-							.print(name).print(" = ").print(getAdapter().getVariableInitialValue(field.sym)).print(";").println();
+							.print(name).print(" = ").print(getAdapter().getVariableInitialValue(field.sym)).print(";")
+							.println();
 				}
 			}
 		}
@@ -3837,11 +3851,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					}
 					if (methSym != null) {
 						if (context.isInvalidOverload(methSym) && !methSym.getParameters().isEmpty()
-								&& !Util.hasTypeParameters(
-										methSym) && !methSym.isDefault() /*
-													 * &&
-													 * !Util.hasVarargs(methSym)
-													 */
+								&& !Util.hasTypeParameters(methSym)
+								&& !methSym.isDefault() /*
+														 * && !Util.hasVarargs(
+														 * methSym)
+														 */
 								&& getParent(JCMethodDecl.class) != null
 								&& !getParent(JCMethodDecl.class).sym.isDefault()) {
 							if (context.isInterface((TypeSymbol) methSym.getEnclosingElement())) {
@@ -5744,8 +5758,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (assignedType == null) {
 			return false;
 		}
-		
-		if(getAdapter().substituteAssignedExpression(assignedType, ExtendedElementFactory.INSTANCE.create(expression))) {
+
+		if (getAdapter().substituteAssignedExpression(assignedType,
+				ExtendedElementFactory.INSTANCE.create(expression))) {
 			return true;
 		}
 		if (assignedType.isInterface() && expression.type.tsym.isEnum()) {
@@ -5913,7 +5928,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					ModuleImportDescriptor moduleImport = getModuleImportDescriptor(name, (ClassSymbol) type);
 					if (moduleImport != null) {
 						useModule(false, moduleImport.isDirect(), moduleImport.getTargetPackage(), null,
-								moduleImport.getImportedName(), moduleImport.getPathToImportedClass(), null);
+								moduleImport.getImportedName(), moduleImport.getPathToImportedClass(), type);
 					}
 				}
 			}

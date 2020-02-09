@@ -76,19 +76,27 @@ public class StaticInitilializerAnalyzer extends TreeScanner {
 	 */
 	public StaticInitilializerAnalyzer(JSweetContext context) {
 		this.context = context;
+		this.context.referenceAnalyzer = this;
 	}
 
 	private DirectedGraph<JCCompilationUnit> getGraph() {
-		if (context.useModules) {
-			DirectedGraph<JCCompilationUnit> graph = staticInitializersDependencies.get(currentTopLevel.packge);
-			if (graph == null) {
-				graph = new DirectedGraph<>();
-				staticInitializersDependencies.put(currentTopLevel.packge, graph);
-			}
-			return graph;
-		} else {
-			return globalStaticInitializersDependencies;
+		/*
+		 * if (context.useModules) { DirectedGraph<JCCompilationUnit> graph =
+		 * staticInitializersDependencies.get(currentTopLevel.packge); if (graph
+		 * == null) { graph = new DirectedGraph<>();
+		 * staticInitializersDependencies.put(currentTopLevel.packge, graph); }
+		 * return graph; } else {
+		 */
+		return globalStaticInitializersDependencies;
+		// }
+	}
+
+	public boolean isDependent(JCCompilationUnit cuSource, TypeSymbol target) {
+		JCCompilationUnit cuTarget = typesToCompilationUnits.get(target);
+		if (cuSource != null && cuTarget != null) {
+			return globalStaticInitializersDependencies.hasEdge(cuTarget, cuSource);
 		}
+		return false;
 	}
 
 	Set<Type> currentTopLevelImportedTypes = new HashSet<>();
