@@ -29,6 +29,7 @@ import javax.lang.model.type.TypeMirror;
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.Util;
 
+import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.CapturedType;
 import com.sun.tools.javac.tree.JCTree;
@@ -181,7 +182,7 @@ public class UtilSupport implements Util {
 	public String getRelativePath(String fromPath, String toPath) {
 		return org.jsweet.transpiler.util.Util.getRelativePath(fromPath, toPath);
 	}
-	
+
 	@Override
 	public String getTypeInitialValue(TypeMirror type) {
 		if (type == null) {
@@ -197,6 +198,13 @@ public class UtilSupport implements Util {
 			return "null";
 		}
 	}
-	
+
+	@Override
+	public boolean isInterface(TypeElement type) {
+		if (type instanceof TypeSymbol) {
+			return context.isInterface((TypeSymbol) type);
+		}
+		return false;
+	}
 
 }

@@ -3,6 +3,7 @@ package org.jsweet.transpiler.model;
 import java.util.List;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 
 /**
@@ -12,6 +13,11 @@ import javax.lang.model.type.TypeMirror;
  */
 public interface Util {
 
+	/**
+	 * Returns true if the given type is an interface.
+	 */
+	boolean isInterface(TypeElement type);
+	
 	/**
 	 * Gets the qualified name for the given type.
 	 */
