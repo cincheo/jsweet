@@ -83,8 +83,8 @@ import org.jsweet.transpiler.util.Util;
 
 import com.sun.source.tree.Tree.Kind;
 import com.sun.tools.javac.code.Attribute;
-import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Attribute.Compound;
+import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
@@ -600,8 +600,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				// qualName.replace(".", "_")... this would work in the general
 				// case...
 
-				if (!context.moduleBundleMode && !(sourceElement instanceof TypeSymbol
-						&& context.referenceAnalyzer.isDependent(compilationUnit, (TypeSymbol) sourceElement))) {
+				if (!context.moduleBundleMode && sourceElement instanceof ClassSymbol
+						&& Util.isSourceElement(sourceElement)
+						&& !(sourceElement instanceof TypeSymbol && context.referenceAnalyzer
+								.isDependent(compilationUnit, (TypeSymbol) sourceElement))) {
 
 					// import as footer statements to avoid cyclic dependencies
 					// as much as possible
