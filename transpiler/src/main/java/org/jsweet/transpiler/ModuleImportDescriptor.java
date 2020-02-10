@@ -42,8 +42,8 @@ public class ModuleImportDescriptor {
 
 	public ModuleImportDescriptor(boolean direct, PackageElement targetPackage, String importedName,
 			String pathToImportedClass, TypeElement importedClass) {
-		this(targetPackage, importedName, pathToImportedClass);
-		this.direct = direct;
+		this(direct, targetPackage, importedName, pathToImportedClass);
+		this.importedClass = importedClass;
 	}
 
 	private boolean direct = false;
