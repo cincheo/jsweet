@@ -3574,7 +3574,17 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 									}
 								}
 							}
+						} else if (fieldAccess.selected.type.tsym instanceof PackageSymbol && context.useModules
+								&& !context.moduleBundleMode && fieldAccess.sym instanceof TypeElement) {
+							accessSubstituted = true;
+							ModuleImportDescriptor moduleImport = getAdapter().getModuleImportDescriptor(
+									new CompilationUnitElementSupport(compilationUnit),
+									fieldAccess.sym.getSimpleName().toString(), (TypeElement) fieldAccess.sym);
+							if (moduleImport != null) {
+								useModule(moduleImport);
+							}
 						}
+
 						if (!accessSubstituted) {
 							print(fieldAccess.selected).print(".");
 						}
