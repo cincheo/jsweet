@@ -4095,6 +4095,17 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 								} else {
 									if (!varSym.owner.getSimpleName().toString().equals(GLOBALS_PACKAGE_NAME)) {
 										print(varSym.owner.getSimpleName().toString());
+										if(context.useModules) {
+											if (varSym.owner instanceof TypeElement) {
+												ModuleImportDescriptor moduleImport = getAdapter().getModuleImportDescriptor(
+														new CompilationUnitElementSupport(compilationUnit),
+														varSym.owner.getSimpleName().toString(), (TypeElement) varSym.owner);
+												if (moduleImport != null) {
+													useModule(moduleImport);
+												}
+											}
+
+										}
 										if (lazyInitializedStatic && varSym.owner.isEnum()) {
 											print(ENUM_WRAPPER_CLASS_SUFFIX);
 										}
