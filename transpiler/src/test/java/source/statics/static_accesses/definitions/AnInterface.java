@@ -1,4 +1,4 @@
-package source.statics.interface_import.definitions;
+package source.statics.static_accesses.definitions;
 
 public interface AnInterface {
 

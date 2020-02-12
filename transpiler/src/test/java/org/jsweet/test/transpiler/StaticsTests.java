@@ -30,9 +30,12 @@ import source.statics.NestedAnonymousClassesWithParams;
 import source.statics.StaticInitializer;
 import source.statics.StaticInitializerWithNoFields;
 import source.statics.StaticsInInterfaces;
-import source.statics.interface_import.definitions.AClass;
-import source.statics.interface_import.definitions.AnInterface;
-import source.statics.interface_import.uses.Using;
+import source.statics.static_accesses.definitions.AClass;
+import source.statics.static_accesses.definitions.AnInterface;
+import source.statics.static_accesses.definitions.TestClassStaticAccess;
+import source.statics.static_accesses.definitions.TestEnumStaticAccess;
+import source.statics.static_accesses.uses.FullPathAccess;
+import source.statics.static_accesses.uses.Using;
 
 public class StaticsTests extends AbstractTest {
 
@@ -107,4 +110,10 @@ public class StaticsTests extends AbstractTest {
 				getSourceFile(AnInterface.class), getSourceFile(Using.class));
 	}
 
+	@Test
+	public void testFullPathStaticAccess() {
+		transpile(TestTranspilationHandler::assertNoProblems, getSourceFile(TestClassStaticAccess.class),
+				getSourceFile(TestEnumStaticAccess.class), getSourceFile(FullPathAccess.class));
+	}
+	
 }
