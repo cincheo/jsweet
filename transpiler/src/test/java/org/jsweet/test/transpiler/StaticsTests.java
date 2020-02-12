@@ -16,6 +16,10 @@
  */
 package org.jsweet.test.transpiler;
 
+import static org.junit.Assert.assertEquals;
+
+import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import source.statics.AnonymousClasses;
@@ -23,14 +27,12 @@ import source.statics.Classes;
 import source.statics.DefaultValues;
 import source.statics.InnerClasses;
 import source.statics.NestedAnonymousClassesWithParams;
-import source.statics.StaticsInInterfaces;
 import source.statics.StaticInitializer;
 import source.statics.StaticInitializerWithNoFields;
-
-import static org.junit.Assert.assertEquals;
-
-import org.junit.Assert;
-import org.junit.Ignore;
+import source.statics.StaticsInInterfaces;
+import source.statics.interface_import.definitions.AClass;
+import source.statics.interface_import.definitions.AnInterface;
+import source.statics.interface_import.uses.Using;
 
 public class StaticsTests extends AbstractTest {
 
@@ -97,6 +99,12 @@ public class StaticsTests extends AbstractTest {
 		eval((h, r) -> {
 			h.assertNoProblems();
 		}, getSourceFile(DefaultValues.class));
+	}
+
+	@Test
+	public void testImportInterface() {
+		transpile(TestTranspilationHandler::assertNoProblems, getSourceFile(AClass.class),
+				getSourceFile(AnInterface.class), getSourceFile(Using.class));
 	}
 
 }

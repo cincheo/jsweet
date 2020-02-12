@@ -79,6 +79,7 @@ import org.jsweet.transpiler.OverloadScanner.OverloadMethodEntry;
 import org.jsweet.transpiler.extension.PrinterAdapter;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.MethodInvocationElement;
+import org.jsweet.transpiler.model.support.CompilationUnitElementSupport;
 import org.jsweet.transpiler.util.AbstractTreePrinter;
 import org.jsweet.transpiler.util.JSDoc;
 
@@ -3713,7 +3714,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
                                     if (varElement.getEnclosingElement() instanceof TypeElement) {
                                         ModuleImportDescriptor moduleImport = getAdapter().getModuleImportDescriptor(
-                                                getCompilationUnitElement(),
+                                                new CompilationUnitElementSupport(getTreePath(compilationUnit),
+                                                        compilationUnit, toElement(compilationUnit), context),
                                                 varElement.getEnclosingElement().getSimpleName().toString(),
                                                 (TypeElement) varElement.getEnclosingElement());
                                         if (moduleImport != null) {
@@ -3721,15 +3723,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                                         }
                                     }
                                 }
-                            }
-                        } else if (selectedElement instanceof PackageElement && context.useModules
-                                && !context.moduleBundleMode && memberElement instanceof TypeElement) {
-                            accessSubstituted = true;
-                            ModuleImportDescriptor moduleImport = getAdapter().getModuleImportDescriptor(
-                                    getCompilationUnitElement(), memberElement.getSimpleName().toString(),
-                                    (TypeElement) memberElement);
-                            if (moduleImport != null) {
-                                useModule(moduleImport);
                             }
                         }
                         if (!accessSubstituted) {
@@ -4275,6 +4268,20 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                                 } else {
                                     if (!varEnclosingElement.getSimpleName().toString().equals(GLOBALS_PACKAGE_NAME)) {
                                         print(varEnclosingElement.getSimpleName().toString());
+
+                                        if (context.useModules) {
+                                            if (varEnclosingElement instanceof TypeElement) {
+                                                ModuleImportDescriptor moduleImport = getAdapter()
+                                                        .getModuleImportDescriptor(getCompilationUnitElement(),
+                                                                varEnclosingElement.getSimpleName().toString(),
+                                                                (TypeElement) varEnclosingElement);
+                                                if (moduleImport != null) {
+                                                    useModule(moduleImport);
+                                                }
+                                            }
+
+                                        }
+
                                         if (lazyInitializedStatic && util().isPartOfAnEnum(varEnclosingElement)) {
                                             print(ENUM_WRAPPER_CLASS_SUFFIX);
                                         }
