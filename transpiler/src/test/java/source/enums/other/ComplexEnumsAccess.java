@@ -9,8 +9,9 @@ public class ComplexEnumsAccess {
 	public static Array<String> trace2 = new Array<String>();
 
 	public static void main(String[] args) {
-		// TODO: this does not work with modules
-		//MyComplexEnum2.aStaticMethod();
+		MyComplexEnum2.aStaticMethod();
+		// TODO: static field access support
+		//trace2.push("" + MyComplexEnum2.aStaticField);
 		trace2.push("" + MyComplexEnum2.RATIO_2_1.getValue());
 		trace2.push("" + MyComplexEnum2.RATIO_2_1.str);
 		trace2.push("" + MyComplexEnum2.RATIO_2_1.otherName);
