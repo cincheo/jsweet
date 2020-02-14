@@ -1850,6 +1850,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			printIndent().print("public name() : string { return this." + ENUM_WRAPPER_CLASS_NAME + "; }").println();
 			printIndent().print("public ordinal() : number { return this." + ENUM_WRAPPER_CLASS_ORDINAL + "; }")
 					.println();
+			printIndent().print("public compareTo(other : any) : number { return this." + ENUM_WRAPPER_CLASS_ORDINAL
+					+ " - (isNaN(other)?other." + ENUM_WRAPPER_CLASS_ORDINAL + ":other); }").println();
 		}
 
 		if (getScope().enumScope) {
@@ -5792,8 +5794,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 		if (assignedType.isInterface() && expression.type.tsym.isEnum()) {
 			String relTarget = getRootRelativeName((Symbol) expression.type.tsym);
-			print(relTarget).print("[\"" + Java2TypeScriptTranslator.ENUM_WRAPPER_CLASS_WRAPPERS + "\"][")
-					.print(expression).print("]");
+			print("((wrappers, value) => wrappers===undefined?value:wrappers[value])(").print(relTarget)
+					.print("[\"" + Java2TypeScriptTranslator.ENUM_WRAPPER_CLASS_WRAPPERS + "\"], ").print(expression)
+					.print(")");
 			return true;
 		}
 		if (expression instanceof JCConditional) {
