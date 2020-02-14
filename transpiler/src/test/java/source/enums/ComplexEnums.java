@@ -25,6 +25,9 @@ public class ComplexEnums {
 		assert MyComplexEnum.getByValue(1.5f) == MyComplexEnum.RATIO_3_2;
 		trace.push("" + InnerEnum.E3.getMode());
 		trace.push("" + A.i);
+		
+		trace.push("" + MyComplexEnum.RATIO_16_9.compareTo(MyComplexEnum.RATIO_16_9));
+		trace.push("" + (MyComplexEnum.RATIO_16_9.compareTo(MyComplexEnum.RATIO_2_1)<0));
 
 		$export("trace", ">" + trace.join(","));
 	}

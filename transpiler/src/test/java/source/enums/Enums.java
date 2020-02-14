@@ -37,6 +37,10 @@ public class Enums {
 		$export("valueOfA", MyEnum.valueOf("A").name());
 		$export("valueOfC", array(MyEnum.values()).indexOf(MyEnum.valueOf("C")));
 		$export("ref", Enums.e.name());
+
+		$export("compare1", e.compareTo(MyEnum.A));
+		$export("compare2", MyEnum.B.compareTo(MyEnum.A));
+		
 		String s = null;
 		switch ((MyEnum) e) {
 		case A:
