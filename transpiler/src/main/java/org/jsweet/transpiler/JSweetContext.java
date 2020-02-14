@@ -1723,7 +1723,14 @@ public class JSweetContext extends Context {
 	 * Returns true if the given type symbol corresponds to a functional type (in
 	 * the TypeScript way).
 	 */
-	public boolean isFunctionalType(TypeSymbol type) {
+	public boolean isFunctionalType(Element element) {
+		TypeSymbol type = null;
+		if (element instanceof TypeSymbol) {
+			type = (TypeSymbol) element;
+		}
+		if (type == null) {
+			return false;
+		}
 		String name = type.getQualifiedName().toString();
 		return name.startsWith("java.util.function.") //
 				|| name.equals(Runnable.class.getName()) //
