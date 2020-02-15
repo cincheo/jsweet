@@ -37,6 +37,7 @@ import source.enums.EnumWithPropOfSameType;
 import source.enums.EnumWithStatics;
 import source.enums.Enums;
 import source.enums.EnumsImplementingInterfaces;
+import source.enums.EnumsReflection;
 import source.enums.ErasedEnum;
 import source.enums.MyComplexEnum2;
 import source.enums.StringEnums;
@@ -91,6 +92,14 @@ public class EnumTests extends AbstractTest {
 		}, getSourceFile(ComplexEnums.class));
 	}
 
+	@Test
+	public void testEnumsReflection() {
+		eval((logHandler, r) -> {
+			logHandler.assertNoProblems();
+			Assert.assertEquals(">", r.get("trace"));
+		}, getSourceFile(EnumsReflection.class));
+	}
+	
 	@Test
 	public void testComplexEnumsAccess() {
 		eval(ModuleKind.commonjs, (logHandler, r) -> {
