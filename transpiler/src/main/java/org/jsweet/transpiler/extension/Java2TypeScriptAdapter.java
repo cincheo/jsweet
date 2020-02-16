@@ -81,8 +81,8 @@ import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.JSweetTranspiler;
 import org.jsweet.transpiler.Java2TypeScriptTranslator;
-import org.jsweet.transpiler.ModuleImportDescriptor;
 import org.jsweet.transpiler.Java2TypeScriptTranslator.ComparisonMode;
+import org.jsweet.transpiler.ModuleImportDescriptor;
 import org.jsweet.transpiler.TypeChecker;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.ForeachLoopElement;
@@ -93,7 +93,6 @@ import org.jsweet.transpiler.model.LiteralElement;
 import org.jsweet.transpiler.model.MethodInvocationElement;
 import org.jsweet.transpiler.model.NewClassElement;
 import org.jsweet.transpiler.model.VariableAccessElement;
-import org.jsweet.transpiler.model.support.CompilationUnitElementSupport;
 import org.jsweet.transpiler.model.support.ForeachLoopElementSupport;
 import org.jsweet.transpiler.model.support.IdentifierElementSupport;
 import org.jsweet.transpiler.model.support.ImportElementSupport;
@@ -863,6 +862,12 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 					&& TypeChecker.FORBIDDEN_JDK_FUNCTIONAL_METHODS.contains(targetMethodName)) {
 				report(invocationElement, JSweetProblem.JDK_METHOD, targetMethodName);
 			}
+
+			if (targetClassName.equals(Function.class.getName()) && targetMethodName.equals("identity")) {
+				print("(x=>x)");
+				return true;
+			}
+
 			printFunctionalInvocation(invocationElement.getTargetExpression(), targetMethodName,
 					invocationElement.getArguments());
 			return true;
@@ -1508,6 +1513,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 				delegateToEmulLayer(accessedType, variableAccess);
 				return true;
 			}
+
 		} else {
 			if (JSweetConfig.UTIL_CLASSNAME.equals(variableAccess.getTargetElement().toString())) {
 				if ("$this".equals(variableAccess.getVariableName())) {
