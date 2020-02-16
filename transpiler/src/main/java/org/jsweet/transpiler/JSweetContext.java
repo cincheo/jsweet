@@ -119,7 +119,7 @@ public class JSweetContext extends Context {
 	private Map<String, TypeMirror> jdkSubclasses = new HashMap<>();
 
 	public StaticInitilializerAnalyzer referenceAnalyzer;
-	
+
 	/**
 	 * Maps the name of a class to the JDK type it extends.
 	 */
@@ -177,9 +177,9 @@ public class JSweetContext extends Context {
 	 * 
 	 * @param fullyQualifiedName
 	 *            fully qualified owning type name + "." + method name
-	 * @return an array containing the class and method AST objects of any matching
-	 *         method (in theory several methods could match because of overloading
-	 *         but we ignore it here)
+	 * @return an array containing the class and method AST objects of any
+	 *         matching method (in theory several methods could match because of
+	 *         overloading but we ignore it here)
 	 * @see #registerGlobalMethod(JCMethodDecl)
 	 */
 	public JCTree[] lookupGlobalMethod(String fullyQualifiedName) {
@@ -206,15 +206,17 @@ public class JSweetContext extends Context {
 	 * @param sourceTypeName
 	 *            the fully qualified name of the source type
 	 * @param targetTypeName
-	 *            the fully Qualified name of the type the source type is mapped to
+	 *            the fully Qualified name of the type the source type is mapped
+	 *            to
 	 */
 	public final void addTypeMapping(String sourceTypeName, String targetTypeName) {
 		typesMapping.put(sourceTypeName, targetTypeName);
 	}
 
 	/**
-	 * Adds a set of name-based type mappings. This method is equivalent to calling
-	 * {@link #addTypeMapping(String, String)} for each entry of the given map.
+	 * Adds a set of name-based type mappings. This method is equivalent to
+	 * calling {@link #addTypeMapping(String, String)} for each entry of the
+	 * given map.
 	 */
 	public final void addTypeMappings(Map<String, String> nameMappings) {
 		typesMapping.putAll(nameMappings);
@@ -242,9 +244,9 @@ public class JSweetContext extends Context {
 	 * Adds a functional type mapping.
 	 * 
 	 * @param mappingFunction
-	 *            a function that takes the type tree, the type name, and returns a
-	 *            mapped type (either under the form of a string, or of a string, or
-	 *            of another type tree).
+	 *            a function that takes the type tree, the type name, and
+	 *            returns a mapped type (either under the form of a string, or
+	 *            of a string, or of another type tree).
 	 */
 	public final void addTypeMapping(BiFunction<ExtendedElement, String, Object> mappingFunction) {
 		functionalTypesMapping.add(mappingFunction);
@@ -258,8 +260,8 @@ public class JSweetContext extends Context {
 	}
 
 	/**
-	 * Adds an annotation manager that will tune (add or remove) annotations on the
-	 * AST. Lastly added managers have precedence over firstly added ones.
+	 * Adds an annotation manager that will tune (add or remove) annotations on
+	 * the AST. Lastly added managers have precedence over firstly added ones.
 	 */
 	public final void addAnnotationManager(AnnotationManager annotationManager) {
 		annotationManagers.add(annotationManager);
@@ -374,15 +376,16 @@ public class JSweetContext extends Context {
 	 * </pre>
 	 * 
 	 * <p>
-	 * Filters are simplified regular expressions matching on the Java AST. Special
-	 * characters are the following:
+	 * Filters are simplified regular expressions matching on the Java AST.
+	 * Special characters are the following:
 	 * 
 	 * <ul>
-	 * <li>*: matches any token/identifier in the signature of the AST element</li>
-	 * <li>**: matches any list of tokens in signature of the AST element (same as
-	 * ..)</li>
-	 * <li>..: matches any list of tokens in signature of the AST element (same as
-	 * **)</li>
+	 * <li>*: matches any token/identifier in the signature of the AST element
+	 * </li>
+	 * <li>**: matches any list of tokens in signature of the AST element (same
+	 * as ..)</li>
+	 * <li>..: matches any list of tokens in signature of the AST element (same
+	 * as **)</li>
 	 * <li>!: negates the filter (first character only)</li>
 	 * </ul>
 	 * 
@@ -412,9 +415,9 @@ public class JSweetContext extends Context {
 	/**
 	 * Adds an annotation on the AST through global filters.
 	 * 
-	 * The annotation to be added is described by its type and by a value, which is
-	 * passed as is to the annotation's value. If the annotation type does not
-	 * accept a value parameter, no annotations will be added.
+	 * The annotation to be added is described by its type and by a value, which
+	 * is passed as is to the annotation's value. If the annotation type does
+	 * not accept a value parameter, no annotations will be added.
 	 * 
 	 * @see #addAnnotation(String, String...)
 	 */
@@ -435,8 +438,8 @@ public class JSweetContext extends Context {
 	 * </pre>
 	 * 
 	 * <p>
-	 * Filters are simplified regular expressions matching on the Java AST. Special
-	 * characters are the following:
+	 * Filters are simplified regular expressions matching on the Java AST.
+	 * Special characters are the following:
 	 * 
 	 * <ul>
 	 * <li>*: matches any character in the signature of the AST element</li>
@@ -445,8 +448,8 @@ public class JSweetContext extends Context {
 	 * 
 	 * @param annotationDescriptor
 	 *            the annotation type name, optionally preceded with a @, and
-	 *            optionally defining a value (fully qualified name is not necessary
-	 *            for JSweet annotations)
+	 *            optionally defining a value (fully qualified name is not
+	 *            necessary for JSweet annotations)
 	 * @param filters
 	 *            the annotation is activated if one of the filters match and no
 	 *            negative filter matches
@@ -605,8 +608,8 @@ public class JSweetContext extends Context {
 	 * Gets or create an overload instance for the given class and method.
 	 */
 	public Overload getOrCreateOverload(TypeElement type, ExecutableElement executable) {
-		ClassSymbol clazz = (ClassSymbol)type;
-		MethodSymbol method = (MethodSymbol)executable;
+		ClassSymbol clazz = (ClassSymbol) type;
+		MethodSymbol method = (MethodSymbol) executable;
 		Map<TypeElement, Map<String, Overload>> actualOverloads = method.isStatic() ? staticOverloads : overloads;
 		Map<String, Overload> m = actualOverloads.get(clazz);
 		if (m == null) {
@@ -627,8 +630,8 @@ public class JSweetContext extends Context {
 	 * Gets an overload instance for the given class and method.
 	 */
 	public Overload getOverload(TypeElement type, ExecutableElement executable) {
-		ClassSymbol clazz = (ClassSymbol)type;
-		MethodSymbol method = (MethodSymbol)executable;
+		ClassSymbol clazz = (ClassSymbol) type;
+		MethodSymbol method = (MethodSymbol) executable;
 		Map<TypeElement, Map<String, Overload>> actualOverloads = method.isStatic() ? staticOverloads : overloads;
 		Map<String, Overload> m = actualOverloads.get(clazz);
 		if (m == null) {
@@ -640,9 +643,10 @@ public class JSweetContext extends Context {
 		}
 		return overload;
 	}
-	
+
 	/**
-	 * Tells if that method is part of an invalid overload in its declaring class.
+	 * Tells if that method is part of an invalid overload in its declaring
+	 * class.
 	 */
 	public boolean isInvalidOverload(ExecutableElement method) {
 		Overload overload = getOverload((ClassSymbol) method.getEnclosingElement(), method);
@@ -677,9 +681,9 @@ public class JSweetContext extends Context {
 	public boolean useModules = false;
 
 	/**
-	 * A flag to tell if the transpiler should transpiler modules to old fashioned
-	 * require instructions rather than the ES2015 flavored syntax. import foo =
-	 * require("foo"); instead of import * as foo from 'foo';
+	 * A flag to tell if the transpiler should transpiler modules to old
+	 * fashioned require instructions rather than the ES2015 flavored syntax.
+	 * import foo = require("foo"); instead of import * as foo from 'foo';
 	 */
 	public boolean useRequireForModules = true;
 
@@ -687,6 +691,20 @@ public class JSweetContext extends Context {
 	 * The source files that are being transpiled.
 	 */
 	public SourceFile[] sourceFiles;
+
+	/**
+	 * The source file paths that are being used for transpilation but not
+	 * generated.
+	 */
+	public Set<String> excludedSourcePaths;
+
+	/**
+	 * Returns true if the source path corresponds to a source file that is part
+	 * of the extra input (not generated).
+	 */
+	public boolean isExcludedSourcePath(String sourcePath) {
+		return excludedSourcePaths.contains(sourcePath);
+	}
 
 	/**
 	 * The compilation units that correspond to the source files.
@@ -702,7 +720,7 @@ public class JSweetContext extends Context {
 	public boolean bundleMode = false;
 
 	public boolean moduleBundleMode = false;
-	
+
 	/**
 	 * Holds all the static fields that are lazy intitialized.
 	 */
@@ -798,7 +816,8 @@ public class JSweetContext extends Context {
 	}
 
 	/**
-	 * The list of package names imported by the given m of the transpiled program.
+	 * The list of package names imported by the given m of the transpiled
+	 * program.
 	 */
 	public Map<Symbol, String> getImportedElements(String moduleName) {
 		Map<Symbol, String> importedElements = importedElementsInModules.get(moduleName);
@@ -871,21 +890,22 @@ public class JSweetContext extends Context {
 	public DirectedGraph<PackageSymbol> packageDependencies = new DirectedGraph<>();
 
 	/**
-	 * Stores the root package names (i.e. packages contained in the default package
-	 * or in a package annotated with the {@link jsweet.lang.Root} annotation).
+	 * Stores the root package names (i.e. packages contained in the default
+	 * package or in a package annotated with the {@link jsweet.lang.Root}
+	 * annotation).
 	 */
 	public Set<String> topLevelPackageNames = new HashSet<>();
 
 	/**
-	 * Store root packages (i.e. packages contained in the default package or in a
-	 * package annotated with the {@link jsweet.lang.Root} annotation, including
-	 * null, i.e. default package).
+	 * Store root packages (i.e. packages contained in the default package or in
+	 * a package annotated with the {@link jsweet.lang.Root} annotation,
+	 * including null, i.e. default package).
 	 */
 	public HashSet<PackageSymbol> rootPackages = new HashSet<>();
 
 	/**
-	 * A flag to keep track of wether a multiple root packages problem was already
-	 * reported (shall report only once).
+	 * A flag to keep track of wether a multiple root packages problem was
+	 * already reported (shall report only once).
 	 */
 	public boolean reportedMultipleRootPackages = false;
 
@@ -895,20 +915,20 @@ public class JSweetContext extends Context {
 	public Set<String> globalImports = new HashSet<>();
 
 	/**
-	 * Imported top packages (used to avoid clashes with local variables when bundle
-	 * is on).
+	 * Imported top packages (used to avoid clashes with local variables when
+	 * bundle is on).
 	 */
 	public Set<String> importedTopPackages = new HashSet<>();
 
 	/**
-	 * A flag that indicates if the transpilation is in "strict" mode, which means
-	 * that the <code>jsweet-core-strict</code> jar is in the classpath.
+	 * A flag that indicates if the transpilation is in "strict" mode, which
+	 * means that the <code>jsweet-core-strict</code> jar is in the classpath.
 	 */
 	public boolean strictMode = false;
 
 	/**
-	 * A flag that indicates if the transpiler should transform old-fashionned apply
-	 * method to lambda or use the new convention ($apply)
+	 * A flag that indicates if the transpiler should transform old-fashionned
+	 * apply method to lambda or use the new convention ($apply)
 	 */
 	public boolean deprecatedApply = false;
 
@@ -1156,8 +1176,8 @@ public class JSweetContext extends Context {
 	private static Pattern libPackagePattern = Pattern.compile(JSweetConfig.LIBS_PACKAGE + "\\.[^.]*");
 
 	/**
-	 * Returns true if the given symbol is a root package (annotated with @Root or a
-	 * definition package).
+	 * Returns true if the given symbol is a root package (annotated with @Root
+	 * or a definition package).
 	 */
 	public boolean isRootPackage(Element element) {
 		Symbol symbol = (Symbol) element;
@@ -1271,9 +1291,10 @@ public class JSweetContext extends Context {
 	}
 
 	/**
-	 * Gets the top-level package enclosing the given symbol. The top-level package
-	 * is the one that is enclosed within a root package (see
-	 * <code>jsweet.lang.Root</code>) or the one in the default (unnamed) package.
+	 * Gets the top-level package enclosing the given symbol. The top-level
+	 * package is the one that is enclosed within a root package (see
+	 * <code>jsweet.lang.Root</code>) or the one in the default (unnamed)
+	 * package.
 	 */
 	public PackageSymbol getTopLevelPackage(Symbol symbol) {
 		if ((symbol instanceof PackageSymbol) && isRootPackage(symbol)) {
@@ -1301,7 +1322,8 @@ public class JSweetContext extends Context {
 	}
 
 	/**
-	 * Finds the first (including itself) enclosing package annotated with @Root.
+	 * Finds the first (including itself) enclosing package annotated
+	 * with @Root.
 	 */
 	public PackageSymbol getFirstEnclosingRootPackage(PackageSymbol packageSymbol) {
 		if (packageSymbol == null) {
@@ -1376,8 +1398,8 @@ public class JSweetContext extends Context {
 	}
 
 	/**
-	 * Gets the first value of the 'value' property for the given annotation type if
-	 * found on the given symbol.
+	 * Gets the first value of the 'value' property for the given annotation
+	 * type if found on the given symbol.
 	 */
 	public final <T> T getAnnotationValue(Symbol symbol, String annotationType, Class<T> propertyClass,
 			T defaultValue) {
@@ -1385,8 +1407,8 @@ public class JSweetContext extends Context {
 	}
 
 	/**
-	 * Gets the first value of the given property for the given annotation type if
-	 * found on the given symbol.
+	 * Gets the first value of the given property for the given annotation type
+	 * if found on the given symbol.
 	 */
 	@SuppressWarnings("unchecked")
 	public <T> T getAnnotationValue(Symbol symbol, String annotationType, String propertyName, Class<T> propertyClass,
@@ -1576,8 +1598,8 @@ public class JSweetContext extends Context {
 	}
 
 	/**
-	 * Tells if the given symbol is annotated with one of the given annotation type
-	 * names.
+	 * Tells if the given symbol is annotated with one of the given annotation
+	 * type names.
 	 */
 	private static boolean hasActualAnnotationType(Symbol symbol, String... annotationTypes) {
 		for (Compound a : symbol.getAnnotationMirrors()) {
@@ -1630,8 +1652,8 @@ public class JSweetContext extends Context {
 	}
 
 	/**
-	 * Returns true if given statement can be used in a Java object instantation block
-	 * to be transformed to a JS Object Literal
+	 * Returns true if given statement can be used in a Java object instantation
+	 * block to be transformed to a JS Object Literal
 	 */
 	private static boolean isAllowedStatementInMap(JCStatement statement) {
 		if (statement instanceof JCExpressionStatement) {
@@ -1720,8 +1742,8 @@ public class JSweetContext extends Context {
 	}
 
 	/**
-	 * Returns true if the given type symbol corresponds to a functional type (in
-	 * the TypeScript way).
+	 * Returns true if the given type symbol corresponds to a functional type
+	 * (in the TypeScript way).
 	 */
 	public boolean isFunctionalType(Element element) {
 		TypeSymbol type = null;
@@ -1740,7 +1762,8 @@ public class JSweetContext extends Context {
 	}
 
 	/**
-	 * Returns true if the given type symbol corresponds to a core functional type.
+	 * Returns true if the given type symbol corresponds to a core functional
+	 * type.
 	 */
 	public boolean isCoreFunctionalType(TypeSymbol type) {
 		String name = type.getQualifiedName().toString();
@@ -1751,8 +1774,8 @@ public class JSweetContext extends Context {
 	}
 
 	/**
-	 * Tells if the given type has a anonymous function (instances can be used as
-	 * lambdas).
+	 * Tells if the given type has a anonymous function (instances can be used
+	 * as lambdas).
 	 */
 	public boolean hasAnonymousFunction(TypeSymbol type) {
 		for (Symbol s : type.getEnclosedElements()) {
@@ -1768,7 +1791,8 @@ public class JSweetContext extends Context {
 	}
 
 	/**
-	 * Returns true if this class declaration is not to be output by the transpiler.
+	 * Returns true if this class declaration is not to be output by the
+	 * transpiler.
 	 */
 	public boolean isIgnored(JCClassDecl classdecl) {
 		if (hasAnnotationType(classdecl.type.tsym, JSweetConfig.ANNOTATION_OBJECT_TYPE)) {
@@ -1803,8 +1827,9 @@ public class JSweetContext extends Context {
 	}
 
 	/**
-	 * Tells if the transpiler is using J4TS Java runtime. If yes, it will use the
-	 * adapter that tries to delegate to the Java emulation layer for the Java API.
+	 * Tells if the transpiler is using J4TS Java runtime. If yes, it will use
+	 * the adapter that tries to delegate to the Java emulation layer for the
+	 * Java API.
 	 */
 	public boolean isUsingJavaRuntime() {
 		return usingJavaRuntime;
@@ -1843,8 +1868,8 @@ public class JSweetContext extends Context {
 	}
 
 	/**
-	 * Tells if the given symbol is ambient (part of a def.* package or within an
-	 * <code>@Ambient</code>-annotated scope).
+	 * Tells if the given symbol is ambient (part of a def.* package or within
+	 * an <code>@Ambient</code>-annotated scope).
 	 */
 	public boolean isAmbientDeclaration(Symbol symbol) {
 		if (symbol instanceof TypeSymbol

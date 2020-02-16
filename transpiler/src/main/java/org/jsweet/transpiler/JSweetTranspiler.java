@@ -821,12 +821,15 @@ public class JSweetTranspiler implements JSweetOptions {
 	 * 
 	 * @param transpilationHandler
 	 *            the log handler
+	 * @param doNotGenerateFiles
+	 *            these files will be used in the transpilation process but will
+	 *            not generated any corresponding transpiled artefacts
 	 * @param files
 	 *            the files to be transpiled
 	 * @throws IOException
 	 */
-	synchronized public void transpile(TranspilationHandler transpilationHandler, SourceFile... files)
-			throws IOException {
+	synchronized public void transpile(TranspilationHandler transpilationHandler, SourceFile[] doNotGenerateFiles,
+			SourceFile... files) throws IOException {
 		transpilationStartTimestamp = System.currentTimeMillis();
 
 		try {
@@ -846,7 +849,7 @@ public class JSweetTranspiler implements JSweetOptions {
 				.filter(source -> source.getJavaFile() != null).collect(toList());
 
 		long startJava2TsTimeNanos = System.nanoTime();
-		java2ts(errorHandler, jsweetSources.toArray(new SourceFile[0]));
+		java2ts(errorHandler, doNotGenerateFiles, jsweetSources.toArray(new SourceFile[0]));
 		long endJava2TsTimeNanos = System.nanoTime();
 
 		long startTs2JsTimeNanos = System.nanoTime();
@@ -892,7 +895,8 @@ public class JSweetTranspiler implements JSweetOptions {
 		}
 	}
 
-	private void java2ts(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files) throws IOException {
+	private void java2ts(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] doNotGenerateFiles,
+			SourceFile[] files) throws IOException {
 		List<JCCompilationUnit> compilationUnits = setupCompiler(Arrays.asList(SourceFile.toFiles(files)),
 				transpilationHandler);
 		if (compilationUnits == null) {
@@ -911,6 +915,8 @@ public class JSweetTranspiler implements JSweetOptions {
 		}
 
 		context.sourceFiles = files;
+		context.excludedSourcePaths = Stream.of(doNotGenerateFiles).map(f -> f.toString()).collect(Collectors.toSet());
+
 		factory.createBeforeTranslationScanner(transpilationHandler, context).process(compilationUnits);
 
 		if (context.useModules) {
@@ -948,6 +954,9 @@ public class JSweetTranspiler implements JSweetOptions {
 
 		String[] headerLines = getHeaderLines();
 		for (int i = 0; i < compilationUnits.length(); i++) {
+			if (context.isExcludedSourcePath(files[i].toString())) {
+				continue;
+			}
 			try {
 				JCCompilationUnit cu = compilationUnits.get(i);
 				if (isModuleDefsFile(cu)) {
