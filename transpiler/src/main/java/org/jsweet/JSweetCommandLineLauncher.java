@@ -808,8 +808,8 @@ public class JSweetCommandLineLauncher {
 					transpiler.addTsDefDir(f);
 				}
 
-				transpiler.transpile(transpilationHandler, SourceFile.toSourceFiles(extraJavaInputFiles),
-						SourceFile.toSourceFiles(javaInputFiles));
+				transpiler.transpile(transpilationHandler, extraJavaInputFiles.stream().map(f -> f.toString())
+						.collect(Collectors.toSet()), SourceFile.toSourceFiles(javaInputFiles));
 			} catch (NoClassDefFoundError error) {
 				transpilationHandler.report(JSweetProblem.JAVA_COMPILER_NOT_FOUND, null,
 						JSweetProblem.JAVA_COMPILER_NOT_FOUND.getMessage());

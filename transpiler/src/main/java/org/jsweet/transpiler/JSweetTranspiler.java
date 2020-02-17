@@ -36,6 +36,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -707,7 +708,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		} else {
 			if (!areAllTranspiled(sourceFiles)) {
 				ErrorCountTranspilationHandler errorHandler = new ErrorCountTranspilationHandler(transpilationHandler);
-				transpile(errorHandler, sourceFiles);
+				transpile(errorHandler, Collections.emptySet(), sourceFiles);
 				if (errorHandler.getErrorCount() > 0) {
 					throw new Exception("unable to evaluate: transpilation errors remain");
 				}
@@ -821,14 +822,14 @@ public class JSweetTranspiler implements JSweetOptions {
 	 * 
 	 * @param transpilationHandler
 	 *            the log handler
-	 * @param doNotGenerateFiles
+	 * @param excludedSourcePaths
 	 *            these files will be used in the transpilation process but will
 	 *            not generated any corresponding transpiled artefacts
 	 * @param files
 	 *            the files to be transpiled
 	 * @throws IOException
 	 */
-	synchronized public void transpile(TranspilationHandler transpilationHandler, SourceFile[] doNotGenerateFiles,
+	synchronized public void transpile(TranspilationHandler transpilationHandler, Set<String> excludedSourcePaths,
 			SourceFile... files) throws IOException {
 		transpilationStartTimestamp = System.currentTimeMillis();
 
@@ -849,7 +850,7 @@ public class JSweetTranspiler implements JSweetOptions {
 				.filter(source -> source.getJavaFile() != null).collect(toList());
 
 		long startJava2TsTimeNanos = System.nanoTime();
-		java2ts(errorHandler, doNotGenerateFiles, jsweetSources.toArray(new SourceFile[0]));
+		java2ts(errorHandler, excludedSourcePaths, jsweetSources.toArray(new SourceFile[0]));
 		long endJava2TsTimeNanos = System.nanoTime();
 
 		long startTs2JsTimeNanos = System.nanoTime();
@@ -895,7 +896,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		}
 	}
 
-	private void java2ts(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] doNotGenerateFiles,
+	private void java2ts(ErrorCountTranspilationHandler transpilationHandler, Set<String> excludedSourcePaths,
 			SourceFile[] files) throws IOException {
 		List<JCCompilationUnit> compilationUnits = setupCompiler(Arrays.asList(SourceFile.toFiles(files)),
 				transpilationHandler);
@@ -915,7 +916,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		}
 
 		context.sourceFiles = files;
-		context.excludedSourcePaths = Stream.of(doNotGenerateFiles).map(f -> f.toString()).collect(Collectors.toSet());
+		context.excludedSourcePaths = excludedSourcePaths;
 
 		factory.createBeforeTranslationScanner(transpilationHandler, context).process(compilationUnits);
 
