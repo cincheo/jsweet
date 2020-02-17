@@ -153,7 +153,7 @@ public class Util {
 				return clazz.sourcefile.getName();
 			}
 		}
-		return getSourceFilePath(element);
+		return null;
 	}
 
 	/**

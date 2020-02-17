@@ -832,7 +832,8 @@ public class JSweetTranspiler implements JSweetOptions {
 	synchronized public void transpile(TranspilationHandler transpilationHandler, Set<String> excludedSourcePaths,
 			SourceFile... files) throws IOException {
 		transpilationStartTimestamp = System.currentTimeMillis();
-
+		SourceFile.touch(files);
+		
 		try {
 			initNode(transpilationHandler);
 		} catch (Exception e) {
