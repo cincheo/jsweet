@@ -342,7 +342,6 @@ public class JSweetCommandLineLauncher {
 		optionArg.setList(true);
 		optionArg.setStringParser(FileStringParser.getParser());
 		optionArg.setListSeparator(':');
-		optionArg.setRequired(true);
 		optionArg.setHelp(
 				"An input directory (or column-separated input directories) containing Java source files to help the tranpilation (typically for libraries). Files in these directories will not generate any corresponding TS files but will help resolving various generation issues (such as default methods, tricking overloading cases, ...).");
 		jsap.registerParameter(optionArg);
