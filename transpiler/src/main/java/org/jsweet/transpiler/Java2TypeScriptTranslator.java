@@ -600,11 +600,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				// qualName.replace(".", "_")... this would work in the general
 				// case...
 
-				if(context.isExcludedSourcePath(Util.getSourceFilePath(sourceElement))) {
-					// ignore excluded source files 
+				if (context.isExcludedSourcePath(Util.getSourceFilePath(sourceElement))) {
+					// ignore excluded source files
 					return;
 				}
-				
+
 				if (!context.moduleBundleMode && sourceElement instanceof ClassSymbol
 						&& Util.isSourceElement(sourceElement)
 						&& !(sourceElement instanceof TypeSymbol && context.referenceAnalyzer != null
@@ -3848,13 +3848,15 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 								printInnerClassAccess(methSym.name.toString(), methSym.getKind(),
 										methSym.getParameters().size());
 							} else {
-								if(isStatic && selected instanceof JCIdent && isStatic && ((JCIdent)selected).sym instanceof VarSymbol) {
+								if (methSym != null && methSym.isStatic() && selected instanceof JCIdent
+										&& ((JCIdent) selected).sym instanceof VarSymbol) {
 									// case of instance static access
-									if(context.useModules && !context.moduleBundleMode) {
+									if (context.useModules && !context.moduleBundleMode) {
 										print(getClassName(selected.type.tsym));
 										ModuleImportDescriptor moduleImport = getAdapter().getModuleImportDescriptor(
 												new CompilationUnitElementSupport(compilationUnit),
-												selected.type.tsym.getSimpleName().toString(), (TypeElement) selected.type.tsym);
+												selected.type.tsym.getSimpleName().toString(),
+												(TypeElement) selected.type.tsym);
 										if (moduleImport != null) {
 											useModule(moduleImport);
 										}
