@@ -159,6 +159,11 @@ public class TsComparisonTest extends AbstractTest {
 		}
 
 		@Override
+		public void touch() {
+			// do nothing
+		}
+		
+		@Override
 		public String toString() {
 			return getTsFile().toString();
 		}
