@@ -92,6 +92,8 @@ public class JSweetDiagnosticHandler extends BasicDiagnosticFormatter {
 		if (diagnostic.getKind() == Kind.ERROR) {
 			if (!ignoreError(diagnostic)) {
 				reportJavaError(diagnostic, locale);
+			} else {
+				return "";
 			}
 		}
 		switch (diagnostic.getKind()) {
