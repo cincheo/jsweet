@@ -330,7 +330,7 @@ public class JSweetCommandLineLauncher {
 		optionArg.setLongFlag("input");
 		optionArg.setList(true);
 		optionArg.setStringParser(FileStringParser.getParser());
-		optionArg.setListSeparator(':');
+		optionArg.setListSeparator(File.pathSeparatorChar);
 		optionArg.setRequired(true);
 		optionArg.setHelp(
 				"An input directory (or column-separated input directories) containing Java files to be transpiled. Java files will be recursively looked up in sub-directories. Inclusion and exclusion patterns can be defined with the 'includes' and 'excludes' options.");
@@ -341,7 +341,7 @@ public class JSweetCommandLineLauncher {
 		optionArg.setLongFlag("extraInput");
 		optionArg.setList(true);
 		optionArg.setStringParser(FileStringParser.getParser());
-		optionArg.setListSeparator(':');
+		optionArg.setListSeparator(File.pathSeparatorChar);
 		optionArg.setHelp(
 				"An input directory (or column-separated input directories) containing Java source files to help the tranpilation (typically for libraries). Files in these directories will not generate any corresponding TS files but will help resolving various generation issues (such as default methods, tricking overloading cases, ...).");
 		jsap.registerParameter(optionArg);
@@ -350,7 +350,7 @@ public class JSweetCommandLineLauncher {
 		optionArg = new FlaggedOption("includes");
 		optionArg.setLongFlag("includes");
 		optionArg.setList(true);
-		optionArg.setListSeparator(':');
+		optionArg.setListSeparator(File.pathSeparatorChar);
 		optionArg.setHelp(
 				"A column-separated list of expressions matching files to be included (relatively to the input directory).");
 		jsap.registerParameter(optionArg);
@@ -359,7 +359,7 @@ public class JSweetCommandLineLauncher {
 		optionArg = new FlaggedOption("excludes");
 		optionArg.setLongFlag("excludes");
 		optionArg.setList(true);
-		optionArg.setListSeparator(':');
+		optionArg.setListSeparator(File.pathSeparatorChar);
 		optionArg.setHelp(
 				"A column-separated list of expressions matching files to be excluded (relatively to the input directory).");
 		jsap.registerParameter(optionArg);
@@ -370,7 +370,7 @@ public class JSweetCommandLineLauncher {
 		optionArg.setLongFlag("defInput");
 		optionArg.setList(true);
 		optionArg.setStringParser(FileStringParser.getParser());
-		optionArg.setListSeparator(':');
+		optionArg.setListSeparator(File.pathSeparatorChar);
 		optionArg.setRequired(false);
 		optionArg.setHelp(
 				"An input directory (or column-separated input directories) containing TypeScript definition files (*.d.ts) to be used for transpilation. Definition files will be recursively looked up in sub-diredctories.");
