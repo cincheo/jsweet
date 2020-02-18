@@ -96,7 +96,7 @@ public class TranspilerTests extends AbstractTest {
 			transpiler.setTscWatchMode(true);
 			transpiler.setGenerateSourceMaps(true);
 			long t = System.currentTimeMillis();
-			transpiler.transpile(logHandler, null, new SourceFile(overload), new SourceFile(abstractClass));
+			transpiler.transpile(logHandler, new SourceFile(overload), new SourceFile(abstractClass));
 			t = System.currentTimeMillis() - t;
 			assertEquals("There should be no problems", 0, logHandler.reportedProblems.size());
 			assertTrue("Wrong transpiler state", transpiler.isTscWatchMode());
@@ -115,7 +115,7 @@ public class TranspilerTests extends AbstractTest {
 
 			assertTrue("File not regenerated", transpiler.getWatchedFile(overload).getJsFileLastTranspiled() != ts1);
 
-			transpiler.transpile(logHandler, null, new SourceFile(overload));
+			transpiler.transpile(logHandler, new SourceFile(overload));
 			assertEquals("There should be no problems", 0, logHandler.reportedProblems.size());
 			assertTrue("Wrong transpiler state", transpiler.isTscWatchMode());
 			assertEquals("Wrong transpiler state", 2, transpiler.getWatchedFiles().length);
@@ -127,7 +127,7 @@ public class TranspilerTests extends AbstractTest {
 
 			transpiler.resetTscWatchMode();
 
-			transpiler.transpile(logHandler, null, new SourceFile(overload));
+			transpiler.transpile(logHandler, new SourceFile(overload));
 			assertEquals("There should be no problems", 0, logHandler.reportedProblems.size());
 			assertTrue("Wrong transpiler state", transpiler.isTscWatchMode());
 			assertEquals("Wrong transpiler state", 1, transpiler.getWatchedFiles().length);
@@ -139,7 +139,7 @@ public class TranspilerTests extends AbstractTest {
 
 			transpiler.setTscWatchMode(false);
 			SourceFile sf = new SourceFile(overload);
-			transpiler.transpile(logHandler, null, sf);
+			transpiler.transpile(logHandler, sf);
 			assertEquals("There should be no problems", 0, logHandler.reportedProblems.size());
 			assertTrue("Wrong transpiler state", !transpiler.isTscWatchMode());
 			assertTrue("Wrong transpiler state", transpiler.getWatchedFiles() == null);
