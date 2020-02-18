@@ -31,6 +31,7 @@ import source.statics.static_accesses.definitions.AClass;
 import source.statics.static_accesses.definitions.AnInterface;
 import source.statics.static_accesses.definitions.TestClassStaticAccess;
 import source.statics.static_accesses.definitions.TestEnumStaticAccess;
+import source.statics.static_accesses.uses.AccessThroughInstance;
 import source.statics.static_accesses.uses.FullPathAccess;
 import source.statics.static_accesses.uses.Using;
 
@@ -104,5 +105,13 @@ public class StaticsTests extends AbstractTest {
 		transpile(TestTranspilationHandler::assertNoProblems, getSourceFile(TestClassStaticAccess.class),
 				getSourceFile(TestEnumStaticAccess.class), getSourceFile(FullPathAccess.class));
 	}
+	
+	@Test
+	public void testAccessThroughInstance() {
+		eval((h, r) -> {
+			h.assertNoProblems();
+		}, getSourceFile(TestClassStaticAccess.class), getSourceFile(AccessThroughInstance.class));
+	}
+
 	
 }

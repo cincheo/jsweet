@@ -3848,7 +3848,23 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 								printInnerClassAccess(methSym.name.toString(), methSym.getKind(),
 										methSym.getParameters().size());
 							} else {
-								print(selected).print(".");
+								if(isStatic && selected instanceof JCIdent && isStatic && ((JCIdent)selected).sym instanceof VarSymbol) {
+									// case of instance static access
+									if(context.useModules && !context.moduleBundleMode) {
+										print(getClassName(selected.type.tsym));
+										ModuleImportDescriptor moduleImport = getAdapter().getModuleImportDescriptor(
+												new CompilationUnitElementSupport(compilationUnit),
+												selected.type.tsym.getSimpleName().toString(), (TypeElement) selected.type.tsym);
+										if (moduleImport != null) {
+											useModule(moduleImport);
+										}
+									} else {
+										print(getRootRelativeName(selected.type.tsym));
+									}
+								} else {
+									print(selected);
+								}
+								print(".");
 							}
 						} else {
 							if (context.useModules) {
