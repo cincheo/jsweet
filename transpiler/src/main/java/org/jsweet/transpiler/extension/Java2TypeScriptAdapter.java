@@ -348,7 +348,11 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 
 	@Override
 	public boolean substituteMethodInvocation(MethodInvocationElement invocationElement) {
-
+		if (invocationElement.getMethod() == null && context.options.isIgnoreJavaSymbolNotFoundError()) {
+			// may happen if the method is not available
+			print("null");
+			return true;
+		}
 		Element targetType = invocationElement.getMethod().getEnclosingElement();
 		// This is some sort of hack to avoid invoking erased methods.
 		// If the containing class is erased, we still invoke it because we

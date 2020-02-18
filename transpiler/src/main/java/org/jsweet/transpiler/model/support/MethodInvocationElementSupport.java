@@ -78,9 +78,9 @@ public class MethodInvocationElementSupport extends ExtendedElementSupport<JCMet
 	@Override
 	public ExecutableElement getMethod() {
 		JCTree methTree = tree.meth;
-		if (methTree instanceof JCIdent) {
+		if (methTree instanceof JCIdent && ((JCIdent) methTree).sym instanceof ExecutableElement) {
 			return (ExecutableElement) ((JCIdent) methTree).sym;
-		} else if (methTree instanceof JCFieldAccess) {
+		} else if (methTree instanceof JCFieldAccess && ((JCFieldAccess) methTree).sym instanceof ExecutableElement) {
 			return (ExecutableElement) ((JCFieldAccess) methTree).sym;
 		} else {
 			return null;

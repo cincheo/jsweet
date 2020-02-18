@@ -191,6 +191,11 @@ public interface JSweetOptions {
 	boolean isIgnoreJavaFileNameError();
 
 	/**
+	 * Generates output code even if a Java symbol is not found.
+	 */
+	boolean isIgnoreJavaSymbolNotFoundError();
+	
+	/**
 	 * Generates d.ts files along with the js files.
 	 */
 	boolean isGenerateDeclarations();
