@@ -95,6 +95,7 @@ import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.code.Type.ClassType;
+import com.sun.tools.javac.code.Type.ErrorType;
 import com.sun.tools.javac.code.Type.MethodType;
 import com.sun.tools.javac.code.Type.TypeVar;
 import com.sun.tools.javac.code.TypeTag;
@@ -4491,13 +4492,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 			boolean applyVarargs = true;
 			Symbol s = newClass.constructor;
-			if(!(s instanceof MethodSymbol)) {
+			if (!(s instanceof MethodSymbol)) {
 				// not in source path
 				print("null");
 				return;
 			}
 			MethodSymbol methSym = (MethodSymbol) newClass.constructor;
-			
+
 			if (newClass.args.size() == 0 || !Util.hasVarargs(methSym) //
 					|| newClass.args.last().type.getKind() != TypeKind.ARRAY
 					// we dont use apply if var args type differ
@@ -4541,13 +4542,18 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					}
 					print("(").printConstructorArgList(newClass, false).print(")");
 				} else {
-					print("new ");
-					if (mappedType != null) {
-						print(Java2TypeScriptTranslator.mapConstructorType(mappedType));
+					if (newClass.constructorType instanceof ErrorType) {
+						print("null");
+						return;
 					} else {
-						print(newClass.clazz);
+						print("new ");
+						if (mappedType != null) {
+							print(Java2TypeScriptTranslator.mapConstructorType(mappedType));
+						} else {
+							print(newClass.clazz);
+						}
+						print("(").printConstructorArgList(newClass, false).print(")");
 					}
-					print("(").printConstructorArgList(newClass, false).print(")");
 				}
 			}
 		}
@@ -5985,7 +5991,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 		private void checkType(Symbol symbol) {
 			if (symbol instanceof ClassSymbol /*
-												 * && !isMappedOrErasedType(type)
+												 * &&
+												 * !isMappedOrErasedType(type)
 												 */) {
 				String name = symbol.getSimpleName().toString();
 				if (!names.contains(name)) {
