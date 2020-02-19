@@ -25,7 +25,6 @@ import javax.tools.Diagnostic.Kind;
 
 import org.apache.log4j.Logger;
 
-import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.util.BasicDiagnosticFormatter;
 import com.sun.tools.javac.util.JCDiagnostic;
 import com.sun.tools.javac.util.JavacMessages;
@@ -72,18 +71,13 @@ public class JSweetDiagnosticHandler extends BasicDiagnosticFormatter {
 	}
 
 	private boolean ignoreError(JCDiagnostic diagnostic) {
+		if (context.options.isIgnoreJavaErrors()) {
+			return true;
+		}
 		if (context.options.isIgnoreJavaFileNameError()
 				&& "compiler.err.class.public.should.be.in.file".equals(diagnostic.getCode())) {
 			return true;
 		}
-		if (context.options.isIgnoreJavaSymbolNotFoundError()
-				&& ("compiler.err.cant.resolve.location".equals(diagnostic.getCode())
-						|| "compiler.err.cant.resolve.location.args".equals(diagnostic.getCode()))
-				&& (((JCFieldAccess) diagnostic.getDiagnosticPosition().getTree()).selected.type.toString())
-						.startsWith("java.")) {
-			return true;
-		}
-
 		return false;
 	}
 

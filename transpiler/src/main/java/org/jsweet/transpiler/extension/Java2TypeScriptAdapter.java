@@ -348,7 +348,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 
 	@Override
 	public boolean substituteMethodInvocation(MethodInvocationElement invocationElement) {
-		if (invocationElement.getMethod() == null && context.options.isIgnoreJavaSymbolNotFoundError()) {
+		if (invocationElement.getMethod() == null && context.options.isIgnoreJavaErrors()) {
 			// may happen if the method is not available
 			print("null");
 			return true;

@@ -133,8 +133,9 @@ import com.martiansoftware.jsap.stringparsers.FileStringParser;
         generates d.ts definition files in the directory given by the tsout
         option.
 
-  [--ignoreJavaSymbolNotFoundError]
-        Ignore Java symbol not found error.
+  [--ignoreJavaErrors]
+        Ignore Java compilation errors. Do not use unless you know what you are 
+        doing.
 
   [--declaration]
         Generate the d.ts files along with the js files, so that other programs
@@ -426,10 +427,10 @@ public class JSweetCommandLineLauncher {
 				"Ignore definitions from def.* packages, so that they are not generated in d.ts definition files. If this option is not set, the transpiler generates d.ts definition files in the directory given by the tsout option.");
 		jsap.registerParameter(switchArg);
 
-		switchArg = new Switch("ignoreJavaSymbolNotFoundError");
-		switchArg.setLongFlag("ignoreJavaSymbolNotFoundError");
+		switchArg = new Switch("ignoreJavaErrors");
+		switchArg.setLongFlag("ignoreJavaErrors");
 		switchArg.setHelp(
-				"Ignore Java symbol not found errors.");
+				"Ignore Java compilation errors. Do not use unless you know what you are doing.");
 		jsap.registerParameter(switchArg);
 		
 		// Generates declarations
@@ -783,8 +784,8 @@ public class JSweetCommandLineLauncher {
 				if (jsapArgs.userSpecified("ignoreDefinitions")) {
 					transpiler.setGenerateDefinitions(!jsapArgs.getBoolean("ignoreDefinitions"));
 				}
-				if (jsapArgs.userSpecified("ignoreJavaSymbolNotFoundError")) {
-					transpiler.setIgnoreJavaSymbolNotFoundError(jsapArgs.getBoolean("ignoreJavaSymbolNotFoundError"));
+				if (jsapArgs.userSpecified("ignoreJavaErrors")) {
+					transpiler.setIgnoreJavaErrors(jsapArgs.getBoolean("ignoreJavaErrors"));
 				}
 				if (jsapArgs.userSpecified("dtsOutputDir")) {
 					transpiler.setDeclarationsOutputDir(dtsOutputDir);

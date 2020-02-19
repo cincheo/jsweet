@@ -223,7 +223,6 @@ public class JSweetTranspiler implements JSweetOptions {
 	private boolean noRootDirectories = false;
 	private boolean ignoreAssertions = true;
 	private boolean ignoreJavaFileNameError = false;
-	private boolean ignoreJavaSymbolNotFoundError = false;
 	private boolean generateDeclarations = false;
 	private File declarationsOutputDir;
 	private boolean generateDefinitions = true;
@@ -1654,15 +1653,6 @@ public class JSweetTranspiler implements JSweetOptions {
 	@Override
 	public boolean isIgnoreJavaFileNameError() {
 		return ignoreJavaFileNameError;
-	}
-
-	@Override
-	public boolean isIgnoreJavaSymbolNotFoundError() {
-		return ignoreJavaSymbolNotFoundError;
-	}
-	
-	public void setIgnoreJavaSymbolNotFoundError(boolean ignoreJavaSymbolNotFoundError) {
-		this.ignoreJavaSymbolNotFoundError = ignoreJavaSymbolNotFoundError;
 	}
 
 	public void setIgnoreJavaFileNameError(boolean ignoreJavaFileNameError) {
