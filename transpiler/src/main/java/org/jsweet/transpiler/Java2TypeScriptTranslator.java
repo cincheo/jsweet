@@ -4490,7 +4490,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (typeChecker.checkType(newClass, null, newClass.clazz)) {
 
 			boolean applyVarargs = true;
+			Symbol s = newClass.constructor;
+			if(!(s instanceof MethodSymbol)) {
+				// not in source path
+				print("null");
+				return;
+			}
 			MethodSymbol methSym = (MethodSymbol) newClass.constructor;
+			
 			if (newClass.args.size() == 0 || !Util.hasVarargs(methSym) //
 					|| newClass.args.last().type.getKind() != TypeKind.ARRAY
 					// we dont use apply if var args type differ
