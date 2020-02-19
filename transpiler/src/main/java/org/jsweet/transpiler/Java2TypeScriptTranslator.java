@@ -5973,12 +5973,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 		private HashSet<String> names = new HashSet<>();
 
-		private void checkType(TypeSymbol type) {
-			if (type instanceof ClassSymbol /* && !isMappedOrErasedType(type) */) {
-				String name = type.getSimpleName().toString();
+		private void checkType(Symbol symbol) {
+			if (symbol instanceof ClassSymbol /* && !isMappedOrErasedType(type) */) {
+				String name = symbol.getSimpleName().toString();
 				if (!names.contains(name)) {
 					names.add(name);
-					ModuleImportDescriptor moduleImport = getModuleImportDescriptor(name, (ClassSymbol) type);
+					ModuleImportDescriptor moduleImport = getModuleImportDescriptor(name, (ClassSymbol) symbol);
 					if (moduleImport != null) {
 						useModule(false, moduleImport.isDirect(), moduleImport.getTargetPackage(), null,
 								moduleImport.getImportedName(), moduleImport.getPathToImportedClass(),
