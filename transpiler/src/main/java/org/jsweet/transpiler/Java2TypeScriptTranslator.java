@@ -5918,11 +5918,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			} else if (expression instanceof JCMethodInvocation) {
 				// disable type checking when the method returns a type variable
 				// because it may to be correctly set in the invocation
-				MethodSymbol m = (MethodSymbol) Util.getAccessedSymbol(((JCMethodInvocation) expression).meth);
-				if (m != null && m.getReturnType() instanceof TypeVar
-						&& m.getReturnType().tsym.getEnclosingElement() == m) {
-					print("<any>(").print(expression).print(")");
-					return true;
+				Symbol s = (Symbol) Util.getAccessedSymbol(((JCMethodInvocation) expression).meth);
+				if (s instanceof MethodSymbol) {
+					MethodSymbol m = (MethodSymbol) s;
+					if (m != null && m.getReturnType() instanceof TypeVar
+							&& m.getReturnType().tsym.getEnclosingElement() == m) {
+						print("<any>(").print(expression).print(")");
+						return true;
+					}
 				}
 			}
 			return false;
@@ -5974,7 +5977,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		private HashSet<String> names = new HashSet<>();
 
 		private void checkType(Symbol symbol) {
-			if (symbol instanceof ClassSymbol /* && !isMappedOrErasedType(type) */) {
+			if (symbol instanceof ClassSymbol /*
+												 * && !isMappedOrErasedType(type)
+												 */) {
 				String name = symbol.getSimpleName().toString();
 				if (!names.contains(name)) {
 					names.add(name);
