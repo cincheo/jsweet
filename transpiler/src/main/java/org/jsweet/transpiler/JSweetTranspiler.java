@@ -826,10 +826,11 @@ public class JSweetTranspiler implements JSweetOptions {
 	 *            the files to be transpiled
 	 * @throws IOException
 	 */
-	synchronized public void transpile(TranspilationHandler transpilationHandler, 
-			SourceFile... files) throws IOException {
+	synchronized public void transpile(TranspilationHandler transpilationHandler, SourceFile... files)
+			throws IOException {
 		transpile(transpilationHandler, Collections.emptySet(), files);
-	}	
+	}
+
 	/**
 	 * Transpiles the given Java source files. When the transpiler is in watch
 	 * mode ({@link #setTscWatchMode(boolean)}), the first invocation to this
@@ -848,7 +849,7 @@ public class JSweetTranspiler implements JSweetOptions {
 			SourceFile... files) throws IOException {
 		transpilationStartTimestamp = System.currentTimeMillis();
 		SourceFile.touch(files);
-		
+
 		try {
 			initNode(transpilationHandler);
 		} catch (Exception e) {
@@ -864,6 +865,11 @@ public class JSweetTranspiler implements JSweetOptions {
 		ErrorCountTranspilationHandler errorHandler = new ErrorCountTranspilationHandler(transpilationHandler);
 		Collection<SourceFile> jsweetSources = asList(files).stream() //
 				.filter(source -> source.getJavaFile() != null).collect(toList());
+
+		if (isIgnoreJavaErrors()) {
+			errorHandler.report(JSweetProblem.USER_WARNING, null,
+					"Java compilation errors are ignored - make sure you validate your Java code another way in order to avoid subsequent transpilation errors");
+		}
 
 		long startJava2TsTimeNanos = System.nanoTime();
 		java2ts(errorHandler, excludedSourcePaths, jsweetSources.toArray(new SourceFile[0]));
