@@ -3984,7 +3984,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 		for (int i = 0; i < argsLength; i++) {
 			JCExpression arg = inv.args.get(i);
-			if (inv.meth.type != null) {
+			if (inv.meth.type instanceof MethodType) {
 				// varargs transmission with TS ... notation
 				List<Type> argTypes = ((MethodType) inv.meth.type).argtypes;
 				Type paramType = i < argTypes.size() ? argTypes.get(i) : argTypes.get(argTypes.size() - 1);
@@ -4001,7 +4001,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					print(arg);
 				}
 			} else {
-				// this should never happen but we fall back just in case
+				// fall back when method type is wrongly resolved
 				print(arg);
 			}
 			if (i < argsLength - 1) {
@@ -4494,7 +4494,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			Symbol s = newClass.constructor;
 			if (!(s instanceof MethodSymbol)) {
 				// not in source path
-				print("null");
+				print("null/*cannot resolve "+newClass.clazz+"*/");
 				return;
 			}
 			MethodSymbol methSym = (MethodSymbol) newClass.constructor;
@@ -4543,7 +4543,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					print("(").printConstructorArgList(newClass, false).print(")");
 				} else {
 					if (newClass.constructorType instanceof ErrorType) {
-						print("null");
+						print("null/*cannot resolve constructor type "+newClass.clazz+"*/");
 						return;
 					} else {
 						print("new ");

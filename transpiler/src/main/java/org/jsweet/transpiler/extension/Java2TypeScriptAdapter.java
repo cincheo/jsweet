@@ -350,8 +350,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 	public boolean substituteMethodInvocation(MethodInvocationElement invocationElement) {
 		if (invocationElement.getMethod() == null && context.options.isIgnoreJavaErrors()) {
 			// may happen if the method is not available
-			print("null");
-			return true;
+			return false;
 		}
 		Element targetType = invocationElement.getMethod().getEnclosingElement();
 		// This is some sort of hack to avoid invoking erased methods.
@@ -364,7 +363,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 		// least do it conditionally).
 		if (hasAnnotationType(invocationElement.getMethod(), ANNOTATION_ERASED)
 				&& !isAmbientDeclaration(invocationElement.getMethod())) {
-			print("null");
+			print("null/*erased method "+((MethodInvocationElementSupport)invocationElement).getTree().meth+"*/");
 			return true;
 		}
 		if (invocationElement.getTargetExpression() != null) {
