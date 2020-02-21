@@ -346,11 +346,35 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 		}
 	}
 
+	private boolean substituteUnresolvedMethodInvocation(JCMethodInvocation invocation) {
+		// this is a patch that should be removed when Class.isInstance gets supported by J4TS
+		if (invocation.meth instanceof JCFieldAccess) {
+			JCFieldAccess fieldAccess = (JCFieldAccess) invocation.meth;
+			String methName = fieldAccess.name.toString();
+			String typeName = fieldAccess.selected.type != null && fieldAccess.selected.type.tsym != null
+					? fieldAccess.selected.type.tsym.toString() : null;
+			if (typeName != null && "isInstance".equals(methName) && Class.class.getName().equals(typeName)) {
+				printMacroName(fieldAccess.toString());
+				print("((c:any,o:any) => { if(typeof c === 'string') return (o.constructor && o.constructor")
+				.print("[\"" + Java2TypeScriptTranslator.INTERFACES_FIELD_NAME + "\"] && o.constructor")
+				.print("[\"" + Java2TypeScriptTranslator.INTERFACES_FIELD_NAME + "\"].indexOf(c) >= 0) || (o")
+				.print("[\"" + Java2TypeScriptTranslator.INTERFACES_FIELD_NAME + "\"] && o")
+				.print("[\"" + Java2TypeScriptTranslator.INTERFACES_FIELD_NAME
+						+ "\"].indexOf(c) >= 0); else if(typeof c === 'function') return (o instanceof c) || (o.constructor && o.constructor === c); })(");
+				getPrinter().print(fieldAccess.selected).print(",").print(invocation.args.head).print(")");
+				return true;
+			}
+		}
+		print("/*unresolved method*/");
+		getPrinter().printDefaultMethodInvocation(invocation);
+		return true;
+	}
+
 	@Override
 	public boolean substituteMethodInvocation(MethodInvocationElement invocationElement) {
 		if (invocationElement.getMethod() == null && context.options.isIgnoreJavaErrors()) {
 			// may happen if the method is not available
-			return false;
+			return substituteUnresolvedMethodInvocation(((MethodInvocationElementSupport) invocationElement).getTree());
 		}
 		Element targetType = invocationElement.getMethod().getEnclosingElement();
 		// This is some sort of hack to avoid invoking erased methods.
@@ -363,7 +387,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 		// least do it conditionally).
 		if (hasAnnotationType(invocationElement.getMethod(), ANNOTATION_ERASED)
 				&& !isAmbientDeclaration(invocationElement.getMethod())) {
-			print("null/*erased method "+((MethodInvocationElementSupport)invocationElement).getTree().meth+"*/");
+			print("null/*erased method " + ((MethodInvocationElementSupport) invocationElement).getTree().meth + "*/");
 			return true;
 		}
 		if (invocationElement.getTargetExpression() != null) {
