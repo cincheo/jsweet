@@ -19,6 +19,7 @@
 package org.jsweet.transpiler.extension;
 
 import static org.jsweet.JSweetConfig.ANNOTATION_ERASED;
+import static org.jsweet.JSweetConfig.ANNOTATION_KEEP_USES;
 import static org.jsweet.JSweetConfig.ANNOTATION_OBJECT_TYPE;
 import static org.jsweet.JSweetConfig.ANNOTATION_STRING_TYPE;
 import static org.jsweet.JSweetConfig.DEPRECATED_UTIL_CLASSNAME;
@@ -347,7 +348,8 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 	}
 
 	private boolean substituteUnresolvedMethodInvocation(JCMethodInvocation invocation) {
-		// this is a patch that should be removed when Class.isInstance gets supported by J4TS
+		// this is a patch that should be removed when Class.isInstance gets
+		// supported by J4TS
 		if (invocation.meth instanceof JCFieldAccess) {
 			JCFieldAccess fieldAccess = (JCFieldAccess) invocation.meth;
 			String methName = fieldAccess.name.toString();
@@ -356,11 +358,11 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 			if (typeName != null && "isInstance".equals(methName) && Class.class.getName().equals(typeName)) {
 				printMacroName(fieldAccess.toString());
 				print("((c:any,o:any) => { if(typeof c === 'string') return (o.constructor && o.constructor")
-				.print("[\"" + Java2TypeScriptTranslator.INTERFACES_FIELD_NAME + "\"] && o.constructor")
-				.print("[\"" + Java2TypeScriptTranslator.INTERFACES_FIELD_NAME + "\"].indexOf(c) >= 0) || (o")
-				.print("[\"" + Java2TypeScriptTranslator.INTERFACES_FIELD_NAME + "\"] && o")
-				.print("[\"" + Java2TypeScriptTranslator.INTERFACES_FIELD_NAME
-						+ "\"].indexOf(c) >= 0); else if(typeof c === 'function') return (o instanceof c) || (o.constructor && o.constructor === c); })(");
+						.print("[\"" + Java2TypeScriptTranslator.INTERFACES_FIELD_NAME + "\"] && o.constructor")
+						.print("[\"" + Java2TypeScriptTranslator.INTERFACES_FIELD_NAME + "\"].indexOf(c) >= 0) || (o")
+						.print("[\"" + Java2TypeScriptTranslator.INTERFACES_FIELD_NAME + "\"] && o")
+						.print("[\"" + Java2TypeScriptTranslator.INTERFACES_FIELD_NAME
+								+ "\"].indexOf(c) >= 0); else if(typeof c === 'function') return (o instanceof c) || (o.constructor && o.constructor === c); })(");
 				getPrinter().print(fieldAccess.selected).print(",").print(invocation.args.head).print(")");
 				return true;
 			}
@@ -386,6 +388,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 		// So, we should probably find a better way to erase invocations (or at
 		// least do it conditionally).
 		if (hasAnnotationType(invocationElement.getMethod(), ANNOTATION_ERASED)
+				&& !hasAnnotationType(invocationElement.getMethod(), ANNOTATION_KEEP_USES)
 				&& !isAmbientDeclaration(invocationElement.getMethod())) {
 			print("null/*erased method " + ((MethodInvocationElementSupport) invocationElement).getTree().meth + "*/");
 			return true;
