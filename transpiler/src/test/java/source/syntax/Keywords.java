@@ -30,6 +30,7 @@ public class Keywords {
 		k.m();
 		k.m2(1, 2);
 		$export("trace", trace.join(","));
+		assert 2 == new Other1().export();
 	}
 
 	String in;
@@ -88,6 +89,11 @@ class Other1 {
 	int var;
 
 	String function;
+	
+	public int export() {
+		int export = 2;
+		return export;
+	}
 
 }
 

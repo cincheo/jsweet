@@ -401,6 +401,7 @@ public abstract class JSweetConfig {
 			add("in");
 			add("arguments");
 			add("eval");
+			add("export");
 		}
 	};
 
