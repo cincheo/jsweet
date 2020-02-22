@@ -73,6 +73,10 @@ import com.martiansoftware.jsap.stringparsers.FileStringParser;
         Force the Java compiler to use a specific encoding (UTF-8, UTF-16, ...).
         (default: UTF-8)
 
+  [--outEncoding <encoding>]
+        Force the generated TypeScript output code for the given encoding (UTF-8, UTF-16, ...).
+        (default: UTF-8)
+
   [--jdkHome <jdkHome>]
         Set the JDK home directory to be used to find the Java compiler. If not
         set, the transpiler will try to use the JAVA_HOME environment variable.
@@ -319,6 +323,15 @@ public class JSweetCommandLineLauncher {
 		optionArg.setHelp("Force the Java compiler to use a specific encoding (UTF-8, UTF-16, ...).");
 		jsap.registerParameter(optionArg);
 
+		// Output encoding
+		optionArg = new FlaggedOption("outEncoding");
+		optionArg.setLongFlag("outEncoding");
+		optionArg.setStringParser(JSAP.STRING_PARSER);
+		optionArg.setRequired(false);
+		optionArg.setDefault("UTF-8");
+		optionArg.setHelp("Force the generated TypeScript output code for the given encoding (UTF-8, UTF-16, ...).");
+		jsap.registerParameter(optionArg);
+		
 		// JDK home directory
 		optionArg = new FlaggedOption("jdkHome");
 		optionArg.setLongFlag("jdkHome");
@@ -771,6 +784,9 @@ public class JSweetCommandLineLauncher {
 				}
 				if (jsapArgs.userSpecified("encoding")) {
 					transpiler.setEncoding(jsapArgs.getString("encoding"));
+				}
+				if (jsapArgs.userSpecified("outEncoding")) {
+					transpiler.setOutEncoding(jsapArgs.getString("outEncoding"));
 				}
 				if (jsapArgs.userSpecified("enableAssertions")) {
 					transpiler.setIgnoreAssertions(!jsapArgs.getBoolean("enableAssertions"));

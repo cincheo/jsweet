@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UncheckedIOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -220,6 +221,7 @@ public class JSweetTranspiler implements JSweetOptions {
 	private EcmaScriptComplianceLevel ecmaTargetVersion = EcmaScriptComplianceLevel.ES3;
 	private boolean bundle = false;
 	private String encoding = null;
+	private String outEncoding = "UTF-8";
 	private boolean noRootDirectories = false;
 	private boolean ignoreAssertions = true;
 	private boolean ignoreJavaFileNameError = false;
@@ -1013,7 +1015,7 @@ public class JSweetTranspiler implements JSweetOptions {
 				File outputFile = new File(tsOutputDir, outputFileRelativePath);
 				outputFile.getParentFile().mkdirs();
 				String outputFilePath = outputFile.getPath();
-				PrintWriter out = new PrintWriter(outputFilePath);
+				PrintWriter out = new PrintWriter(outputFilePath, this.outEncoding);
 				String headers = context.getHeaders();
 				int headersLineCount = StringUtils.countMatches(headers, "\n");
 				try {
@@ -1131,7 +1133,7 @@ public class JSweetTranspiler implements JSweetOptions {
 
 	private void createBundle(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files,
 			int[] permutation, java.util.List<JCCompilationUnit> orderedCompilationUnits, boolean definitionBundle)
-			throws FileNotFoundException {
+			throws FileNotFoundException, UnsupportedEncodingException {
 		context.bundleMode = true;
 		StringBuilder sb = new StringBuilder();
 		int lineCount = 0;
@@ -1182,7 +1184,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		logger.info("creating bundle file: " + outputFile);
 		outputFile.getParentFile().mkdirs();
 		String outputFilePath = outputFile.getPath();
-		PrintWriter out = new PrintWriter(outputFilePath);
+		PrintWriter out = new PrintWriter(outputFilePath, this.outEncoding);
 		try {
 			String headers = context.getHeaders();
 			out.print(headers);
@@ -1613,6 +1615,18 @@ public class JSweetTranspiler implements JSweetOptions {
 		this.encoding = encoding;
 	}
 
+	@Override
+	public String getOutEncoding() {
+		return outEncoding;
+	}
+
+	/**
+	 * Sets the encoding for the generated TypeScript code.
+	 */
+	public void setOutEncoding(String encoding) {
+		this.outEncoding = encoding;
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * 

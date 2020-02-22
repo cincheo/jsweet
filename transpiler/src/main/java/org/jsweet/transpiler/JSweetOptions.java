@@ -52,6 +52,10 @@ public interface JSweetOptions {
 	 */
 	String encoding = "encoding";
 	/**
+	 * Constant string for the 'outEncoding' option.
+	 */
+	String outEncoding = "outEncoding";
+	/**
 	 * Constant string for the 'enableAssertions' option.
 	 */
 	String enableAssertions = "enableAssertions";
@@ -170,6 +174,11 @@ public interface JSweetOptions {
 	 */
 	String getEncoding();
 
+	/**
+	 * Gets the encoding of generated TypeScript files.
+	 */
+	String getOutEncoding();
+	
 	/**
 	 * Tells if this transpiler skips the root directories (packages annotated
 	 * with @jsweet.lang.Root) so that the generated file hierarchy starts at
