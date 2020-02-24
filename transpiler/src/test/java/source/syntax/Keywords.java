@@ -31,6 +31,7 @@ public class Keywords {
 		k.m2(1, 2);
 		$export("trace", trace.join(","));
 		assert 2 == new Other1().export();
+		assert 2 == new Other1().let();
 	}
 
 	String in;
@@ -93,6 +94,11 @@ class Other1 {
 	public int export() {
 		int export = 2;
 		return export;
+	}
+
+	public int let() {
+		int let = 2;
+		return let;
 	}
 
 }
