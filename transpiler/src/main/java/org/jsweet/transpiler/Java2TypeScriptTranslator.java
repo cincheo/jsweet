@@ -304,6 +304,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 		private boolean interfaceScope = false;
 
+		private boolean isInterfaceWithDefaultMethods = false;
+
+		private boolean mixinScope = false;
+
+		private boolean interfaceForMixinTargetScope = false;
+
+		private boolean mixinTargetClass = false;
+
 		private boolean enumScope = false;
 
 		private boolean isComplexEnum = false;
@@ -578,6 +586,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	private PackageSymbol topLevelPackage;
 
 	public void useModule(ModuleImportDescriptor moduleImport) {
+		if (moduleImport == null) {
+			return;
+		}
 		useModule(false, moduleImport.isDirect(), moduleImport.getTargetPackage(), null, moduleImport.getImportedName(),
 				moduleImport.getPathToImportedClass(), null);
 	}
@@ -1362,6 +1373,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		return name;
 	}
 
+	private String getMixinName(ClassSymbol type) {
+		if (context.useModules) {
+			return type.getSimpleName().toString();
+		} else {
+			return getRootRelativeName(type);
+		}
+	}
+
 	@Override
 	public void visitClassDef(JCClassDecl classdecl) {
 		if (getAdapter().substituteType(classdecl.sym)) {
@@ -1379,6 +1398,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 		if (!scope.isEmpty() && getScope().anonymousClasses.contains(classdecl)) {
 			name = getScope().name + ANONYMOUS_PREFIX + getScope().anonymousClasses.indexOf(classdecl);
+		}
+
+		if (scope.size() > 1 && getScope().mixinTargetClass && getScope(1).anonymousClasses.contains(classdecl)) {
+			name = getScope().name;
 		}
 
 		JCTree testParent = getFirstParent(JCClassDecl.class, JCMethodDecl.class);
@@ -1411,6 +1434,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		getScope().removedSuperclass = false;
 		getScope().enumScope = false;
 		getScope().enumWrapperClassScope = false;
+		getScope().mixinScope = false;
+		getScope().interfaceForMixinTargetScope = scope.size() > 1 && getScope(1).mixinTargetClass;
 
 		if (getScope().declareClassScope) {
 			if (context.hasAnnotationType(classdecl.sym, JSweetConfig.ANNOTATION_DECORATOR)) {
@@ -1450,10 +1475,19 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				report(classdecl, JSweetProblem.GLOBALS_CLASS_CANNOT_BE_SUBCLASSED);
 				return;
 			}
-			if (!(classdecl.getKind() == Kind.ENUM && scope.size() > 1 && getScope(1).isComplexEnum)) {
+			if (!(classdecl.getKind() == Kind.ENUM && scope.size() > 1 && getScope(1).isComplexEnum)
+					&& !(context.isInterface(classdecl.sym) && scope.size() > 1
+							&& getScope(1).isInterfaceWithDefaultMethods)) {
 				printDocComment(classdecl);
 			} else {
-				print("/** @ignore */").println().printIndent();
+				if ((context.isInterface(classdecl.sym) && scope.size() > 1
+						&& getScope(1).isInterfaceWithDefaultMethods)) {
+					print("/** @ignore - Mixin class generated to hold default methods for the corresponding interface */")
+							.println().printIndent();
+				} else {
+					print("/** @ignore - Utility class generated to hold extra elements for the corresponding simple enum */")
+							.println().printIndent();
+				}
 			}
 			print(classdecl.mods);
 
@@ -1462,8 +1496,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				print("export ");
 			}
 			if (context.isInterface(classdecl.sym)) {
-				print("interface ");
-				getScope().interfaceScope = true;
+				if (scope.size() > 1 && getScope(1).isInterfaceWithDefaultMethods) {
+					print("class ");
+					getScope().mixinScope = true;
+				} else {
+					print("interface ");
+					getScope().interfaceScope = true;
+				}
 			} else {
 				if (classdecl.getKind() == Kind.ENUM) {
 					if (getScope().declareClassScope && !(getIndent() != 0 && isDefinitionScope)) {
@@ -1483,12 +1522,16 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					if (getScope().declareClassScope && !(getIndent() != 0 && isDefinitionScope)) {
 						print("declare ");
 					}
-					defaultMethods = new HashSet<>();
-					Util.findDefaultMethodsInType(defaultMethods, context, classdecl.sym);
-					if (classdecl.getModifiers().getFlags().contains(Modifier.ABSTRACT)) {
-						print("abstract ");
+					if (getScope().interfaceForMixinTargetScope) {
+						print("interface ");
+					} else {
+						defaultMethods = new HashSet<>();
+						Util.findDefaultMethodsInType(defaultMethods, context, classdecl.sym);
+						if (classdecl.getModifiers().getFlags().contains(Modifier.ABSTRACT)) {
+							print("abstract ");
+						}
+						print("class ");
 					}
-					print("class ");
 				}
 			}
 
@@ -1521,7 +1564,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 			// print EXTENDS
 			boolean extendsInterface = false;
-			if (classdecl.extending != null) {
+			if (classdecl.extending != null && !getScope().interfaceForMixinTargetScope) {
 
 				boolean removeIterable = false;
 				if (context.hasAnnotationType(classdecl.sym, JSweetConfig.ANNOTATION_SYNTACTIC_ITERABLE)
@@ -1582,7 +1625,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 					if (!implementing.isEmpty()) {
 						if (!extendsInterface) {
-							if (getScope().interfaceScope) {
+							if (getScope().interfaceScope || getScope().interfaceForMixinTargetScope) {
 								print(" extends ");
 							} else {
 								print(" implements ");
@@ -1604,297 +1647,354 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			print(" {").println().startIndent();
 		}
 
-		getAdapter().beforeTypeBody(classdecl.sym);
+		if (!getScope().interfaceForMixinTargetScope) {
+			getAdapter().beforeTypeBody(classdecl.sym);
 
-		if (getScope().innerClassNotStatic && !getScope().interfaceScope && !getScope().enumScope
-				&& !getScope().enumWrapperClassScope) {
-			printIndent().print("public " + PARENT_CLASS_FIELD_NAME + ": any;").println();
-		}
+			if (getScope().innerClassNotStatic && !getScope().interfaceScope && !getScope().enumScope
+					&& !getScope().enumWrapperClassScope) {
+				printIndent().print("public " + PARENT_CLASS_FIELD_NAME + ": any;").println();
+			}
 
-		if (defaultMethods != null && !defaultMethods.isEmpty()) {
-			getScope().defaultMethodScope = true;
-			for (Entry<JCClassDecl, JCMethodDecl> entry : defaultMethods) {
-				if (!(entry.getValue().type instanceof MethodType)) {
-					continue;
-				}
-				MethodSymbol s = Util.findMethodDeclarationInType(context.types, classdecl.sym,
-						entry.getValue().getName().toString(), (MethodType) entry.getValue().type);
-				if (s == null || s == entry.getValue().sym) {
-					getAdapter().typeVariablesToErase
-							.addAll(((ClassSymbol) s.getEnclosingElement()).getTypeParameters());
-					// scan for used types to generate imports
-					if (context.useModules) {
-						UsedTypesScanner scanner = new UsedTypesScanner();
-						JCMethodDecl method = entry.getValue();
-						if (!context.hasAnnotationType(method.sym, JSweetConfig.ANNOTATION_ERASED)) {
-							if (context.hasAnnotationType(method.sym, JSweetConfig.ANNOTATION_REPLACE)) {
-								// do not scan the method body
-								scanner.scan(method.params);
-								scanner.scan(method.restype);
-								scanner.scan(method.thrown);
-								scanner.scan(method.typarams);
-								scanner.scan(method.recvparam);
-							} else {
-								scanner.scan(method);
-							}
-						}
-					}
-					printIndent().print(entry.getValue()).println();
-					getAdapter().typeVariablesToErase
-							.removeAll(((ClassSymbol) s.getEnclosingElement()).getTypeParameters());
-				}
-			}
-			getScope().defaultMethodScope = false;
-		}
+			/*
+			 * if (defaultMethods != null && !defaultMethods.isEmpty()) {
+			 * getScope().defaultMethodScope = true; for (Entry<JCClassDecl,
+			 * JCMethodDecl> entry : defaultMethods) { if
+			 * (!(entry.getValue().type instanceof MethodType)) { continue; }
+			 * MethodSymbol s = Util.findMethodDeclarationInType(context.types,
+			 * classdecl.sym, entry.getValue().getName().toString(),
+			 * (MethodType) entry.getValue().type); if (s == null || s ==
+			 * entry.getValue().sym) { getAdapter().typeVariablesToErase
+			 * .addAll(((ClassSymbol)
+			 * s.getEnclosingElement()).getTypeParameters()); // scan for used
+			 * types to generate imports if (context.useModules) {
+			 * UsedTypesScanner scanner = new UsedTypesScanner(); JCMethodDecl
+			 * method = entry.getValue(); if
+			 * (!context.hasAnnotationType(method.sym,
+			 * JSweetConfig.ANNOTATION_ERASED)) { if
+			 * (context.hasAnnotationType(method.sym,
+			 * JSweetConfig.ANNOTATION_REPLACE)) { // do not scan the method
+			 * body scanner.scan(method.params); scanner.scan(method.restype);
+			 * scanner.scan(method.thrown); scanner.scan(method.typarams);
+			 * scanner.scan(method.recvparam); } else { scanner.scan(method); }
+			 * } } printIndent().print(entry.getValue()).println();
+			 * getAdapter().typeVariablesToErase .removeAll(((ClassSymbol)
+			 * s.getEnclosingElement()).getTypeParameters()); } }
+			 * getScope().defaultMethodScope = false; }
+			 */
 
-		if (getScope().enumScope) {
-			printIndent();
-		}
-		if (globals) {
-			removeLastIndent();
-		}
-
-		for (JCTree def : classdecl.defs) {
-			if (def instanceof JCClassDecl) {
-				getScope().hasInnerClass = true;
-			}
-			if (def instanceof JCVariableDecl) {
-				JCVariableDecl var = (JCVariableDecl) def;
-				if (!var.sym.isStatic() && var.init != null) {
-					getScope().fieldsWithInitializers.add((JCVariableDecl) def);
-				}
-			}
-		}
-
-		if (!globals && !getScope().enumScope && !context.isInterface(classdecl.sym)
-				&& context.getStaticInitializerCount(classdecl.sym) > 0) {
-			printIndent().print("static __static_initialized : boolean = false;").println();
-			int liCount = context.getStaticInitializerCount(classdecl.sym);
-			String prefix = getClassName(classdecl.sym) + ".";
-			printIndent().print("static __static_initialize() { ");
-			print("if(!" + prefix + "__static_initialized) { ");
-			print(prefix + "__static_initialized = true; ");
-			for (int i = 0; i < liCount; i++) {
-				print(prefix + "__static_initializer_" + i + "(); ");
-			}
-			print("} }").println().println();
-			String qualifiedClassName = getQualifiedTypeName(classdecl.sym, globals, true);
-			context.addTopFooterStatement(
-					(isBlank(qualifiedClassName) ? "" : qualifiedClassName + ".__static_initialize();"));
-		}
-
-		boolean hasUninitializedFields = false;
-
-		for (JCTree def : classdecl.defs) {
-			if (getScope().interfaceScope && ((def instanceof JCMethodDecl && ((JCMethodDecl) def).sym.isStatic())
-					|| (def instanceof JCVariableDecl && ((JCVariableDecl) def).sym.isStatic()))) {
-				// static interface members are printed in a namespace
-				continue;
-			}
-			if (getScope().interfaceScope && def instanceof JCMethodDecl) {
-				// object method should not be defined otherwise they will have
-				// to be implemented
-				if (Util.isOverridingBuiltInJavaObjectMethod(((JCMethodDecl) def).sym)) {
-					continue;
-				}
-			}
-			if (def instanceof JCClassDecl) {
-				// inner types are be printed in a namespace
-				continue;
-			}
-			if (def instanceof JCVariableDecl) {
-				if (getScope().enumScope && ((JCVariableDecl) def).sym.getKind() != ElementKind.ENUM_CONSTANT) {
-					getScope().isComplexEnum = true;
-					continue;
-				}
-				if (!((JCVariableDecl) def).getModifiers().getFlags().contains(Modifier.STATIC)
-						&& ((JCVariableDecl) def).init == null) {
-					hasUninitializedFields = true;
-				}
-			}
-			if (def instanceof JCBlock && !((JCBlock) def).isStatic()) {
-				hasUninitializedFields = true;
-			}
-			if (!getScope().enumScope) {
+			if (getScope().enumScope) {
 				printIndent();
 			}
-			int pos = getCurrentPosition();
-			print(def);
-			if (getCurrentPosition() == pos) {
-				if (!getScope().enumScope) {
-					removeLastIndent();
-				}
-				continue;
+			if (globals) {
+				removeLastIndent();
 			}
-			if (def instanceof JCVariableDecl) {
-				if (getScope().enumScope) {
-					print(", ");
-				} else {
-					print(";").println().println();
-				}
-			} else {
-				println().println();
-			}
-		}
 
-		// generate missing abstract methods if abstract class
-		if (!getScope().interfaceScope && classdecl.getModifiers().getFlags().contains(Modifier.ABSTRACT)) {
-			List<MethodSymbol> methods = new ArrayList<>();
-			for (Type t : implementedInterfaces) {
-				context.grabMethodsToBeImplemented(methods, t.tsym);
+			for (JCTree def : classdecl.defs) {
+				if (def instanceof JCClassDecl) {
+					getScope().hasInnerClass = true;
+				}
+				if (def instanceof JCVariableDecl) {
+					JCVariableDecl var = (JCVariableDecl) def;
+					if (!var.sym.isStatic() && var.init != null) {
+						getScope().fieldsWithInitializers.add((JCVariableDecl) def);
+					}
+				}
 			}
-			methods.sort((m1, m2) -> m1.getSimpleName().compareTo(m2.getSimpleName()));
-			Map<Name, String> signatures = new HashMap<>();
-			for (MethodSymbol meth : methods) {
-				if (meth.type instanceof MethodType && !context.hasAnnotationType(meth, JSweetConfig.ANNOTATION_ERASED)
-						&& !isMappedOrErasedType(meth.owner)) {
-					// do not generate default abstract method for already
-					// generated methods
-					if (getScope().generatedMethodNames.contains(meth.name.toString())) {
+
+			if (!globals && !getScope().enumScope && !context.isInterface(classdecl.sym)
+					&& context.getStaticInitializerCount(classdecl.sym) > 0) {
+				printIndent().print("static __static_initialized : boolean = false;").println();
+				int liCount = context.getStaticInitializerCount(classdecl.sym);
+				String prefix = getClassName(classdecl.sym) + ".";
+				printIndent().print("static __static_initialize() { ");
+				print("if(!" + prefix + "__static_initialized) { ");
+				print(prefix + "__static_initialized = true; ");
+				for (int i = 0; i < liCount; i++) {
+					print(prefix + "__static_initializer_" + i + "(); ");
+				}
+				print("} }").println().println();
+				String qualifiedClassName = getQualifiedTypeName(classdecl.sym, globals, true);
+				context.addTopFooterStatement(
+						(isBlank(qualifiedClassName) ? "" : qualifiedClassName + ".__static_initialize();"));
+			}
+
+			boolean hasUninitializedFields = false;
+
+			for (JCTree def : classdecl.defs) {
+				if (getScope().interfaceScope && ((def instanceof JCMethodDecl && ((JCMethodDecl) def).sym.isStatic())
+						|| (def instanceof JCVariableDecl && ((JCVariableDecl) def).sym.isStatic()))) {
+					// static interface members are printed in a namespace
+					continue;
+				}
+				if (getScope().interfaceScope && def instanceof JCMethodDecl) {
+					// object method should not be defined otherwise they will
+					// have
+					// to be implemented
+					if (Util.isOverridingBuiltInJavaObjectMethod(((JCMethodDecl) def).sym)) {
 						continue;
 					}
-					MethodSymbol s = Util.findMethodDeclarationInType(getContext().types, classdecl.sym,
-							meth.getSimpleName().toString(), (MethodType) meth.type, true);
-					if (Object.class.getName().equals(s.getEnclosingElement().toString())) {
-						s = null;
+				}
+				if (def instanceof JCClassDecl) {
+					// inner types are be printed in a namespace
+					continue;
+				}
+				if (def instanceof JCVariableDecl) {
+					if (getScope().enumScope && ((JCVariableDecl) def).sym.getKind() != ElementKind.ENUM_CONSTANT) {
+						getScope().isComplexEnum = true;
+						continue;
 					}
-					boolean printAbstractDeclaration = false;
-					if (s != null) {
-						if (!s.getEnclosingElement().equals(classdecl.sym)) {
-							if (!(s.isDefault() || (!context.isInterface((TypeSymbol) s.getEnclosingElement())
-									&& !s.getModifiers().contains(Modifier.ABSTRACT)))) {
-								printAbstractDeclaration = true;
-							}
-						}
+					if (!((JCVariableDecl) def).getModifiers().getFlags().contains(Modifier.STATIC)
+							&& ((JCVariableDecl) def).init == null) {
+						hasUninitializedFields = true;
 					}
+				}
+				if (def instanceof JCBlock && !((JCBlock) def).isStatic()) {
+					hasUninitializedFields = true;
+				}
+				if (!getScope().enumScope) {
+					printIndent();
+				}
+				int pos = getCurrentPosition();
+				print(def);
+				if (getCurrentPosition() == pos) {
+					if (!getScope().enumScope) {
+						removeLastIndent();
+					}
+					continue;
+				}
+				if (def instanceof JCVariableDecl) {
+					if (getScope().enumScope) {
+						print(", ");
+					} else {
+						print(";").println().println();
+					}
+				} else {
+					println().println();
+				}
+			}
 
-					if (printAbstractDeclaration) {
-						Overload o = context.getOverload(classdecl.sym, meth);
-						if (o != null && o.methods.size() > 1 && !o.isValid) {
-							if (!meth.type.equals(o.coreMethod.type)) {
-								printAbstractDeclaration = false;
+			// generate missing abstract methods if abstract class
+			if (!getScope().interfaceScope && classdecl.getModifiers().getFlags().contains(Modifier.ABSTRACT)) {
+				List<MethodSymbol> methods = new ArrayList<>();
+				for (Type t : implementedInterfaces) {
+					context.grabMethodsToBeImplemented(methods, t.tsym);
+				}
+				methods.sort((m1, m2) -> m1.getSimpleName().compareTo(m2.getSimpleName()));
+				Map<Name, String> signatures = new HashMap<>();
+				for (MethodSymbol meth : methods) {
+					if (meth.type instanceof MethodType
+							&& !context.hasAnnotationType(meth, JSweetConfig.ANNOTATION_ERASED)
+							&& !isMappedOrErasedType(meth.owner)) {
+						// do not generate default abstract method for already
+						// generated methods
+						if (getScope().generatedMethodNames.contains(meth.name.toString())) {
+							continue;
+						}
+						MethodSymbol s = Util.findMethodDeclarationInType(getContext().types, classdecl.sym,
+								meth.getSimpleName().toString(), (MethodType) meth.type, true);
+						if (Object.class.getName().equals(s.getEnclosingElement().toString())) {
+							s = null;
+						}
+						boolean printAbstractDeclaration = false;
+						if (s != null) {
+							if (!s.getEnclosingElement().equals(classdecl.sym)) {
+								if (!(s.isDefault() || (!context.isInterface((TypeSymbol) s.getEnclosingElement())
+										&& !s.getModifiers().contains(Modifier.ABSTRACT)))) {
+									printAbstractDeclaration = true;
+								}
 							}
 						}
-					}
-					if (s == null || printAbstractDeclaration) {
-						String signature = getContext().types.erasure(meth.type).toString();
-						if (!(signatures.containsKey(meth.name) && signatures.get(meth.name).equals(signature))) {
-							printAbstractMethodDeclaration(meth);
-							signatures.put(meth.name, signature);
+
+						if (printAbstractDeclaration) {
+							Overload o = context.getOverload(classdecl.sym, meth);
+							if (o != null && o.methods.size() > 1 && !o.isValid) {
+								if (!meth.type.equals(o.coreMethod.type)) {
+									printAbstractDeclaration = false;
+								}
+							}
+						}
+						if (s == null || printAbstractDeclaration) {
+							String signature = getContext().types.erasure(meth.type).toString();
+							if (!(signatures.containsKey(meth.name) && signatures.get(meth.name).equals(signature))) {
+								printAbstractMethodDeclaration(meth);
+								signatures.put(meth.name, signature);
+							}
 						}
 					}
 				}
 			}
-		}
 
-		if (!getScope().hasDeclaredConstructor
-				&& !(getScope().interfaceScope || getScope().enumScope || getScope().declareClassScope)) {
-			Set<String> interfaces = new HashSet<>();
-			context.grabSupportedInterfaceNames(interfaces, classdecl.sym);
-			if (!interfaces.isEmpty() || getScope().innerClass || getScope().innerClassNotStatic
-					|| hasUninitializedFields) {
-				printIndent().print("constructor(");
-				boolean hasArgs = false;
-				if (getScope().innerClassNotStatic) {
-					print(PARENT_CLASS_FIELD_NAME + ": any");
-					hasArgs = true;
-				}
-				int anonymousClassIndex = scope.size() > 1 ? getScope(1).anonymousClasses.indexOf(classdecl) : -1;
-				if (anonymousClassIndex != -1) {
-					for (int i = 0; i < getScope(1).anonymousClassesConstructors.get(anonymousClassIndex).args
-							.length(); i++) {
-						if (!hasArgs) {
-							hasArgs = true;
-						} else {
-							print(", ");
-						}
-						print("__arg" + i + ": any");
-					}
-					for (VarSymbol v : getScope(1).finalVariables.get(anonymousClassIndex)) {
-						if (!hasArgs) {
-							hasArgs = true;
-						} else {
-							print(", ");
-						}
-						print("private " + v.getSimpleName() + ": any");
-					}
-				}
-
-				print(") {").startIndent().println();
-				if (classdecl.extending != null && !getScope().removedSuperclass
-						&& !context.isInterface(classdecl.extending.type.tsym)) {
-					printIndent().print("super(");
-					boolean hasArg = false;
+			if (!getScope().hasDeclaredConstructor
+					&& !(getScope().interfaceScope || getScope().enumScope || getScope().declareClassScope)) {
+				Set<String> interfaces = new HashSet<>();
+				context.grabSupportedInterfaceNames(interfaces, classdecl.sym);
+				if (!interfaces.isEmpty() || getScope().innerClass || getScope().innerClassNotStatic
+						|| hasUninitializedFields) {
+					printIndent().print("constructor(");
+					boolean hasArgs = false;
 					if (getScope().innerClassNotStatic) {
-						TypeSymbol s = classdecl.extending.type.tsym;
-						if (s.getEnclosingElement() instanceof ClassSymbol && !s.isStatic()) {
-							print(PARENT_CLASS_FIELD_NAME);
-							hasArg = true;
-						}
+						print(PARENT_CLASS_FIELD_NAME + ": any");
+						hasArgs = true;
 					}
+					int anonymousClassIndex = scope.size() > 1 ? getScope(1).anonymousClasses.indexOf(classdecl) : -1;
 					if (anonymousClassIndex != -1) {
 						for (int i = 0; i < getScope(1).anonymousClassesConstructors.get(anonymousClassIndex).args
 								.length(); i++) {
-							if (hasArg) {
-								print(", ");
+							if (!hasArgs) {
+								hasArgs = true;
 							} else {
-								hasArg = true;
+								print(", ");
 							}
-							print("__arg" + i);
+							print("__arg" + i + ": any");
+						}
+						for (VarSymbol v : getScope(1).finalVariables.get(anonymousClassIndex)) {
+							if (!hasArgs) {
+								hasArgs = true;
+							} else {
+								print(", ");
+							}
+							print("private " + v.getSimpleName() + ": any");
 						}
 					}
-					print(");").println();
-				}
-				printInstanceInitialization(classdecl, null);
-				endIndent().printIndent().print("}").println().println();
-			}
-		}
 
-		removeLastChar();
-
-		if (getScope().enumWrapperClassScope && !getScope(1).anonymousClasses.contains(classdecl)) {
-			printIndent().print("public name() : string { return this." + ENUM_WRAPPER_CLASS_NAME + "; }").println();
-			printIndent().print("public ordinal() : number { return this." + ENUM_WRAPPER_CLASS_ORDINAL + "; }")
-					.println();
-			printIndent().print("public compareTo(other : any) : number { return this." + ENUM_WRAPPER_CLASS_ORDINAL
-					+ " - (isNaN(other)?other." + ENUM_WRAPPER_CLASS_ORDINAL + ":other); }").println();
-		}
-
-		if (getScope().enumScope) {
-			removeLastChar().println();
-		}
-
-		if (!globals) {
-			endIndent().printIndent().print("}");
-			if (!getScope().interfaceScope && !getScope().declareClassScope && !getScope().enumScope
-					&& !(getScope().enumWrapperClassScope && classdecl.sym.isAnonymous())) {
-				if (!classdecl.sym.isAnonymous()) {
-					println().printIndent()
-							.print(getScope().enumWrapperClassScope ? classdecl.sym.getSimpleName().toString() : name)
-							.print("[\"" + CLASS_NAME_IN_CONSTRUCTOR + "\"] = ")
-							.print("\"" + classdecl.sym.getQualifiedName().toString() + "\";");
-				}
-				Set<String> interfaces = new HashSet<>();
-				context.grabSupportedInterfaceNames(interfaces, classdecl.sym);
-				if (!interfaces.isEmpty()) {
-					println().printIndent()
-							.print(getScope().enumWrapperClassScope ? classdecl.sym.getSimpleName().toString() : name)
-							.print("[\"" + INTERFACES_FIELD_NAME + "\"] = ");
-					print("[");
-					for (String itf : interfaces) {
-						print("\"").print(itf).print("\",");
+					print(") {").startIndent().println();
+					if (classdecl.extending != null && !getScope().removedSuperclass
+							&& !context.isInterface(classdecl.extending.type.tsym)) {
+						printIndent().print("super(");
+						boolean hasArg = false;
+						if (getScope().innerClassNotStatic) {
+							TypeSymbol s = classdecl.extending.type.tsym;
+							if (s.getEnclosingElement() instanceof ClassSymbol && !s.isStatic()) {
+								print(PARENT_CLASS_FIELD_NAME);
+								hasArg = true;
+							}
+						}
+						if (anonymousClassIndex != -1) {
+							for (int i = 0; i < getScope(1).anonymousClassesConstructors.get(anonymousClassIndex).args
+									.length(); i++) {
+								if (hasArg) {
+									print(", ");
+								} else {
+									hasArg = true;
+								}
+								print("__arg" + i);
+							}
+						}
+						print(");").println();
 					}
-					removeLastChar();
-					print("];").println();
-				}
-				if (!getScope().enumWrapperClassScope) {
-					println();
+					printInstanceInitialization(classdecl, null);
+					endIndent().printIndent().print("}").println().println();
 				}
 			}
+
+			removeLastChar();
+
+			if (getScope().enumWrapperClassScope && !getScope(1).anonymousClasses.contains(classdecl)) {
+				printIndent().print("public name() : string { return this." + ENUM_WRAPPER_CLASS_NAME + "; }")
+						.println();
+				printIndent().print("public ordinal() : number { return this." + ENUM_WRAPPER_CLASS_ORDINAL + "; }")
+						.println();
+				printIndent().print("public compareTo(other : any) : number { return this." + ENUM_WRAPPER_CLASS_ORDINAL
+						+ " - (isNaN(other)?other." + ENUM_WRAPPER_CLASS_ORDINAL + ":other); }").println();
+			}
+
+			if (getScope().enumScope) {
+				removeLastChar().println();
+			}
+
+			if (!globals) {
+				endIndent().printIndent().print("}");
+				if (!getScope().interfaceScope && !getScope().declareClassScope && !getScope().enumScope
+						&& !(getScope().enumWrapperClassScope && classdecl.sym.isAnonymous())
+						&& !getScope().mixinScope) {
+					if (!classdecl.sym.isAnonymous()) {
+						println().printIndent()
+								.print(getScope().enumWrapperClassScope ? classdecl.sym.getSimpleName().toString()
+										: name)
+								.print("[\"" + CLASS_NAME_IN_CONSTRUCTOR + "\"] = ")
+								.print("\"" + classdecl.sym.getQualifiedName().toString() + "\";");
+					}
+					Set<String> interfaces = new HashSet<>();
+					context.grabSupportedInterfaceNames(interfaces, classdecl.sym);
+					if (!interfaces.isEmpty()) {
+						println()
+								.printIndent().print(getScope().enumWrapperClassScope
+										? classdecl.sym.getSimpleName().toString() : name)
+								.print("[\"" + INTERFACES_FIELD_NAME + "\"] = ");
+						print("[");
+						for (String itf : interfaces) {
+							print("\"").print(itf).print("\",");
+						}
+						removeLastChar();
+						print("];").println();
+					}
+					if (!getScope().enumWrapperClassScope) {
+						println();
+					}
+				}
+				List<ClassSymbol> mixins = new ArrayList<>();
+				for (Type t : implementedInterfaces) {
+					if (context.isInterfaceWithDefaultMethods(t.tsym.getQualifiedName().toString())) {
+						mixins.add((ClassSymbol) t.tsym);
+					}
+				}
+				List<ClassSymbol> allMixins = new ArrayList<>();
+				Util.findInterfacesWithDefaultMethods(allMixins, context, mixins);
+				if (!mixins.isEmpty() && !getScope().interfaceScope) {
+					getScope().mixinTargetClass = true;
+					println().printIndent().print("// class mixins (coming from Java interfaces with default methods)");
+					println().printIndent();
+					visitClassDef(classdecl);
+					// println().printIndent().print("// class mixins (coming
+					// from
+					// Java interfaces with default methods)");
+					// println().printIndent().print("export interface " + name
+					// + "
+					// extends "
+					// + mixins.stream().map(t ->
+					// getMixinName(t)).collect(Collectors.joining(",")) + "
+					// {}");
+					for (ClassSymbol mixin : allMixins) {
+						useModule(getAdapter().getModuleImportDescriptor(
+								new CompilationUnitElementSupport(compilationUnit), getMixinName(mixin), mixin));
+					}
+					context.addFooterStatement("// apply mixins (i.e. interfaces with default methods) to class");
+					String targetName = null;
+					if (classdecl.name.toString().isEmpty()) {
+						// anonymous class case
+						Symbol owner = classdecl.sym.owner;
+						while (!(owner instanceof TypeSymbol)) {
+							owner = owner.owner;
+						}
+						targetName = getRootRelativeName(owner) + "." + name;
+					} else {
+						targetName = getRootRelativeName(classdecl.sym);
+					}
+					// t = target class; ml = mixin classes list
+					context.addFooterStatement(
+							"((t: any, ml: any[]) => { ml.forEach(m => { Object.getOwnPropertyNames(m.prototype).forEach(name => { if(!Object.getOwnPropertyDescriptor(t.prototype, name)) Object.defineProperty(t.prototype, name, Object.getOwnPropertyDescriptor(m.prototype, name)); }); }); })"
+									+ "(" + targetName + ", ["
+									+ allMixins.stream().map(t -> getMixinName(t)).collect(Collectors.joining(","))
+									+ "]);");
+					context.addFooterStatement("// end apply mixins");
+				}
+
+			}
+		} else {
+			// end of getScope().interfaceForMixinTargetScope
+			endIndent().printIndent().print("}");
+			exitScope();
+			return;
 		}
 
 		// enum class for complex enum
 		if (getScope().isComplexEnum) {
+			println().println().printIndent();
+			visitClassDef(classdecl);
+		}
+
+		// mixin class for interfaces with default methods
+		if (getScope().isInterfaceWithDefaultMethods) {
 			println().println().printIndent();
 			visitClassDef(classdecl);
 		}
@@ -2042,7 +2142,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				mainMethodQualifier = mainClassName + ".";
 			}
 			context.entryFiles.add(new File(compilationUnit.sourcefile.getName()));
-			context.addFooterStatement(mainMethodQualifier + JSweetConfig.MAIN_FUNCTION_NAME + "("
+			context.addBottomFooterStatement(mainMethodQualifier + JSweetConfig.MAIN_FUNCTION_NAME + "("
 					+ (getScope().mainMethod.getParameters().isEmpty() ? "" : "null") + ");");
 		}
 
@@ -2112,6 +2212,16 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			return;
 		}
 
+		if (getScope().mixinScope && (methodDecl.body == null || methodDecl.sym.isStatic())) {
+			// non-default methods are not required in mixins and static methods
+			// should be in namespaces
+			return;
+		}
+
+		if (!getScope().mixinScope && !getScope().defaultMethodScope && methodDecl.sym.isDefault()) {
+			getScope().isInterfaceWithDefaultMethods = true;
+		}
+
 		JCClassDecl parent = (JCClassDecl) getParent();
 
 		if (parent != null && methodDecl.pos == parent.pos && !getScope().enumWrapperClassScope) {
@@ -2163,7 +2273,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					if (!printCoreMethodDelegate) {
 						if (overload.coreMethod.equals(methodDecl)) {
 							inCoreWrongOverload = true;
-							if (!isInterfaceMethod(parent, methodDecl) && !methodDecl.sym.isConstructor()
+							if ((!(isInterfaceMethod(parent, methodDecl) && !getScope().mixinScope))
+									&& !methodDecl.sym.isConstructor()
 									&& parent.sym.equals(overload.coreMethod.sym.getEnclosingElement())) {
 								printCoreMethodDelegate = true;
 								visitMethodDef(overload.coreMethod);
@@ -2193,7 +2304,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 									println().println().printIndent();
 								}
 							}
-							if (isInterfaceMethod(parent, methodDecl)) {
+							if (isInterfaceMethod(parent, methodDecl) && !getScope().mixinScope) {
 								return;
 							}
 						}
@@ -2389,12 +2500,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		printMethodArgs(methodDecl, overload, inOverload, inCoreWrongOverload, getScope());
 		print(")");
 		printMethodReturnDeclaration(methodDecl, inCoreWrongOverload);
-		if (inCoreWrongOverload && isInterfaceMethod(parent, methodDecl)) {
+		if (inCoreWrongOverload && isInterfaceMethod(parent, methodDecl) && !getScope().mixinScope) {
 			print(";");
 			return;
 		}
 		if (methodDecl.getBody() == null && !(inCoreWrongOverload && !getScope().declareClassScope)
-				|| (methodDecl.mods.getFlags().contains(Modifier.DEFAULT) && !getScope().defaultMethodScope)) {
+				|| (methodDecl.sym.isDefault() && !getScope().defaultMethodScope && !getScope().mixinScope)) {
 			if (!getScope().interfaceScope && methodDecl.getModifiers().getFlags().contains(Modifier.ABSTRACT)
 					&& inOverload && !overload.isValid) {
 				print(" {");
@@ -2487,6 +2598,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			if (!Util.isParent(parent.sym, (ClassSymbol) method.sym.getEnclosingElement())) {
 				continue;
 			}
+			if (getScope().mixinScope && parent.sym != method.sym.getEnclosingElement() && context
+					.getOverload((ClassSymbol) method.sym.getEnclosingElement(), method.sym).coreMethod == method) {
+				continue;
+			}
 			if (wasPrinted) {
 				print(" else ");
 			}
@@ -2495,7 +2610,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			printMethodParamsTest(overload, method);
 			print(") ");
 			if (method.sym.isConstructor()
-					|| (method.sym.getModifiers().contains(Modifier.DEFAULT) && method.equals(overload.coreMethod))) {
+			/*
+			 * || (method.sym.getModifiers().contains(Modifier.DEFAULT) &&
+			 * method.equals(overload.coreMethod))
+			 */) {
 				printInlinedMethod(overload, method, methodDecl.getParameters());
 			} else {
 				if (parent.sym != method.sym.getEnclosingElement() && context
@@ -3124,6 +3242,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			return;
 		}
 
+		if (getScope().mixinScope && varDecl.sym.isStatic()) {
+			// static fields are defined in namespace
+			return;
+		}
+
 		if (getScope().enumScope) {
 			// we print the doc comment for information, but
 			// TypeScript-generated cannot be recognized by JSDoc... so this
@@ -3729,8 +3852,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						if (parent != null) {
 							while (getScope(level++).innerClass) {
 								parent = getParent(JCClassDecl.class, parent);
-								if ((method = Util.findMethodDeclarationInType(context.types, parent.sym, methName,
-										type)) != null) {
+								if (parent == null || (method = Util.findMethodDeclarationInType(context.types,
+										parent.sym, methName, type)) != null) {
 									break;
 								}
 							}
@@ -4494,7 +4617,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			Symbol s = newClass.constructor;
 			if (!(s instanceof MethodSymbol)) {
 				// not in source path
-				print("null/*cannot resolve "+newClass.clazz+"*/");
+				print("null/*cannot resolve " + newClass.clazz + "*/");
 				return;
 			}
 			MethodSymbol methSym = (MethodSymbol) newClass.constructor;
@@ -4543,7 +4666,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					print("(").printConstructorArgList(newClass, false).print(")");
 				} else {
 					if (newClass.constructorType instanceof ErrorType) {
-						print("null/*cannot resolve constructor type "+newClass.clazz+"*/");
+						print("null/*cannot resolve constructor type " + newClass.clazz + "*/");
 						return;
 					} else {
 						print("new ");

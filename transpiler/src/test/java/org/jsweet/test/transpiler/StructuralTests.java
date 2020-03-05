@@ -71,6 +71,12 @@ import source.structural.TwoClassesInSameFile;
 import source.structural.WrappedParametersOwner;
 import source.structural.WrongConstructsInInterfaces;
 import source.structural.WrongThisAccessOnStatic;
+import source.structural.defaultMethods.AClass;
+import source.structural.defaultMethods.I;
+import source.structural.defaultMethods.J;
+import source.structural.defaultMethods.K;
+import source.structural.defaultMethodsWithAnonymousClasses.AnonymousClassWithDefaultMethod;
+import source.structural.defaultMethodsWithInnerInterfaces.MyPrimitiveIterator;
 import source.structural.fieldmethodclash.Person;
 import source.structural.fieldmethodclash.User;
 import source.structural.globalclasses.Globals;
@@ -140,7 +146,7 @@ public class StructuralTests extends AbstractTest {
 		}, getSourceFile(source.structural.publicfieldmethodclash.Person2.class),
 				getSourceFile(source.structural.publicfieldmethodclash.User2.class));
 	}
-	
+
 	@Test
 	public void testTwoClassesInSameFile() {
 		transpile(logHandler -> {
@@ -429,7 +435,7 @@ public class StructuralTests extends AbstractTest {
 		// TODO: make it work with modules
 		// actually we need to completely change the implementation of default
 		// method because they require the source code
-		eval(ModuleKind.none, (logHandler, r) -> {
+		eval((logHandler, r) -> {
 			logHandler.assertNoProblems();
 			assertEquals("m,m1,m2-overriden,FromAbstract_overload_called5;p2,FromAbstract_overload_called15;kako",
 					r.get("FromAbstract_trace"));
@@ -441,6 +447,27 @@ public class StructuralTests extends AbstractTest {
 				getSourceFile(DefaultMethodsConsumer.class));
 	}
 
+	@Test
+	public void testSimpleDefaultMethods() {
+		eval((logHandler, r) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(J.class), getSourceFile(K.class), getSourceFile(I.class), getSourceFile(AClass.class));
+	}
+
+	@Test
+	public void testInnerInterfaceDefaultMethods() {
+		eval(ModuleKind.commonjs, (logHandler, r) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(MyPrimitiveIterator.class));
+	}
+
+	@Test
+	public void testAnonymousClassWithDefaultMethods() {
+		eval((logHandler, r) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(AnonymousClassWithDefaultMethod.class));
+	}
+	
 	@Test
 	public void testInterfaceStaticMethods() {
 		eval((logHandler, r) -> {

@@ -146,6 +146,9 @@ public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {
 				}
 			}
 			if (def instanceof JCMethodDecl) {
+				if(classdecl.sym.isInterface() && ((JCMethodDecl)def).sym.isDefault()) {
+					context.addInterfaceWithDefaultMethods(classdecl.sym);
+				}
 				if (globals && ((JCMethodDecl) def).sym.isStatic()) {
 					context.registerGlobalMethod(classdecl, (JCMethodDecl) def);
 				} else {

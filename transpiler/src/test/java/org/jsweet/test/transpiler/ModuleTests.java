@@ -127,7 +127,7 @@ public class ModuleTests extends AbstractTest {
 
 	@Test
 	public void testRequireFromDifferentRootPackages() {
-		transpile(logHandler -> {
+		transpile(ModuleKind.commonjs, logHandler -> {
 			logHandler.assertNoProblems();
 		}, getSourceFile(2, "t.b.C1"), getSourceFile(3, "u.T1"));
 	}

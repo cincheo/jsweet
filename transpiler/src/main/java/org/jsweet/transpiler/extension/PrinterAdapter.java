@@ -806,16 +806,18 @@ public class PrinterAdapter {
 				while (importedClass.getEnclosingElement() instanceof ClassSymbol) {
 					importedClass = (ClassSymbol) importedClass.getEnclosingElement();
 				}
-
+				
 				if (parent != null && !hasAnnotationType(importedClass, JSweetConfig.ANNOTATION_ERASED)) {
 					// '@' represents a common root in case there is no common
 					// root
 					// package => pathToImportedClass cannot be null because of
 					// the
 					// common '@' root
+					String importedModuleName = importedModule.substring(0, importedModule.length() - 5);
+					importedModuleName = importedModuleName.substring(importedModule.lastIndexOf("/"));
 					String pathToImportedClass = util().getRelativePath(
 							"@/" + currentCompilationUnit.getPackage().toString().replace('.', '/'),
-							"@/" + importedClass.toString().replace('.', '/'));
+							"@/" + (parent.toString()+"."+importedModuleName).replace('.', '/'));
 					if (!pathToImportedClass.startsWith(".")) {
 						pathToImportedClass = "./" + pathToImportedClass;
 					}

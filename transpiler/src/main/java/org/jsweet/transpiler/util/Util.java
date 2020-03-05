@@ -160,8 +160,10 @@ public class Util {
 	 * Gets the tree that corresponds to the given element (this is a slow
 	 * implementation - do not use intensively).
 	 * 
-	 * @param context the transpiler's context
-	 * @param element the element to lookup
+	 * @param context
+	 *            the transpiler's context
+	 * @param element
+	 *            the element to lookup
 	 * @return the javac AST that corresponds to that element
 	 */
 	public static JCTree lookupTree(JSweetContext context, Element element) {
@@ -224,9 +226,12 @@ public class Util {
 	/**
 	 * Recursively adds files to the given list.
 	 * 
-	 * @param extension the extension to filter with
-	 * @param file      the root file/directory to look into recursively
-	 * @param files     the list to add the files matching the extension
+	 * @param extension
+	 *            the extension to filter with
+	 * @param file
+	 *            the root file/directory to look into recursively
+	 * @param files
+	 *            the list to add the files matching the extension
 	 */
 	public static void addFiles(String extension, File file, Collection<File> files) {
 		addFiles(f -> f.getName().endsWith(extension), file, files);
@@ -235,10 +240,13 @@ public class Util {
 	/**
 	 * Recursively adds files to the given list.
 	 * 
-	 * @param filter the filter predicate to apply (only files matching the
-	 *               predicate will be added)
-	 * @param file   the root file/directory to look into recursively
-	 * @param files  the list to add the files matching the extension
+	 * @param filter
+	 *            the filter predicate to apply (only files matching the
+	 *            predicate will be added)
+	 * @param file
+	 *            the root file/directory to look into recursively
+	 * @param files
+	 *            the list to add the files matching the extension
 	 */
 	public static void addFiles(Predicate<File> filter, File file, Collection<File> files) {
 		if (file.isDirectory()) {
@@ -371,8 +379,8 @@ public class Util {
 	}
 
 	/**
-	 * Fills the given map with all the variables beeing accessed within the given
-	 * code tree.
+	 * Fills the given map with all the variables beeing accessed within the
+	 * given code tree.
 	 */
 	public static void fillAllVariableAccesses(final Map<String, VarSymbol> vars, final JCTree tree) {
 		new TreeScanner() {
@@ -393,7 +401,8 @@ public class Util {
 	}
 
 	/**
-	 * Finds the method declaration within the given type, for the given invocation.
+	 * Finds the method declaration within the given type, for the given
+	 * invocation.
 	 */
 	public static MethodSymbol findMethodDeclarationInType(Types types, TypeSymbol typeSymbol,
 			JCMethodInvocation invocation) {
@@ -403,7 +412,8 @@ public class Util {
 	}
 
 	/**
-	 * Finds the method in the given type that matches the given name and signature.
+	 * Finds the method in the given type that matches the given name and
+	 * signature.
 	 */
 	public static MethodSymbol findMethodDeclarationInType(Types types, TypeSymbol typeSymbol, String methodName,
 			MethodType methodType) {
@@ -411,7 +421,8 @@ public class Util {
 	}
 
 	/**
-	 * Finds the method in the given type that matches the given name and signature.
+	 * Finds the method in the given type that matches the given name and
+	 * signature.
 	 */
 	public static MethodSymbol findMethodDeclarationInType(Types types, TypeSymbol typeSymbol, String methodName,
 			MethodType methodType, boolean overrides) {
@@ -471,8 +482,8 @@ public class Util {
 		if (typeSymbol.getEnclosedElements() != null) {
 			for (Element element : typeSymbol.getEnclosedElements()) {
 				if ((element instanceof MethodSymbol) && (methodName.equals(element.getSimpleName().toString())
-						|| ((MethodSymbol) element).getKind() == ElementKind.CONSTRUCTOR
-								&& ("this".equals(methodName) /* || "super".equals(methodName) */))) {
+						|| ((MethodSymbol) element).getKind() == ElementKind.CONSTRUCTOR && ("this".equals(
+								methodName) /* || "super".equals(methodName) */))) {
 					MethodSymbol methodSymbol = (MethodSymbol) element;
 					if (methodType == null) {
 						collector.add(methodSymbol);
@@ -575,8 +586,8 @@ public class Util {
 	}
 
 	/**
-	 * Find first declaration (of any kind) matching the given name (and optionally
-	 * the given number of arguments for methods)
+	 * Find first declaration (of any kind) matching the given name (and
+	 * optionally the given number of arguments for methods)
 	 */
 	public static Symbol findFirstDeclarationInClassAndSuperClasses(TypeSymbol typeSymbol, String name,
 			ElementKind kind, Integer methodArgsCount) {
@@ -586,7 +597,8 @@ public class Util {
 		if (typeSymbol.getEnclosedElements() != null) {
 			for (Element element : typeSymbol.getEnclosedElements()) {
 				if (name.equals(element.getSimpleName().toString()) && element.getKind() == kind
-						&& (methodArgsCount == null || methodArgsCount.equals(((ExecutableElement)element).getParameters().size()))) {
+						&& (methodArgsCount == null
+								|| methodArgsCount.equals(((ExecutableElement) element).getParameters().size()))) {
 					return (Symbol) element;
 				}
 			}
@@ -658,10 +670,13 @@ public class Util {
 	/**
 	 * Tells if a method can be invoked with some given parameter types.
 	 * 
-	 * @param types  a reference to the types in the compilation scope
-	 * @param from   the caller method signature to test (contains the parameter
-	 *               types)
-	 * @param target the callee method signature
+	 * @param types
+	 *            a reference to the types in the compilation scope
+	 * @param from
+	 *            the caller method signature to test (contains the parameter
+	 *            types)
+	 * @param target
+	 *            the callee method signature
 	 * @return true if the callee can be invoked by the caller
 	 */
 	public static boolean isInvocable(Types types, MethodType from, MethodType target) {
@@ -697,8 +712,8 @@ public class Util {
 	}
 
 	/**
-	 * Fills the given set with all the default methods found in the current type
-	 * and super interfaces.
+	 * Fills the given set with all the default methods found in the current
+	 * type and super interfaces.
 	 */
 	public static void findDefaultMethodsInType(Set<Entry<JCClassDecl, JCMethodDecl>> defaultMethods,
 			JSweetContext context, ClassSymbol classSymbol) {
@@ -707,6 +722,25 @@ public class Util {
 		}
 		for (Type t : classSymbol.getInterfaces()) {
 			findDefaultMethodsInType(defaultMethods, context, (ClassSymbol) t.tsym);
+		}
+	}
+
+	/**
+	 * Fills the given list with all the interfaces containing default methods
+	 * (including super interfaces).
+	 */
+	public static void findInterfacesWithDefaultMethods(List<ClassSymbol> interfacesWithDefaultMethods,
+			JSweetContext context, List<ClassSymbol> initInterfaces) {
+		for (ClassSymbol itf : initInterfaces) {
+			if (context.isInterfaceWithDefaultMethods(itf)) {
+				interfacesWithDefaultMethods.add(itf);
+			}
+		}
+		for (ClassSymbol itf : initInterfaces) {
+			if (context.isInterfaceWithDefaultMethods(itf)) {
+				findInterfacesWithDefaultMethods(interfacesWithDefaultMethods, context,
+						itf.getInterfaces().stream().map(i -> (ClassSymbol) i.tsym).collect(Collectors.toList()));
+			}
 		}
 	}
 
@@ -752,7 +786,7 @@ public class Util {
 	public static boolean isVarargs(VarSymbol varSym) {
 		return (varSym.flags_field & Flags.VARARGS) == Flags.VARARGS;
 	}
-	
+
 	/**
 	 * Gets the file from a Java file object.
 	 */
@@ -794,12 +828,14 @@ public class Util {
 	private final static Pattern REGEX_CHARS = Pattern.compile("([\\\\*+\\[\\](){}\\$.?\\^|])");
 
 	/**
-	 * This function will escape special characters within a string to ensure that
-	 * the string will not be parsed as a regular expression. This is helpful with
-	 * accepting using input that needs to be used in functions that take a regular
-	 * expression as an argument (such as String.replaceAll(), or String.split()).
+	 * This function will escape special characters within a string to ensure
+	 * that the string will not be parsed as a regular expression. This is
+	 * helpful with accepting using input that needs to be used in functions
+	 * that take a regular expression as an argument (such as
+	 * String.replaceAll(), or String.split()).
 	 * 
-	 * @param regex - argument which we wish to escape.
+	 * @param regex
+	 *            - argument which we wish to escape.
 	 * @return - Resulting string with the following characters escaped:
 	 *         [](){}+*^?$.\
 	 */
@@ -846,8 +882,10 @@ public class Util {
 	/**
 	 * Get the relative path to reach a symbol from another one.
 	 * 
-	 * @param fromSymbol the start path
-	 * @param toSymbol   the end path
+	 * @param fromSymbol
+	 *            the start path
+	 * @param toSymbol
+	 *            the end path
 	 * @return the '/'-separated path
 	 * @see #getRelativePath(String, String)
 	 */
@@ -878,8 +916,10 @@ public class Util {
 	 * <p>
 	 * Bug fix: Renaud Pawlak
 	 * 
-	 * @param fromPath the path to start from
-	 * @param toPath   the path to reach
+	 * @param fromPath
+	 *            the path to start from
+	 * @param toPath
+	 *            the path to reach
 	 */
 	public static String getRelativePath(String fromPath, String toPath) {
 		StringBuilder relativePath = null;
@@ -934,7 +974,8 @@ public class Util {
 	/**
 	 * Removes the extensions of the given file name.
 	 * 
-	 * @param fileName the given file name (can contain path)
+	 * @param fileName
+	 *            the given file name (can contain path)
 	 * @return the file name without the extension
 	 */
 	public static String removeExtension(String fileName) {
@@ -947,11 +988,13 @@ public class Util {
 	}
 
 	/**
-	 * Tells if the given directory or any of its sub-directory contains one of the
-	 * given files.
+	 * Tells if the given directory or any of its sub-directory contains one of
+	 * the given files.
 	 * 
-	 * @param dir   the directory to look into
-	 * @param files the files to be found
+	 * @param dir
+	 *            the directory to look into
+	 * @param files
+	 *            the files to be found
 	 * @return true if one of the given files is found
 	 */
 	public static boolean containsFile(File dir, File[] files) {
@@ -1121,8 +1164,8 @@ public class Util {
 	}
 
 	/**
-	 * Recursively looks up one of the given types in the type hierachy of the given
-	 * class.
+	 * Recursively looks up one of the given types in the type hierachy of the
+	 * given class.
 	 * 
 	 * @return true if one of the given names is found as a superclass or a
 	 *         superinterface
@@ -1277,8 +1320,8 @@ public class Util {
 	}
 
 	/**
-	 * Tells if that variable is a non-static final field initialized with a literal
-	 * value.
+	 * Tells if that variable is a non-static final field initialized with a
+	 * literal value.
 	 */
 	public static boolean isConstantOrNullField(JCVariableDecl var) {
 		return !var.getModifiers().getFlags().contains(Modifier.STATIC) && (var.init == null
@@ -1343,10 +1386,10 @@ public class Util {
 	 * 
 	 * <p>
 	 * This method aims at overcoming TypeScrit limitation that forces a parent
-	 * class to be declared before its child class (it is not the case in Java). So
-	 * far this is a partial implementation that should cover most cases... for a
-	 * 100% coverage we would need a much more complicated implementation that is
-	 * probably not worth it.
+	 * class to be declared before its child class (it is not the case in Java).
+	 * So far this is a partial implementation that should cover most cases...
+	 * for a 100% coverage we would need a much more complicated implementation
+	 * that is probably not worth it.
 	 */
 	public static List<JCClassDecl> getSortedClassDeclarations(List<JCTree> decls) {
 		// return (List<JCClassDecl>)(Object)decls;
@@ -1380,8 +1423,8 @@ public class Util {
 	}
 
 	/**
-	 * Finds the first inner class declaration of the given name in the given class
-	 * hierarchy.
+	 * Finds the first inner class declaration of the given name in the given
+	 * class hierarchy.
 	 */
 	public static ClassSymbol findInnerClassDeclaration(ClassSymbol clazz, String name) {
 		if (clazz == null) {

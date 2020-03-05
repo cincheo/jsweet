@@ -117,7 +117,30 @@ public class JSweetContext extends Context {
 	}
 
 	private Map<String, TypeMirror> jdkSubclasses = new HashMap<>();
+	
+	private Map<String, ClassSymbol> interfacesWithDefaultMethods = new HashMap<>(); 
 
+	/**
+	 * Memorizes an interface to be declaring one or more default methods.
+	 */
+	public void addInterfaceWithDefaultMethods(ClassSymbol interfaceSymbol) {
+		interfacesWithDefaultMethods.put(interfaceSymbol.getQualifiedName().toString(), interfaceSymbol);
+	}
+
+	/**
+	 * Returns true if an interface declares one or more default methods.
+	 */
+	public boolean isInterfaceWithDefaultMethods(ClassSymbol interfaceSymbol) {
+		return interfacesWithDefaultMethods.values().contains(interfaceSymbol);
+	}
+
+	/**
+	 * Returns true if an interface declares one or more default methods.
+	 */
+	public boolean isInterfaceWithDefaultMethods(String interfaceName) {
+		return interfacesWithDefaultMethods.keySet().contains(interfaceName);
+	}
+	
 	public StaticInitilializerAnalyzer referenceAnalyzer;
 
 	/**
@@ -934,11 +957,14 @@ public class JSweetContext extends Context {
 
 	private List<String> footerStatements = new LinkedList<String>();
 
+	private int bottomFooterIndex = 0;
+	
 	/**
 	 * Clears the footer statements.
 	 */
 	public void clearFooterStatements() {
 		footerStatements.clear();
+		bottomFooterIndex = 0;
 	}
 
 	/**
@@ -958,7 +984,8 @@ public class JSweetContext extends Context {
 	 * Adds a footer statement.
 	 */
 	public void addFooterStatement(String footerStatement) {
-		footerStatements.add(footerStatement);
+		footerStatements.add(bottomFooterIndex, footerStatement);
+		bottomFooterIndex++;
 	}
 
 	/**
@@ -966,8 +993,16 @@ public class JSweetContext extends Context {
 	 */
 	public void addTopFooterStatement(String footerStatement) {
 		footerStatements.add(0, footerStatement);
+		bottomFooterIndex++;
 	}
 
+	/**
+	 * Adds a footer statement at the bottom (after regular or top footer statements).
+	 */
+	public void addBottomFooterStatement(String footerStatement) {
+		footerStatements.add(footerStatement);
+	}
+	
 	private Map<String, String> headers = new LinkedHashMap<String, String>();
 
 	/**
