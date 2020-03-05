@@ -1639,6 +1639,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							}
 						}
 					}
+					if (!context.hasAnnotationType(entry.getValue().sym, JSweetConfig.ANNOTATION_ERASED)) {
+						printIndent().print("/* Default method injected from " + entry.getKey().sym.getQualifiedName()+" */").println();
+					}
 					printIndent().print(entry.getValue()).println();
 					getAdapter().typeVariablesToErase
 							.removeAll(((ClassSymbol) s.getEnclosingElement()).getTypeParameters());
@@ -4494,7 +4497,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			Symbol s = newClass.constructor;
 			if (!(s instanceof MethodSymbol)) {
 				// not in source path
-				print("null/*cannot resolve "+newClass.clazz+"*/");
+				print("null/*cannot resolve " + newClass.clazz + "*/");
 				return;
 			}
 			MethodSymbol methSym = (MethodSymbol) newClass.constructor;
@@ -4543,7 +4546,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					print("(").printConstructorArgList(newClass, false).print(")");
 				} else {
 					if (newClass.constructorType instanceof ErrorType) {
-						print("null/*cannot resolve constructor type "+newClass.clazz+"*/");
+						print("null/*cannot resolve constructor type " + newClass.clazz + "*/");
 						return;
 					} else {
 						print("new ");
