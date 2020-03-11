@@ -71,6 +71,17 @@ import source.structural.TwoClassesInSameFile;
 import source.structural.WrappedParametersOwner;
 import source.structural.WrongConstructsInInterfaces;
 import source.structural.WrongThisAccessOnStatic;
+import source.structural.defaultMethods.AbstractViewController;
+import source.structural.defaultMethods.CC1;
+import source.structural.defaultMethods.CC2;
+import source.structural.defaultMethods.FinalViewController;
+import source.structural.defaultMethods.I1;
+import source.structural.defaultMethods.I2;
+import source.structural.defaultMethods.I3;
+import source.structural.defaultMethods.I4;
+import source.structural.defaultMethods.I5;
+import source.structural.defaultMethods.II1;
+import source.structural.defaultMethods.IntermediateAbstractViewController;
 import source.structural.fieldmethodclash.Person;
 import source.structural.fieldmethodclash.User;
 import source.structural.globalclasses.Globals;
@@ -534,4 +545,12 @@ public class StructuralTests extends AbstractTest {
 		}, getSourceFile(AnonymousInInterface.class));
 	}
 
+	@Test
+	public void testDefaultMethodsHierarchy() {
+		eval(ModuleKind.commonjs, (logHandler, r) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(II1.class), getSourceFile(CC1.class), getSourceFile(CC2.class), getSourceFile(I1.class), getSourceFile(I2.class), getSourceFile(I3.class), getSourceFile(I4.class), getSourceFile(I5.class), getSourceFile(AbstractViewController.class), getSourceFile(IntermediateAbstractViewController.class), getSourceFile(FinalViewController.class));
+	}
+
+	
 }
