@@ -132,6 +132,26 @@ public class PrinterAdapter {
 	}
 
 	/**
+	 * This hook is called when the transpilation starts. Overloads must call
+	 * super to forward this hook to the adapters chain.
+	 */
+	public void onTranspilationStarted() {
+		if (getParentAdapter() != null) {
+			getParentAdapter().onTranspilationStarted();
+		}
+	}
+
+	/**
+	 * This hook is called when the transpilation finishes. Overloads must call
+	 * super to forward this hook to the adapters chain.
+	 */
+	public void onTranspilationFinished() {
+		if (getParentAdapter() != null) {
+			getParentAdapter().onTranspilationFinished();
+		}
+	}
+
+	/**
 	 * Adds a type mapping so that this adapter substitutes the source type with
 	 * the target type during the transpilation process.
 	 * 

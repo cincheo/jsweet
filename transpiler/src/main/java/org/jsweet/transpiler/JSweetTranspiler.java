@@ -977,6 +977,8 @@ public class JSweetTranspiler implements JSweetOptions {
 			context.dumpOverloads(System.out);
 		}
 
+		adapter.onTranspilationStarted();
+		
 		String[] headerLines = getHeaderLines();
 		for (int i = 0; i < compilationUnits.length(); i++) {
 			if (context.isExcludedSourcePath(files[i].toString())) {
@@ -1041,7 +1043,9 @@ public class JSweetTranspiler implements JSweetOptions {
 				context.clearHeaders();
 				context.clearFooterStatements();
 			}
+			
 		}
+		adapter.onTranspilationFinished();
 	}
 
 	private void generateTypeScriptSourceMapFile(SourceFile sourceFile) throws IOException {
@@ -1100,6 +1104,8 @@ public class JSweetTranspiler implements JSweetOptions {
 
 		new OverloadScanner(transpilationHandler, context).process(orderedCompilationUnits);
 
+		adapter.onTranspilationStarted();
+
 		logger.debug("ordered compilation units: " + orderedCompilationUnits.stream().map(cu -> {
 			return cu.sourcefile.getName();
 		}).collect(Collectors.toList()));
@@ -1116,6 +1122,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		if (isGenerateDefinitions()) {
 			createBundle(transpilationHandler, files, permutation, orderedCompilationUnits, true);
 		}
+		adapter.onTranspilationFinished();
 	}
 
 	private void initSourceFileJavaPaths(SourceFile file, JCCompilationUnit cu) {
