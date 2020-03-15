@@ -1,5 +1,5 @@
 package source.structural.defaultMethods;
 
-public class AbstractViewController implements I4 {
-
+public abstract class AbstractViewController implements I4 {
+	
 }

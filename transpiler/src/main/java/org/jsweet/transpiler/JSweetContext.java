@@ -932,7 +932,7 @@ public class JSweetContext extends Context {
 	 */
 	public boolean deprecatedApply = false;
 
-	private List<String> footerStatements = new LinkedList<String>();
+	private List<Entry<String, String>> footerStatements = new LinkedList<Entry<String, String>>();
 
 	/**
 	 * Clears the footer statements.
@@ -946,9 +946,9 @@ public class JSweetContext extends Context {
 	 */
 	public String getFooterStatements() {
 		StringBuilder sb = new StringBuilder();
-		for (String footerStatement : footerStatements) {
+		for (Entry<String, String> footerStatement : footerStatements) {
 			sb.append("\n");
-			sb.append(footerStatement);
+			sb.append(footerStatement.getValue());
 			sb.append("\n");
 		}
 		return sb.toString();
@@ -957,16 +957,40 @@ public class JSweetContext extends Context {
 	/**
 	 * Adds a footer statement.
 	 */
+	public void addFooterStatement(String key, String footerStatement) {
+		footerStatements.add(new AbstractMap.SimpleEntry<String, String>(key, footerStatement));
+	}
+
+	/**
+	 * Adds a footer statement.
+	 */
 	public void addFooterStatement(String footerStatement) {
-		footerStatements.add(footerStatement);
+		footerStatements.add(new AbstractMap.SimpleEntry<String, String>("", footerStatement));
+	}
+
+	/**
+	 * Adds a footer statement at the first position.
+	 */
+	public void addTopFooterStatement(String key, String footerStatement) {
+		footerStatements.add(0, new AbstractMap.SimpleEntry<String, String>(key, footerStatement));
 	}
 
 	/**
 	 * Adds a footer statement at the first position.
 	 */
 	public void addTopFooterStatement(String footerStatement) {
-		footerStatements.add(0, footerStatement);
+		footerStatements.add(0, new AbstractMap.SimpleEntry<String, String>("", footerStatement));
 	}
+
+	/**
+	 * A flag to force import generation at the top of the file.
+	 */
+	public boolean forceTopImports() {
+		forceTopImports = true;
+		return forceTopImports;
+	}
+
+	private boolean forceTopImports = false;
 
 	private Map<String, String> headers = new LinkedHashMap<String, String>();
 
@@ -975,12 +999,21 @@ public class JSweetContext extends Context {
 	 */
 	public void clearHeaders() {
 		headers.clear();
+		forceTopImports = false;
 	}
 
 	/**
 	 * Gets the headers.
 	 */
 	public String getHeaders() {
+		if (forceTopImports) {
+			for (Entry<String, String> statement : new ArrayList<>(footerStatements)) {
+				if (statement.getKey().startsWith("import.")) {
+					footerStatements.remove(statement);
+					headers.put(statement.getKey(), statement.getValue());
+				}
+			}
+		}
 		StringBuilder sb = new StringBuilder();
 		if (!headers.isEmpty()) {
 			for (String header : headers.values()) {

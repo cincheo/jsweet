@@ -1,6 +1,6 @@
 package source.structural.defaultMethods;
 
-public class IntermediateAbstractViewController extends AbstractViewController implements I2, I3 {
+public abstract class IntermediateAbstractViewController extends AbstractViewController implements I2, I3 {
 
 	@Override
 	public void m() {

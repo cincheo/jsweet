@@ -6,4 +6,7 @@ public interface I4 {
 		System.out.println("m4");
 	}
 	
+	void o3(boolean b);
+	
+	
 }

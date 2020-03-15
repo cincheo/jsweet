@@ -606,6 +606,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					return;
 				}
 
+				if (sourceElement instanceof ClassSymbol && context.hasAnnotationType(((ClassSymbol) sourceElement),
+						JSweetConfig.ANNOTATION_DECORATOR)) {
+					context.forceTopImports();
+				}
+
 				if (!context.moduleBundleMode && sourceElement instanceof ClassSymbol
 						&& Util.isSourceElement(sourceElement)
 						&& !(sourceElement instanceof TypeSymbol && context.referenceAnalyzer != null
@@ -616,7 +621,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					// as much as possible
 					// note that the better way to avoid cyclic dependency
 					// issues is to create bundles
-					context.addTopFooterStatement("import { " + targetName + " } from '" + moduleName + "';\n");
+					context.addTopFooterStatement("import." + targetName,
+							"import { " + targetName + " } from '" + moduleName + "';\n");
 
 				} else {
 
@@ -1640,7 +1646,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						}
 					}
 					if (!context.hasAnnotationType(entry.getValue().sym, JSweetConfig.ANNOTATION_ERASED)) {
-						printIndent().print("/* Default method injected from " + entry.getKey().sym.getQualifiedName()+" */").println();
+						printIndent().print(
+								"/* Default method injected from " + entry.getKey().sym.getQualifiedName() + " */")
+								.println();
 					}
 					printIndent().print(entry.getValue()).println();
 					getAdapter().typeVariablesToErase
@@ -2254,6 +2262,20 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			print("));");
 			println().endIndent().printIndent();
 			print("}").println().println().printIndent();
+		}
+
+		if (inOverload && !overload.isValid) {
+			// spread all annotations of the overload to the methods
+			for (JCMethodDecl m : overload.methods) {
+				if (m != methodDecl) {
+					for (JCAnnotation anno : m.mods.annotations) {
+						if (!methodDecl.mods.annotations.stream().anyMatch(
+								a -> a.getAnnotationType().toString().equals(anno.getAnnotationType().toString()))) {
+							methodDecl.mods.annotations = methodDecl.mods.annotations.append(anno);
+						}
+					}
+				}
+			}
 		}
 
 		print(methodDecl.mods);
@@ -5799,7 +5821,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (!context.hasAnnotationType(annotation.type.tsym, JSweetConfig.ANNOTATION_DECORATOR)) {
 			return;
 		}
-		if(getScope().isInterfaceScope()) {
+		if (getScope().isInterfaceScope()) {
 			return;
 		}
 		print("@").print(annotation.getAnnotationType());
