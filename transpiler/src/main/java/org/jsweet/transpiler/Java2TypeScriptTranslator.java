@@ -5799,6 +5799,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (!context.hasAnnotationType(annotation.type.tsym, JSweetConfig.ANNOTATION_DECORATOR)) {
 			return;
 		}
+		if(getScope().isInterfaceScope()) {
+			return;
+		}
 		print("@").print(annotation.getAnnotationType());
 		if (annotation.getArguments() != null && !annotation.getArguments().isEmpty()) {
 			print("(");
