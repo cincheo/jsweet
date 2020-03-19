@@ -83,6 +83,10 @@ import source.structural.defaultMethods.I5;
 import source.structural.defaultMethods.II1;
 import source.structural.defaultMethods.IntermediateAbstractViewController;
 import source.structural.defaultMethods.MyAnnotation;
+import source.structural.defaultsOverloaded.AbstractDuplicateMethod;
+import source.structural.defaultsOverloaded.DuplicateMethod;
+import source.structural.defaultsOverloaded.DuplicateMethodImpl;
+import source.structural.defaultsOverloaded.DuplicateMethodInterface;
 import source.structural.fieldmethodclash.Person;
 import source.structural.fieldmethodclash.User;
 import source.structural.globalclasses.Globals;
@@ -152,7 +156,7 @@ public class StructuralTests extends AbstractTest {
 		}, getSourceFile(source.structural.publicfieldmethodclash.Person2.class),
 				getSourceFile(source.structural.publicfieldmethodclash.User2.class));
 	}
-	
+
 	@Test
 	public void testTwoClassesInSameFile() {
 		transpile(logHandler -> {
@@ -550,8 +554,18 @@ public class StructuralTests extends AbstractTest {
 	public void testDefaultMethodsHierarchy() {
 		eval(ModuleKind.commonjs, (logHandler, r) -> {
 			logHandler.assertNoProblems();
-		}, getSourceFile(MyAnnotation.class), getSourceFile(II1.class), getSourceFile(CC1.class), getSourceFile(CC2.class), getSourceFile(I1.class), getSourceFile(I2.class), getSourceFile(I3.class), getSourceFile(I4.class), getSourceFile(I5.class), getSourceFile(AbstractViewController.class), getSourceFile(IntermediateAbstractViewController.class), getSourceFile(FinalViewController.class));
+		}, getSourceFile(MyAnnotation.class), getSourceFile(II1.class), getSourceFile(CC1.class),
+				getSourceFile(CC2.class), getSourceFile(I1.class), getSourceFile(I2.class), getSourceFile(I3.class),
+				getSourceFile(I4.class), getSourceFile(I5.class), getSourceFile(AbstractViewController.class),
+				getSourceFile(IntermediateAbstractViewController.class), getSourceFile(FinalViewController.class));
 	}
 
-	
+	@Test
+	public void testDefaultsOverloaded() {
+		eval(ModuleKind.commonjs, (logHandler, r) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(AbstractDuplicateMethod.class), getSourceFile(DuplicateMethod.class),
+				getSourceFile(DuplicateMethodImpl.class), getSourceFile(DuplicateMethodInterface.class));
+	}
+
 }

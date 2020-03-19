@@ -404,6 +404,7 @@ public class Util {
 	 * Finds the method declaration within the given type, for the given
 	 * invocation.
 	 */
+	@Deprecated
 	public static MethodSymbol findMethodDeclarationInType(Types types, TypeSymbol typeSymbol,
 			JCMethodInvocation invocation) {
 		String meth = invocation.meth.toString();
@@ -415,6 +416,7 @@ public class Util {
 	 * Finds the method in the given type that matches the given name and
 	 * signature.
 	 */
+	@Deprecated
 	public static MethodSymbol findMethodDeclarationInType(Types types, TypeSymbol typeSymbol, String methodName,
 			MethodType methodType) {
 		return findMethodDeclarationInType(types, typeSymbol, methodName, methodType, false);
@@ -424,6 +426,28 @@ public class Util {
 	 * Finds the method in the given type that matches the given name and
 	 * signature.
 	 */
+	public static MethodSymbol findMethodDeclarationInType2(Types types, TypeSymbol typeSymbol, String methodName,
+			MethodType methodType) {
+
+		// gathers all the potential method matches
+		List<MethodSymbol> candidates = new LinkedList<>();
+		collectMatchingMethodDeclarationsInType(types, typeSymbol, methodName, methodType, false, candidates);
+
+		// score them
+		for (MethodSymbol candidate : candidates) {
+			if(types.isSubSignature(candidate.type, methodType)) {
+				return candidate;
+			}
+		}
+		return null;
+	}
+	
+	
+	/**
+	 * Finds the method in the given type that matches the given name and
+	 * signature.
+	 */
+	@Deprecated
 	public static MethodSymbol findMethodDeclarationInType(Types types, TypeSymbol typeSymbol, String methodName,
 			MethodType methodType, boolean overrides) {
 
@@ -451,6 +475,7 @@ public class Util {
 		return bestMatch;
 	}
 
+	@Deprecated
 	private static int getCandidateMethodMatchScore(MethodSymbol candidate, MethodType methodType, Types types) {
 
 		if (methodType == null || candidate.getParameters().size() != methodType.argtypes.size()) {
