@@ -5837,7 +5837,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			print(" } ");
 			isAnnotationScope = false;
 			print(")");
-		} else if (getParentOfParent() instanceof JCClassDecl) {
+		} else /*if (getParentOfParent() instanceof JCClassDecl)*/ {
 			print("()");
 		}
 		println().printIndent();
