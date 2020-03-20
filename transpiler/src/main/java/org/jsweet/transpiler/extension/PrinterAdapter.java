@@ -872,6 +872,28 @@ public class PrinterAdapter {
 	}
 
 	/**
+	 * Substitutes a given executable declaration.
+	 * 
+	 * @param executable
+	 *            the executable being printed
+	 * @return true if substituted
+	 */
+	public boolean substituteExecutable(ExecutableElement executable) {
+		return parentAdapter == null ? false : parentAdapter.substituteExecutable(executable);
+	}
+
+	/**
+	 * Substitutes a given variable declaration.
+	 * 
+	 * @param variable
+	 *            the variable being printed
+	 * @return true if substituted
+	 */
+	public boolean substituteVariable(VariableElement variable) {
+		return parentAdapter == null ? false : parentAdapter.substituteVariable(variable);
+	}
+	
+	/**
 	 * Substitutes the value of a <em>field assignment</em> expression.
 	 * 
 	 * @param assignment

@@ -2118,6 +2118,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	@Override
 	public void visitMethodDef(JCMethodDecl methodDecl) {
 
+		if (getAdapter().substituteExecutable(methodDecl.sym)) {
+			return;
+		}
+		
 		if (context.hasAnnotationType(methodDecl.sym, JSweetConfig.ANNOTATION_ERASED)) {
 			// erased elements are ignored
 			return;
@@ -3140,6 +3144,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 */
 	@Override
 	public void visitVarDef(JCVariableDecl varDecl) {
+		
+		if (getAdapter().substituteVariable(varDecl.sym)) {
+			return;
+		}
+		
 		if (context.hasAnnotationType(varDecl.sym, JSweetConfig.ANNOTATION_ERASED)) {
 			// erased elements are ignored
 			return;
