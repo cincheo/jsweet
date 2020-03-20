@@ -2121,7 +2121,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (getAdapter().substituteExecutable(methodDecl.sym)) {
 			return;
 		}
-		
+
 		if (context.hasAnnotationType(methodDecl.sym, JSweetConfig.ANNOTATION_ERASED)) {
 			// erased elements are ignored
 			return;
@@ -3144,11 +3144,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 */
 	@Override
 	public void visitVarDef(JCVariableDecl varDecl) {
-		
+
 		if (getAdapter().substituteVariable(varDecl.sym)) {
 			return;
 		}
-		
+
 		if (context.hasAnnotationType(varDecl.sym, JSweetConfig.ANNOTATION_ERASED)) {
 			// erased elements are ignored
 			return;
@@ -5846,8 +5846,18 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			print(" } ");
 			isAnnotationScope = false;
 			print(")");
-		} else /*if (getParentOfParent() instanceof JCClassDecl)*/ {
-			print("()");
+		} else {
+			boolean parens = true;
+			if (annotation.getAnnotationType() instanceof JCIdent) {
+				JCTree[] globalDecoratorFunction = context
+						.lookupGlobalMethod(((JCIdent) annotation.getAnnotationType()).sym.toString());
+				if (globalDecoratorFunction != null) {
+					if(!((JCMethodDecl)globalDecoratorFunction[1]).sym.getParameters().isEmpty()) {
+						parens = false;
+					}
+				}
+			}
+			if(parens) print("()");
 		}
 		println().printIndent();
 	}
