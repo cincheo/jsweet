@@ -16,6 +16,7 @@
  */
 package org.jsweet.test.transpiler;
 
+import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -272,7 +273,11 @@ public class ApiTests extends AbstractTest {
 	public void testDates() {
 		eval(ModuleKind.none, (logHandler, r) -> {
 			logHandler.assertNoProblems();
-			Assert.assertEquals("1/1/2020, 1:00:00 AM", r.get("localeString"));
+			assertTrue(asList(
+					"1/1/2020, 1:00:00 AM", 
+					"2020-1-1 1:00:00 AM").contains( 
+					r.get("localeString")));
+			
 		}, getSourceFile(Dates.class));
 	}
 

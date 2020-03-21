@@ -177,7 +177,7 @@ public class ExtensionTests extends AbstractTest {
 		TranspilerTestRunner transpilerExtensionTest = new TranspilerTestRunner(getCurrentTestOutDir(),
 				new TestFactory());
 		transpilerExtensionTest.transpile(ModuleKind.none, (logHandler) -> {
-			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+			logHandler.assertNoProblems();
 			try {
 				String generated = FileUtils.readFileToString(
 						transpilerExtensionTest.getTranspiler().getContext().sourceFiles[0].getTsFile());

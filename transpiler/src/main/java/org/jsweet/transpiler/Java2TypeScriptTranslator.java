@@ -1718,8 +1718,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					getScope().isComplexEnum = true;
 					continue;
 				}
-				if (!((JCVariableDecl) def).getModifiers().getFlags().contains(Modifier.STATIC)
-						&& ((JCVariableDecl) def).init == null) {
+				if (shouldPrintFieldInitializationInConstructor((JCVariableDecl) def)) {
 					hasUninitializedFields = true;
 				}
 			}
@@ -2463,6 +2462,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						replacedBody = (String) context.getAnnotationValue(methodDecl.sym,
 								JSweetConfig.ANNOTATION_REPLACE, String.class, null);
 					}
+
+					boolean fieldsInitPrinted = false;
 					int position = getCurrentPosition();
 					if (replacedBody == null || BODY_MARKER.matcher(replacedBody).find()) {
 						enter(methodDecl.getBody());
@@ -2471,11 +2472,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							printBlockStatement(methodDecl.getBody().stats.head);
 							if (parent != null) {
 								printInstanceInitialization(parent, methodDecl.sym);
+								fieldsInitPrinted = true;
 							}
 							printBlockStatements(methodDecl.getBody().stats.tail);
 						} else {
 							if (parent != null) {
 								printInstanceInitialization(parent, methodDecl.sym);
+								fieldsInitPrinted = true;
 							}
 							printBlockStatements(methodDecl.getBody().stats);
 						}
@@ -2492,6 +2495,18 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 									.replaceAll(parent.sym.getQualifiedName().toString());
 						}
 					}
+					
+					if (replacedBody != null && replacedBody.trim().startsWith("super(")) {
+						String superCall = replacedBody.substring(0, replacedBody.indexOf(';') + 1);
+						replacedBody = replacedBody.substring(replacedBody.indexOf(';') + 1);
+						println(superCall);
+					}
+					
+					if (!fieldsInitPrinted && parent != null) {
+						printInstanceInitialization(parent, methodDecl.sym);
+						fieldsInitPrinted = true;
+					}
+					
 					if (replacedBody != null) {
 						if (methodDecl.sym.isConstructor()) {
 							getScope().hasDeclaredConstructor = true;
@@ -2728,6 +2743,15 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 	}
 
+	private boolean shouldPrintFieldInitializationInConstructor(JCVariableDecl var) {
+		if (var.sym.isStatic()) {
+			return false;
+		}
+
+		return var.init == null || (!getScope().hasConstructorOverloadWithSuperClass
+				&& getScope().getFieldsWithInitializers().contains(var));
+	}
+
 	protected void printVariableInitialization(JCClassDecl clazz, JCVariableDecl var) {
 		String name = var.getName().toString();
 		if (context.getFieldNameMapping(var.sym) != null) {
@@ -2735,7 +2759,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		} else {
 			name = getIdentifier(var.sym);
 		}
-		if (getScope().innerClassNotStatic && !Util.isConstantOrNullField(var)) {
+
+		if (getScope().innerClassNotStatic && !Util.isConstantOrNullField(var)
+				// constructor fields init is handled in another method
+				// (printFieldInitializations)
+				|| var.init != null && shouldPrintFieldInitializationInConstructor(var)) {
+
 			if (doesMemberNameRequireQuotes(name)) {
 				printIndent().print("this['").print(name).print("'] = ");
 			} else {
@@ -3385,8 +3414,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							report(varDecl, varDecl.name, JSweetProblem.INVALID_FIELD_INITIALIZER_IN_INTERFACE,
 									varDecl.name, ((JCClassDecl) parent).name);
 						} else {
-							if (!(getScope().hasConstructorOverloadWithSuperClass
-									&& getScope().fieldsWithInitializers.contains(varDecl))) {
+							if (!getScope().fieldsWithInitializers.contains(varDecl)) {
 								print(" = ");
 								if (!substituteAssignedExpression(varDecl.type, varDecl.init)) {
 									print(varDecl.init);

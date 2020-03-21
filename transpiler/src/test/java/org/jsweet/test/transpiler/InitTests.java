@@ -33,6 +33,7 @@ import source.init.ConstructorField;
 import source.init.ConstructorFieldInInterface;
 import source.init.ConstructorMethod;
 import source.init.ConstructorMethodInInterface;
+import source.init.DependentFields;
 import source.init.FieldDefaultValues;
 import source.init.Initializer;
 import source.init.InitializerStatementConditionError;
@@ -244,6 +245,15 @@ public class InitTests extends AbstractTest {
 			assertEquals("value:1", result.get("i3"));
 			assertEquals("value:0", result.get("j3"));
 		}, getSourceFile(FieldDefaultValues.class));
+	}
+
+	@Test
+	public void testDependentFields() {
+		eval((logHandler, result) -> {
+			logHandler.assertNoProblems();
+			assertEquals("value:1", result.get("i1"));
+			assertEquals("value:0", result.get("j1"));
+		}, getSourceFile(DependentFields.class));
 	}
 
 	@Test
