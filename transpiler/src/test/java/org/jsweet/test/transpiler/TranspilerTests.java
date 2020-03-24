@@ -194,7 +194,7 @@ public class TranspilerTests extends AbstractTest {
 				"--jsout", outDir.getPath(), //
 				"--sourceMap", //
 				"-i", gameDir.getAbsolutePath(), //
-				"--excludes", "UselessClass.java:dummy");
+				"--excludes", "UselessClass.java" + File.pathSeparatorChar + "dummy");
 
 		assertTrue(process.exitValue() == 0);
 		files.clear();
@@ -219,7 +219,7 @@ public class TranspilerTests extends AbstractTest {
 				"--sourceMap", //
 				"--factoryClassName", "org.jsweet.transpiler.extension.RemoveJavaDependenciesFactory", //
 				"-i", gameDir.getAbsolutePath(), //
-				"--includes", "UselessClass.java:dummy");
+				"--includes", "UselessClass.java" + File.pathSeparatorChar + "dummy");
 
 		assertTrue(process.exitValue() == 0);
 		files.clear();
@@ -236,7 +236,7 @@ public class TranspilerTests extends AbstractTest {
 				"--sourceMap", //
 				"--factoryClassName", "org.jsweet.transpiler.extension.RemoveJavaDependenciesFactory", //
 				"-i", gameDir.getAbsolutePath(), //
-				"--includes", "UselessClass.java:dummy", "--targetVersion", "ES5");
+				"--includes", "UselessClass.java" + File.pathSeparatorChar + "dummy", "--targetVersion", "ES5");
 
 		assertTrue(process.exitValue() == 0);
 		files.clear();
@@ -253,7 +253,7 @@ public class TranspilerTests extends AbstractTest {
 				"--sourceMap", //
 				"--factoryClassName", "org.jsweet.transpiler.extension.RemoveJavaDependenciesFactory", //
 				"-i", gameDir.getAbsolutePath(), //
-				"--includes", "UselessClass.java:dummy", "--targetVersion", "ES3");
+				"--includes", "UselessClass.java" + File.pathSeparatorChar + "dummy", "--targetVersion", "ES3");
 
 		assertTrue(process.exitValue() == 0);
 		files.clear();
@@ -278,7 +278,7 @@ public class TranspilerTests extends AbstractTest {
 				"--factoryClassName", RemoveJavaDependenciesFactory.class.getName(), //
 				"--sourceMap", //
 				"--verbose", //
-				"-i", sources.map(File::getAbsolutePath).collect(joining(":")));
+				"-i", sources.map(File::getAbsolutePath).collect(joining(File.pathSeparator)));
 
 		assertTrue(process.exitValue() == 0);
 		LinkedList<File> files = new LinkedList<>();
@@ -301,7 +301,7 @@ public class TranspilerTests extends AbstractTest {
 				"--sourceMap", //
 				"--factoryClassName", "org.jsweet.transpiler.extension.RemoveJavaDependenciesFactory", //
 				"-i", gameDir.getAbsolutePath(), //
-				"--includes", "UselessClass.java:dummy", "--targetVersion", "ES4");
+				"--includes", "UselessClass.java" + File.pathSeparatorChar + "dummy", "--targetVersion", "ES4");
 
 		assertTrue(process.exitValue() == 1);
 	}
@@ -476,7 +476,8 @@ public class TranspilerTests extends AbstractTest {
 	public void testConfigurationFile() {
 		SourceFile f = getSourceFile(CanvasDrawing.class);
 		File configurationFile = new File(f.getJavaFile().getParentFile(), "configuration-nobundle.json");
-		TranspilerTestRunner transpilerTest = new TranspilerTestRunner(configurationFile, getCurrentTestOutDir(), new JSweetFactory());
+		TranspilerTestRunner transpilerTest = new TranspilerTestRunner(configurationFile, getCurrentTestOutDir(),
+				new JSweetFactory());
 		assertTrue(transpilerTest.getTranspiler().getHeaderFile().getPath().endsWith("header.txt"));
 		assertFalse(transpilerTest.getTranspiler().isBundle());
 		transpilerTest.transpile(logHandler -> {

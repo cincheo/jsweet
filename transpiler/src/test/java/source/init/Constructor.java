@@ -27,11 +27,15 @@ public class Constructor {
 	}
 
 	public Constructor(String s) {
+		this(s, false);
+	}
+
+	public Constructor(String s, boolean b) {
 		this.s = s;
 	}
 
 	public static void main(String[] args) {
-		Constructor c = new Constructor("abc");
+		Constructor c = new Constructor("abc", true);
 
 		$export("v1", c.s);
 
