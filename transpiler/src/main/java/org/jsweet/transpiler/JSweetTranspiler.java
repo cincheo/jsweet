@@ -129,7 +129,7 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 	 * (WARNING: so far, having multiple JSweet versions for the same user account
 	 * may lead to performance issues - could be fixed if necessary).
 	 */
-	public static final String TSC_VERSION = "2.1";
+	public static final String TSC_VERSION = "3.7.4";
 
 	static {
 		if (!SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_1_8)) {

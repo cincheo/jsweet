@@ -30,36 +30,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.text.Collator;
-import java.util.AbstractList;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Deque;
-import java.util.EnumSet;
-import java.util.Enumeration;
-import java.util.EventObject;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Queue;
-import java.util.Set;
-import java.util.Stack;
-import java.util.TimeZone;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.Vector;
-import java.util.WeakHashMap;
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -121,16 +93,20 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		extTypesMapping.put(List.class.getName(), "Array");
 		extTypesMapping.put(AbstractList.class.getName(), "Array");
 		extTypesMapping.put(ArrayList.class.getName(), "Array");
+		extTypesMapping.put(CopyOnWriteArrayList.class.getName(), "Array");
 		extTypesMapping.put(Iterable.class.getName(), "Array");
 		extTypesMapping.put(LinkedList.class.getName(), "Array");
 		extTypesMapping.put(Collection.class.getName(), "Array");
 		extTypesMapping.put(Set.class.getName(), "Array");
 		extTypesMapping.put(EnumSet.class.getName(), "Array");
 		extTypesMapping.put(Deque.class.getName(), "Array");
+		extTypesMapping.put(ArrayDeque.class.getName(), "Array");
 		extTypesMapping.put(Queue.class.getName(), "Array");
 		extTypesMapping.put(Stack.class.getName(), "Array");
 		extTypesMapping.put(HashSet.class.getName(), "Array");
+		extTypesMapping.put(SortedSet.class.getName(), "Array");
 		extTypesMapping.put(TreeSet.class.getName(), "Array");
+		extTypesMapping.put(LinkedHashSet.class.getName(), "Array");
 		extTypesMapping.put(Vector.class.getName(), "Array");
 		extTypesMapping.put(Enumeration.class.getName(), "any");
 		extTypesMapping.put(Iterator.class.getName(), "any");
@@ -139,9 +115,11 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		extTypesMapping.put(Properties.class.getName(), "any");
 		extTypesMapping.put(AbstractMap.class.getName(), "any");
 		extTypesMapping.put(HashMap.class.getName(), "any");
+		extTypesMapping.put(NavigableMap.class.getName(), "any");
 		extTypesMapping.put(TreeMap.class.getName(), "any");
 		extTypesMapping.put(WeakHashMap.class.getName(), "any");
 		extTypesMapping.put(LinkedHashMap.class.getName(), "any");
+		extTypesMapping.put(EnumMap.class.getName(), "any");
 		extTypesMapping.put(Hashtable.class.getName(), "any");
 		extTypesMapping.put(Comparator.class.getName(), "any");
 		extTypesMapping.put(Exception.class.getName(), "Error");
@@ -252,14 +230,18 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			case "java.util.AbstractCollection":
 			case "java.util.Queue":
 			case "java.util.Deque":
+			case "java.util.ArrayDeque":
 			case "java.util.LinkedList":
 			case "java.util.ArrayList":
+			case "java.util.concurrent.CopyOnWriteArrayList":
 			case "java.util.Stack":
 			case "java.util.Vector":
 			case "java.util.Set":
 			case "java.util.EnumSet":
 			case "java.util.HashSet":
+			case "java.util.SortedSet":
 			case "java.util.TreeSet":
+			case "java.util.LinkedHashSet":
 				if (substituteMethodInvocationOnArray(invocation, targetMethodName, targetClassName, delegate)) {
 					return true;
 				}
@@ -270,6 +252,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			case "java.util.Map":
 			case "java.util.AbstractMap":
 			case "java.util.HashMap":
+			case "java.util.NavigableMap":
 			case "java.util.TreeMap":
 			case "java.util.Hashtable":
 			case "java.util.WeakHashMap":
@@ -1543,10 +1526,12 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			substitute = true;
 			break;
 		case "java.util.HashMap":
+		case "java.util.NavigableMap":
 		case "java.util.TreeMap":
 		case "java.util.Hashtable":
 		case "java.util.WeakHashMap":
 		case "java.util.LinkedHashMap":
+		case "java.util.EnumMap":
 			if (newClass.getArgumentCount() == 0 || !(newClass.getArgument(0).getType() instanceof DeclaredType)
 					|| !util().isDeclarationOrSubClassDeclaration((DeclaredType) newClass.getArgument(0).getType(),
 							Map.class.getName())) {
