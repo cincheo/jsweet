@@ -81,6 +81,13 @@ public class Keywords {
 		trace.push(constructor);
 		String delete = "abc";
 		assert delete == "abc";
+		
+		String with = this.with(3);
+		$export("with", with);
+	}
+	
+	String with(int with) {
+		return "test" + with;
 	}
 
 }

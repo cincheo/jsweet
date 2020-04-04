@@ -68,11 +68,12 @@ public class SyntaxTests extends AbstractTest {
 	@Test
 	public void testKeywords() {
 		eval((logHandler, r) -> {
-			Assert.assertEquals(15, logHandler.reportedProblems.size());
+			Assert.assertEquals(17, logHandler.reportedProblems.size());
 			for (JSweetProblem problem : logHandler.reportedProblems) {
 				Assert.assertEquals(JSweetProblem.JS_KEYWORD_CONFLICT, problem);
 			}
 			Assert.assertEquals("a,1,f,2,abc", r.get("trace"));
+			Assert.assertEquals("test3", r.get("with"));
 		}, getSourceFile(Keywords.class));
 	}
 
