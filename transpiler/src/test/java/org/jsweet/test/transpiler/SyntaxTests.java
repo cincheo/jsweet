@@ -52,6 +52,7 @@ import source.syntax.References;
 import source.syntax.SpecialFunctions;
 import source.syntax.StatementsWithNoBlocks;
 import source.syntax.SuperInvocation;
+import source.syntax.UnreachableCode;
 import source.syntax.ValidIndexedAccesses;
 
 public class SyntaxTests extends AbstractTest {
@@ -76,6 +77,14 @@ public class SyntaxTests extends AbstractTest {
 			assertEquals("otherForVarKeyword", r.get("varKeyword"));
 			assertEquals("test3", r.get("with"));
 		}, getSourceFile(Keywords.class));
+	}
+
+	@Test
+	public void testUnreachable() {
+		eval((logHandler, r) -> {
+			logHandler.assertNoProblems();
+			assertEquals("OUI", r.get("reachableExecuted"));
+		}, getSourceFile(UnreachableCode.class));
 	}
 
 	@Test
