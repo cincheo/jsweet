@@ -83,6 +83,13 @@ public class Keywords {
 		var varKeyword = "coucou";
 		varKeyword = "otherForVarKeyword";
 		$export("varKeyword", varKeyword);
+		
+		String with = this.with(3);
+		$export("with", with);
+	}
+	
+	String with(int with) {
+		return "test" + with;
 	}
 
 }
