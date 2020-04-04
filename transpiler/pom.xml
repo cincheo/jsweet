@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.jsweet</groupId>
 	<artifactId>jsweet-transpiler</artifactId>
-	<version>3.0.0-RC1</version>
+	<version>3.0.0-RC2</version>
 	<name>JSweet transpiler</name>
 	<description>A Java to TypeScript/JavaScript Open Transpiler</description>
 	<developers>
