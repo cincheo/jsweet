@@ -7,6 +7,7 @@
 	<version>3.0.0-RC2</version>
 	<name>JSweet transpiler</name>
 	<description>A Java to TypeScript/JavaScript Open Transpiler</description>
+	<url>http://www.jsweet.org</url>
 	<developers>
 		<developer>
 			<id>rpawlak</id>
@@ -169,6 +170,21 @@
 						<id>attach-javadocs</id>
 						<goals>
 							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-gpg-plugin</artifactId>
+				<version>1.6</version>
+				<executions>
+					<execution>
+						<id>sign-artifacts</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>sign</goal>
 						</goals>
 					</execution>
 				</executions>
