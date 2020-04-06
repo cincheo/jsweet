@@ -11,7 +11,7 @@ env:
   - TEST_DIR=transpiler JSWEET_VERBOSE=false
 
 script:
-  - cd $TEST_DIR && mvn clean verify
+  - cd $TEST_DIR && mvn clean verify -DskipSigning=true
 
 cache:
   directories:

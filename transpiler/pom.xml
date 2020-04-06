@@ -90,7 +90,7 @@
 				<configuration>
 					<forkCount>0</forkCount>
 					<reuseForks>false</reuseForks>
-					 <useSystemClassLoader>false</useSystemClassLoader>
+					<useSystemClassLoader>false</useSystemClassLoader>
 					<includes>
 						<include>**/*.java</include>
 					</includes>
@@ -179,6 +179,9 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-gpg-plugin</artifactId>
 				<version>1.6</version>
+				<configuration>
+					<skip>${skipSigning}</skip>
+				</configuration>
 				<executions>
 					<execution>
 						<id>sign-artifacts</id>
