@@ -36,6 +36,16 @@ Since version 2, the JSweet transpiler source code is licensed under GPLv3, whic
 
 NOTE: JSweet transpiler version 1.x, which is no longer maintained, is licensed under Apache v2.
 
+## Signing
+In order to be able to deploy on Maven Central repository, we sign our jars using http://maven.apache.org/plugins/maven-gpg-plugin/
+
+You need to install gpg (built in in most OS now), and import JSweet GPG key:
+https://www.debuntu.org/how-to-importexport-gpg-key-pair/
+A passphrase will be asked.
+
+To regenerate keys from scratch, follow https://blog.sonatype.com/2010/01/how-to-generate-pgp-signatures-with-maven/
+and https://help.ubuntu.com/community/GnuPrivacyGuardHowto#Uploading_the_key_to_Ubuntu_keyserver 
+
 ## Release
 ```
 git flow release start X.Y.Z
