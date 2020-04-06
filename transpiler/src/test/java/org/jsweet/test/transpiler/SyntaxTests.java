@@ -52,6 +52,7 @@ import source.syntax.References;
 import source.syntax.SpecialFunctions;
 import source.syntax.StatementsWithNoBlocks;
 import source.syntax.SuperInvocation;
+import source.syntax.UnreachableCode;
 import source.syntax.ValidIndexedAccesses;
 
 public class SyntaxTests extends AbstractTest {
@@ -68,12 +69,21 @@ public class SyntaxTests extends AbstractTest {
 	@Test
 	public void testKeywords() {
 		eval((logHandler, r) -> {
-			Assert.assertEquals(15, logHandler.reportedProblems.size());
+			Assert.assertEquals(17, logHandler.reportedProblems.size());
 			for (JSweetProblem problem : logHandler.reportedProblems) {
 				Assert.assertEquals(JSweetProblem.JS_KEYWORD_CONFLICT, problem);
 			}
 			Assert.assertEquals("a,1,f,2,abc", r.get("trace"));
+			Assert.assertEquals("test3", r.get("with"));
 		}, getSourceFile(Keywords.class));
+	}
+
+	@Test
+	public void testUnreachable() {
+		eval((logHandler, r) -> {
+			logHandler.assertNoProblems();
+			assertEquals("OUI", r.get("reachableExecuted"));
+		}, getSourceFile(UnreachableCode.class));
 	}
 
 	@Test
