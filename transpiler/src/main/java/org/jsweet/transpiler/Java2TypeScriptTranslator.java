@@ -3726,9 +3726,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (methName.equals("super") && getScope().removedSuperclass) {
 			return;
 		}
-		if(inv.toString().startsWith("super") && "valuerModele".equals(methName)) {
-			System.out.println();
-		}
 
 		boolean applyVarargs = true;
 		if (JSweetConfig.NEW_FUNCTION_NAME.equals(methName)) {
