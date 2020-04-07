@@ -46,6 +46,8 @@ A passphrase will be asked.
 To regenerate keys from scratch, follow https://blog.sonatype.com/2010/01/how-to-generate-pgp-signatures-with-maven/
 and https://help.ubuntu.com/community/GnuPrivacyGuardHowto#Uploading_the_key_to_Ubuntu_keyserver 
 
+You can ignore signing with `mvn [...] -DskipSigning=true`
+
 ## Release
 ```
 git flow release start X.Y.Z
