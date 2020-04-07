@@ -87,6 +87,8 @@ import source.overload.WrongOverloadsWithDefaultMethods;
 import source.overload.WrongOverloadsWithNonCoreMethod;
 import source.overload.default_methods.AClassImplementingInterfaceWithDefaultOverloadedMethods;
 import source.overload.default_methods.AnInterfaceWithDefaultOverloadedMethods;
+import source.overload.inheritance.SubClass;
+import source.overload.inheritance.SuperClass;
 import source.overload.visitor.A1;
 import source.overload.visitor.A2;
 import source.overload.visitor.A3;
@@ -99,9 +101,9 @@ public class OverloadTests extends AbstractTest {
 	public void testOverload() {
 		eval((logHandler, result) -> {
 			logHandler.assertNoProblems();
-			assertEquals("default1", result.<String> get("res1"));
-			assertEquals("s11", result.<String> get("res2"));
-			assertEquals("s22", result.<String> get("res3"));
+			assertEquals("default1", result.<String>get("res1"));
+			assertEquals("s11", result.<String>get("res2"));
+			assertEquals("s22", result.<String>get("res3"));
 		}, getSourceFile(Overload.class));
 	}
 
@@ -395,6 +397,13 @@ public class OverloadTests extends AbstractTest {
 			logHandler.assertNoProblems();
 		}, getSourceFile(AnInterfaceWithDefaultOverloadedMethods.class),
 				getSourceFile(AClassImplementingInterfaceWithDefaultOverloadedMethods.class));
+	}
+
+	@Test
+	public void testWrongOverloadWithInheritance2() {
+		eval(ModuleKind.none, (logHandler, result) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(SuperClass.class), getSourceFile(SubClass.class));
 	}
 
 }
