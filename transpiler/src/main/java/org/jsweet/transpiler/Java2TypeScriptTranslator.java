@@ -3726,6 +3726,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (methName.equals("super") && getScope().removedSuperclass) {
 			return;
 		}
+		if(inv.toString().startsWith("super") && "valuerModele".equals(methName)) {
+			System.out.println();
+		}
 
 		boolean applyVarargs = true;
 		if (JSweetConfig.NEW_FUNCTION_NAME.equals(methName)) {
@@ -3952,12 +3955,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						}
 					}
 					if (methSym != null) {
-						if (context.isInvalidOverload(methSym) && !methSym.getParameters().isEmpty()
+						if (context.isInvalidOverload(methSym)
 								&& !Util.hasTypeParameters(methSym)
-								&& !methSym.isDefault() /*
-														 * && !Util.hasVarargs(
-														 * methSym)
-														 */
+								&& !methSym.isDefault()
 								&& getParent(JCMethodDecl.class) != null
 								&& !getParent(JCMethodDecl.class).sym.isDefault()) {
 							if (context.isInterface((TypeSymbol) methSym.getEnclosingElement())) {
