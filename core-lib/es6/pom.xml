@@ -1,11 +1,13 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.jsweet</groupId>
 	<artifactId>jsweet-core</artifactId>
+	<version>6.1.0</version>
 	<name>JSweet Core Lib</name>
 	<description>JavaScript API for JSweet</description>
-	<version>6.1.0</version>
+	<url>http://www.jsweet.org</url>
 	<properties>
 		<timestamp>${maven.build.timestamp}</timestamp>
 		<maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
@@ -13,7 +15,6 @@
 		<java.version.release>11</java.version.release>
 		<java.version>1.${java.version.release}</java.version>
 	</properties>
-
 	<developers>
 		<developer>
 			<id>rpawlak</id>
@@ -26,6 +27,13 @@
 			<email>louis.grignon@gmail.com</email>
 		</developer>
 	</developers>
+	<licenses>
+		<license>
+			<name>The Apache Software License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
 	<issueManagement>
 		<url>https://github.com/cincheo/jsweet/issues</url>
 		<system>GitHub Issues</system>
@@ -154,6 +162,24 @@
 						<id>attach-javadoc</id>
 						<goals>
 							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-gpg-plugin</artifactId>
+				<version>1.6</version>
+				<configuration>
+					<skip>${skipSigning}</skip>
+				</configuration>
+				<executions>
+					<execution>
+						<id>sign-artifacts</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>sign</goal>
 						</goals>
 					</execution>
 				</executions>
