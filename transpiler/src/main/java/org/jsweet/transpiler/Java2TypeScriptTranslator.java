@@ -1033,6 +1033,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	private void printDocComment(Tree tree, boolean newline) {
 		if (compilationUnit != null) {
 			TreePath treePath = getTreePath(tree);
+			if(treePath ==null) {
+				return;
+			}
+			
 			String docComment = trees().getDocComment(treePath);
 			String commentText = JSDoc.adaptDocComment(context, treePath, tree, docComment);
 
@@ -2149,7 +2153,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	@Override
 	public Void visitMethod(final MethodTree methodTree, final Trees trees) {
 		ExecutableElement methodElement = toElement(methodTree);
+		//ExecutableElement methodElement = (ExecutableElement)methodTree.getClass().getField("sym").get(methodTree);
 
+		if(methodElement == null) {
+			System.out.println();
+		}
+		
 		if (context.hasAnnotationType(methodElement, JSweetConfig.ANNOTATION_ERASED)) {
 			// erased elements are ignored
 			return returnNothing();
@@ -3333,7 +3342,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 			}
 
-			if (util().isVarargs(varTree, getCompilationUnitForTree(varTree))) {
+			if (util().isVarargs(toElement(varTree))) {
 				print("...");
 			}
 
@@ -3343,7 +3352,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				print(name);
 			}
 
-			if (!util().isVarargs(varTree, getCompilationUnitForTree(varTree))
+			if (!util().isVarargs(toElement(varTree))
 					&& (getScope().isEraseVariableTypes() || (getScope().interfaceScope
 							&& context.hasAnnotationType(varElement, JSweetConfig.ANNOTATION_OPTIONAL)))) {
 				print("?");
@@ -3972,12 +3981,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						}
 					}
 					if (methSym != null) {
-						if (context.isInvalidOverload(methSym) && !methSym.getParameters().isEmpty()
-								&& !util().hasTypeParameters(methSym) && !util().hasVarargs(methSym)
+						if (context.isInvalidOverload(methSym) 
+								&& !util().hasTypeParameters(methSym) 
 								&& getParent(MethodTree.class) != null
 								&& !getParent(MethodTree.class).getModifiers().getFlags().contains(Modifier.DEFAULT)) {
 							if (context.isInterface((TypeElement) methSym.getEnclosingElement())) {
-								removeLastChar('.');
+								removeLastChar('.')	;
 								print("['" + getOverloadMethodName(methSym) + "']");
 							} else {
 								print(getOverloadMethodName(methSym));

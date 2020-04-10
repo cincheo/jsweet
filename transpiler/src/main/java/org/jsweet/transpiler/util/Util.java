@@ -1960,11 +1960,16 @@ public class Util {
 		if (tree == null) {
 			return null;
 		}
-		TreePath treePath = trees().getPath(compilationUnit, tree);
-		if (treePath == null) {
-			return null;
+		try {
+			return (T)tree.getClass().getField("sym").get(tree);
+		} catch (Exception e) {
+			TreePath treePath = trees().getPath(compilationUnit, tree);
+			if (treePath == null) {
+				return null;
+			}
+			return getElementForTreePath(treePath);
 		}
-		return getElementForTreePath(treePath);
+		
 	}
 
 	/**
@@ -2034,8 +2039,12 @@ public class Util {
 			return null;
 		}
 
-		TreePath treePath = trees().getPath(compilationUnit, tree);
-		return getTypeForTreePath(treePath);
+		try {
+			return (T) tree.getClass().getField("type").get(tree);
+		} catch (Exception e) {
+			TreePath treePath = trees().getPath(compilationUnit, tree);
+			return getTypeForTreePath(treePath);
+		}
 	}
 
 	/**

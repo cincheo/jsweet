@@ -30,6 +30,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
@@ -500,8 +501,14 @@ public abstract class AbstractTreeScanner extends TreePathScanner<Void, Trees> {
 	/**
 	 * @see Util#getElementForTree(Tree, CompilationUnitTree)
 	 */
+	@SuppressWarnings("unchecked")
 	protected <T extends Element> T toElement(Tree tree) {
-		return getFromTreePath(tree, treePath -> util().getElementForTreePath(treePath));
+		try {
+			return (T)tree.getClass().getField("sym").get(tree);
+		} catch (Exception e) {
+			//e.printStackTrace();
+			return getFromTreePath(tree, treePath -> util().getElementForTreePath(treePath));
+		}
 	}
 
 	/**

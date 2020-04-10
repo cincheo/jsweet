@@ -85,6 +85,8 @@ import source.overload.WrongOverloadWithSpecialParameters;
 import source.overload.WrongOverloads;
 import source.overload.WrongOverloadsWithDefaultMethods;
 import source.overload.WrongOverloadsWithNonCoreMethod;
+import source.overload.inheritance.SubClass;
+import source.overload.inheritance.SuperClass;
 import source.overload.visitor.A1;
 import source.overload.visitor.A2;
 import source.overload.visitor.A3;
@@ -387,4 +389,11 @@ public class OverloadTests extends AbstractTest {
 				getSourceFile(ImplementationB15.class));
 	}
 
+	@Test
+	public void testWrongOverloadWithInheritance2() {
+		eval(ModuleKind.none, (logHandler, result) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(SuperClass.class), getSourceFile(SubClass.class));
+	}
+	
 }
