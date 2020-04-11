@@ -5870,8 +5870,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					}
 				}
 			}
-			if (parens)
+			if (parens) {
 				print("()");
+			}
 		}
 		println().printIndent();
 	}
@@ -6051,9 +6052,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		private HashSet<String> names = new HashSet<>();
 
 		private void checkType(Symbol symbol) {
-			if (symbol instanceof ClassSymbol /*
-												 * && !isMappedOrErasedType(type)
-												 */) {
+			if (symbol instanceof ClassSymbol) {
 				String name = symbol.getSimpleName().toString();
 				if (!names.contains(name)) {
 					names.add(name);
