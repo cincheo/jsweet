@@ -4953,7 +4953,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 */
 	@Override
 	public Void visitIf(IfTree ifStatement, Trees trees) {
-		print("if").print(ifStatement.getCondition()).print(" ");
+		print("if (").print(ifStatement.getCondition()).print(") ");
 		print(ifStatement.getThenStatement());
 		if (!(ifStatement.getThenStatement() instanceof BlockTree)) {
 			if (!isStatementWithNoSemiColon(ifStatement.getThenStatement())) {
