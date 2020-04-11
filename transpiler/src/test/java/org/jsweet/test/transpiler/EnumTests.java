@@ -41,8 +41,10 @@ import source.enums.EnumsReflection;
 import source.enums.ErasedEnum;
 import source.enums.MyComplexEnum2;
 import source.enums.StringEnums;
+import source.enums.SwitchWithEnumWrapper;
 import source.enums.other.ComplexEnumsAccess;
 import source.enums.other.EnumInOtherPackage;
+import source.enums.other.EnumWrapper;
 
 public class EnumTests extends AbstractTest {
 
@@ -189,6 +191,13 @@ public class EnumTests extends AbstractTest {
 		transpile(logHandler -> {
 			logHandler.assertNoProblems();
 		}, getSourceFile(EnumWithPropOfSameType.class));
+	}
+
+	@Test
+	public void testSwitchWithEnumWrapper() {
+		eval(ModuleKind.commonjs, (logHandler, r) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(EnumInOtherPackage.class), getSourceFile(EnumWrapper.class), getSourceFile(SwitchWithEnumWrapper.class));
 	}
 	
 }

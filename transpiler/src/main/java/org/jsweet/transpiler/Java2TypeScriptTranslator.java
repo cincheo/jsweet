@@ -168,13 +168,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 */
 	public static final String PARENT_CLASS_FIELD_NAME = "__parent";
 	/**
-	 * The name of the field where the implemented interface names are stored in
-	 * the generated TypeScript code (for <code>instanceof</code> operator).
+	 * The name of the field where the implemented interface names are stored in the
+	 * generated TypeScript code (for <code>instanceof</code> operator).
 	 */
 	public static final String INTERFACES_FIELD_NAME = "__interfaces";
 	/**
-	 * The suffix added to static field initialization methods (for Java
-	 * semantics).
+	 * The suffix added to static field initialization methods (for Java semantics).
 	 */
 	public static final String STATIC_INITIALIZATION_SUFFIX = "_$LI$";
 	/**
@@ -227,8 +226,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 */
 	public static final Pattern METHOD_NAME_MARKER = Pattern.compile("\\{\\{\\s*methodName\\s*\\}\\}");
 	/**
-	 * A regular expression for matching class name markers in
-	 * <code>@Replace</code> expression.
+	 * A regular expression for matching class name markers in <code>@Replace</code>
+	 * expression.
 	 */
 	public static final Pattern CLASS_NAME_MARKER = Pattern.compile("\\{\\{\\s*className\\s*\\}\\}");
 	/**
@@ -242,8 +241,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	protected static Logger logger = Logger.getLogger(Java2TypeScriptTranslator.class);
 
 	/**
-	 * A state flag indicating the comparison mode to be used by this printer
-	 * for printing comparison operators.
+	 * A state flag indicating the comparison mode to be used by this printer for
+	 * printing comparison operators.
 	 * 
 	 * @author Renaud Pawlak
 	 */
@@ -255,8 +254,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		FORCE_STRICT,
 		/**
 		 * Uses the strict comparison operators (===, >==, <==), except for null
-		 * literals, where loose operators are used to match better the Java
-		 * semantics. This is the default behavior.
+		 * literals, where loose operators are used to match better the Java semantics.
+		 * This is the default behavior.
 		 */
 		STRICT,
 		/**
@@ -512,18 +511,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	/**
 	 * Creates a new TypeScript translator.
 	 * 
-	 * @param adapter
-	 *            an object that can tune various aspects of the TypeScript code
-	 *            generation
-	 * @param logHandler
-	 *            the handler for logging and error reporting
-	 * @param context
-	 *            the AST scanning context
-	 * @param compilationUnit
-	 *            the compilation unit to be translated
-	 * @param fillSourceMap
-	 *            if true, the printer generates the source maps, for debugging
-	 *            purpose
+	 * @param adapter         an object that can tune various aspects of the
+	 *                        TypeScript code generation
+	 * @param logHandler      the handler for logging and error reporting
+	 * @param context         the AST scanning context
+	 * @param compilationUnit the compilation unit to be translated
+	 * @param fillSourceMap   if true, the printer generates the source maps, for
+	 *                        debugging purpose
 	 */
 	public Java2TypeScriptTranslator(PrinterAdapter adapter, TranspilationHandler logHandler, JSweetContext context,
 			JCCompilationUnit compilationUnit, boolean fillSourceMap) {
@@ -683,6 +677,23 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	private boolean isMappedOrErasedType(Symbol symbol) {
 		return context.isMappedType(symbol.type.tsym.toString())
 				|| context.hasAnnotationType(symbol, JSweetConfig.ANNOTATION_ERASED);
+	}
+
+	/**
+	 * Ensures that the module that corresponds to the given element is used (imported).
+	 */
+	public void ensureModuleIsUsed(Element element) {
+		if (context.useModules) {
+			if (element instanceof TypeElement) {
+				ModuleImportDescriptor moduleImport = getAdapter().getModuleImportDescriptor(
+						new CompilationUnitElementSupport(compilationUnit), element.getSimpleName().toString(),
+						(TypeElement) element);
+				if (moduleImport != null) {
+					useModule(moduleImport);
+				}
+			}
+		}
+
 	}
 
 	/**
@@ -2495,18 +2506,18 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 									.replaceAll(parent.sym.getQualifiedName().toString());
 						}
 					}
-					
+
 					if (replacedBody != null && replacedBody.trim().startsWith("super(")) {
 						String superCall = replacedBody.substring(0, replacedBody.indexOf(';') + 1);
 						replacedBody = replacedBody.substring(replacedBody.indexOf(';') + 1);
 						println(superCall);
 					}
-					
+
 					if (!fieldsInitPrinted && parent != null) {
 						printInstanceInitialization(parent, methodDecl.sym);
 						fieldsInitPrinted = true;
 					}
-					
+
 					if (replacedBody != null) {
 						if (methodDecl.sym.isConstructor()) {
 							getScope().hasDeclaredConstructor = true;
@@ -2628,8 +2639,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	}
 
 	/**
-	 * Print async keyword for given method if relevant. Prints nothing if
-	 * method shouldn't be async
+	 * Print async keyword for given method if relevant. Prints nothing if method
+	 * shouldn't be async
 	 * 
 	 */
 	protected void printAsyncKeyword(JCMethodDecl methodDecl) {
@@ -3389,10 +3400,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (varDecl.init != null && !isDefinitionScope) {
 					print("if(" + prefix).print(name).print(" == null) ").print(prefix).print(name).print(" = ");
 					/*
-					 * if (getScope().enumWrapperClassScope) { JCNewClass
-					 * newClass = (JCNewClass) varDecl.init; print("new "
-					 * ).print(clazz.getSimpleName().toString()).print("(")
-					 * .printArgList(null, newClass.args).print(")"); } else {
+					 * if (getScope().enumWrapperClassScope) { JCNewClass newClass = (JCNewClass)
+					 * varDecl.init; print("new "
+					 * ).print(clazz.getSimpleName().toString()).print("(") .printArgList(null,
+					 * newClass.args).print(")"); } else {
 					 */
 					if (!substituteAssignedExpression(varDecl.type, varDecl.init)) {
 						print(varDecl.init);
@@ -3633,16 +3644,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							if (varSym.isStatic() && varSym.owner != Util.getAccessedSymbol(fieldAccess.selected)) {
 								accessSubstituted = true;
 								print(getRootRelativeName(varSym.owner)).print(".");
-								if (context.useModules) {
-									if (varSym.owner instanceof TypeElement) {
-										ModuleImportDescriptor moduleImport = getAdapter().getModuleImportDescriptor(
-												new CompilationUnitElementSupport(compilationUnit),
-												varSym.owner.getSimpleName().toString(), (TypeElement) varSym.owner);
-										if (moduleImport != null) {
-											useModule(moduleImport);
-										}
-									}
-								}
+								ensureModuleIsUsed(varSym.owner);
 							}
 						} else if (fieldAccess.selected.type.tsym instanceof PackageSymbol && context.useModules
 								&& !context.moduleBundleMode && fieldAccess.sym instanceof TypeElement
@@ -3952,10 +3954,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						}
 					}
 					if (methSym != null) {
-						if (context.isInvalidOverload(methSym)
-								&& !Util.hasTypeParameters(methSym)
-								&& !methSym.isDefault()
-								&& getParent(JCMethodDecl.class) != null
+						if (context.isInvalidOverload(methSym) && !Util.hasTypeParameters(methSym)
+								&& !methSym.isDefault() && getParent(JCMethodDecl.class) != null
 								&& !getParent(JCMethodDecl.class).sym.isDefault()) {
 							if (context.isInterface((TypeSymbol) methSym.getEnclosingElement())) {
 								removeLastChar('.');
@@ -4181,19 +4181,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 								} else {
 									if (!varSym.owner.getSimpleName().toString().equals(GLOBALS_PACKAGE_NAME)) {
 										print(varSym.owner.getSimpleName().toString());
-										if (context.useModules) {
-											if (varSym.owner instanceof TypeElement) {
-												ModuleImportDescriptor moduleImport = getAdapter()
-														.getModuleImportDescriptor(
-																new CompilationUnitElementSupport(compilationUnit),
-																varSym.owner.getSimpleName().toString(),
-																(TypeElement) varSym.owner);
-												if (moduleImport != null) {
-													useModule(moduleImport);
-												}
-											}
-
-										}
+										ensureModuleIsUsed(varSym.owner);
 										if (lazyInitializedStatic && varSym.owner.isEnum()) {
 											print(ENUM_WRAPPER_CLASS_SUFFIX);
 										}
@@ -4969,7 +4957,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					: null;
 		} else if (expr instanceof JCFieldAccess) {
 			return context.lazyInitializedStatics.contains(((JCFieldAccess) expr).sym)
-					? (VarSymbol) ((JCFieldAccess) expr).sym : null;
+					? (VarSymbol) ((JCFieldAccess) expr).sym
+					: null;
 		} else {
 			return null;
 		}
@@ -5328,6 +5317,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					}
 				} else {
 					print(getRootRelativeName(caseStatement.pat.type.tsym) + "." + caseStatement.pat);
+					ensureModuleIsUsed(caseStatement.pat.type.tsym);
 				}
 			}
 		} else {
@@ -5682,10 +5672,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	/**
 	 * Prints either a string, or the tree if the the string is null.
 	 * 
-	 * @param exprStr
-	 *            a string to be printed as is if not null
-	 * @param expr
-	 *            a tree to be printed if exprStr is null
+	 * @param exprStr a string to be printed as is if not null
+	 * @param expr    a tree to be printed if exprStr is null
 	 */
 	public void print(String exprStr, JCTree expr) {
 		if (exprStr == null) {
@@ -5877,12 +5865,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				JCTree[] globalDecoratorFunction = context
 						.lookupGlobalMethod(((JCIdent) annotation.getAnnotationType()).sym.toString());
 				if (globalDecoratorFunction != null) {
-					if(!((JCMethodDecl)globalDecoratorFunction[1]).sym.getParameters().isEmpty()) {
+					if (!((JCMethodDecl) globalDecoratorFunction[1]).sym.getParameters().isEmpty()) {
 						parens = false;
 					}
 				}
 			}
-			if(parens) print("()");
+			if (parens) {
+				print("()");
+			}
 		}
 		println().printIndent();
 	}
@@ -6062,10 +6052,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		private HashSet<String> names = new HashSet<>();
 
 		private void checkType(Symbol symbol) {
-			if (symbol instanceof ClassSymbol /*
-												 * &&
-												 * !isMappedOrErasedType(type)
-												 */) {
+			if (symbol instanceof ClassSymbol) {
 				String name = symbol.getSimpleName().toString();
 				if (!names.contains(name)) {
 					names.add(name);
