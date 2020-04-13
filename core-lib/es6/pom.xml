@@ -15,7 +15,6 @@
 		<java.version.release>11</java.version.release>
 		<java.version>1.${java.version.release}</java.version>
 	</properties>
-
 	<developers>
 		<developer>
 			<id>rpawlak</id>
@@ -28,6 +27,13 @@
 			<email>louis.grignon@gmail.com</email>
 		</developer>
 	</developers>
+	<licenses>
+		<license>
+			<name>The Apache Software License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
 	<issueManagement>
 		<url>https://github.com/cincheo/jsweet/issues</url>
 		<system>GitHub Issues</system>
@@ -156,6 +162,24 @@
 						<id>attach-javadoc</id>
 						<goals>
 							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-gpg-plugin</artifactId>
+				<version>1.6</version>
+				<configuration>
+					<skip>${skipSigning}</skip>
+				</configuration>
+				<executions>
+					<execution>
+						<id>sign-artifacts</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>sign</goal>
 						</goals>
 					</execution>
 				</executions>
