@@ -20,6 +20,7 @@ package org.jsweet.transpiler;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.jsweet.JSweetConfig.ANNOTATION_ERASED;
+import static org.jsweet.JSweetConfig.UTIL_CLASSNAME;
 import static org.jsweet.JSweetConfig.ANNOTATION_FUNCTIONAL_INTERFACE;
 import static org.jsweet.JSweetConfig.ANNOTATION_OBJECT_TYPE;
 import static org.jsweet.JSweetConfig.ANNOTATION_STRING_TYPE;
@@ -78,7 +79,10 @@ import org.jsweet.transpiler.model.support.MethodInvocationElementSupport;
 import org.jsweet.transpiler.model.support.NewClassElementSupport;
 import org.jsweet.transpiler.model.support.UnaryOperatorElementSupport;
 import org.jsweet.transpiler.util.AbstractTreePrinter;
+import org.jsweet.transpiler.util.AbstractTreeScanner;
+import org.jsweet.transpiler.util.ConsoleTranspilationHandler;
 import org.jsweet.transpiler.util.JSDoc;
+import org.jsweet.transpiler.util.RollbackException;
 import org.jsweet.transpiler.util.Util;
 
 import com.sun.source.tree.Tree.Kind;
@@ -680,7 +684,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	}
 
 	/**
-	 * Ensures that the module that corresponds to the given element is used (imported).
+	 * Ensures that the module that corresponds to the given element is used
+	 * (imported).
 	 */
 	public void ensureModuleIsUsed(Element element) {
 		if (context.useModules) {
@@ -1693,6 +1698,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			printIndent().print("static __static_initialized : boolean = false;").println();
 			int liCount = context.getStaticInitializerCount(classdecl.sym);
 			String prefix = getClassName(classdecl.sym) + ".";
+
 			printIndent().print("static __static_initialize() { ");
 			print("if(!" + prefix + "__static_initialized) { ");
 			print(prefix + "__static_initialized = true; ");
@@ -3150,7 +3156,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			if (m instanceof JCBlock) {
 				if (((JCBlock) m).isStatic()) {
 					if (block == m) {
-						print("static __static_initializer_" + static_i + "() ");
+						String asyncKeyword = isAsyncStaticInitializer(block) ? "async" : "";
+						print("static " + asyncKeyword + " __static_initializer_" + static_i + "() ");
 						print("{");
 						println().startIndent();
 
@@ -3163,6 +3170,41 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					static_i++;
 				}
 			}
+		}
+	}
+
+	protected boolean isAsyncStaticInitializer(JCBlock initializerBlock) {
+		AsyncCallsFinder finder = new AsyncCallsFinder(new ConsoleTranspilationHandler(), context, compilationUnit);
+		initializerBlock.accept(finder);
+		return finder.found;
+	}
+
+	private class AsyncCallsFinder extends AbstractTreeScanner {
+
+		protected boolean found = false;
+
+		public AsyncCallsFinder(TranspilationHandler logHandler, JSweetContext context,
+				JCCompilationUnit compilationUnit) {
+			super(logHandler, context, compilationUnit);
+		}
+
+		@Override
+		public void visitApply(JCMethodInvocation methodInvocation) {
+			Symbol methodSymbol = Util.getAccessedSymbol(methodInvocation.meth);
+			if (methodSymbol instanceof MethodSymbol) {
+				MethodSymbol method = (MethodSymbol) methodSymbol;
+
+				if (isAwait(method)) {
+					found = true;
+					throw new RollbackException(methodInvocation, null);
+				}
+			}
+			super.visitApply(methodInvocation);
+		}
+
+		private boolean isAwait(MethodSymbol method) {
+			return method.owner.getQualifiedName().toString().equals(UTIL_CLASSNAME)
+					&& method.name.toString().equals("await");
 		}
 	}
 
