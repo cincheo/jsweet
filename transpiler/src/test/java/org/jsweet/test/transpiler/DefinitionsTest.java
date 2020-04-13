@@ -16,9 +16,12 @@
  */
 package org.jsweet.test.transpiler;
 
+import org.jsweet.transpiler.ModuleKind;
 import org.junit.Test;
 
 import def.test.ClassWithObjectType;
+import def.test.SAXException;
+import source.definition.UseDef;
 
 public class DefinitionsTest extends AbstractTest {
 
@@ -30,4 +33,11 @@ public class DefinitionsTest extends AbstractTest {
 		}, getSourceFile(ClassWithObjectType.class));
 	}
 
+	@Test
+	public void testUseDef() {
+		transpile(ModuleKind.none, h -> {
+			h.assertNoProblems();
+		}, getSourceFile(SAXException.class), getSourceFile(UseDef.class));
+	}
+	
 }

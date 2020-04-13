@@ -2178,7 +2178,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			ClassType superClassType = (ClassType) parent.getExtendsClause().type;
 			MethodSymbol superMethod = Util.findMethodDeclarationInType(context.types, superClassType.tsym,
 					methodDecl.getName().toString(), (MethodType) methodDecl.type);
-			if (superMethod != null) {
+			if(superMethod != null && Util.isSourceElement(superMethod)) {
 				return;
 			}
 		}
