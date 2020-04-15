@@ -8,7 +8,7 @@ public class LombokTest extends AbstractTest {
 
 	
 	@Test
-	public void testComplexInnerEnums() {
+	public void testEqualsAndHashCode() {
 		eval((logHandler, r) -> {
 			logHandler.assertNoProblems();
 		}, getSourceFile(EqualsAndHashCodeExample.class));
