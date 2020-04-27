@@ -239,6 +239,7 @@ public class JSweetTranspiler implements JSweetOptions {
 	private boolean skipTypeScriptChecks = false;
 	private boolean disableSingleFloatPrecision = false;
 	private boolean ignoreCandiesTypeScriptDefinitions = false;
+	private boolean lazyInitializedStatics = true;
 
 	private ArrayList<String> adapters = new ArrayList<>();
 	private File configurationFile;
@@ -1868,6 +1869,15 @@ public class JSweetTranspiler implements JSweetOptions {
 		this.disableSingleFloatPrecision = disableSinglePrecisionFloats;
 	}
 
+	@Override
+	public boolean isLazyInitializedStatics() {
+	    return lazyInitializedStatics;
+	}
+
+	public void setLazyInitializedStatics(boolean lazyInitializedStatics) {
+	    this.lazyInitializedStatics = lazyInitializedStatics;
+	}
+	
 	// @SuppressWarnings("unchecked")
 	// private <T> T getConfigurationValue(String key) {
 	// return (T) getConfiguration().get(key);
