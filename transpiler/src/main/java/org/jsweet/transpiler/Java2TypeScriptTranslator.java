@@ -3216,7 +3216,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	}
 
 	private boolean isLazyInitialized(VarSymbol var) {
-		return var.isStatic() && context.lazyInitializedStatics.contains(var)
+		return context.options.isLazyInitializedStatics() && var.isStatic() && context.lazyInitializedStatics.contains(var)
 				&& /* enum fields are not lazy initialized */ !(var.isEnum()
 						&& var.getEnclosingElement().equals(var.type.tsym));
 	}

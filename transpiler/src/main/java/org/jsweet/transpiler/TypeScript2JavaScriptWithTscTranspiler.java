@@ -60,6 +60,10 @@ public class TypeScript2JavaScriptWithTscTranspiler extends TypeScript2JavaScrip
 		if (options.isGenerateDeclarations()) {
 			args.add("--declaration");
 		}
+		if (options.getDeclarationsOutputDir() != null) {
+			args.addAll(asList("--declarationDir", options.getDeclarationsOutputDir().getAbsolutePath()));
+		}
+		
 		args.addAll(asList("--rootDir", options.getTsOutputDir().getAbsolutePath()));
 		// args.addAll(asList("--sourceRoot", tsOutputDir.toString()));
 
