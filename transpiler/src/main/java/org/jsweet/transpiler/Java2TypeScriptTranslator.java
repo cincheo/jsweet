@@ -2178,7 +2178,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			ClassType superClassType = (ClassType) parent.getExtendsClause().type;
 			MethodSymbol superMethod = Util.findMethodDeclarationInType(context.types, superClassType.tsym,
 					methodDecl.getName().toString(), (MethodType) methodDecl.type);
-			if(superMethod != null && Util.isSourceElement(superMethod)) {
+			if (superMethod != null && Util.isSourceElement(superMethod)) {
 				return;
 			}
 		}
@@ -4757,7 +4757,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				print("for(" + VAR_DECL_KEYWORD + " " + indexVarName + "=0; " + indexVarName + " < ")
 						.print(foreachLoop.expr).print("." + "length" + "; " + indexVarName + "++) {").println()
 						.startIndent().printIndent();
-				print(VAR_DECL_KEYWORD + " " + foreachLoop.var.name.toString() + " = ").print(foreachLoop.expr)
+				print(VAR_DECL_KEYWORD + " " + avoidJSKeyword(foreachLoop.var.name.toString()) + " = ").print(foreachLoop.expr)
 						.print("[" + indexVarName + "];").println();
 			} else {
 				String arrayVarName = "array" + Util.getId();
@@ -4766,8 +4766,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						.printIndent();
 				print("for(" + VAR_DECL_KEYWORD + " " + indexVarName + "=0; " + indexVarName + " < " + arrayVarName
 						+ ".length; " + indexVarName + "++) {").println().startIndent().printIndent();
-				print(VAR_DECL_KEYWORD + " " + foreachLoop.var.name.toString() + " = " + arrayVarName + "["
-						+ indexVarName + "];").println();
+				print(VAR_DECL_KEYWORD + " " + avoidJSKeyword(foreachLoop.var.name.toString()) + " = " + arrayVarName
+						+ "[" + indexVarName + "];").println();
 			}
 			visitBeforeForEachBody(foreachLoop);
 			printIndent().print(foreachLoop.body);

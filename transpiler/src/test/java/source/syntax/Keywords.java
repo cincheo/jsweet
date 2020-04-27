@@ -18,6 +18,9 @@ package source.syntax;
 
 import static jsweet.util.Lang.$export;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import def.js.Array;
 
 public class Keywords {
@@ -32,6 +35,8 @@ public class Keywords {
 		$export("trace", trace.join(","));
 		assert 2 == new Other1().export();
 		assert 2 == new Other1().let();
+		
+		k.iteration();
 	}
 
 	String in;
@@ -51,6 +56,19 @@ public class Keywords {
 	void var(String s, int i) {
 		int eval = 4;
 		eval = eval + i;
+	}
+
+	void iteration() {
+		List<String> l = new ArrayList<>();
+		l.add("a");
+		l.add("b");
+		l.add("c");
+		
+		String s = "";
+		for (String function : l) {
+			s += function;
+		}
+		assert s.equals("abc");
 	}
 
 	void f(String in) {
