@@ -803,7 +803,7 @@ public class JSweetCommandLineLauncher {
 				if (jsapArgs.userSpecified("ignoreJavaErrors")) {
 					transpiler.setIgnoreJavaErrors(jsapArgs.getBoolean("ignoreJavaErrors"));
 				}
-				if (jsapArgs.userSpecified("dtsOutputDir")) {
+				if (jsapArgs.userSpecified("dtsout")) {
 					transpiler.setDeclarationsOutputDir(dtsOutputDir);
 				}
 				if (jsapArgs.userSpecified("header")) {
