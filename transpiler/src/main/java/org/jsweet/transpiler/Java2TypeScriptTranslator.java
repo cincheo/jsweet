@@ -876,7 +876,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	private void detectAndUseModulesFromReferencedTypes(CompilationUnitTree compilationUnit) {
 		if (context.useModules) {
-			TreeScanner<Void, Trees> usedTypesScanner = new TreeScanner<>() {
+			TreeScanner<Void, Trees> usedTypesScanner = new TreeScanner<Void, Trees>() {
 
 				private HashSet<String> names = new HashSet<>();
 
@@ -922,7 +922,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		// generate requires by looking up imported external modules
 		for (ImportTree importDecl : compilationUnit.getImports()) {
 
-			TreeScanner<Void, Trees> importedModulesScanner = new TreeScanner<>() {
+			TreeScanner<Void, Trees> importedModulesScanner = new TreeScanner<Void, Trees>() {
 				@Override
 				public Void scan(Tree tree, Trees trees) {
 					if (tree instanceof MemberSelectTree) {
@@ -4979,10 +4979,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	@Override
 	public Void visitIf(IfTree ifStatement, Trees trees) {
 		print("if ");
-		if (!ifStatement.getCondition().toString().startsWith("(")) {
-			print("( ").print(ifStatement.getCondition()).print(") ");
+		if (ifStatement.getCondition() instanceof ParenthesizedTree) {
+			print(ifStatement.getCondition());
 		} else {
-			print(ifStatement.getCondition()).print(" ");;
+			print("(");
+			print(ifStatement.getCondition());
+			print(") ");
 		}
 		print(ifStatement.getThenStatement());
 		if (!(ifStatement.getThenStatement() instanceof BlockTree)) {
