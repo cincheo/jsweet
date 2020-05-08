@@ -149,9 +149,18 @@ public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {
 				if (globals && ((JCMethodDecl) def).sym.isStatic()) {
 					context.registerGlobalMethod(classdecl, (JCMethodDecl) def);
 				} else {
+				    JCMethodDecl method = ((JCMethodDecl) def);
+				    if(method.sym.isPrivate() && !method.sym.isStaticOrInstanceInit() && !method.sym.isStatic() && !method.sym.isConstructor()) {
+	                    MethodSymbol clashingMethod = Util.findMethodDeclarationInType(context.types, classdecl.sym.getSuperclass().tsym,  method.name.toString(), null);
+	                    if(clashingMethod != null) {
+	                        context.addMethodNameMapping(method.sym, JSweetConfig.FIELD_METHOD_CLASH_RESOLVER_PREFIX
+                                    + classdecl.sym.toString().replace(".", "_") + "_" + method.name.toString());
+	                    }
+				    }
+				    
 					VarSymbol clashingField = null;
 					clashingField = Util.findFieldDeclaration((ClassSymbol) classdecl.sym.getSuperclass().tsym,
-							((JCMethodDecl)def).name);
+							method.name);
 					if (clashingField != null) {
 						if (clashingField.isPrivate() && !context.hasFieldNameMapping(clashingField)) {
 							context.addFieldNameMapping(clashingField, JSweetConfig.FIELD_METHOD_CLASH_RESOLVER_PREFIX

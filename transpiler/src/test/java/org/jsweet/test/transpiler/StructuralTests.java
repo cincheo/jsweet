@@ -64,6 +64,7 @@ import source.structural.NoNameClashesWithFields;
 import source.structural.NoWildcardsInImports;
 import source.structural.ObjectTypes;
 import source.structural.PrivateFieldNameClashes;
+import source.structural.PrivateMethodNameClashes;
 import source.structural.ReplaceAnnotation;
 import source.structural.StaticMembersInInterfaces;
 import source.structural.SubAbstract;
@@ -129,11 +130,18 @@ public class StructuralTests extends AbstractTest {
 
 	@Test
 	public void testPrivateFieldNameClashes() {
-		transpile(logHandler -> {
+		transpile(ModuleKind.none, logHandler -> {
 			logHandler.assertNoProblems();
 		}, getSourceFile(PrivateFieldNameClashes.class));
 	}
 
+    @Test
+    public void testPrivateMethodNameClashes() {
+        eval(ModuleKind.none, (logHandler, r) -> {
+            logHandler.assertNoProblems();
+        }, getSourceFile(PrivateMethodNameClashes.class));
+    }
+	
 	@Test
 	public void testPrivateFieldMethodNameClashes() {
 		transpile(ModuleKind.none, logHandler -> {
