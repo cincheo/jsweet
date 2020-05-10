@@ -876,7 +876,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	private void detectAndUseModulesFromReferencedTypes(CompilationUnitTree compilationUnit) {
 		if (context.useModules) {
-			TreeScanner<Void, Trees> usedTypesScanner = new TreeScanner<Void, Trees>() {
+			TreeScanner<Void, Trees> usedTypesScanner = new TreeScanner<>() {
 
 				private HashSet<String> names = new HashSet<>();
 
@@ -922,7 +922,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		// generate requires by looking up imported external modules
 		for (ImportTree importDecl : compilationUnit.getImports()) {
 
-			TreeScanner<Void, Trees> importedModulesScanner = new TreeScanner<Void, Trees>() {
+			TreeScanner<Void, Trees> importedModulesScanner = new TreeScanner<>() {
 				@Override
 				public Void scan(Tree tree, Trees trees) {
 					if (tree instanceof MemberSelectTree) {
