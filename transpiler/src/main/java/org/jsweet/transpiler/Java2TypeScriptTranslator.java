@@ -2112,7 +2112,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		case JSweetConfig.NEW_FUNCTION_NAME:
 			return "new";
 		default:
-			return name;
+		    if(context.hasMethodNameMapping(methodDecl.sym)) {
+		        return context.getMethodNameMapping(methodDecl.sym);
+		    } else {
+		        return name;
+		    }
 		}
 	}
 
