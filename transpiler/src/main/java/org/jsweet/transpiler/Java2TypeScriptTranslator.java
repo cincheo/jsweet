@@ -4787,7 +4787,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				print("for(" + VAR_DECL_KEYWORD + " " + indexVarName + "=0; " + indexVarName + " < ")
 						.print(foreachLoop.getExpression()).print("." + "length" + "; " + indexVarName + "++) {")
 						.println().startIndent().printIndent();
-				print(VAR_DECL_KEYWORD + " " + foreachLoop.getVariable().getName().toString() + " = ")
+				print(VAR_DECL_KEYWORD + " " + avoidJSKeyword(foreachLoop.getVariable().getName().toString()) + " = ")
 						.print(foreachLoop.getExpression()).print("[" + indexVarName + "];").println();
 			} else {
 				String arrayVarName = "array" + util().getId();
@@ -4796,7 +4796,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						.println().printIndent();
 				print("for(" + VAR_DECL_KEYWORD + " " + indexVarName + "=0; " + indexVarName + " < " + arrayVarName
 						+ ".length; " + indexVarName + "++) {").println().startIndent().printIndent();
-				print(VAR_DECL_KEYWORD + " " + foreachLoop.getVariable().getName().toString() + " = " + arrayVarName
+				print(VAR_DECL_KEYWORD + " " + avoidJSKeyword(foreachLoop.getVariable().getName().toString()) + " = " + arrayVarName
 						+ "[" + indexVarName + "];").println();
 			}
 			visitBeforeForEachBody(foreachLoop);
