@@ -1048,7 +1048,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			case "put":
 			case "setProperty":
 				printMacroName(targetMethodName);
-				print("((m,k,v) => { if(m.entries==null) m.entries=[]; for(let i=0;i<m.entries.length;i++) if(m.entries[i].key.equals!=null && m.entries[i].key.equals(k) || m.entries[i].key===k) { m.entries[i].value=v; return; } m.entries.push("
+				print("((m,k,v) => { if(m.entries==null) m.entries=[]; for(let i=0;i<m.entries.length;i++) if(m.entries[i].key==null && k==null || m.entries[i].key.equals!=null && m.entries[i].key.equals(k) || m.entries[i].key===k) { m.entries[i].value=v; return; } m.entries.push("
 						+ newEntry + "); })(").print("<any>");
 				printTargetForParameter(invocation.getTargetExpression(), delegate).print(", ")
 						.printArgList(invocation.getArguments()).print(")");
@@ -1056,14 +1056,14 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 			case "get":
 			case "getProperty":
 				printMacroName(targetMethodName);
-				print("((m,k) => { if(m.entries==null) m.entries=[]; for(let i=0;i<m.entries.length;i++) if(m.entries[i].key.equals!=null && m.entries[i].key.equals(k) || m.entries[i].key===k) { return m.entries[i].value; } return null; })(")
+				print("((m,k) => { if(m.entries==null) m.entries=[]; for(let i=0;i<m.entries.length;i++) if(m.entries[i].key==null && k==null || m.entries[i].key.equals!=null && m.entries[i].key.equals(k) || m.entries[i].key===k) { return m.entries[i].value; } return null; })(")
 						.print("<any>");
 				printTargetForParameter(invocation.getTargetExpression(), delegate).print(", ")
 						.printArgList(invocation.getArguments()).print(")");
 				return true;
 			case "containsKey":
 				printMacroName(targetMethodName);
-				print("((m,k) => { if(m.entries==null) m.entries=[]; for(let i=0;i<m.entries.length;i++) if(m.entries[i].key.equals!=null && m.entries[i].key.equals(k) || m.entries[i].key===k) { return true; } return false; })(")
+				print("((m,k) => { if(m.entries==null) m.entries=[]; for(let i=0;i<m.entries.length;i++) if(m.entries[i].key==null && k==null || m.entries[i].key.equals!=null && m.entries[i].key.equals(k) || m.entries[i].key===k) { return true; } return false; })(")
 						.print("<any>");
 				print(invocation.getTargetExpression(), delegate).print(", ").printArgList(invocation.getArguments())
 						.print(")");
@@ -1093,7 +1093,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 				return true;
 			case "remove":
 				printMacroName(targetMethodName);
-				print("((m,k) => { if(m.entries==null) m.entries=[]; for(let i=0;i<m.entries.length;i++) if(m.entries[i].key.equals!=null && m.entries[i].key.equals(k) || m.entries[i].key===k) { return m.entries.splice(i,1)[0]; } })(")
+				print("((m,k) => { if(m.entries==null) m.entries=[]; for(let i=0;i<m.entries.length;i++) if(m.entries[i].key==null && k==null || m.entries[i].key.equals!=null && m.entries[i].key.equals(k) || m.entries[i].key===k) { return m.entries.splice(i,1)[0]; } })(")
 						.print("<any>");
 				printTargetForParameter(invocation.getTargetExpression(), delegate).print(", ")
 						.printArgList(invocation.getArguments()).print(")");
