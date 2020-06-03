@@ -28,6 +28,7 @@ import java.io.StringReader;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.text.Collator;
 import java.util.AbstractList;
@@ -120,6 +121,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		context.getLangTypeMappings().put(RuntimeException.class.getName(), "Error");
 		context.getBaseThrowables().add(RuntimeException.class.getName());
 
+	    extTypesMapping.put(URL.class.getName(), "URL");
 		extTypesMapping.put(List.class.getName(), "Array");
 		extTypesMapping.put(AbstractList.class.getName(), "Array");
 		extTypesMapping.put(ArrayList.class.getName(), "Array");

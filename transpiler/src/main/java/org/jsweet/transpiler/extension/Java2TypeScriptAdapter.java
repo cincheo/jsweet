@@ -202,8 +202,6 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 		addTypeMapping(CharSequence.class.getName(), "any");
 		addTypeMapping(Void.class.getName(), "void");
 
-		addTypeMapping(URL.class.getName(), "URL");
-
 		addTypeMapping("double", "number");
 		addTypeMapping("int", "number");
 		addTypeMapping("float", "number");
