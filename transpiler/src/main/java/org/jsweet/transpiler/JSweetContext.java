@@ -1051,6 +1051,13 @@ public class JSweetContext extends Context {
 		globalsMapping.put(from, to);
 	}
 
+    /**
+     * Clear globals mappings.
+     */
+    public void clearGlobalsMappings() {
+        globalsMapping.clear();;
+    }
+
 	/**
 	 * Returns the TypeScript string for globals mapping.
 	 */

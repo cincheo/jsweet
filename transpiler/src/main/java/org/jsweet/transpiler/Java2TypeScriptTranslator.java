@@ -5783,7 +5783,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					print(exprStr, expr);
 					if (checkFirstArrayElement)
 						print("[0]");
-					print(").length == " + context.getFunctionalTypeParameterCount(type));
+					print(").length === " + context.getFunctionalTypeParameterCount(type));
 				}
 			} else {
 				print(exprStr, expr);

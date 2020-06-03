@@ -1052,6 +1052,7 @@ public class JSweetTranspiler implements JSweetOptions {
 				logger.info("created " + outputFilePath);
 			} finally {
 				context.clearHeaders();
+				context.clearGlobalsMappings();
 				context.clearFooterStatements();
 			}
 			
