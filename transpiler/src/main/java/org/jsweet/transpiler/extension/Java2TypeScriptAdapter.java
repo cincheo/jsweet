@@ -38,7 +38,6 @@ import static org.jsweet.JSweetConfig.UTIL_CLASSNAME;
 import static org.jsweet.JSweetConfig.UTIL_PACKAGE;
 import static org.jsweet.JSweetConfig.isJSweetPath;
 
-import java.net.URL;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -99,6 +98,7 @@ import org.jsweet.transpiler.model.support.IdentifierElementSupport;
 import org.jsweet.transpiler.model.support.ImportElementSupport;
 import org.jsweet.transpiler.model.support.MethodInvocationElementSupport;
 import org.jsweet.transpiler.model.support.NewClassElementSupport;
+import org.jsweet.transpiler.model.support.UtilSupport;
 import org.jsweet.transpiler.model.support.VariableAccessElementSupport;
 import org.jsweet.transpiler.util.Util;
 
@@ -1286,11 +1286,18 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 				} else {
 					switch (targetMethodName) {
 					case "equals":
-						printMacroName(targetMethodName);
-						print("(<any>((o1: any, o2: any) => { if(o1 && o1.equals) { return o1.equals(o2); } else { return o1 === o2; } })(");
-						printTarget(invocationElement.getTargetExpression()).print(",")
-								.print(invocationElement.getArgument(0));
-						print("))");
+                        if (types().isSameType(invocationElement.getTargetExpression().getType(),
+                                util().getType(String.class))
+                                || util().isNumber(invocationElement.getTargetExpression().getType())) {
+                            print(invocationElement.getTargetExpression()).print(" === ")
+                                    .print(invocationElement.getArgument(0));
+                        } else {
+                            printMacroName(targetMethodName);
+                            print("(<any>((o1: any, o2: any) => { if(o1 && o1.equals) { return o1.equals(o2); } else { return o1 === o2; } })(");
+                            printTarget(invocationElement.getTargetExpression()).print(",")
+                                    .print(invocationElement.getArgument(0));
+                            print("))");
+                        }
 						return true;
 					case "compareTo":
 						if (invocationElement.getArgumentCount() == 1
