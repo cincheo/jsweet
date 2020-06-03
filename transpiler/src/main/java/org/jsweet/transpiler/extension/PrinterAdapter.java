@@ -94,6 +94,14 @@ public class PrinterAdapter {
 		this.parentAdapter = null;
 	}
 
+    /**
+     * Returns a quote string (single or double quote depending on the
+     * <code>useSingleQuotesForStringLiterals</code> option).
+     */
+    public String getStringLiteralQuote() {
+        return getContext().options.isUseSingleQuotesForStringLiterals() ? "'" : "\"";
+    }
+	
 	/**
 	 * Returns the current compilation unit.
 	 */
