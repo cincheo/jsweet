@@ -89,7 +89,7 @@ public class TranspilerTestRunner {
 				null, //
 				new File(JSweetTranspiler.TMP_WORKING_DIR_NAME + "/candies/js"), //
 				System.getProperty("java.class.path"));
-		transpiler.setEcmaTargetVersion(EcmaScriptComplianceLevel.ES6);
+		transpiler.setEcmaTargetVersion(EcmaScriptComplianceLevel.ES3);
 		transpiler.setEncoding("UTF-8");
 		transpiler.setSkipTypeScriptChecks(true);
 		transpiler.setIgnoreAssertions(false);
