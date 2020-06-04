@@ -4949,10 +4949,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	}
 
 	protected void printBinaryRightOperand(JCBinary binary) {
+	    addInlinedExpression(binary.rhs);
 		print(binary.rhs);
 	}
 
 	protected void printBinaryLeftOperand(JCBinary binary) {
+        addInlinedExpression(binary.lhs);
 		print(binary.lhs);
 	}
 
@@ -5272,6 +5274,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	@Override
 	public void visitUnary(JCUnary unary) {
 		if (!getAdapter().substituteUnaryOperator(new UnaryOperatorElementSupport(unary))) {
+	        addInlinedExpression(unary.arg);
 			if (!inRollback) {
 				JCStatement statement = null;
 				VarSymbol[] staticInitializedField = { null };

@@ -18,7 +18,9 @@
  */
 package org.jsweet.transpiler.util;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Stack;
 import java.util.function.Consumer;
 
@@ -51,6 +53,30 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 
 	private Stack<Position> positionStack = new Stack<>();
 
+    private Set<JCTree> inlinedExpressions = new HashSet<JCTree>();
+
+    /**
+     * Tells if the given expression is an inlined expression 
+     * (and would require parenthesis).
+     */
+    public boolean isInlinedExpression(JCTree tree) {
+        return this.inlinedExpressions.contains(tree);
+    }
+    
+    /**
+     * Adds an inlined expression.
+     */
+    public void addInlinedExpression(JCTree tree) {
+        this.inlinedExpressions.add(tree);
+    }
+	
+    /**
+     * Clears the inlined expressions.
+     */
+    public void clearInlinedExpression() {
+        this.inlinedExpressions.clear();
+    }
+    
 	/**
 	 * A footer to be printed at the end of the output.
 	 */

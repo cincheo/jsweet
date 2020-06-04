@@ -1177,4 +1177,16 @@ public class PrinterAdapter {
 	public final String getHeader(String key) {
 		return context.getHeader(key);
 	}
+
+    /**
+     * Tells if this element is an inlined expression. An inlined expression
+     * typically requires parenthesis (on contrary to top-level statement for instance).
+     * 
+     * @param element the element to check
+     * @return true if an inlined expression
+     */
+    public final boolean isInlinedExpression(ExtendedElement element) {
+        return printer.isInlinedExpression(((ExtendedElementSupport<?>) element).getTree());
+    }
+
 }
