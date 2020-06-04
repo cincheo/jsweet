@@ -98,7 +98,6 @@ import org.jsweet.transpiler.model.support.IdentifierElementSupport;
 import org.jsweet.transpiler.model.support.ImportElementSupport;
 import org.jsweet.transpiler.model.support.MethodInvocationElementSupport;
 import org.jsweet.transpiler.model.support.NewClassElementSupport;
-import org.jsweet.transpiler.model.support.UtilSupport;
 import org.jsweet.transpiler.model.support.VariableAccessElementSupport;
 import org.jsweet.transpiler.util.Util;
 

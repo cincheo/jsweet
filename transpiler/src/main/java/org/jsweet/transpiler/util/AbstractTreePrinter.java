@@ -137,6 +137,14 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 		this.fillSourceMap = fillSourceMap;
 	}
 
+    /**
+     * Returns a quote string (single or double quote depending on the
+     * <code>useSingleQuotesForStringLiterals</code> option).
+     */
+    protected String getStringLiteralQuote() {
+        return this.context.options.isUseSingleQuotesForStringLiterals() ? "'" : "\"";
+    }
+	
 	/**
 	 * Gets this output of this printer.
 	 */

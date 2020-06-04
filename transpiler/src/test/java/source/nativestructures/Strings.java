@@ -20,6 +20,8 @@ public class Strings {
 		trace.push(new String(sb));
 		trace.push(new String(bytes, 0, 2));
 		trace.push(new String(chars, 1, 1));
+        trace.push("Hello, I'm \"Renaud\"");
+        trace.push("Hello, \"Renaud\"");
 		$export("trace", trace.join(","));
 		assert "" == new String();
 		byte[] bytes2 = { 'a', 'b', 'c' };

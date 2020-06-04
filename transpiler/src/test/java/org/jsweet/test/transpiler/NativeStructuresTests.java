@@ -211,10 +211,16 @@ public class NativeStructuresTests extends AbstractTest {
 
 	@Test
 	public void testStrings() {
-		eval((logHandler, result) -> {
+		eval(ModuleKind.none, (logHandler, result) -> {
 			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-			assertEquals(">,0,ABC,abc,abcd,AB,b", result.get("trace"));
+			assertEquals(">,0,ABC,abc,abcd,AB,b,Hello, I'm \"Renaud\",Hello, \"Renaud\"", result.get("trace"));
 		}, getSourceFile(Strings.class));
+		transpilerTest().getTranspiler().setUseSingleQuotesForStringLiterals(true);
+        eval(ModuleKind.none, (logHandler, result) -> {
+            Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+            assertEquals(">,0,ABC,abc,abcd,AB,b,Hello, I'm \"Renaud\",Hello, \"Renaud\"", result.get("trace"));
+        }, getSourceFile(Strings.class));
+        transpilerTest().getTranspiler().setUseSingleQuotesForStringLiterals(false);
 	}
 
 	@Ignore
