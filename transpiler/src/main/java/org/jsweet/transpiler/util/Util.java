@@ -500,7 +500,7 @@ public class Util {
 		return score;
 	}
 
-	private static void collectMatchingMethodDeclarationsInType(Types types, TypeSymbol typeSymbol, String methodName,
+	public static void collectMatchingMethodDeclarationsInType(Types types, TypeSymbol typeSymbol, String methodName,
 			MethodType methodType, boolean overrides, List<MethodSymbol> collector) {
 		if (typeSymbol == null) {
 			return;

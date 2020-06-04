@@ -36,6 +36,7 @@ import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.Type.MethodType;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
@@ -150,13 +151,17 @@ public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {
 					context.registerGlobalMethod(classdecl, (JCMethodDecl) def);
 				} else {
 				    JCMethodDecl method = ((JCMethodDecl) def);
-				    if(method.sym.isPrivate() && !method.sym.isStaticOrInstanceInit() && !method.sym.isStatic() && !method.sym.isConstructor()) {
-	                    MethodSymbol clashingMethod = Util.findMethodDeclarationInType(context.types, classdecl.sym.getSuperclass().tsym,  method.name.toString(), null);
-	                    if(clashingMethod != null) {
-	                        context.addMethodNameMapping(method.sym, JSweetConfig.FIELD_METHOD_CLASH_RESOLVER_PREFIX
+                    if (method.sym.isPrivate() && (method.sym.type instanceof MethodType)
+                            && !method.sym.isStaticOrInstanceInit() && !method.sym.isStatic()
+                            && !method.sym.isConstructor()) {
+                        MethodSymbol clashingMethod = Util.findMethodDeclarationInType2(context.types,
+                                classdecl.sym.getSuperclass().tsym, method.name.toString(),
+                                (MethodType) method.sym.type);
+                        if (clashingMethod != null && clashingMethod.isPrivate()) {
+                            context.addMethodNameMapping(method.sym, JSweetConfig.FIELD_METHOD_CLASH_RESOLVER_PREFIX
                                     + classdecl.sym.toString().replace(".", "_") + "_" + method.name.toString());
-	                    }
-				    }
+                        }
+                    }
 				    
 					VarSymbol clashingField = null;
 					clashingField = Util.findFieldDeclaration((ClassSymbol) classdecl.sym.getSuperclass().tsym,

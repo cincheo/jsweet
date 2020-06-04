@@ -79,6 +79,10 @@ public interface JSweetOptions {
 	 * Constant string for the 'disableSinglePrecisionFloats' option.
 	 */
 	String disableSinglePrecisionFloats = "disableSinglePrecisionFloats";
+    /**
+     * Constant string for the 'disableStaticsLazyInitialization' option.
+     */
+	String disableStaticsLazyInitialization = "disableStaticsLazyInitialization";
 	/**
 	 * Constant string for the 'targetVersion' option.
 	 */
@@ -108,12 +112,18 @@ public interface JSweetOptions {
 	 */
 	String extraSystemPath = "extraSystemPath";
 
+    /**
+     * Constant string for the 'moduleResolution' option.
+     */
+    String useSingleQuotesForStringLiterals = "useSingleQuotesForStringLiterals";
+	
 	/**
-	 * All the supported options.
+	 * All the supported options (used to report non-blocking errors when options do not exist).
 	 */
-	String[] options = { bundle, noRootDirectories, sourceMap, module, encoding, enableAssertions, declaration, tsOnly,
-			ignoreDefinitions, header, disableSinglePrecisionFloats, targetVersion, tsout, dtsout, jsout, candiesJsOut,
-			moduleResolution, extraSystemPath };
+    String[] options = { bundle, noRootDirectories, sourceMap, module, encoding, outEncoding, enableAssertions,
+            declaration, tsOnly, ignoreDefinitions, header, disableSinglePrecisionFloats,
+            disableStaticsLazyInitialization, targetVersion, tsout, dtsout, jsout, candiesJsOut, moduleResolution,
+            extraSystemPath, useSingleQuotesForStringLiterals };
 
 	/**
 	 * Returns the configuration from the configuration file.
@@ -319,4 +329,12 @@ public interface JSweetOptions {
      * order to avoid initialization precedence issues (emulates Java behavior).
      */
     boolean isLazyInitializedStatics();
+
+    /**
+     * Generates string literals with single quotes rather than double quotes.
+     * 
+     * @return true if activated
+     */
+    boolean isUseSingleQuotesForStringLiterals();
+    
 }

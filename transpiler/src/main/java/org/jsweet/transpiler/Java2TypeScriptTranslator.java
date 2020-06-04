@@ -631,8 +631,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						boolean fullImport = require || GLOBALS_CLASS_NAME.equals(targetName);
 						if (fullImport) {
 							if (context.useRequireForModules) {
-								context.addHeader("import." + targetName,
-										"import " + targetName + " = require(\"" + moduleName + "\");\n");
+                                context.addHeader("import." + targetName,
+                                        "import " + targetName + " = require(" + getStringLiteralQuote()
+                                                + moduleName + getStringLiteralQuote() + ");\n");
 							} else {
 								context.addHeader("import." + targetName,
 										"import * as " + targetName + " from '" + moduleName + "';\n");
@@ -1896,23 +1897,27 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			if (!getScope().interfaceScope && !getScope().declareClassScope && !getScope().enumScope
 					&& !(getScope().enumWrapperClassScope && classdecl.sym.isAnonymous())) {
 				if (!classdecl.sym.isAnonymous()) {
-					println().printIndent()
-							.print(getScope().enumWrapperClassScope ? classdecl.sym.getSimpleName().toString() : name)
-							.print("[\"" + CLASS_NAME_IN_CONSTRUCTOR + "\"] = ")
-							.print("\"" + classdecl.sym.getQualifiedName().toString() + "\";");
-				}
-				Set<String> interfaces = new HashSet<>();
-				context.grabSupportedInterfaceNames(interfaces, classdecl.sym);
-				if (!interfaces.isEmpty()) {
-					println().printIndent()
-							.print(getScope().enumWrapperClassScope ? classdecl.sym.getSimpleName().toString() : name)
-							.print("[\"" + INTERFACES_FIELD_NAME + "\"] = ");
-					print("[");
-					for (String itf : interfaces) {
-						print("\"").print(itf).print("\",");
-					}
-					removeLastChar();
-					print("];").println();
+                    println().printIndent()
+                            .print(getScope().enumWrapperClassScope ? classdecl.sym.getSimpleName().toString() : name)
+                            .print("[" + getStringLiteralQuote() + CLASS_NAME_IN_CONSTRUCTOR
+                                    + getStringLiteralQuote() + "] = ")
+                            .print(getStringLiteralQuote() + classdecl.sym.getQualifiedName().toString()
+                                    + getStringLiteralQuote() + ";");
+                }
+                Set<String> interfaces = new HashSet<>();
+                context.grabSupportedInterfaceNames(interfaces, classdecl.sym);
+                if (!interfaces.isEmpty()) {
+                    println().printIndent()
+                            .print(getScope().enumWrapperClassScope ? classdecl.sym.getSimpleName().toString() : name)
+                            .print("[" + getStringLiteralQuote() + INTERFACES_FIELD_NAME
+                                    + getStringLiteralQuote() + "] = ");
+                    print("[");
+                    for (String itf : interfaces) {
+                        print(getStringLiteralQuote()).print(itf)
+                                .print(getStringLiteralQuote() + ",");
+                    }
+                    removeLastChar();
+                    print("];").println();
 				}
 				if (!getScope().enumWrapperClassScope) {
 					println();
@@ -2023,8 +2028,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		// end of namespace =================================================
 
 		if (getScope().enumScope && getScope().isComplexEnum && !getScope().anonymousClasses.contains(classdecl)) {
-			println().printIndent().print(classdecl.sym.getSimpleName().toString())
-					.print("[\"" + ENUM_WRAPPER_CLASS_WRAPPERS + "\"] = [");
+            println().printIndent().print(classdecl.sym.getSimpleName().toString())
+                    .print("[" + getStringLiteralQuote() + ENUM_WRAPPER_CLASS_WRAPPERS
+                            + getStringLiteralQuote() + "] = [");
 			int index = 0;
 			for (JCTree tree : classdecl.defs) {
 				if (tree instanceof JCVariableDecl
@@ -2046,7 +2052,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 									.print("(");
 						}
 						print("" + (index++) + ", ");
-						print("\"" + varDecl.sym.name.toString() + "\"");
+                        print(getStringLiteralQuote() + varDecl.sym.name.toString()
+                                + getStringLiteralQuote());
 						if (!newClass.args.isEmpty()) {
 							print(", ");
 						}
@@ -2574,6 +2581,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						print(" throw new Error('cannot invoke abstract overloaded method... check your argument(s) type(s)'); ");
 					} else {
 						String tsMethodAccess = getTSMemberAccess(getTSMethodName(methodDecl), true);
+                        if (!"void".equals(methodDecl.restype.type.toString())) {
+                            print("return ");
+                        }
 						print("super" + tsMethodAccess);
 						print("(");
 						for (int j = 0; j < method.getParameters().size(); j++) {
@@ -3406,10 +3416,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						} else {
 							if (context.hasAnnotationType(varDecl.vartype.type.tsym, ANNOTATION_STRING_TYPE)
 									&& !varDecl.vartype.type.tsym.isEnum()) {
-								print("\"");
+								print(getStringLiteralQuote());
 								print(context.getAnnotationValue(varDecl.vartype.type.tsym, ANNOTATION_STRING_TYPE,
 										String.class, varDecl.vartype.type.tsym.name.toString()).toString());
-								print("\"");
+								print(getStringLiteralQuote());
 							} else {
 								substituteAndPrintType(varDecl.vartype);
 							}
@@ -3628,9 +3638,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			if ("class".equals(fieldAccess.name.toString())) {
 				if (fieldAccess.type instanceof Type.ClassType
 						&& context.isInterface(((Type.ClassType) fieldAccess.type).typarams_field.head.tsym)) {
-					print("\"").print(context
+					print(getStringLiteralQuote()).print(context
 							.getRootRelativeJavaName(((Type.ClassType) fieldAccess.type).typarams_field.head.tsym))
-							.print("\"");
+							.print(getStringLiteralQuote());
 				} else {
 					String name = fieldAccess.selected.type.tsym.toString();
 					if (context.isMappedType(name)) {
@@ -3638,8 +3648,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						if (CONSTRUCTOR_TYPE_MAPPING.containsKey(target)) {
 							print(mapConstructorType(target));
 						} else {
-							print("\"").print(context.getRootRelativeJavaName(
-									((Type.ClassType) fieldAccess.type).typarams_field.head.tsym)).print("\"");
+                            print(getStringLiteralQuote())
+                                    .print(context.getRootRelativeJavaName(
+                                            ((Type.ClassType) fieldAccess.type).typarams_field.head.tsym))
+                                    .print(getStringLiteralQuote());
 						}
 					} else {
 						if (CONSTRUCTOR_TYPE_MAPPING.containsKey(name)) {
@@ -4502,9 +4514,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (!interfaces.isEmpty()) {
 					print(", '" + INTERFACES_FIELD_NAME + "', { configurable: true, value: ");
 					print("[");
-					for (String i : interfaces) {
-						print("\"").print(i).print("\",");
-					}
+                    for (String i : interfaces) {
+                        print(getStringLiteralQuote()).print(i)
+                                .print(getStringLiteralQuote() + ",");
+                    }
 					removeLastChar();
 					print("]");
 					print(" })");
@@ -4723,6 +4736,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			break;
 		default:
 		}
+        if (s.startsWith("\"") && context.options.isUseSingleQuotesForStringLiterals()) {
+            s = "'" + s.substring(1, s.length() - 1).replace("'", "\'") + "'";
+        }
 		print(s);
 	}
 
@@ -4933,10 +4949,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	}
 
 	protected void printBinaryRightOperand(JCBinary binary) {
+	    addInlinedExpression(binary.rhs);
 		print(binary.rhs);
 	}
 
 	protected void printBinaryLeftOperand(JCBinary binary) {
+        addInlinedExpression(binary.lhs);
 		print(binary.lhs);
 	}
 
@@ -5256,6 +5274,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	@Override
 	public void visitUnary(JCUnary unary) {
 		if (!getAdapter().substituteUnaryOperator(new UnaryOperatorElementSupport(unary))) {
+	        addInlinedExpression(unary.arg);
 			if (!inRollback) {
 				JCStatement statement = null;
 				VarSymbol[] staticInitializedField = { null };
@@ -5340,7 +5359,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					if (caseStatement.pat instanceof JCIdent) {
 						Object value = ((VarSymbol) ((JCIdent) caseStatement.pat).sym).getConstValue();
 						if (context.types.isSameType(context.symtab.stringType, caseStatement.pat.type)) {
-							print("\"" + value + "\" /* " + caseStatement.pat + " */");
+                            print(getStringLiteralQuote() + value + getStringLiteralQuote()
+                                    + " /* " + caseStatement.pat + " */");
 						} else {
 							print("" + value + " /* " + caseStatement.pat + " */");
 						}
@@ -5766,7 +5786,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					print(exprStr, expr);
 					if (checkFirstArrayElement)
 						print("[0]");
-					print(").length == " + context.getFunctionalTypeParameterCount(type));
+					print(").length === " + context.getFunctionalTypeParameterCount(type));
 				}
 			} else {
 				print(exprStr, expr);
@@ -5778,12 +5798,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					print(exprStr, expr);
 					if (checkFirstArrayElement)
 						print("[0]");
-					print("[\"" + INTERFACES_FIELD_NAME + "\"]").print(" != null && ");
+                    print("[" + getStringLiteralQuote() + INTERFACES_FIELD_NAME
+                            + getStringLiteralQuote() + "]").print(" != null && ");
 					print(exprStr, expr);
 					if (checkFirstArrayElement)
 						print("[0]");
-					print("[\"" + INTERFACES_FIELD_NAME + "\"].indexOf(\"")
-							.print(type.tsym.getQualifiedName().toString()).print("\") >= 0");
+                    print("[" + getStringLiteralQuote() + INTERFACES_FIELD_NAME
+                            + getStringLiteralQuote() + "].indexOf(\"")
+                                    .print(type.tsym.getQualifiedName().toString()).print("\") >= 0");
 					print(" || ");
 					print(exprStr, expr);
 					if (checkFirstArrayElement)
@@ -5792,18 +5814,21 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					print(exprStr, expr);
 					if (checkFirstArrayElement)
 						print("[0]");
-					print(".constructor[\"" + INTERFACES_FIELD_NAME + "\"]").print(" != null && ");
+                    print(".constructor[" + getStringLiteralQuote() + INTERFACES_FIELD_NAME
+                            + getStringLiteralQuote() + "]").print(" != null && ");
 					print(exprStr, expr);
 					if (checkFirstArrayElement)
 						print("[0]");
-					print(".constructor[\"" + INTERFACES_FIELD_NAME + "\"].indexOf(\"")
-							.print(type.tsym.getQualifiedName().toString()).print("\") >= 0");
+                    print(".constructor[" + getStringLiteralQuote() + INTERFACES_FIELD_NAME
+                            + getStringLiteralQuote() + "].indexOf(\"")
+                                    .print(type.tsym.getQualifiedName().toString()).print("\") >= 0");
 					if (CharSequence.class.getName().equals(type.tsym.getQualifiedName().toString())) {
 						print(" || typeof ");
 						print(exprStr, expr);
 						if (checkFirstArrayElement)
 							print("[0]");
-						print(" === \"string\"");
+                        print(" === " + getStringLiteralQuote() + "string"
+                                + getStringLiteralQuote());
 					}
 					print(")");
 				} else {
@@ -5938,9 +5963,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 		if (assignedType.isInterface() && expression.type.tsym.isEnum()) {
 			String relTarget = getRootRelativeName((Symbol) expression.type.tsym);
-			print("((wrappers, value) => wrappers===undefined?value:wrappers[value])(").print(relTarget)
-					.print("[\"" + Java2TypeScriptTranslator.ENUM_WRAPPER_CLASS_WRAPPERS + "\"], ").print(expression)
-					.print(")");
+            print("((wrappers, value) => wrappers===undefined?value:wrappers[value])(").print(relTarget)
+                    .print("[" + getStringLiteralQuote()
+                            + Java2TypeScriptTranslator.ENUM_WRAPPER_CLASS_WRAPPERS
+                            + getStringLiteralQuote() + "], ")
+                    .print(expression).print(")");
 			return true;
 		}
 		if (expression instanceof JCConditional) {

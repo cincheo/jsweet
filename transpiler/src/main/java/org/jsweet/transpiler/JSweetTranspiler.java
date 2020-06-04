@@ -240,6 +240,7 @@ public class JSweetTranspiler implements JSweetOptions {
 	private boolean disableSingleFloatPrecision = false;
 	private boolean ignoreCandiesTypeScriptDefinitions = false;
 	private boolean lazyInitializedStatics = true;
+	private boolean useSingleQuotesForStringLiterals = false;
 
 	private ArrayList<String> adapters = new ArrayList<>();
 	private File configurationFile;
@@ -345,6 +346,9 @@ public class JSweetTranspiler implements JSweetOptions {
 			if (options.containsKey(JSweetOptions.encoding)) {
 				setEncoding(getMapValue(options, JSweetOptions.encoding));
 			}
+            if (options.containsKey(JSweetOptions.outEncoding)) {
+                setOutEncoding(getMapValue(options, JSweetOptions.outEncoding));
+            }
 			if (options.containsKey(JSweetOptions.enableAssertions)) {
 				setIgnoreAssertions(!(Boolean) getMapValue(options, JSweetOptions.enableAssertions));
 			}
@@ -363,6 +367,9 @@ public class JSweetTranspiler implements JSweetOptions {
 			if (options.containsKey(JSweetOptions.disableSinglePrecisionFloats)) {
 				setDisableSinglePrecisionFloats(getMapValue(options, JSweetOptions.disableSinglePrecisionFloats));
 			}
+            if (options.containsKey(JSweetOptions.disableStaticsLazyInitialization)) {
+                setLazyInitializedStatics(getMapValue(options, JSweetOptions.disableStaticsLazyInitialization));
+            }
 			if (options.containsKey(JSweetOptions.targetVersion)) {
 				setEcmaTargetVersion(
 						JSweetTranspiler.getEcmaTargetVersion(getMapValue(options, JSweetOptions.targetVersion)));
@@ -385,6 +392,9 @@ public class JSweetTranspiler implements JSweetOptions {
 			if (options.containsKey(JSweetOptions.extraSystemPath)) {
 				ProcessUtil.addExtraPath(extraSystemPath);
 			}
+            if (options.containsKey(JSweetOptions.useSingleQuotesForStringLiterals)) {
+                setUseSingleQuotesForStringLiterals((Boolean) getMapValue(options, JSweetOptions.useSingleQuotesForStringLiterals));
+            }
 		}
 
 	}
@@ -1042,6 +1052,7 @@ public class JSweetTranspiler implements JSweetOptions {
 				logger.info("created " + outputFilePath);
 			} finally {
 				context.clearHeaders();
+				context.clearGlobalsMappings();
 				context.clearFooterStatements();
 			}
 			
@@ -1908,4 +1919,14 @@ public class JSweetTranspiler implements JSweetOptions {
 	public void setIgnoreCandiesTypeScriptDefinitions(boolean ignoreCandiesTypeScriptDefinitions) {
 		this.ignoreCandiesTypeScriptDefinitions = ignoreCandiesTypeScriptDefinitions;
 	}
+
+    @Override
+    public boolean isUseSingleQuotesForStringLiterals() {
+        return this.useSingleQuotesForStringLiterals;
+    }
+
+    public void setUseSingleQuotesForStringLiterals(boolean useSingleQuotesForStringLiterals) {
+        this.useSingleQuotesForStringLiterals = useSingleQuotesForStringLiterals;
+    }
+    
 }

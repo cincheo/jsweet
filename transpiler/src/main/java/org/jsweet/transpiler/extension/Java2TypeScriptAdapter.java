@@ -38,7 +38,6 @@ import static org.jsweet.JSweetConfig.UTIL_CLASSNAME;
 import static org.jsweet.JSweetConfig.UTIL_PACKAGE;
 import static org.jsweet.JSweetConfig.isJSweetPath;
 
-import java.net.URL;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -201,8 +200,6 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 		addTypeMapping(Character.class.getName(), "string");
 		addTypeMapping(CharSequence.class.getName(), "any");
 		addTypeMapping(Void.class.getName(), "void");
-
-		addTypeMapping(URL.class.getName(), "URL");
 
 		addTypeMapping("double", "number");
 		addTypeMapping("int", "number");
@@ -1288,11 +1285,24 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 				} else {
 					switch (targetMethodName) {
 					case "equals":
-						printMacroName(targetMethodName);
-						print("(<any>((o1: any, o2: any) => { if(o1 && o1.equals) { return o1.equals(o2); } else { return o1 === o2; } })(");
-						printTarget(invocationElement.getTargetExpression()).print(",")
-								.print(invocationElement.getArgument(0));
-						print("))");
+                        if (types().isSameType(invocationElement.getTargetExpression().getType(),
+                                util().getType(String.class))
+                                || util().isNumber(invocationElement.getTargetExpression().getType())) {
+                            if(isInlinedExpression(invocationElement)) {
+                                print("(");
+                            }
+                            print(invocationElement.getTargetExpression()).print(" === ")
+                                    .print(invocationElement.getArgument(0));
+                            if(isInlinedExpression(invocationElement)) {
+                                print(")");
+                            }
+                        } else {
+                            printMacroName(targetMethodName);
+                            print("(<any>((o1: any, o2: any) => { if(o1 && o1.equals) { return o1.equals(o2); } else { return o1 === o2; } })(");
+                            printTarget(invocationElement.getTargetExpression()).print(",")
+                                    .print(invocationElement.getArgument(0));
+                            print("))");
+                        }
 						return true;
 					case "compareTo":
 						if (invocationElement.getArgumentCount() == 1
