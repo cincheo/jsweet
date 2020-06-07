@@ -2810,12 +2810,25 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			print(";").println();
 		} else if (var.init == null) {
 			if (doesMemberNameRequireQuotes(name)) {
-				printIndent().print("if(").print("this['").print(name).print("']").print("===undefined) ")
-						.print("this['").print(name).print("'] = ").print(getAdapter().getVariableInitialValue(var.sym))
-						.print(";").println();
+				printIndent().print("if(").print("this['").print(name).print("']").print("===undefined) ");
+                if (context.options.isNonEnumerableTransients() && var.sym.getModifiers().contains(Modifier.TRANSIENT)) {
+                    print("Object.defineProperty(this, " + getStringLiteralQuote() + name + getStringLiteralQuote()
+                            + ", { value: ").print(getAdapter().getVariableInitialValue(var.sym))
+                                    .print(", enumerable: false });").println();
+                } else {
+                    print("this['").print(name).print("'] = ").print(getAdapter().getVariableInitialValue(var.sym))
+                    .print(";").println();
+                }
 			} else {
-				printIndent().print("if(").print("this.").print(name).print("===undefined) this.").print(name)
-						.print(" = ").print(getAdapter().getVariableInitialValue(var.sym)).print(";").println();
+				printIndent().print("if(").print("this.").print(name).print("===undefined) ");
+                if (context.options.isNonEnumerableTransients() && var.sym.getModifiers().contains(Modifier.TRANSIENT)) {
+                    print("Object.defineProperty(this, " + getStringLiteralQuote() + name + getStringLiteralQuote()
+                            + ", { value: ").print(getAdapter().getVariableInitialValue(var.sym))
+                                    .print(", enumerable: false });").println();
+                } else {
+                    print("this.").print(name).print(" = ").print(getAdapter().getVariableInitialValue(var.sym))
+                            .print(";").println();
+                }
 			}
 		}
 	}
@@ -2976,13 +2989,19 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			if (t instanceof JCVariableDecl && !getScope().fieldsWithInitializers.contains(t)) {
 				JCVariableDecl field = (JCVariableDecl) t;
 				if (!field.sym.isStatic() && !context.hasAnnotationType(field.sym, JSweetConfig.ANNOTATION_ERASED)) {
-					String name = getIdentifier(field.sym);
+				    String name = getIdentifier(field.sym);
 					if (context.getFieldNameMapping(field.sym) != null) {
 						name = context.getFieldNameMapping(field.sym);
 					}
-					printIndent().print("if(").print("this.").print(name).print("===undefined) ").print("this.")
-							.print(name).print(" = ").print(getAdapter().getVariableInitialValue(field.sym)).print(";")
-							.println();
+					printIndent().print("if(").print("this.").print(name).print("===undefined) ");
+                    if (context.options.isNonEnumerableTransients() && field.sym.getModifiers().contains(Modifier.TRANSIENT)) {
+                        print("Object.defineProperty(this, " + getStringLiteralQuote() + name + getStringLiteralQuote()
+                                + ", { value: ").print(getAdapter().getVariableInitialValue(field.sym))
+                                        .print(", enumerable: false });");
+                    } else {
+                        print("this.").print(name).print(" = ").print(getAdapter().getVariableInitialValue(field.sym))
+                                .print(";").println();
+                    }
 				}
 			}
 		}

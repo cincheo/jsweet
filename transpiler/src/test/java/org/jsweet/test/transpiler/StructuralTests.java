@@ -68,6 +68,7 @@ import source.structural.PrivateMethodNameClashes;
 import source.structural.ReplaceAnnotation;
 import source.structural.StaticMembersInInterfaces;
 import source.structural.SubAbstract;
+import source.structural.Transients;
 import source.structural.TwoClassesInSameFile;
 import source.structural.WrappedParametersOwner;
 import source.structural.WrongConstructsInInterfaces;
@@ -544,6 +545,20 @@ public class StructuralTests extends AbstractTest {
 		}, getSourceFile(FieldInitialization.class));
 	}
 
+    @Test
+    public void testTransients() {
+        eval(ModuleKind.none, (logHandler, r) -> {
+            logHandler.assertNoProblems();
+            assertEquals("a,b,c,d", r.get("keys"));
+        }, getSourceFile(Transients.class));
+        this.transpilerTest().getTranspiler().setNonEnumerableTransients(true);
+        eval(ModuleKind.none, (logHandler, r) -> {
+            logHandler.assertNoProblems();
+            assertEquals("a,c", r.get("keys"));
+        }, getSourceFile(Transients.class));
+        this.transpilerTest().getTranspiler().setNonEnumerableTransients(false);
+    }
+	
 	@Test
 	public void testInheritanceWithGenerics() {
 		transpile(logHandler -> {
