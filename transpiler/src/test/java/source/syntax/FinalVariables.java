@@ -33,7 +33,11 @@ import def.js.Math;
 
 public class FinalVariables {
 
+    int finalField;
+    int modifiedField;
+    
 	void m1(HTMLElement e) {
+	    modifiedField++;
 		NodeList nodes = document.querySelectorAll("form .form-control");
 		for (int i = 0; i < nodes.length; i++) {
 			HTMLElement element = (HTMLElement) nodes.$get(i);
@@ -117,6 +121,12 @@ public class FinalVariables {
 		});
 	}
 
+    String notFinal() {
+        String s = "abc";
+        s = "bcd";
+        return s;
+    }
+	
 }
 
 // subset of promises API

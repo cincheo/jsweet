@@ -482,6 +482,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	private boolean isDefinitionScope = false;
 
+	private ConstAnalyzer constAnalyzer = null;
+	
 	protected final boolean isTopLevelScope() {
 		return getIndent() == 0;
 	}
@@ -736,7 +738,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		footer.delete(0, footer.length());
 
 		setCompilationUnit(topLevel);
-
+		constAnalyzer = new ConstAnalyzer(getLogHandler(), context);
+		constAnalyzer.scan(topLevel);
+		
 		String packge = topLevel.packge.toString();
 
 		boolean globalModule = JSweetConfig.GLOBALS_PACKAGE_NAME.equals(packge)
@@ -3404,7 +3408,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					if (isDefinitionScope) {
 						print("var ");
 					} else {
-						print(VAR_DECL_KEYWORD + " ");
+                        if (varDecl.sym.getModifiers().contains(Modifier.FINAL) || (constAnalyzer != null
+                                && !constAnalyzer.getModifiedVariables().contains(varDecl.sym))) {
+                            print("const ");
+                        } else {
+                            print(VAR_DECL_KEYWORD + " ");
+                        }
 					}
 				}
 			} else {

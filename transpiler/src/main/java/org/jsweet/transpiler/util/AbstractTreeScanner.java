@@ -60,7 +60,7 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 
 	private TranspilationHandler logHandler;
 
-	/**
+    /**
 	 * Report a JSweet problem on the given program element (tree).
 	 * 
 	 * @param tree
@@ -467,5 +467,12 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 		}
 		return null;
 	}
+
+	/**
+	 * Gets the transpilation handler for this scanner.
+	 */
+    public TranspilationHandler getLogHandler() {
+        return logHandler;
+    }
 
 }
