@@ -22,16 +22,22 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.IOException;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
+import org.jsweet.test.transpiler.util.TranspilerTestRunner;
+import org.jsweet.transpiler.JSweetContext;
+import org.jsweet.transpiler.JSweetFactory;
 import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.ModuleKind;
 import org.jsweet.transpiler.SourceFile;
+import org.jsweet.transpiler.extension.PrinterAdapter;
 import org.jsweet.transpiler.util.EvaluationResult;
 import org.junit.Assert;
 import org.junit.Test;
 
+import source.extension.ToBeSorted;
 import source.syntax.AnnotationQualifiedNames;
 import source.syntax.Casts;
 import source.syntax.DocComments;
@@ -146,6 +152,23 @@ public class SyntaxTests extends AbstractTest {
 		}, getSourceFile(FinalVariables.class));
 	}
 
+    @Test
+    public void testConstVariables() throws IOException {
+        SourceFile f1 = getSourceFile(FinalVariables.class);
+        SourceFile f2 = getSourceFile(GlobalsInvocation.class);
+        transpilerTest().transpile(logHandler -> {
+            logHandler.assertNoProblems();
+        }, f1, f2);
+        String generatedCode = FileUtils.readFileToString(f1.getTsFile());
+        Assert.assertTrue(generatedCode.indexOf("const explicitFinalString") > -1);
+        Assert.assertTrue(generatedCode.indexOf("const implicitFinalString") > -1);
+        Assert.assertTrue(generatedCode.indexOf("let notFinalString") > -1);
+        generatedCode = FileUtils.readFileToString(f2.getTsFile());
+        Assert.assertTrue(generatedCode.indexOf("const explicitFinalGlobal") > -1);
+        Assert.assertTrue(generatedCode.indexOf("let implicitFinalGlobal") > -1);
+        Assert.assertTrue(generatedCode.indexOf("let notFinalGlobal") > -1);
+    }	
+	
 	@Test
 	public void testFinalVariablesRuntime() {
 		try {

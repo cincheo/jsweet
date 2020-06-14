@@ -3424,7 +3424,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					if (isDefinitionScope) {
 						print("var ");
 					} else {
-                        if (varDecl.sym.getModifiers().contains(Modifier.FINAL) || (constAnalyzer != null
+                        if (varDecl.sym.getModifiers().contains(Modifier.FINAL) || (!globals && constAnalyzer != null
                                 && !constAnalyzer.getModifiedVariables().contains(varDecl.sym))) {
                             print("const ");
                         } else {

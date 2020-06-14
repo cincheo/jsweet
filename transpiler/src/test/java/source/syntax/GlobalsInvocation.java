@@ -50,4 +50,14 @@ class Globals {
 		});
 	}
 	public static void m() {};
+	
+    public final static int explicitFinalGlobal = 1;
+    public static int implicitFinalGlobal = 1;
+    public static int notFinalGlobal = 1;
+    
+    public static void init() {
+        notFinalGlobal = 1;
+    }
+    
+    
 }
