@@ -19,6 +19,7 @@
 package org.jsweet.transpiler.extension;
 
 import java.lang.annotation.Annotation;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -1204,4 +1205,17 @@ public class PrinterAdapter {
         return printer.isInlinedExpression(((ExtendedElementSupport<?>) element).getTree());
     }
 
+    /**
+     * Returns a comparator that will control the order of class members for output
+     * (default will keep order of appearance in the source code).
+     */
+    public Comparator<ExtendedElement> getClassMemberComparator() {
+        return new Comparator<ExtendedElement>() {
+            @Override
+            public int compare(ExtendedElement e1, ExtendedElement e2) {
+                return e1.getStartSourcePosition() - e2.getStartSourcePosition();
+            }
+        };
+    }
+    
 }

@@ -242,6 +242,7 @@ public class JSweetTranspiler implements JSweetOptions {
 	private boolean lazyInitializedStatics = true;
 	private boolean useSingleQuotesForStringLiterals = false;
 	private boolean nonEnumerableTransients = false;
+	private boolean sortClassMembers = false;
 
 	private ArrayList<String> adapters = new ArrayList<>();
 	private File configurationFile;
@@ -1944,6 +1945,14 @@ public class JSweetTranspiler implements JSweetOptions {
     public void setNonEnumerableTransients(boolean nonEnumerableTransients) {
         this.nonEnumerableTransients = nonEnumerableTransients;
     }
-    
+
+    @Override
+    public boolean isSortClassMembers() {
+        return this.sortClassMembers;
+    }
+
+    public void setSortClassMembers(boolean sortClassMembers) {
+        this.sortClassMembers = sortClassMembers;
+    }
     
 }

@@ -1717,7 +1717,23 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 		boolean hasUninitializedFields = false;
 
-		for (JCTree def : classdecl.defs) {
+		List<JCTree> defs = classdecl.defs; 
+		if (context.options.isSortClassMembers()) {
+		    List<JCTree> memberDefs = defs.stream()   
+		            .filter(t -> (t instanceof JCMethodDecl || t instanceof JCVariableDecl))
+		            .sorted((t1, t2) -> getAdapter().getClassMemberComparator().compare(
+		                    ExtendedElementFactory.INSTANCE.create(t1), ExtendedElementFactory.INSTANCE.create(t2)))
+		            .collect(Collectors.toList());
+		    defs = new ArrayList<>();
+		    defs.addAll(memberDefs);
+	        for (JCTree def : classdecl.defs) {
+	            if (!defs.contains(def)) {
+	                defs.add(def);
+	            }
+	        }
+		}
+		
+		for (JCTree def : defs) {
 			if (getScope().interfaceScope && ((def instanceof JCMethodDecl && ((JCMethodDecl) def).sym.isStatic())
 					|| (def instanceof JCVariableDecl && ((JCVariableDecl) def).sym.isStatic()))) {
 				// static interface members are printed in a namespace

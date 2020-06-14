@@ -69,4 +69,9 @@ public interface ExtendedElement {
 	 */
 	boolean isStringLiteral();
 
+	/**
+	 * Gets the start position of the element in the source code.
+	 */
+	int getStartSourcePosition();
+
 }

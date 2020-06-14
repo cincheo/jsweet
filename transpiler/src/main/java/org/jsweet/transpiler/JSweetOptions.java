@@ -139,13 +139,18 @@ public interface JSweetOptions {
      */
     String classpath = "classpath";
 
+    /**
+     * Constant string for the 'sortClassMembers' option.
+     */
+    String sortClassMembers = "sortClassMembers";
+    
 	/**
 	 * All the supported options (used to report non-blocking errors when options do not exist).
 	 */
     String[] options = { bundle, noRootDirectories, sourceMap, module, encoding, outEncoding, enableAssertions,
             declaration, tsOnly, ignoreDefinitions, ignoreJavaErrors, header, disableSinglePrecisionFloats,
             disableStaticsLazyInitialization, targetVersion, tsout, dtsout, jsout, candiesJsOut, moduleResolution,
-            extraSystemPath, useSingleQuotesForStringLiterals, nonEnumerableTransients, classpath };
+            extraSystemPath, useSingleQuotesForStringLiterals, nonEnumerableTransients, classpath, sortClassMembers };
 
 	/**
 	 * Returns the configuration from the configuration file.
@@ -364,4 +369,10 @@ public interface JSweetOptions {
      * JavaScript properties.
      */
     boolean isNonEnumerableTransients();
+
+    /**
+     * If true, class members are sorted using
+     * {@link PrinterAdapter#getClassMemberComparator()}.
+     */
+    boolean isSortClassMembers();
 }
