@@ -42,5 +42,16 @@ public interface ForeachLoopElement extends ExtendedElement {
 	 * The body of the foreach loop.
 	 */
 	ExtendedElement getBody();
+	
+    /**
+     * Returns true if the loop contains a control flow statement
+     * (<code>break</code>, <code>continue</code>, <code>return</code>).
+     */
+    boolean hasControlFlowStatement();
 
+    /**
+     * Returns true if the iteration variable is modified within the loop body.
+     */
+    boolean isIterationVariableModified();
+    
 }

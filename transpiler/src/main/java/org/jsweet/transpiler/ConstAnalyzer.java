@@ -23,14 +23,13 @@ import java.util.Set;
 
 import javax.lang.model.element.ElementKind;
 
-import org.jsweet.transpiler.util.AbstractTreeScanner;
-
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAssign;
 import com.sun.tools.javac.tree.JCTree.JCAssignOp;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCUnary;
+import com.sun.tools.javac.tree.TreeScanner;
 
 /**
  * This AST scanner analyzes local variables to determine if they are locally
@@ -39,7 +38,7 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
  * @see JSweetContext
  * @author Renaud Pawlak
  */
-public class ConstAnalyzer extends AbstractTreeScanner {
+public class ConstAnalyzer extends TreeScanner {
 
     private Set<VarSymbol> modifiedVariables = new HashSet<>();
 
@@ -49,13 +48,6 @@ public class ConstAnalyzer extends AbstractTreeScanner {
      */
     public Set<VarSymbol> getModifiedVariables() {
         return modifiedVariables;
-    }
-
-    /**
-     * Creates a new constant variable analyzer.
-     */
-    public ConstAnalyzer(TranspilationHandler logHandler, JSweetContext context) {
-        super(logHandler, context, null);
     }
 
     private void registerModification(JCTree tree) {

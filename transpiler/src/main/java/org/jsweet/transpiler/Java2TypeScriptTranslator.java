@@ -738,7 +738,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		footer.delete(0, footer.length());
 
 		setCompilationUnit(topLevel);
-		constAnalyzer = new ConstAnalyzer(getLogHandler(), context);
+		constAnalyzer = new ConstAnalyzer();
 		constAnalyzer.scan(topLevel);
 		
 		String packge = topLevel.packge.toString();
