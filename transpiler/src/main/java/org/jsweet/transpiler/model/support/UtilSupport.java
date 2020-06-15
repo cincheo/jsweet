@@ -80,6 +80,8 @@ public class UtilSupport implements Util {
 	@Override
 	public TypeMirror getType(Class<?> clazz) {
 		switch (clazz.getName()) {
+        case "java.lang.Object":
+            return context.symtab.objectType;
 		case "java.lang.annotation.Annotation":
 			return context.symtab.annotationType;
 		case "java.lang.AssertionError":
