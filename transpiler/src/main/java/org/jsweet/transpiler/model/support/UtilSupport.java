@@ -18,6 +18,8 @@
  */
 package org.jsweet.transpiler.model.support;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.lang.model.element.Element;
@@ -209,4 +211,24 @@ public class UtilSupport implements Util {
 		return false;
 	}
 
+	@Override
+	public List<Element> getAllMembers(TypeElement typeElement) {
+	    if(typeElement == null) {
+	        return Collections.emptyList();
+	    }
+	    List<Element> elements = new ArrayList<Element>();
+	    for(Element e : typeElement.getEnclosedElements()) {
+	        elements.add(e);
+	    }
+	    elements.addAll(getAllMembers(typeElement.getSuperclass()));
+	    return elements;
+	}
+
+    private List<Element> getAllMembers(TypeMirror type) {
+        if(type == null) {
+            return Collections.emptyList();
+        }
+        return getAllMembers((TypeElement)context.modelTypes.asElement(type));
+    }
+	
 }

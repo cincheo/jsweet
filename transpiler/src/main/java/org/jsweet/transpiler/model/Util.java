@@ -117,4 +117,13 @@ public interface Util {
 	 */
 	String getTypeInitialValue(TypeMirror type);
 
+    /**
+     * Gets all the members of the given type, including members within the super
+     * classes.
+     * 
+     * @param typeElement the typeElement
+     * @return a list of all the members
+     */
+    List<Element> getAllMembers(TypeElement typeElement);
+	
 }
