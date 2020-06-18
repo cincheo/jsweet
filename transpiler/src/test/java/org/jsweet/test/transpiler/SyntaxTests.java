@@ -160,13 +160,15 @@ public class SyntaxTests extends AbstractTest {
             logHandler.assertNoProblems();
         }, f1, f2);
         String generatedCode = FileUtils.readFileToString(f1.getTsFile());
-        Assert.assertTrue(generatedCode.indexOf("const explicitFinalString") > -1);
-        Assert.assertTrue(generatedCode.indexOf("const implicitFinalString") > -1);
-        Assert.assertTrue(generatedCode.indexOf("let notFinalString") > -1);
+        Assert.assertTrue(generatedCode.contains("const explicitFinalString"));
+        Assert.assertTrue(generatedCode.contains("let explicitFinalStringWithDeferredAssignment"));
+        Assert.assertFalse(generatedCode.contains("const explicitFinalStringWithDeferredAssignment"));
+        Assert.assertTrue(generatedCode.contains("const implicitFinalString"));
+        Assert.assertTrue(generatedCode.contains("let notFinalString"));
         generatedCode = FileUtils.readFileToString(f2.getTsFile());
-        Assert.assertTrue(generatedCode.indexOf("const explicitFinalGlobal") > -1);
-        Assert.assertTrue(generatedCode.indexOf("let implicitFinalGlobal") > -1);
-        Assert.assertTrue(generatedCode.indexOf("let notFinalGlobal") > -1);
+        Assert.assertTrue(generatedCode.contains("const explicitFinalGlobal"));
+        Assert.assertTrue(generatedCode.contains("let implicitFinalGlobal"));
+        Assert.assertTrue(generatedCode.contains("let notFinalGlobal"));
     }	
 	
 	@Test

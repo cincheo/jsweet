@@ -3425,9 +3425,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                         if (isDefinitionScope) {
                             print("var ");
                         } else {
-                            if (!isLazyInitialized(varDecl.sym) && (varDecl.sym.getModifiers().contains(Modifier.FINAL)
-                                    || (!globals && constAnalyzer != null
-                                            && !constAnalyzer.getModifiedVariables().contains(varDecl.sym)))) {
+                            if (!isLazyInitialized(varDecl.sym) && ((!globals && constAnalyzer != null
+                                    && !constAnalyzer.getModifiedVariables().contains(varDecl.sym))
+                                    || (globals && varDecl.sym.getModifiers().contains(Modifier.FINAL)
+                                            && varDecl.init != null))) {
                                 print("const ");
                             } else {
                                 print(VAR_DECL_KEYWORD + " ");
