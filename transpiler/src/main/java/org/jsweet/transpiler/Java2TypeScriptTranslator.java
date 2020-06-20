@@ -1637,8 +1637,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			printIndent().print("public " + PARENT_CLASS_FIELD_NAME + ": any;").println();
 		}
 
+		Set<JCMethodDecl> injectedDefaultMethods = new HashSet<>();
+        Map<JCMethodDecl, MethodSymbol> injectedDefaultMethodMap = new HashMap<>();
+		
 		if (defaultMethods != null && !defaultMethods.isEmpty()) {
-			getScope().defaultMethodScope = true;
 			for (Entry<JCClassDecl, JCMethodDecl> entry : defaultMethods) {
 				if (!(entry.getValue().type instanceof MethodType)) {
 					continue;
@@ -1646,36 +1648,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				MethodSymbol s = Util.findMethodDeclarationInType2(context.types, classdecl.sym,
 						entry.getValue().getName().toString(), (MethodType) entry.getValue().type);
 				if (s == null || s == entry.getValue().sym) {
-					getAdapter().typeVariablesToErase
-							.addAll(((ClassSymbol) s.getEnclosingElement()).getTypeParameters());
-					// scan for used types to generate imports
-					if (context.useModules) {
-						UsedTypesScanner scanner = new UsedTypesScanner();
-						JCMethodDecl method = entry.getValue();
-						if (!context.hasAnnotationType(method.sym, JSweetConfig.ANNOTATION_ERASED)) {
-							if (context.hasAnnotationType(method.sym, JSweetConfig.ANNOTATION_REPLACE)) {
-								// do not scan the method body
-								scanner.scan(method.params);
-								scanner.scan(method.restype);
-								scanner.scan(method.thrown);
-								scanner.scan(method.typarams);
-								scanner.scan(method.recvparam);
-							} else {
-								scanner.scan(method);
-							}
-						}
-					}
-					if (!context.hasAnnotationType(entry.getValue().sym, JSweetConfig.ANNOTATION_ERASED)) {
-						printIndent().print(
-								"/* Default method injected from " + entry.getKey().sym.getQualifiedName() + " */")
-								.println();
-					}
-					printIndent().print(entry.getValue()).println();
-					getAdapter().typeVariablesToErase
-							.removeAll(((ClassSymbol) s.getEnclosingElement()).getTypeParameters());
+                    injectedDefaultMethods.add(entry.getValue());
+                    injectedDefaultMethodMap.put(entry.getValue(), s);
 				}
 			}
-			getScope().defaultMethodScope = false;
 		}
 
 		if (getScope().enumScope) {
@@ -1717,7 +1693,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 		boolean hasUninitializedFields = false;
 
-		List<JCTree> defs = classdecl.defs; 
+		List<JCTree> defs = new ArrayList<>();
+		defs.addAll(injectedDefaultMethods);
+		defs.addAll(classdecl.defs);
 		if (context.options.isSortClassMembers()) {
 		    List<JCTree> memberDefs = defs.stream()   
 		            .filter(t -> (t instanceof JCMethodDecl || t instanceof JCVariableDecl))
@@ -1734,6 +1712,38 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 		
 		for (JCTree def : defs) {
+		    if(injectedDefaultMethods.contains(def)) {
+		        JCMethodDecl defaultMethod = (JCMethodDecl) def;
+		        MethodSymbol s = injectedDefaultMethodMap.get(defaultMethod);
+		        getScope().defaultMethodScope = true;
+                getAdapter().typeVariablesToErase.addAll(((ClassSymbol) s.getEnclosingElement()).getTypeParameters());
+                // scan for used types to generate imports
+                if (context.useModules) {
+                    UsedTypesScanner scanner = new UsedTypesScanner();
+                    if (!context.hasAnnotationType(defaultMethod.sym, JSweetConfig.ANNOTATION_ERASED)) {
+                        if (context.hasAnnotationType(defaultMethod.sym, JSweetConfig.ANNOTATION_REPLACE)) {
+                            // do not scan the method body
+                            scanner.scan(defaultMethod.params);
+                            scanner.scan(defaultMethod.restype);
+                            scanner.scan(defaultMethod.thrown);
+                            scanner.scan(defaultMethod.typarams);
+                            scanner.scan(defaultMethod.recvparam);
+                        } else {
+                            scanner.scan(defaultMethod);
+                        }
+                    }
+                }
+                if (!context.hasAnnotationType(defaultMethod.sym, JSweetConfig.ANNOTATION_ERASED)) {
+                    printIndent()
+                            .print("/* Default method injected from " + defaultMethod.sym.getEnclosingElement() + " */")
+                            .println();
+                }
+                printIndent().print(defaultMethod).println();
+                getAdapter().typeVariablesToErase.removeAll(((ClassSymbol) s.getEnclosingElement()).getTypeParameters());
+                getScope().defaultMethodScope = false;
+                continue;
+		    }
+		    
 			if (getScope().interfaceScope && ((def instanceof JCMethodDecl && ((JCMethodDecl) def).sym.isStatic())
 					|| (def instanceof JCVariableDecl && ((JCVariableDecl) def).sym.isStatic()))) {
 				// static interface members are printed in a namespace
