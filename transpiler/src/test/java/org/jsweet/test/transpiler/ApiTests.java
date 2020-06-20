@@ -273,6 +273,7 @@ public class ApiTests extends AbstractTest {
 	public void testDates() {
 		eval(ModuleKind.none, (logHandler, r) -> {
 			logHandler.assertNoProblems();
+            System.out.println("result = " + r.get("localeString"));
 			assertTrue(asList(
 					"1/1/2020, 1:00:00 AM", 
 					"2020-1-1 1:00:00 AM").contains( 
