@@ -56,6 +56,11 @@ public interface Util {
 	 */
 	boolean isNumber(TypeMirror type);
 
+    /**
+     * Tells if the given type is a boolean.
+     */
+    boolean isBoolean(TypeMirror type);
+
 	/**
 	 * Tells if the given element is deprecated.
 	 */
@@ -125,5 +130,13 @@ public interface Util {
      * @return a list of all the members
      */
     List<Element> getAllMembers(TypeElement typeElement);
-	
+
+    /**
+     * Gets the type as a primitive type (by unboxing it) when possible.
+     * 
+     * @param type the origin type
+     * @return the origin type or the corresponding primitive type if possible
+     */
+    TypeMirror toPrimitiveTypeOrType(TypeMirror type);
+    
 }

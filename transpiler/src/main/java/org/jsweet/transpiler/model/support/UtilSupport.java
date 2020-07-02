@@ -157,6 +157,11 @@ public class UtilSupport implements Util {
 		return org.jsweet.transpiler.util.Util.isNumber(type);
 	}
 
+    @Override
+    public boolean isBoolean(TypeMirror type) {
+        return org.jsweet.transpiler.util.Util.isBoolean(type);
+    }
+	
 	@Override
 	public boolean isDeprecated(Element element) {
 		return org.jsweet.transpiler.util.Util.isDeprecated(element);
@@ -231,4 +236,12 @@ public class UtilSupport implements Util {
         return getAllMembers((TypeElement)context.modelTypes.asElement(type));
     }
 	
+    @Override
+    public TypeMirror toPrimitiveTypeOrType(TypeMirror type) {
+        try {
+            return context.types.unboxedTypeOrType((Type)type);
+        } catch (Exception e) {
+            return type;
+        }
+    }
 }

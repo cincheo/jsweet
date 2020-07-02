@@ -72,6 +72,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
@@ -1285,9 +1286,9 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 				} else {
 					switch (targetMethodName) {
 					case "equals":
-                        if (types().isSameType(invocationElement.getTargetExpression().getType(),
-                                util().getType(String.class))
-                                || util().isNumber(invocationElement.getTargetExpression().getType())) {
+					    TypeMirror t1 = util().toPrimitiveTypeOrType(invocationElement.getTargetExpression().getType());
+                        TypeMirror t2 = util().toPrimitiveTypeOrType(invocationElement.getArgument(0).getType());
+                        if (types().isSameType(t1, t2) && util().isCoreType(t1)) {
                             if(isInlinedExpression(invocationElement)) {
                                 print("(");
                             }
