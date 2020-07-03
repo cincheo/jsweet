@@ -50,6 +50,7 @@ import org.jsweet.transpiler.model.AssignmentElement;
 import org.jsweet.transpiler.model.AssignmentWithOperatorElement;
 import org.jsweet.transpiler.model.BinaryOperatorElement;
 import org.jsweet.transpiler.model.CaseElement;
+import org.jsweet.transpiler.model.TypeCastElement;
 import org.jsweet.transpiler.model.CompilationUnitElement;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.ForeachLoopElement;
@@ -1054,6 +1055,13 @@ public class PrinterAdapter {
 		return parentAdapter == null ? false : parentAdapter.substituteInstanceof(exprStr, expr, type);
 	}
 
+    /**
+     * Substitutes if necessary a type cast expression.
+     */
+    public boolean substituteTypeCast(TypeCastElement castExpression) {
+        return parentAdapter == null ? false : parentAdapter.substituteTypeCast(castExpression);
+    }
+	
 	/**
 	 * Substitutes if necessary the pattern of a case statement.
 	 */

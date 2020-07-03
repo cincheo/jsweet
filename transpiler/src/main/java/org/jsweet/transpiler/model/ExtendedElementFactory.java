@@ -34,6 +34,7 @@ import org.jsweet.transpiler.model.support.LiteralElementSupport;
 import org.jsweet.transpiler.model.support.MethodInvocationElementSupport;
 import org.jsweet.transpiler.model.support.NewArrayElementSupport;
 import org.jsweet.transpiler.model.support.NewClassElementSupport;
+import org.jsweet.transpiler.model.support.TypeCastElementSupport;
 import org.jsweet.transpiler.model.support.UnaryOperatorElementSupport;
 import org.jsweet.transpiler.model.support.VariableAccessElementSupport;
 import org.jsweet.transpiler.model.support.VariableElementSupport;
@@ -53,6 +54,7 @@ import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCNewArray;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
+import com.sun.tools.javac.tree.JCTree.JCTypeCast;
 import com.sun.tools.javac.tree.JCTree.JCUnary;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 
@@ -155,6 +157,8 @@ public class ExtendedElementFactory {
 		case POSTDEC:
 		case POSTINC:
 			return new UnaryOperatorElementSupport((JCUnary) tree);
+		case TYPECAST:
+		    return new TypeCastElementSupport((JCTypeCast) tree);
 		default:
 			return new ExtendedElementSupport<>(tree);
 		}

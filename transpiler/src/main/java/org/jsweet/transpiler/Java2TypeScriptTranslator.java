@@ -66,6 +66,7 @@ import org.jsweet.transpiler.extension.PrinterAdapter;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.ExtendedElementFactory;
 import org.jsweet.transpiler.model.MethodInvocationElement;
+import org.jsweet.transpiler.model.TypeCastElement;
 import org.jsweet.transpiler.model.support.ArrayAccessElementSupport;
 import org.jsweet.transpiler.model.support.AssignmentElementSupport;
 import org.jsweet.transpiler.model.support.AssignmentWithOperatorElementSupport;
@@ -5473,6 +5474,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	public void visitTypeCast(JCTypeCast cast) {
 		if (substituteAssignedExpression(cast.type, cast.expr)) {
 			return;
+		}
+		if (getAdapter().substituteTypeCast((TypeCastElement)ExtendedElementFactory.INSTANCE.create(cast))) {
+		    return;
 		}
 		if (Util.isIntegral(cast.type)) {
 			if (cast.type.getKind() == TypeKind.LONG) {
