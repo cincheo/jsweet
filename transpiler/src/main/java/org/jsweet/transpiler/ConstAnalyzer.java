@@ -19,6 +19,7 @@
 package org.jsweet.transpiler;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.lang.model.element.ElementKind;
@@ -27,6 +28,7 @@ import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAssign;
 import com.sun.tools.javac.tree.JCTree.JCAssignOp;
+import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCUnary;
 import com.sun.tools.javac.tree.TreeScanner;
@@ -81,4 +83,13 @@ public class ConstAnalyzer extends TreeScanner {
         super.visitUnary(unary);
     }
 
+    /**
+     * Scans a given compilation unit list.
+     */
+    public void process(List<JCCompilationUnit> cuList) {
+        for (JCCompilationUnit cu : cuList) {
+            scan(cu);
+        }
+    }
+    
 }

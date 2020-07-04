@@ -483,8 +483,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	private boolean isDefinitionScope = false;
 
-	private ConstAnalyzer constAnalyzer = null;
-	
 	protected final boolean isTopLevelScope() {
 		return getIndent() == 0;
 	}
@@ -739,8 +737,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		footer.delete(0, footer.length());
 
 		setCompilationUnit(topLevel);
-		constAnalyzer = new ConstAnalyzer();
-		constAnalyzer.scan(topLevel);
 		
 		String packge = topLevel.packge.toString();
 
@@ -2965,9 +2961,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						printInstanceInitialization(getParent(JCClassDecl.class), method.sym);
 					}
 					if (!stats.tail.isEmpty()) {
-						printIndent().print("((").print(") => {").startIndent().println();
 						printBlockStatements(stats.tail);
-						endIndent().printIndent().print("})(").print(");").println();
 					}
 				} else {
 					if (!initialized) {
@@ -3436,8 +3430,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                         if (isDefinitionScope) {
                             print("var ");
                         } else {
-                            if (!isLazyInitialized(varDecl.sym) && ((!globals && constAnalyzer != null
-                                    && !constAnalyzer.getModifiedVariables().contains(varDecl.sym))
+                            if (!isLazyInitialized(varDecl.sym) && ((!globals && context.constAnalyzer != null
+                                    && !context.constAnalyzer.getModifiedVariables().contains(varDecl.sym))
                                     || (globals && varDecl.sym.getModifiers().contains(Modifier.FINAL)
                                             && varDecl.init != null))) {
                                 print("const ");

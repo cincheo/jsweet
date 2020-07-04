@@ -991,6 +991,8 @@ public class JSweetTranspiler implements JSweetOptions {
 			List<JCCompilationUnit> compilationUnits) throws IOException {
 		// regular file-to-file generation
 		new OverloadScanner(transpilationHandler, context).process(compilationUnits);
+        context.constAnalyzer = new ConstAnalyzer();
+        context.constAnalyzer.scan(compilationUnits);
 
 		if (isVerbose()) {
 			context.dumpOverloads(System.out);
@@ -1123,7 +1125,9 @@ public class JSweetTranspiler implements JSweetOptions {
 		}
 
 		new OverloadScanner(transpilationHandler, context).process(orderedCompilationUnits);
-
+		context.constAnalyzer = new ConstAnalyzer();
+		context.constAnalyzer.process(orderedCompilationUnits);
+		
 		adapter.onTranspilationStarted();
 
 		logger.debug("ordered compilation units: " + orderedCompilationUnits.stream().map(cu -> {
