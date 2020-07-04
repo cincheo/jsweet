@@ -24,6 +24,9 @@ import java.util.Set;
 
 import javax.lang.model.element.ElementKind;
 
+import org.jsweet.transpiler.util.Util;
+
+import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAssign;
@@ -43,7 +46,27 @@ import com.sun.tools.javac.tree.TreeScanner;
 public class ConstAnalyzer extends TreeScanner {
 
     private Set<VarSymbol> modifiedVariables = new HashSet<>();
+    private ElementKind variableKind = ElementKind.LOCAL_VARIABLE;
+    private boolean initializationOnly = false;
 
+    /**
+     * Create a constant variable analyzer on local variables only (default).
+     */
+    public ConstAnalyzer() {
+    }
+
+    /**
+     * Create a constant variable analyzer on the given kind of variable.
+     * 
+     * @param variableKind the variable kind to analyze (if null, analyzes all kinds
+     *                     of variables)
+     * @param initializationOnly only takes into account direct assignments and not self-dependent modifications
+     */
+    public ConstAnalyzer(ElementKind variableKind, boolean initializationOnly) {
+        this.variableKind = variableKind;
+        this.initializationOnly = initializationOnly;
+    }
+    
     /**
      * Gets all the local variables that are modified within the program. All other
      * local variables can be assumed as constant.
@@ -53,20 +76,24 @@ public class ConstAnalyzer extends TreeScanner {
     }
 
     private void registerModification(JCTree tree) {
-        if (tree instanceof JCIdent && ((JCIdent) tree).sym.getKind() == ElementKind.LOCAL_VARIABLE) {
-            modifiedVariables.add((VarSymbol) ((JCIdent) tree).sym);
+        Symbol symbol = Util.getAccessedSymbol(tree);
+        if (symbol != null && (variableKind == null || symbol.getKind() == variableKind)) {
+            modifiedVariables.add((VarSymbol) symbol);
         }
     }
 
     @Override
     public void visitAssign(JCAssign assign) {
+        // TODO: should check if rhs contains self reference for initialization only
         registerModification(assign.lhs);
         super.visitAssign(assign);
     }
 
     @Override
     public void visitAssignop(JCAssignOp assignOp) {
-        registerModification(assignOp.lhs);
+        if (!this.initializationOnly) {
+            registerModification(assignOp.lhs);
+        }
         super.visitAssignop(assignOp);
     }
 
@@ -77,7 +104,9 @@ public class ConstAnalyzer extends TreeScanner {
         case POSTINC:
         case PREDEC:
         case POSTDEC:
-            registerModification(unary.arg);
+            if (!this.initializationOnly) {
+                registerModification(unary.arg);
+            }
         default:
         }
         super.visitUnary(unary);
