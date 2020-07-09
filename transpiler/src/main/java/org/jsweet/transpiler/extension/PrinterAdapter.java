@@ -1069,6 +1069,13 @@ public class PrinterAdapter {
 		return parentAdapter == null ? false : parentAdapter.substituteCaseStatementPattern(caseStatement, pattern);
 	}
 
+    /**
+     * Substitutes if necessary the selector expression of a switch statement.
+     */
+    public boolean substituteSwitchStatementSelector(ExtendedElement selector) {
+        return parentAdapter == null ? false : parentAdapter.substituteSwitchStatementSelector(selector);
+    }
+
 	/**
 	 * This method is called after a type was printed.
 	 */
