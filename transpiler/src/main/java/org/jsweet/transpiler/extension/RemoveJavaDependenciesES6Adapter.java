@@ -82,7 +82,7 @@ public class RemoveJavaDependenciesES6Adapter extends RemoveJavaDependenciesAdap
 
 	private void substituteNewSet(NewClassElement newClass) {
 		TypeMirror genericIterable = context.modelTypes.erasure(context.symtab.iterableType);
-		
+
 		boolean ignoreArguments = newClass.getArgumentCount() == 0
 				|| !(newClass.getArgument(0).getType() instanceof ArrayType || context.modelTypes
 						.isAssignable(context.modelTypes.erasure(newClass.getArgument(0).getType()), genericIterable));
@@ -95,7 +95,14 @@ public class RemoveJavaDependenciesES6Adapter extends RemoveJavaDependenciesAdap
 	}
 
 	private void substituteNewMap(NewClassElement newClass) {
-		print("new Map()");
+		boolean ignoreArguments = newClass.getArgumentCount() == 0
+				|| !context.modelTypes.erasure(newClass.getArgument(0).getType()).toString().endsWith("Map");
+
+		if (ignoreArguments) {
+			print("new Map()");
+		} else {
+			print("new Map(").print(newClass.getArgument(0)).print(")");
+		}
 	}
 
 	@Override
@@ -125,8 +132,8 @@ public class RemoveJavaDependenciesES6Adapter extends RemoveJavaDependenciesAdap
 		switch (targetMethodName) {
 		case "add":
 			printMacroName(targetMethodName);
-			print("((s, v) => { const n = s.size; s.add(v); return n !== s.size; })(")
-					.print(targetExpression).print(",").print(invocation.getArgument(0)).print(")");
+			print("((s, v) => { const n = s.size; s.add(v); return n !== s.size; })(").print(targetExpression)
+					.print(",").print(invocation.getArgument(0)).print(")");
 			break;
 		case "addAll":
 			printMacroName(targetMethodName);
@@ -143,8 +150,8 @@ public class RemoveJavaDependenciesES6Adapter extends RemoveJavaDependenciesAdap
 			break;
 		case "containsAll":
 			printMacroName(targetMethodName);
-			print("((s, c) => c.every(e => s.has(e)))(")
-					.print(targetExpression).print(",").print(invocation.getArgument(0)).print(")");
+			print("((s, c) => c.every(e => s.has(e)))(").print(targetExpression).print(",")
+					.print(invocation.getArgument(0)).print(")");
 			break;
 		case "equals":
 			print("((s1, s2) => { if (!s1 || !s2) return s1 === s2; return s1.size === s2.size && Array.from(s1).every(e => s2.has(e)) })(")
@@ -164,8 +171,7 @@ public class RemoveJavaDependenciesES6Adapter extends RemoveJavaDependenciesAdap
 			break;
 		case "remove":
 			printMacroName(targetMethodName);
-			print("(").print(targetExpression).print(".delete(").print(invocation.getArgument(0)).print(")")
-					.print(")");
+			print("(").print(targetExpression).print(".delete(").print(invocation.getArgument(0)).print(")").print(")");
 			break;
 		case "removeAll":
 			printMacroName(targetMethodName);
@@ -178,7 +184,8 @@ public class RemoveJavaDependenciesES6Adapter extends RemoveJavaDependenciesAdap
 					.print(targetExpression).print(",").print(invocation.getArgument(0)).print(")");
 			break;
 		case "size":
-			// size typing was so strong that it breaks unit tests checking size "type" (e.g 0 !== 2) 
+			// size typing was so strong that it breaks unit tests checking size "type" (e.g
+			// 0 !== 2)
 			print("(<any>");
 			printMacroName(targetMethodName);
 			print(targetExpression).print(".size");
@@ -200,7 +207,7 @@ public class RemoveJavaDependenciesES6Adapter extends RemoveJavaDependenciesAdap
 		switch (targetMethodName) {
 		case "put":
 			printMacroName(targetMethodName);
-			print("((m, k, v) => m.set(k,v))(");
+			print("((m, k, v) => { const prev = m.get(k); m.set(k,v); return prev; })(");
 			print(targetExpression).print(",");
 			print(invocation.getArgument(0)).print(",");
 			print(invocation.getArgument(1));
@@ -208,8 +215,8 @@ public class RemoveJavaDependenciesES6Adapter extends RemoveJavaDependenciesAdap
 			break;
 		case "putAll":
 			printMacroName(targetMethodName);
-			print("((m, m2) => { for (const e of m2) m.set(e[0], e[1]) })(")
-					.print(targetExpression).print(",").print(invocation.getArgument(0)).print(")");
+			print("((m, m2) => { for (const e of m2) m.set(e[0], e[1]) })(").print(targetExpression).print(",")
+					.print(invocation.getArgument(0)).print(")");
 			break;
 		case "containsKey":
 			printMacroName(targetMethodName);
@@ -265,7 +272,8 @@ public class RemoveJavaDependenciesES6Adapter extends RemoveJavaDependenciesAdap
 
 		case "size":
 			printMacroName(targetMethodName);
-			// size typing was so strong that it breaks unit tests checking size "type" (e.g 0 !== 2) 
+			// size typing was so strong that it breaks unit tests checking size "type" (e.g
+			// 0 !== 2)
 			print("(<any>");
 			print(targetExpression).print(".size");
 			print(")");
@@ -279,7 +287,7 @@ public class RemoveJavaDependenciesES6Adapter extends RemoveJavaDependenciesAdap
 	private void printCallToEponymMethod(MethodInvocationElement invocation) {
 		String targetMethodName = invocation.getMethodName();
 		ExtendedElement targetExpression = invocation.getTargetExpression();
-		
+
 		printMacroName(targetMethodName);
 		print(targetExpression).print(".").print(targetMethodName);
 		print("(");
