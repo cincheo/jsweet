@@ -45,11 +45,11 @@ import org.jsweet.transpiler.model.NewClassElement;
  */
 
 public class RemoveJavaDependenciesES6Adapter extends RemoveJavaDependenciesAdapter {
-	private final static Set<String> SET_CLASS_NAMES = Stream
+	protected final static Set<String> SET_CLASS_NAMES = Stream
 			.of(Set.class, HashSet.class, LinkedHashSet.class, TreeSet.class, AbstractSet.class).map(Class::getName)
 			.collect(Collectors.toSet());
 
-	private final static Set<String> MAP_CLASS_NAMES = Stream
+	protected final static Set<String> MAP_CLASS_NAMES = Stream
 			.of(Map.class, HashMap.class, LinkedHashMap.class, TreeMap.class, AbstractMap.class).map(Class::getName)
 			.collect(Collectors.toSet());
 
@@ -80,7 +80,7 @@ public class RemoveJavaDependenciesES6Adapter extends RemoveJavaDependenciesAdap
 		return super.substituteNewClass(newClass);
 	}
 
-	private void substituteNewSet(NewClassElement newClass) {
+	protected void substituteNewSet(NewClassElement newClass) {
 		TypeMirror genericIterable = context.modelTypes.erasure(context.symtab.iterableType);
 
 		boolean ignoreArguments = newClass.getArgumentCount() == 0
@@ -94,7 +94,7 @@ public class RemoveJavaDependenciesES6Adapter extends RemoveJavaDependenciesAdap
 		}
 	}
 
-	private void substituteNewMap(NewClassElement newClass) {
+	protected void substituteNewMap(NewClassElement newClass) {
 		boolean ignoreArguments = newClass.getArgumentCount() == 0
 				|| !context.modelTypes.erasure(newClass.getArgument(0).getType()).toString().endsWith("Map");
 
@@ -125,7 +125,7 @@ public class RemoveJavaDependenciesES6Adapter extends RemoveJavaDependenciesAdap
 		return super.substituteMethodInvocation(invocation);
 	}
 
-	private void substituteMethodOnSet(MethodInvocationElement invocation) {
+	protected void substituteMethodOnSet(MethodInvocationElement invocation) {
 		String targetMethodName = invocation.getMethodName();
 		ExtendedElement targetExpression = invocation.getTargetExpression();
 
@@ -200,7 +200,7 @@ public class RemoveJavaDependenciesES6Adapter extends RemoveJavaDependenciesAdap
 		}
 	}
 
-	private void substituteMethodOnMap(MethodInvocationElement invocation) {
+	protected void substituteMethodOnMap(MethodInvocationElement invocation) {
 		String targetMethodName = invocation.getMethodName();
 		ExtendedElement targetExpression = invocation.getTargetExpression();
 
