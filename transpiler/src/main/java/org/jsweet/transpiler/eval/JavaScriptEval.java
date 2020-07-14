@@ -3,8 +3,10 @@ package org.jsweet.transpiler.eval;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
@@ -52,6 +54,12 @@ public class JavaScriptEval extends RuntimeEval {
 
 			File tmpFile = new File(options.workingDir, "eval.tmp_" + System.currentTimeMillis() + ".js");
 			FileUtils.deleteQuietly(tmpFile);
+			if (options.useJavaRuntime) {
+			    List<File> newFiles = new ArrayList<>(jsFiles);
+			    newFiles.add(0, new File("src/test/resources/j4ts.js"));
+			    jsFiles = newFiles;
+			}
+			
 			Set<File> alreadyWrittenScripts = new HashSet<>();
 			for (File jsFile : jsFiles) {
 				if (!alreadyWrittenScripts.contains(jsFile)) {
@@ -61,7 +69,7 @@ public class JavaScriptEval extends RuntimeEval {
 				}
 			}
 
-			logger.info("[no modules] eval file: " + tmpFile + " jsFiles=" + jsFiles);
+			logger.info("[no modules] eval file: " + tmpFile + " jsFiles=" + jsFiles + ", useJavaRuntime=" + options.useJavaRuntime);
 
 			runProcess = runScript(trace, tmpFile);
 		}

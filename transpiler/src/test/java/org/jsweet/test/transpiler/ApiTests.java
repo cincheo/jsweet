@@ -78,14 +78,21 @@ public class ApiTests extends AbstractTest {
 
 	@Test
 	public void testJ4TSInvocations() {
-		transpile(ModuleKind.none, logHandler -> {
+	    // with J4TS
+	    transpilerTest().getTranspiler().setUsingJavaRuntime(true);
+		eval(ModuleKind.none, (logHandler, result) -> {
 			logHandler.assertNoProblems();
 		}, getSourceFile(J4TSInvocations.class));
+		// without J4TS
+        transpilerTest().getTranspiler().setUsingJavaRuntime(false);
+        eval(ModuleKind.none, (logHandler, result) -> {
+            logHandler.assertNoProblems();
+        }, getSourceFile(J4TSInvocations.class));
 	}
 
 	@Test
 	public void testJdkInvocations() {
-		eval((logHandler, result) -> {
+		eval(ModuleKind.none, (logHandler, result) -> {
 			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
 			assertEquals("test", result.<String>get("s1"));
 			assertEquals("m1", result.<String>get("s2"));

@@ -720,11 +720,9 @@ public class JSweetTranspiler implements JSweetOptions {
 			SourceFile... sourceFiles) throws Exception {
 		logger.info("[" + engineName + " engine] eval files: " + Arrays.asList(sourceFiles));
 
-		EvalOptions options = new EvalOptions(isUsingModules(), workingDir);
-
 		if ("Java".equals(engineName)) {
 
-			JavaEval evaluator = new JavaEval(this, options);
+			JavaEval evaluator = new JavaEval(this, new EvalOptions(isUsingModules(),  workingDir, false));
 			return evaluator.performEval(sourceFiles);
 		} else {
 			if (!areAllTranspiled(sourceFiles)) {
@@ -755,7 +753,9 @@ public class JSweetTranspiler implements JSweetOptions {
 				jsFiles = Stream.of(sourceFiles).map(sourceFile -> sourceFile.getJsFile()).collect(toList());
 			}
 
-			JavaScriptEval evaluator = new JavaScriptEval(options, JavaScriptRuntime.NodeJs);
+			JavaScriptEval evaluator = new JavaScriptEval(
+			        new EvalOptions(isUsingModules(),  workingDir, context.isUsingJavaRuntime()), 
+			        JavaScriptRuntime.NodeJs);
 			return evaluator.performEval(jsFiles);
 		}
 	}

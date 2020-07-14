@@ -265,6 +265,12 @@
 			<optional>true</optional>
 		</dependency>
 		<dependency>
+			<groupId>org.jsweet</groupId>
+			<artifactId>j4ts</artifactId>
+			<version>0.6.0</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.jsweet.candies</groupId>
 			<artifactId>jquery</artifactId>
 			<version>1.10.0-20170726</version>
