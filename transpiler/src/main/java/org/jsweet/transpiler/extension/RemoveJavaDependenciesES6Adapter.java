@@ -36,8 +36,12 @@ import javax.lang.model.type.TypeMirror;
 
 import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.model.ExtendedElement;
+import org.jsweet.transpiler.model.ForeachLoopElement;
 import org.jsweet.transpiler.model.MethodInvocationElement;
 import org.jsweet.transpiler.model.NewClassElement;
+import org.jsweet.transpiler.model.support.ForeachLoopElementSupport;
+
+import com.sun.tools.javac.tree.JCTree.JCEnhancedForLoop;
 
 /**
  * An adapter that removes many uses of Java APIs and replace them with
@@ -62,6 +66,19 @@ public class RemoveJavaDependenciesES6Adapter extends RemoveJavaDependenciesAdap
 		super.initTypesMapping();
 		SET_CLASS_NAMES.forEach(name -> extTypesMapping.put(name, "Set"));
 		MAP_CLASS_NAMES.forEach(name -> extTypesMapping.put(name, "Map"));
+		extTypesMapping.put(Map.class.getName() + ".Entry", "any");
+	}
+
+	@Override
+	public boolean substituteForEachLoop(ForeachLoopElement foreachLoop, boolean targetHasLength, String indexVarName) {
+		JCEnhancedForLoop loop = ((ForeachLoopElementSupport) foreachLoop).getTree();
+		if (!targetHasLength && SET_CLASS_NAMES.contains(context.types.erasure(loop.expr.type).toString())) {
+			getPrinter().print(loop.expr).print(".forEach((" + loop.var.name.toString() + ")=>");
+			getPrinter().printIndent().print(loop.body);
+			endIndent().println().printIndent().print(")");
+			return true;
+		}
+		return super.substituteForEachLoop(foreachLoop, targetHasLength, indexVarName);
 	}
 
 	@Override
@@ -196,7 +213,7 @@ public class RemoveJavaDependenciesES6Adapter extends RemoveJavaDependenciesAdap
 			print("(").print("Array.from(").print(targetExpression).print(")").print(")");
 			break;
 		default:
-			report(invocation, JSweetProblem.USER_ERROR, targetMethodName + " is not supported.");
+			printCallToEponymMethod(invocation);
 		}
 	}
 
@@ -229,9 +246,9 @@ public class RemoveJavaDependenciesES6Adapter extends RemoveJavaDependenciesAdap
 			print(")");
 			break;
 
-		case "entries":
+		case "entrySet":
 			printMacroName(targetMethodName);
-			print("((m) => new Set(m.entries()))(");
+			print("((m) => new Set(Array.from(m.entries()).map(entry => ({ getKey: () => entry[0], getValue: () => entry[1] }) ) ))(");
 			print(targetExpression);
 			print(")");
 			break;
