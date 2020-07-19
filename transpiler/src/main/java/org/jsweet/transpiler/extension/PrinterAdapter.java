@@ -772,7 +772,18 @@ public class PrinterAdapter {
 	 * @return true if substituted
 	 */
 	public boolean substituteOverloadMethodBody(TypeElement parentTypeElement, Overload overload) {
-		return false;
+		return parentAdapter == null ? false : parentAdapter.substituteOverloadMethodBody(parentTypeElement, overload);
+	}
+	
+	/**
+	 * Substitutes method's body
+	 * 
+	 * @param parentTypeElement parent class
+	 * @param method method's symbol
+	 * @return true if substituted
+	 */
+	public boolean substituteMethodBody(TypeElement parentTypeElement, ExecutableElement method) {
+		return parentAdapter == null ? false : parentAdapter.substituteMethodBody(parentTypeElement, method);
 	}
 
 	/**
