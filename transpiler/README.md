@@ -68,4 +68,3 @@ Declare release in GitHub.
  
 Update all projects to next snapshot versions.
 
-
