@@ -78,14 +78,21 @@ public class ApiTests extends AbstractTest {
 
 	@Test
 	public void testJ4TSInvocations() {
-		transpile(ModuleKind.none, logHandler -> {
+	    // with J4TS
+	    transpilerTest().getTranspiler().setUsingJavaRuntime(true);
+		eval(ModuleKind.none, (logHandler, result) -> {
 			logHandler.assertNoProblems();
 		}, getSourceFile(J4TSInvocations.class));
+		// without J4TS
+        transpilerTest().getTranspiler().setUsingJavaRuntime(false);
+        eval(ModuleKind.none, (logHandler, result) -> {
+            logHandler.assertNoProblems();
+        }, getSourceFile(J4TSInvocations.class));
 	}
 
 	@Test
 	public void testJdkInvocations() {
-		eval((logHandler, result) -> {
+		eval(ModuleKind.none, (logHandler, result) -> {
 			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
 			assertEquals("test", result.<String>get("s1"));
 			assertEquals("m1", result.<String>get("s2"));
@@ -273,6 +280,7 @@ public class ApiTests extends AbstractTest {
 	public void testDates() {
 		eval(ModuleKind.none, (logHandler, r) -> {
 			logHandler.assertNoProblems();
+            System.out.println("result = " + r.get("localeString"));
 			assertTrue(asList(
 					"1/1/2020, 1:00:00 AM", 
 					"2020-1-1 1:00:00 AM").contains( 

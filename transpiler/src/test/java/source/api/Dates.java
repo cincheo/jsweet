@@ -11,7 +11,7 @@ public class Dates {
 		double JANUARY = 0;
 		Date d = new Date(Date.UTC(2020, JANUARY, 01, 1, 0, 0));
 
-		String localeString = d.toLocaleString("fr", new DateTimeFormatOptions() {
+		String localeString = d.toLocaleString("en", new DateTimeFormatOptions() {
 			{
 				$set("timeZone", "UTC");
 			}

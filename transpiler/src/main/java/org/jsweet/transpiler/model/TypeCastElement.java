@@ -18,40 +18,21 @@
  */
 package org.jsweet.transpiler.model;
 
-import javax.lang.model.element.VariableElement;
-
 /**
- * An AST node for a Java for each loop statement, of the form
- * <code>for(var : iterable) body</code>.
+ * An AST node for a Java cast expression.
  * 
  * @author Renaud Pawlak
  */
-public interface ForeachLoopElement extends ExtendedElement {
-
-	/**
-	 * The expression returning the iterable (or array) being looped over.
-	 */
-	ExtendedElement getIterableExpression();
-
-	/**
-	 * The iteration local variable.
-	 */
-	VariableElement getIterationVariable();
-
-	/**
-	 * The body of the foreach loop.
-	 */
-	ExtendedElement getBody();
-	
-    /**
-     * Returns true if the loop contains a control flow statement
-     * (<code>break</code>, <code>continue</code>, <code>return</code>).
-     */
-    boolean hasControlFlowStatement();
+public interface TypeCastElement extends ExtendedElement {
 
     /**
-     * Returns true if the iteration variable is modified within the loop body.
+     * Gets the target type expression.
      */
-    boolean isIterationVariableModified();
+	public ExtendedElement getTargetTypeExpression();
+
+	/**
+	 * Gets the expression being cast.
+	 */
+    public ExtendedElement getExpression();
     
 }

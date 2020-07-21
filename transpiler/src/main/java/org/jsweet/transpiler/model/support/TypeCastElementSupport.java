@@ -16,42 +16,33 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jsweet.transpiler.model;
+package org.jsweet.transpiler.model.support;
 
-import javax.lang.model.element.VariableElement;
+import org.jsweet.transpiler.model.TypeCastElement;
+import org.jsweet.transpiler.model.ExtendedElement;
+import org.jsweet.transpiler.model.ExtendedElementFactory;
+
+import com.sun.tools.javac.tree.JCTree.JCTypeCast;
 
 /**
- * An AST node for a Java for each loop statement, of the form
- * <code>for(var : iterable) body</code>.
+ * See {@link TypeCastElement}.
  * 
  * @author Renaud Pawlak
  */
-public interface ForeachLoopElement extends ExtendedElement {
+public class TypeCastElementSupport extends ExtendedElementSupport<JCTypeCast> implements TypeCastElement {
 
-	/**
-	 * The expression returning the iterable (or array) being looped over.
-	 */
-	ExtendedElement getIterableExpression();
+	public TypeCastElementSupport(JCTypeCast tree) {
+		super(tree);
+	}
 
-	/**
-	 * The iteration local variable.
-	 */
-	VariableElement getIterationVariable();
+	@Override
+	public ExtendedElement getTargetTypeExpression() {
+		return (ExtendedElement) ExtendedElementFactory.INSTANCE.create(getTree().getType());
+	}
 
-	/**
-	 * The body of the foreach loop.
-	 */
-	ExtendedElement getBody();
-	
-    /**
-     * Returns true if the loop contains a control flow statement
-     * (<code>break</code>, <code>continue</code>, <code>return</code>).
-     */
-    boolean hasControlFlowStatement();
+	@Override
+	public ExtendedElement getExpression() {
+		return ExtendedElementFactory.INSTANCE.create(getTree().getExpression());
+	}
 
-    /**
-     * Returns true if the iteration variable is modified within the loop body.
-     */
-    boolean isIterationVariableModified();
-    
 }

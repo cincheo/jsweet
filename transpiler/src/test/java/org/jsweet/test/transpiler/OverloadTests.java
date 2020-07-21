@@ -62,6 +62,8 @@ import source.overload.ConstructorOverloadWithFieldInitializer;
 import source.overload.InterfaceInheritance;
 import source.overload.LocalVariablesNameCollision;
 import source.overload.NonPublicRootMethod;
+import source.overload.OverLoadClassAndObject;
+import source.overload.OverLoadVarags;
 import source.overload.OverLoadWithClassParam;
 import source.overload.Overload;
 import source.overload.OverloadInInnerClass;
@@ -262,6 +264,31 @@ public class OverloadTests extends AbstractTest {
 		}, getSourceFile(ConstructorOverloadWithFieldInitializer.class));
 	}
 
+    @Test
+    public void testOverloadClassAndObjectWithJ4TS() {
+        transpilerTest().getTranspiler().setUsingJavaRuntime(true);
+        eval(ModuleKind.none, (logHandler, r) -> {
+            logHandler.assertNoProblems();
+        }, getSourceFile(OverLoadClassAndObject.class));
+        transpilerTest().getTranspiler().setUsingJavaRuntime(false);
+    }
+	
+    @Test
+    public void testOverloadClassAndObject() {
+        eval(ModuleKind.none, (logHandler, r) -> {
+            logHandler.assertNoProblems();
+        }, getSourceFile(OverLoadClassAndObject.class));
+    }
+
+    @Test
+    public void testOverloadVarargs() {
+        transpilerTest().getTranspiler().setUsingJavaRuntime(true);
+        eval(ModuleKind.none, (logHandler, r) -> {
+            logHandler.assertNoProblems();
+        }, getSourceFile(OverLoadVarags.class));
+        transpilerTest().getTranspiler().setUsingJavaRuntime(false);
+    }
+    
 	@Test
 	public void testConstructorOverloadWithArray() {
 		eval(ModuleKind.none, (logHandler, r) -> {

@@ -19,6 +19,7 @@
 package org.jsweet.transpiler.extension;
 
 import java.lang.annotation.Annotation;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +50,7 @@ import org.jsweet.transpiler.model.AssignmentElement;
 import org.jsweet.transpiler.model.AssignmentWithOperatorElement;
 import org.jsweet.transpiler.model.BinaryOperatorElement;
 import org.jsweet.transpiler.model.CaseElement;
+import org.jsweet.transpiler.model.TypeCastElement;
 import org.jsweet.transpiler.model.CompilationUnitElement;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.ForeachLoopElement;
@@ -1053,12 +1055,26 @@ public class PrinterAdapter {
 		return parentAdapter == null ? false : parentAdapter.substituteInstanceof(exprStr, expr, type);
 	}
 
+    /**
+     * Substitutes if necessary a type cast expression.
+     */
+    public boolean substituteTypeCast(TypeCastElement castExpression) {
+        return parentAdapter == null ? false : parentAdapter.substituteTypeCast(castExpression);
+    }
+	
 	/**
 	 * Substitutes if necessary the pattern of a case statement.
 	 */
 	public boolean substituteCaseStatementPattern(CaseElement caseStatement, ExtendedElement pattern) {
 		return parentAdapter == null ? false : parentAdapter.substituteCaseStatementPattern(caseStatement, pattern);
 	}
+
+    /**
+     * Substitutes if necessary the selector expression of a switch statement.
+     */
+    public boolean substituteSwitchStatementSelector(ExtendedElement selector) {
+        return parentAdapter == null ? false : parentAdapter.substituteSwitchStatementSelector(selector);
+    }
 
 	/**
 	 * This method is called after a type was printed.
@@ -1204,4 +1220,36 @@ public class PrinterAdapter {
         return printer.isInlinedExpression(((ExtendedElementSupport<?>) element).getTree());
     }
 
+    /**
+     * Returns a comparator that will control the order of class members for output
+     * (default will keep order of appearance in the source code).
+     */
+    public Comparator<ExtendedElement> getClassMemberComparator() {
+        if (parentAdapter == null) {
+            return new Comparator<ExtendedElement>() {
+                @Override
+                public int compare(ExtendedElement e1, ExtendedElement e2) {
+                    return e1.getStartSourcePosition() - e2.getStartSourcePosition();
+                }
+            };
+        } else {
+            return parentAdapter.getClassMemberComparator();
+        }
+    }
+
+    /**
+     * Optionally substitutes the default variable declaration keyword
+     * (<code>var</code>, <code>let</code>, <code>const</code>) for the given
+     * variable. By default, regular variables are declared with the
+     * <code>let</code> keyword, except for unmodified variables, which are declared
+     * with the <code>const</code> keyword.
+     * 
+     * @param variable the target variable
+     * @return true if the default keyword has been substituted, false otherwise
+     *         (default is false)
+     */
+    public boolean substituteVariableDeclarationKeyword(VariableElement variable) {
+        return parentAdapter == null ? false : parentAdapter.substituteVariableDeclarationKeyword(variable);
+    }
+    
 }

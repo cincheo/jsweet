@@ -92,4 +92,10 @@ public class ExtendedElementSupport<T extends JCTree> implements ExtendedElement
 	public boolean isStringLiteral() {
 		return getTree().getKind() == Kind.STRING_LITERAL;
 	}
+	
+	@Override
+	public int getStartSourcePosition() {
+	    return getTree().getStartPosition();
+	}
+	
 }

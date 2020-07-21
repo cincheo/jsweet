@@ -1059,6 +1059,21 @@ public class Util {
 		}
 	}
 
+    /**
+     * Returns true is the type is a boolean.
+     */
+    public static boolean isBoolean(TypeMirror type) {
+        if (type == null) {
+            return false;
+        }
+        switch (type.getKind()) {
+        case BOOLEAN:
+            return true;
+        default:
+            return false;
+        }
+    }
+	
 	/**
 	 * Returns true is the type is a core.
 	 */

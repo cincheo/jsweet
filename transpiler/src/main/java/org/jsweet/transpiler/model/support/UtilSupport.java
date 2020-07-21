@@ -18,6 +18,8 @@
  */
 package org.jsweet.transpiler.model.support;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.lang.model.element.Element;
@@ -80,6 +82,8 @@ public class UtilSupport implements Util {
 	@Override
 	public TypeMirror getType(Class<?> clazz) {
 		switch (clazz.getName()) {
+        case "java.lang.Object":
+            return context.symtab.objectType;
 		case "java.lang.annotation.Annotation":
 			return context.symtab.annotationType;
 		case "java.lang.AssertionError":
@@ -153,6 +157,11 @@ public class UtilSupport implements Util {
 		return org.jsweet.transpiler.util.Util.isNumber(type);
 	}
 
+    @Override
+    public boolean isBoolean(TypeMirror type) {
+        return org.jsweet.transpiler.util.Util.isBoolean(type);
+    }
+	
 	@Override
 	public boolean isDeprecated(Element element) {
 		return org.jsweet.transpiler.util.Util.isDeprecated(element);
@@ -207,4 +216,32 @@ public class UtilSupport implements Util {
 		return false;
 	}
 
+	@Override
+	public List<Element> getAllMembers(TypeElement typeElement) {
+	    if(typeElement == null) {
+	        return Collections.emptyList();
+	    }
+	    List<Element> elements = new ArrayList<Element>();
+	    for(Element e : typeElement.getEnclosedElements()) {
+	        elements.add(e);
+	    }
+	    elements.addAll(getAllMembers(typeElement.getSuperclass()));
+	    return elements;
+	}
+
+    private List<Element> getAllMembers(TypeMirror type) {
+        if(type == null) {
+            return Collections.emptyList();
+        }
+        return getAllMembers((TypeElement)context.modelTypes.asElement(type));
+    }
+	
+    @Override
+    public TypeMirror toPrimitiveTypeOrType(TypeMirror type) {
+        try {
+            return context.types.unboxedTypeOrType((Type)type);
+        } catch (Exception e) {
+            return type;
+        }
+    }
 }

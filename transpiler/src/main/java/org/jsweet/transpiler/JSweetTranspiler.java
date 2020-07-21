@@ -241,6 +241,8 @@ public class JSweetTranspiler implements JSweetOptions {
 	private boolean ignoreCandiesTypeScriptDefinitions = false;
 	private boolean lazyInitializedStatics = true;
 	private boolean useSingleQuotesForStringLiterals = false;
+	private boolean nonEnumerableTransients = false;
+	private boolean sortClassMembers = false;
 
 	private ArrayList<String> adapters = new ArrayList<>();
 	private File configurationFile;
@@ -394,6 +396,12 @@ public class JSweetTranspiler implements JSweetOptions {
 			}
             if (options.containsKey(JSweetOptions.useSingleQuotesForStringLiterals)) {
                 setUseSingleQuotesForStringLiterals((Boolean) getMapValue(options, JSweetOptions.useSingleQuotesForStringLiterals));
+            }
+            if (options.containsKey(JSweetOptions.ignoreJavaErrors)) {
+                setIgnoreJavaErrors((Boolean) getMapValue(options, JSweetOptions.ignoreJavaErrors));
+            }
+            if (options.containsKey(JSweetOptions.nonEnumerableTransients)) {
+                setNonEnumerableTransients((Boolean) getMapValue(options, JSweetOptions.nonEnumerableTransients));
             }
 		}
 
@@ -712,11 +720,9 @@ public class JSweetTranspiler implements JSweetOptions {
 			SourceFile... sourceFiles) throws Exception {
 		logger.info("[" + engineName + " engine] eval files: " + Arrays.asList(sourceFiles));
 
-		EvalOptions options = new EvalOptions(isUsingModules(), workingDir);
-
 		if ("Java".equals(engineName)) {
 
-			JavaEval evaluator = new JavaEval(this, options);
+			JavaEval evaluator = new JavaEval(this, new EvalOptions(isUsingModules(),  workingDir, false));
 			return evaluator.performEval(sourceFiles);
 		} else {
 			if (!areAllTranspiled(sourceFiles)) {
@@ -747,7 +753,9 @@ public class JSweetTranspiler implements JSweetOptions {
 				jsFiles = Stream.of(sourceFiles).map(sourceFile -> sourceFile.getJsFile()).collect(toList());
 			}
 
-			JavaScriptEval evaluator = new JavaScriptEval(options, JavaScriptRuntime.NodeJs);
+			JavaScriptEval evaluator = new JavaScriptEval(
+			        new EvalOptions(isUsingModules(),  workingDir, context.isUsingJavaRuntime()), 
+			        JavaScriptRuntime.NodeJs);
 			return evaluator.performEval(jsFiles);
 		}
 	}
@@ -983,6 +991,8 @@ public class JSweetTranspiler implements JSweetOptions {
 			List<JCCompilationUnit> compilationUnits) throws IOException {
 		// regular file-to-file generation
 		new OverloadScanner(transpilationHandler, context).process(compilationUnits);
+        context.constAnalyzer = new ConstAnalyzer();
+        context.constAnalyzer.scan(compilationUnits);
 
 		if (isVerbose()) {
 			context.dumpOverloads(System.out);
@@ -1115,7 +1125,9 @@ public class JSweetTranspiler implements JSweetOptions {
 		}
 
 		new OverloadScanner(transpilationHandler, context).process(orderedCompilationUnits);
-
+		context.constAnalyzer = new ConstAnalyzer();
+		context.constAnalyzer.process(orderedCompilationUnits);
+		
 		adapter.onTranspilationStarted();
 
 		logger.debug("ordered compilation units: " + orderedCompilationUnits.stream().map(cu -> {
@@ -1927,6 +1939,24 @@ public class JSweetTranspiler implements JSweetOptions {
 
     public void setUseSingleQuotesForStringLiterals(boolean useSingleQuotesForStringLiterals) {
         this.useSingleQuotesForStringLiterals = useSingleQuotesForStringLiterals;
+    }
+    
+    @Override
+    public boolean isNonEnumerableTransients() {
+        return this.nonEnumerableTransients;
+    }
+
+    public void setNonEnumerableTransients(boolean nonEnumerableTransients) {
+        this.nonEnumerableTransients = nonEnumerableTransients;
+    }
+
+    @Override
+    public boolean isSortClassMembers() {
+        return this.sortClassMembers;
+    }
+
+    public void setSortClassMembers(boolean sortClassMembers) {
+        this.sortClassMembers = sortClassMembers;
     }
     
 }

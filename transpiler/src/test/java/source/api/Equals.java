@@ -8,6 +8,12 @@ public class Equals {
 
 	static Array<String> trace = new Array<String>();
 
+	static Integer int1 = 0;
+    static Integer int2 = 0;
+    static Integer int3 = 0;
+    static Integer int4 = 0;
+    static Integer int5 = 0;
+	
 	public static void main(String[] args) {
 		trace.push("" + equals("a", "b"));
 		trace.push("" + equals("a", "a"));
@@ -20,6 +26,11 @@ public class Equals {
 		MyObject2 o = new MyObject2("a");
 		trace.push("" + equals(o, o));
 		$export("trace", trace.join(","));
+		// ensures that this kind of test works fine
+        if (!int1.equals(int2 == int3
+                ? int4
+                : int5)) {
+        }		
 	}
 
 	public static boolean equals(Object a, Object b) {

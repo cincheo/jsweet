@@ -72,6 +72,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
@@ -1249,14 +1250,14 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 				switch (targetMethodName) {
 				case "getName":
 					printMacroName(targetMethodName);
-					getPrinter().print("(c => c[\"" + Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR + "\"]?c[\""
+					getPrinter().print("(c => typeof c === 'string'?c:c[\"" + Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR + "\"]?c[\""
 							+ Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR + "\"]:c[\"name\"])(");
 					printTarget(invocationElement.getTargetExpression());
 					print(")");
 					return true;
 				case "getSimpleName":
 					printMacroName(targetMethodName);
-					print("(c => c[\"" + Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR + "\"]?c[\""
+					print("(c => typeof c === 'string'?(<any>c).substring((<any>c).lastIndexOf('.')+1):c[\"" + Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR + "\"]?c[\""
 							+ Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR + "\"].substring(c[\""
 							+ Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR
 							+ "\"].lastIndexOf('.')+1):c[\"name\"].substring(c[\"name\"].lastIndexOf('.')+1))(");
@@ -1285,15 +1286,25 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 				} else {
 					switch (targetMethodName) {
 					case "equals":
-                        if (types().isSameType(invocationElement.getTargetExpression().getType(),
-                                util().getType(String.class))
-                                || util().isNumber(invocationElement.getTargetExpression().getType())) {
-                            if(isInlinedExpression(invocationElement)) {
+					    TypeMirror t1 = util().toPrimitiveTypeOrType(invocationElement.getTargetExpression().getType());
+                        TypeMirror t2 = util().toPrimitiveTypeOrType(invocationElement.getArgument(0).getType());
+                        if (types().isSameType(t1, t2) && util().isCoreType(t1)) {
+                            if (isInlinedExpression(invocationElement)) {
                                 print("(");
                             }
-                            print(invocationElement.getTargetExpression()).print(" === ")
-                                    .print(invocationElement.getArgument(0));
-                            if(isInlinedExpression(invocationElement)) {
+                            print(invocationElement.getTargetExpression()).print(" === ");
+                            ExtendedElement arg = invocationElement.getArgument(0);
+                            boolean inlinable = arg instanceof VariableAccessElement
+                                    || (arg instanceof MethodInvocationElement
+                                            && !"equals".equals(((MethodInvocationElement) arg).getMethodName()));
+                            if (!inlinable) {
+                                print("(");
+                            }
+                            print(invocationElement.getArgument(0));
+                            if (!inlinable) {
+                                print(")");
+                            }
+                            if (isInlinedExpression(invocationElement)) {
                                 print(")");
                             }
                         } else {

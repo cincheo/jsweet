@@ -33,7 +33,11 @@ import def.js.Math;
 
 public class FinalVariables {
 
+    int finalField;
+    int modifiedField;
+    
 	void m1(HTMLElement e) {
+	    modifiedField++;
 		NodeList nodes = document.querySelectorAll("form .form-control");
 		for (int i = 0; i < nodes.length; i++) {
 			HTMLElement element = (HTMLElement) nodes.$get(i);
@@ -98,25 +102,46 @@ public class FinalVariables {
 	}
 
 	void explicitFinal() {
-		final String s = "abc";
+		final String explicitFinalString = "abc";
 		handler(new ANonFunctionalInterface() {
 			@Override
 			public void m() {
-				System.out.println(s);
+				System.out.println(explicitFinalString);
 			}
 		});
 	}
 
+    public void explicitFinalWithDeferredAssignment(boolean condition) {
+        final String explicitFinalStringWithDeferredAssignment;
+        if(condition) {
+            explicitFinalStringWithDeferredAssignment = "1";
+        } else {
+            explicitFinalStringWithDeferredAssignment = "2";
+        }
+        handler(new ANonFunctionalInterface() {
+            @Override
+            public void m() {
+                System.out.println(explicitFinalStringWithDeferredAssignment);
+            }
+        });
+    }
+    
 	void implicitFinal() {
-		String s = "abc";
+		String implicitFinalString = "abc";
 		handler(new ANonFunctionalInterface() {
 			@Override
 			public void m() {
-				System.out.println(s);
+				System.out.println(implicitFinalString);
 			}
 		});
 	}
 
+    String notFinal() {
+        String notFinalString = "abc";
+        notFinalString = "bcd";
+        return notFinalString;
+    }
+	
 }
 
 // subset of promises API
@@ -133,3 +158,4 @@ interface Callback<T1, T2> {
 interface ANonFunctionalInterface {
 	void m();
 }
+
