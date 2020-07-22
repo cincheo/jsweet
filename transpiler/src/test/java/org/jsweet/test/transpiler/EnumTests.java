@@ -1,13 +1,13 @@
-/* 
+/*
  * JSweet - http://www.jsweet.org
  * Copyright (C) 2015 CINCHEO SAS <renaud.pawlak@cincheo.fr>
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -40,6 +40,7 @@ import source.enums.EnumsImplementingInterfaces;
 import source.enums.EnumsReflection;
 import source.enums.ErasedEnum;
 import source.enums.MyComplexEnum2;
+import source.enums.StringEnumType;
 import source.enums.StringEnums;
 import source.enums.SwitchWithEnumWrapper;
 import source.enums.other.ComplexEnumsAccess;
@@ -101,7 +102,7 @@ public class EnumTests extends AbstractTest {
 			Assert.assertEquals(">", r.get("trace"));
 		}, getSourceFile(EnumsReflection.class));
 	}
-	
+
 	@Test
 	public void testComplexEnumsAccess() {
 		eval(ModuleKind.commonjs, (logHandler, r) -> {
@@ -131,7 +132,7 @@ public class EnumTests extends AbstractTest {
 			Assert.assertEquals(">ok1,ok2", r.get("trace"));
 		}, getSourceFile(ComplexEnumWithAbstractMethods.class));
 		transpilerTest().getTranspiler().setBundle(false);
-		
+
 		TranspilerTestRunner transpilerTest = new TranspilerTestRunner(getCurrentTestOutDir(), new AddRootFactory());
 		transpilerTest.eval((logHandler, r) -> {
 			assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
@@ -199,5 +200,9 @@ public class EnumTests extends AbstractTest {
 			logHandler.assertNoProblems();
 		}, getSourceFile(EnumInOtherPackage.class), getSourceFile(EnumWrapper.class), getSourceFile(SwitchWithEnumWrapper.class));
 	}
-	
+
+	@Test
+	public void testStringEnum() {
+		transpile(TestTranspilationHandler::assertNoProblems, getSourceFile(StringEnumType.class));
+	}
 }
