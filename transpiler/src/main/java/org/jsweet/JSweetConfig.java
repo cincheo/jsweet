@@ -1,12 +1,12 @@
-/* 
+/*
  * JSweet transpiler - http://www.jsweet.org
  * Copyright (C) 2015 CINCHEO SAS <renaud.pawlak@cincheo.fr>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
- *  
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
@@ -32,7 +32,7 @@ import org.apache.log4j.Logger;
 
 /**
  * This class contains static constants and utilities.
- * 
+ *
  * @author Renaud Pawlak
  */
 @SuppressWarnings("serial")
@@ -73,7 +73,7 @@ public abstract class JSweetConfig {
 
 	/**
 	 * Initialize the classpath to include tools.jar.
-	 * 
+	 *
 	 * @param jdkHome
 	 *            the jdkHome option value (if not set or not found, fall back
 	 *            to the JAVA_HOME environment variable)
@@ -295,6 +295,10 @@ public abstract class JSweetConfig {
 	 * Fully-qualified name for the JSweet <code>@StringType</code> annotation (see JSweet core API).
 	 */
 	public static final String ANNOTATION_STRING_TYPE = JSweetConfig.LANG_PACKAGE + ".StringType";
+	/**
+	 * Fully-qualified name for the JSweet <code>@StringEnum</code> annotation (see JSweet core API).
+	 */
+	public static final String ANNOTATION_STRING_ENUM = JSweetConfig.LANG_PACKAGE + ".StringEnum";
 	/**
 	 * Fully-qualified name for the JSweet <code>@Root</code> annotation (see JSweet core API).
 	 */

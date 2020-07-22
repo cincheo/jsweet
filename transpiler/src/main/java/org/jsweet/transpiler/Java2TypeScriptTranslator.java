@@ -1,12 +1,12 @@
-/* 
+/*
  * JSweet transpiler - http://www.jsweet.org
  * Copyright (C) 2015 CINCHEO SAS <renaud.pawlak@cincheo.fr>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
- *  
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
@@ -20,6 +20,7 @@ package org.jsweet.transpiler;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.jsweet.JSweetConfig.ANNOTATION_ERASED;
+import static org.jsweet.JSweetConfig.ANNOTATION_STRING_ENUM;
 import static org.jsweet.JSweetConfig.UTIL_CLASSNAME;
 import static org.jsweet.JSweetConfig.ANNOTATION_FUNCTIONAL_INTERFACE;
 import static org.jsweet.JSweetConfig.ANNOTATION_OBJECT_TYPE;
@@ -162,7 +163,7 @@ import com.sun.tools.javac.util.Name;
 /**
  * This is a TypeScript printer for translating the Java AST to a TypeScript
  * program.
- * 
+ *
  * @author Renaud Pawlak
  */
 public class Java2TypeScriptTranslator extends AbstractTreePrinter {
@@ -248,7 +249,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	/**
 	 * A state flag indicating the comparison mode to be used by this printer for
 	 * printing comparison operators.
-	 * 
+	 *
 	 * @author Renaud Pawlak
 	 */
 	public static enum ComparisonMode {
@@ -273,7 +274,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	/**
 	 * Selects a comparison mode for subsequently printed comparison operators.
-	 * 
+	 *
 	 * @see #exitComparisonMode()
 	 */
 	public void enterComparisonMode(ComparisonMode comparisonMode) {
@@ -282,7 +283,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	/**
 	 * Exits a comparison mode and go back to the previous one.
-	 * 
+	 *
 	 * @see #enterComparisonMode(ComparisonMode)
 	 */
 	public void exitComparisonMode() {
@@ -313,6 +314,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		private boolean isComplexEnum = false;
 
 		private boolean enumWrapperClassScope = false;
+
+		private boolean enumString = false;
 
 		private boolean removedSuperclass = false;
 
@@ -497,7 +500,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	/**
 	 * Enters a new class scope.
-	 * 
+	 *
 	 * @see #exitScope()
 	 */
 	public void enterScope() {
@@ -506,7 +509,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	/**
 	 * Exits a class scope.
-	 * 
+	 *
 	 * @see #enterScope()
 	 */
 	public void exitScope() {
@@ -515,7 +518,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	/**
 	 * Creates a new TypeScript translator.
-	 * 
+	 *
 	 * @param adapter         an object that can tune various aspects of the
 	 *                        TypeScript code generation
 	 * @param logHandler      the handler for logging and error reporting
@@ -1501,6 +1504,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					} else {
 						print("enum ");
 						getScope().enumScope = true;
+						if (context.hasAnnotationType(classdecl.sym, ANNOTATION_STRING_ENUM)) {
+							getScope().enumString = true;
+							getScope().enumWrapperClassScope = false;
+							getScope().isComplexEnum = false;
+						}
 					}
 				} else {
 					if (getScope().declareClassScope && !(getIndent() != 0 && isDefinitionScope)) {
@@ -1774,6 +1782,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 			int pos = getCurrentPosition();
 			print(def);
+
+			if (getScope().enumScope && JCTree.Tag.VARDEF == def.getTag() && getScope().enumString) {
+				print(" =  \"");
+				print(def);
+				print("\"");
+			}
 			if (getCurrentPosition() == pos) {
 				if (!getScope().enumScope) {
 					removeLastIndent();
@@ -2695,7 +2709,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	/**
 	 * Print async keyword for given method if relevant. Prints nothing if method
 	 * shouldn't be async
-	 * 
+	 *
 	 */
 	protected void printAsyncKeyword(JCMethodDecl methodDecl) {
 		if (getScope().declareClassScope || getScope().interfaceScope) {
@@ -5812,7 +5826,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	/**
 	 * Prints either a string, or the tree if the the string is null.
-	 * 
+	 *
 	 * @param exprStr a string to be printed as is if not null
 	 * @param expr    a tree to be printed if exprStr is null
 	 */
