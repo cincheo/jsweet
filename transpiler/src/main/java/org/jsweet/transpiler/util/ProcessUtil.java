@@ -132,7 +132,7 @@ public class ProcessUtil {
 	            return lookupGlobalNpmPackageExecutablePath(NPM_DIR, command)
 	                    .orElseThrow(() -> new RuntimeException("Could not locate command " + command));
 			} else {
-                return lookupGlobalNpmPackageExecutablePath(NPM_DIR, command).get();
+                return lookupGlobalNpmPackageExecutablePath(NPM_DIR, command).orElse(null);
 			}
 			    
 		}
