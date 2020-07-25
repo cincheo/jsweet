@@ -105,9 +105,16 @@ public class ProcessUtil {
 	}
 
 	/**
+     * Gets the full path of a global package's JS main file installed with npm.
+     */
+    public static String getGlobalNpmPackageExecutablePath(String command) {
+        return getGlobalNpmPackageExecutablePath(command, true);
+    }
+
+	/**
 	 * Gets the full path of a global package's JS main file installed with npm.
 	 */
-	public static String getGlobalNpmPackageExecutablePath(String command) {
+	public static String getGlobalNpmPackageExecutablePath(String command, boolean throwError) {
 		File commandFile = new File(command);
 		if (commandFile.isFile() && commandFile.isAbsolute()) {
 			return command;
@@ -121,8 +128,13 @@ public class ProcessUtil {
 			}
 
 			logger.info("cannot find " + command + " - searching in " + NPM_DIR.getAbsolutePath());
-			return lookupGlobalNpmPackageExecutablePath(NPM_DIR, command)
-					.orElseThrow(() -> new RuntimeException("Could not locate command " + command));
+			if (throwError) {
+	            return lookupGlobalNpmPackageExecutablePath(NPM_DIR, command)
+	                    .orElseThrow(() -> new RuntimeException("Could not locate command " + command));
+			} else {
+                return lookupGlobalNpmPackageExecutablePath(NPM_DIR, command).get();
+			}
+			    
 		}
 	}
 
@@ -177,7 +189,7 @@ public class ProcessUtil {
 	 * Tells if this node command is globally installed.
 	 */
 	public static boolean isExecutableInstalledGloballyWithNpm(String command) {
-		String executablePath = getGlobalNpmPackageExecutablePath(command);
+		String executablePath = getGlobalNpmPackageExecutablePath(command, false);
 		return executablePath != null && new File(executablePath).exists();
 	}
 
