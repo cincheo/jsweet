@@ -25,10 +25,7 @@ import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -123,14 +120,13 @@ public class ProcessUtil {
 				return unixPath;
 			}
 
-			logger.info("cannot find " + command + " - searching in node_modules files");
-			unixPath = lookupGlobalNpmPackageExecutablePath(NPM_DIR, command);
-			
-			return unixPath;
+			logger.info("cannot find " + command + " - searching in " + NPM_DIR.getAbsolutePath());
+			return lookupGlobalNpmPackageExecutablePath(NPM_DIR, command)
+					.orElseThrow(() -> new RuntimeException("Could not locate command " + command));
 		}
 	}
 
-	private static String lookupGlobalNpmPackageExecutablePath(File directory, String executableName) {
+	private static Optional<String> lookupGlobalNpmPackageExecutablePath(File directory, String executableName) {
 		if (directory != null) {
 			File[] children = directory.listFiles();
 			if (children != null) {
@@ -139,12 +135,12 @@ public class ProcessUtil {
 						if (child.getName().equals("bin")) {
 							for (File binFile : child.listFiles()) {
 								if (binFile.getName().equals(executableName)) {
-									return binFile.getAbsolutePath();
+									return Optional.of(binFile.getAbsolutePath());
 								}
 							}
 						} else {
-							String foundPath = lookupGlobalNpmPackageExecutablePath(child, executableName);
-							if (foundPath != null) {
+							Optional<String> foundPath = lookupGlobalNpmPackageExecutablePath(child, executableName);
+							if (foundPath.isPresent()) {
 								return foundPath;
 							}
 						}
@@ -152,7 +148,7 @@ public class ProcessUtil {
 				}
 			}
 		}
-		return null;
+		return Optional.empty();
 	}
 
 	/**
