@@ -1316,9 +1316,40 @@ public class JSweetContext extends Context {
 				}
 			}
 		}
+		
+		if (extraAnnotations != null) {
+            for (String annotationType : annotationTypes) {
+                Set<Symbol> symbols = extraAnnotations.get(annotationType);
+                if (symbols != null && symbols.contains(symbol)) {
+                    return true;
+                }
+            }
+		}
+		
 		return hasActualAnnotationType(symbol, annotationTypes);
 	}
 
+	private Map<String, Set<Symbol>> extraAnnotations;
+
+	/**
+	 * Adds an extra annotation type to a symbol (no args).
+	 * See {@link #hasAnnotationType(Symbol, String...)}.
+	 * 
+	 * @param symbol the symbol to add the annotation to
+	 * @param annotationTypeName the annotation type name
+	 */
+	public void addExtraAnnotationType(Symbol symbol, String annotationTypeName) {
+	    if (extraAnnotations == null) {
+	        extraAnnotations = new HashMap<String, Set<Symbol>>();
+	    }
+	    Set<Symbol> symbols = extraAnnotations.get(annotationTypeName);
+	    if (symbols == null) {
+	        symbols = new HashSet<>();
+	        extraAnnotations.put(annotationTypeName, symbols);
+	    }
+	    symbols.add(symbol);
+	}
+	
 	/**
 	 * Gets the actual name of a symbol from a JSweet convention, so including
 	 * potential <code>jsweet.lang.Name</code> annotation.
@@ -1961,4 +1992,21 @@ public class JSweetContext extends Context {
 		}
 	}
 
+	private Set<JCMethodInvocation> awaitInvocations;
+
+    public void addAwaitInvocation(JCMethodInvocation invocation) {
+        if (this.awaitInvocations == null) {
+            this.awaitInvocations = new HashSet<>();
+        }
+        this.awaitInvocations.add(invocation);
+    }
+
+    public boolean isAwaitInvocation(JCMethodInvocation invocation) {
+        if (this.awaitInvocations != null) {
+            return this.awaitInvocations.contains(invocation);
+        } else {
+            return false;
+        }
+    }
+	
 }

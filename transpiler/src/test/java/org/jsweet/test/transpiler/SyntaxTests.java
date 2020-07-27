@@ -39,6 +39,7 @@ import org.junit.Test;
 
 import source.extension.ToBeSorted;
 import source.syntax.AnnotationQualifiedNames;
+import source.syntax.AsyncAwaitPropagation;
 import source.syntax.Casts;
 import source.syntax.DocComments;
 import source.syntax.DynamicInvoke;
@@ -312,4 +313,13 @@ public class SyntaxTests extends AbstractTest {
 		transpile(TestTranspilationHandler::assertNoProblems, getSourceFile(MemberReferences.class));
 	}
 
+    @Test
+    public void testAsyncAwaitPropagation() {
+        transpilerTest().getTranspiler().setAutoPropagateAsyncAwaits(true);
+        transpile(ModuleKind.none, logHandler -> {
+            logHandler.assertNoProblems();
+        }, getSourceFile(AsyncAwaitPropagation.class));
+        transpilerTest().getTranspiler().setAutoPropagateAsyncAwaits(false);
+    }
+	
 }

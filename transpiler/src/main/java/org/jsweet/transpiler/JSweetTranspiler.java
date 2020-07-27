@@ -243,7 +243,8 @@ public class JSweetTranspiler implements JSweetOptions {
 	private boolean useSingleQuotesForStringLiterals = false;
 	private boolean nonEnumerableTransients = false;
 	private boolean sortClassMembers = false;
-
+	private boolean autoPropagateAsyncAwaits = false;
+	
 	private ArrayList<String> adapters = new ArrayList<>();
 	private File configurationFile;
 
@@ -998,6 +999,10 @@ public class JSweetTranspiler implements JSweetOptions {
 			context.dumpOverloads(System.out);
 		}
 
+        if (isAutoPropagateAsyncAwaits()) {
+            new AsyncAwaitPropagationScanner(context).process(compilationUnits);
+        }
+		
 		adapter.onTranspilationStarted();
 		
 		String[] headerLines = getHeaderLines();
@@ -1125,9 +1130,14 @@ public class JSweetTranspiler implements JSweetOptions {
 		}
 
 		new OverloadScanner(transpilationHandler, context).process(orderedCompilationUnits);
+		
 		context.constAnalyzer = new ConstAnalyzer();
 		context.constAnalyzer.process(orderedCompilationUnits);
 		
+		if (isAutoPropagateAsyncAwaits()) {
+		    new AsyncAwaitPropagationScanner(context).process(compilationUnits);
+		}
+        
 		adapter.onTranspilationStarted();
 
 		logger.debug("ordered compilation units: " + orderedCompilationUnits.stream().map(cu -> {
@@ -1959,4 +1969,13 @@ public class JSweetTranspiler implements JSweetOptions {
         this.sortClassMembers = sortClassMembers;
     }
     
+    @Override
+    public boolean isAutoPropagateAsyncAwaits() {
+        return this.autoPropagateAsyncAwaits;
+    }
+
+    public void setAutoPropagateAsyncAwaits(boolean autoPropagateAsyncAwaits) {
+        this.autoPropagateAsyncAwaits = autoPropagateAsyncAwaits;
+    }
+
 }

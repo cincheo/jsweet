@@ -924,7 +924,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 			@Override
 			public void visitApply(JCMethodInvocation invocation) {
-				// TODO: same for static variables
+			    // TODO: same for static variables
 				if (invocation.meth instanceof JCIdent
 						&& JSweetConfig.TS_STRICT_MODE_KEYWORDS.contains(invocation.meth.toString().toLowerCase())) {
 					PackageSymbol invocationPackage = (PackageSymbol) ((JCIdent) invocation.meth).sym
@@ -2683,13 +2683,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				boolean promisify = isAsyncMethod(methodDecl)
 						&& !methodDecl.restype.type.tsym.getQualifiedName().toString().endsWith(".Promise");
 				if (promisify) {
-					print(" Promise< ");
+					print("Promise<");
 				}
 
 				substituteAndPrintType(methodDecl.restype);
 
 				if (promisify) {
-					print(" > ");
+					print(">");
 				}
 			}
 		}
@@ -3841,7 +3841,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 */
 	@Override
 	public void visitApply(JCMethodInvocation inv) {
-
 		boolean debugMode = false;
 		if (context.options.isDebugMode()) {
 			if (Util.getAccessedSymbol(inv.meth) instanceof MethodSymbol) {
@@ -3877,6 +3876,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			applyVarargs = false;
 		}
 
+        if (context.isAwaitInvocation(inv)) {
+            print("await ");
+        }
+        
 		boolean anonymous = isAnonymousMethod(methName);
 		boolean targetIsThisOrStaticImported = /*
 												 * !"super".equals(methName) &&
