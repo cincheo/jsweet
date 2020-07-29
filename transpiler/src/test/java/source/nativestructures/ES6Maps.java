@@ -77,5 +77,33 @@ public class ES6Maps {
 		m4 = new HashMap<>(15, 89);
 		assert m4.size() == 0;
 		assert m4.isEmpty();
+		
+		/**
+		 * test some of the default methods
+		 */
+		Map<String, Integer> m9 = new HashMap<>();
+		m9.put("k1", 1);
+		m9.compute("k1", (k, v) -> v * 2);
+		assert m9.get("k1") == 2;
+		
+		m9.put("k1", null);
+		m9.computeIfAbsent("k1", (k) -> 3);
+		m9.computeIfAbsent("k2", (k) -> 3);
+		assert m9.get("k1") == 3;
+		assert m9.get("k2") == 3;
+		
+		m9.put("k1", null);
+		m9.put("k2", 2);
+		m9.computeIfPresent("k1", (k, v) -> v * 2);
+		m9.computeIfPresent("k2", (k, v) -> v * 2);
+		assert m9.get("k1") == null;
+		assert m9.get("k2") == 4;
+		
+		m9.put("k1", null);
+		m9.put("k2", 2);
+		Integer vk1 = m9.getOrDefault("k1", 7);
+		Integer vk2 = m9.getOrDefault("k2", 7);
+		assert vk1 == 7;
+		assert vk2 == 2;
 	}
 }

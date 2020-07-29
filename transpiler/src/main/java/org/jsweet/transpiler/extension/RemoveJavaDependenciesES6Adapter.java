@@ -287,6 +287,36 @@ public class RemoveJavaDependenciesES6Adapter extends RemoveJavaDependenciesAdap
 			print(")");
 			break;
 
+		case "getOrDefault":
+			printMacroName(targetMethodName);
+			print("(");
+			print(targetExpression);
+			print(" .get(");
+			print(invocation.getArgument(0));
+			print(" ) || ");
+			print(invocation.getArgument(1));
+			print(")");
+			break;
+			
+		case "compute":
+			printMacroName(targetMethodName);
+			print("((m, k, f) => { m.set(k, f(k, m.get(k))); })(");
+			print(targetExpression).print(",").print(invocation.getArgument(0)).print(",").print(invocation.getArgument(1));
+			print(")");
+			break;
+		case "computeIfAbsent":
+			printMacroName(targetMethodName);
+			print("((m, k, f) => { if (m.get(k) == null) m.set(k, f(k)) })(");
+			print(targetExpression).print(",").print(invocation.getArgument(0)).print(",").print(invocation.getArgument(1));
+			print(")");
+			break;
+		case "computeIfPresent":
+			printMacroName(targetMethodName);
+			print("((m, k, f) => { if (m.get(k) != null) m.set(k, f(k, m.get(k))); })(");
+			print(targetExpression).print(",").print(invocation.getArgument(0)).print(",").print(invocation.getArgument(1));
+			print(")");
+			break;
+
 		case "size":
 			printMacroName(targetMethodName);
 			// size typing was so strong that it breaks unit tests checking size "type" (e.g
