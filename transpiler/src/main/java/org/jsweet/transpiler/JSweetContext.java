@@ -1319,8 +1319,8 @@ public class JSweetContext extends Context {
 		
 		if (extraAnnotations != null) {
             for (String annotationType : annotationTypes) {
-                Set<Symbol> symbols = extraAnnotations.get(annotationType);
-                if (symbols != null && symbols.contains(symbol)) {
+                Set<Element> elements = extraAnnotations.get(annotationType);
+                if (elements != null && elements.contains(symbol)) {
                     return true;
                 }
             }
@@ -1329,25 +1329,25 @@ public class JSweetContext extends Context {
 		return hasActualAnnotationType(symbol, annotationTypes);
 	}
 
-	private Map<String, Set<Symbol>> extraAnnotations;
+	private Map<String, Set<Element>> extraAnnotations;
 
 	/**
 	 * Adds an extra annotation type to a symbol (no args).
 	 * See {@link #hasAnnotationType(Symbol, String...)}.
 	 * 
-	 * @param symbol the symbol to add the annotation to
+	 * @param element the element to add the annotation to
 	 * @param annotationTypeName the annotation type name
 	 */
-	public void addExtraAnnotationType(Symbol symbol, String annotationTypeName) {
+	public void addExtraAnnotationType(Element symbol, String annotationTypeName) {
 	    if (extraAnnotations == null) {
-	        extraAnnotations = new HashMap<String, Set<Symbol>>();
+	        extraAnnotations = new HashMap<String, Set<Element>>();
 	    }
-	    Set<Symbol> symbols = extraAnnotations.get(annotationTypeName);
-	    if (symbols == null) {
-	        symbols = new HashSet<>();
-	        extraAnnotations.put(annotationTypeName, symbols);
+	    Set<Element> elements = extraAnnotations.get(annotationTypeName);
+	    if (elements == null) {
+	        elements = new HashSet<>();
+	        extraAnnotations.put(annotationTypeName, elements);
 	    }
-	    symbols.add(symbol);
+	    elements.add(symbol);
 	}
 	
 	/**

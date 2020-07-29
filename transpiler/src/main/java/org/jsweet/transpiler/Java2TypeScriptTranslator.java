@@ -2646,6 +2646,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					print("{").println().startIndent().printIndent();
 					// temporary cast to any because of Java generics bug
 					print("return <any>");
+			        if (isAsyncMethod(method)) {
+			            print("await ");
+			        }
 					if (!isGlobalsClassName(parent.name.toString())) {
 						if (method.sym.isStatic()) {
 							print(getQualifiedTypeName(parent.sym, false, false).toString());
@@ -2674,23 +2677,23 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	}
 
 	protected void printMethodReturnDeclaration(JCMethodDecl methodDecl, boolean inCoreWrongOverload) {
-		if (inCoreWrongOverload && !methodDecl.sym.isConstructor()) {
-			print(" : any");
-		} else {
-			if (methodDecl.restype != null && methodDecl.restype.type.getTag() != TypeTag.VOID) {
-				print(" : ");
+		if (methodDecl.restype != null && methodDecl.restype.type.getTag() != TypeTag.VOID) {
+			print(" : ");
 
-				boolean promisify = isAsyncMethod(methodDecl)
-						&& !methodDecl.restype.type.tsym.getQualifiedName().toString().endsWith(".Promise");
-				if (promisify) {
-					print("Promise<");
-				}
+			boolean promisify = isAsyncMethod(methodDecl)
+					&& !methodDecl.restype.type.tsym.getQualifiedName().toString().endsWith(".Promise");
+			if (promisify) {
+				print("Promise<");
+			}
 
-				substituteAndPrintType(methodDecl.restype);
+	        if (inCoreWrongOverload && !methodDecl.sym.isConstructor()) {
+	            print("any");
+	        } else {
+	            substituteAndPrintType(methodDecl.restype);
+	        }
 
-				if (promisify) {
-					print(">");
-				}
+			if (promisify) {
+				print(">");
 			}
 		}
 	}
@@ -2717,7 +2720,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 
 		if (isAsyncMethod(methodDecl)) {
-			print(" async ");
+			print("async ");
 		}
 	}
 
