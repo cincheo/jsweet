@@ -300,19 +300,19 @@ public class RemoveJavaDependenciesES6Adapter extends RemoveJavaDependenciesAdap
 			
 		case "compute":
 			printMacroName(targetMethodName);
-			print("((m, k, f) => { m.set(k, f(k, m.get(k))); })(");
+			print("((m, k, f) => { const v = f(k, m.get(k)); m.set(k, v); return v; })(");
 			print(targetExpression).print(",").print(invocation.getArgument(0)).print(",").print(invocation.getArgument(1));
 			print(")");
 			break;
 		case "computeIfAbsent":
 			printMacroName(targetMethodName);
-			print("((m, k, f) => { if (m.get(k) == null) m.set(k, f(k)) })(");
+			print("((m, k, f) => { if (m.get(k) == null) { const v = f(k); m.set(k, v); return v; } })(");
 			print(targetExpression).print(",").print(invocation.getArgument(0)).print(",").print(invocation.getArgument(1));
 			print(")");
 			break;
 		case "computeIfPresent":
 			printMacroName(targetMethodName);
-			print("((m, k, f) => { if (m.get(k) != null) m.set(k, f(k, m.get(k))); })(");
+			print("((m, k, f) => { if (m.get(k) != null) { const v = f(k, m.get(k)); m.set(k, v); return v; } })(");
 			print(targetExpression).print(",").print(invocation.getArgument(0)).print(",").print(invocation.getArgument(1));
 			print(")");
 			break;
