@@ -135,7 +135,6 @@ public class Maps {
 		}
 
 		$export("trace", trace.join(","));
-
 	}
 
 }

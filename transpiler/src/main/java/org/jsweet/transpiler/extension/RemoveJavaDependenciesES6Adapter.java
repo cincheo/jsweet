@@ -287,6 +287,36 @@ public class RemoveJavaDependenciesES6Adapter extends RemoveJavaDependenciesAdap
 			print(")");
 			break;
 
+		case "getOrDefault":
+			printMacroName(targetMethodName);
+			print("(");
+			print(targetExpression);
+			print(" .get(");
+			print(invocation.getArgument(0));
+			print(" ) || ");
+			print(invocation.getArgument(1));
+			print(")");
+			break;
+			
+		case "compute":
+			printMacroName(targetMethodName);
+			print("((m, k, f) => { const v = f(k, m.get(k)); m.set(k, v); return v; })(");
+			print(targetExpression).print(",").print(invocation.getArgument(0)).print(",").print(invocation.getArgument(1));
+			print(")");
+			break;
+		case "computeIfAbsent":
+			printMacroName(targetMethodName);
+			print("((m, k, f) => { if (m.get(k) == null) { const v = f(k); m.set(k, v); return v; } })(");
+			print(targetExpression).print(",").print(invocation.getArgument(0)).print(",").print(invocation.getArgument(1));
+			print(")");
+			break;
+		case "computeIfPresent":
+			printMacroName(targetMethodName);
+			print("((m, k, f) => { if (m.get(k) != null) { const v = f(k, m.get(k)); m.set(k, v); return v; } })(");
+			print(targetExpression).print(",").print(invocation.getArgument(0)).print(",").print(invocation.getArgument(1));
+			print(")");
+			break;
+
 		case "size":
 			printMacroName(targetMethodName);
 			// size typing was so strong that it breaks unit tests checking size "type" (e.g
