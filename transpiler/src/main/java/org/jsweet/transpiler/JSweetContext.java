@@ -205,7 +205,7 @@ public class JSweetContext extends Context {
 	}
 
 	/**
-	 * Registers a decorator annotation in the context.
+	 * Looks up a decorator annotation in the context.
 	 */
 	public JCClassDecl lookupDecoratorAnnotation(String fullyQualifiedName) {
 		return decoratorAnnotations.get(fullyQualifiedName);

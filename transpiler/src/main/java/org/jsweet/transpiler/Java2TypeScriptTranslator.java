@@ -1446,20 +1446,27 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 		} else {
 			if (context.lookupDecoratorAnnotation(classdecl.sym.getQualifiedName().toString()) != null) {
-				JCTree[] globalDecoratorFunction = context
-						.lookupGlobalMethod(classdecl.sym.getQualifiedName().toString());
-				if (globalDecoratorFunction == null) {
-					report(classdecl, JSweetProblem.CANNOT_FIND_GLOBAL_DECORATOR_FUNCTION,
-							classdecl.sym.getQualifiedName());
-				} else {
-					getScope().decoratorScope = true;
-					enter(globalDecoratorFunction[0]);
-					print(globalDecoratorFunction[1]);
-					exit();
-					getScope().decoratorScope = false;
-				}
-				exitScope();
-				return;
+                boolean requiresDecoratorFunction = context.getAnnotationValue(classdecl.sym,
+                        JSweetConfig.ANNOTATION_DECORATOR, Boolean.class, true);
+                boolean errorReported = false;
+                if (requiresDecoratorFunction) {
+                    JCTree[] globalDecoratorFunction = context
+                            .lookupGlobalMethod(classdecl.sym.getQualifiedName().toString());
+                    if (globalDecoratorFunction == null) {
+                        report(classdecl, JSweetProblem.CANNOT_FIND_GLOBAL_DECORATOR_FUNCTION,
+                                classdecl.sym.getQualifiedName());
+                        errorReported = true;
+                    }
+                    if (!errorReported) {
+                        getScope().decoratorScope = true;
+                        enter(globalDecoratorFunction[0]);
+                        print(globalDecoratorFunction[1]);
+                        exit();
+                        getScope().decoratorScope = false;
+                    }
+                    exitScope();
+                    return;
+                }
 			}
 		}
 
