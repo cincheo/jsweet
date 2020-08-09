@@ -1094,6 +1094,15 @@ public class PrinterAdapter {
 		}
 	}
 
+    /**
+     * This method is called after printing the body of a type.
+     */
+    public void afterTypeBody(TypeElement type) {
+        if (parentAdapter != null) {
+            parentAdapter.afterTypeBody(type);
+        }
+    }
+	
 	/**
 	 * Adapts the JavaDoc comment for a given element.
 	 * 

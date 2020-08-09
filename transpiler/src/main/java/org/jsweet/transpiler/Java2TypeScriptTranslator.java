@@ -1939,6 +1939,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			removeLastChar().println();
 		}
 
+        getAdapter().afterTypeBody(classdecl.sym);
+		
 		if (!globals) {
 			endIndent().printIndent().print("}");
 			if (!getScope().interfaceScope && !getScope().declareClassScope && !getScope().enumScope
