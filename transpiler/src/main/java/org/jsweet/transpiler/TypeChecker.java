@@ -172,14 +172,19 @@ public class TypeChecker {
 						compilationUnit);
 			}
 
-			String type = util().getTypeForTree(typeExpression, compilationUnit).toString();
-			if (!jdkAllowed && !translator.getContext().strictMode && type.startsWith("java.")) {
-				if (!(AUTHORIZED_DECLARED_TYPES.contains(type) || NUMBER_TYPES.contains(type)
-						|| type.startsWith("java.util.function"))) {
-					translator.report(declaringElement, declaringElementName, JSweetProblem.JDK_TYPE, type);
-					return false;
-				}
-			}
+			TypeMirror type = util().getTypeForTree(typeExpression, compilationUnit);
+            if (type != null) {
+    			String typeName = type.toString();
+    			if (!jdkAllowed && !translator.getContext().strictMode && typeName.startsWith("java.")) {
+    				if (!(AUTHORIZED_DECLARED_TYPES.contains(typeName) || NUMBER_TYPES.contains(typeName)
+    						|| typeName.startsWith("java.util.function"))) {
+    					translator.report(declaringElement, declaringElementName, JSweetProblem.JDK_TYPE, typeName);
+    					return false;
+    				}
+    			}
+            } else {
+                System.out.println("==> LOUIS : " + typeExpression + " // cu=" + compilationUnit);
+            }
 		}
 		return true;
 	}

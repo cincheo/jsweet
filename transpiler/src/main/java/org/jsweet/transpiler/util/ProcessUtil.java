@@ -78,7 +78,7 @@ public class ProcessUtil {
 	/**
 	 * A static field that stores the JSweet npm directory.
 	 */
-	public static File NPM_DIR = new File(USER_HOME_DIR, ".jsweet-node_modules");
+	public static File NPM_DIR = new File(USER_HOME_DIR, ".jsweet.v3-node_modules");
 
 	private static List<String> nodeCommandsBaseNames = Arrays.asList("tsc", "browserify", "phantomjs");
 
