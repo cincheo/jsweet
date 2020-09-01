@@ -878,6 +878,12 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
                     && TypeChecker.FORBIDDEN_JDK_FUNCTIONAL_METHODS.contains(targetMethodName)) {
                 report(invocationElement, JSweetProblem.JDK_METHOD, targetMethodName);
             }
+            
+            if (targetClassName.equals(Function.class.getName()) && targetMethodName.equals("identity")) {
+                print("(x=>x)");
+                return true;
+            }
+            
             printFunctionalInvocation(invocationElement.getTargetExpression(), targetMethodName,
                     invocationElement.getArguments());
             return true;
