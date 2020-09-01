@@ -1358,6 +1358,12 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
                     .print(target).print(")");
         }
     }
+    
+    protected void printFunctionalInvocation2(ExtendedElement target, String functionName,
+            List<ExtendedElement> arguments) {
+        print("((target => (target['" + functionName + "'] === undefined)?target:target['" + functionName + "'])(")
+                .print(target).print("))").print("(").printArgList(arguments).print(")");
+    }
 
     protected final PrinterAdapter printTarget(ExtendedElement target) {
         if (target == null) {
