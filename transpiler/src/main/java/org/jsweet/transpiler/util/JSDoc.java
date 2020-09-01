@@ -93,16 +93,16 @@ public class JSDoc {
 					compilationUnit);
 			qualifiedName = parametrizedType.toString();
 		}
-		if (type instanceof TypeVariable) {
-			TypeVariable typeVar = (TypeVariable) type;
-			if (typeVar.getUpperBound() == null) {
-				return "*";
-			} else {
-				return getMappedDocType(context, null, typeVar.getUpperBound(), compilationUnit);
-			}
-		}
 		boolean isMapped = false;
 		if (typeTree != null) {
+		    if (type instanceof TypeVariable) {
+		        TypeVariable typeVar = (TypeVariable) type;
+		        if (typeVar.getUpperBound() == null) {
+		            return "*";
+		        } else {
+		            return getMappedDocType(context, null, typeVar.getUpperBound(), compilationUnit);
+		        }
+		    }
 			ExtendedElement extendedElement = ExtendedElementFactory.INSTANCE
 					.create(TreePath.getPath(compilationUnit, typeTree), context);
 			for (BiFunction<ExtendedElement, String, Object> mapping : context.getFunctionalTypeMappings()) {
