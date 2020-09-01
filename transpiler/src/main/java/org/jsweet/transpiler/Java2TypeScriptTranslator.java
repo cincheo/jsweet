@@ -3714,14 +3714,23 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
                                     if (varElement.getEnclosingElement() instanceof TypeElement) {
                                         ModuleImportDescriptor moduleImport = getAdapter().getModuleImportDescriptor(
-                                                new CompilationUnitElementSupport(getTreePath(compilationUnit),
-                                                        compilationUnit, toElement(compilationUnit), context),
+                                                getCompilationUnitElement(),
                                                 varElement.getEnclosingElement().getSimpleName().toString(),
                                                 (TypeElement) varElement.getEnclosingElement());
                                         if (moduleImport != null) {
                                             useModule(moduleImport);
                                         }
                                     }
+                                }
+                            } else if (selectedElement instanceof PackageElement && context.useModules
+                                    && !context.moduleBundleMode && memberElement instanceof TypeElement
+                                    && util().isSourceElement(memberElement)) {
+                                accessSubstituted = true;
+                                ModuleImportDescriptor moduleImport = getAdapter().getModuleImportDescriptor(
+                                        getCompilationUnitElement(), memberElement.getSimpleName().toString(),
+                                        (TypeElement) memberElement);
+                                if (moduleImport != null) {
+                                    useModule(moduleImport);
                                 }
                             }
                         }
