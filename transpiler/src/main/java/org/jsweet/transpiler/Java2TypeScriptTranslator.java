@@ -2567,7 +2567,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             printMethodParamsTest(overload, overloadMethodEntry);
             print(") ");
             if (methodElement.getKind() == ElementKind.CONSTRUCTOR
-                    || (methodElement.getModifiers().contains(Modifier.DEFAULT) && method.equals(overload.getCoreMethod()))) {
+                    || (methodElement.getModifiers().contains(Modifier.DEFAULT)
+                            && method.equals(overload.getCoreMethod()))) {
                 printInlinedMethod(overload, method, methodDecl.getParameters());
             } else {
                 if (parentElement != methodElement.getEnclosingElement()
@@ -3435,7 +3436,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     print("; ");
                 }
                 print("return ").print(prefix).print(name).print("; }");
-                if (!globals) {
+                if (!globals && context.bundleMode) {
                     String qualifiedClassName = getQualifiedTypeName(classTypeElement, globals, true);
                     context.addTopFooterStatement((isBlank(qualifiedClassName) ? "" : qualifiedClassName + ".") + name
                             + STATIC_INITIALIZATION_SUFFIX + "();");
@@ -4004,8 +4005,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     }
                     if (methSym != null) {
                         if (context.isInvalidOverload(methSym) && !methSym.getParameters().isEmpty()
-                                && !util().hasTypeParameters(methSym)
-                                && getParent(MethodTree.class) != null
+                                && !util().hasTypeParameters(methSym) && getParent(MethodTree.class) != null
                                 && !getParent(MethodTree.class).getModifiers().getFlags().contains(Modifier.DEFAULT)) {
                             if (context.isInterface((TypeElement) methSym.getEnclosingElement())) {
                                 removeLastChar('.');
