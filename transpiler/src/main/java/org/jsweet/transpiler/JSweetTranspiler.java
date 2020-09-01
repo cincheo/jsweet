@@ -34,6 +34,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -76,13 +77,13 @@ import org.jsweet.transpiler.util.SourceMap.Entry;
 import org.jsweet.transpiler.util.Util;
 
 import com.google.debugging.sourcemap.FilePosition;
+import com.google.debugging.sourcemap.OriginalMapping;
 import com.google.debugging.sourcemap.SourceMapConsumerFactory;
 import com.google.debugging.sourcemap.SourceMapFormat;
 import com.google.debugging.sourcemap.SourceMapGenerator;
 import com.google.debugging.sourcemap.SourceMapGeneratorFactory;
 import com.google.debugging.sourcemap.SourceMapGeneratorV3;
 import com.google.debugging.sourcemap.SourceMapping;
-import com.google.debugging.sourcemap.OriginalMapping;
 import com.google.gson.Gson;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
@@ -642,7 +643,7 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
         } else {
             if (!areAllTranspiled(sourceFiles)) {
                 ErrorCountTranspilationHandler errorHandler = new ErrorCountTranspilationHandler(transpilationHandler);
-                transpile(errorHandler, sourceFiles);
+                transpile(errorHandler, Collections.emptySet(), sourceFiles);
                 if (errorHandler.getErrorCount() > 0) {
                     throw new Exception("unable to evaluate: transpilation errors remain");
                 }
@@ -746,13 +747,13 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
      * determines the files to be watched by the Tsc process.
      * 
      * @param transpilationHandler the log handler
-     * @param doNotGenerateFiles   these files will be used in the transpilation
+     * @param excludedSourcePaths   these files will be used in the transpilation
      *                             process but will not generated any corresponding
      *                             transpiled artefacts
      * @param files                the files to be transpiled
      * @throws IOException
      */
-    synchronized public void transpile(TranspilationHandler transpilationHandler, SourceFile[] doNotGenerateFiles,
+    synchronized public void transpile(TranspilationHandler transpilationHandler, Set<String> excludedSourcePaths,
             SourceFile... files) throws IOException {
         transpilationStartTimestamp = System.currentTimeMillis();
 
@@ -773,7 +774,7 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
                 .filter(source -> source.getJavaFile() != null).collect(toList());
 
         long startJava2TsTimeNanos = System.nanoTime();
-        java2ts(errorHandler, doNotGenerateFiles, jsweetSources.toArray(new SourceFile[0]));
+        java2ts(errorHandler, excludedSourcePaths, jsweetSources.toArray(new SourceFile[0]));
         long endJava2TsTimeNanos = System.nanoTime();
 
         long startTs2JsTimeNanos = System.nanoTime();
@@ -819,7 +820,7 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
         }
     }
 
-    private void java2ts(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] doNotGenerateFiles,
+    private void java2ts(ErrorCountTranspilationHandler transpilationHandler, Set<String> excludedSourcePaths,
             SourceFile[] files) throws IOException {
         prepareForJavaFiles(Arrays.asList(SourceFile.toFiles(files)), transpilationHandler);
         if (context.compilationUnits == null) {
@@ -838,7 +839,7 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
         }
 
         context.sourceFiles = files;
-        context.excludedSourcePaths = Stream.of(doNotGenerateFiles).map(f -> f.toString()).collect(Collectors.toSet());
+        context.excludedSourcePaths = excludedSourcePaths;
 
         factory.createBeforeTranslationScanner(transpilationHandler, context).process(context.compilationUnits);
 
@@ -879,7 +880,7 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
             if (context.isExcludedSourcePath(files[i].toString())) {
                 continue;
             }
-            
+
             try {
                 CompilationUnitTree cu = compilationUnits.get(i);
                 if (isModuleDefsFile(cu)) {

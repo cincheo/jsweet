@@ -221,8 +221,8 @@ public class JSweetCommandLineLauncher {
     }
 
     /**
-     * API entry point with command line arguments (same as the main entry point
-     * but returns error codes instead of exiting the VM).
+     * API entry point with command line arguments (same as the main entry point but
+     * returns error codes instead of exiting the VM).
      */
     public static int transpileWithArgs(String[] args) {
         try {
@@ -329,7 +329,7 @@ public class JSweetCommandLineLauncher {
         optionArg.setHelp(
                 "An input directory (or column-separated input directories) containing Java source files to help the tranpilation (typically for libraries). Files in these directories will not generate any corresponding TS files but will help resolving various generation issues (such as default methods, tricking overloading cases, ...).");
         jsap.registerParameter(optionArg);
-        
+
         // Included files
         optionArg = new FlaggedOption("includes");
         optionArg.setLongFlag("includes");
@@ -669,7 +669,7 @@ public class JSweetCommandLineLauncher {
                 }
 
                 javaInputFiles.addAll(extraJavaInputFiles);
-                
+
                 File tsOutputDir = null;
                 if (jsapArgs.userSpecified("tsout") && jsapArgs.getFile("tsout") != null) {
                     tsOutputDir = jsapArgs.getFile("tsout");
@@ -780,7 +780,8 @@ public class JSweetCommandLineLauncher {
                         transpiler.addTsDefDir(f);
                     }
 
-                    transpiler.transpile(transpilationHandler, SourceFile.toSourceFiles(extraJavaInputFiles),
+                    transpiler.transpile(transpilationHandler,
+                            extraJavaInputFiles.stream().map(f -> f.toString()).collect(Collectors.toSet()),
                             SourceFile.toSourceFiles(javaInputFiles));
                 }
             } catch (NoClassDefFoundError error) {

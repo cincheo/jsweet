@@ -710,7 +710,7 @@ public class JSweetContext {
      * of the extra input (not generated).
      */
     public boolean isExcludedSourcePath(String sourcePath) {
-        return excludedSourcePaths.contains(sourcePath);
+        return excludedSourcePaths != null && excludedSourcePaths.contains(sourcePath);
     }
 	
 	/**
