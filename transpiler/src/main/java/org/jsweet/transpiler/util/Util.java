@@ -55,6 +55,7 @@ import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.JavaFileObject;
@@ -122,6 +123,18 @@ public class Util {
 
     public Util(JSweetContext context) {
         this.context = context;
+    }
+
+    /**
+     * If the given type is a capture and has an upper bound, returns it, else
+     * return the given type unchanged.
+     */
+    public TypeMirror getUpperBound(TypeMirror type) {
+        if (type instanceof TypeVariable && ((TypeVariable) type).getUpperBound() != null) {
+            return ((TypeVariable) type).getUpperBound();
+        } else {
+            return type;
+        }
     }
 
     /**
