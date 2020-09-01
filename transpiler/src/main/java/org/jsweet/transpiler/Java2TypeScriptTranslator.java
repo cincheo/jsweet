@@ -1033,10 +1033,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	private void printDocComment(Tree tree, boolean newline) {
 		if (compilationUnit != null) {
 			TreePath treePath = getTreePath(tree);
+			Element element = toElement(tree);
+			if (treePath == null && element != null) {
+			    treePath = trees().getPath(element);
+			}
+			
 			String docComment = trees().getDocComment(treePath);
 			String commentText = JSDoc.adaptDocComment(context, treePath, tree, docComment);
 
-			Element element = toElement(tree);
 			if (element != null) {
 				commentText = getAdapter().adaptDocComment(element, commentText);
 			}

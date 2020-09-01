@@ -166,6 +166,7 @@ public class TypeChecker {
 	 */
 	public boolean checkType(Tree declaringElement, Name declaringElementName, Tree typeExpression,
 			CompilationUnitTree compilationUnit) {
+	    
 		if (!JSweetConfig.isJDKReplacementMode()) {
 			if (typeExpression instanceof ArrayTypeTree) {
 				return checkType(declaringElement, declaringElementName, ((ArrayTypeTree) typeExpression).getType(),
@@ -182,8 +183,6 @@ public class TypeChecker {
     					return false;
     				}
     			}
-            } else {
-                System.out.println("==> LOUIS : " + typeExpression + " // cu=" + compilationUnit);
             }
 		}
 		return true;
