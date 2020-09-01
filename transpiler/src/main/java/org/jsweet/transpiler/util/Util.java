@@ -2220,6 +2220,10 @@ public class Util {
         return list.get(list.size() - 1);
     }
 
+    /**
+     * Returns true if given element is an interface TypeElement. <br />
+     * WARNING: does not include JSweet @Interface
+     */
     public boolean isInterface(Element typeElement) {
         return typeElement != null && typeElement.getKind() == ElementKind.INTERFACE;
     }

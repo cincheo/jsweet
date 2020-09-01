@@ -837,6 +837,8 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
         factory.createBeforeTranslationScanner(transpilationHandler, context).process(context.compilationUnits);
 
         if (context.useModules) {
+            StaticInitilializerAnalyzer analizer = new StaticInitilializerAnalyzer(context);
+            analizer.process(context.compilationUnits);
             generateTsFiles(transpilationHandler, files, context.compilationUnits);
         } else {
             if (bundle) {

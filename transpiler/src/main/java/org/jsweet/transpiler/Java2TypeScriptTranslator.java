@@ -609,22 +609,33 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                 // qualName.replace(".", "_")... this would work in the general
                 // case...
 
-                if (direct) {
-                    context.addHeader("import." + targetName, "import " + targetName + " = " + moduleName + ";\n");
-                } else {
+                if (!context.moduleBundleMode && !(sourceElement instanceof TypeElement
+                        && context.referenceAnalyzer.isDependent(compilationUnit, (TypeElement) sourceElement))) {
 
-                    boolean fullImport = require || GLOBALS_CLASS_NAME.equals(targetName);
-                    if (fullImport) {
-                        if (context.useRequireForModules) {
-                            context.addHeader("import." + targetName,
-                                    "import " + targetName + " = require(\"" + moduleName + "\");\n");
+                    // import as footer statements to avoid cyclic dependencies
+                    // as much as possible
+                    // note that the better way to avoid cyclic dependency
+                    // issues is to create bundles
+                    context.addTopFooterStatement("import { " + targetName + " } from '" + moduleName + "';\n");
+
+                } else {
+                    if (direct) {
+                        context.addHeader("import." + targetName, "import " + targetName + " = " + moduleName + ";\n");
+                    } else {
+
+                        boolean fullImport = require || GLOBALS_CLASS_NAME.equals(targetName);
+                        if (fullImport) {
+                            if (context.useRequireForModules) {
+                                context.addHeader("import." + targetName,
+                                        "import " + targetName + " = require(\"" + moduleName + "\");\n");
+                            } else {
+                                context.addHeader("import." + targetName,
+                                        "import * as " + targetName + " from '" + moduleName + "';\n");
+                            }
                         } else {
                             context.addHeader("import." + targetName,
-                                    "import * as " + targetName + " from '" + moduleName + "';\n");
+                                    "import { " + targetName + " } from '" + moduleName + "';\n");
                         }
-                    } else {
-                        context.addHeader("import." + targetName,
-                                "import { " + targetName + " } from '" + moduleName + "';\n");
                     }
                 }
             }
@@ -1119,7 +1130,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             removeLastChars(3);
             return this;
         }
-        
+
         Element typeElement = toTypeElement(typeTree);
         TypeMirror typeType = toType(typeTree);
         if (typeElement instanceof TypeParameterElement) {
@@ -2798,12 +2809,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             if (doesMemberNameRequireQuotes(name)) {
                 printIndent();
                 print("if(").print("this['").print(name).print("']").print("===undefined) ");
-                print("this['").print(name).print("'] = ")
-                        .print(getAdapter().getVariableInitialValue(varElement)).print(";").println();
+                print("this['").print(name).print("'] = ").print(getAdapter().getVariableInitialValue(varElement))
+                        .print(";").println();
             } else {
                 printIndent();
-                print("if(").print("this.").print(name).print("===undefined) this.").print(name)
-                        .print(" = ").print(getAdapter().getVariableInitialValue(varElement)).print(";").println();
+                print("if(").print("this.").print(name).print("===undefined) this.").print(name).print(" = ")
+                        .print(getAdapter().getVariableInitialValue(varElement)).print(";").println();
             }
         }
     }
@@ -6312,7 +6323,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     ModuleImportDescriptor moduleImport = getModuleImportDescriptor(name, (TypeElement) type);
                     if (moduleImport != null) {
                         useModule(false, moduleImport.isDirect(), moduleImport.getTargetPackage(), null,
-                                moduleImport.getImportedName(), moduleImport.getPathToImportedClass(), null);
+                                moduleImport.getImportedName(), moduleImport.getPathToImportedClass(), type);
                     }
                 }
             }

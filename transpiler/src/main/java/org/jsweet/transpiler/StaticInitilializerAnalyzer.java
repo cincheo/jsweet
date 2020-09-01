@@ -81,21 +81,20 @@ public class StaticInitilializerAnalyzer extends TreePathScanner<Void, Trees> {
 	 */
 	public StaticInitilializerAnalyzer(JSweetContext context) {
 		this.context = context;
+		this.context.referenceAnalyzer = this;
 	}
 
 	private DirectedGraph<CompilationUnitTree> getGraph() {
-		if (context.useModules) {
-			DirectedGraph<CompilationUnitTree> graph = staticInitializersDependencies
-					.get(currentCompilationUnit.getPackage());
-			if (graph == null) {
-				graph = new DirectedGraph<>();
-				staticInitializersDependencies.put(currentCompilationUnit.getPackage(), graph);
-			}
-			return graph;
-		} else {
-			return globalStaticInitializersDependencies;
-		}
+	    return globalStaticInitializersDependencies;
 	}
+	
+	public boolean isDependent(CompilationUnitTree cuSource, TypeElement target) {
+	    CompilationUnitTree cuTarget = typesToCompilationUnits.get(target);
+        if (cuSource != null && cuTarget != null) {
+            return globalStaticInitializersDependencies.hasEdge(cuTarget, cuSource);
+        }
+        return false;
+    }
 
 	Set<TypeMirror> currentTopLevelImportedTypes = new HashSet<>();
 

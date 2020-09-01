@@ -112,6 +112,8 @@ public class JSweetContext {
 	}
 
 	private Map<String, TypeMirror> jdkSubclasses = new HashMap<>();
+	
+	public StaticInitilializerAnalyzer referenceAnalyzer;
 
 	/**
 	 * Maps the name of a class to the JDK type it extends.
