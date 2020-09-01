@@ -747,7 +747,21 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
      * determines the files to be watched by the Tsc process.
      * 
      * @param transpilationHandler the log handler
-     * @param excludedSourcePaths   these files will be used in the transpilation
+     * @param files                the files to be transpiled
+     * @throws IOException
+     */
+    synchronized public void transpile(TranspilationHandler transpilationHandler, SourceFile... files)
+            throws IOException {
+        transpile(transpilationHandler, Collections.emptySet(), files);
+    }
+
+    /**
+     * Transpiles the given Java source files. When the transpiler is in watch mode
+     * ({@link #setTscWatchMode(boolean)}), the first invocation to this method
+     * determines the files to be watched by the Tsc process.
+     * 
+     * @param transpilationHandler the log handler
+     * @param excludedSourcePaths  these files will be used in the transpilation
      *                             process but will not generated any corresponding
      *                             transpiled artefacts
      * @param files                the files to be transpiled
@@ -756,9 +770,9 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
     synchronized public void transpile(TranspilationHandler transpilationHandler, Set<String> excludedSourcePaths,
             SourceFile... files) throws IOException {
         transpilationStartTimestamp = System.currentTimeMillis();
-        
+
         SourceFile.touch(files);
-        
+
         try {
             initNode(transpilationHandler);
         } catch (Exception e) {
