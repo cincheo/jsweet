@@ -81,9 +81,9 @@ public class EnumTests extends AbstractTest {
 
 	@Test
 	public void testComplexEnumsAccess() {
-		eval((logHandler, r) -> {
+		eval(ModuleKind.commonjs, (logHandler, r) -> {
 			logHandler.assertNoProblems();
-			Assert.assertEquals(">2,--2--,ratio_2_1_5,true,true,true,true", r.get("trace2"));
+			Assert.assertEquals(">static,2,--2--,ratio_2_1_5,true,true,true,true", r.get("trace2"));
 			// Assert.assertEquals(">static,2,--2--,ratio_2_1_5,true,true,true,true,2,2",
 			// r.get("trace2"));
 		}, getSourceFile(MyComplexEnum2.class), getSourceFile(ComplexEnumsAccess.class));

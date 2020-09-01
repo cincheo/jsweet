@@ -84,6 +84,7 @@ import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.JSweetTranspiler;
 import org.jsweet.transpiler.Java2TypeScriptTranslator;
 import org.jsweet.transpiler.Java2TypeScriptTranslator.ComparisonMode;
+import org.jsweet.transpiler.ModuleImportDescriptor;
 import org.jsweet.transpiler.TypeChecker;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.ExtendedElementFactory;
@@ -471,6 +472,14 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
                             .print(Java2TypeScriptTranslator.ENUM_WRAPPER_CLASS_SUFFIX + ".")
                             .print(invocationElement.getMethodName()).print("(")
                             .printArgList(invocationElement.getArguments()).print(")");
+
+                    ModuleImportDescriptor moduleImport = getModuleImportDescriptor(getCompilationUnit(),
+                            invocationElement.getTargetExpression().toString()
+                                    + Java2TypeScriptTranslator.ENUM_WRAPPER_CLASS_SUFFIX,
+                            (TypeElement) invocationElement.getTargetExpression().getTypeAsElement());
+                    if (moduleImport != null) {
+                        getPrinter().useModule(moduleImport);
+                    }
                     return true;
                 }
             }

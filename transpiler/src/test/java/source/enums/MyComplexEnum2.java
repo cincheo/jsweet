@@ -32,6 +32,8 @@ public enum MyComplexEnum2 {
 		ComplexEnumsAccess.trace2.push("static");
 	}
 
+	public static int aStaticField = 4;
+	
 	public static void aStaticMethod2() {
 	}
 
