@@ -2307,8 +2307,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                 if (isDefinitionScope) {
                     return returnNothing();
                 } else {
-                    report(methodTree, methodTree.getName(), JSweetProblem.METHOD_CONFLICTS_FIELD, methodTree.getName(),
-                            parentElement);
+                    if (methodTree.getName().toString().equals(context.getActualName(v))) {
+                        report(methodTree, methodTree.getName(), JSweetProblem.METHOD_CONFLICTS_FIELD,
+                                methodTree.getName(), parentElement);
+                    }
                 }
             }
         }

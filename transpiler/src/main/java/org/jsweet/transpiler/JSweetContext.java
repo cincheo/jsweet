@@ -1271,7 +1271,7 @@ public class JSweetContext {
 	}
 
 	/**
-	 * Gets the actual name of a symbol from a JSweet convention, so including
+	 * Gets the actual (simple) name of a symbol from a JSweet convention, so including
 	 * potential <code>jsweet.lang.Name</code> annotation.
 	 */
 	public String getActualName(Element symbol) {
