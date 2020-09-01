@@ -770,8 +770,8 @@ public class PrinterAdapter {
                         pathToImportedClass = "./" + pathToImportedClass;
                     }
 
-                    return new ModuleImportDescriptor((PackageElement) parent, importedName,
-                            pathToImportedClass.replace('\\', '/'));
+                    return new ModuleImportDescriptor(false, (PackageElement) parent, importedName,
+                            pathToImportedClass.replace('\\', '/'), importedClass);
                 }
             }
             return null;
