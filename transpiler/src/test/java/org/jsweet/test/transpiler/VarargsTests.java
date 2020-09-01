@@ -24,6 +24,7 @@ import org.junit.Test;
 
 import source.varargs.VarargsAndOverloads;
 import source.varargs.VarargsCalledWithArray;
+import source.varargs.VarargsCalledWithArray2;
 import source.varargs.VarargsCalledWithoutArray;
 import source.varargs.VarargsOnAnonymous;
 import source.varargs.VarargsOnApi;
@@ -80,6 +81,13 @@ public class VarargsTests extends AbstractTest {
 		}, getSourceFile(VarargsCalledWithArray.class));
 	}
 
+	@Test
+    public void testVarargsCalledWithArray2() {
+        eval((logHandler, res) -> {
+            logHandler.assertNoProblems();
+        }, getSourceFile(VarargsCalledWithArray2.class));
+    }
+	
 	@Test
     public void testVarargsCalledWithoutArray() {
         eval((logHandler, res) -> {

@@ -608,6 +608,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                 // qualName.replace(".", "_")... this would work in the general
                 // case...
 
+                if (context.isExcludedSourcePath(util().getSourceFilePath(sourceElement))) {
+                    // ignore excluded source files
+                    return;
+                }
+
                 if (!context.moduleBundleMode && sourceElement instanceof TypeElement
                         && util().isSourceElement(sourceElement)
                         && !(sourceElement instanceof TypeElement && context.referenceAnalyzer != null

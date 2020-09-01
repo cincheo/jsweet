@@ -746,11 +746,14 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
      * determines the files to be watched by the Tsc process.
      * 
      * @param transpilationHandler the log handler
+     * @param doNotGenerateFiles   these files will be used in the transpilation
+     *                             process but will not generated any corresponding
+     *                             transpiled artefacts
      * @param files                the files to be transpiled
      * @throws IOException
      */
-    synchronized public void transpile(TranspilationHandler transpilationHandler, SourceFile... files)
-            throws IOException {
+    synchronized public void transpile(TranspilationHandler transpilationHandler, SourceFile[] doNotGenerateFiles,
+            SourceFile... files) throws IOException {
         transpilationStartTimestamp = System.currentTimeMillis();
 
         try {
@@ -770,7 +773,7 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
                 .filter(source -> source.getJavaFile() != null).collect(toList());
 
         long startJava2TsTimeNanos = System.nanoTime();
-        java2ts(errorHandler, jsweetSources.toArray(new SourceFile[0]));
+        java2ts(errorHandler, doNotGenerateFiles, jsweetSources.toArray(new SourceFile[0]));
         long endJava2TsTimeNanos = System.nanoTime();
 
         long startTs2JsTimeNanos = System.nanoTime();
@@ -816,7 +819,8 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
         }
     }
 
-    private void java2ts(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] files) throws IOException {
+    private void java2ts(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] doNotGenerateFiles,
+            SourceFile[] files) throws IOException {
         prepareForJavaFiles(Arrays.asList(SourceFile.toFiles(files)), transpilationHandler);
         if (context.compilationUnits == null) {
             return;
@@ -834,6 +838,8 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
         }
 
         context.sourceFiles = files;
+        context.excludedSourcePaths = Stream.of(doNotGenerateFiles).map(f -> f.toString()).collect(Collectors.toSet());
+
         factory.createBeforeTranslationScanner(transpilationHandler, context).process(context.compilationUnits);
 
         if (context.useModules) {
@@ -870,6 +876,10 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 
         String[] headerLines = getHeaderLines();
         for (int i = 0; i < compilationUnits.size(); i++) {
+            if (context.isExcludedSourcePath(files[i].toString())) {
+                continue;
+            }
+            
             try {
                 CompilationUnitTree cu = compilationUnits.get(i);
                 if (isModuleDefsFile(cu)) {
@@ -1034,7 +1044,7 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
             sb.append(line).append("\n");
             lineCount++;
         }
-        
+
         ArrayList<SourceFile> bundledFiles = new ArrayList<>();
         for (int i = 0; i < orderedCompilationUnits.size(); i++) {
             CompilationUnitTree cu = orderedCompilationUnits.get(i);
@@ -1058,7 +1068,7 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
             files[permutation[i]].setSourceMap(printer.sourceMap);
 
             bundledFiles.add(files[permutation[i]]);
-            
+
             sb.append(printer.getOutput());
             lineCount += (printer.getCurrentLine() - 1);
 
@@ -1083,10 +1093,10 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
             String headers = context.getHeaders();
             out.print(headers);
             lineCount = StringUtils.countMatches(headers, "\n");
-            for(SourceFile f : bundledFiles) {
+            for (SourceFile f : bundledFiles) {
                 f.getSourceMap().shiftOutputPositions(lineCount);
             }
-            
+
             out.println(sb.toString());
             if (!definitionBundle) {
                 out.print(context.getGlobalsMappingString());

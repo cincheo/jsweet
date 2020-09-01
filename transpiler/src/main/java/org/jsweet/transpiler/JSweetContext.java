@@ -700,6 +700,20 @@ public class JSweetContext {
 	public SourceFile[] sourceFiles;
 
 	/**
+     * The source file paths that are being used for transpilation but not
+     * generated.
+     */
+    public Set<String> excludedSourcePaths;
+
+    /**
+     * Returns true if the source path corresponds to a source file that is part
+     * of the extra input (not generated).
+     */
+    public boolean isExcludedSourcePath(String sourcePath) {
+        return excludedSourcePaths.contains(sourcePath);
+    }
+	
+	/**
 	 * The compilation units that correspond to the source files.
 	 */
 	public List<CompilationUnitTree> compilationUnits;
