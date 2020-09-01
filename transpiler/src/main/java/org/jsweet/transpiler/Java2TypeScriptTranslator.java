@@ -582,8 +582,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
     private PackageElement topLevelPackage;
 
-    private void useModule(boolean require, PackageElement targetPackage, Tree sourceTree, String targetName,
-            String moduleName, Element sourceElement) {
+    private void useModule(boolean require, boolean direct, PackageElement targetPackage, Tree sourceTree,
+            String targetName, String moduleName, Element sourceElement) {
         if (context.useModules) {
             context.packageDependencies.add((PackageElement) targetPackage);
             PackageElement packageElement = toElement(compilationUnit.getPackage());
@@ -602,18 +602,23 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                 // qualName.replace(".", "_")... this would work in the general
                 // case...
 
-                boolean fullImport = require || GLOBALS_CLASS_NAME.equals(targetName);
-                if (fullImport) {
-                    if (context.useRequireForModules) {
-                        context.addHeader("import." + targetName,
-                                "import " + targetName + " = require(\"" + moduleName + "\");\n");
+                if (direct) {
+                    context.addHeader("import." + targetName, "import " + targetName + " = " + moduleName + ";\n");
+                } else {
+
+                    boolean fullImport = require || GLOBALS_CLASS_NAME.equals(targetName);
+                    if (fullImport) {
+                        if (context.useRequireForModules) {
+                            context.addHeader("import." + targetName,
+                                    "import " + targetName + " = require(\"" + moduleName + "\");\n");
+                        } else {
+                            context.addHeader("import." + targetName,
+                                    "import * as " + targetName + " from '" + moduleName + "';\n");
+                        }
                     } else {
                         context.addHeader("import." + targetName,
-                                "import * as " + targetName + " from '" + moduleName + "';\n");
+                                "import { " + targetName + " } from '" + moduleName + "';\n");
                     }
-                } else {
-                    context.addHeader("import." + targetName,
-                            "import { " + targetName + " } from '" + moduleName + "';\n");
                 }
             }
             context.registerImportedName(compilationUnit.getSourceFile().getName(), sourceElement, targetName);
@@ -778,8 +783,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     File moduleFile = new File(new File(pathToModulePackage), JSweetConfig.MODULE_FILE_NAME);
                     if (!identifierPackage.getSimpleName().toString()
                             .equals(compilationUnitPackageElement.getSimpleName().toString())) {
-                        useModule(false, identifierPackage, identifier, identifierPackage.getSimpleName().toString(),
-                                moduleFile.getPath().replace('\\', '/'), null);
+                        useModule(false, false, identifierPackage, identifier,
+                                identifierPackage.getSimpleName().toString(), moduleFile.getPath().replace('\\', '/'),
+                                null);
                     }
                 } else if (identifierElement instanceof TypeElement) {
                     if (JSweetConfig.GLOBALS_PACKAGE_NAME
@@ -792,8 +798,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                         File moduleFile = new File(new File(pathToModulePackage), JSweetConfig.MODULE_FILE_NAME);
                         if (!identifierElement.getEnclosingElement().getSimpleName().toString()
                                 .equals(compilationUnitPackageElement.getSimpleName().toString())) {
-                            useModule(false, (PackageElement) identifierElement.getEnclosingElement(), identifier,
-                                    JSweetConfig.GLOBALS_PACKAGE_NAME, moduleFile.getPath().replace('\\', '/'), null);
+                            useModule(false, false, (PackageElement) identifierElement.getEnclosingElement(),
+                                    identifier, JSweetConfig.GLOBALS_PACKAGE_NAME,
+                                    moduleFile.getPath().replace('\\', '/'), null);
                         }
                     }
                 }
@@ -827,7 +834,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     File moduleFile = new File(new File(pathToReachRootPackage), JSweetConfig.MODULE_FILE_NAME);
                     if (!invocationPackage.toString()
                             .equals(compilationUnitPackageElement.getSimpleName().toString())) {
-                        useModule(false, invocationPackage, invocation, targetRootPackageName,
+                        useModule(false, false, invocationPackage, invocation, targetRootPackageName,
                                 moduleFile.getPath().replace('\\', '/'), null);
                     }
                 }
@@ -876,8 +883,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
     private void detectAndUseModulesFromReferencedTypes(CompilationUnitTree compilationUnit) {
         if (context.useModules) {
-            
-            
+
             new UsedTypesScanner().scan(compilationUnit, context.trees);
         }
     }
@@ -898,7 +904,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                                 String targetName = createImportAliasFromFieldAccess(qualified);
                                 String actualName = context.getAnnotationValue(memberSelectElement,
                                         JSweetConfig.ANNOTATION_MODULE, String.class, null);
-                                useModule(true, null, importDecl, targetName, actualName, memberSelectElement);
+                                useModule(true, false, null, importDecl, targetName, actualName, memberSelectElement);
                             }
                         } else {
                             // static import case (imported fields and methods)
@@ -914,7 +920,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                                                     String targetName = createImportAliasFromSymbol(importedMember);
                                                     String actualName = context.getAnnotationValue(importedMember,
                                                             JSweetConfig.ANNOTATION_MODULE, String.class, null);
-                                                    useModule(true, null, importDecl, targetName, actualName,
+                                                    useModule(true, false, null, importDecl, targetName, actualName,
                                                             importedMember);
                                                     break;
                                                 }
@@ -953,7 +959,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                             ModuleImportDescriptor moduleImport = getModuleImportDescriptor(importedName,
                                     importedClass);
                             if (moduleImport != null) {
-                                useModule(false, moduleImport.getTargetPackage(), importTree,
+                                useModule(false, moduleImport.isDirect(), moduleImport.getTargetPackage(), importTree,
                                         moduleImport.getImportedName(), moduleImport.getPathToImportedClass(), null);
                             }
                         }
@@ -1627,9 +1633,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
                     // scan for used types to generate imports
                     if (context.useModules) {
-                        new UsedTypesScanner().scan(entry.methodTree, trees);                  
+                        new UsedTypesScanner().scan(entry.methodTree, trees);
                     }
-                    
+
                     registerMethodTreeCompilationUnit(entry.methodTree, entry.compilationUnit);
                     printIndent().print(entry.methodTree).println();
                     getAdapter().typeVariablesToErase
@@ -3049,8 +3055,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             String name = type.getSimpleName().toString();
             ModuleImportDescriptor moduleImport = getModuleImportDescriptor(name, (TypeElement) type);
             if (moduleImport != null) {
-                useModule(false, moduleImport.getTargetPackage(), null, moduleImport.getImportedName(),
-                        moduleImport.getPathToImportedClass(), null);
+                useModule(false, moduleImport.isDirect(), moduleImport.getTargetPackage(), null,
+                        moduleImport.getImportedName(), moduleImport.getPathToImportedClass(), null);
             }
         }
     }
@@ -4234,7 +4240,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                             }
                             File moduleFile = new File(new File(pathToModulePackage),
                                     classIdentifierTypeElement.getEnclosingElement().getSimpleName().toString());
-                            useModule(false, identifierPackage, identifierTree,
+                            useModule(false, false, identifierPackage, identifierTree,
                                     classIdentifierTypeElement.getEnclosingElement().getSimpleName().toString(),
                                     moduleFile.getPath().replace('\\', '/'), null);
                         }
@@ -6222,7 +6228,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
         } while ((newClassElement = util().getParentElement(parentMethodElement, TypeElement.class)) != null);
         return false;
     }
-    
+
     class UsedTypesScanner extends TreeScanner<Void, Trees> {
 
         private HashSet<String> names = new HashSet<>();
@@ -6234,8 +6240,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     names.add(name);
                     ModuleImportDescriptor moduleImport = getModuleImportDescriptor(name, (TypeElement) type);
                     if (moduleImport != null) {
-                        useModule(false, moduleImport.getTargetPackage(), null, moduleImport.getImportedName(),
-                                moduleImport.getPathToImportedClass(), null);
+                        useModule(false, moduleImport.isDirect(), moduleImport.getTargetPackage(), null,
+                                moduleImport.getImportedName(), moduleImport.getPathToImportedClass(), null);
                     }
                 }
             }

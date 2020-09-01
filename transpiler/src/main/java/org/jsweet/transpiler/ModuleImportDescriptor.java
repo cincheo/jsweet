@@ -26,35 +26,49 @@ import javax.lang.model.element.PackageElement;
  * @author Renaud Pawlak
  */
 public class ModuleImportDescriptor {
-	public ModuleImportDescriptor(PackageElement targetPackage, String importedName, String pathToImportedClass) {
-		super();
-		this.targetPackage = targetPackage;
-		this.importedName = importedName;
-		this.pathToImportedClass = pathToImportedClass;
-	}
+    public ModuleImportDescriptor(PackageElement targetPackage, String importedName, String pathToImportedClass) {
+        super();
+        this.targetPackage = targetPackage;
+        this.importedName = importedName;
+        this.pathToImportedClass = pathToImportedClass;
+    }
 
-	private PackageElement targetPackage;
-	private String importedName;
-	private String pathToImportedClass;
+    public ModuleImportDescriptor(boolean direct, PackageElement targetPackage, String importedName,
+            String pathToImportedClass) {
+        this(targetPackage, importedName, pathToImportedClass);
+        this.direct = direct;
+    }
 
-	/**
-	 * Gets the package of the element being imported.
-	 */
-	public PackageElement getTargetPackage() {
-		return targetPackage;
-	}
+    private boolean direct = false;
+    private PackageElement targetPackage;
+    private String importedName;
+    private String pathToImportedClass;
 
-	/**
-	 * Gets the name of the import.
-	 */
-	public String getImportedName() {
-		return importedName;
-	}
+    /**
+     * Gets the package of the element being imported.
+     */
+    public PackageElement getTargetPackage() {
+        return targetPackage;
+    }
 
-	/**
-	 * Gets the path to the imported class.
-	 */
-	public String getPathToImportedClass() {
-		return pathToImportedClass;
-	}
+    /**
+     * Gets the name of the import.
+     */
+    public String getImportedName() {
+        return importedName;
+    }
+
+    /**
+     * Gets the path to the imported class.
+     */
+    public String getPathToImportedClass() {
+        return pathToImportedClass;
+    }
+
+    /**
+     * True for a direct import.
+     */
+    public boolean isDirect() {
+        return direct;
+    }
 }
