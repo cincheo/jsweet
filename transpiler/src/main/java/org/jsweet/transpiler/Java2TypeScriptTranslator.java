@@ -4024,7 +4024,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                                 printInnerClassAccess(methSym.getSimpleName().toString(), methSym.getKind(),
                                         methSym.getParameters().size());
                             } else {
-                                if (isStatic && selected instanceof IdentifierTree && isStatic
+                                if (isStatic && selected instanceof IdentifierTree
                                         && toElement(selected) instanceof VariableElement) {
                                     // case of instance static access
                                     if (context.useModules && !context.moduleBundleMode) {
