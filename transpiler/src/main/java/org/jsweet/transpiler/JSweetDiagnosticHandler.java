@@ -35,65 +35,80 @@ import org.apache.log4j.Logger;
  */
 public class JSweetDiagnosticHandler implements DiagnosticListener<JavaFileObject> {
 
-	/**
-	 * The transpilation message/warning/error handler.
-	 */
-	protected TranspilationHandler transpilationHandler;
-	/**
-	 * The transpilation context.
-	 */
-	protected JSweetContext context;
-	private final static Logger logger = Logger.getLogger(JSweetTranspiler.class);
+    /**
+     * The transpilation message/warning/error handler.
+     */
+    protected TranspilationHandler transpilationHandler;
+    /**
+     * The transpilation context.
+     */
+    protected JSweetContext context;
+    private final static Logger logger = Logger.getLogger(JSweetTranspiler.class);
 
-	/**
-	 * Creates a new diagnostic handler.
-	 */
-	public JSweetDiagnosticHandler(TranspilationHandler transpilationHandler, JSweetContext context) {
-		this.context = context;
-		this.transpilationHandler = transpilationHandler;
-	}
+    /**
+     * Creates a new diagnostic handler.
+     */
+    public JSweetDiagnosticHandler(TranspilationHandler transpilationHandler, JSweetContext context) {
+        this.context = context;
+        this.transpilationHandler = transpilationHandler;
+    }
 
-	/**
-	 * Override this method to tune how JSweet reports the errors.
-	 * 
-	 * @param diagnostic a Java-reported diagnostic (errors, warning, etc.)
-	 * @param locale     a locale
-	 */
-	protected void reportJavaError(Diagnostic<? extends JavaFileObject> diagnostic, Locale locale) {
-		transpilationHandler.report(JSweetProblem.INTERNAL_JAVA_ERROR, //
-				new SourcePosition( //
-						new File(diagnostic.getSource() == null ? "." : diagnostic.getSource().getName()), //
-						null, //
-						(int) diagnostic.getLineNumber(), //
-						(int) diagnostic.getColumnNumber() //
-				), //
-				diagnostic.getMessage(locale));
-	}
+    /**
+     * Override this method to tune how JSweet reports the errors.
+     * 
+     * @param diagnostic a Java-reported diagnostic (errors, warning, etc.)
+     * @param locale     a locale
+     */
+    protected void reportJavaError(Diagnostic<? extends JavaFileObject> diagnostic, Locale locale) {
+        transpilationHandler.report(JSweetProblem.INTERNAL_JAVA_ERROR, //
+                new SourcePosition( //
+                        new File(diagnostic.getSource() == null ? "." : diagnostic.getSource().getName()), //
+                        null, //
+                        (int) diagnostic.getLineNumber(), //
+                        (int) diagnostic.getColumnNumber() //
+                ), //
+                diagnostic.getMessage(locale));
+    }
 
-	@Override
-	public void report(Diagnostic<? extends JavaFileObject> diagnostic) {
-		Locale locale = context.locale;
+    private boolean ignoreError(Diagnostic<? extends JavaFileObject> diagnostic) {
+        if (context.options.isIgnoreJavaFileNameError()
+                && "compiler.err.class.public.should.be.in.file".equals(diagnostic.getCode())) {
+            return true;
+        }
 
-		if (diagnostic.getKind() == Kind.ERROR) {
-			if (!(context.options.isIgnoreJavaFileNameError()
-					&& "compiler.err.class.public.should.be.in.file".equals(diagnostic.getCode()))) {
-				reportJavaError(diagnostic, locale);
-			}
-		}
-		switch (diagnostic.getKind()) {
-		case ERROR:
-			logger.error(diagnostic);
-			break;
-		case WARNING:
-		case MANDATORY_WARNING:
-			logger.debug(diagnostic);
-			break;
-		case NOTE:
-		case OTHER:
-		default:
-			logger.trace(diagnostic);
-			break;
-		}
-	}
+        if (context.options.isIgnoreJavaSymbolNotFoundError()
+                && ("compiler.err.cant.resolve.location".equals(diagnostic.getCode())
+                        || "compiler.err.cant.resolve.location.args".equals(diagnostic.getCode()))
+                && diagnostic.toString().contains("java.")) {
+            return true;
+        }
+
+        return false;
+    }
+
+    @Override
+    public void report(Diagnostic<? extends JavaFileObject> diagnostic) {
+        Locale locale = context.locale;
+
+        if (diagnostic.getKind() == Kind.ERROR) {
+            if (!ignoreError(diagnostic)) {
+                reportJavaError(diagnostic, locale);
+            }
+        }
+        switch (diagnostic.getKind()) {
+        case ERROR:
+            logger.error(diagnostic);
+            break;
+        case WARNING:
+        case MANDATORY_WARNING:
+            logger.debug(diagnostic);
+            break;
+        case NOTE:
+        case OTHER:
+        default:
+            logger.trace(diagnostic);
+            break;
+        }
+    }
 
 }
