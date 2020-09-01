@@ -759,6 +759,16 @@ public class PrinterAdapter {
     }
 
     /**
+     * Substitutes a given type declaration.
+     * 
+     * @param type the type being printed
+     * @return true if substituted
+     */
+    public boolean substituteType(TypeElement type) {
+        return parentAdapter == null ? false : parentAdapter.substituteType(type);
+    }
+
+    /**
      * Substitutes the value of a <em>field assignment</em> expression.
      * 
      * @param assignment the field assignment being printed

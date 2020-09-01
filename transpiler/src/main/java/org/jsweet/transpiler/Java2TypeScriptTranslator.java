@@ -1362,6 +1362,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
     @Override
     public Void visitClass(final ClassTree classTree, final Trees trees) {
         TypeElement classTypeElement = toElement(classTree);
+        if (getAdapter().substituteType(classTypeElement)) {
+            getAdapter().afterType(classTypeElement);
+            return null;
+        }
+        
         if (context.isIgnored(classTree, compilationUnit)) {
             getAdapter().afterType(classTypeElement);
             return returnNothing();
