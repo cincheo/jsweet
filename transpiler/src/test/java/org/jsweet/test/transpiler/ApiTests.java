@@ -277,10 +277,11 @@ public class ApiTests extends AbstractTest {
         eval(ModuleKind.none, (logHandler, r) -> {
             logHandler.assertNoProblems();
             String localeString = r.get("localeString");
-            
-            // TODO : check why js runtime does not return proper formatting here :/
-            List<String> expected = asList("2020-1-1 1:00:00 AM", "2020-1-1 01:00:00", "1/1/2020, 12:00:00 AM",
-                    "01/01/2020 à 01:00:00");
+
+            // TODO : check why js runtime does not return proper deterministic format
+            // here...
+            List<String> expected = asList("2020-1-1 1:00:00 AM", "2020-1-1 12:00:00 AM", "2020-1-1 01:00:00",
+                    "1/1/2020, 1:00:00 AM", "1/1/2020, 12:00:00 AM", "01/01/2020 à 01:00:00");
             assertTrue("date is not ok: " + localeString + " is not one of " + expected,
                     expected.contains(localeString));
         }, getSourceFile(Dates.class));

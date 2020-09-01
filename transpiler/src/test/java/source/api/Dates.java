@@ -13,6 +13,7 @@ public class Dates {
 
 		String localeString = d.toLocaleString("fr", new DateTimeFormatOptions() {
 			{
+			    $set("timeZone", "UTC");
 			}
 		});
 
