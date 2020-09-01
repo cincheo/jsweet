@@ -2796,12 +2796,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             print(";").println();
         } else if (var.getInitializer() == null) {
             if (doesMemberNameRequireQuotes(name)) {
-                printIndent().print("if(").print("this['").print(name).print("']").print("===undefined) ")
-                        .print("this['").print(name).print("'] = ")
-                        .print(util().getTypeInitialValue(varElement.asType())).print(";").println();
+                printIndent();
+                print("if(").print("this['").print(name).print("']").print("===undefined) ");
+                print("this['").print(name).print("'] = ")
+                        .print(getAdapter().getVariableInitialValue(varElement)).print(";").println();
             } else {
-                printIndent().print("if(").print("this.").print(name).print("===undefined) this.").print(name)
-                        .print(" = ").print(util().getTypeInitialValue(varElement.asType())).print(";").println();
+                printIndent();
+                print("if(").print("this.").print(name).print("===undefined) this.").print(name)
+                        .print(" = ").print(getAdapter().getVariableInitialValue(varElement)).print(";").println();
             }
         }
     }
@@ -2980,7 +2982,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                         name = context.getFieldNameMapping(fieldElement);
                     }
                     printIndent().print("if(").print("this.").print(name).print("===undefined) ").print("this.")
-                            .print(name).print(" = ").print(util().getTypeInitialValue(fieldElement.asType()))
+                            .print(name).print(" = ").print(getAdapter().getVariableInitialValue(fieldElement))
                             .print(";").println();
                 }
             }
@@ -3477,7 +3479,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                 // var initialization is not allowed in definition
                 if (!isDefinitionScope && !(ambient || (isTopLevelScope() && isDefinitionScope))
                         && varElement.getModifiers().contains(Modifier.STATIC) && varTree.getInitializer() == null) {
-                    print(" = ").print(util().getTypeInitialValue(varElement.asType()));
+                    print(" = ").print(getAdapter().getVariableInitialValue(varElement));
                 }
             }
         }
