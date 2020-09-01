@@ -68,6 +68,8 @@ public class EnumTests extends AbstractTest {
 			Assert.assertEquals(2, ((Number) r.get("valueOfC")).intValue());
 			Assert.assertEquals("B", r.get("ref"));
 			Assert.assertEquals("A", r.get("switch"));
+			Assert.assertEquals(0, ((Number) r.get("compare1")).intValue());
+            Assert.assertEquals(1, ((Number) r.get("compare2")).intValue());
 		}, getSourceFile(EnumInSamePackage.class), getSourceFile(EnumInOtherPackage.class), getSourceFile(Enums.class));
 	}
 
@@ -75,7 +77,7 @@ public class EnumTests extends AbstractTest {
 	public void testComplexEnums() {
 		eval((logHandler, r) -> {
 			logHandler.assertNoProblems();
-			Assert.assertEquals(">static,2,--2--,ratio_2_1_5,true,true,true,true,2,2", r.get("trace"));
+            Assert.assertEquals(">static,2,--2--,ratio_2_1_5,true,true,true,true,2,2,0,true", r.get("trace"));
 		}, getSourceFile(ComplexEnums.class));
 	}
 

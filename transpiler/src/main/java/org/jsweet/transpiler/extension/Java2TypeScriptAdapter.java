@@ -464,6 +464,11 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
                 print("(<any>(").print(invocationElement.getTargetExpression()).print(") === <any>(")
                         .print(invocationElement.getArgument(0)).print("))");
                 return true;
+            case "compareTo":
+                printMacroName("Enum." + targetMethodName);
+                print("(<number>(").print(invocationElement.getTargetExpression()).print(") - <number>(")
+                        .print(invocationElement.getArgument(0)).print("))");
+                return true;
             }
             // enum objets wrapping
             if (invocationElement.getTargetExpression() != null) {
