@@ -1032,6 +1032,8 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
             sb.append(line).append("\n");
             lineCount++;
         }
+        
+        ArrayList<SourceFile> bundledFiles = new ArrayList<>();
         for (int i = 0; i < orderedCompilationUnits.size(); i++) {
             CompilationUnitTree cu = orderedCompilationUnits.get(i);
             if (isModuleDefsFile(cu)) {
@@ -1053,6 +1055,8 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
             printer.sourceMap.shiftOutputPositions(lineCount);
             files[permutation[i]].setSourceMap(printer.sourceMap);
 
+            bundledFiles.add(files[permutation[i]]);
+            
             sb.append(printer.getOutput());
             lineCount += (printer.getCurrentLine() - 1);
 
@@ -1074,6 +1078,13 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
         String outputFilePath = outputFile.getPath();
         PrintWriter out = new PrintWriter(outputFilePath);
         try {
+            String headers = context.getHeaders();
+            out.print(headers);
+            lineCount = StringUtils.countMatches(headers, "\n");
+            for(SourceFile f : bundledFiles) {
+                f.getSourceMap().shiftOutputPositions(lineCount);
+            }
+            
             out.println(sb.toString());
             if (!definitionBundle) {
                 out.print(context.getGlobalsMappingString());
