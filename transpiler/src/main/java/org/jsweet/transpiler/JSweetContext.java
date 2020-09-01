@@ -709,6 +709,8 @@ public class JSweetContext {
 	 * fields will be initialized at the end of the bundle.
 	 */
 	public boolean bundleMode = false;
+	
+	public boolean moduleBundleMode = false;
 
 	/**
 	 * Holds all the static fields that are lazy intitialized.

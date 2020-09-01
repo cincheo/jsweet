@@ -710,9 +710,8 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
         context.useRequireForModules = moduleKind != ModuleKind.es2015;
 
         if (context.useModules && bundle) {
-            transpilationHandler.report(JSweetProblem.BUNDLE_WITH_MODULE, null,
-                    JSweetProblem.BUNDLE_WITH_MODULE.getMessage());
-            return null;
+            context.useModules = false;
+            context.moduleBundleMode = true;
         }
 
         adapter = factory.createAdapter(context);

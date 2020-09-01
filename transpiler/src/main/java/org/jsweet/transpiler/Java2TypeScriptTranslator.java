@@ -856,6 +856,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             printIndent();
             if (isDefinitionScope) {
                 print("declare ");
+            } else if (context.moduleBundleMode) {
+                print("export ");
             }
             print("namespace ").print(rootRelativePackageName).print(" {").startIndent().println();
         }
@@ -1468,7 +1470,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             }
             print(classTree.getModifiers());
 
-            if (!isTopLevelScope() || context.useModules || isAnonymousClass() || isInnerClass() || isLocalClass()) {
+            if (!isTopLevelScope() || context.useModules || context.moduleBundleMode || isAnonymousClass()
+                    || isInnerClass() || isLocalClass()) {
                 print("export ");
             }
             if (context.isInterface(classTypeElement)) {
@@ -1960,7 +1963,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                         nameSpace = true;
                         println().println().printIndent();
 
-                        if (getIndent() != 0 || context.useModules) {
+                        if (getIndent() != 0 || context.useModules || context.moduleBundleMode) {
                             print("export ");
                         } else {
                             if (isDefinitionScope) {
@@ -1994,7 +1997,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                 if (!nameSpace) {
                     nameSpace = true;
                     println().println().printIndent();
-                    if (!isTopLevelScope() || context.useModules) {
+                    if (!isTopLevelScope() || context.useModules || context.moduleBundleMode) {
                         print("export ");
                     } else {
                         if (isDefinitionScope) {
@@ -2013,7 +2016,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             if (!nameSpace) {
                 nameSpace = true;
                 println().println().printIndent();
-                if (!isTopLevelScope() || context.useModules) {
+                if (!isTopLevelScope() || context.useModules || context.moduleBundleMode) {
                     print("export ");
                 }
                 print("namespace ").print(name).print(" {").startIndent();
@@ -2392,7 +2395,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                         methodElement, getCompilationUnit());
             }
 
-            if (context.useModules) {
+            if (context.useModules || context.moduleBundleMode) {
                 if (!methodTree.getModifiers().getFlags().contains(Modifier.PRIVATE)) {
                     print("export ");
                 }
@@ -3323,7 +3326,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                         getContext().addExportedElement(context.getAnnotationValue(varElement,
                                 JSweetConfig.ANNOTATION_MODULE, String.class, null), varElement, getCompilationUnit());
                     }
-                    if (context.useModules) {
+                    if (context.useModules || context.moduleBundleMode) {
                         if (!varTree.getModifiers().getFlags().contains(Modifier.PRIVATE)) {
                             print("export ");
                         }
