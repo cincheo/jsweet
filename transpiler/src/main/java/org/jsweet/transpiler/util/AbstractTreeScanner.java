@@ -41,8 +41,10 @@ import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.SourcePosition;
 import org.jsweet.transpiler.TranspilationHandler;
+import org.jsweet.transpiler.model.CompilationUnitElement;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.ExtendedElementFactory;
+import org.jsweet.transpiler.model.support.CompilationUnitElementSupport;
 import org.jsweet.transpiler.model.support.ExtendedElementSupport;
 
 import com.sun.source.tree.CompilationUnitTree;
@@ -125,6 +127,14 @@ public abstract class AbstractTreeScanner extends TreePathScanner<Void, Trees> {
      */
     public CompilationUnitTree getCompilationUnit() {
         return compilationUnit;
+    }
+
+    /**
+     * Returns the current compilation unit element.
+     */
+    public CompilationUnitElement getCompilationUnitElement() {
+        return new CompilationUnitElementSupport(getTreePath(getCompilationUnit()), getCompilationUnit(),
+                toElement(getCompilationUnit()), context);
     }
 
     protected void registerTreeCompilationUnit(Tree tree, CompilationUnitTree compilationUnit) {
@@ -545,7 +555,7 @@ public abstract class AbstractTreeScanner extends TreePathScanner<Void, Trees> {
         if (element != null) {
             return element;
         }
-        
+
         return util().getTypeElementForTree(tree, compilationUnit);
     }
 

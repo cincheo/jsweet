@@ -1032,7 +1032,7 @@ public class PrinterAdapter {
     }
 
     /**
-     * Returns the current compilation unit.
+     * Returns the current compilation unit element.
      */
     public CompilationUnitElement getCompilationUnit() {
         return new CompilationUnitElementSupport(printer.getTreePath(getCompilationUnitTree()),
