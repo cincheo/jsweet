@@ -79,6 +79,7 @@ import org.jsweet.transpiler.OverloadScanner.OverloadMethodEntry;
 import org.jsweet.transpiler.extension.PrinterAdapter;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.MethodInvocationElement;
+import org.jsweet.transpiler.model.support.CompilationUnitElementSupport;
 import org.jsweet.transpiler.util.AbstractTreePrinter;
 import org.jsweet.transpiler.util.JSDoc;
 
@@ -581,6 +582,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
     }
 
     private PackageElement topLevelPackage;
+
+    public void useModule(ModuleImportDescriptor moduleImport) {
+        useModule(false, moduleImport.isDirect(), moduleImport.getTargetPackage(), null, moduleImport.getImportedName(),
+                moduleImport.getPathToImportedClass(), null);
+    }
 
     private void useModule(boolean require, boolean direct, PackageElement targetPackage, Tree sourceTree,
             String targetName, String moduleName, Element sourceElement) {
@@ -3672,6 +3678,19 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                                     && varElement.getEnclosingElement() != selectedElement) {
                                 accessSubstituted = true;
                                 print(getRootRelativeName(varElement.getEnclosingElement())).print(".");
+                                if (context.useModules) {
+
+                                    if (varElement.getEnclosingElement() instanceof TypeElement) {
+                                        ModuleImportDescriptor moduleImport = getAdapter().getModuleImportDescriptor(
+                                                new CompilationUnitElementSupport(getTreePath(compilationUnit),
+                                                        compilationUnit, toElement(compilationUnit), context),
+                                                varElement.getEnclosingElement().getSimpleName().toString(),
+                                                (TypeElement) varElement.getEnclosingElement());
+                                        if (moduleImport != null) {
+                                            useModule(moduleImport);
+                                        }
+                                    }
+                                }
                             }
                         }
                         if (!accessSubstituted) {
