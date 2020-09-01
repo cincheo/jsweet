@@ -475,7 +475,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 
 			Element classElement = util.getElementForTree(classTree, classCompilationUnit);
 			ExecutableElement methodElement = util.getElementForTree(methodTree, methodCompilationUnit);
-			this.entries.add(new OverloadMethodEntry(classCompilationUnit, //
+			safeAdd(new OverloadMethodEntry(classCompilationUnit, //
 					classTree, //
 					classElement, //
 					methodCompilationUnit, //
