@@ -79,7 +79,6 @@ import org.jsweet.transpiler.OverloadScanner.OverloadMethodEntry;
 import org.jsweet.transpiler.extension.PrinterAdapter;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.MethodInvocationElement;
-import org.jsweet.transpiler.model.support.CompilationUnitElementSupport;
 import org.jsweet.transpiler.util.AbstractTreePrinter;
 import org.jsweet.transpiler.util.JSDoc;
 
@@ -1926,6 +1925,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             printIndent().print("public name() : string { return this." + ENUM_WRAPPER_CLASS_NAME + "; }").println();
             printIndent().print("public ordinal() : number { return this." + ENUM_WRAPPER_CLASS_ORDINAL + "; }")
                     .println();
+            printIndent().print("public compareTo(other : any) : number { return this." + ENUM_WRAPPER_CLASS_ORDINAL
+                    + " - (isNaN(other)?other." + ENUM_WRAPPER_CLASS_ORDINAL + ":other); }").println();
         }
 
         if (getScope().enumScope) {
@@ -6137,8 +6138,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
         if (util().isInterface(assignedTypeElement) && expressionTypeElement != null
                 && util().isPartOfAnEnum(expressionTypeElement)) {
             String relTarget = getRootRelativeName(expressionTypeElement);
-            print(relTarget).print("[\"" + Java2TypeScriptTranslator.ENUM_WRAPPER_CLASS_WRAPPERS + "\"][")
-                    .print(expression).print("]");
+            print("((wrappers, value) => wrappers===undefined?value:wrappers[value])(").print(relTarget)
+                    .print("[\"" + Java2TypeScriptTranslator.ENUM_WRAPPER_CLASS_WRAPPERS + "\"], ").print(expression)
+                    .print(")");
             return true;
         }
         if (expression instanceof ConditionalExpressionTree) {
