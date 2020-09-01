@@ -892,7 +892,7 @@ public class Util {
                 && methodElement.getParameters().size() > 0 //
                 && last(methodElement.getParameters()) == varElement;
     }
-
+    
     /**
      * Gets the file from a Java file object.
      */

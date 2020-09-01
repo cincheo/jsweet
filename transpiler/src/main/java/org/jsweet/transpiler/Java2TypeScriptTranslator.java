@@ -2574,6 +2574,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     }
                     print(getOverloadMethodName(methodElement)).print("(");
                     for (int j = 0; j < method.getParameters().size(); j++) {
+                        if (j == method.getParameters().size() - 1 && util().hasVarargs(overload.getCoreMethodElement())) {
+                            print("<any>");
+                        }
                         print(avoidJSKeyword(overload.getCoreMethod().getParameters().get(j).getName().toString()))
                                 .print(", ");
                     }
@@ -3951,7 +3954,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     }
                     if (methSym != null) {
                         if (context.isInvalidOverload(methSym) && !methSym.getParameters().isEmpty()
-                                && !util().hasTypeParameters(methSym) && !util().hasVarargs(methSym)
+                                && !util().hasTypeParameters(methSym)
                                 && getParent(MethodTree.class) != null
                                 && !getParent(MethodTree.class).getModifiers().getFlags().contains(Modifier.DEFAULT)) {
                             if (context.isInterface((TypeElement) methSym.getEnclosingElement())) {

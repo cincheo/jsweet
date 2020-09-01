@@ -21,10 +21,16 @@ import static jsweet.util.Lang.$export;
 public class VarargsCalledWithArray {
 	public static void main(String[] args) {
 		a(new String[] { "array", "var", "arg" });
+		b(1, new String[] { "array", "var", "arg" });
 	}
 
 	public static void a(String... args) {
-		$export("argsLength", args.length);
-		$export("firstArg", args[0]);
+        $export("argsLength_a", args.length);
+        $export("firstArg_a", args[0]);
 	}
+
+    public static void b(int i, String... args) {
+        $export("argsLength_b", args.length);
+        $export("firstArg_b", args[0]);
+    }
 }
