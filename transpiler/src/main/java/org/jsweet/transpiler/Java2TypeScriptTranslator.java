@@ -107,6 +107,7 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.InstanceOfTree;
+import com.sun.source.tree.IntersectionTypeTree;
 import com.sun.source.tree.LabeledStatementTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.LiteralTree;
@@ -1110,6 +1111,15 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
     private AbstractTreePrinter substituteAndPrintType(Tree typeTree, boolean arrayComponent, boolean inTypeParameters,
             boolean completeRawTypes, boolean disableSubstitution) {
 
+        if (typeTree instanceof IntersectionTypeTree) {
+            for (Tree t : ((IntersectionTypeTree) typeTree).getBounds()) {
+                substituteAndPrintType(t, arrayComponent, inTypeParameters, completeRawTypes, disableSubstitution);
+                print(" & ");
+            }
+            removeLastChars(3);
+            return this;
+        }
+        
         Element typeElement = toTypeElement(typeTree);
         TypeMirror typeType = toType(typeTree);
         if (typeElement instanceof TypeParameterElement) {
