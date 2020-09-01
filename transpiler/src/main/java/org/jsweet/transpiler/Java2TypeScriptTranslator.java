@@ -1366,7 +1366,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             getAdapter().afterType(classTypeElement);
             return null;
         }
-        
+
         if (context.isIgnored(classTree, compilationUnit)) {
             getAdapter().afterType(classTypeElement);
             return returnNothing();
@@ -1644,7 +1644,19 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
                     // scan for used types to generate imports
                     if (context.useModules) {
-                        new UsedTypesScanner().scan(entry.methodTree, trees);
+                        UsedTypesScanner scanner = new UsedTypesScanner();
+                        if (!context.hasAnnotationType(entry.methodElement, JSweetConfig.ANNOTATION_ERASED)) {
+                            if (context.hasAnnotationType(entry.methodElement, JSweetConfig.ANNOTATION_REPLACE)) {
+                                // do not scan the method body
+                                scanner.scan(entry.methodTree.getParameters(), trees);
+                                scanner.scan(entry.methodTree.getReturnType(), trees);
+                                scanner.scan(entry.methodTree.getThrows(), trees);
+                                scanner.scan(entry.methodTree.getTypeParameters(), trees);
+                                scanner.scan(entry.methodTree.getReceiverParameter(), trees);
+                            } else {
+                                scanner.scan(entry.methodTree, trees);
+                            }
+                        }
                     }
 
                     registerMethodTreeCompilationUnit(entry.methodTree, entry.compilationUnit);
