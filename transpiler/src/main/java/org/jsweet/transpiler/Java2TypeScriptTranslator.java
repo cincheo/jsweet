@@ -6076,6 +6076,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
         if (assignedType == null) {
             return false;
         }
+        if (getAdapter().substituteAssignedExpression(assignedType, createExtendedElement(expression))) {
+            return true;
+        }
         Element expressionTypeElement = toTypeElement(expression);
         TypeMirror expressionType = toType(expression);
         Element assignedTypeElement = types().asElement(assignedType);

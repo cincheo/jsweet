@@ -658,6 +658,23 @@ public class PrinterAdapter {
     }
 
     /**
+     * Substitutes an assigned expression if necessary.
+     * <p>
+     * Expressions are assigned to a type when used in an assignment expression (=)
+     * or as function arguments. JSweet implements a default behavior to adapt the
+     * expression when necessary (for instance to implement implicit type conversion
+     * that would be necessary in TypeScript). One can override or extend the
+     * default behavior by overriding this method.
+     * 
+     * @param type               the type the expression is being assigned to
+     * @param assignedExpression the assigned expression
+     * @return true if the expression has been substituted
+     */
+    public boolean substituteAssignedExpression(TypeMirror type, ExtendedElement assignedExpression) {
+        return parentAdapter == null ? false : parentAdapter.substituteAssignedExpression(type, assignedExpression);
+    }
+
+    /**
      * Upcalled by the transpiler to forward to the right subtitution method
      * depending on the actual extended element type.
      */
