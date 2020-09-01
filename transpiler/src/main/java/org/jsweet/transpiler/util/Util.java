@@ -125,6 +125,17 @@ public class Util {
     }
 
     /**
+     * Gets the type arguments of a given type (if any).
+     */
+    public List<? extends TypeMirror> getTypeArguments(TypeMirror type) {
+        if (type instanceof DeclaredType) {
+            return ((DeclaredType) type).getTypeArguments();
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * Gets the qualified name for the given type.
      */
     public String getQualifiedName(TypeMirror type) {
@@ -892,7 +903,7 @@ public class Util {
                 && methodElement.getParameters().size() > 0 //
                 && last(methodElement.getParameters()) == varElement;
     }
-    
+
     /**
      * Gets the file from a Java file object.
      */

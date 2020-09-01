@@ -1541,80 +1541,86 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     removeIterable = true;
                 }
 
-                if (!removeIterable && !JSweetConfig.isJDKReplacementMode()
-                        && !(JSweetConfig.OBJECT_CLASSNAME.equals(superType.toString())
-                                || Object.class.getName().equals(superType.toString()))
-                        && !(mixin != null && types().isSameType(mixin, superType))
-                        && !(getAdapter().eraseSuperClass(classTypeElement, superTypeElement))) {
+                if (!getAdapter().substituteExtends(classTypeElement)) {
+                    if (!removeIterable && !JSweetConfig.isJDKReplacementMode()
+                            && !(JSweetConfig.OBJECT_CLASSNAME.equals(superType.toString())
+                                    || Object.class.getName().equals(superType.toString()))
+                            && !(mixin != null && types().isSameType(mixin, superType))
+                            && !(getAdapter().eraseSuperClass(classTypeElement, superTypeElement))) {
 
-                    if (!getScope().interfaceScope && context.isInterface(superTypeElement)) {
-                        extendsInterface = true;
-                        print(" implements ");
-                        implementedInterfaces.add(superType);
+                        if (!getScope().interfaceScope && context.isInterface(superTypeElement)) {
+                            extendsInterface = true;
+                            print(" implements ");
+                            implementedInterfaces.add(superType);
+                        } else {
+                            print(" extends ");
+                        }
+                        if (getScope().enumWrapperClassScope && getScope(1).anonymousClasses.contains(classTree)) {
+                            print(classTree.getExtendsClause().toString() + ENUM_WRAPPER_CLASS_SUFFIX);
+                        } else {
+                            disableTypeSubstitution = !getAdapter().isSubstituteSuperTypes();
+                            substituteAndPrintType(classTree.getExtendsClause());
+                            disableTypeSubstitution = false;
+                        }
+                        if (context.classesWithWrongConstructorOverload.contains(classTypeElement)) {
+                            getScope().hasConstructorOverloadWithSuperClass = true;
+                        }
                     } else {
-                        print(" extends ");
+                        getScope().removedSuperclass = true;
                     }
-                    if (getScope().enumWrapperClassScope && getScope(1).anonymousClasses.contains(classTree)) {
-                        print(classTree.getExtendsClause().toString() + ENUM_WRAPPER_CLASS_SUFFIX);
-                    } else {
-                        disableTypeSubstitution = !getAdapter().isSubstituteSuperTypes();
-                        substituteAndPrintType(classTree.getExtendsClause());
-                        disableTypeSubstitution = false;
-                    }
-                    if (context.classesWithWrongConstructorOverload.contains(classTypeElement)) {
-                        getScope().hasConstructorOverloadWithSuperClass = true;
-                    }
-                } else {
-                    getScope().removedSuperclass = true;
                 }
             }
 
             // print IMPLEMENTS
-            if (classTree.getImplementsClause() != null && !classTree.getImplementsClause().isEmpty()
-                    && !getScope().enumScope) {
-                List<Tree> implementing = new ArrayList<>(classTree.getImplementsClause());
+            if (!getAdapter().substituteImplements(classTypeElement)) {
+                if (classTree.getImplementsClause() != null && !classTree.getImplementsClause().isEmpty()
+                        && !getScope().enumScope) {
+                    List<Tree> implementing = new ArrayList<>(classTree.getImplementsClause());
 
-                if (context.hasAnnotationType(classTypeElement, JSweetConfig.ANNOTATION_SYNTACTIC_ITERABLE)) {
+                    if (context.hasAnnotationType(classTypeElement, JSweetConfig.ANNOTATION_SYNTACTIC_ITERABLE)) {
+                        for (Tree implementsTree : classTree.getImplementsClause()) {
+                            TypeElement implementsElement = toElement(implementsTree);
+                            if (implementsElement.getQualifiedName().toString().equals(Iterable.class.getName())) {
+                                implementing.remove(implementsTree);
+                            }
+                        }
+                    }
+
                     for (Tree implementsTree : classTree.getImplementsClause()) {
                         TypeElement implementsElement = toElement(implementsTree);
-                        if (implementsElement.getQualifiedName().toString().equals(Iterable.class.getName())) {
+                        // erase Java interfaces
+                        if (context.isFunctionalType(implementsElement) //
+                                || getAdapter().eraseSuperInterface(classTypeElement, implementsElement)) {
                             implementing.remove(implementsTree);
                         }
                     }
-                }
 
-                for (Tree implementsTree : classTree.getImplementsClause()) {
-                    TypeElement implementsElement = toElement(implementsTree);
-                    // erase Java interfaces
-                    if (context.isFunctionalType(implementsElement) //
-                            || getAdapter().eraseSuperInterface(classTypeElement, implementsElement)) {
-                        implementing.remove(implementsTree);
-                    }
-                }
-
-                if (!implementing.isEmpty()) {
-                    if (!extendsInterface) {
-                        if (getScope().interfaceScope) {
-                            print(" extends ");
+                    if (!implementing.isEmpty()) {
+                        if (!extendsInterface) {
+                            if (getScope().interfaceScope) {
+                                print(" extends ");
+                            } else {
+                                print(" implements ");
+                            }
                         } else {
-                            print(" implements ");
+                            print(", ");
                         }
-                    } else {
-                        print(", ");
+                        for (Tree implementsTree : implementing) {
+                            TypeMirror implementsType = toType(implementsTree);
+                            disableTypeSubstitution = !getAdapter().isSubstituteSuperTypes();
+                            substituteAndPrintType(implementsTree);
+                            disableTypeSubstitution = false;
+                            implementedInterfaces.add(implementsType);
+                            print(", ");
+                        }
+                        removeLastChars(2);
                     }
-                    for (Tree implementsTree : implementing) {
-                        TypeMirror implementsType = toType(implementsTree);
-                        disableTypeSubstitution = !getAdapter().isSubstituteSuperTypes();
-                        substituteAndPrintType(implementsTree);
-                        disableTypeSubstitution = false;
-                        implementedInterfaces.add(implementsType);
-                        print(", ");
-                    }
-                    removeLastChars(2);
                 }
             }
             print(" {").println().startIndent();
         }
+
+        getAdapter().beforeTypeBody(classTypeElement);
 
         if (getScope().innerClassNotStatic && !getScope().interfaceScope && !getScope().enumScope
                 && !getScope().enumWrapperClassScope) {
