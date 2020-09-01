@@ -533,7 +533,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 					return true;
 
 				case "union":
-					getPrinter().typeChecker.checkUnionTypeAssignment(getPrinter().getParent(), getCompilationUnit(),
+					getPrinter().typeChecker.checkUnionTypeAssignment(getPrinter().getParent(), getCompilationUnitTree(),
 							methodInvocationTree);
 					print("(<any>");
 					printCastMethodInvocation(invocationElement);

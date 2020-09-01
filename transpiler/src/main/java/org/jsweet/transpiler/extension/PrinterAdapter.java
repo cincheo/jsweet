@@ -56,6 +56,7 @@ import org.jsweet.transpiler.model.MethodInvocationElement;
 import org.jsweet.transpiler.model.NewClassElement;
 import org.jsweet.transpiler.model.UnaryOperatorElement;
 import org.jsweet.transpiler.model.VariableAccessElement;
+import org.jsweet.transpiler.model.support.CompilationUnitElementSupport;
 import org.jsweet.transpiler.model.support.ExtendedElementSupport;
 import org.jsweet.transpiler.model.support.MethodInvocationElementSupport;
 import org.jsweet.transpiler.util.AbstractTreePrinter;
@@ -1001,20 +1002,28 @@ public class PrinterAdapter {
         return context.getHeader(key);
     }
 
-    protected final CompilationUnitTree getCompilationUnit() {
+    /**
+     * Returns the current compilation unit.
+     */
+    public CompilationUnitElement getCompilationUnit() {
+        return new CompilationUnitElementSupport(printer.getTreePath(getCompilationUnitTree()),
+                getCompilationUnitTree(), toElement(getCompilationUnitTree()), context);
+    }
+
+    protected final CompilationUnitTree getCompilationUnitTree() {
         return printer.getCompilationUnit();
     }
 
     protected final PackageElement getPackageElement() {
-        return toElement(getCompilationUnit().getPackage());
+        return toElement(getCompilationUnitTree().getPackage());
     }
 
     protected final <T extends Element> T toElement(Tree tree) {
-        return util().getElementForTree(tree, getCompilationUnit());
+        return util().getElementForTree(tree, getCompilationUnitTree());
     }
 
     @SuppressWarnings("unchecked")
     protected final <T extends TypeMirror> T toType(Tree tree) {
-        return (T) util().getTypeForTree(tree, getCompilationUnit());
+        return (T) util().getTypeForTree(tree, getCompilationUnitTree());
     }
 }

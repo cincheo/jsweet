@@ -160,6 +160,31 @@ public class Util {
         return typeElement == null ? null : typeElement.asType();
     }
 
+    /**
+     * Gets the source type from the fully qualified name when possible (return null
+     * when the type cannot be found).
+     * <p/>
+     * This method looks up well-known Java types and all the types that are in the
+     * complied source files.
+     */
+    public TypeMirror getType(String fullyQualifiedName) {
+        TypeMirror result = null;
+        try {
+            Class<?> clazz = Class.forName(fullyQualifiedName);
+            result = getType(clazz);
+            if (result != null) {
+                return result;
+            }
+        } catch (Exception e) {
+            // swallow
+        }
+        TypeElement typeElement = context.elements.getTypeElement(fullyQualifiedName);
+        if (typeElement != null) {
+            return typeElement.asType();
+        }
+        return null;
+    }
+
     private static long id = 121;
 
     /**

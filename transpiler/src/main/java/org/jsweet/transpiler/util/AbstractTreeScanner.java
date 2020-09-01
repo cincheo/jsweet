@@ -533,7 +533,7 @@ public abstract class AbstractTreeScanner extends TreePathScanner<Void, Trees> {
         return util().getTypeForTree(tree, compilationUnit);
     }
 
-    protected TreePath getTreePath(Tree tree) {
+    public TreePath getTreePath(Tree tree) {
         return getFromTreePath(tree, Function.identity());
     }
 
