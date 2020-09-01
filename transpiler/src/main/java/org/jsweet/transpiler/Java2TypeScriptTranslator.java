@@ -609,8 +609,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                 // qualName.replace(".", "_")... this would work in the general
                 // case...
 
-                if (!context.moduleBundleMode && !(sourceElement instanceof TypeElement
-                        && context.referenceAnalyzer.isDependent(compilationUnit, (TypeElement) sourceElement))) {
+                if (!context.moduleBundleMode && sourceElement instanceof TypeElement
+                        && util().isSourceElement(sourceElement)
+                        && !(sourceElement instanceof TypeElement && context.referenceAnalyzer
+                                .isDependent(compilationUnit, (TypeElement) sourceElement))) {
 
                     // import as footer statements to avoid cyclic dependencies
                     // as much as possible
