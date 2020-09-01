@@ -82,6 +82,14 @@ public class EnumTests extends AbstractTest {
 	}
 
 	@Test
+    public void testEnumsReflection() {
+        eval((logHandler, r) -> {
+            logHandler.assertNoProblems();
+            Assert.assertEquals(">", r.get("trace"));
+        }, getSourceFile(EnumsReflection.class));
+    }
+	
+	@Test
 	public void testComplexEnumsAccess() {
 		eval(ModuleKind.commonjs, (logHandler, r) -> {
 			logHandler.assertNoProblems();
