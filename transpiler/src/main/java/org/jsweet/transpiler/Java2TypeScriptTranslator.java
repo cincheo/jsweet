@@ -876,45 +876,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
     private void detectAndUseModulesFromReferencedTypes(CompilationUnitTree compilationUnit) {
         if (context.useModules) {
-            TreeScanner<Void, Trees> usedTypesScanner = new TreeScanner<>() {
-
-                private HashSet<String> names = new HashSet<>();
-
-                private void checkType(TypeElement type) {
-                    if (type instanceof TypeElement && !isMappedOrErasedType(type)) {
-                        String name = type.getSimpleName().toString();
-                        if (!names.contains(name)) {
-                            names.add(name);
-                            ModuleImportDescriptor moduleImport = getModuleImportDescriptor(name, (TypeElement) type);
-                            if (moduleImport != null) {
-                                useModule(false, moduleImport.getTargetPackage(), null, moduleImport.getImportedName(),
-                                        moduleImport.getPathToImportedClass(), null);
-                            }
-                        }
-                    }
-                }
-
-                @Override
-                public Void scan(Tree tree, Trees trees) {
-                    if (tree instanceof ImportTree) {
-                        return returnNothing();
-                    }
-                    if (tree != null) {
-                        Element treeElement = toElement(tree);
-                        if (!(treeElement instanceof TypeElement)) {
-                            treeElement = toTypeElement(tree);
-                        }
-                        if (treeElement instanceof TypeElement) {
-                            if (!(tree instanceof ParameterizedTypeTree)) {
-                                checkType((TypeElement) treeElement);
-                            }
-                        }
-                    }
-                    return super.scan(tree, trees);
-                }
-
-            };
-            usedTypesScanner.scan(compilationUnit, context.trees);
+            
+            
+            new UsedTypesScanner().scan(compilationUnit, context.trees);
         }
     }
 
@@ -934,8 +898,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                                 String targetName = createImportAliasFromFieldAccess(qualified);
                                 String actualName = context.getAnnotationValue(memberSelectElement,
                                         JSweetConfig.ANNOTATION_MODULE, String.class, null);
-                                useModule(true, null, importDecl, targetName, actualName,
-                                        ((PackageElement) memberSelectElement));
+                                useModule(true, null, importDecl, targetName, actualName, memberSelectElement);
                             }
                         } else {
                             // static import case (imported fields and methods)
@@ -1662,6 +1625,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     getAdapter().typeVariablesToErase
                             .addAll(((TypeElement) methodElementMatch.getEnclosingElement()).getTypeParameters());
 
+                    // scan for used types to generate imports
+                    if (context.useModules) {
+                        new UsedTypesScanner().scan(entry.methodTree, trees);                  
+                    }
+                    
                     registerMethodTreeCompilationUnit(entry.methodTree, entry.compilationUnit);
                     printIndent().print(entry.methodTree).println();
                     getAdapter().typeVariablesToErase
@@ -6253,5 +6221,44 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             }
         } while ((newClassElement = util().getParentElement(parentMethodElement, TypeElement.class)) != null);
         return false;
+    }
+    
+    class UsedTypesScanner extends TreeScanner<Void, Trees> {
+
+        private HashSet<String> names = new HashSet<>();
+
+        private void checkType(TypeElement type) {
+            if (type instanceof TypeElement) {
+                String name = type.getSimpleName().toString();
+                if (!names.contains(name)) {
+                    names.add(name);
+                    ModuleImportDescriptor moduleImport = getModuleImportDescriptor(name, (TypeElement) type);
+                    if (moduleImport != null) {
+                        useModule(false, moduleImport.getTargetPackage(), null, moduleImport.getImportedName(),
+                                moduleImport.getPathToImportedClass(), null);
+                    }
+                }
+            }
+        }
+
+        @Override
+        public Void scan(Tree tree, Trees trees) {
+            if (tree instanceof ImportTree) {
+                return returnNothing();
+            }
+            if (tree != null) {
+                Element treeElement = toElement(tree);
+                if (!(treeElement instanceof TypeElement)) {
+                    treeElement = toTypeElement(tree);
+                }
+                if (treeElement instanceof TypeElement) {
+                    if (!(tree instanceof ParameterizedTypeTree)) {
+                        checkType((TypeElement) treeElement);
+                    }
+                }
+            }
+            return super.scan(tree, trees);
+        }
+
     }
 }
