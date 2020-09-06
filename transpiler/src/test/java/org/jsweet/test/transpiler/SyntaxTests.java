@@ -69,7 +69,7 @@ public class SyntaxTests extends AbstractTest {
 	@Test
 	public void testKeywords() {
 		eval((logHandler, r) -> {
-			assertEquals(16, logHandler.reportedProblems.size());
+			assertEquals(17, logHandler.reportedProblems.size());
 			for (JSweetProblem problem : logHandler.reportedProblems) {
 				assertEquals(JSweetProblem.JS_KEYWORD_CONFLICT, problem);
 			}
