@@ -71,15 +71,12 @@ public class JSweetDiagnosticHandler implements DiagnosticListener<JavaFileObjec
     }
 
     private boolean ignoreError(Diagnostic<? extends JavaFileObject> diagnostic) {
-        if (context.options.isIgnoreJavaFileNameError()
-                && "compiler.err.class.public.should.be.in.file".equals(diagnostic.getCode())) {
+        if (context.options.isIgnoreJavaErrors()) {
             return true;
         }
 
-        if (context.options.isIgnoreJavaSymbolNotFoundError()
-                && ("compiler.err.cant.resolve.location".equals(diagnostic.getCode())
-                        || "compiler.err.cant.resolve.location.args".equals(diagnostic.getCode()))
-                && diagnostic.toString().contains("java.")) {
+        if (context.options.isIgnoreJavaFileNameError()
+                && "compiler.err.class.public.should.be.in.file".equals(diagnostic.getCode())) {
             return true;
         }
 

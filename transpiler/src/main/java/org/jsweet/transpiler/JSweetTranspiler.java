@@ -209,7 +209,6 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
     private boolean ignoreAssertions = true;
     private boolean ignoreJavaFileNameError = false;
     private boolean generateDeclarations = false;
-    private boolean ignoreJavaSymbolNotFoundError = false;
     private File declarationsOutputDir;
     private boolean generateDefinitions = true;
     private ArrayList<File> jsLibFiles = new ArrayList<>();
@@ -1581,15 +1580,6 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 
     public void setIgnoreJavaFileNameError(boolean ignoreJavaFileNameError) {
         this.ignoreJavaFileNameError = ignoreJavaFileNameError;
-    }
-
-    @Override
-    public boolean isIgnoreJavaSymbolNotFoundError() {
-        return ignoreJavaSymbolNotFoundError;
-    }
-
-    public void setIgnoreJavaSymbolNotFoundError(boolean ignoreJavaSymbolNotFoundError) {
-        this.ignoreJavaSymbolNotFoundError = ignoreJavaSymbolNotFoundError;
     }
 
     @Override
