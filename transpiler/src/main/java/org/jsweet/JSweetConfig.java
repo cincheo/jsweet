@@ -337,6 +337,7 @@ public abstract class JSweetConfig {
             add("with");
             add("arguments");
             add("eval");
+            add("export");
         }
     };
 
