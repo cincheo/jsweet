@@ -19,6 +19,7 @@
 package org.jsweet.transpiler.extension;
 
 import static org.jsweet.JSweetConfig.ANNOTATION_ERASED;
+import static org.jsweet.JSweetConfig.ANNOTATION_KEEP_USES;
 import static org.jsweet.JSweetConfig.ANNOTATION_OBJECT_TYPE;
 import static org.jsweet.JSweetConfig.ANNOTATION_STRING_TYPE;
 import static org.jsweet.JSweetConfig.DEPRECATED_UTIL_CLASSNAME;
