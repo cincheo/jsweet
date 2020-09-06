@@ -4721,13 +4721,22 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
         if (typeChecker.checkType(newClass, null, newClass.getIdentifier(), getCompilationUnit())) {
 
             boolean applyVarargs = true;
-            ExecutableElement methSym = (ExecutableElement) toElement(newClass);
-            if (newClass.getArguments().size() == 0 || !util().hasVarargs(methSym) //
+
+            Element constructorElement = toElement(newClass);
+            if (!(constructorElement instanceof ExecutableElement)) {
+                // not in source path
+                print("null");
+                return;
+            }
+            ExecutableElement constructorExecutableElement = (ExecutableElement) constructorElement;
+
+            if (newClass.getArguments().size() == 0 || !util().hasVarargs(constructorExecutableElement) //
                     || toType(util().last(newClass.getArguments())).getKind() != TypeKind.ARRAY
                     // we dont use apply if var args type differ
                     || !types().erasure(((ArrayType) toType(util().last(newClass.getArguments()))).getComponentType())
                             .equals(types().erasure(
-                                    ((ArrayType) util().last(methSym.getParameters()).asType()).getComponentType()))) {
+                                    ((ArrayType) util().last(constructorExecutableElement.getParameters()).asType())
+                                            .getComponentType()))) {
                 applyVarargs = false;
             }
             if (applyVarargs) {
