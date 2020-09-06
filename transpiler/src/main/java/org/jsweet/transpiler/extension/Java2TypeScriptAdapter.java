@@ -388,6 +388,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
         // So, we should probably find a better way to erase invocations (or at
         // least do it conditionally).
         if (hasAnnotationType(invocationElement.getMethod(), ANNOTATION_ERASED)
+                && !hasAnnotationType(invocationElement.getMethod(), ANNOTATION_KEEP_USES)
                 && !isAmbientDeclaration(invocationElement.getMethod())) {
             print("null /*erased method " + invocationElement.getMethod() + "*/");
             return true;
