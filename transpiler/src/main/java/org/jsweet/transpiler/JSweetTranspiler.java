@@ -788,6 +788,10 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
         ErrorCountTranspilationHandler errorHandler = new ErrorCountTranspilationHandler(transpilationHandler);
         Collection<SourceFile> jsweetSources = asList(files).stream() //
                 .filter(source -> source.getJavaFile() != null).collect(toList());
+        if (isIgnoreJavaErrors()) {
+            errorHandler.report(JSweetProblem.USER_WARNING, null,
+                    "Java compilation errors are ignored - make sure you validate your Java code another way in order to avoid subsequent transpilation errors");
+        }
 
         long startJava2TsTimeNanos = System.nanoTime();
         java2ts(errorHandler, excludedSourcePaths, jsweetSources.toArray(new SourceFile[0]));
