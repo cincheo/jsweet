@@ -599,7 +599,7 @@ public class Util {
         // return the best match
         if (logger.isTraceEnabled()) {
             logger.trace("method declaration match for " + typeSymbol + "." + methodName + " - " + methodType + " : "
-                    + bestMatch + " score=" + lastScore);
+                    + (bestMatch == null ? "" : bestMatch.getEnclosingElement() + ".") + bestMatch + " score=" + lastScore);
         }
         return bestMatch;
     }
@@ -612,7 +612,7 @@ public class Util {
 
         int score = 0;
 
-        boolean isAbstract = candidate.getModifiers().contains(Modifier.ABSTRACT);
+        boolean isAbstract = candidate.getModifiers().contains(Modifier.ABSTRACT) && !candidate.isDefault();
         if (isAbstract) {
             score -= 30;
         }
