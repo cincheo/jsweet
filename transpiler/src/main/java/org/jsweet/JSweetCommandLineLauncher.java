@@ -73,6 +73,10 @@ import com.martiansoftware.jsap.stringparsers.FileStringParser;
         Force the Java compiler to use a specific encoding (UTF-8, UTF-16, ...).
         (default: UTF-8)
 
+  [--outEncoding <encoding>]
+        Force the generated TypeScript output code for the given encoding (UTF-8, UTF-16, ...).
+        (default: UTF-8)
+
   (-i|--input) input1:input2:...:inputN 
         An input directory (or column-separated input directories) containing
         Java files to be transpiled. Java files will be recursively looked up in
@@ -310,6 +314,15 @@ public class JSweetCommandLineLauncher {
         optionArg.setDefault("UTF-8");
         optionArg.setHelp("Force the Java compiler to use a specific encoding (UTF-8, UTF-16, ...).");
         jsap.registerParameter(optionArg);
+        
+        // Output encoding
+        optionArg = new FlaggedOption("outEncoding");
+        optionArg.setLongFlag("outEncoding");
+        optionArg.setStringParser(JSAP.STRING_PARSER);
+        optionArg.setRequired(false);
+        optionArg.setDefault("UTF-8");
+        optionArg.setHelp("Force the generated TypeScript output code for the given encoding (UTF-8, UTF-16, ...).");
+        jsap.registerParameter(optionArg);
 
         // Input directories
         optionArg = new FlaggedOption("input");
@@ -412,10 +425,9 @@ public class JSweetCommandLineLauncher {
 
         switchArg = new Switch("ignoreJavaErrors");
         switchArg.setLongFlag("ignoreJavaErrors");
-        switchArg.setHelp(
-                "Ignore Java compilation errors. Do not use unless you know what you are doing.");
+        switchArg.setHelp("Ignore Java compilation errors. Do not use unless you know what you are doing.");
         jsap.registerParameter(switchArg);
-        
+
         // Generates declarations
         switchArg = new Switch("declaration");
         switchArg.setLongFlag("declaration");
@@ -743,6 +755,9 @@ public class JSweetCommandLineLauncher {
                     }
                     if (jsapArgs.userSpecified("encoding")) {
                         transpiler.setEncoding(jsapArgs.getString("encoding"));
+                    }
+                    if (jsapArgs.userSpecified("outEncoding")) {
+                        transpiler.setOutEncoding(jsapArgs.getString("outEncoding"));
                     }
                     if (jsapArgs.userSpecified("enableAssertions")) {
                         transpiler.setIgnoreAssertions(!jsapArgs.getBoolean("enableAssertions"));
