@@ -342,10 +342,9 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 
         if (invocationElement.getMethod() == null && context.options.isIgnoreJavaErrors()) {
             // may happen if the method is not available
-            print("null");
-            return true;
+            return false;
         }
-        
+
         Element targetTypeElement = util().getMethodOwner(invocationElement.getMethod());
         TypeMirror targetType = null;
         if (targetTypeElement != null) {
@@ -362,7 +361,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
         // least do it conditionally).
         if (hasAnnotationType(invocationElement.getMethod(), ANNOTATION_ERASED)
                 && !isAmbientDeclaration(invocationElement.getMethod())) {
-            print("null");
+            print("null /*erased method " + invocationElement.getMethod() + "*/");
             return true;
         }
 
@@ -884,12 +883,12 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
                     && TypeChecker.FORBIDDEN_JDK_FUNCTIONAL_METHODS.contains(targetMethodName)) {
                 report(invocationElement, JSweetProblem.JDK_METHOD, targetMethodName);
             }
-            
+
             if (targetClassName.equals(Function.class.getName()) && targetMethodName.equals("identity")) {
                 print("(x=>x)");
                 return true;
             }
-            
+
             printFunctionalInvocation(invocationElement.getTargetExpression(), targetMethodName,
                     invocationElement.getArguments());
             return true;
@@ -1375,7 +1374,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
                     .print(target).print(")");
         }
     }
-    
+
     protected void printFunctionalInvocation2(ExtendedElement target, String functionName,
             List<ExtendedElement> arguments) {
         print("((target => (target['" + functionName + "'] === undefined)?target:target['" + functionName + "'])(")

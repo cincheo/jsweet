@@ -4155,12 +4155,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             ClassTree p = getParent(ClassTree.class);
             methSym = p == null ? null : util().findMethodDeclarationInType(toElement(p), "this", type);
         }
+
+        TypeMirror methodType = toType(methodInvocationTree.getMethodSelect());
         for (int i = 0; i < argsLength; i++) {
             ExpressionTree arg = methodInvocationTree.getArguments().get(i);
-            ExecutableType methodType = toType(methodInvocationTree.getMethodSelect());
-            if (methodType != null) {
+            if (methodType != null && methodType.getKind() == TypeKind.EXECUTABLE) {
                 // varargs transmission with TS ... notation
-                List<? extends TypeMirror> argTypes = methodType.getParameterTypes();
+                List<? extends TypeMirror> argTypes = ((ExecutableType) methodType).getParameterTypes();
                 TypeMirror paramType = i < argTypes.size() ? argTypes.get(i) : util().last(argTypes);
                 if (i == argsLength - 1 && !applyVarargs && methSym != null && methSym.isVarArgs()) {
                     if (arg instanceof IdentifierTree && toElement((IdentifierTree) arg) instanceof VariableElement) {
@@ -4176,7 +4177,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     print(arg);
                 }
             } else {
-                // this should never happen but we fall back just in case
+                // fall back when method type is wrongly resolved
                 print(arg);
             }
             if (i < argsLength - 1) {
@@ -4725,7 +4726,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             Element constructorElement = toElement(newClass);
             if (!(constructorElement instanceof ExecutableElement)) {
                 // not in source path
-                print("null");
+                print("null /*cannot resolve " + newClass.getIdentifier() + "*/");
                 return;
             }
             ExecutableElement constructorExecutableElement = (ExecutableElement) constructorElement;
@@ -4776,7 +4777,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     print("(").printConstructorArgList(newClass, false).print(")");
                 } else {
                     if (constructorExecutableElement.asType().getKind() == TypeKind.ERROR) {
-                        print("null");
+                        print("null /*cannot resolve " + newClass.getIdentifier() + "*/");
                         return;
                     }
                     print("new ");
