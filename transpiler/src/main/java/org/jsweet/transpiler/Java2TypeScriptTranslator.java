@@ -4775,6 +4775,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     }
                     print("(").printConstructorArgList(newClass, false).print(")");
                 } else {
+                    if (constructorExecutableElement.asType().getKind() == TypeKind.ERROR) {
+                        print("null");
+                        return;
+                    }
                     print("new ");
                     if (mappedType != null) {
                         print(Java2TypeScriptTranslator.mapConstructorType(mappedType));
