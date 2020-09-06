@@ -96,6 +96,7 @@ import org.jsweet.transpiler.model.LiteralElement;
 import org.jsweet.transpiler.model.MethodInvocationElement;
 import org.jsweet.transpiler.model.NewClassElement;
 import org.jsweet.transpiler.model.VariableAccessElement;
+import org.jsweet.transpiler.model.support.MethodInvocationElementSupport;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.EnhancedForLoopTree;
@@ -337,12 +338,39 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
         }
     }
 
+    private boolean substituteUnresolvedMethodInvocation(MethodInvocationTree invocation) {
+        // this is a patch that should be removed when Class.isInstance gets supported
+        // by J4TS
+        if (invocation.getMethodSelect() instanceof MemberSelectTree) {
+            MemberSelectTree fieldAccess = (MemberSelectTree) invocation.getMethodSelect();
+            String methName = fieldAccess.getIdentifier().toString();
+            TypeElement typeElement = util().getTypeElementForTree(fieldAccess.getExpression(),
+                    getCompilationUnitTree());
+            String typeName = typeElement != null ? typeElement.toString() : null;
+            if (typeName != null && "isInstance".equals(methName) && Class.class.getName().equals(typeName)) {
+                printMacroName(fieldAccess.toString());
+                print("((c:any,o:any) => { if(typeof c === 'string') return (o.constructor && o.constructor")
+                        .print("[\"" + Java2TypeScriptTranslator.INTERFACES_FIELD_NAME + "\"] && o.constructor")
+                        .print("[\"" + Java2TypeScriptTranslator.INTERFACES_FIELD_NAME + "\"].indexOf(c) >= 0) || (o")
+                        .print("[\"" + Java2TypeScriptTranslator.INTERFACES_FIELD_NAME + "\"] && o")
+                        .print("[\"" + Java2TypeScriptTranslator.INTERFACES_FIELD_NAME
+                                + "\"].indexOf(c) >= 0); else if(typeof c === 'function') return (o instanceof c) || (o.constructor && o.constructor === c); })(");
+                getPrinter().print(fieldAccess.getExpression()).print(",").print(invocation.getArguments().get(0))
+                        .print(")");
+                return true;
+            }
+        }
+        print("/*unresolved method*/");
+        getPrinter().printDefaultMethodInvocation(invocation);
+        return true;
+    }
+
     @Override
     public boolean substituteMethodInvocation(MethodInvocationElement invocationElement) {
 
         if (invocationElement.getMethod() == null && context.options.isIgnoreJavaErrors()) {
             // may happen if the method is not available
-            return false;
+            return substituteUnresolvedMethodInvocation(((MethodInvocationElementSupport) invocationElement).getTree());
         }
 
         Element targetTypeElement = util().getMethodOwner(invocationElement.getMethod());
