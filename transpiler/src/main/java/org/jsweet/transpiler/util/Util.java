@@ -560,6 +560,7 @@ public class Util {
     /**
      * Finds the method declaration within the given type, for the given invocation.
      */
+    @Deprecated
     public ExecutableElement findMethodDeclarationInType(TypeElement typeSymbol, MethodInvocationTree invocation) {
         ExpressionTree method = invocation.getMethodSelect();
         String methName = method.toString().substring(method.toString().lastIndexOf('.') + 1);
@@ -572,6 +573,7 @@ public class Util {
     /**
      * Finds the method in the given type that matches the given name and signature.
      */
+    @Deprecated
     public ExecutableElement findMethodDeclarationInType(TypeElement typeSymbol, String methodName,
             ExecutableType methodType) {
         return findMethodDeclarationInType(typeSymbol, methodName, methodType, false);
@@ -580,6 +582,7 @@ public class Util {
     /**
      * Finds the method in the given type that matches the given name and signature.
      */
+    @Deprecated
     public ExecutableElement findMethodDeclarationInType(TypeElement typeSymbol, String methodName,
             ExecutableType methodType, boolean overrides) {
 
@@ -607,6 +610,26 @@ public class Util {
         return bestMatch;
     }
 
+    /**
+     * Finds the method in the given type that matches the given name and signature.
+     */
+    public ExecutableElement findMethodDeclarationInType2(TypeElement typeSymbol, String methodName,
+            ExecutableType methodType) {
+
+        // gathers all the potential method matches
+        List<ExecutableElement> candidates = new LinkedList<>();
+        collectMatchingMethodDeclarationsInType(typeSymbol, methodName, methodType, false, candidates);
+
+        // score them
+        for (ExecutableElement candidate : candidates) {
+            if (context.types.isSubsignature((ExecutableType) candidate.asType(), methodType)) {
+                return candidate;
+            }
+        }
+        return null;
+    }
+
+    @Deprecated
     private static int getCandidateMethodMatchScore(ExecutableElement candidate, ExecutableType methodType) {
 
         if (methodType == null || candidate.getParameters().size() != methodType.getParameterTypes().size()) {

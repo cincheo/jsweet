@@ -1679,7 +1679,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             getScope().defaultMethodScope = true;
             for (DefaultMethodEntry entry : defaultMethods) {
 
-                ExecutableElement methodElementMatch = util().findMethodDeclarationInType(classTypeElement,
+                ExecutableElement methodElementMatch = util().findMethodDeclarationInType2(classTypeElement,
                         entry.methodTree.getName().toString(), entry.methodType);
                 if (methodElementMatch == null || methodElementMatch == entry.methodElement) {
                     getAdapter().typeVariablesToErase
