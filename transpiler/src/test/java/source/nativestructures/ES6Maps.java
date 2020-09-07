@@ -2,6 +2,8 @@ package source.nativestructures;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 public class ES6Maps {
     public static void main(String[] args) {
@@ -43,6 +45,22 @@ public class ES6Maps {
         assert m1.size() == 2;
         assert m1.get("1") == 2;
         assert m1.get("2") == 4;
+
+        // entrySet
+        Set<Entry<String, Integer>> entrySet = m2.entrySet();
+        assert entrySet.size() == 2;
+        boolean firstFound = false;
+        boolean secondFound = false;
+        for (Entry<String, Integer> e : entrySet) {
+            if (e.getKey() == "1" && e.getValue() == 2) {
+                firstFound = true;
+            } else if (e.getKey() == "2" && e.getValue() == 4) {
+                secondFound = true;
+            }
+        }
+
+        assert firstFound;
+        assert secondFound;
 
         // new HashMap(Collection<>);
         Map<String, Integer> m3 = new HashMap<>(m2);

@@ -117,7 +117,7 @@ import com.sun.source.tree.Tree;
  */
 public class Java2TypeScriptAdapter extends PrinterAdapter {
 
-    private final static String VAR_DECL_KEYWORD = Java2TypeScriptTranslator.VAR_DECL_KEYWORD;
+    protected final static String VAR_DECL_KEYWORD = Java2TypeScriptTranslator.VAR_DECL_KEYWORD;
 
     public Java2TypeScriptTranslator getPrinter() {
         return (Java2TypeScriptTranslator) super.getPrinter();

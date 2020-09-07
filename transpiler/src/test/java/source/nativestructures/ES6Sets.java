@@ -1,6 +1,8 @@
 package source.nativestructures;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class ES6Sets {
@@ -137,5 +139,12 @@ public class ES6Sets {
         assert "1".equals(ar[0]) || "2".equals(ar[0]);
         assert "1".equals(ar[1]) || "2".equals(ar[1]);
         assert !ar[0].equals(ar[1]);
+
+        // forEach
+        List<String> iterated = new ArrayList<>();
+        s11.forEach(str -> iterated.add(str));
+        assert iterated.size() == 2;
+        assert iterated.get(0) == "1";
+        assert iterated.get(1) == "2";
     }
 }
