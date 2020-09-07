@@ -29,7 +29,6 @@ import javax.lang.model.element.VariableElement;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
-import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.util.TreeScanner;
@@ -58,16 +57,33 @@ public class ConstAnalyzer extends TreeScanner<Void, Trees> {
         return modifiedVariables;
     }
 
+    private ElementKind variableKind = ElementKind.LOCAL_VARIABLE;
+    private boolean initializationOnly = false;
+
     /**
-     * Creates a new constant variable analyzer.
+     * Create a constant variable analyzer on local variables only (default).
      */
     public ConstAnalyzer(JSweetContext context) {
         this.context = context;
     }
 
+    /**
+     * Create a constant variable analyzer on the given kind of variable.
+     * 
+     * @param variableKind       the variable kind to analyze (if null, analyzes all
+     *                           kinds of variables)
+     * @param initializationOnly only takes into account direct assignments and not
+     *                           self-dependent modifications
+     */
+    public ConstAnalyzer(JSweetContext context, ElementKind variableKind, boolean initializationOnly) {
+        this(context);
+        this.variableKind = variableKind;
+        this.initializationOnly = initializationOnly;
+    }
+
     private void registerModification(Tree tree) {
         Element element = context.util.getElementForTree(tree, compilationUnitTree);
-        if (tree instanceof IdentifierTree && element.getKind() == ElementKind.LOCAL_VARIABLE) {
+        if (element != null && (variableKind == null || element.getKind() == variableKind)) {
             modifiedVariables.add((VariableElement) element);
         }
     }
@@ -80,13 +96,16 @@ public class ConstAnalyzer extends TreeScanner<Void, Trees> {
 
     @Override
     public Void visitAssignment(AssignmentTree assign, Trees trees) {
+        // TODO: should check if rhs contains self reference for initialization only
         registerModification(assign.getVariable());
         return super.visitAssignment(assign, trees);
     }
 
     @Override
     public Void visitCompoundAssignment(CompoundAssignmentTree assign, Trees trees) {
-        registerModification(assign.getVariable());
+        if (!this.initializationOnly) {
+            registerModification(assign.getVariable());
+        }
         return super.visitCompoundAssignment(assign, trees);
     }
 
@@ -97,7 +116,9 @@ public class ConstAnalyzer extends TreeScanner<Void, Trees> {
         case PREFIX_DECREMENT:
         case POSTFIX_INCREMENT:
         case PREFIX_INCREMENT:
-            registerModification(unary.getExpression());
+            if (!this.initializationOnly) {
+                registerModification(unary.getExpression());
+            }
         default:
         }
         return super.visitUnary(unary, trees);

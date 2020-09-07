@@ -1734,7 +1734,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             int liCount = context.getStaticInitializerCount(classTypeElement);
             String prefix = getClassName(classTypeElement) + ".";
             printIndent().print("static __static_initialize() { ");
-            print("if(!" + prefix + "__static_initialized) { ");
+            print("if (!" + prefix + "__static_initialized) { ");
             print(prefix + "__static_initialized = true; ");
             for (int i = 0; i < liCount; i++) {
                 print(prefix + "__static_initializer_" + i + "(); ");
@@ -2705,7 +2705,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                 print(" else ");
             }
             wasPrinted = true;
-            print("if(");
+            print("if (");
             printMethodParamsTest(overload, overloadMethodEntry);
             print(") ");
             if (methodElement.getKind() == ElementKind.CONSTRUCTOR
@@ -2944,29 +2944,28 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
         } else if (var.getInitializer() == null) {
             if (doesMemberNameRequireQuotes(name)) {
                 printIndent();
-                print("if(").print("this['").print(name).print("']").print("===undefined) ");
+                print("if (").print("this['").print(name).print("']").print(" === undefined) { ");
                 if (context.options.isNonEnumerableTransients()
                         && varElement.getModifiers().contains(Modifier.TRANSIENT)) {
                     print("Object.defineProperty(this, " + getStringLiteralQuote() + name + getStringLiteralQuote()
                             + ", { value: ").print(getAdapter().getVariableInitialValue(varElement))
-                                    .print(", enumerable: false });").println();
+                                    .print(", enumerable: false }); } ").println();
                 } else {
-                    printIndent().print("if(").print("this.").print(name).print("===undefined) ");
-                    if (context.options.isNonEnumerableTransients()
-                            && varElement.getModifiers().contains(Modifier.TRANSIENT)) {
-                        print("Object.defineProperty(this, " + getStringLiteralQuote() + name + getStringLiteralQuote()
-                                + ", { value: ").print(getAdapter().getVariableInitialValue(varElement))
-                                        .print(", enumerable: false });").println();
-                    } else {
-                        print("this.").print(name).print(" = ").print(getAdapter().getVariableInitialValue(varElement))
-                                .print(";").println();
-                    }
+                    print("this.").print(name).print(" = ").print(getAdapter().getVariableInitialValue(varElement))
+                            .print("; } ").println();
                 }
 
             } else {
-                printIndent();
-                print("if(").print("this.").print(name).print("===undefined) this.").print(name).print(" = ")
-                        .print(getAdapter().getVariableInitialValue(varElement)).print(";").println();
+                printIndent().print("if (").print("this.").print(name).print(" === undefined) { ");
+                if (context.options.isNonEnumerableTransients()
+                        && varElement.getModifiers().contains(Modifier.TRANSIENT)) {
+                    print("Object.defineProperty(this, " + getStringLiteralQuote() + name + getStringLiteralQuote()
+                            + ", { value: ").print(getAdapter().getVariableInitialValue(varElement))
+                                    .print(", enumerable: false }); } ").println();
+                } else {
+                    print("this.").print(name).print(" = ").print(getAdapter().getVariableInitialValue(varElement))
+                            .print("; }").println();
+                }
             }
         }
     }
@@ -3046,7 +3045,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
         ExecutableElement methodElement = toElement(method);
         if (method.getBody() != null) {
             boolean skipFirst = false;
-            boolean initialized = false;
             List<? extends StatementTree> statements = method.getBody().getStatements();
             if (!statements.isEmpty() && statements.get(0).toString().startsWith("this(")) {
                 skipFirst = true;
@@ -3057,7 +3055,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                 for (OverloadMethodEntry overloadMethodEntry : overload.getEntries()) {
                     if (overloadMethodEntry.methodElement.equals(ms)) {
                         printIndent();
-                        initialized = true;
                         printInlinedMethod(overload, overloadMethodEntry.methodTree, inv.getArguments());
                         println();
                     }
@@ -3075,20 +3072,20 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                 enter(method.getBody());
                 List<? extends StatementTree> actualStatements = skipFirst ? statements.subList(1, statements.size())
                         : statements;
+
+                if (isConstructor) {
+                    getScope().hasDeclaredConstructor = true;
+                }
+
                 if (!actualStatements.isEmpty() && actualStatements.get(0).toString().startsWith("super(")) {
                     printBlockStatement(actualStatements.get(0));
-                    printFieldInitializations();
-                    if (!initialized) {
-                        printInstanceInitialization(getParent(ClassTree.class), methodElement);
-                    }
+                    printFieldInitializations(actualStatements);
                     List<? extends StatementTree> nextStatements = actualStatements.subList(1, actualStatements.size());
                     if (!nextStatements.isEmpty()) {
                         printBlockStatements(nextStatements);
                     }
                 } else {
-                    if (!initialized) {
-                        printInstanceInitialization(getParent(ClassTree.class), methodElement);
-                    }
+                    printFieldInitializations(actualStatements);
                     if (!actualStatements.isEmpty() || !isConstructor) {
                         printIndent();
                     }
@@ -3130,7 +3127,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
         endIndent().printIndent().print("}");
     }
 
-    private void printFieldInitializations() {
+    private void printFieldInitializations(List<? extends StatementTree> potentialInitializationStatements) {
         ClassTree clazz = getParent(ClassTree.class);
         for (Tree t : clazz.getMembers()) {
             if (t instanceof VariableTree && !getScope().fieldsWithInitializers.contains(t)) {
@@ -3143,15 +3140,15 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                         name = context.getFieldNameMapping(fieldElement);
                     }
 
-                    printIndent().print("if(").print("this.").print(name).print("===undefined) ");
+                    printIndent().print("if (").print("this.").print(name).print(" === undefined) { ");
                     if (context.options.isNonEnumerableTransients()
                             && fieldElement.getModifiers().contains(Modifier.TRANSIENT)) {
                         print("Object.defineProperty(this, " + getStringLiteralQuote() + name + getStringLiteralQuote()
                                 + ", { value: ").print(getAdapter().getVariableInitialValue(fieldElement))
-                                        .print(", enumerable: false });");
+                                        .print(", enumerable: false }); } ");
                     } else {
                         print("this.").print(name).print(" = ")
-                                .print(getAdapter().getVariableInitialValue(fieldElement)).print(";").println();
+                                .print(getAdapter().getVariableInitialValue(fieldElement)).print("; } ").println();
                     }
                 }
             }
@@ -3669,7 +3666,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     }
                 }
                 if (varTree.getInitializer() != null && !isDefinitionScope) {
-                    print("if(" + prefix).print(name).print(" == null) ").print(prefix).print(name).print(" = ");
+                    print("if (" + prefix).print(name).print(" == null) { ").print(prefix).print(name).print(" = ");
                     /*
                      * if (getScope().enumWrapperClassScope) { NewClassTree newClass =
                      * (NewClassTree) varDecl.init; print("new "
@@ -3680,7 +3677,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                         print(varTree.getInitializer());
                     }
                     // }
-                    print("; ");
+                    print("; } ");
                 }
                 print("return ").print(prefix).print(name).print("; }");
                 if (!globals && context.bundleMode) {
@@ -5612,7 +5609,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                 }
             } else {
                 print("<any> (function(dims) { " + VAR_DECL_KEYWORD
-                        + " allocate = function(dims) { if(dims.length==0) { return "
+                        + " allocate = function(dims) { if (dims.length === 0) { return "
                         + util().getTypeInitialValue(newArrayElementType) + "; } else { " + VAR_DECL_KEYWORD
                         + " array = []; for(" + VAR_DECL_KEYWORD
                         + " i = 0; i < dims[0]; i++) { array.push(allocate(dims.slice(1))); } return array; }}; return allocate(dims);})");
@@ -6331,8 +6328,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
     public Void visitAssert(AssertTree assertion, Trees trees) {
         if (!context.options.isIgnoreAssertions()) {
             String assertCode = assertion.toString().replace("\"", "'");
-            print("if(!(").print(assertion.getCondition()).print(
-                    ")) throw new Error(\"Assertion error line " + getCurrentLine() + ": " + assertCode + "\");");
+            print("if (!(").print(assertion.getCondition()).print(
+                    ")) { throw new Error(\"Assertion error line " + getCurrentLine() + ": " + assertCode + "\"); }");
         }
         return returnNothing();
     }
