@@ -1125,6 +1125,21 @@ public class PrinterAdapter {
     }
 
     /**
+     * Optionally substitutes the default variable declaration keyword
+     * (<code>var</code>, <code>let</code>, <code>const</code>) for the given
+     * variable. By default, regular variables are declared with the
+     * <code>let</code> keyword, except for unmodified variables, which are declared
+     * with the <code>const</code> keyword.
+     * 
+     * @param variable the target variable
+     * @return true if the default keyword has been substituted, false otherwise
+     *         (default is false)
+     */
+    public boolean substituteVariableDeclarationKeyword(VariableElement variable) {
+        return false;
+    }
+
+    /**
      * Returns the current compilation unit element.
      */
     public CompilationUnitElement getCompilationUnit() {
