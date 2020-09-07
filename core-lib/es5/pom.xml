@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.jsweet</groupId>
@@ -13,7 +14,7 @@
 		<java.version.release>11</java.version.release>
 		<java.version>1.${java.version.release}</java.version>
 	</properties>
-	
+
 	<developers>
 		<developer>
 			<id>rpawlak</id>
@@ -50,7 +51,7 @@
 					</compilerArgs>
 				</configuration>
 			</plugin>
-			
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
@@ -69,7 +70,7 @@
 					</execution>
 				</executions>
 			</plugin>
-			
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
@@ -80,10 +81,11 @@
 					<encoding>UTF-8</encoding>
 					<fixTags>all</fixTags>
 					<failOnError>false</failOnError>
-                    <!-- leave these options unchanged to place the Javadoc at the right place for jsweet.org -->
-                    <reportOutputDirectory>/var/www/apidocs/org/jsweet</reportOutputDirectory>
-                    <destDir>${project.artifactId}/${project.version}</destDir>
-                    <!-- end of jsweet.org configuration -->
+					<!-- leave these options unchanged to place the Javadoc at the right 
+						place for jsweet.org -->
+					<reportOutputDirectory>/var/www/apidocs/org/jsweet</reportOutputDirectory>
+					<destDir>${project.artifactId}/${project.version}</destDir>
+					<!-- end of jsweet.org configuration -->
 					<header><![CDATA[<a href="http://www.jsweet.org" target="_blank" style="text-transform: lowercase">http://www.jsweet.org<a>]]></header>
 					<bottom><![CDATA[<center>Copyright 2015, <a href="http://www.cincheo.org" target="_blank">Cinchéo SAS<a> - Web site: <a href="http://www.jsweet.org" target="_blank">http://www.jsweet.org<a><center>]]></bottom>
 					<stylesheetfile>/var/www/apidocs/stylesheet.css</stylesheetfile>
@@ -97,7 +99,31 @@
 					</execution>
 				</executions>
 			</plugin>
-			
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-gpg-plugin</artifactId>
+				<version>1.6</version>
+				<configuration>
+					<skip>${skipSigning}</skip>
+
+					<!-- This is necessary for gpg to not try to use the pinentry programs -->
+					<gpgArguments>
+						<arg>--pinentry-mode</arg>
+						<arg>loopback</arg>
+					</gpgArguments>
+				</configuration>
+				<executions>
+					<execution>
+						<id>sign-artifacts</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>sign</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
 		</plugins>
 		<pluginManagement>
 			<plugins>
@@ -147,5 +173,5 @@
 		<name>JSweet</name>
 		<url>http://www.jsweet.org</url>
 	</organization>
-	
+
 </project>
