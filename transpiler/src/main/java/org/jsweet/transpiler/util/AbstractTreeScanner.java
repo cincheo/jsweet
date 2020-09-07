@@ -508,6 +508,13 @@ public abstract class AbstractTreeScanner extends TreePathScanner<Void, Trees> {
     }
 
     /**
+     * Gets the transpilation handler for this scanner.
+     */
+    public TranspilationHandler getLogHandler() {
+        return logHandler;
+    }
+
+    /**
      * @see Util#getElementForTree(Tree, CompilationUnitTree)
      */
     protected <T extends Element> T toElement(Tree tree) {

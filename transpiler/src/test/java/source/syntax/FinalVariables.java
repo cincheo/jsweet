@@ -33,103 +33,114 @@ import def.js.Math;
 
 public class FinalVariables {
 
-	void m1(HTMLElement e) {
-		NodeList nodes = document.querySelectorAll("form .form-control");
-		for (int i = 0; i < nodes.length; i++) {
-			HTMLElement element = (HTMLElement) nodes.$get(i);
-			element.addEventListener("keyup", (evt) -> {
-				console.log("typing...");
-				element.classList.add("hit");
-			});
-		}
-	}
+    int finalField;
+    int modifiedField;
 
-	void m2(HTMLElement e) {
-		NodeListOf<Element> elements = document.querySelectorAll("form .form-control");
-		for (Element element : elements) {
-			element.addEventListener("keyup", (evt) -> {
-				console.log("typing...");
-				// element.classList.add("hit");
-			});
-		}
-	}
+    void m1(HTMLElement e) {
+        modifiedField++;
 
-	private HTMLDivElement spinner;
+        NodeList nodes = document.querySelectorAll("form .form-control");
+        for (int i = 0; i < nodes.length; i++) {
+            HTMLElement element = (HTMLElement) nodes.$get(i);
+            element.addEventListener("keyup", (evt) -> {
+                console.log("typing...");
+                element.classList.add("hit");
+            });
+        }
+    }
 
-	Promise<Double> spawnProgressBar(int index) {
+    void m2(HTMLElement e) {
+        NodeListOf<Element> elements = document.querySelectorAll("form .form-control");
+        for (Element element : elements) {
+            element.addEventListener("keyup", (evt) -> {
+                console.log("typing...");
+                // element.classList.add("hit");
+            });
+        }
+    }
 
-		HTMLDivElement progressBackground = document.createElement(div);
-		progressBackground.classList.add("background");
+    private HTMLDivElement spinner;
 
-		HTMLDivElement progressText = document.createElement(div);
-		progressText.classList.add("text");
+    Promise<Double> spawnProgressBar(int index) {
 
-		HTMLDivElement progress = document.createElement(div);
-		progress.classList.add("progress");
-		progress.appendChild(progressBackground);
-		progress.appendChild(progressText);
+        HTMLDivElement progressBackground = document.createElement(div);
+        progressBackground.classList.add("background");
 
-		HTMLDivElement bar = document.createElement(div);
-		bar.classList.add("bar");
-		bar.id = "bar" + index;
-		bar.dataset.$set("progress", "0");
-		bar.addEventListener(click, (event) -> {
-			double newProgress = Math.round((100 * (bar.clientHeight - event.clientY) / bar.clientHeight));
-			console.log("clicked on " + event.offsetY + " percent=" + newProgress + " height=" + bar.clientHeight);
-			bar.dataset.$set("progress", "" + newProgress);
-			return null;
-		});
-		bar.appendChild(progress);
-		this.spinner.appendChild(bar);
+        HTMLDivElement progressText = document.createElement(div);
+        progressText.classList.add("text");
 
-		double startTime = new Date().getTime();
-		return new Promise<Double>((Callback<Consumer<Double>, Consumer<Object>>) //
-		(resolve, reject) -> {
-			this.onProgress(bar, resolve, reject, startTime);
-		});
-	}
+        HTMLDivElement progress = document.createElement(div);
+        progress.classList.add("progress");
+        progress.appendChild(progressBackground);
+        progress.appendChild(progressText);
 
-	void onProgress(HTMLDivElement progressBar, Consumer<Double> resolve, Consumer<Object> reject, double startTime) {
+        HTMLDivElement bar = document.createElement(div);
+        bar.classList.add("bar");
+        bar.id = "bar" + index;
+        bar.dataset.$set("progress", "0");
+        bar.addEventListener(click, (event) -> {
+            double newProgress = Math.round((100 * (bar.clientHeight - event.clientY) / bar.clientHeight));
+            console.log("clicked on " + event.offsetY + " percent=" + newProgress + " height=" + bar.clientHeight);
+            bar.dataset.$set("progress", "" + newProgress);
+            return null;
+        });
+        bar.appendChild(progress);
+        this.spinner.appendChild(bar);
 
-	}
+        double startTime = new Date().getTime();
+        return new Promise<Double>((Callback<Consumer<Double>, Consumer<Object>>) //
+        (resolve, reject) -> {
+            this.onProgress(bar, resolve, reject, startTime);
+        });
+    }
 
-	void handler(ANonFunctionalInterface i) {
+    void onProgress(HTMLDivElement progressBar, Consumer<Double> resolve, Consumer<Object> reject, double startTime) {
 
-	}
+    }
 
-	void explicitFinal() {
-		final String s = "abc";
-		handler(new ANonFunctionalInterface() {
-			@Override
-			public void m() {
-				System.out.println(s);
-			}
-		});
-	}
+    void handler(ANonFunctionalInterface i) {
 
-	void implicitFinal() {
-		String s = "abc";
-		handler(new ANonFunctionalInterface() {
-			@Override
-			public void m() {
-				System.out.println(s);
-			}
-		});
-	}
+    }
+
+    void explicitFinal() {
+        final String s = "abc";
+        handler(new ANonFunctionalInterface() {
+            @Override
+            public void m() {
+                System.out.println(s);
+            }
+        });
+    }
+
+    void implicitFinal() {
+        String s = "abc";
+        handler(new ANonFunctionalInterface() {
+            @Override
+            public void m() {
+                System.out.println(s);
+            }
+        });
+    }
+
+    String notFinal() {
+        String s = "abc";
+        s = "bcd";
+        return s;
+    }
 
 }
 
 // subset of promises API
 class Promise<R> {
-	public Promise(Callback<java.util.function.Consumer<R>, java.util.function.Consumer<Object>> callback) {
-	}
+    public Promise(Callback<java.util.function.Consumer<R>, java.util.function.Consumer<Object>> callback) {
+    }
 }
 
 @java.lang.FunctionalInterface
 interface Callback<T1, T2> {
-	public void apply(T1 p1, T2 p2);
+    public void apply(T1 p1, T2 p2);
 }
 
 interface ANonFunctionalInterface {
-	void m();
+    void m();
 }
