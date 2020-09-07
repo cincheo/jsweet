@@ -5699,10 +5699,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
     @Override
     public Void visitSwitch(SwitchTree switchStatement, Trees trees) {
         print("switch(");
-        print(switchStatement.getExpression());
-        if (types().isSameType(util().getType(char.class),
-                util().unboxedTypeOrType(toType(switchStatement.getExpression())))) {
-            print(".charCodeAt(0)");
+        if (!getAdapter().substituteSwitchStatementSelector(createExtendedElement(switchStatement.getExpression()))) {
+            print(switchStatement.getExpression());
+            if (types().isSameType(util().getType(char.class),
+                    util().unboxedTypeOrType(toType(switchStatement.getExpression())))) {
+                print(".charCodeAt(0)");
+            }
         }
         print(") {").println();
         for (CaseTree caseStatement : switchStatement.getCases()) {

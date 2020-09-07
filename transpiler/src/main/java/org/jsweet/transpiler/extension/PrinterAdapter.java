@@ -984,6 +984,13 @@ public class PrinterAdapter {
     }
 
     /**
+     * Substitutes if necessary the selector expression of a switch statement.
+     */
+    public boolean substituteSwitchStatementSelector(ExtendedElement selector) {
+        return parentAdapter == null ? false : parentAdapter.substituteSwitchStatementSelector(selector);
+    }
+
+    /**
      * This method is called after a type was printed.
      */
     public void afterType(TypeElement type) {
