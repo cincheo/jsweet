@@ -1264,14 +1264,14 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
                 switch (targetMethodName) {
                 case "getName":
                     printMacroName(targetMethodName);
-                    getPrinter().print("(c => c[\"" + Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR + "\"]?c[\""
+                    getPrinter().print("(c => typeof c === 'string'?c:c[\"" + Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR + "\"]?c[\""
                             + Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR + "\"]:c[\"name\"])(");
                     printTarget(invocationElement.getTargetExpression());
                     print(")");
                     return true;
                 case "getSimpleName":
                     printMacroName(targetMethodName);
-                    print("(c => c[\"" + Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR + "\"]?c[\""
+                    print("(c => typeof c === 'string'?(<any>c).substring((<any>c).lastIndexOf('.')+1):c[\"" + Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR + "\"]?c[\""
                             + Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR + "\"].substring(c[\""
                             + Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR
                             + "\"].lastIndexOf('.')+1):c[\"name\"].substring(c[\"name\"].lastIndexOf('.')+1))(");
