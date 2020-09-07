@@ -696,6 +696,23 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
     }
 
     /**
+     * Ensures that the module that corresponds to the given element is used
+     * (imported).
+     */
+    public void ensureModuleIsUsed(Element element) {
+        if (context.useModules) {
+            if (element instanceof TypeElement) {
+                ModuleImportDescriptor moduleImport = getAdapter().getModuleImportDescriptor(
+                        getCompilationUnitElement(), element.getSimpleName().toString(), (TypeElement) element);
+                if (moduleImport != null) {
+                    useModule(moduleImport);
+                }
+            }
+        }
+
+    }
+
+    /**
      * Prints a compilation unit tree.
      */
     @Override
@@ -3832,18 +3849,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                                     && varElement.getEnclosingElement() != selectedElement) {
                                 accessSubstituted = true;
                                 print(getRootRelativeName(varElement.getEnclosingElement())).print(".");
-                                if (context.useModules) {
-
-                                    if (varElement.getEnclosingElement() instanceof TypeElement) {
-                                        ModuleImportDescriptor moduleImport = getAdapter().getModuleImportDescriptor(
-                                                getCompilationUnitElement(),
-                                                varElement.getEnclosingElement().getSimpleName().toString(),
-                                                (TypeElement) varElement.getEnclosingElement());
-                                        if (moduleImport != null) {
-                                            useModule(moduleImport);
-                                        }
-                                    }
-                                }
+                                ensureModuleIsUsed(varElement.getEnclosingElement());
                             } else if (selectedElement instanceof PackageElement && context.useModules
                                     && !context.moduleBundleMode && memberElement instanceof TypeElement
                                     && util().isSourceElement(memberElement)) {
@@ -4419,19 +4425,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                                     if (!varEnclosingElement.getSimpleName().toString().equals(GLOBALS_PACKAGE_NAME)) {
                                         print(varEnclosingElement.getSimpleName().toString());
 
-                                        if (context.useModules) {
-                                            if (varEnclosingElement instanceof TypeElement) {
-                                                ModuleImportDescriptor moduleImport = getAdapter()
-                                                        .getModuleImportDescriptor(getCompilationUnitElement(),
-                                                                varEnclosingElement.getSimpleName().toString(),
-                                                                (TypeElement) varEnclosingElement);
-                                                if (moduleImport != null) {
-                                                    useModule(moduleImport);
-                                                }
-                                            }
-
-                                        }
-
+                                        ensureModuleIsUsed(varEnclosingElement);
                                         if (lazyInitializedStatic && util().isPartOfAnEnum(varEnclosingElement)) {
                                             print(ENUM_WRAPPER_CLASS_SUFFIX);
                                         }
@@ -5687,7 +5681,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                         }
                     }
                 } else {
-                    print(getRootRelativeName(types().asElement(expressionType)) + "." + caseTree.getExpression());
+                    Element expressionTypeElement = types().asElement(expressionType);
+                    print(getRootRelativeName(expressionTypeElement) + "." + caseTree.getExpression());
+                    ensureModuleIsUsed(expressionTypeElement);
                 }
             }
         } else {
@@ -6280,8 +6276,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     }
                 }
             }
-            if (parens)
+            if (parens) {
                 print("()");
+            }
         }
         println().printIndent();
 
