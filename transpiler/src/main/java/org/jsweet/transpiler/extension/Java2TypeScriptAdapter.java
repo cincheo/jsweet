@@ -38,7 +38,6 @@ import static org.jsweet.JSweetConfig.UTIL_CLASSNAME;
 import static org.jsweet.JSweetConfig.UTIL_PACKAGE;
 import static org.jsweet.JSweetConfig.isJSweetPath;
 
-import java.net.URL;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -190,8 +189,6 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
         addTypeMapping(Character.class.getName(), "string");
         addTypeMapping(CharSequence.class.getName(), "any");
         addTypeMapping(Void.class.getName(), "void");
-
-        addTypeMapping(URL.class.getName(), "URL");
 
         addTypeMapping("double", "number");
         addTypeMapping("int", "number");
