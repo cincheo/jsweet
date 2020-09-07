@@ -103,29 +103,29 @@ public class FinalVariables {
     }
 
     void explicitFinal() {
-        final String s = "abc";
+        final String explicitFinalString = "abc";
         handler(new ANonFunctionalInterface() {
             @Override
             public void m() {
-                System.out.println(s);
+                System.out.println(explicitFinalString);
             }
         });
     }
 
     void implicitFinal() {
-        String s = "abc";
+        String implicitFinalString = "abc";
         handler(new ANonFunctionalInterface() {
             @Override
             public void m() {
-                System.out.println(s);
+                System.out.println(implicitFinalString);
             }
         });
     }
 
     String notFinal() {
-        String s = "abc";
-        s = "bcd";
-        return s;
+        String notFinalString = "abc";
+        notFinalString = "bcd";
+        return notFinalString;
     }
 
 }
