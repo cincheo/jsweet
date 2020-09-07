@@ -3570,14 +3570,16 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     }
                 }
                 if (!(inArgListTail && (parent instanceof ForLoopTree))) {
-                    if (isDefinitionScope) {
-                        print("var ");
-                    } else {
-                        if (varElement.getModifiers().contains(Modifier.FINAL) || (!globals && constAnalyzer != null
-                                && !constAnalyzer.getModifiedVariables().contains(varElement))) {
-                            print("const ");
+                    if (!getAdapter().substituteVariableDeclarationKeyword(varElement)) {
+                        if (isDefinitionScope) {
+                            print("var ");
                         } else {
-                            print(VAR_DECL_KEYWORD + " ");
+                            if (varElement.getModifiers().contains(Modifier.FINAL) || (!globals && constAnalyzer != null
+                                    && !constAnalyzer.getModifiedVariables().contains(varElement))) {
+                                print("const ");
+                            } else {
+                                print(VAR_DECL_KEYWORD + " ");
+                            }
                         }
                     }
                 }

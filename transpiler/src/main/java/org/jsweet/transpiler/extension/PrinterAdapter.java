@@ -1113,15 +1113,19 @@ public class PrinterAdapter {
      * (default will keep order of appearance in the source code).
      */
     public Comparator<ExtendedElement> getClassMemberComparator() {
-        return new Comparator<ExtendedElement>() {
-            @Override
-            public int compare(ExtendedElement e1, ExtendedElement e2) {
-                SourcePosition sourcePosition1 = e1.getSourcePosition();
-                SourcePosition sourcePosition2 = e2.getSourcePosition();
+        if (parentAdapter == null) {
+            return new Comparator<ExtendedElement>() {
+                @Override
+                public int compare(ExtendedElement e1, ExtendedElement e2) {
+                    SourcePosition sourcePosition1 = e1.getSourcePosition();
+                    SourcePosition sourcePosition2 = e2.getSourcePosition();
 
-                return sourcePosition1.getStartPosition().compareTo(sourcePosition2.getStartPosition());
-            }
-        };
+                    return sourcePosition1.getStartPosition().compareTo(sourcePosition2.getStartPosition());
+                }
+            };
+        } else {
+            return parentAdapter.getClassMemberComparator();
+        }
     }
 
     /**
@@ -1136,7 +1140,7 @@ public class PrinterAdapter {
      *         (default is false)
      */
     public boolean substituteVariableDeclarationKeyword(VariableElement variable) {
-        return false;
+        return parentAdapter == null ? false : parentAdapter.substituteVariableDeclarationKeyword(variable);
     }
 
     /**
