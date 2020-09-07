@@ -1424,6 +1424,11 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
         case "valueOf":
             print(invocation.getArgument(0));
             return true;
+        case "toString":
+            if (invocation.getMethod().getModifiers().contains(Modifier.STATIC)) {
+                print(invocation.getArgument(0));
+                return true;
+            }
         }
 
         return false;
