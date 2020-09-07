@@ -43,6 +43,7 @@ import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetOptions;
 import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.ModuleImportDescriptor;
+import org.jsweet.transpiler.OverloadScanner.Overload;
 import org.jsweet.transpiler.model.ArrayAccessElement;
 import org.jsweet.transpiler.model.AssignmentElement;
 import org.jsweet.transpiler.model.AssignmentWithOperatorElement;
@@ -717,6 +718,17 @@ public class PrinterAdapter {
      */
     public boolean substituteVariableAccess(VariableAccessElement variableAccess) {
         return parentAdapter == null ? false : parentAdapter.substituteVariableAccess(variableAccess);
+    }
+
+    /**
+     * Substitutes overloaded method implementation
+     * 
+     * @param parentTypeElement parent class
+     * @param overload          overloaded method descriptors
+     * @return true if substituted
+     */
+    public boolean substituteOverloadMethodBody(TypeElement parentTypeElement, Overload overload) {
+        return false;
     }
 
     /**

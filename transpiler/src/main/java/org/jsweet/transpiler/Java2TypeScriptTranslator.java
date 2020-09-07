@@ -2651,6 +2651,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
     }
 
     private void printCoreOverloadMethod(MethodTree methodDecl, ClassTree parent, Overload overload) {
+        if (getAdapter().substituteOverloadMethodBody(toElement(parent), overload)) {
+            return;
+        }
+
         boolean wasPrinted = false;
         for (OverloadMethodEntry overloadMethodEntry : overload.getEntries()) {
             MethodTree method = overloadMethodEntry.methodTree;
