@@ -1292,9 +1292,10 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
                 } else {
                     switch (targetMethodName) {
                     case "equals":
-                        if (types().isSameType(invocationElement.getTargetExpression().getType(),
-                                util().getType(String.class))
-                                || util().isNumber(invocationElement.getTargetExpression().getType())) {
+                        TypeMirror t1 = util().unboxedTypeOrType(invocationElement.getTargetExpression().getType());
+                        TypeMirror t2 = util().unboxedTypeOrType(invocationElement.getArgument(0).getType());
+                        if (types().isSameType(t1, t2) && util().isCoreType(t1)) {
+
                             if (isInlinedExpression(invocationElement)) {
                                 print("(");
                             }

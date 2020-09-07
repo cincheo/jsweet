@@ -113,6 +113,8 @@ import com.sun.source.util.Trees;
 /**
  * Various utilities.
  * 
+ * Static utilities (independent from JSweet context) are accessible through Util.Static.myHelper()
+ * 
  * @author Renaud Pawlak
  * @author Louis Grignon
  */
@@ -745,6 +747,21 @@ public class Util {
             }
         }
         return null;
+    }
+
+    /**
+     * Returns true is the type is a boolean.
+     */
+    public boolean isBoolean(TypeMirror type) {
+        if (type == null) {
+            return false;
+        }
+        switch (type.getKind()) {
+        case BOOLEAN:
+            return true;
+        default:
+            return false;
+        }
     }
 
     /**
@@ -2324,12 +2341,18 @@ public class Util {
 
     }
 
+    /**
+     * Gets the type as a primitive type (by unboxing it) when possible.
+     * 
+     * @param type the origin type
+     * @return the origin type or the corresponding primitive type if possible
+     */
     public TypeMirror unboxedTypeOrType(TypeMirror type) {
-        if (isPrimitiveOrVoid(type)) {
-            return type;
-        }
-
         try {
+            if (isPrimitiveOrVoid(type)) {
+                return type;
+            }
+
             return types().unboxedType(type);
         } catch (Exception e) {
             return type;
