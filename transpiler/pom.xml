@@ -271,9 +271,9 @@
 
 		<!-- Test-only dependencies for testing candies -->
 		<dependency>
-			<groupId>org.jsweet</groupId>
+			<groupId>org.jsweet.v3</groupId>
 			<artifactId>jsweet-core</artifactId>
-			<version>6.2.0</version>
+			<version>6.0.0-SNAPSHOT</version>
 			<scope>compile</scope>
 			<optional>true</optional>
 		</dependency>

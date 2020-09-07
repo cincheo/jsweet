@@ -43,6 +43,7 @@ import source.enums.ErasedEnum;
 import source.enums.FailingEnums;
 import source.enums.MyComplexEnum2;
 import source.enums.PassingEnums;
+import source.enums.StringEnumType;
 import source.enums.StringEnums;
 import source.enums.SwitchWithEnumWrapper;
 import source.enums.other.ComplexEnumsAccess;
@@ -217,5 +218,10 @@ public class EnumTests extends AbstractTest {
             logHandler.assertNoProblems();
         }, getSourceFile(EnumInOtherPackage.class), getSourceFile(EnumWrapper.class),
                 getSourceFile(SwitchWithEnumWrapper.class));
+    }
+
+    @Test
+    public void testStringEnum() {
+        transpile(TestTranspilationHandler::assertNoProblems, getSourceFile(StringEnumType.class));
     }
 }

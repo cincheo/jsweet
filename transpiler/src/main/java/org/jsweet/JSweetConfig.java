@@ -223,6 +223,11 @@ public abstract class JSweetConfig {
      */
     public static final String ANNOTATION_STRING_TYPE = JSweetConfig.LANG_PACKAGE + ".StringType";
     /**
+     * Fully-qualified name for the JSweet <code>@StringEnum</code> annotation (see
+     * JSweet core API).
+     */
+    public static final String ANNOTATION_STRING_ENUM = JSweetConfig.LANG_PACKAGE + ".StringEnum";
+    /**
      * Fully-qualified name for the JSweet <code>@Root</code> annotation (see JSweet
      * core API).
      */

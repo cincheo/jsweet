@@ -21,6 +21,7 @@ package org.jsweet.transpiler;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.jsweet.JSweetConfig.ANNOTATION_ERASED;
+import static org.jsweet.JSweetConfig.ANNOTATION_STRING_ENUM;
 import static org.jsweet.JSweetConfig.ANNOTATION_FUNCTIONAL_INTERFACE;
 import static org.jsweet.JSweetConfig.ANNOTATION_OBJECT_TYPE;
 import static org.jsweet.JSweetConfig.ANNOTATION_STRING_TYPE;
@@ -293,6 +294,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
         private boolean isComplexEnum = false;
 
         private boolean enumWrapperClassScope = false;
+
+        private boolean enumString = false;
 
         private boolean removedSuperclass = false;
 
@@ -1543,6 +1546,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     } else {
                         print("enum ");
                         getScope().enumScope = true;
+                        if (context.hasAnnotationType(classTypeElement, ANNOTATION_STRING_ENUM)) {
+                            getScope().enumString = true;
+                            getScope().enumWrapperClassScope = false;
+                            getScope().isComplexEnum = false;
+                        }
                     }
                 } else {
                     if (getScope().declareClassScope && !(getIndent() != 0 && isDefinitionScope)) {
@@ -1840,6 +1848,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             }
             int pos = getCurrentPosition();
             print(def);
+
+            if (getScope().enumScope && def.getKind() == Kind.VARIABLE && getScope().enumString) {
+                print(" =  \"");
+                print(def);
+                print("\"");
+            }
+
             if (getCurrentPosition() == pos) {
                 if (!getScope().enumScope) {
                     removeLastIndent();
