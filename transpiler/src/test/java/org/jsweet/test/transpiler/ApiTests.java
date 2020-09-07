@@ -278,6 +278,8 @@ public class ApiTests extends AbstractTest {
             logHandler.assertNoProblems();
             String localeString = r.get("localeString");
 
+            System.out.println("result = " + r.get("localeString"));
+
             // TODO : check why js runtime does not return proper deterministic format
             // here...
             List<String> expected = asList("2020-1-1 1:00:00 AM", "2020-1-1 12:00:00 AM", "2020-1-1 01:00:00",
