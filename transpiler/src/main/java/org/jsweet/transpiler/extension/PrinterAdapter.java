@@ -123,10 +123,10 @@ public class PrinterAdapter {
         }
         return context;
     }
-    
+
     /**
-     * This hook is called when the transpilation starts. Overloads must call
-     * super to forward this hook to the adapters chain.
+     * This hook is called when the transpilation starts. Overloads must call super
+     * to forward this hook to the adapters chain.
      */
     public void onTranspilationStarted() {
         if (getParentAdapter() != null) {
@@ -816,6 +816,26 @@ public class PrinterAdapter {
      */
     public boolean substituteType(TypeElement type) {
         return parentAdapter == null ? false : parentAdapter.substituteType(type);
+    }
+
+    /**
+     * Substitutes a given executable declaration.
+     * 
+     * @param executable the executable being printed
+     * @return true if substituted
+     */
+    public boolean substituteExecutable(ExecutableElement executable) {
+        return parentAdapter == null ? false : parentAdapter.substituteExecutable(executable);
+    }
+
+    /**
+     * Substitutes a given variable declaration.
+     * 
+     * @param variable the variable being printed
+     * @return true if substituted
+     */
+    public boolean substituteVariable(VariableElement variable) {
+        return parentAdapter == null ? false : parentAdapter.substituteVariable(variable);
     }
 
     /**

@@ -2203,6 +2203,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
     public Void visitMethod(final MethodTree methodTree, final Trees trees) {
         ExecutableElement methodElement = toElement(methodTree);
 
+        if (getAdapter().substituteExecutable(methodElement)) {
+            return returnNothing();
+        }
+
         if (context.hasAnnotationType(methodElement, JSweetConfig.ANNOTATION_ERASED)) {
             // erased elements are ignored
             return returnNothing();
@@ -3266,6 +3270,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
     @Override
     public Void visitVariable(VariableTree varTree, Trees trees) {
         VariableElement varElement = toElement(varTree);
+
+        if (getAdapter().substituteVariable(varElement)) {
+            return returnNothing();
+        }
 
         if (context.hasAnnotationType(varElement, JSweetConfig.ANNOTATION_ERASED)) {
             // erased elements are ignored
