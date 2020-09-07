@@ -1698,47 +1698,19 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             printIndent().print("public " + PARENT_CLASS_FIELD_NAME + ": any;").println();
         }
 
+        Set<MethodTree> injectedDefaultMethods = new HashSet<>();
+        Map<MethodTree, DefaultMethodEntry> injectedDefaultMethodMap = new HashMap<>();
         if (defaultMethods != null && !defaultMethods.isEmpty()) {
-            getScope().defaultMethodScope = true;
+
             for (DefaultMethodEntry entry : defaultMethods) {
 
                 ExecutableElement methodElementMatch = util().findMethodDeclarationInType2(classTypeElement,
                         entry.methodTree.getName().toString(), entry.methodType);
                 if (methodElementMatch == null || methodElementMatch == entry.methodElement) {
-                    getAdapter().typeVariablesToErase
-                            .addAll(((TypeElement) methodElementMatch.getEnclosingElement()).getTypeParameters());
-
-                    // scan for used types to generate imports
-                    if (context.useModules) {
-                        UsedTypesScanner scanner = new UsedTypesScanner();
-                        if (!context.hasAnnotationType(entry.methodElement, JSweetConfig.ANNOTATION_ERASED)) {
-                            if (context.hasAnnotationType(entry.methodElement, JSweetConfig.ANNOTATION_REPLACE)) {
-                                // do not scan the method body
-                                scanner.scan(entry.methodTree.getParameters(), trees);
-                                scanner.scan(entry.methodTree.getReturnType(), trees);
-                                scanner.scan(entry.methodTree.getThrows(), trees);
-                                scanner.scan(entry.methodTree.getTypeParameters(), trees);
-                                scanner.scan(entry.methodTree.getReceiverParameter(), trees);
-                            } else {
-                                scanner.scan(entry.methodTree, trees);
-                            }
-                        }
-                    }
-
-                    if (!context.hasAnnotationType(entry.methodElement, JSweetConfig.ANNOTATION_ERASED)) {
-                        printIndent().print("/* Default method injected from "
-                                + entry.enclosingClassElement.getQualifiedName() + " */").println();
-                        printIndent().print("/* Default method injected from "
-                                + entry.enclosingClassElement.getQualifiedName() + " */").println();
-                    }
-
-                    registerMethodTreeCompilationUnit(entry.methodTree, entry.compilationUnit);
-                    printIndent().print(entry.methodTree).println();
-                    getAdapter().typeVariablesToErase
-                            .removeAll(((TypeElement) methodElementMatch.getEnclosingElement()).getTypeParameters());
+                    injectedDefaultMethods.add(entry.methodTree);
+                    injectedDefaultMethodMap.put(entry.methodTree, entry);
                 }
             }
-            getScope().defaultMethodScope = false;
         }
 
         if (getScope().enumScope) {
@@ -1780,8 +1752,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
         boolean hasUninitializedFields = false;
 
-        @SuppressWarnings("unchecked")
-        List<Tree> classMembers = (List<Tree>) classTree.getMembers();
+        List<Tree> classMembers = new ArrayList<>();
+        classMembers.addAll(injectedDefaultMethods);
+        classMembers.addAll(classTree.getMembers());
         if (context.options.isSortClassMembers()) {
             List<Tree> memberDefs = classMembers.stream()
                     .filter(t -> (t instanceof MethodTree || t instanceof VariableTree)).sorted((t1, t2) -> getAdapter()
@@ -1797,6 +1770,45 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
         }
 
         for (Tree def : classMembers) {
+            if (injectedDefaultMethods.contains(def)) {
+                MethodTree defaultMethod = (MethodTree) def;
+                DefaultMethodEntry entry = injectedDefaultMethodMap.get(defaultMethod);
+
+                getScope().defaultMethodScope = true;
+                getAdapter().typeVariablesToErase
+                        .addAll(((TypeElement) entry.methodElement.getEnclosingElement()).getTypeParameters());
+                // scan for used types to generate imports
+                if (context.useModules) {
+                    UsedTypesScanner scanner = new UsedTypesScanner();
+                    if (!context.hasAnnotationType(entry.methodElement, JSweetConfig.ANNOTATION_ERASED)) {
+                        if (context.hasAnnotationType(entry.methodElement, JSweetConfig.ANNOTATION_REPLACE)) {
+                            // do not scan the method body
+                            scanner.scan(entry.methodTree.getParameters(), trees);
+                            scanner.scan(entry.methodTree.getReturnType(), trees);
+                            scanner.scan(entry.methodTree.getThrows(), trees);
+                            scanner.scan(entry.methodTree.getTypeParameters(), trees);
+                            scanner.scan(entry.methodTree.getReceiverParameter(), trees);
+                        } else {
+                            scanner.scan(entry.methodTree, trees);
+                        }
+                    }
+                }
+                if (!context.hasAnnotationType(entry.methodElement, JSweetConfig.ANNOTATION_ERASED)) {
+                    printIndent().print(
+                            "/* Default method injected from " + entry.enclosingClassElement.getQualifiedName() + " */")
+                            .println();
+                }
+
+                registerMethodTreeCompilationUnit(entry.methodTree, entry.compilationUnit);
+                printIndent().print(defaultMethod).println();
+
+                getAdapter().typeVariablesToErase
+                        .removeAll(((TypeElement) entry.methodElement.getEnclosingElement()).getTypeParameters());
+
+                getScope().defaultMethodScope = false;
+                continue;
+            }
+
             if (getScope().interfaceScope) {
                 // static interface members are printed in a namespace
                 Element memberElement = toElement(def);
