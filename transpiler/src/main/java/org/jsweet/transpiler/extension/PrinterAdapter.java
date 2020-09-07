@@ -58,6 +58,7 @@ import org.jsweet.transpiler.model.IdentifierElement;
 import org.jsweet.transpiler.model.ImportElement;
 import org.jsweet.transpiler.model.MethodInvocationElement;
 import org.jsweet.transpiler.model.NewClassElement;
+import org.jsweet.transpiler.model.TypeCastElement;
 import org.jsweet.transpiler.model.UnaryOperatorElement;
 import org.jsweet.transpiler.model.VariableAccessElement;
 import org.jsweet.transpiler.model.support.CompilationUnitElementSupport;
@@ -966,6 +967,13 @@ public class PrinterAdapter {
      */
     public boolean substituteInstanceof(String exprStr, ExtendedElement expr, TypeMirror type) {
         return parentAdapter == null ? false : parentAdapter.substituteInstanceof(exprStr, expr, type);
+    }
+
+    /**
+     * Substitutes if necessary a type cast expression.
+     */
+    public boolean substituteTypeCast(TypeCastElement castExpression) {
+        return parentAdapter == null ? false : parentAdapter.substituteTypeCast(castExpression);
     }
 
     /**

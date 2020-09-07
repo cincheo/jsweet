@@ -5812,6 +5812,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
         if (substituteAssignedExpression(toType, cast.getExpression())) {
             return returnNothing();
         }
+        if (getAdapter().substituteTypeCast(createExtendedElement(cast))) {
+            return returnNothing();
+        }
         if (util().isIntegral(toType)) {
             if (toType.getKind() == TypeKind.LONG) {
                 print("(n => n<0?Math.ceil(n):Math.floor(n))(");
