@@ -226,7 +226,8 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
     private boolean ignoreCandiesTypeScriptDefinitions = false;
     private boolean lazyInitializedStatics = true;
     private boolean useSingleQuotesForStringLiterals = false;
-
+    private boolean nonEnumerableTransients = false;
+    
     private ArrayList<String> adapters = new ArrayList<>();
     private File configurationFile;
 
@@ -378,6 +379,12 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
             if (options.containsKey(JSweetOptions.useSingleQuotesForStringLiterals)) {
                 setUseSingleQuotesForStringLiterals(
                         (Boolean) getMapValue(options, JSweetOptions.useSingleQuotesForStringLiterals));
+            }
+            if (options.containsKey(JSweetOptions.ignoreJavaErrors)) {
+                setIgnoreJavaErrors((Boolean) getMapValue(options, JSweetOptions.ignoreJavaErrors));
+            }
+            if (options.containsKey(JSweetOptions.nonEnumerableTransients)) {
+                setNonEnumerableTransients((Boolean) getMapValue(options, JSweetOptions.nonEnumerableTransients));
             }
         }
 
@@ -1838,6 +1845,15 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 
     public void setUseSingleQuotesForStringLiterals(boolean useSingleQuotesForStringLiterals) {
         this.useSingleQuotesForStringLiterals = useSingleQuotesForStringLiterals;
+    }
+
+    @Override
+    public boolean isNonEnumerableTransients() {
+        return this.nonEnumerableTransients;
+    }
+
+    public void setNonEnumerableTransients(boolean nonEnumerableTransients) {
+        this.nonEnumerableTransients = nonEnumerableTransients;
     }
 
     @Override

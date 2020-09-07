@@ -2917,8 +2917,24 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             if (doesMemberNameRequireQuotes(name)) {
                 printIndent();
                 print("if(").print("this['").print(name).print("']").print("===undefined) ");
-                print("this['").print(name).print("'] = ").print(getAdapter().getVariableInitialValue(varElement))
-                        .print(";").println();
+                if (context.options.isNonEnumerableTransients()
+                        && varElement.getModifiers().contains(Modifier.TRANSIENT)) {
+                    print("Object.defineProperty(this, " + getStringLiteralQuote() + name + getStringLiteralQuote()
+                            + ", { value: ").print(getAdapter().getVariableInitialValue(varElement))
+                                    .print(", enumerable: false });").println();
+                } else {
+                    printIndent().print("if(").print("this.").print(name).print("===undefined) ");
+                    if (context.options.isNonEnumerableTransients()
+                            && varElement.getModifiers().contains(Modifier.TRANSIENT)) {
+                        print("Object.defineProperty(this, " + getStringLiteralQuote() + name + getStringLiteralQuote()
+                                + ", { value: ").print(getAdapter().getVariableInitialValue(varElement))
+                                        .print(", enumerable: false });").println();
+                    } else {
+                        print("this.").print(name).print(" = ").print(getAdapter().getVariableInitialValue(varElement))
+                                .print(";").println();
+                    }
+                }
+
             } else {
                 printIndent();
                 print("if(").print("this.").print(name).print("===undefined) this.").print(name).print(" = ")
@@ -3100,9 +3116,17 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     if (context.getFieldNameMapping(fieldElement) != null) {
                         name = context.getFieldNameMapping(fieldElement);
                     }
-                    printIndent().print("if(").print("this.").print(name).print("===undefined) ").print("this.")
-                            .print(name).print(" = ").print(getAdapter().getVariableInitialValue(fieldElement))
-                            .print(";").println();
+
+                    printIndent().print("if(").print("this.").print(name).print("===undefined) ");
+                    if (context.options.isNonEnumerableTransients()
+                            && fieldElement.getModifiers().contains(Modifier.TRANSIENT)) {
+                        print("Object.defineProperty(this, " + getStringLiteralQuote() + name + getStringLiteralQuote()
+                                + ", { value: ").print(getAdapter().getVariableInitialValue(fieldElement))
+                                        .print(", enumerable: false });");
+                    } else {
+                        print("this.").print(name).print(" = ")
+                                .print(getAdapter().getVariableInitialValue(fieldElement)).print(";").println();
+                    }
                 }
             }
         }

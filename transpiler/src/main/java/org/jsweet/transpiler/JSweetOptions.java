@@ -72,6 +72,10 @@ public interface JSweetOptions {
      */
     String ignoreDefinitions = "ignoreDefinitions";
     /**
+     * Constant string for the 'ignoreJavaErrors' option.
+     */
+    String ignoreJavaErrors = "ignoreJavaErrors";
+    /**
      * Constant string for the 'header' option.
      */
     String header = "header";
@@ -100,6 +104,14 @@ public interface JSweetOptions {
      */
     String jsout = "jsout";
     /**
+     * Constant string for the 'sourceRoot' option.
+     */
+    String sourceRoot = "sourceRoot";
+    /**
+     * Constant string for the 'defInput' option.
+     */
+    String defInput = "defInput";
+    /**
      * Constant string for the 'candiesJsOut' option.
      */
     String candiesJsOut = "candiesJsOut";
@@ -117,13 +129,23 @@ public interface JSweetOptions {
     String useSingleQuotesForStringLiterals = "useSingleQuotesForStringLiterals";
 
     /**
+     * Constant string for the 'nonEnumerableTransients' option.
+     */
+    String nonEnumerableTransients = "nonEnumerableTransients";
+
+    /**
+     * Constant string for the 'classpath' option.
+     */
+    String classpath = "classpath";
+
+    /**
      * All the supported options. (used to report non-blocking errors when options
      * do not exist)
      */
     String[] options = { bundle, noRootDirectories, sourceMap, module, encoding, outEncoding, enableAssertions,
-            declaration, tsOnly, ignoreDefinitions, header, disableSinglePrecisionFloats,
+            declaration, tsOnly, ignoreDefinitions, ignoreJavaErrors, header, disableSinglePrecisionFloats,
             disableStaticsLazyInitialization, targetVersion, tsout, dtsout, jsout, candiesJsOut, moduleResolution,
-            extraSystemPath, useSingleQuotesForStringLiterals };
+            extraSystemPath, useSingleQuotesForStringLiterals, nonEnumerableTransients, classpath };
 
     /**
      * Returns the configuration from the configuration file.
@@ -334,4 +356,10 @@ public interface JSweetOptions {
      * @return true if activated
      */
     boolean isUseSingleQuotesForStringLiterals();
+
+    /**
+     * If true, the transpiler generates Java transient fields as non-enumerable
+     * JavaScript properties.
+     */
+    boolean isNonEnumerableTransients();
 }

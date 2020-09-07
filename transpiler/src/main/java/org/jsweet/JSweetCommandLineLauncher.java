@@ -314,8 +314,8 @@ public class JSweetCommandLineLauncher {
         jsap.registerParameter(switchArg);
 
         // Java compiler's encoding
-        optionArg = new FlaggedOption("encoding");
-        optionArg.setLongFlag("encoding");
+        optionArg = new FlaggedOption(JSweetOptions.encoding);
+        optionArg.setLongFlag(JSweetOptions.encoding);
         optionArg.setStringParser(JSAP.STRING_PARSER);
         optionArg.setRequired(false);
         optionArg.setDefault("UTF-8");
@@ -323,8 +323,8 @@ public class JSweetCommandLineLauncher {
         jsap.registerParameter(optionArg);
 
         // Output encoding
-        optionArg = new FlaggedOption("outEncoding");
-        optionArg.setLongFlag("outEncoding");
+        optionArg = new FlaggedOption(JSweetOptions.outEncoding);
+        optionArg.setLongFlag(JSweetOptions.outEncoding);
         optionArg.setStringParser(JSAP.STRING_PARSER);
         optionArg.setRequired(false);
         optionArg.setDefault("UTF-8");
@@ -372,9 +372,9 @@ public class JSweetCommandLineLauncher {
         jsap.registerParameter(optionArg);
 
         // Definition directories
-        optionArg = new FlaggedOption("defInput");
+        optionArg = new FlaggedOption(JSweetOptions.defInput);
         optionArg.setShortFlag('d');
-        optionArg.setLongFlag("defInput");
+        optionArg.setLongFlag(JSweetOptions.defInput);
         optionArg.setList(true);
         optionArg.setStringParser(FileStringParser.getParser());
         optionArg.setListSeparator(File.pathSeparatorChar);
@@ -384,16 +384,16 @@ public class JSweetCommandLineLauncher {
         jsap.registerParameter(optionArg);
 
         // Skip empty root dirs
-        switchArg = new Switch("noRootDirectories");
-        switchArg.setLongFlag("noRootDirectories");
+        switchArg = new Switch(JSweetOptions.noRootDirectories);
+        switchArg.setLongFlag(JSweetOptions.noRootDirectories);
         switchArg.setHelp(
                 "Skip the root directories (i.e. packages annotated with @jsweet.lang.Root) so that the generated file hierarchy starts at the root directories rather than including the entire directory structure.");
         switchArg.setDefault("false");
         jsap.registerParameter(switchArg);
 
         // TypeScript output directory
-        optionArg = new FlaggedOption("tsout");
-        optionArg.setLongFlag("tsout");
+        optionArg = new FlaggedOption(JSweetOptions.tsout);
+        optionArg.setLongFlag(JSweetOptions.tsout);
         optionArg.setDefault(".ts");
         optionArg.setHelp("Specify where to place generated TypeScript files.");
         optionArg.setStringParser(FileStringParser.getParser());
@@ -401,9 +401,9 @@ public class JSweetCommandLineLauncher {
         jsap.registerParameter(optionArg);
 
         // JavaScript output directory
-        optionArg = new FlaggedOption("jsout");
+        optionArg = new FlaggedOption(JSweetOptions.jsout);
         optionArg.setShortFlag('o');
-        optionArg.setLongFlag("jsout");
+        optionArg.setLongFlag(JSweetOptions.jsout);
         optionArg.setDefault("js");
         optionArg.setHelp("Specify where to place generated JavaScript files (ignored if jsFile is specified).");
         optionArg.setStringParser(FileStringParser.getParser());
@@ -411,40 +411,46 @@ public class JSweetCommandLineLauncher {
         jsap.registerParameter(optionArg);
 
         // Disable single precision floats
-        switchArg = new Switch("disableSinglePrecisionFloats");
-        switchArg.setLongFlag("disableSinglePrecisionFloats");
+        switchArg = new Switch(JSweetOptions.disableSinglePrecisionFloats);
+        switchArg.setLongFlag(JSweetOptions.disableSinglePrecisionFloats);
         switchArg.setHelp(
                 "By default, for a target version >=ES5, JSweet will force Java floats to be mapped to JavaScript numbers that will be constrained with ES5 Math.fround function. If this option is true, then the calls to Math.fround are erased and the generated program will use the JavaScript default precision (double precision).");
         jsap.registerParameter(switchArg);
 
+        // Transients as non-enumerable properties
+        switchArg = new Switch(JSweetOptions.nonEnumerableTransients);
+        switchArg.setLongFlag(JSweetOptions.nonEnumerableTransients);
+        switchArg.setHelp("Generate Java transient fields as non-enumerable JavaScript properties..");
+        jsap.registerParameter(switchArg);
+
         // Do not generate JavaScript
-        switchArg = new Switch("tsOnly");
-        switchArg.setLongFlag("tsOnly");
+        switchArg = new Switch(JSweetOptions.tsOnly);
+        switchArg.setLongFlag(JSweetOptions.tsOnly);
         switchArg.setHelp("Do not compile the TypeScript output (let an external TypeScript compiler do so).");
         jsap.registerParameter(switchArg);
 
         // Do not generate d.ts files that correspond to def.* packages
-        switchArg = new Switch("ignoreDefinitions");
-        switchArg.setLongFlag("ignoreDefinitions");
+        switchArg = new Switch(JSweetOptions.ignoreDefinitions);
+        switchArg.setLongFlag(JSweetOptions.ignoreDefinitions);
         switchArg.setHelp(
                 "Ignore definitions from def.* packages, so that they are not generated in d.ts definition files. If this option is not set, the transpiler generates d.ts definition files in the directory given by the tsout option.");
         jsap.registerParameter(switchArg);
 
-        switchArg = new Switch("ignoreJavaErrors");
-        switchArg.setLongFlag("ignoreJavaErrors");
+        switchArg = new Switch(JSweetOptions.ignoreJavaErrors);
+        switchArg.setLongFlag(JSweetOptions.ignoreJavaErrors);
         switchArg.setHelp("Ignore Java compilation errors. Do not use unless you know what you are doing.");
         jsap.registerParameter(switchArg);
 
         // Generates declarations
-        switchArg = new Switch("declaration");
-        switchArg.setLongFlag("declaration");
+        switchArg = new Switch(JSweetOptions.declaration);
+        switchArg.setLongFlag(JSweetOptions.declaration);
         switchArg.setHelp(
                 "Generate the d.ts files along with the js files, so that other programs can use them to compile.");
         jsap.registerParameter(switchArg);
 
         // Declarations output directory
-        optionArg = new FlaggedOption("dtsout");
-        optionArg.setLongFlag("dtsout");
+        optionArg = new FlaggedOption(JSweetOptions.dtsout);
+        optionArg.setLongFlag(JSweetOptions.dtsout);
         optionArg.setHelp(
                 "Specify where to place generated d.ts files when the declaration option is set (by default, d.ts files are generated in the JavaScript output directory - next to the corresponding js files).");
         optionArg.setStringParser(FileStringParser.getParser());
@@ -452,8 +458,8 @@ public class JSweetCommandLineLauncher {
         jsap.registerParameter(optionArg);
 
         // Candies javascript output directory
-        optionArg = new FlaggedOption("candiesJsOut");
-        optionArg.setLongFlag("candiesJsOut");
+        optionArg = new FlaggedOption(JSweetOptions.candiesJsOut);
+        optionArg.setLongFlag(JSweetOptions.candiesJsOut);
         optionArg.setDefault("js/candies");
         optionArg.setHelp("Specify where to place extracted JavaScript files from candies.");
         optionArg.setStringParser(FileStringParser.getParser());
@@ -461,8 +467,8 @@ public class JSweetCommandLineLauncher {
         jsap.registerParameter(optionArg);
 
         // Source root directory for source maps
-        optionArg = new FlaggedOption("sourceRoot");
-        optionArg.setLongFlag("sourceRoot");
+        optionArg = new FlaggedOption(JSweetOptions.sourceRoot);
+        optionArg.setLongFlag(JSweetOptions.sourceRoot);
         optionArg.setHelp(
                 "Specify the location where debugger should locate Java files instead of source locations. Use this flag if the sources will be located at run-time in a different location than that at design-time. The location specified will be embedded in the sourceMap to direct the debugger where the source files will be located.");
         optionArg.setStringParser(FileStringParser.getParser());
@@ -470,8 +476,8 @@ public class JSweetCommandLineLauncher {
         jsap.registerParameter(optionArg);
 
         // Classpath
-        optionArg = new FlaggedOption("classpath");
-        optionArg.setLongFlag("classpath");
+        optionArg = new FlaggedOption(JSweetOptions.classpath);
+        optionArg.setLongFlag(JSweetOptions.classpath);
         optionArg.setHelp(
                 "The JSweet transpilation classpath (candy jars). This classpath should at least contain the core candy.");
         optionArg.setStringParser(JSAP.STRING_PARSER);
@@ -479,8 +485,8 @@ public class JSweetCommandLineLauncher {
         jsap.registerParameter(optionArg);
 
         // Module
-        optionArg = new FlaggedOption("module");
-        optionArg.setLongFlag("module");
+        optionArg = new FlaggedOption(JSweetOptions.module);
+        optionArg.setLongFlag(JSweetOptions.module);
         optionArg.setShortFlag('m');
         optionArg.setDefault("none");
         optionArg.setHelp("The module kind (none, commonjs, amd, system, umd, es2015).");
@@ -498,8 +504,8 @@ public class JSweetCommandLineLauncher {
         jsap.registerParameter(optionArg);
 
         // Bundle
-        switchArg = new Switch("bundle");
-        switchArg.setLongFlag("bundle");
+        switchArg = new Switch(JSweetOptions.bundle);
+        switchArg.setLongFlag(JSweetOptions.bundle);
         switchArg.setShortFlag('b');
         switchArg.setHelp(
                 "Bundle up all the generated code in a single file, which can be used in the browser. The bundle files are called 'bundle.ts', 'bundle.d.ts', or 'bundle.js' depending on the kind of generated code. NOTE: bundles are not compatible with any module kind other than 'none'.");
@@ -516,7 +522,7 @@ public class JSweetCommandLineLauncher {
         jsap.registerParameter(optionArg);
 
         // // Adapters
-        // optionArg = new FlaggedOption("adapters");
+        // optionArg = new FlaggedOption(JSweetOptions.adapters);
         // optionArg.setLongFlag("adapters");
         // optionArg.setList(true);
         // optionArg.setStringParser(JSAP.STRING_PARSER);
@@ -534,23 +540,23 @@ public class JSweetCommandLineLauncher {
         // jsap.registerParameter(optionArg);
 
         // Debug
-        switchArg = new Switch("sourceMap");
-        switchArg.setLongFlag("sourceMap");
+        switchArg = new Switch(JSweetOptions.sourceMap);
+        switchArg.setLongFlag(JSweetOptions.sourceMap);
         switchArg.setHelp(
                 "Generate source map files for the Java files, so that it is possible to debug Java files directly with a debugger that supports source maps (most JavaScript debuggers).");
         switchArg.setDefault("false");
         jsap.registerParameter(switchArg);
 
         // Enable assertions
-        switchArg = new Switch("enableAssertions");
-        switchArg.setLongFlag("enableAssertions");
+        switchArg = new Switch(JSweetOptions.enableAssertions);
+        switchArg.setLongFlag(JSweetOptions.enableAssertions);
         switchArg.setHelp("Java 'assert' statements are transpiled as runtime JavaScript checks.");
         switchArg.setDefault("false");
         jsap.registerParameter(switchArg);
 
         // Header file
-        optionArg = new FlaggedOption("header");
-        optionArg.setLongFlag("header");
+        optionArg = new FlaggedOption(JSweetOptions.header);
+        optionArg.setLongFlag(JSweetOptions.header);
         optionArg.setHelp(
                 "A file that contains a header to be written at the beginning of each generated file. If left unspecified, JSweet will generate a default header.");
         optionArg.setStringParser(FileStringParser.getParser());
@@ -566,8 +572,8 @@ public class JSweetCommandLineLauncher {
         optionArg.setRequired(false);
         jsap.registerParameter(optionArg);
 
-        optionArg = new FlaggedOption("targetVersion");
-        optionArg.setLongFlag("targetVersion");
+        optionArg = new FlaggedOption(JSweetOptions.targetVersion);
+        optionArg.setLongFlag(JSweetOptions.targetVersion);
         optionArg.setHelp("The EcmaScript target (JavaScript) version. Possible values: "
                 + Arrays.asList(EcmaScriptComplianceLevel.values()));
         optionArg.setDefault("ES3");
@@ -583,8 +589,8 @@ public class JSweetCommandLineLauncher {
         jsap.registerParameter(optionArg);
 
         // Disable statics lazy initialization
-        switchArg = new Switch("disableStaticsLazyInitialization");
-        switchArg.setLongFlag("disableStaticsLazyInitialization");
+        switchArg = new Switch(JSweetOptions.disableStaticsLazyInitialization);
+        switchArg.setLongFlag(JSweetOptions.disableStaticsLazyInitialization);
         switchArg.setHelp("Do not generate lazy initialization code of static fields that is meant "
                 + "to emulate the Java behavior. When disables, the code is more readable "
                 + "but it may result into runtime static initialization issues (cross-class "
@@ -646,7 +652,7 @@ public class JSweetCommandLineLauncher {
 
         @Override
         public void run() throws Exception {
-            String classPath = jsapArgs.getString("classpath");
+            String classPath = jsapArgs.getString(JSweetOptions.classpath);
             logger.info("classpath: " + classPath);
 
             ErrorCountTranspilationHandler transpilationHandler = new ErrorCountTranspilationHandler(
@@ -708,32 +714,34 @@ public class JSweetCommandLineLauncher {
                 javaInputFiles.addAll(extraJavaInputFiles);
 
                 File tsOutputDir = null;
-                if (jsapArgs.userSpecified("tsout") && jsapArgs.getFile("tsout") != null) {
-                    tsOutputDir = jsapArgs.getFile("tsout");
+                if (jsapArgs.userSpecified(JSweetOptions.tsout) && jsapArgs.getFile(JSweetOptions.tsout) != null) {
+                    tsOutputDir = jsapArgs.getFile(JSweetOptions.tsout);
                     tsOutputDir.mkdirs();
                 }
                 logger.info("ts output dir: " + tsOutputDir);
 
                 File jsOutputDir = null;
-                if (jsapArgs.userSpecified("jsout") && jsapArgs.getFile("jsout") != null) {
-                    jsOutputDir = jsapArgs.getFile("jsout");
+                if (jsapArgs.userSpecified(JSweetOptions.jsout) && jsapArgs.getFile(JSweetOptions.jsout) != null) {
+                    jsOutputDir = jsapArgs.getFile(JSweetOptions.jsout);
                     jsOutputDir.mkdirs();
                 }
                 logger.info("js output dir: " + jsOutputDir);
 
                 File dtsOutputDir = null;
-                if (jsapArgs.userSpecified("dtsout") && jsapArgs.getFile("dtsout") != null) {
-                    dtsOutputDir = jsapArgs.getFile("dtsout");
+                if (jsapArgs.userSpecified(JSweetOptions.dtsout) && jsapArgs.getFile(JSweetOptions.dtsout) != null) {
+                    dtsOutputDir = jsapArgs.getFile(JSweetOptions.dtsout);
                 }
 
                 File candiesJsOutputDir = null;
-                if (jsapArgs.userSpecified("candiesJsOut") && jsapArgs.getFile("candiesJsOut") != null) {
-                    candiesJsOutputDir = jsapArgs.getFile("candiesJsOut");
+                if (jsapArgs.userSpecified(JSweetOptions.candiesJsOut)
+                        && jsapArgs.getFile(JSweetOptions.candiesJsOut) != null) {
+                    candiesJsOutputDir = jsapArgs.getFile(JSweetOptions.candiesJsOut);
                 }
 
                 File sourceRootDir = null;
-                if (jsapArgs.userSpecified("sourceRoot") && jsapArgs.getFile("sourceRoot") != null) {
-                    sourceRootDir = jsapArgs.getFile("sourceRoot");
+                if (jsapArgs.userSpecified(JSweetOptions.sourceRoot)
+                        && jsapArgs.getFile(JSweetOptions.sourceRoot) != null) {
+                    sourceRootDir = jsapArgs.getFile(JSweetOptions.sourceRoot);
                 }
 
                 JSweetFactory factory = null;
@@ -750,65 +758,71 @@ public class JSweetCommandLineLauncher {
                 try (JSweetTranspiler transpiler = new JSweetTranspiler(factory, jsapArgs.getFile("workingDir"),
                         tsOutputDir, jsOutputDir, candiesJsOutputDir, classPath)) {
 
-                    if (jsapArgs.userSpecified("bundle")) {
-                        transpiler.setBundle(jsapArgs.getBoolean("bundle"));
+                    if (jsapArgs.userSpecified(JSweetOptions.bundle)) {
+                        transpiler.setBundle(jsapArgs.getBoolean(JSweetOptions.bundle));
                     }
-                    if (jsapArgs.userSpecified("noRootDirectories")) {
-                        transpiler.setNoRootDirectories(jsapArgs.getBoolean("noRootDirectories"));
+                    if (jsapArgs.userSpecified(JSweetOptions.noRootDirectories)) {
+                        transpiler.setNoRootDirectories(jsapArgs.getBoolean(JSweetOptions.noRootDirectories));
                     }
-                    if (jsapArgs.userSpecified("sourceMap")) {
-                        transpiler.setGenerateSourceMaps(jsapArgs.getBoolean("sourceMap"));
+                    if (jsapArgs.userSpecified(JSweetOptions.sourceMap)) {
+                        transpiler.setGenerateSourceMaps(jsapArgs.getBoolean(JSweetOptions.sourceMap));
                     }
                     if (sourceRootDir != null) {
                         transpiler.setSourceRoot(sourceRootDir);
                     }
-                    if (jsapArgs.userSpecified("module")) {
-                        transpiler.setModuleKind(ModuleKind.valueOf(jsapArgs.getString("module")));
+                    if (jsapArgs.userSpecified(JSweetOptions.module)) {
+                        transpiler.setModuleKind(ModuleKind.valueOf(jsapArgs.getString(JSweetOptions.module)));
                     }
                     if (jsapArgs.userSpecified(JSweetOptions.moduleResolution)) {
                         transpiler.setModuleResolution(
                                 ModuleResolution.valueOf(jsapArgs.getString(JSweetOptions.moduleResolution)));
                     }
-                    if (jsapArgs.userSpecified("encoding")) {
-                        transpiler.setEncoding(jsapArgs.getString("encoding"));
+                    if (jsapArgs.userSpecified(JSweetOptions.encoding)) {
+                        transpiler.setEncoding(jsapArgs.getString(JSweetOptions.encoding));
                     }
-                    if (jsapArgs.userSpecified("outEncoding")) {
-                        transpiler.setOutEncoding(jsapArgs.getString("outEncoding"));
+                    if (jsapArgs.userSpecified(JSweetOptions.outEncoding)) {
+                        transpiler.setOutEncoding(jsapArgs.getString(JSweetOptions.outEncoding));
                     }
-                    if (jsapArgs.userSpecified("enableAssertions")) {
-                        transpiler.setIgnoreAssertions(!jsapArgs.getBoolean("enableAssertions"));
+                    if (jsapArgs.userSpecified(JSweetOptions.nonEnumerableTransients)) {
+                        transpiler
+                                .setNonEnumerableTransients(jsapArgs.getBoolean(JSweetOptions.nonEnumerableTransients));
                     }
-                    if (jsapArgs.userSpecified("declaration")) {
-                        transpiler.setGenerateDeclarations(jsapArgs.getBoolean("declaration"));
+                    if (jsapArgs.userSpecified(JSweetOptions.enableAssertions)) {
+                        transpiler.setIgnoreAssertions(!jsapArgs.getBoolean(JSweetOptions.enableAssertions));
                     }
-                    if (jsapArgs.userSpecified("tsOnly")) {
-                        transpiler.setGenerateJsFiles(!jsapArgs.getBoolean("tsOnly"));
+                    if (jsapArgs.userSpecified(JSweetOptions.declaration)) {
+                        transpiler.setGenerateDeclarations(jsapArgs.getBoolean(JSweetOptions.declaration));
                     }
-                    if (jsapArgs.userSpecified("ignoreDefinitions")) {
-                        transpiler.setGenerateDefinitions(!jsapArgs.getBoolean("ignoreDefinitions"));
+                    if (jsapArgs.userSpecified(JSweetOptions.tsOnly)) {
+                        transpiler.setGenerateJsFiles(!jsapArgs.getBoolean(JSweetOptions.tsOnly));
                     }
-                    if (jsapArgs.userSpecified("ignoreJavaErrors")) {
-                        transpiler.setIgnoreJavaErrors(jsapArgs.getBoolean("ignoreJavaErrors"));
+                    if (jsapArgs.userSpecified(JSweetOptions.ignoreDefinitions)) {
+                        transpiler.setGenerateDefinitions(!jsapArgs.getBoolean(JSweetOptions.ignoreDefinitions));
+                    }
+                    if (jsapArgs.userSpecified(JSweetOptions.ignoreJavaErrors)) {
+                        transpiler.setIgnoreJavaErrors(jsapArgs.getBoolean(JSweetOptions.ignoreJavaErrors));
                     }
                     if (dtsOutputDir != null) {
                         transpiler.setDeclarationsOutputDir(dtsOutputDir);
                     }
-                    if (jsapArgs.userSpecified("header")) {
-                        transpiler.setHeaderFile(jsapArgs.getFile("header"));
+                    if (jsapArgs.userSpecified(JSweetOptions.header)) {
+                        transpiler.setHeaderFile(jsapArgs.getFile(JSweetOptions.header));
                     }
-                    if (jsapArgs.userSpecified("targetVersion")) {
+                    if (jsapArgs.userSpecified(JSweetOptions.targetVersion)) {
                         transpiler.setEcmaTargetVersion(
-                                JSweetTranspiler.getEcmaTargetVersion(jsapArgs.getString("targetVersion")));
+                                JSweetTranspiler.getEcmaTargetVersion(jsapArgs.getString(JSweetOptions.targetVersion)));
                     }
-                    if (jsapArgs.userSpecified("disableSinglePrecisionFloats")) {
-                        transpiler.setDisableSinglePrecisionFloats(jsapArgs.getBoolean("disableSinglePrecisionFloats"));
+                    if (jsapArgs.userSpecified(JSweetOptions.disableSinglePrecisionFloats)) {
+                        transpiler.setDisableSinglePrecisionFloats(
+                                jsapArgs.getBoolean(JSweetOptions.disableSinglePrecisionFloats));
                     }
                     if (jsapArgs.userSpecified(JSweetOptions.extraSystemPath)) {
                         ProcessUtil.addExtraPath(jsapArgs.getString(JSweetOptions.extraSystemPath));
                     }
 
-                    if (jsapArgs.userSpecified("disableStaticsLazyInitialization")) {
-                        transpiler.setLazyInitializedStatics(!jsapArgs.getBoolean("disableStaticsLazyInitialization"));
+                    if (jsapArgs.userSpecified(JSweetOptions.disableStaticsLazyInitialization)) {
+                        transpiler.setLazyInitializedStatics(
+                                !jsapArgs.getBoolean(JSweetOptions.disableStaticsLazyInitialization));
                     }
 
                     if (tsOutputDir != null) {
@@ -820,7 +834,7 @@ public class JSweetCommandLineLauncher {
 
                     // transpiler.setAdapters(Arrays.asList(jsapArgs.getStringArray("adapters")));
 
-                    List<File> files = Arrays.asList(jsapArgs.getFileArray("defInput"));
+                    List<File> files = Arrays.asList(jsapArgs.getFileArray(JSweetOptions.defInput));
                     logger.info("definition input dirs: " + files);
 
                     for (File f : files) {
