@@ -112,6 +112,21 @@ public class FinalVariables {
         });
     }
 
+    public void explicitFinalWithDeferredAssignment(boolean condition) {
+        final String explicitFinalStringWithDeferredAssignment;
+        if (condition) {
+            explicitFinalStringWithDeferredAssignment = "1";
+        } else {
+            explicitFinalStringWithDeferredAssignment = "2";
+        }
+        handler(new ANonFunctionalInterface() {
+            @Override
+            public void m() {
+                System.out.println(explicitFinalStringWithDeferredAssignment);
+            }
+        });
+    }
+
     void implicitFinal() {
         String implicitFinalString = "abc";
         handler(new ANonFunctionalInterface() {
