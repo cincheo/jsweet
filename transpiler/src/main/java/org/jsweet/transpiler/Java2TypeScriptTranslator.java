@@ -613,6 +613,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     return;
                 }
 
+                if (sourceElement instanceof TypeElement
+                        && context.hasAnnotationType(sourceElement, JSweetConfig.ANNOTATION_DECORATOR)) {
+                    context.forceTopImports();
+                }
+
                 if (!context.moduleBundleMode && sourceElement instanceof TypeElement
                         && util().isSourceElement(sourceElement)
                         && !(sourceElement instanceof TypeElement && context.referenceAnalyzer != null
@@ -623,7 +628,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     // as much as possible
                     // note that the better way to avoid cyclic dependency
                     // issues is to create bundles
-                    context.addTopFooterStatement("import { " + targetName + " } from '" + moduleName + "';\n");
+                    context.addTopFooterStatement("import." + targetName,
+                            "import { " + targetName + " } from '" + moduleName + "';\n");
 
                 } else {
                     if (direct) {
@@ -1696,6 +1702,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                         }
                     }
 
+                    if (!context.hasAnnotationType(entry.methodElement, JSweetConfig.ANNOTATION_ERASED)) {
+                        printIndent().print("/* Default method injected from "
+                                + entry.enclosingClassElement.getQualifiedName() + " */").println();
+                        printIndent().print("/* Default method injected from "
+                                + entry.enclosingClassElement.getQualifiedName() + " */").println();
+                    }
+
                     registerMethodTreeCompilationUnit(entry.methodTree, entry.compilationUnit);
                     printIndent().print(entry.methodTree).println();
                     getAdapter().typeVariablesToErase
@@ -2344,6 +2357,20 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             print("));");
             println().endIndent().printIndent();
             print("}").println().println().printIndent();
+        }
+
+        if (inOverload && !overload.isValid) {
+            // spread all annotations of the overload to the methods
+            for (MethodTree m : overload.getMethods()) {
+                if (m != methodTree) {
+                    for (AnnotationTree anno : m.getModifiers().getAnnotations()) {
+                        if (!methodTree.getModifiers().getAnnotations().stream().anyMatch(
+                                a -> a.getAnnotationType().toString().equals(anno.getAnnotationType().toString()))) {
+                            util().addAnnotation(methodTree.getModifiers(), anno);
+                        }
+                    }
+                }
+            }
         }
 
         print(methodTree.getModifiers());

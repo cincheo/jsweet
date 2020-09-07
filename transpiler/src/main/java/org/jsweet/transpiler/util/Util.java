@@ -68,6 +68,7 @@ import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetContext.DefaultMethodEntry;
 import org.jsweet.transpiler.SourcePosition;
 
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.BreakTree;
@@ -90,6 +91,7 @@ import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.PackageTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.StatementTree;
@@ -599,7 +601,8 @@ public class Util {
         // return the best match
         if (logger.isTraceEnabled()) {
             logger.trace("method declaration match for " + typeSymbol + "." + methodName + " - " + methodType + " : "
-                    + (bestMatch == null ? "" : bestMatch.getEnclosingElement() + ".") + bestMatch + " score=" + lastScore);
+                    + (bestMatch == null ? "" : bestMatch.getEnclosingElement() + ".") + bestMatch + " score="
+                    + lastScore);
         }
         return bestMatch;
     }
@@ -2287,6 +2290,17 @@ public class Util {
         return type == null || type.getKind() == TypeKind.NULL;
     }
 
+    public void addAnnotation(ModifiersTree modifiers, AnnotationTree annotation) {
+        if (modifiers != null) {
+            try {
+                Object newList = javacInternals().listAppendMethod.invoke(modifiers.getAnnotations(), annotation);
+                javacInternals().modifiersAnnotationsField.set(modifiers, newList);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
     @SuppressWarnings("unchecked")
     private <T extends Element> T getElementFromLegacySymbolField(Tree tree) {
         if (tree == null) {
@@ -2342,6 +2356,10 @@ public class Util {
         final Field treePosField;
         final Field treeTypeField;
 
+        final Field modifiersAnnotationsField;
+
+        final Method listAppendMethod;
+
         @SuppressWarnings("rawtypes")
         private final Map<Class, Field> treeClassToSymbolField = new HashMap<>();
 
@@ -2369,6 +2387,15 @@ public class Util {
 
                 treePosField = JCTreeClass.getDeclaredField("pos");
                 treeTypeField = JCTreeClass.getDeclaredField("type");
+
+                Class<?> JCModifiersClass = Stream.of(JCTreeClass.getDeclaredClasses())
+                        .filter(innerClass -> innerClass.getSimpleName().equals("JCModifiers")) //
+                        .findFirst().get();
+                modifiersAnnotationsField = JCModifiersClass.getDeclaredField("annotations");
+
+                Class<?> listClass = Class.forName("com.sun.tools.javac.util.List");
+                listAppendMethod = listClass.getMethod("append", Object.class);
+
             } catch (Exception e) {
                 throw new RuntimeException("Cannot call internal Javac API :( please adapt this code if API changed",
                         e);
