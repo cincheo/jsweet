@@ -21,12 +21,16 @@ package org.jsweet.transpiler.model.support;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
 
+import org.jsweet.transpiler.ConstAnalyzer;
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.ForeachLoopElement;
 
+import com.sun.source.tree.DoWhileLoopTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreeScanner;
+import com.sun.source.util.Trees;
 
 /**
  * See {@link ForeachLoopElement}.
@@ -35,26 +39,82 @@ import com.sun.source.util.TreePath;
  * @author Louis Grignon
  */
 public class ForeachLoopElementSupport extends ExtendedElementSupport<EnhancedForLoopTree>
-		implements ForeachLoopElement {
+        implements ForeachLoopElement {
 
-	public ForeachLoopElementSupport(TreePath treePath, EnhancedForLoopTree tree, Element element,
-			JSweetContext context) {
-		super(treePath, tree, element, context);
-	}
+    public ForeachLoopElementSupport(TreePath treePath, EnhancedForLoopTree tree, Element element,
+            JSweetContext context) {
+        super(treePath, tree, element, context);
+    }
 
-	@Override
-	public ExtendedElement getBody() {
-		return createElement(getTree().getStatement());
-	}
+    @Override
+    public ExtendedElement getBody() {
+        return createElement(getTree().getStatement());
+    }
 
-	@Override
-	public VariableElement getIterationVariable() {
-		return (VariableElement) util().getElementForTree(getTree().getVariable(), compilationUnit);
-	}
+    @Override
+    public VariableElement getIterationVariable() {
+        return (VariableElement) util().getElementForTree(getTree().getVariable(), compilationUnit);
+    }
 
-	@Override
-	public ExtendedElement getIterableExpression() {
-		return createElement(getTree().getExpression());
-	}
+    @Override
+    public ExtendedElement getIterableExpression() {
+        return createElement(getTree().getExpression());
+    }
+
+    @Override
+    public boolean hasControlFlowStatement() {
+        boolean[] hasControlFlowStatement = { false };
+        new TreeScanner<Void, Trees>() {
+            @Override
+            public Void visitBreak(com.sun.source.tree.BreakTree node, Trees p) {
+                hasControlFlowStatement[0] = true;
+                return null;
+            }
+
+            @Override
+            public Void visitContinue(com.sun.source.tree.ContinueTree node, Trees p) {
+                hasControlFlowStatement[0] = true;
+                return null;
+            }
+
+            @Override
+            public Void visitReturn(com.sun.source.tree.ReturnTree node, Trees p) {
+                hasControlFlowStatement[0] = true;
+                return null;
+            }
+
+            @Override
+            public Void visitEnhancedForLoop(EnhancedForLoopTree node, Trees p) {
+                // do not scan inner loops
+                return null;
+            }
+
+            @Override
+            public Void visitDoWhileLoop(DoWhileLoopTree node, Trees p) {
+                // do not scan inner loops
+                return null;
+            }
+
+            @Override
+            public Void visitWhileLoop(com.sun.source.tree.WhileLoopTree node, Trees p) {
+                // do not scan inner loops
+                return null;
+            }
+
+            @Override
+            public Void visitForLoop(com.sun.source.tree.ForLoopTree node, Trees p) {// do not scan inner loops
+                return null;
+            }
+
+        }.scan(getTree().getStatement(), context.trees);
+        return hasControlFlowStatement[0];
+    }
+
+    @Override
+    public boolean isIterationVariableModified() {
+        ConstAnalyzer a = new ConstAnalyzer(compilationUnit, context);
+        a.scan(getTree().getStatement(), context.trees);
+        return a.getModifiedVariables().contains(getIterationVariable());
+    }
 
 }

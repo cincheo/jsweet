@@ -21,16 +21,17 @@ package org.jsweet.transpiler;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.VariableElement;
 
-import org.jsweet.transpiler.util.AbstractTreeScanner;
-
 import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
+import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
 
 /**
@@ -40,9 +41,13 @@ import com.sun.source.util.Trees;
  * @see JSweetContext
  * @author Renaud Pawlak
  */
-public class ConstAnalyzer extends AbstractTreeScanner {
+public class ConstAnalyzer extends TreeScanner<Void, Trees> {
 
     private Set<VariableElement> modifiedVariables = new HashSet<>();
+
+    private final CompilationUnitTree compilationUnitTree;
+
+    private final JSweetContext context;
 
     /**
      * Gets all the local variables that are modified within the program. All other
@@ -55,13 +60,15 @@ public class ConstAnalyzer extends AbstractTreeScanner {
     /**
      * Creates a new constant variable analyzer.
      */
-    public ConstAnalyzer(TranspilationHandler logHandler, JSweetContext context) {
-        super(logHandler, context, null);
+    public ConstAnalyzer(CompilationUnitTree compilationUnitTree, JSweetContext context) {
+        this.compilationUnitTree = compilationUnitTree;
+        this.context = context;
     }
 
     private void registerModification(Tree tree) {
-        if (tree instanceof IdentifierTree && toElement(tree).getKind() == ElementKind.LOCAL_VARIABLE) {
-            modifiedVariables.add(toElement(tree));
+        Element element = context.util.getElementForTree(tree, compilationUnitTree);
+        if (tree instanceof IdentifierTree && element.getKind() == ElementKind.LOCAL_VARIABLE) {
+            modifiedVariables.add((VariableElement) element);
         }
     }
 
