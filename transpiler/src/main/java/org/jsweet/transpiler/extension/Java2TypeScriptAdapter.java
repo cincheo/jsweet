@@ -1295,8 +1295,14 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
                         if (types().isSameType(invocationElement.getTargetExpression().getType(),
                                 util().getType(String.class))
                                 || util().isNumber(invocationElement.getTargetExpression().getType())) {
+                            if (isInlinedExpression(invocationElement)) {
+                                print("(");
+                            }
                             print(invocationElement.getTargetExpression()).print(" === ")
                                     .print(invocationElement.getArgument(0));
+                            if (isInlinedExpression(invocationElement)) {
+                                print(")");
+                            }
                         } else {
                             printMacroName(targetMethodName);
                             print("(<any>((o1: any, o2: any) => { if(o1 && o1.equals) { return o1.equals(o2); } else { return o1 === o2; } })(");

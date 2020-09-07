@@ -5225,10 +5225,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
     }
 
     protected void printBinaryRightOperand(BinaryTree binary) {
+        addInlinedExpression(binary.getRightOperand());
         print(binary.getRightOperand());
     }
 
     protected void printBinaryLeftOperand(BinaryTree binary) {
+        addInlinedExpression(binary.getLeftOperand());
         print(binary.getLeftOperand());
     }
 
@@ -5587,7 +5589,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
     @Override
     public Void visitUnary(UnaryTree unary, Trees trees) {
         if (!getAdapter().substituteUnaryOperator(createExtendedElement(unary))) {
-
+            addInlinedExpression(unary.getExpression());
+            
             String operatorAsString = util().toOperator(unary.getKind());
             if (!inRollback) {
                 StatementTree statement = null;
