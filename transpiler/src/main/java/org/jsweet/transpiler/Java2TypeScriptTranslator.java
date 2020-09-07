@@ -29,6 +29,7 @@ import static org.jsweet.JSweetConfig.GLOBALS_PACKAGE_NAME;
 import static org.jsweet.JSweetConfig.TS_IDENTIFIER_FORBIDDEN_CHARS;
 import static org.jsweet.JSweetConfig.TUPLE_CLASSES_PACKAGE;
 import static org.jsweet.JSweetConfig.UNION_CLASS_NAME;
+import static org.jsweet.JSweetConfig.UTIL_CLASSNAME;
 import static org.jsweet.JSweetConfig.UTIL_PACKAGE;
 import static org.jsweet.transpiler.util.Util.CONSTRUCTOR_METHOD_NAME;
 import static org.jsweet.transpiler.util.Util.firstOrDefault;
@@ -80,7 +81,10 @@ import org.jsweet.transpiler.extension.PrinterAdapter;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.MethodInvocationElement;
 import org.jsweet.transpiler.util.AbstractTreePrinter;
+import org.jsweet.transpiler.util.AbstractTreeScanner;
+import org.jsweet.transpiler.util.ConsoleTranspilationHandler;
 import org.jsweet.transpiler.util.JSDoc;
+import org.jsweet.transpiler.util.RollbackException;
 
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
@@ -2250,7 +2254,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
             ExecutableElement superMethod = util().findMethodDeclarationInType(superTypeElement,
                     methodTree.getName().toString(), toType(methodTree));
-            if (superMethod != null) {
+            if (superMethod != null && util().isSourceElement(superMethod)) {
                 return returnNothing();
             }
         }
@@ -3267,7 +3271,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             if (m instanceof BlockTree) {
                 if (((BlockTree) m).isStatic()) {
                     if (block == m) {
-                        print("static __static_initializer_" + static_i + "() ");
+                        String asyncKeyword = isAsyncStaticInitializer(block) ? "async" : "";
+                        print("static " + asyncKeyword + " __static_initializer_" + static_i + "() ");
+
                         print("{");
                         println().startIndent();
 
@@ -3280,6 +3286,53 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     static_i++;
                 }
             }
+        }
+    }
+
+    protected boolean isAsyncStaticInitializer(BlockTree initializerBlock) {
+        AsyncCallsFinder finder = new AsyncCallsFinder();
+        initializerBlock.accept(finder, trees());
+        return finder.found;
+    }
+
+    private class AsyncCallsFinder extends TreeScanner<Void, Trees> {
+
+        protected boolean found = false;
+
+        @Override
+        public Void scan(Tree tree, Trees p) {
+            if (found) {
+                return returnNothing();
+            }
+            return super.scan(tree, p);
+        }
+
+        @Override
+        public Void scan(Iterable<? extends Tree> nodes, Trees p) {
+            if (found) {
+                return returnNothing();
+            }
+            return super.scan(nodes, p);
+        }
+
+        @Override
+        public Void visitMethodInvocation(MethodInvocationTree methodInvocation, Trees trees) {
+            Element methodSymbol = toElement(methodInvocation.getMethodSelect());
+            if (methodSymbol instanceof ExecutableElement) {
+                ExecutableElement method = (ExecutableElement) methodSymbol;
+
+                if (isAwait(method)) {
+                    found = true;
+                    return returnNothing();
+                }
+            }
+            return super.visitMethodInvocation(methodInvocation, trees);
+        }
+
+        private boolean isAwait(ExecutableElement method) {
+            return method.getEnclosingElement() instanceof TypeElement
+                    && ((TypeElement) method.getEnclosingElement()).getQualifiedName().toString().equals(UTIL_CLASSNAME)
+                    && method.getSimpleName().toString().equals("await");
         }
     }
 

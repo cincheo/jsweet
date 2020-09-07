@@ -28,6 +28,7 @@ import source.statics.DefaultValues;
 import source.statics.InnerClasses;
 import source.statics.NestedAnonymousClassesWithParams;
 import source.statics.StaticInitializer;
+import source.statics.StaticInitializerAsync;
 import source.statics.StaticInitializerWithNoFields;
 import source.statics.StaticsInInterfaces;
 import source.statics.static_accesses.definitions.AClass;
@@ -79,6 +80,14 @@ public class StaticsTests extends AbstractTest {
             h.assertNoProblems();
             Assert.assertEquals(4, (int) r.get("result"));
         }, getSourceFile(StaticInitializer.class));
+    }
+
+    @Test
+    public void testStaticInitializerAsync() {
+        eval((handler, r) -> {
+            handler.assertNoProblems();
+            Assert.assertEquals("that's it", r.get("result"));
+        }, getSourceFile(StaticInitializerAsync.class));
     }
 
     @Test
