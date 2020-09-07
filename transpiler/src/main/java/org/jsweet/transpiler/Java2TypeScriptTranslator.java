@@ -2584,63 +2584,67 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                 } else {
                     print(" ").print("{").println().startIndent();
 
-                    String replacedBody = null;
-                    if (context.hasAnnotationType(methodElement, JSweetConfig.ANNOTATION_REPLACE)) {
-                        replacedBody = (String) context.getAnnotationValue(methodElement,
-                                JSweetConfig.ANNOTATION_REPLACE, String.class, null);
-                    }
+                    if (!getAdapter().substituteMethodBody(parentElement, methodElement)) {
 
-                    boolean fieldsInitPrinted = false;
-                    int position = getCurrentPosition();
-                    if (replacedBody == null || BODY_MARKER.matcher(replacedBody).find()) {
-                        enter(methodTree.getBody());
-
-                        List<? extends StatementTree> statements = methodTree.getBody().getStatements();
-                        if (!statements.isEmpty() && statements.get(0).toString().startsWith("super(")) {
-                            printBlockStatement(statements.get(0));
-                            if (parent != null) {
-                                printInstanceInitialization(parent, methodElement);
-                                fieldsInitPrinted = true;
-                            }
-                            printBlockStatements(statements.subList(1, statements.size()));
-                        } else {
-                            if (parent != null) {
-                                printInstanceInitialization(parent, methodElement);
-                                fieldsInitPrinted = true;
-                            }
-                            printBlockStatements(statements);
+                        String replacedBody = null;
+                        if (context.hasAnnotationType(methodElement, JSweetConfig.ANNOTATION_REPLACE)) {
+                            replacedBody = (String) context.getAnnotationValue(methodElement,
+                                    JSweetConfig.ANNOTATION_REPLACE, String.class, null);
                         }
-                        exit();
+
+                        boolean fieldsInitPrinted = false;
+                        int position = getCurrentPosition();
+                        if (replacedBody == null || BODY_MARKER.matcher(replacedBody).find()) {
+                            enter(methodTree.getBody());
+
+                            List<? extends StatementTree> statements = methodTree.getBody().getStatements();
+                            if (!statements.isEmpty() && statements.get(0).toString().startsWith("super(")) {
+                                printBlockStatement(statements.get(0));
+                                if (parent != null) {
+                                    printInstanceInitialization(parent, methodElement);
+                                    fieldsInitPrinted = true;
+                                }
+                                printBlockStatements(statements.subList(1, statements.size()));
+                            } else {
+                                if (parent != null) {
+                                    printInstanceInitialization(parent, methodElement);
+                                    fieldsInitPrinted = true;
+                                }
+                                printBlockStatements(statements);
+                            }
+                            exit();
+                            if (replacedBody != null) {
+                                String orgBody = getOutput().substring(position);
+                                removeLastChars(getCurrentPosition() - position);
+                                replacedBody = BODY_MARKER.matcher(replacedBody).replaceAll(orgBody);
+                                replacedBody = BASE_INDENT_MARKER.matcher(replacedBody).replaceAll(getIndentString());
+                                replacedBody = INDENT_MARKER.matcher(replacedBody).replaceAll(INDENT);
+                                replacedBody = METHOD_NAME_MARKER.matcher(replacedBody)
+                                        .replaceAll(methodTree.getName().toString());
+                                TypeElement parentTypeElement = toElement(parent);
+                                replacedBody = CLASS_NAME_MARKER.matcher(replacedBody)
+                                        .replaceAll(parentTypeElement.getQualifiedName().toString());
+                            }
+                        }
+
+                        if (replacedBody != null && replacedBody.trim().startsWith("super(")) {
+                            String superCall = replacedBody.substring(0, replacedBody.indexOf(';') + 1);
+                            replacedBody = replacedBody.substring(replacedBody.indexOf(';') + 1);
+                            println(superCall);
+                        }
+
+                        if (!fieldsInitPrinted && parent != null) {
+                            printInstanceInitialization(parent, methodElement);
+                            fieldsInitPrinted = true;
+                        }
+
                         if (replacedBody != null) {
-                            String orgBody = getOutput().substring(position);
-                            removeLastChars(getCurrentPosition() - position);
-                            replacedBody = BODY_MARKER.matcher(replacedBody).replaceAll(orgBody);
-                            replacedBody = BASE_INDENT_MARKER.matcher(replacedBody).replaceAll(getIndentString());
-                            replacedBody = INDENT_MARKER.matcher(replacedBody).replaceAll(INDENT);
-                            replacedBody = METHOD_NAME_MARKER.matcher(replacedBody)
-                                    .replaceAll(methodTree.getName().toString());
-                            TypeElement parentTypeElement = toElement(parent);
-                            replacedBody = CLASS_NAME_MARKER.matcher(replacedBody)
-                                    .replaceAll(parentTypeElement.getQualifiedName().toString());
+                            if (methodElement.getKind() == ElementKind.CONSTRUCTOR) {
+                                getScope().hasDeclaredConstructor = true;
+                            }
+                            printIndent().print(replacedBody).println();
                         }
-                    }
 
-                    if (replacedBody != null && replacedBody.trim().startsWith("super(")) {
-                        String superCall = replacedBody.substring(0, replacedBody.indexOf(';') + 1);
-                        replacedBody = replacedBody.substring(replacedBody.indexOf(';') + 1);
-                        println(superCall);
-                    }
-
-                    if (!fieldsInitPrinted && parent != null) {
-                        printInstanceInitialization(parent, methodElement);
-                        fieldsInitPrinted = true;
-                    }
-
-                    if (replacedBody != null) {
-                        if (methodElement.getKind() == ElementKind.CONSTRUCTOR) {
-                            getScope().hasDeclaredConstructor = true;
-                        }
-                        printIndent().print(replacedBody).println();
                     }
                     endIndent().printIndent().print("}");
                 }
