@@ -18,13 +18,21 @@
  */
 package org.jsweet.transpiler.extension;
 
+import java.util.AbstractMap;
 import java.util.AbstractSet;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.TypeMirror;
 
 import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.model.ExtendedElement;
@@ -37,9 +45,12 @@ import org.jsweet.transpiler.model.NewClassElement;
  */
 
 public class RemoveJavaDependenciesES6Adapter extends RemoveJavaDependenciesAdapter {
-    private Set<String> setClassNames = Stream.of(
-            Set.class, HashSet.class, LinkedHashSet.class, TreeSet.class, AbstractSet.class)
-            .map(Class::getName)
+    private final static Set<String> SET_CLASS_NAMES = Stream
+            .of(Set.class, HashSet.class, LinkedHashSet.class, TreeSet.class, AbstractSet.class).map(Class::getName)
+            .collect(Collectors.toSet());
+
+    private final static Set<String> MAP_CLASS_NAMES = Stream
+            .of(Map.class, HashMap.class, LinkedHashMap.class, TreeMap.class, AbstractMap.class).map(Class::getName)
             .collect(Collectors.toSet());
 
     public RemoveJavaDependenciesES6Adapter(PrinterAdapter parentAdapter) {
@@ -48,12 +59,9 @@ public class RemoveJavaDependenciesES6Adapter extends RemoveJavaDependenciesAdap
 
     @Override
     protected void initTypesMapping() {
-        setClassNames = Stream.of(Set.class, HashSet.class, AbstractSet.class)
-            .map(Class::getName)
-            .collect(Collectors.toSet());
-
         super.initTypesMapping();
-        setClassNames.forEach(name -> extTypesMapping.put(name, "any"));
+        SET_CLASS_NAMES.forEach(name -> extTypesMapping.put(name, "Set"));
+        MAP_CLASS_NAMES.forEach(name -> extTypesMapping.put(name, "Map"));
     }
 
     @Override
@@ -72,8 +80,12 @@ public class RemoveJavaDependenciesES6Adapter extends RemoveJavaDependenciesAdap
     public boolean substituteNewClass(NewClassElement newClass) {
         String className = newClass.getTypeAsElement().toString();
 
-        if (setClassNames.contains(className)) {
+        if (SET_CLASS_NAMES.contains(className)) {
             this.substituteNewSet(newClass);
+            return true;
+        }
+        if (MAP_CLASS_NAMES.contains(className)) {
+            this.substituteNewMap(newClass);
             return true;
         }
 
@@ -81,23 +93,27 @@ public class RemoveJavaDependenciesES6Adapter extends RemoveJavaDependenciesAdap
     }
 
     private void substituteNewSet(NewClassElement newClass) {
-        boolean ignoreArguments = newClass.getArgumentCount() == 0 ||
-                Integer.class.getName().equals(newClass.getArgument(0).getType().toString()) ||
-                "int".equals(newClass.getArgument(0).getType().toString());
+        TypeMirror genericIterable = context.types.erasure(util().getType(Iterable.class));
+
+        boolean ignoreArguments = newClass.getArgumentCount() == 0
+                || !(newClass.getArgument(0).getType() instanceof ArrayType || context.types
+                        .isAssignable(context.types.erasure(newClass.getArgument(0).getType()), genericIterable));
 
         if (ignoreArguments) {
-            print(String.format(
-                    "(() => { const col = %s; col.data = new Set(); col.iterator = %s; return col; })()",
-                    createNewCollection(newClass.getType().toString()),
-                    "() => { let i = 0; const a = Array.from(col.data.values()); return { next: () => i < a.length? a[i++] : null, hasNext: () => i < a.length }; }"
-            ));
+            print("new Set()");
         } else {
-            print(String.format(
-                    "((arg) => { const col = %s; col.data = new Set(); col.iterator = %s; %s return col; })(",
-                    createNewCollection(newClass.getType().toString()),
-                    "() => { let i = 0; const a = Array.from(col.data.values()); return { next: () => i < a.length? a[i++] : null, hasNext: () => i < a.length }; }",
-                    "const it = arg.iterator(); while(it.hasNext()) col.data.add(it.next());"
-            )).print(newClass.getArgument(0)).print(")");
+            print("new Set(").print(newClass.getArgument(0)).print(")");
+        }
+    }
+
+    private void substituteNewMap(NewClassElement newClass) {
+        boolean ignoreArguments = newClass.getArgumentCount() == 0
+                || !context.types.erasure(newClass.getArgument(0).getType()).toString().endsWith("Map");
+
+        if (ignoreArguments) {
+            print("new Map()");
+        } else {
+            print("new Map(").print(newClass.getArgument(0)).print(")");
         }
     }
 
@@ -109,8 +125,12 @@ public class RemoveJavaDependenciesES6Adapter extends RemoveJavaDependenciesAdap
             targetClassName = targetExpression.getTypeAsElement().toString();
         }
 
-        if (setClassNames.contains(targetClassName)) {
+        if (SET_CLASS_NAMES.contains(targetClassName)) {
             this.substituteMethodOnSet(invocation);
+            return true;
+        }
+        if (MAP_CLASS_NAMES.contains(targetClassName)) {
+            this.substituteMethodOnMap(invocation);
             return true;
         }
 
@@ -122,108 +142,174 @@ public class RemoveJavaDependenciesES6Adapter extends RemoveJavaDependenciesAdap
         ExtendedElement targetExpression = invocation.getTargetExpression();
 
         switch (targetMethodName) {
-            case "add":
-                printMacroName(targetMethodName);
-                print("((s, v) => { const n = s.data.size; s.data.add(v); return n !== s.data.size; })(")
-                        .print(targetExpression)
-                        .print(",")
-                        .print(invocation.getArgument(0))
-                        .print(")");
-                break;
-            case "addAll":
-                printMacroName(targetMethodName);
-                print("((s, c) => { const it = c.iterator(); const n = s.data.size; while(it.hasNext()) s.data.add(it.next()); return n !== s.data.size; })(")
-                        .print(targetExpression)
-                        .print(",")
-                        .print(invocation.getArgument(0))
-                        .print(")");
-                break;
-            case "clear":
-                printMacroName(targetMethodName);
-                print(targetExpression)
-                        .print(".data.clear()");
-                break;
-            case "contains":
-                printMacroName(targetMethodName);
-                print(targetExpression)
-                        .print(".data.has(")
-                        .print(invocation.getArgument(0))
-                        .print(")");
-                break;
-            case "containsAll":
-                printMacroName(targetMethodName);
-                print("((s, c) => { const it = c.iterator(); while(it.hasNext()) if (!s.has(it.next())) return false; return true; })(")
-                        .print(targetExpression)
-                        .print(",")
-                        .print(invocation.getArgument(0))
-                        .print(")");
-                break;
-            case "equals":
-                printMacroName(targetMethodName);
-                print("((s1, s2) => { if (!s1 || !s2) return s1 === s2; const it1 = s1.iterator(); const it2 = s2.iterator(); while(it1.hasNext()) if (it1.next() !== it2.next()) return false; return !it2.hasNext(); })(")
-                        .print(targetExpression)
-                        .print(",")
-                        .print(invocation.getArgument(0))
-                        .print(")");
-                break;
-            case "hashCode":
-                printMacroName(targetMethodName);
-                report(invocation, JSweetProblem.USER_ERROR, "hashCode() is not supported.");
-                break;
-            case "isEmpty":
-                printMacroName(targetMethodName);
-                print("(")
-                        .print(targetExpression)
-                        .print(".data.size === 0")
-                        .print(")");
-                break;
-            case "iterator":
-                printMacroName(targetMethodName);
-                print(targetExpression).print(".iterator()");
-                break;
-            case "remove":
-                printMacroName(targetMethodName);
-                print("(")
-                        .print(targetExpression)
-                        .print(".data.delete(")
-                        .print(invocation.getArgument(0))
-                        .print(")")
-                        .print(")");
-                break;
-            case "removeAll":
-                    printMacroName(targetMethodName);
-                    print("((s, c) => { const it = c.iterator(); const n = s.data.size; while (it.hasNext()) s.data.delete(it.next()); return n !== s.data.size; })(")
-                            .print(targetExpression)
-                            .print(",")
-                            .print(invocation.getArgument(0))
-                            .print(")");
-                    break;
-            case "retainAll":
-                printMacroName(targetMethodName);
-                print("((s, c) => { const n = s.data.size; const s2 = new Set(); const it = c.iterator(); while(it.hasNext()) s2.add(it.next()); s.data.forEach(v => { if(!s2.has(v)) s.data.delete(v); }); return n !== s.data.size; })(")
-                        .print(targetExpression)
-                        .print(",")
-                        .print(invocation.getArgument(0))
-                        .print(")");
-                break;
-            case "size":
-                printMacroName(targetMethodName);
-                print(targetExpression).print(".data.size");
-                break;
-            case "toArray":
-                printMacroName(targetMethodName);
-                print("(")
-                        .print("Array.from(")
-                        .print(targetExpression)
-                        .print(".data)")
-                        .print(")");
-                break;
-            default:
-                report(invocation, JSweetProblem.USER_ERROR, targetMethodName + " is not supported.");
+        case "add":
+            printMacroName(targetMethodName);
+            print("((s, v) => { const n = s.size; s.add(v); return n !== s.size; })(").print(targetExpression)
+                    .print(",").print(invocation.getArgument(0)).print(")");
+            break;
+        case "addAll":
+            printMacroName(targetMethodName);
+            print("((s, c) => { const len = s.size; for (const e of c) s.add(e); return s.size !== len; })(")
+                    .print(targetExpression).print(",").print(invocation.getArgument(0)).print(")");
+            break;
+        case "clear":
+            printMacroName(targetMethodName);
+            print(targetExpression).print(".clear()");
+            break;
+        case "contains":
+            printMacroName(targetMethodName);
+            print(targetExpression).print(".has(").print(invocation.getArgument(0)).print(")");
+            break;
+        case "containsAll":
+            printMacroName(targetMethodName);
+            print("((s, c) => c.every(e => s.has(e)))(").print(targetExpression).print(",")
+                    .print(invocation.getArgument(0)).print(")");
+            break;
+        case "equals":
+            printMacroName(targetMethodName);
+            print("((s1, s2) => { if (!s1 || !s2) return s1 === s2; return s1.size === s2.size && Array.from(s1).every(e => s2.has(e)) })(")
+                    .print(targetExpression).print(",").print(invocation.getArgument(0)).print(")");
+            break;
+        case "hashCode":
+            printMacroName(targetMethodName);
+            report(invocation, JSweetProblem.USER_ERROR, "hashCode() is not supported.");
+            break;
+        case "isEmpty":
+            printMacroName(targetMethodName);
+            print("(").print(targetExpression).print(".size === 0").print(")");
+            break;
+        case "iterator":
+            printMacroName(targetMethodName);
+            print(targetExpression).print(".values()");
+            break;
+        case "remove":
+            printMacroName(targetMethodName);
+            print("(").print(targetExpression).print(".delete(").print(invocation.getArgument(0)).print(")").print(")");
+            break;
+        case "removeAll":
+            printMacroName(targetMethodName);
+            print("((s, c) => { const len = s.size; for (const e of c) s.delete(e); return s.size !== len; })(")
+                    .print(targetExpression).print(",").print(invocation.getArgument(0)).print(")");
+            break;
+        case "retainAll":
+            printMacroName(targetMethodName);
+            print("((s, c) => { const len = s.size; const ca = Array.from(c); s.forEach(e => { if (ca.indexOf(e) == -1) s.delete(e) }); return len !== s.size; })(")
+                    .print(targetExpression).print(",").print(invocation.getArgument(0)).print(")");
+            break;
+        case "size":
+            // size typing was so strong that it breaks unit tests checking size "type" (e.g
+            // 0 !== 2)
+            print("(<any>");
+            printMacroName(targetMethodName);
+            print(targetExpression).print(".size");
+            print(")");
+            break;
+        case "toArray":
+            printMacroName(targetMethodName);
+            print("(").print("Array.from(").print(targetExpression).print(")").print(")");
+            break;
+        default:
+            report(invocation, JSweetProblem.USER_ERROR, targetMethodName + " is not supported.");
         }
     }
 
-    private String createNewCollection(String className) {
-        return String.format("{ className: '%s', data: null, iterator: null }", className);
+    private void substituteMethodOnMap(MethodInvocationElement invocation) {
+        String targetMethodName = invocation.getMethodName();
+        ExtendedElement targetExpression = invocation.getTargetExpression();
+
+        switch (targetMethodName) {
+        case "put":
+            printMacroName(targetMethodName);
+            print("((m, k, v) => { const prev = m.get(k); m.set(k,v); return prev; })(");
+            print(targetExpression).print(",");
+            print(invocation.getArgument(0)).print(",");
+            print(invocation.getArgument(1));
+            print(")");
+            break;
+        case "putAll":
+            printMacroName(targetMethodName);
+            print("((m, m2) => { for (const e of m2) m.set(e[0], e[1]) })(").print(targetExpression).print(",")
+                    .print(invocation.getArgument(0)).print(")");
+            break;
+        case "containsKey":
+            printMacroName(targetMethodName);
+            print(targetExpression).print(".has(").print(invocation.getArgument(0)).print(")");
+            break;
+        case "containsValue":
+            printMacroName(targetMethodName);
+            print("((m, v) => Array.from(m.values()).indexOf(v)>-1)(");
+            print(targetExpression).print(",").print(invocation.getArgument(0));
+            print(")");
+            break;
+
+        case "entries":
+            printMacroName(targetMethodName);
+            print("((m) => new Set(m.entries()))(");
+            print(targetExpression);
+            print(")");
+            break;
+        case "keySet":
+            printMacroName(targetMethodName);
+            print("((m) => new Set(m.keys()))(");
+            print(targetExpression);
+            print(")");
+            break;
+        case "values":
+            printMacroName(targetMethodName);
+            print("((m) => Array.from(m.values()))(");
+            print(targetExpression);
+            print(")");
+            break;
+
+        case "equals":
+            printMacroName(targetMethodName);
+            print("((s1, s2) => { if (!s1 || !s2) return s1 === s2; return s1.size === s2.size && Array.from(s1.keys()).every(i => x[i] == x2[i]) })(")
+                    .print(targetExpression).print(",").print(invocation.getArgument(0)).print(")");
+            break;
+        case "hashCode":
+            printMacroName(targetMethodName);
+            report(invocation, JSweetProblem.USER_ERROR, "hashCode() is not supported.");
+            break;
+
+        case "isEmpty":
+            printMacroName(targetMethodName);
+            print("(").print(targetExpression).print(".size === 0").print(")");
+            break;
+
+        case "remove":
+            printMacroName(targetMethodName);
+            print("((m, k) => { const v = m.get(k); return m.delete(k) ? v : undefined; })(");
+            print(targetExpression).print(",").print(invocation.getArgument(0));
+            print(")");
+            break;
+
+        case "size":
+            printMacroName(targetMethodName);
+            // size typing was so strong that it breaks unit tests checking size "type" (e.g
+            // 0 !== 2)
+            print("(<any>");
+            print(targetExpression).print(".size");
+            print(")");
+            break;
+
+        default:
+            printCallToEponymMethod(invocation);
+        }
+    }
+
+    private void printCallToEponymMethod(MethodInvocationElement invocation) {
+        String targetMethodName = invocation.getMethodName();
+        ExtendedElement targetExpression = invocation.getTargetExpression();
+
+        printMacroName(targetMethodName);
+        print(targetExpression).print(".").print(targetMethodName);
+        print("(");
+        for (int i = 0; i < invocation.getArgumentCount(); i++) {
+            print(invocation.getArgument(i));
+            if (i < invocation.getArgumentCount() - 1) {
+                print(",");
+            }
+        }
+        print(")");
     }
 }
