@@ -912,6 +912,8 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
             List<CompilationUnitTree> compilationUnits) throws IOException {
         // regular file-to-file generation
         new OverloadScanner(transpilationHandler, context).process(compilationUnits);
+        context.constAnalyzer = new ConstAnalyzer(context);
+        context.constAnalyzer.scan(compilationUnits, context.trees);
 
         if (isVerbose()) {
             context.dumpOverloads(System.out);
@@ -1050,6 +1052,8 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
         }
 
         new OverloadScanner(transpilationHandler, context).process(orderedCompilationUnits);
+        context.constAnalyzer = new ConstAnalyzer(context);
+        context.constAnalyzer.scan(orderedCompilationUnits, context.trees);
 
         adapter.onTranspilationStarted();
 

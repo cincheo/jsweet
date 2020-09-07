@@ -112,6 +112,17 @@ public class JSweetContext {
         }
     }
 
+    /**
+     * The constant variables (variables assigned only at initialization) scanner
+     * and accessor.
+     * 
+     * <p>
+     * TODO: This scanner is run globally (for all compilation units) before
+     * translation. It could be run locally to each compilation unit, except for
+     * default methods that are injected in the target classes.
+     */
+    public ConstAnalyzer constAnalyzer = null;
+
     private Map<String, TypeMirror> jdkSubclasses = new HashMap<>();
 
     public StaticInitilializerAnalyzer referenceAnalyzer;

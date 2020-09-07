@@ -494,8 +494,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
     private boolean isDefinitionScope = false;
 
-    private ConstAnalyzer constAnalyzer = null;
-
     protected final boolean isTopLevelScope() {
         return getIndent() == 0;
     }
@@ -749,9 +747,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
         footer.delete(0, footer.length());
 
         setCompilationUnit(compilationUnit);
-
-        constAnalyzer = new ConstAnalyzer(getCompilationUnit(), context);
-        constAnalyzer.scan(compilationUnit, trees);
 
         boolean globalModule = JSweetConfig.GLOBALS_PACKAGE_NAME.equals(packageFullName)
                 || packageFullName.endsWith("." + JSweetConfig.GLOBALS_PACKAGE_NAME);
@@ -3088,9 +3083,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     }
                     List<? extends StatementTree> nextStatements = actualStatements.subList(1, actualStatements.size());
                     if (!nextStatements.isEmpty()) {
-                        printIndent().print("((").print(") => {").startIndent().println();
                         printBlockStatements(nextStatements);
-                        endIndent().printIndent().print("})(").print(");").println();
                     }
                 } else {
                     if (!initialized) {
@@ -3586,8 +3579,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                         if (isDefinitionScope) {
                             print("var ");
                         } else {
-                            if (!isLazyInitialized(varElement) && ((!globals && constAnalyzer != null
-                                    && !constAnalyzer.getModifiedVariables().contains(varElement))
+                            if (!isLazyInitialized(varElement) && ((!globals && context.constAnalyzer != null
+                                    && !context.constAnalyzer.getModifiedVariables().contains(varElement))
                                     || (globals && varElement.getModifiers().contains(Modifier.FINAL)
                                             && varTree.getInitializer() != null))) {
                                 print("const ");

@@ -19,6 +19,7 @@
 package org.jsweet.transpiler;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.lang.model.element.Element;
@@ -45,7 +46,7 @@ public class ConstAnalyzer extends TreeScanner<Void, Trees> {
 
     private Set<VariableElement> modifiedVariables = new HashSet<>();
 
-    private final CompilationUnitTree compilationUnitTree;
+    private CompilationUnitTree compilationUnitTree;
 
     private final JSweetContext context;
 
@@ -60,8 +61,7 @@ public class ConstAnalyzer extends TreeScanner<Void, Trees> {
     /**
      * Creates a new constant variable analyzer.
      */
-    public ConstAnalyzer(CompilationUnitTree compilationUnitTree, JSweetContext context) {
-        this.compilationUnitTree = compilationUnitTree;
+    public ConstAnalyzer(JSweetContext context) {
         this.context = context;
     }
 
@@ -70,6 +70,12 @@ public class ConstAnalyzer extends TreeScanner<Void, Trees> {
         if (tree instanceof IdentifierTree && element.getKind() == ElementKind.LOCAL_VARIABLE) {
             modifiedVariables.add((VariableElement) element);
         }
+    }
+
+    @Override
+    public Void visitCompilationUnit(CompilationUnitTree compilationUnit, Trees trees) {
+        this.compilationUnitTree = compilationUnit;
+        return super.visitCompilationUnit(compilationUnit, trees);
     }
 
     @Override
@@ -95,5 +101,14 @@ public class ConstAnalyzer extends TreeScanner<Void, Trees> {
         default:
         }
         return super.visitUnary(unary, trees);
+    }
+
+    /**
+     * Scans a given compilation unit list.
+     */
+    public void process(List<CompilationUnitTree> cuList, Trees trees) {
+        for (CompilationUnitTree cu : cuList) {
+            scan(cu, trees);
+        }
     }
 }

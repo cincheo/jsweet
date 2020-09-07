@@ -56,6 +56,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -107,6 +108,8 @@ public class ExtendedElementFactory {
                     (javax.lang.model.element.ExecutableElement) element, context);
         case VARIABLE:
             return new VariableElementSupport(treePath, (VariableTree) tree, (VariableElement) element, context);
+        case TYPE_CAST:
+            return new TypeCastElementSupport((TypeCastTree) tree);
         case METHOD_INVOCATION:
             return new MethodInvocationElementSupport(treePath, (MethodInvocationTree) tree, element, context);
         case MEMBER_SELECT:

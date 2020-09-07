@@ -1295,12 +1295,21 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
                         TypeMirror t1 = util().unboxedTypeOrType(invocationElement.getTargetExpression().getType());
                         TypeMirror t2 = util().unboxedTypeOrType(invocationElement.getArgument(0).getType());
                         if (types().isSameType(t1, t2) && util().isCoreType(t1)) {
-
                             if (isInlinedExpression(invocationElement)) {
                                 print("(");
                             }
-                            print(invocationElement.getTargetExpression()).print(" === ")
-                                    .print(invocationElement.getArgument(0));
+                            print(invocationElement.getTargetExpression()).print(" === ");
+                            ExtendedElement arg = invocationElement.getArgument(0);
+                            boolean inlinable = arg instanceof VariableAccessElement
+                                    || (arg instanceof MethodInvocationElement
+                                            && !"equals".equals(((MethodInvocationElement) arg).getMethodName()));
+                            if (!inlinable) {
+                                print("(");
+                            }
+                            print(invocationElement.getArgument(0));
+                            if (!inlinable) {
+                                print(")");
+                            }
                             if (isInlinedExpression(invocationElement)) {
                                 print(")");
                             }
