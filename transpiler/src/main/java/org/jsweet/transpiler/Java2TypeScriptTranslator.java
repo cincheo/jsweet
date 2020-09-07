@@ -4182,8 +4182,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                         }
                     }
                     if (methSym != null) {
-                        if (context.isInvalidOverload(methSym) && !methSym.getParameters().isEmpty()
-                                && !util().hasTypeParameters(methSym) && getParent(MethodTree.class) != null
+                        if (context.isInvalidOverload(methSym) && !util().hasTypeParameters(methSym)
+                                && getParent(MethodTree.class) != null
                                 && !getParent(MethodTree.class).getModifiers().getFlags().contains(Modifier.DEFAULT)) {
                             if (context.isInterface((TypeElement) methSym.getEnclosingElement())) {
                                 removeLastChar('.');
