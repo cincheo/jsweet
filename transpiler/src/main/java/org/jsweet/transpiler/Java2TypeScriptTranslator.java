@@ -6189,7 +6189,18 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             isAnnotationScope = false;
             print(")");
         } else {
-            print("()");
+            boolean parens = true;
+            if (annotation.getAnnotationType() instanceof IdentifierTree) {
+                GlobalMethodInfos globalDecoratorFunction = context
+                        .lookupGlobalMethod(toElement(annotation.getAnnotationType()).toString());
+                if (globalDecoratorFunction != null) {
+                    if (!globalDecoratorFunction.methodTree.getParameters().isEmpty()) {
+                        parens = false;
+                    }
+                }
+            }
+            if (parens)
+                print("()");
         }
         println().printIndent();
 
