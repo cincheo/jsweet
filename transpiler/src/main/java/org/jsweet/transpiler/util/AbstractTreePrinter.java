@@ -134,6 +134,14 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
     }
 
     /**
+     * Returns a quote string (single or double quote depending on the
+     * <code>useSingleQuotesForStringLiterals</code> option).
+     */
+    public String getStringLiteralQuote() {
+        return getContext().options.isUseSingleQuotesForStringLiterals() ? "'" : "\"";
+    }
+
+    /**
      * Gets this output of this printer.
      */
     public String getOutput() {
