@@ -1281,14 +1281,6 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
                 }
                 break;
 
-            // case "java.util.Date":
-            // switch (targetMethodName) {
-            // case "setFullYear":
-            // printMacroName(targetMethodName);
-            // print(fieldAccess.getExpression()).print(".setYear(").printArgList(invocation.args).print(")");
-            //
-            // }
-            // break;
             }
 
             if (invocationElement.getTargetExpression() != null && isMappedType(targetClassName)
@@ -1300,11 +1292,18 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
                 } else {
                     switch (targetMethodName) {
                     case "equals":
-                        printMacroName(targetMethodName);
-                        print("(<any>((o1: any, o2: any) => { if(o1 && o1.equals) { return o1.equals(o2); } else { return o1 === o2; } })(");
-                        printTarget(invocationElement.getTargetExpression()).print(",")
-                                .print(invocationElement.getArgument(0));
-                        print("))");
+                        if (types().isSameType(invocationElement.getTargetExpression().getType(),
+                                util().getType(String.class))
+                                || util().isNumber(invocationElement.getTargetExpression().getType())) {
+                            print(invocationElement.getTargetExpression()).print(" === ")
+                                    .print(invocationElement.getArgument(0));
+                        } else {
+                            printMacroName(targetMethodName);
+                            print("(<any>((o1: any, o2: any) => { if(o1 && o1.equals) { return o1.equals(o2); } else { return o1 === o2; } })(");
+                            printTarget(invocationElement.getTargetExpression()).print(",")
+                                    .print(invocationElement.getArgument(0));
+                            print("))");
+                        }
                         return true;
                     case "compareTo":
                         if (invocationElement.getArgumentCount() == 1
