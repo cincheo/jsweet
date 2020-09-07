@@ -1154,6 +1154,29 @@ public class JSweetContext {
         return fieldNameMapping.containsKey(field);
     }
 
+    private Map<ExecutableElement, String> methodNameMapping = new HashMap<>();
+
+    /**
+     * Adds a name mapping to a method (rename it to avoid name clashes).
+     */
+    public void addMethodNameMapping(ExecutableElement method, String name) {
+        methodNameMapping.put(method, name);
+    }
+
+    /**
+     * Gets a method name mapping if any (null otherwise).
+     */
+    public String getMethodNameMapping(Element method) {
+        return methodNameMapping.get(method);
+    }
+
+    /**
+     * Tells if the given method has a method name mapping.
+     */
+    public boolean hasMethodNameMapping(Element method) {
+        return methodNameMapping.containsKey(method);
+    }
+
     private Map<TypeElement, String> classNameMapping = new HashMap<>();
 
     /**
@@ -1333,10 +1356,15 @@ public class JSweetContext {
      */
     public String getActualName(Element symbol) {
         String name = symbol.getSimpleName().toString();
+        String originalName = "";
         if (hasAnnotationType(symbol, JSweetConfig.ANNOTATION_NAME)) {
-            String originalName = getAnnotationValue(symbol, JSweetConfig.ANNOTATION_NAME, String.class, null);
-            if (!isBlank(originalName)) {
-                name = originalName;
+            originalName = getAnnotationValue(symbol, JSweetConfig.ANNOTATION_NAME, String.class, null);
+        }
+        if (!isBlank(originalName)) {
+            name = originalName;
+        } else {
+            if (hasMethodNameMapping(symbol)) {
+                name = getMethodNameMapping(symbol);
             }
         }
         return name;

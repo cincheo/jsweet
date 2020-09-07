@@ -56,192 +56,218 @@ import com.sun.source.util.Trees;
  */
 public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {
 
-	private Map<VariableTree, TypeElement> lazyInitializedStaticCandidates = new HashMap<>();
+    private Map<VariableTree, TypeElement> lazyInitializedStaticCandidates = new HashMap<>();
 
-	/**
-	 * Creates a new global scanner.
-	 */
-	public GlobalBeforeTranslationScanner(TranspilationHandler logHandler, JSweetContext context) {
-		super(logHandler, context, null);
-	}
+    /**
+     * Creates a new global scanner.
+     */
+    public GlobalBeforeTranslationScanner(TranspilationHandler logHandler, JSweetContext context) {
+        super(logHandler, context, null);
+    }
 
-	@Override
-	public Void visitCompilationUnit(CompilationUnitTree compilationUnit, Trees trees) {
-		if (util().getPackageFullNameForCompilationUnit(compilationUnit).startsWith(JSweetConfig.LIBS_PACKAGE + ".")) {
-			return null;
-		}
-		this.compilationUnit = compilationUnit;
-		return super.visitCompilationUnit(compilationUnit, trees);
-	}
+    @Override
+    public Void visitCompilationUnit(CompilationUnitTree compilationUnit, Trees trees) {
+        if (util().getPackageFullNameForCompilationUnit(compilationUnit).startsWith(JSweetConfig.LIBS_PACKAGE + ".")) {
+            return null;
+        }
+        this.compilationUnit = compilationUnit;
+        return super.visitCompilationUnit(compilationUnit, trees);
+    }
 
-	@Override
-	public Void visitClass(ClassTree classDeclaration, Trees trees) {
-		TypeElement classElement = util().getElementForTree(classDeclaration, compilationUnit);
+    @Override
+    public Void visitClass(ClassTree classDeclaration, Trees trees) {
+        TypeElement classElement = util().getElementForTree(classDeclaration, compilationUnit);
 
-		String docComment = trees.getDocComment(trees.getPath(compilationUnit, classDeclaration));
-		if (isNotBlank(docComment)) {
-			context.docComments.put(classElement, docComment);
-		}
-		
-		TypeMirror superClassType = context.types.erasure(classElement.getSuperclass());
-		if (superClassType.toString().startsWith("java.") && !superClassType.toString().equals(Object.class.getName())
-				&& !types().isSubtype(classElement.asType(), util().getType(Throwable.class))
-				&& !util().isSourceElement(types().asElement(superClassType))) {
-			// the class extends a JDK class
-			context.addJdkSubclass(classElement.toString(), superClassType);
-		}
+        String docComment = trees.getDocComment(trees.getPath(compilationUnit, classDeclaration));
+        if (isNotBlank(docComment)) {
+            context.docComments.put(classElement, docComment);
+        }
 
-		transposeInnerClassNameIfClash(classDeclaration, classElement);
+        TypeMirror superClassType = context.types.erasure(classElement.getSuperclass());
+        if (superClassType.toString().startsWith("java.") && !superClassType.toString().equals(Object.class.getName())
+                && !types().isSubtype(classElement.asType(), util().getType(Throwable.class))
+                && !util().isSourceElement(types().asElement(superClassType))) {
+            // the class extends a JDK class
+            context.addJdkSubclass(classElement.toString(), superClassType);
+        }
 
-		if (!(classElement.getEnclosingElement() instanceof TypeElement)) {
-			if (classElement.getKind() == ElementKind.ANNOTATION_TYPE
-					&& context.hasAnnotationType(classElement, JSweetConfig.ANNOTATION_DECORATOR)) {
-				context.registerDecoratorAnnotation(classDeclaration, compilationUnit);
-			}
-		}
+        transposeInnerClassNameIfClash(classDeclaration, classElement);
 
-		boolean globals = false;
-		if (JSweetConfig.GLOBALS_CLASS_NAME.equals(classDeclaration.getSimpleName().toString())) {
-			globals = true;
-		}
+        if (!(classElement.getEnclosingElement() instanceof TypeElement)) {
+            if (classElement.getKind() == ElementKind.ANNOTATION_TYPE
+                    && context.hasAnnotationType(classElement, JSweetConfig.ANNOTATION_DECORATOR)) {
+                context.registerDecoratorAnnotation(classDeclaration, compilationUnit);
+            }
+        }
 
-		for (Tree def : classDeclaration.getMembers()) {
-			if (def instanceof VariableTree) {
-				VariableTree fieldDeclaration = (VariableTree) def;
-				VariableElement fieldElement = util().getElementForTree(fieldDeclaration, compilationUnit);
+        boolean globals = false;
+        if (JSweetConfig.GLOBALS_CLASS_NAME.equals(classDeclaration.getSimpleName().toString())) {
+            globals = true;
+        }
 
-				String fieldDocComment = trees.getDocComment(trees.getPath(compilationUnit, fieldDeclaration));
-				if (isNotBlank(docComment)) {
-					context.docComments.put(fieldElement, fieldDocComment);
-				}
+        for (Tree def : classDeclaration.getMembers()) {
+            if (def instanceof VariableTree) {
+                VariableTree fieldDeclaration = (VariableTree) def;
+                VariableElement fieldElement = util().getElementForTree(fieldDeclaration, compilationUnit);
 
-				transposeFieldNameIfClash(classElement, fieldDeclaration, fieldElement);
+                String fieldDocComment = trees.getDocComment(trees.getPath(compilationUnit, fieldDeclaration));
+                if (isNotBlank(docComment)) {
+                    context.docComments.put(fieldElement, fieldDocComment);
+                }
 
-				if (fieldDeclaration.getModifiers().getFlags().contains(Modifier.STATIC)) {
-					if (!(fieldDeclaration.getModifiers().getFlags().contains(Modifier.FINAL)
-							&& fieldDeclaration.getInitializer() != null
-							&& fieldDeclaration.getInitializer() instanceof LiteralTree)) {
-						lazyInitializedStaticCandidates.put(fieldDeclaration, classElement);
-					}
-				}
-			} else if (def instanceof BlockTree) {
-				if (((BlockTree) def).isStatic()) {
-					context.countStaticInitializer(classElement);
-				}
-			}
-			if (globals && def instanceof MethodTree) {
-				ExecutableElement methodElement = util().getElementForTree(def, compilationUnit);
-				if (methodElement.getModifiers().contains(Modifier.STATIC)) {
-					context.registerGlobalMethod(classDeclaration, (MethodTree) def, compilationUnit);
-				}
-			}
-		}
+                transposeFieldNameIfClash(classElement, fieldDeclaration, fieldElement);
 
-		return super.visitClass(classDeclaration, trees);
-	}
+                if (fieldDeclaration.getModifiers().getFlags().contains(Modifier.STATIC)) {
+                    if (!(fieldDeclaration.getModifiers().getFlags().contains(Modifier.FINAL)
+                            && fieldDeclaration.getInitializer() != null
+                            && fieldDeclaration.getInitializer() instanceof LiteralTree)) {
+                        lazyInitializedStaticCandidates.put(fieldDeclaration, classElement);
+                    }
+                }
+            } else if (def instanceof BlockTree) {
+                if (((BlockTree) def).isStatic()) {
+                    context.countStaticInitializer(classElement);
+                }
+            }
+            if (def instanceof MethodTree) {
+                ExecutableElement methodElement = util().getElementForTree(def, compilationUnit);
+                if (globals && methodElement.getModifiers().contains(Modifier.STATIC)) {
+                    context.registerGlobalMethod(classDeclaration, (MethodTree) def, compilationUnit);
+                } else {
 
-	private void transposeFieldNameIfClash(TypeElement classElement, VariableTree fieldDeclaration,
-			VariableElement fieldElement) {
+                    MethodTree method = ((MethodTree) def);
+                    TypeElement superClassTypeElement = (TypeElement) types().asElement(classElement.getSuperclass());
+                    if (methodElement.getModifiers().contains(Modifier.PRIVATE)
+                            && !(methodElement.getKind() == ElementKind.STATIC_INIT
+                                    || methodElement.getKind() == ElementKind.INSTANCE_INIT)
+                            && !methodElement.getModifiers().contains(Modifier.STATIC)
+                            && methodElement.getKind() != ElementKind.CONSTRUCTOR) {
+                        ExecutableElement clashingMethod = util().findMethodDeclarationInType(superClassTypeElement,
+                                method.getName().toString(), null);
+                        if (clashingMethod != null) {
+                            context.addMethodNameMapping(methodElement, JSweetConfig.FIELD_METHOD_CLASH_RESOLVER_PREFIX
+                                    + classElement.toString().replace(".", "_") + "_" + method.getName().toString());
+                        }
+                    }
 
-		if (!context.hasFieldNameMapping(fieldElement)) {
-			if (classElement.getSuperclass() != null) {
-				Element superClassElement = types().asElement(classElement.getSuperclass());
-				if (superClassElement instanceof TypeElement) {
-					VariableElement clashingField = util().findFieldDeclaration((TypeElement) superClassElement,
-							fieldDeclaration.getName());
-					if (clashingField != null) {
-						if (clashingField.getModifiers().contains(Modifier.PRIVATE)
-								&& !context.hasFieldNameMapping(clashingField)) {
-							context.addFieldNameMapping(fieldElement,
-									JSweetConfig.FIELD_METHOD_CLASH_RESOLVER_PREFIX
-											+ classElement.toString().replace(".", "_") + "_"
-											+ fieldDeclaration.getName().toString());
-						}
-					}
+                    VariableElement clashingField = null;
+                    clashingField = util().findFieldDeclaration(superClassTypeElement, method.getName());
+                    if (clashingField != null) {
+                        if (clashingField.getModifiers().contains(Modifier.PRIVATE)
+                                && !context.hasFieldNameMapping(clashingField)) {
+                            context.addFieldNameMapping(clashingField, JSweetConfig.FIELD_METHOD_CLASH_RESOLVER_PREFIX
+                                    + classElement.toString().replace(".", "_") + "_" + method.getName().toString());
+                        }
+                    }
+                }
+            }
+        }
 
-					ExecutableElement m = util().findMethodDeclarationInType(classElement,
-							fieldDeclaration.getName().toString(), null);
-					if (m != null) {
-						context.addFieldNameMapping(fieldElement, JSweetConfig.FIELD_METHOD_CLASH_RESOLVER_PREFIX
-								+ fieldDeclaration.getName().toString());
-					}
-				}
-			}
-		}
-	}
+        return super.visitClass(classDeclaration, trees);
+    }
 
-	private void transposeInnerClassNameIfClash(ClassTree classDeclaration, TypeElement classElement) {
-		if (classElement.getEnclosingElement() instanceof TypeElement) {
-			TypeElement enclosingClassElement = (TypeElement) classElement.getEnclosingElement();
-			TypeMirror superClass = enclosingClassElement.getSuperclass();
-			if (superClass != null) {
-				TypeElement superClassElement = (TypeElement) types().asElement(superClass);
-				TypeElement clashingInnerClass = util().findInnerClassDeclaration(superClassElement,
-						classDeclaration.getSimpleName().toString());
+    private void transposeFieldNameIfClash(TypeElement classElement, VariableTree fieldDeclaration,
+            VariableElement fieldElement) {
 
-				// rename inner class is enclosing class' super class has an inner class of the
-				// same name
-				if (clashingInnerClass != null && !context.hasClassNameMapping(clashingInnerClass)) {
-					context.addClassNameMapping(classElement,
-							"__" + enclosingClassElement.getQualifiedName().toString().replace('.', '_') + "_"
-									+ clashingInnerClass.getSimpleName());
-				}
-			}
-		}
-	}
+        if (!context.hasFieldNameMapping(fieldElement)) {
+            if (classElement.getSuperclass() != null) {
+                Element superClassElement = types().asElement(classElement.getSuperclass());
+                if (superClassElement instanceof TypeElement) {
+                    VariableElement clashingField = util().findFieldDeclaration((TypeElement) superClassElement,
+                            fieldDeclaration.getName());
+                    if (clashingField != null) {
+                        if (clashingField.getModifiers().contains(Modifier.PRIVATE)
+                                && !context.hasFieldNameMapping(clashingField)) {
+                            context.addFieldNameMapping(fieldElement,
+                                    JSweetConfig.FIELD_METHOD_CLASH_RESOLVER_PREFIX
+                                            + classElement.toString().replace(".", "_") + "_"
+                                            + fieldDeclaration.getName().toString());
+                        }
+                    }
 
-	@Override
-	public Void visitMethod(MethodTree methodDeclaration, Trees trees) {
+                    ExecutableElement m = util().findMethodDeclarationInType(classElement,
+                            fieldDeclaration.getName().toString(), null);
+                    if (m != null) {
+                        context.addFieldNameMapping(fieldElement, JSweetConfig.FIELD_METHOD_CLASH_RESOLVER_PREFIX
+                                + fieldDeclaration.getName().toString());
+                    }
+                }
+            }
+        }
+    }
 
-		String docComment = trees.getDocComment(trees.getPath(compilationUnit, methodDeclaration));
-		if (isNotBlank(docComment)) {
-			ExecutableElement methodElement = util().getElementForTree(methodDeclaration, compilationUnit);
-			context.docComments.put(methodElement, docComment);
-		}
+    private void transposeInnerClassNameIfClash(ClassTree classDeclaration, TypeElement classElement) {
+        if (classElement.getEnclosingElement() instanceof TypeElement) {
+            TypeElement enclosingClassElement = (TypeElement) classElement.getEnclosingElement();
+            TypeMirror superClass = enclosingClassElement.getSuperclass();
+            if (superClass != null) {
+                TypeElement superClassElement = (TypeElement) types().asElement(superClass);
+                TypeElement clashingInnerClass = util().findInnerClassDeclaration(superClassElement,
+                        classDeclaration.getSimpleName().toString());
 
-		if (methodDeclaration.getModifiers().getFlags().contains(Modifier.DEFAULT)) {
-			getContext().addDefaultMethod(compilationUnit, getParent(ClassTree.class), methodDeclaration);
-		}
-		if (!getContext().ignoreWildcardBounds) {
-			scan(methodDeclaration.getParameters(), trees);
-		}
+                // rename inner class is enclosing class' super class has an inner class of the
+                // same name
+                if (clashingInnerClass != null && !context.hasClassNameMapping(clashingInnerClass)) {
+                    context.addClassNameMapping(classElement,
+                            "__" + enclosingClassElement.getQualifiedName().toString().replace('.', '_') + "_"
+                                    + clashingInnerClass.getSimpleName());
+                }
+            }
+        }
+    }
 
-		return null;
-	}
+    @Override
+    public Void visitMethod(MethodTree methodDeclaration, Trees trees) {
 
-	@Override
-	public Void visitWildcard(WildcardTree wildcard, Trees trees) {
-		ExecutableElement container = null;
-		MethodTree method = getParent(MethodTree.class);
-		if (method != null) {
-			container = util().getElementForTree(method, compilationUnit);
-		}
-		if (container != null) {
-			getContext().registerWildcard(container, wildcard);
-			scan(wildcard.getBound(), trees);
-		}
+        String docComment = trees.getDocComment(trees.getPath(compilationUnit, methodDeclaration));
+        if (isNotBlank(docComment)) {
+            ExecutableElement methodElement = util().getElementForTree(methodDeclaration, compilationUnit);
+            context.docComments.put(methodElement, docComment);
+        }
 
-		return null;
-	}
+        if (methodDeclaration.getModifiers().getFlags().contains(Modifier.DEFAULT)) {
+            getContext().addDefaultMethod(compilationUnit, getParent(ClassTree.class), methodDeclaration);
+        }
+        if (!getContext().ignoreWildcardBounds) {
+            scan(methodDeclaration.getParameters(), trees);
+        }
 
-	public void process(List<CompilationUnitTree> compilationUnits) {
-		for (CompilationUnitTree compilationUnit : compilationUnits) {
-			scan(compilationUnit, trees());
-		}
-		for (Entry<VariableTree, TypeElement> lazyStaticCandidate : lazyInitializedStaticCandidates.entrySet()) {
+        return null;
+    }
 
-			VariableTree var = lazyStaticCandidate.getKey();
-			TypeElement enclosingClass = lazyStaticCandidate.getValue();
+    @Override
+    public Void visitWildcard(WildcardTree wildcard, Trees trees) {
+        ExecutableElement container = null;
+        MethodTree method = getParent(MethodTree.class);
+        if (method != null) {
+            container = util().getElementForTree(method, compilationUnit);
+        }
+        if (container != null) {
+            getContext().registerWildcard(container, wildcard);
+            scan(wildcard.getBound(), trees);
+        }
 
-			if (context.getStaticInitializerCount(enclosingClass) == 0 && var.getInitializer() == null
-					|| util().isLiteralExpression(var.getInitializer())) {
-				continue;
-			}
+        return null;
+    }
 
-			CompilationUnitTree varCompilationUnit = trees().getPath(enclosingClass).getCompilationUnit();
-			VariableElement varElement = util().getElementForTree(var, varCompilationUnit);
-			context.lazyInitializedStatics.add(varElement);
-		}
-	}
+    public void process(List<CompilationUnitTree> compilationUnits) {
+        for (CompilationUnitTree compilationUnit : compilationUnits) {
+            scan(compilationUnit, trees());
+        }
+        for (Entry<VariableTree, TypeElement> lazyStaticCandidate : lazyInitializedStaticCandidates.entrySet()) {
+
+            VariableTree var = lazyStaticCandidate.getKey();
+            TypeElement enclosingClass = lazyStaticCandidate.getValue();
+
+            if (context.getStaticInitializerCount(enclosingClass) == 0 && var.getInitializer() == null
+                    || util().isLiteralExpression(var.getInitializer())) {
+                continue;
+            }
+
+            CompilationUnitTree varCompilationUnit = trees().getPath(enclosingClass).getCompilationUnit();
+            VariableElement varElement = util().getElementForTree(var, varCompilationUnit);
+            context.lazyInitializedStatics.add(varElement);
+        }
+    }
 
 }
