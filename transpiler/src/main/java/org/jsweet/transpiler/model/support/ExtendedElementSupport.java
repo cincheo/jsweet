@@ -26,6 +26,7 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
 import org.jsweet.transpiler.JSweetContext;
+import org.jsweet.transpiler.SourcePosition;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.ExtendedElementFactory;
 import org.jsweet.transpiler.util.Util;
@@ -137,5 +138,10 @@ public class ExtendedElementSupport<T extends Tree> implements ExtendedElement {
 
 	protected Types types() {
 		return context.types;
+	}
+	
+	@Override
+	public SourcePosition getSourcePosition() {
+	    return context.util.getSourcePosition(tree, compilationUnit);
 	}
 }

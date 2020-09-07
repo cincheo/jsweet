@@ -2,10 +2,12 @@ package org.jsweet.test.transpiler;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Comparator;
 import java.util.EventObject;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
@@ -29,6 +31,7 @@ import org.jsweet.transpiler.extension.Java2TypeScriptAdapter;
 import org.jsweet.transpiler.extension.MapAdapter;
 import org.jsweet.transpiler.extension.PrinterAdapter;
 import org.jsweet.transpiler.extension.RemoveJavaDependenciesAdapter;
+import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.ImportElement;
 import org.junit.Assert;
 import org.junit.Test;
@@ -41,6 +44,7 @@ import source.extension.HelloWorldDto;
 import source.extension.HelloWorldService;
 import source.extension.IAddNumber;
 import source.extension.Maps;
+import source.extension.ToBeSorted;
 import source.extension.UseOfGlobalVariable;
 
 class TestFactory extends JSweetFactory {
@@ -104,6 +108,38 @@ class HelloWorldAdapter extends PrinterAdapter {
             throw new RuntimeException("header not added");
         }
     }
+}
+
+class SortAdapter extends PrinterAdapter {
+
+    public SortAdapter(PrinterAdapter parentAdapter) {
+        super(parentAdapter);
+    }
+
+    @Override
+    public Comparator<ExtendedElement> getClassMemberComparator() {
+
+        Comparator<ExtendedElement> defaultComparator = super.getClassMemberComparator();
+
+        return new Comparator<ExtendedElement>() {
+            @Override
+            public int compare(ExtendedElement e1, ExtendedElement e2) {
+                if (e1 instanceof org.jsweet.transpiler.model.ExecutableElement
+                        && e2 instanceof org.jsweet.transpiler.model.ExecutableElement) {
+                    ExecutableElement se1 = ((org.jsweet.transpiler.model.ExecutableElement) e1).getStandardElement();
+                    ExecutableElement se2 = ((org.jsweet.transpiler.model.ExecutableElement) e2).getStandardElement();
+                    if (se1.getModifiers().contains(Modifier.STATIC) && !se2.getModifiers().contains(Modifier.STATIC)) {
+                        return -1;
+                    } else if (se2.getModifiers().contains(Modifier.STATIC)
+                            && !se1.getModifiers().contains(Modifier.STATIC)) {
+                        return 1;
+                    }
+                }
+                return defaultComparator.compare(e1, e2);
+            }
+        };
+    }
+
 }
 
 class JaxRSStubAdapter extends PrinterAdapter {
@@ -243,6 +279,31 @@ public class ExtensionTests extends AbstractTest {
         Assert.assertTrue(generatedCode.contains("this is a header comment"));
         Assert.assertTrue(generatedCode.contains("date : string"));
         Assert.assertFalse(generatedCode.contains("date : Date"));
+    }
+
+    @Test
+    public void testSortAdapter() throws IOException {
+        TranspilerTestRunner transpilerTest = new TranspilerTestRunner(getCurrentTestOutDir(), new JSweetFactory());
+        SourceFile f = getSourceFile(ToBeSorted.class);
+        transpilerTest.transpile(logHandler -> {
+            logHandler.assertNoProblems();
+        }, f);
+        String generatedCode = FileUtils.readFileToString(f.getTsFile());
+        Assert.assertTrue(generatedCode.indexOf("myStaticMethod") > generatedCode.indexOf("myMethod"));
+        transpilerTest = new TranspilerTestRunner(getCurrentTestOutDir(), new JSweetFactory() {
+
+            @Override
+            public PrinterAdapter createAdapter(JSweetContext context) {
+                return new SortAdapter(super.createAdapter(context));
+            }
+        });
+        transpilerTest.getTranspiler().setSortClassMembers(true);
+        f = getSourceFile(ToBeSorted.class);
+        transpilerTest.transpile(logHandler -> {
+            logHandler.assertNoProblems();
+        }, f);
+        generatedCode = FileUtils.readFileToString(f.getTsFile());
+        Assert.assertTrue(generatedCode.indexOf("myStaticMethod") < generatedCode.indexOf("myMethod"));
     }
 
     @Test

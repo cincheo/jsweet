@@ -597,6 +597,14 @@ public class JSweetCommandLineLauncher {
                 + "static dependencies).");
         jsap.registerParameter(switchArg);
 
+        // Sort class members
+        switchArg = new Switch(JSweetOptions.sortClassMembers);
+        switchArg.setLongFlag(JSweetOptions.sortClassMembers);
+        switchArg.setHelp("If enabled, class members are sorted using "
+                + "PrinterAdapter#getClassMemberComparator(), to be overloaded by the user to "
+                + "implement the desired order.");
+        jsap.registerParameter(switchArg);
+
         return jsap;
     }
 
@@ -823,6 +831,9 @@ public class JSweetCommandLineLauncher {
                     if (jsapArgs.userSpecified(JSweetOptions.disableStaticsLazyInitialization)) {
                         transpiler.setLazyInitializedStatics(
                                 !jsapArgs.getBoolean(JSweetOptions.disableStaticsLazyInitialization));
+                    }
+                    if (jsapArgs.userSpecified(JSweetOptions.sortClassMembers)) {
+                        transpiler.setSortClassMembers(jsapArgs.getBoolean(JSweetOptions.sortClassMembers));
                     }
 
                     if (tsOutputDir != null) {

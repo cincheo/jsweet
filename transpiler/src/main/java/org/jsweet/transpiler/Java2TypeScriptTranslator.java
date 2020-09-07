@@ -1780,7 +1780,23 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
         boolean hasUninitializedFields = false;
 
-        for (Tree def : classTree.getMembers()) {
+        @SuppressWarnings("unchecked")
+        List<Tree> classMembers = (List<Tree>) classTree.getMembers();
+        if (context.options.isSortClassMembers()) {
+            List<Tree> memberDefs = classMembers.stream()
+                    .filter(t -> (t instanceof MethodTree || t instanceof VariableTree)).sorted((t1, t2) -> getAdapter()
+                            .getClassMemberComparator().compare(createExtendedElement(t1), createExtendedElement(t2)))
+                    .collect(Collectors.toList());
+            classMembers = new ArrayList<>();
+            classMembers.addAll(memberDefs);
+            for (Tree def : classTree.getMembers()) {
+                if (!classMembers.contains(def)) {
+                    classMembers.add(def);
+                }
+            }
+        }
+
+        for (Tree def : classMembers) {
             if (getScope().interfaceScope) {
                 // static interface members are printed in a namespace
                 Element memberElement = toElement(def);

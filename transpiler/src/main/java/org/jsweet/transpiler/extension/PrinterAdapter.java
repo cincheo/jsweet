@@ -19,6 +19,7 @@
 package org.jsweet.transpiler.extension;
 
 import java.lang.annotation.Annotation;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +45,7 @@ import org.jsweet.transpiler.JSweetOptions;
 import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.ModuleImportDescriptor;
 import org.jsweet.transpiler.OverloadScanner.Overload;
+import org.jsweet.transpiler.SourcePosition;
 import org.jsweet.transpiler.model.ArrayAccessElement;
 import org.jsweet.transpiler.model.AssignmentElement;
 import org.jsweet.transpiler.model.AssignmentWithOperatorElement;
@@ -1104,6 +1106,22 @@ public class PrinterAdapter {
      */
     public final boolean isInlinedExpression(ExtendedElement element) {
         return printer.isInlinedExpression(((ExtendedElementSupport<?>) element).getTree());
+    }
+
+    /**
+     * Returns a comparator that will control the order of class members for output
+     * (default will keep order of appearance in the source code).
+     */
+    public Comparator<ExtendedElement> getClassMemberComparator() {
+        return new Comparator<ExtendedElement>() {
+            @Override
+            public int compare(ExtendedElement e1, ExtendedElement e2) {
+                SourcePosition sourcePosition1 = e1.getSourcePosition();
+                SourcePosition sourcePosition2 = e2.getSourcePosition();
+
+                return sourcePosition1.getStartPosition().compareTo(sourcePosition2.getStartPosition());
+            }
+        };
     }
 
     /**
