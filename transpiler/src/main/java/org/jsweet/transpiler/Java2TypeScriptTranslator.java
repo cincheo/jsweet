@@ -2683,6 +2683,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                         print(" throw new Error('cannot invoke abstract overloaded method... check your argument(s) type(s)'); ");
                     } else {
                         String tsMethodAccess = getTSMemberAccess(getTSMethodName(methodDecl), true);
+                        if (!"void".equals(toType(method.getReturnType()).toString())) {
+                            print("return ");
+                        }
+
                         print("super" + tsMethodAccess);
                         print("(");
                         for (int j = 0; j < method.getParameters().size(); j++) {

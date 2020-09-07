@@ -313,7 +313,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
                 switch (targetMethodName) {
                 case "getInstance":
                     printMacroName(targetMethodName);
-                    print("((o1, o2) => o1.toString().localeCompare(o2.toString()))");
+                    print("{ compare: (o1, o2) => o1.toString().localeCompare(o2.toString()), equals: (o1, o2) => o1.toString().localeCompare(o2.toString()) === 0 }");
                     return true;
                 }
                 break;
@@ -724,7 +724,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
                             + "return -(low + 1); })(").printArgList(invocation.getArguments()).print(")");
                     return true;
                 } else {
-                    print("((l, key) => { let comp = (a,b)=>a.localeCompare(b); let low = 0; let high = l.length-1; while (low <= high) { let mid = (low + high) >>> 1; let midVal = l[mid]; "
+                    print("((l, key) => { let comp = (a,b)=> {if(a.compareTo) return (<number>a.compareTo(b)); else return a.localeCompare(b);}; let low = 0; let high = l.length-1; while (low <= high) { let mid = (low + high) >>> 1; let midVal = l[mid]; "
                             + "let cmp = comp(midVal, key); if (cmp < 0) low = mid + 1; else if (cmp > 0) high = mid - 1; else return mid; } "
                             + "return -(low + 1); })(").printArgList(invocation.getArguments()).print(")");
                     return true;

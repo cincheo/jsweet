@@ -31,6 +31,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
 
 import org.jsweet.JSweetConfig;
@@ -130,23 +131,26 @@ public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {
                 }
             }
             if (def instanceof MethodTree) {
-                ExecutableElement methodElement = util().getElementForTree(def, compilationUnit);
+                Element methodElement = util().getElementForTree(def, compilationUnit);
                 if (globals && methodElement.getModifiers().contains(Modifier.STATIC)) {
                     context.registerGlobalMethod(classDeclaration, (MethodTree) def, compilationUnit);
                 } else {
 
                     MethodTree method = ((MethodTree) def);
                     TypeElement superClassTypeElement = (TypeElement) types().asElement(classElement.getSuperclass());
-                    if (methodElement.getModifiers().contains(Modifier.PRIVATE)
+                    if (methodElement instanceof ExecutableElement
+                            && methodElement.getModifiers().contains(Modifier.PRIVATE)
                             && !(methodElement.getKind() == ElementKind.STATIC_INIT
                                     || methodElement.getKind() == ElementKind.INSTANCE_INIT)
                             && !methodElement.getModifiers().contains(Modifier.STATIC)
                             && methodElement.getKind() != ElementKind.CONSTRUCTOR) {
-                        ExecutableElement clashingMethod = util().findMethodDeclarationInType(superClassTypeElement,
-                                method.getName().toString(), null);
-                        if (clashingMethod != null) {
-                            context.addMethodNameMapping(methodElement, JSweetConfig.FIELD_METHOD_CLASH_RESOLVER_PREFIX
-                                    + classElement.toString().replace(".", "_") + "_" + method.getName().toString());
+                        ExecutableElement clashingMethod = util().findMethodDeclarationInType2(superClassTypeElement,
+                                method.getName().toString(), (ExecutableType) methodElement.asType());
+                        if (clashingMethod != null && clashingMethod.getModifiers().contains(Modifier.PRIVATE)) {
+                            context.addMethodNameMapping((ExecutableElement) methodElement,
+                                    JSweetConfig.FIELD_METHOD_CLASH_RESOLVER_PREFIX
+                                            + classElement.toString().replace(".", "_") + "_"
+                                            + method.getName().toString());
                         }
                     }
 
