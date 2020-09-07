@@ -979,6 +979,7 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
                 logger.info("created " + outputFilePath);
             } finally {
                 context.clearHeaders();
+                context.clearGlobalsMappings();
                 context.clearFooterStatements();
             }
         }

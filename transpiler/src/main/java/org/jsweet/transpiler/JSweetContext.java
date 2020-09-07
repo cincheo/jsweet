@@ -1055,6 +1055,13 @@ public class JSweetContext {
     }
 
     /**
+     * Clear globals mappings.
+     */
+    public void clearGlobalsMappings() {
+        globalsMapping.clear();
+    }
+
+    /**
      * Returns the TypeScript string for globals mapping.
      */
     public String getGlobalsMappingString() {
