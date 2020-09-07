@@ -37,6 +37,7 @@ import org.jsweet.transpiler.model.support.LiteralElementSupport;
 import org.jsweet.transpiler.model.support.MethodInvocationElementSupport;
 import org.jsweet.transpiler.model.support.NewArrayElementSupport;
 import org.jsweet.transpiler.model.support.NewClassElementSupport;
+import org.jsweet.transpiler.model.support.TypeCastElementSupport;
 import org.jsweet.transpiler.model.support.UnaryOperatorElementSupport;
 import org.jsweet.transpiler.model.support.VariableAccessElementSupport;
 import org.jsweet.transpiler.model.support.VariableElementSupport;
@@ -109,7 +110,7 @@ public class ExtendedElementFactory {
         case VARIABLE:
             return new VariableElementSupport(treePath, (VariableTree) tree, (VariableElement) element, context);
         case TYPE_CAST:
-            return new TypeCastElementSupport((TypeCastTree) tree);
+            return new TypeCastElementSupport(treePath, (TypeCastTree) tree, element, context);
         case METHOD_INVOCATION:
             return new MethodInvocationElementSupport(treePath, (MethodInvocationTree) tree, element, context);
         case MEMBER_SELECT:

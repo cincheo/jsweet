@@ -132,4 +132,8 @@ public class ConstAnalyzer extends TreeScanner<Void, Trees> {
             scan(cu, trees);
         }
     }
+    
+    public void setCompilationUnitTree(CompilationUnitTree compilationUnitTree) {
+        this.compilationUnitTree = compilationUnitTree;
+    }
 }

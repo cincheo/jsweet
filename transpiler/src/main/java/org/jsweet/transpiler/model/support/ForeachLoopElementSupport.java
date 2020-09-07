@@ -112,7 +112,8 @@ public class ForeachLoopElementSupport extends ExtendedElementSupport<EnhancedFo
 
     @Override
     public boolean isIterationVariableModified() {
-        ConstAnalyzer a = new ConstAnalyzer(compilationUnit, context);
+        ConstAnalyzer a = new ConstAnalyzer(context);
+        a.setCompilationUnitTree(compilationUnit);
         a.scan(getTree().getStatement(), context.trees);
         return a.getModifiedVariables().contains(getIterationVariable());
     }
