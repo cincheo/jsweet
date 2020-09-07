@@ -28,6 +28,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -1625,6 +1626,32 @@ public class Util {
         } else {
             return "null";
         }
+    }
+
+    /**
+     * Gets all the members of the given type, including members within the super
+     * classes.
+     * 
+     * @param typeElement the typeElement
+     * @return a list of all the members
+     */
+    public List<Element> getAllMembers(TypeElement typeElement) {
+        if (typeElement == null) {
+            return Collections.emptyList();
+        }
+        List<Element> elements = new ArrayList<Element>();
+        for (Element e : typeElement.getEnclosedElements()) {
+            elements.add(e);
+        }
+        elements.addAll(getAllMembers(typeElement.getSuperclass()));
+        return elements;
+    }
+
+    private List<Element> getAllMembers(TypeMirror type) {
+        if (type == null) {
+            return Collections.emptyList();
+        }
+        return getAllMembers((TypeElement) context.types.asElement(type));
     }
 
     public Element getFirstTypeArgumentAsElement(DeclaredType type) {
