@@ -224,6 +224,7 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
     private boolean skipTypeScriptChecks = false;
     private boolean disableSingleFloatPrecision = false;
     private boolean ignoreCandiesTypeScriptDefinitions = false;
+    private boolean lazyInitializedStatics = true;
 
     private ArrayList<String> adapters = new ArrayList<>();
     private File configurationFile;
@@ -898,7 +899,7 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
         }
 
         adapter.onTranspilationStarted();
-        
+
         String[] headerLines = getHeaderLines();
         for (int i = 0; i < compilationUnits.size(); i++) {
             if (context.isExcludedSourcePath(files[i].toString())) {
@@ -970,7 +971,7 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
                 context.clearFooterStatements();
             }
         }
-        
+
         adapter.onTranspilationFinished();
     }
 
@@ -1031,7 +1032,7 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
         new OverloadScanner(transpilationHandler, context).process(orderedCompilationUnits);
 
         adapter.onTranspilationStarted();
-        
+
         logger.debug("ordered compilation units: " + orderedCompilationUnits.stream().map(cu -> {
             return cu.getSourceFile().getName();
         }).collect(Collectors.toList()));
@@ -1048,7 +1049,7 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
         if (isGenerateDefinitions()) {
             createBundle(transpilationHandler, files, permutation, orderedCompilationUnits, true);
         }
-        
+
         adapter.onTranspilationFinished();
     }
 
@@ -1783,10 +1784,14 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
         this.disableSingleFloatPrecision = disableSinglePrecisionFloats;
     }
 
-    // @SuppressWarnings("unchecked")
-    // private <T> T getConfigurationValue(String key) {
-    // return (T) getConfiguration().get(key);
-    // }
+    @Override
+    public boolean isLazyInitializedStatics() {
+        return lazyInitializedStatics;
+    }
+
+    public void setLazyInitializedStatics(boolean lazyInitializedStatics) {
+        this.lazyInitializedStatics = lazyInitializedStatics;
+    }
 
     @Override
     public java.util.List<String> getAdapters() {

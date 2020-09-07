@@ -81,10 +81,7 @@ import org.jsweet.transpiler.extension.PrinterAdapter;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.MethodInvocationElement;
 import org.jsweet.transpiler.util.AbstractTreePrinter;
-import org.jsweet.transpiler.util.AbstractTreeScanner;
-import org.jsweet.transpiler.util.ConsoleTranspilationHandler;
 import org.jsweet.transpiler.util.JSDoc;
-import org.jsweet.transpiler.util.RollbackException;
 
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
@@ -3361,7 +3358,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
     }
 
     private boolean isLazyInitialized(VariableElement var) {
-        return var.getModifiers().contains(Modifier.STATIC) && context.lazyInitializedStatics.contains(var)
+        return context.options.isLazyInitializedStatics() && var.getModifiers().contains(Modifier.STATIC)
+                && context.lazyInitializedStatics.contains(var)
                 && /* enum fields are not lazy initialized */ !(util().isPartOfAnEnum(var)
                         && var.getEnclosingElement().equals(toTypeElement(var)));
     }

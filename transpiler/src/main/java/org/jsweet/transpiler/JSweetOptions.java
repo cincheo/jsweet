@@ -311,4 +311,10 @@ public interface JSweetOptions {
      * @return true to enable tsc watch mode
      */
     boolean isTscWatchMode();
+
+    /**
+     * True (default) if JSweet generates code that lazily initializes statics in
+     * order to avoid initialization precedence issues (emulates Java behavior).
+     */
+    boolean isLazyInitializedStatics();
 }

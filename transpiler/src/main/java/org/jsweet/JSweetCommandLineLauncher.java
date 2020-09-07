@@ -199,6 +199,13 @@ import com.martiansoftware.jsap.stringparsers.FileStringParser;
 
   [--extraSystemPath <extraSystemPath>]
         Allow an extra path to be added to the system path.
+        
+  [--disableStaticsLazyInitialization]
+        Do not generate lazy initialization code of static fields that is meant 
+        to emulate the Java behavior. When disables, the code is more readable 
+        but it may result into runtime static initialization issues (cross-class
+        static dependencies).
+ * 
  * </pre>
  * 
  * @author Renaud Pawlak
@@ -314,7 +321,7 @@ public class JSweetCommandLineLauncher {
         optionArg.setDefault("UTF-8");
         optionArg.setHelp("Force the Java compiler to use a specific encoding (UTF-8, UTF-16, ...).");
         jsap.registerParameter(optionArg);
-        
+
         // Output encoding
         optionArg = new FlaggedOption("outEncoding");
         optionArg.setLongFlag("outEncoding");
@@ -575,6 +582,15 @@ public class JSweetCommandLineLauncher {
         optionArg.setRequired(false);
         jsap.registerParameter(optionArg);
 
+        // Disable statics lazy initialization
+        switchArg = new Switch("disableStaticsLazyInitialization");
+        switchArg.setLongFlag("disableStaticsLazyInitialization");
+        switchArg.setHelp("Do not generate lazy initialization code of static fields that is meant "
+                + "to emulate the Java behavior. When disables, the code is more readable "
+                + "but it may result into runtime static initialization issues (cross-class "
+                + "static dependencies).");
+        jsap.registerParameter(switchArg);
+
         return jsap;
     }
 
@@ -789,6 +805,10 @@ public class JSweetCommandLineLauncher {
                     }
                     if (jsapArgs.userSpecified(JSweetOptions.extraSystemPath)) {
                         ProcessUtil.addExtraPath(jsapArgs.getString(JSweetOptions.extraSystemPath));
+                    }
+
+                    if (jsapArgs.userSpecified("disableStaticsLazyInitialization")) {
+                        transpiler.setLazyInitializedStatics(!jsapArgs.getBoolean("disableStaticsLazyInitialization"));
                     }
 
                     if (tsOutputDir != null) {
