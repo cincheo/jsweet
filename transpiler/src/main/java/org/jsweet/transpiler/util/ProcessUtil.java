@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -123,14 +124,14 @@ public class ProcessUtil {
 				return unixPath;
 			}
 
-			logger.info("cannot find " + command + " - searching in node_modules files");
-			unixPath = lookupGlobalNpmPackageExecutablePath(NPM_DIR, command);
-			
-			return unixPath;
+			logger.info("cannot find " + command + " - searching in " + NPM_DIR.getAbsolutePath());
+			Optional<String> lastChangeResult = lookupGlobalNpmPackageExecutablePath(NPM_DIR, command);
+
+			return lastChangeResult.orElse(null);
 		}
 	}
 
-	private static String lookupGlobalNpmPackageExecutablePath(File directory, String executableName) {
+	private static Optional<String> lookupGlobalNpmPackageExecutablePath(File directory, String executableName) {
 		if (directory != null) {
 			File[] children = directory.listFiles();
 			if (children != null) {
@@ -139,12 +140,12 @@ public class ProcessUtil {
 						if (child.getName().equals("bin")) {
 							for (File binFile : child.listFiles()) {
 								if (binFile.getName().equals(executableName)) {
-									return binFile.getAbsolutePath();
+									return Optional.of(binFile.getAbsolutePath());
 								}
 							}
 						} else {
-							String foundPath = lookupGlobalNpmPackageExecutablePath(child, executableName);
-							if (foundPath != null) {
+							Optional<String> foundPath = lookupGlobalNpmPackageExecutablePath(child, executableName);
+							if (foundPath.isPresent()) {
 								return foundPath;
 							}
 						}
@@ -152,7 +153,7 @@ public class ProcessUtil {
 				}
 			}
 		}
-		return null;
+		return Optional.empty();
 	}
 
 	/**
@@ -460,10 +461,12 @@ public class ProcessUtil {
 
 		String path = globalExecutableCache.get(fileName);
 		if (path == null) {
+			String globalPackagesDir = NPM_DIR.getAbsolutePath();
+
+			Stream<Path> searchPaths = null;
 			try {
 
-				String globalPackagesDir = NPM_DIR.getAbsolutePath();
-				Stream<Path> searchPaths = Files.walk(Paths.get(globalPackagesDir));
+				searchPaths = Files.walk(Paths.get(globalPackagesDir));
 				if (isWindows()) {
 					File programFilesPath = new File(
 							System.getenv("ProgramFiles") + "/nodejs/node_modules/" + packageName);
@@ -485,6 +488,10 @@ public class ProcessUtil {
 				globalExecutableCache.put(fileName, path);
 			} catch (Exception e) {
 				throw new RuntimeException("cannot find global executable", e);
+			} finally {
+				if (searchPaths != null) {
+					searchPaths.close();
+				}
 			}
 		}
 		return path;
