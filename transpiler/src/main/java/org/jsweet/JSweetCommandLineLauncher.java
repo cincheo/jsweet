@@ -683,6 +683,7 @@ public class JSweetCommandLineLauncher {
                 javaInputFiles = new LinkedList<File>();
 
                 for (File inputDir : inputDirList) {
+                    logger.info("add sources from directory: " + inputDir);
                     Util.Static.addFiles(f -> {
                         String path = inputDir.toURI().relativize(f.toURI()).getPath();
                         if (path.endsWith(".java")) {

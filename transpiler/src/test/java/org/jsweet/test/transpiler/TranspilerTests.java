@@ -211,7 +211,7 @@ public class TranspilerTests extends AbstractTest {
                 "--factoryClassName", RemoveJavaDependenciesFactory.class.getName(), //
                 "--sourceMap", //
                 "--verbose", //
-                "-i", sources.map(File::getAbsolutePath).collect(joining(":")));
+                "-i", sources.map(File::getAbsolutePath).collect(joining(File.pathSeparator)));
 
         assertTrue(process.exitValue() == 0);
         LinkedList<File> files = new LinkedList<>();
@@ -235,7 +235,7 @@ public class TranspilerTests extends AbstractTest {
                 "--factoryClassName", "org.jsweet.transpiler.extension.RemoveJavaDependenciesFactory", //
                 "-i", gameDir.getAbsolutePath(), //
                 "--includes", "UselessClass.java" + File.pathSeparatorChar + "dummy", "--targetVersion", "ES4");
-        
+
         assertTrue(process.exitValue() != 0);
     }
 
