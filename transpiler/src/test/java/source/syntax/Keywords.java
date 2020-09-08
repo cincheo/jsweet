@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import def.js.Array;
+import source.syntax.function.KeywordWithPackage;
 
 public class Keywords {
 
@@ -38,6 +39,11 @@ public class Keywords {
 
         assert 2 == new Other1().export();
         assert 2 == new Other1().let();
+        
+        List<String> s = new ArrayList<>();
+        s.add("first");
+        String r = new KeywordWithPackage().function(s);
+        assert r == "first";
     }
 
     String in;

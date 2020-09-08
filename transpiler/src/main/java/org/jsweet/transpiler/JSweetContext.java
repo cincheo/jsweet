@@ -1403,14 +1403,16 @@ public class JSweetContext {
 
             if (nameMapping != null && nameMapping.containsKey(element)) {
                 name = nameMapping.get(element);
-            } else {
-                if (hasAnnotationType(element, JSweetConfig.ANNOTATION_NAME)) {
-                    String originalName = getAnnotationValue(element, JSweetConfig.ANNOTATION_NAME, String.class, null);
-                    if (!isBlank(originalName)) {
-                        name = originalName;
-                    }
+            } else if (hasAnnotationType(element, JSweetConfig.ANNOTATION_NAME)) {
+                String originalName = getAnnotationValue(element, JSweetConfig.ANNOTATION_NAME, String.class, null);
+                if (!isBlank(originalName)) {
+                    name = originalName;
                 }
+            } else if (element.getKind() == ElementKind.PACKAGE) {
+                // remove reserved keywords from package names
+                name = avoidJSKeyword(name);
             }
+
             sb.insert(0, name);
             element = (element instanceof PackageElement) ? util.getParentPackage((PackageElement) element)
                     : element.getEnclosingElement();
@@ -1418,6 +1420,13 @@ public class JSweetContext {
                 getRootRelativeName(nameMapping, sb, element);
             }
         }
+    }
+
+    private String avoidJSKeyword(String name) {
+        if (JSweetConfig.JS_KEYWORDS.contains(name)) {
+            name = JSweetConfig.JS_KEYWORD_PREFIX + name;
+        }
+        return name;
     }
 
     /**

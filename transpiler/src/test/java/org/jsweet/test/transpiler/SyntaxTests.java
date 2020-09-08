@@ -55,6 +55,7 @@ import source.syntax.StatementsWithNoBlocks;
 import source.syntax.SuperInvocation;
 import source.syntax.UnreachableCode;
 import source.syntax.ValidIndexedAccesses;
+import source.syntax.function.KeywordWithPackage;
 
 public class SyntaxTests extends AbstractTest {
 
@@ -77,7 +78,7 @@ public class SyntaxTests extends AbstractTest {
             assertEquals("a,1,f,2,abc", r.get("trace"));
             assertEquals("otherForVarKeyword", r.get("varKeyword"));
             assertEquals("test3", r.get("with"));
-        }, getSourceFile(Keywords.class));
+        }, getSourceFile(KeywordWithPackage.class), getSourceFile(Keywords.class));
     }
 
     @Test
