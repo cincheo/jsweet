@@ -235,8 +235,8 @@ public class TranspilerTests extends AbstractTest {
                 "--factoryClassName", "org.jsweet.transpiler.extension.RemoveJavaDependenciesFactory", //
                 "-i", gameDir.getAbsolutePath(), //
                 "--includes", "UselessClass.java" + File.pathSeparatorChar + "dummy", "--targetVersion", "ES4");
-
-        assertTrue(process.exitValue() == 1);
+        
+        assertTrue(process.exitValue() != 0);
     }
 
     @Test

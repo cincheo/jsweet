@@ -2968,7 +2968,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                             + ", { value: ").print(getAdapter().getVariableInitialValue(varElement))
                                     .print(", enumerable: false }); } ").println();
                 } else {
-                    print("this.").print(name).print(" = ").print(getAdapter().getVariableInitialValue(varElement))
+                    print("this['").print(name).print("'] = ").print(getAdapter().getVariableInitialValue(varElement))
                             .print("; } ").println();
                 }
 
@@ -3965,18 +3965,19 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                                 accessSubstituted = true;
                                 print(getRootRelativeName(varElement.getEnclosingElement())).print(".");
                                 ensureModuleIsUsed(varElement.getEnclosingElement());
-                            } else if (selectedElement instanceof PackageElement && context.useModules
-                                    && !context.moduleBundleMode && memberElement instanceof TypeElement
-                                    && util().isSourceElement(memberElement)) {
-                                accessSubstituted = true;
-                                ModuleImportDescriptor moduleImport = getAdapter().getModuleImportDescriptor(
-                                        getCompilationUnitElement(), memberElement.getSimpleName().toString(),
-                                        (TypeElement) memberElement);
-                                if (moduleImport != null) {
-                                    useModule(moduleImport);
-                                }
+                            }
+                        } else if (selectedElement instanceof PackageElement && context.useModules
+                                && !context.moduleBundleMode && memberElement instanceof TypeElement
+                                && util().isSourceElement(memberElement)) {
+                            accessSubstituted = true;
+                            ModuleImportDescriptor moduleImport = getAdapter().getModuleImportDescriptor(
+                                    getCompilationUnitElement(), memberElement.getSimpleName().toString(),
+                                    (TypeElement) memberElement);
+                            if (moduleImport != null) {
+                                useModule(moduleImport);
                             }
                         }
+
                         if (!accessSubstituted) {
                             print(memberSelectTree.getExpression()).print(".");
                         }

@@ -1,4 +1,5 @@
 /* 
+
  * JSweet - http://www.jsweet.org
  * Copyright (C) 2015 CINCHEO SAS <renaud.pawlak@cincheo.fr>
  * 
@@ -18,6 +19,7 @@ package org.jsweet.test.transpiler;
 
 import static org.junit.Assert.assertEquals;
 
+import org.jsweet.transpiler.ModuleKind;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -122,7 +124,9 @@ public class StaticsTests extends AbstractTest {
 
     @Test
     public void testFullPathStaticAccess() {
-        transpile(TestTranspilationHandler::assertNoProblems, getSourceFile(TestClassStaticAccess.class),
+        transpile(ModuleKind.commonjs,
+                
+                TestTranspilationHandler::assertNoProblems, getSourceFile(TestClassStaticAccess.class),
                 getSourceFile(TestEnumStaticAccess.class), getSourceFile(FullPathAccess.class));
     }
 

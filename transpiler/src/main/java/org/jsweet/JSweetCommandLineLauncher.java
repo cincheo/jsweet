@@ -270,6 +270,7 @@ public class JSweetCommandLineLauncher {
             }
 
         } catch (Throwable t) {
+            System.out.println("fatal error in transpiler");
             t.printStackTrace();
             return -1;
         }
