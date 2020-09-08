@@ -113,7 +113,8 @@ import com.sun.source.util.Trees;
 /**
  * Various utilities.
  * 
- * Static utilities (independent from JSweet context) are accessible through Util.Static.myHelper()
+ * Static utilities (independent from JSweet context) are accessible through
+ * Util.Static.myHelper()
  * 
  * @author Renaud Pawlak
  * @author Louis Grignon
@@ -2154,7 +2155,15 @@ public class Util {
             return (T) getPackageByName(treeType.toString());
         }
 
-        return treeType == null ? null : (T) types().asElement(treeType);
+        if (treeType == null) {
+            return null;
+        }
+
+        if (treeType.getKind() == TypeKind.ARRAY) {
+            return (T) getTypeElementFromLegacyTypeSymbolField(treeType);
+        }
+
+        return (T) types().asElement(treeType);
     }
 
     /**
@@ -2392,6 +2401,23 @@ public class Util {
         }
     }
 
+    private TypeElement getTypeElementFromLegacyTypeSymbolField(TypeMirror type) {
+        if (type == null) {
+            return null;
+        }
+
+        Field typeSymbolField = javacInternals().getTypeSymbolField(type);
+        if (typeSymbolField == null) {
+            return null;
+        }
+
+        try {
+            return (TypeElement) typeSymbolField.get(type);
+        } catch (IllegalArgumentException | IllegalAccessException e) {
+            return null;
+        }
+    }
+
     @SuppressWarnings("unchecked")
     private <T extends TypeMirror> T getTypeFromLegacyTypeField(Tree tree) {
         if (tree == null) {
@@ -2435,6 +2461,9 @@ public class Util {
 
         @SuppressWarnings("rawtypes")
         private final Map<Class, Field> treeClassToSymbolField = new HashMap<>();
+
+        @SuppressWarnings("rawtypes")
+        private final Map<Class, Field> treeClassToTypeSymbolField = new HashMap<>();
 
         private JavacInternals(Types types) {
             try {
@@ -2488,6 +2517,21 @@ public class Util {
             }
 
             return treeClassToSymbolField.get(treeClass);
+        }
+
+        Field getTypeSymbolField(TypeMirror type) {
+            Class<? extends TypeMirror> typeClass = type.getClass();
+            if (!treeClassToTypeSymbolField.containsKey(typeClass)) {
+                Field field;
+                try {
+                    field = typeClass.getField("tsym");
+                } catch (NoSuchFieldException | SecurityException e) {
+                    field = null;
+                }
+                treeClassToSymbolField.put(typeClass, field);
+            }
+
+            return treeClassToSymbolField.get(typeClass);
         }
 
         static JavacInternals instance(Types types) {
