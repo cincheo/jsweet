@@ -352,6 +352,11 @@ public class Collections implements Cloneable, Serializable {
 
 		$export("trace", trace.join(","));
 
+		List<String> testList = new ArrayList<String>();
+		testList.add("a");
+		testList.add("b");
+		testList.add("c");
+        assert testList.toString() == "[a, b, c]";
 	}
 
 	private static void testArrayListCopyConstructor() {
