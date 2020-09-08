@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.jsweet.v3</groupId>
 	<artifactId>jsweet-core</artifactId>
-	<version>6.0.0-SNAPSHOT</version>
+	<version>6.0.0</version>
 	<name>JSweet Core Lib</name>
 	<description>JavaScript API for JSweet</description>
 	<url>http://www.jsweet.org</url>
@@ -173,12 +173,6 @@
 				<version>1.6</version>
 				<configuration>
 					<skip>${skipSigning}</skip>
-
-					<!-- This is necessary for gpg to not try to use the pinentry programs -->
-					<gpgArguments>
-						<arg>--pinentry-mode</arg>
-						<arg>loopback</arg>
-					</gpgArguments>
 				</configuration>
 				<executions>
 					<execution>
@@ -225,30 +219,6 @@
 							</pluginExecutions>
 						</lifecycleMappingMetadata>
 					</configuration>
-				</plugin>
-
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-gpg-plugin</artifactId>
-					<version>1.6</version>
-					<configuration>
-						<skip>${skipSigning}</skip>
-
-						<!-- This is necessary for gpg to not try to use the pinentry programs -->
-						<gpgArguments>
-							<arg>--pinentry-mode</arg>
-							<arg>loopback</arg>
-						</gpgArguments>
-					</configuration>
-					<executions>
-						<execution>
-							<id>sign-artifacts</id>
-							<phase>verify</phase>
-							<goals>
-								<goal>sign</goal>
-							</goals>
-						</execution>
-					</executions>
 				</plugin>
 			</plugins>
 		</pluginManagement>

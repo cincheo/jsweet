@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.jsweet</groupId>
 	<artifactId>jsweet-transpiler</artifactId>
-	<version>3.0.0-SNAPSHOT</version>
+	<version>3.0.0-RC4</version>
 	<name>JSweet transpiler</name>
 	<description>A Java to TypeScript/JavaScript Open Transpiler</description>
 	<url>http://www.jsweet.org</url>
@@ -181,12 +181,6 @@
 				<version>1.6</version>
 				<configuration>
 					<skip>${skipSigning}</skip>
-
-					<!-- This is necessary for gpg to not try to use the pinentry programs -->
-					<gpgArguments>
-						<arg>--pinentry-mode</arg>
-						<arg>loopback</arg>
-					</gpgArguments>
 				</configuration>
 				<executions>
 					<execution>
@@ -273,7 +267,7 @@
 		<dependency>
 			<groupId>org.jsweet.v3</groupId>
 			<artifactId>jsweet-core</artifactId>
-			<version>6.0.0-SNAPSHOT</version>
+			<version>6.0.0</version>
 			<scope>compile</scope>
 			<optional>true</optional>
 		</dependency>
