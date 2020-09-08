@@ -154,7 +154,7 @@ public class ExtensionManager {
 				logger.debug("updated classpath with: " + extensionDir.toURI().toURL());
 			}
 		} catch (Exception e) {
-			throw new RuntimeException("fail to initalize extension classpath", e);
+			throw new RuntimeException("fail to initialize extension classpath", e);
 		}
 	}
 
