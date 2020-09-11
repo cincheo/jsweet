@@ -355,7 +355,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 					? fieldAccess.selected.type.tsym.toString() : null;
 			if (typeName != null && "isInstance".equals(methName) && Class.class.getName().equals(typeName)) {
 				printMacroName(fieldAccess.toString());
-				print("((c:any,o:any) => { if (typeof c === 'string') return (o.constructor && o.constructor")
+				print("((c: any, o: any) => { if (typeof c === 'string') return (o.constructor && o.constructor")
 						.print("[\"" + Java2TypeScriptTranslator.INTERFACES_FIELD_NAME + "\"] && o.constructor")
 						.print("[\"" + Java2TypeScriptTranslator.INTERFACES_FIELD_NAME + "\"].indexOf(c) >= 0) || (o")
 						.print("[\"" + Java2TypeScriptTranslator.INTERFACES_FIELD_NAME + "\"] && o")
@@ -1375,12 +1375,12 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 					JCClassDecl parent = getPrinter().getParent(JCClassDecl.class);
 					if (parent.sym.getSuperclass() != null
 							&& !context.symtab.objectType.equals(parent.sym.getSuperclass())) {
-						print("((o:any) => { if (super.clone!=undefined) { return super.clone(); } else { let clone = Object.create(o); for(let p in o) { if (o.hasOwnProperty(p)) clone[p] = o[p]; } return clone; } })(this)");
+						print("((o: any) => { if (super.clone!=undefined) { return super.clone(); } else { let clone = Object.create(o); for(let p in o) { if (o.hasOwnProperty(p)) clone[p] = o[p]; } return clone; } })(this)");
 					} else {
-						print("((o:any) => { let clone = Object.create(o); for(let p in o) { if (o.hasOwnProperty(p)) clone[p] = o[p]; } return clone; })(this)");
+						print("((o: any) => { let clone = Object.create(o); for(let p in o) { if (o.hasOwnProperty(p)) clone[p] = o[p]; } return clone; })(this)");
 					}
 				} else {
-					print("((o:any) => { if (o.clone!=undefined) { return (<any>o).clone(); } else { let clone = Object.create(o); for(let p in o) { if (o.hasOwnProperty(p)) clone[p] = o[p]; } return clone; } })(");
+					print("((o: any) => { if (o.clone!=undefined) { return (<any>o).clone(); } else { let clone = Object.create(o); for(let p in o) { if (o.hasOwnProperty(p)) clone[p] = o[p]; } return clone; } })(");
 					printTarget(invocationElement.getTargetExpression());
 					print(")");
 				}
