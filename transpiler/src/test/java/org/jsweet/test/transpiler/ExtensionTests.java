@@ -276,8 +276,8 @@ public class ExtensionTests extends AbstractTest {
 		}, f);
 		String generatedCode = FileUtils.readFileToString(f.getTsFile());
 		Assert.assertTrue(generatedCode.contains("this is a header comment"));
-		Assert.assertTrue(generatedCode.contains("date : string"));
-		Assert.assertFalse(generatedCode.contains("date : Date"));
+		Assert.assertTrue(generatedCode.contains("date: string"));
+		Assert.assertFalse(generatedCode.contains("date: Date"));
 	}
 
     @Test
