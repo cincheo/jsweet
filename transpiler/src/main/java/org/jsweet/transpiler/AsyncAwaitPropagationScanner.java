@@ -65,6 +65,9 @@ public class AsyncAwaitPropagationScanner extends AbstractTreeScanner {
     @Override
     public void visitApply(JCMethodInvocation invocation) {
         try {
+            if (!(invocation.meth.getClass().getField("sym").get(invocation.meth) instanceof MethodSymbol)) {
+                return;
+            }
             MethodSymbol method = (MethodSymbol) invocation.meth.getClass().getField("sym").get(invocation.meth);
             if (context.hasAnnotationType(method, JSweetConfig.ANNOTATION_ASYNC)
                     && !"void".equals(method.getReturnType().toString())) {

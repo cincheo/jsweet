@@ -146,7 +146,7 @@ public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {
 					context.countStaticInitializer(classdecl.sym);
 				}
 			}
-			if (def instanceof JCMethodDecl) {
+			if (def instanceof JCMethodDecl && ((JCMethodDecl) def).sym != null) {
 				if (globals && ((JCMethodDecl) def).sym.isStatic()) {
 					context.registerGlobalMethod(classdecl, (JCMethodDecl) def);
 				} else {
