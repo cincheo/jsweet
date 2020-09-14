@@ -2812,7 +2812,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
         if (methodTree.getReturnType() != null) {
             Element returnTypeElement = toElement(methodTree.getReturnType());
             TypeMirror returnType = toType(methodTree.getReturnType());
-            if (returnType.getKind() != TypeKind.VOID) {
+            if (returnTypeElement != null && returnType.getKind() != TypeKind.VOID) {
 
                 print(": ");
 
