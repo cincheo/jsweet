@@ -1485,23 +1485,33 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             }
         } else {
             if (context.lookupDecoratorAnnotation(classTypeElement.getQualifiedName().toString()) != null) {
-                GlobalMethodInfos globalDecoratorFunction = context
-                        .lookupGlobalMethod(classTypeElement.getQualifiedName().toString());
-                if (globalDecoratorFunction == null) {
-                    report(classTree, JSweetProblem.CANNOT_FIND_GLOBAL_DECORATOR_FUNCTION,
-                            classTypeElement.getQualifiedName());
-                } else {
-                    CompilationUnitTree previousCompilUnit = getCompilationUnit();
-                    getScope().decoratorScope = true;
-                    compilationUnit = globalDecoratorFunction.compilationUnitTree;
-                    enter(globalDecoratorFunction.classTree);
-                    print(globalDecoratorFunction.methodTree);
-                    exit();
-                    getScope().decoratorScope = false;
-                    compilationUnit = previousCompilUnit;
+
+                boolean requiresDecoratorFunction = context.getAnnotationValue(classTypeElement,
+                        JSweetConfig.ANNOTATION_DECORATOR, Boolean.class, true);
+                if (requiresDecoratorFunction) {
+
+                    GlobalMethodInfos globalDecoratorFunction = context
+                            .lookupGlobalMethod(classTypeElement.getQualifiedName().toString());
+                    if (globalDecoratorFunction == null) {
+                        report(classTree, JSweetProblem.CANNOT_FIND_GLOBAL_DECORATOR_FUNCTION,
+                                classTypeElement.getQualifiedName());
+                    } else {
+                        CompilationUnitTree previousCompilUnit = getCompilationUnit();
+                        getScope().decoratorScope = true;
+                        compilationUnit = globalDecoratorFunction.compilationUnitTree;
+                        try {
+                            enter(globalDecoratorFunction.classTree);
+                            print(globalDecoratorFunction.methodTree);
+                            exit();
+                        } finally {
+                            getScope().decoratorScope = false;
+                            compilationUnit = previousCompilUnit;
+                        }
+                    }
+                    exitScope();
+                    return returnNothing();
+
                 }
-                exitScope();
-                return returnNothing();
             }
         }
 
