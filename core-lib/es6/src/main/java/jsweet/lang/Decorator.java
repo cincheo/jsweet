@@ -33,14 +33,14 @@ import java.lang.annotation.Target;
  * <pre>
  * &#64;Decorator
  * public @interface Component {
- * 	public String name;
+ *     public String name;
  * }
  * </pre>
  * 
  * Using this annotation:
  * 
  * <pre>
- * &#64;Component(name="Hello")
+ * &#64;Component(name = "Hello")
  * public class C {
  * }
  * </pre>
@@ -58,4 +58,12 @@ import java.lang.annotation.Target;
 @Target({ ElementType.ANNOTATION_TYPE })
 @Documented
 public @interface Decorator {
+    /**
+     * Tells if the corresponding decorator function is expected to be found in the
+     * transpiled source code. If the decorator function is declared externally, set
+     * this parameter to false.
+     * 
+     * @return true by default
+     */
+    boolean value() default true;
 }
