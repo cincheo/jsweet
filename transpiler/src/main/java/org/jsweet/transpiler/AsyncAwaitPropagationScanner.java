@@ -66,6 +66,10 @@ public class AsyncAwaitPropagationScanner extends AbstractTreeScanner {
     public Void visitMethodInvocation(MethodInvocationTree invocation, Trees trees) {
         try {
             ExecutableElement method = toElement(invocation.getMethodSelect());
+            if (method == null) {
+                return null;
+            }
+            
             if (context.hasAnnotationType(method, JSweetConfig.ANNOTATION_ASYNC)
                     && !"void".equals(method.getReturnType().toString())) {
                 MethodTree parent = getParent(MethodTree.class);

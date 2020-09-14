@@ -131,36 +131,42 @@ public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {
                 }
             }
             if (def instanceof MethodTree) {
-                Element methodElement = util().getElementForTree(def, compilationUnit);
-                if (globals && methodElement.getModifiers().contains(Modifier.STATIC)) {
-                    context.registerGlobalMethod(classDeclaration, (MethodTree) def, compilationUnit);
-                } else {
+                Element methodElement = toElement(def);
+                if (methodElement != null) {
+                    if (globals && methodElement.getModifiers().contains(Modifier.STATIC)) {
+                        context.registerGlobalMethod(classDeclaration, (MethodTree) def, compilationUnit);
+                    } else {
 
-                    MethodTree method = ((MethodTree) def);
-                    TypeElement superClassTypeElement = (TypeElement) types().asElement(classElement.getSuperclass());
-                    if (methodElement instanceof ExecutableElement
-                            && methodElement.getModifiers().contains(Modifier.PRIVATE)
-                            && !(methodElement.getKind() == ElementKind.STATIC_INIT
-                                    || methodElement.getKind() == ElementKind.INSTANCE_INIT)
-                            && !methodElement.getModifiers().contains(Modifier.STATIC)
-                            && methodElement.getKind() != ElementKind.CONSTRUCTOR) {
-                        ExecutableElement clashingMethod = util().findMethodDeclarationInType2(superClassTypeElement,
-                                method.getName().toString(), (ExecutableType) methodElement.asType());
-                        if (clashingMethod != null && clashingMethod.getModifiers().contains(Modifier.PRIVATE)) {
-                            context.addMethodNameMapping((ExecutableElement) methodElement,
-                                    JSweetConfig.FIELD_METHOD_CLASH_RESOLVER_PREFIX
-                                            + classElement.toString().replace(".", "_") + "_"
-                                            + method.getName().toString());
+                        MethodTree method = ((MethodTree) def);
+                        TypeElement superClassTypeElement = (TypeElement) types()
+                                .asElement(classElement.getSuperclass());
+                        if (methodElement instanceof ExecutableElement
+                                && methodElement.getModifiers().contains(Modifier.PRIVATE)
+                                && !(methodElement.getKind() == ElementKind.STATIC_INIT
+                                        || methodElement.getKind() == ElementKind.INSTANCE_INIT)
+                                && !methodElement.getModifiers().contains(Modifier.STATIC)
+                                && methodElement.getKind() != ElementKind.CONSTRUCTOR) {
+                            ExecutableElement clashingMethod = util().findMethodDeclarationInType2(
+                                    superClassTypeElement, method.getName().toString(),
+                                    (ExecutableType) methodElement.asType());
+                            if (clashingMethod != null && clashingMethod.getModifiers().contains(Modifier.PRIVATE)) {
+                                context.addMethodNameMapping((ExecutableElement) methodElement,
+                                        JSweetConfig.FIELD_METHOD_CLASH_RESOLVER_PREFIX
+                                                + classElement.toString().replace(".", "_") + "_"
+                                                + method.getName().toString());
+                            }
                         }
-                    }
 
-                    VariableElement clashingField = null;
-                    clashingField = util().findFieldDeclaration(superClassTypeElement, method.getName());
-                    if (clashingField != null) {
-                        if (clashingField.getModifiers().contains(Modifier.PRIVATE)
-                                && !context.hasFieldNameMapping(clashingField)) {
-                            context.addFieldNameMapping(clashingField, JSweetConfig.FIELD_METHOD_CLASH_RESOLVER_PREFIX
-                                    + classElement.toString().replace(".", "_") + "_" + method.getName().toString());
+                        VariableElement clashingField = null;
+                        clashingField = util().findFieldDeclaration(superClassTypeElement, method.getName());
+                        if (clashingField != null) {
+                            if (clashingField.getModifiers().contains(Modifier.PRIVATE)
+                                    && !context.hasFieldNameMapping(clashingField)) {
+                                context.addFieldNameMapping(clashingField,
+                                        JSweetConfig.FIELD_METHOD_CLASH_RESOLVER_PREFIX
+                                                + classElement.toString().replace(".", "_") + "_"
+                                                + method.getName().toString());
+                            }
                         }
                     }
                 }
