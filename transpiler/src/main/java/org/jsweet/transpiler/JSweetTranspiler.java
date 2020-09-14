@@ -229,6 +229,8 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
     private boolean nonEnumerableTransients = false;
     private boolean sortClassMembers = false;
 
+    private boolean autoPropagateAsyncAwaits = false;
+
     private ArrayList<String> adapters = new ArrayList<>();
     private File configurationFile;
 
@@ -690,7 +692,7 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
             }
 
             JavaScriptEval evaluator = new JavaScriptEval(
-                    new EvalOptions(isUsingModules(),  workingDir, context.isUsingJavaRuntime()),
+                    new EvalOptions(isUsingModules(), workingDir, context.isUsingJavaRuntime()),
                     JavaScriptRuntime.NodeJs);
             return evaluator.performEval(jsFiles);
         }
@@ -919,6 +921,10 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
             context.dumpOverloads(System.out);
         }
 
+        if (isAutoPropagateAsyncAwaits()) {
+            new AsyncAwaitPropagationScanner(context).process(compilationUnits, context.trees);
+        }
+
         adapter.onTranspilationStarted();
 
         String[] headerLines = getHeaderLines();
@@ -1054,6 +1060,10 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
         new OverloadScanner(transpilationHandler, context).process(orderedCompilationUnits);
         context.constAnalyzer = new ConstAnalyzer(context);
         context.constAnalyzer.scan(orderedCompilationUnits, context.trees);
+
+        if (isAutoPropagateAsyncAwaits()) {
+            new AsyncAwaitPropagationScanner(context).process(compilationUnits, context.trees);
+        }
 
         adapter.onTranspilationStarted();
 
@@ -1868,6 +1878,15 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 
     public void setSortClassMembers(boolean sortClassMembers) {
         this.sortClassMembers = sortClassMembers;
+    }
+
+    @Override
+    public boolean isAutoPropagateAsyncAwaits() {
+        return this.autoPropagateAsyncAwaits;
+    }
+
+    public void setAutoPropagateAsyncAwaits(boolean autoPropagateAsyncAwaits) {
+        this.autoPropagateAsyncAwaits = autoPropagateAsyncAwaits;
     }
 
     @Override

@@ -2803,13 +2803,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     boolean promisify = isAsyncMethod(methodTree)
                             && !util().getQualifiedName(returnTypeElement).endsWith(".Promise");
                     if (promisify) {
-                        print(" Promise< ");
+                        print("Promise<");
                     }
 
                     substituteAndPrintType(methodTree.getReturnType());
 
                     if (promisify) {
-                        print(" > ");
+                        print(">");
                     }
                 }
             }
@@ -4054,6 +4054,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
         if (JSweetConfig.NEW_FUNCTION_NAME.equals(methName)) {
             print("new ");
             applyVarargs = false;
+        }
+
+        if (context.isAwaitInvocation(methodInvocationTree)) {
+            print("await ");
         }
 
         boolean anonymous = isAnonymousMethod(methName);

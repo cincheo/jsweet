@@ -1354,7 +1354,38 @@ public class JSweetContext {
                 }
             }
         }
+
+        if (extraAnnotations != null) {
+            for (String annotationType : annotationTypes) {
+                Set<Element> symbols = extraAnnotations.get(annotationType);
+                if (symbols != null && symbols.contains(element)) {
+                    return true;
+                }
+            }
+        }
+
         return hasActualAnnotationType(element, annotationTypes);
+    }
+
+    private Map<String, Set<Element>> extraAnnotations;
+
+    /**
+     * Adds an extra annotation type to a symbol (no args). See
+     * {@link #hasAnnotationType(Symbol, String...)}.
+     * 
+     * @param symbol             the symbol to add the annotation to
+     * @param annotationTypeName the annotation type name
+     */
+    public void addExtraAnnotationType(Element symbol, String annotationTypeName) {
+        if (extraAnnotations == null) {
+            extraAnnotations = new HashMap<>();
+        }
+        Set<Element> symbols = extraAnnotations.get(annotationTypeName);
+        if (symbols == null) {
+            symbols = new HashSet<>();
+            extraAnnotations.put(annotationTypeName, symbols);
+        }
+        symbols.add(symbol);
     }
 
     private String getElementSignatureForAnnotationFilters(Element element) {
@@ -2001,5 +2032,22 @@ public class JSweetContext {
     public CompilationUnitTree getCompilationUnitForTree(Tree tree) {
         CompilationUnitTree compilationUnit = compilationUnitsMapping.get(tree);
         return compilationUnit;
+    }
+    
+    private Set<MethodInvocationTree> awaitInvocations;
+
+    public void addAwaitInvocation(MethodInvocationTree invocation) {
+        if (this.awaitInvocations == null) {
+            this.awaitInvocations = new HashSet<>();
+        }
+        this.awaitInvocations.add(invocation);
+    }
+
+    public boolean isAwaitInvocation(MethodInvocationTree invocation) {
+        if (this.awaitInvocations != null) {
+            return this.awaitInvocations.contains(invocation);
+        } else {
+            return false;
+        }
     }
 }

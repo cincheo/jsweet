@@ -34,6 +34,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import source.syntax.AnnotationQualifiedNames;
+import source.syntax.AsyncAwaitPropagation;
 import source.syntax.Casts;
 import source.syntax.DocComments;
 import source.syntax.DynamicInvoke;
@@ -162,7 +163,7 @@ public class SyntaxTests extends AbstractTest {
         Assert.assertFalse(generatedCode.contains("const explicitFinalStringWithDeferredAssignment"));
         Assert.assertTrue(generatedCode.contains("const implicitFinalString"));
         Assert.assertTrue(generatedCode.contains("let notFinalString"));
-        
+
         generatedCode = FileUtils.readFileToString(f2.getTsFile());
         Assert.assertTrue(generatedCode.contains("const explicitFinalGlobal"));
         Assert.assertTrue(generatedCode.contains("let implicitFinalGlobal"));
@@ -310,4 +311,12 @@ public class SyntaxTests extends AbstractTest {
         transpile(TestTranspilationHandler::assertNoProblems, getSourceFile(MemberReferences.class));
     }
 
+    @Test
+    public void testAsyncAwaitPropagation() {
+        transpilerTest().getTranspiler().setAutoPropagateAsyncAwaits(true);
+        transpile(ModuleKind.none, logHandler -> {
+            logHandler.assertNoProblems();
+        }, getSourceFile(AsyncAwaitPropagation.class));
+        transpilerTest().getTranspiler().setAutoPropagateAsyncAwaits(false);
+    }
 }

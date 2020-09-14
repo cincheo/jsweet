@@ -144,13 +144,19 @@ public interface JSweetOptions {
     String sortClassMembers = "sortClassMembers";
 
     /**
+     * Constant string for the 'autoPropagateAsyncs' option.
+     */
+    String autoPropagateAsyncAwaits = "autoPropagateAsyncAwaits";
+
+    /**
      * All the supported options. (used to report non-blocking errors when options
      * do not exist)
      */
     String[] options = { bundle, noRootDirectories, sourceMap, module, encoding, outEncoding, enableAssertions,
             declaration, tsOnly, ignoreDefinitions, ignoreJavaErrors, header, disableSinglePrecisionFloats,
             disableStaticsLazyInitialization, targetVersion, tsout, dtsout, jsout, candiesJsOut, moduleResolution,
-            extraSystemPath, useSingleQuotesForStringLiterals, nonEnumerableTransients, classpath, sortClassMembers };
+            extraSystemPath, useSingleQuotesForStringLiterals, nonEnumerableTransients, classpath, sortClassMembers,
+            autoPropagateAsyncAwaits };
 
     /**
      * Returns the configuration from the configuration file.
@@ -373,4 +379,9 @@ public interface JSweetOptions {
      * {@link PrinterAdapter#getClassMemberComparator()}.
      */
     boolean isSortClassMembers();
+
+    /**
+     * If true, auto propagates async methods and await invocations.
+     */
+    boolean isAutoPropagateAsyncAwaits();
 }

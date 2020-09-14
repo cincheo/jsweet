@@ -606,6 +606,14 @@ public class JSweetCommandLineLauncher {
                 + "implement the desired order.");
         jsap.registerParameter(switchArg);
 
+        // Auto propagate async methods and await invocations
+        switchArg = new Switch(JSweetOptions.autoPropagateAsyncAwaits);
+        switchArg.setLongFlag(JSweetOptions.autoPropagateAsyncAwaits);
+        switchArg.setHelp(
+                "Propagate automatically the async modifier when a method invokes an async method "+
+                "and automatically adds await keywords when invoking async methods.");
+        jsap.registerParameter(switchArg);
+        
         return jsap;
     }
 
@@ -837,7 +845,10 @@ public class JSweetCommandLineLauncher {
                     if (jsapArgs.userSpecified(JSweetOptions.sortClassMembers)) {
                         transpiler.setSortClassMembers(jsapArgs.getBoolean(JSweetOptions.sortClassMembers));
                     }
-
+                    if (jsapArgs.userSpecified(JSweetOptions.autoPropagateAsyncAwaits)) {
+                        transpiler.setAutoPropagateAsyncAwaits(jsapArgs.getBoolean(JSweetOptions.autoPropagateAsyncAwaits));
+                    }    
+                    
                     if (tsOutputDir != null) {
                         transpiler.setTsOutputDir(tsOutputDir);
                     }
