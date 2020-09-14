@@ -2021,7 +2021,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             removeLastChar().println();
         }
 
-        getAdapter().afterTypeBody(classdecl.sym);
+        getAdapter().afterTypeBody(classTypeElement);
 
         if (!globals) {
             endIndent().printIndent().print("}");
