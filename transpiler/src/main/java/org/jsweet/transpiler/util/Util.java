@@ -658,7 +658,7 @@ public class Util {
         return score;
     }
 
-    private void collectMatchingMethodDeclarationsInType(TypeElement typeSymbol, String methodName,
+    public void collectMatchingMethodDeclarationsInType(TypeElement typeSymbol, String methodName,
             ExecutableType methodType, boolean overrides, List<ExecutableElement> collector) {
         if (typeSymbol == null) {
             return;

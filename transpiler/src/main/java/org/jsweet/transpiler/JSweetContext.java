@@ -1357,8 +1357,8 @@ public class JSweetContext {
 
         if (extraAnnotations != null) {
             for (String annotationType : annotationTypes) {
-                Set<Element> symbols = extraAnnotations.get(annotationType);
-                if (symbols != null && symbols.contains(element)) {
+                Set<Element> elements = extraAnnotations.get(annotationType);
+                if (elements != null && elements.contains(element)) {
                     return true;
                 }
             }
@@ -1380,12 +1380,12 @@ public class JSweetContext {
         if (extraAnnotations == null) {
             extraAnnotations = new HashMap<>();
         }
-        Set<Element> symbols = extraAnnotations.get(annotationTypeName);
-        if (symbols == null) {
-            symbols = new HashSet<>();
-            extraAnnotations.put(annotationTypeName, symbols);
+        Set<Element> elements = extraAnnotations.get(annotationTypeName);
+        if (elements == null) {
+            elements = new HashSet<>();
+            extraAnnotations.put(annotationTypeName, elements);
         }
-        symbols.add(symbol);
+        elements.add(symbol);
     }
 
     private String getElementSignatureForAnnotationFilters(Element element) {

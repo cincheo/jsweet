@@ -18,11 +18,16 @@
  */
 package org.jsweet.transpiler;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.ExecutableType;
 
 import org.jsweet.JSweetConfig;
+import org.jsweet.transpiler.OverloadScanner.Overload;
+import org.jsweet.transpiler.OverloadScanner.OverloadMethodEntry;
 import org.jsweet.transpiler.util.AbstractTreeScanner;
 
 import com.sun.source.tree.CompilationUnitTree;
@@ -68,6 +73,24 @@ public class AsyncAwaitPropagationScanner extends AbstractTreeScanner {
                     ExecutableElement parentMethodElement = toElement(parent);
                     if (!context.hasAnnotationType(parentMethodElement, JSweetConfig.ANNOTATION_ASYNC)) {
                         context.addExtraAnnotationType(parentMethodElement, JSweetConfig.ANNOTATION_ASYNC);
+
+                        if (context.isInvalidOverload(parentMethodElement)) {
+                            Overload overload = context.getOverload(
+                                    (TypeElement) parentMethodElement.getEnclosingElement(), parentMethodElement);
+
+                            for (OverloadMethodEntry overloadEntry : overload.getEntries()) {
+                                context.addExtraAnnotationType(overloadEntry.methodElement,
+                                        JSweetConfig.ANNOTATION_ASYNC);
+                            }
+                        }
+                        List<ExecutableElement> candidates = new ArrayList<>();
+                        util().collectMatchingMethodDeclarationsInType(
+                                (TypeElement) parentMethodElement.getEnclosingElement(), parent.getName().toString(),
+                                (ExecutableType) parentMethodElement.asType(), true, candidates);
+                        for (ExecutableElement candidate : candidates) {
+                            context.addExtraAnnotationType(candidate, JSweetConfig.ANNOTATION_ASYNC);
+                        }
+
                         stillWorking = true;
                     }
                 }

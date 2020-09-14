@@ -2759,6 +2759,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     print("{").println().startIndent().printIndent();
                     // temporary cast to any because of Java generics bug
                     print("return <any>");
+                    if (isAsyncMethod(method)) {
+                        print("await ");
+                    }
                     if (!util().isGlobalsClassName(parent.getSimpleName().toString())) {
                         if (methodElement.getModifiers().contains(Modifier.STATIC)) {
                             print(getQualifiedTypeName(parentElement, false, false).toString());
@@ -2790,27 +2793,28 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
     protected void printMethodReturnDeclaration(MethodTree methodTree, boolean inCoreWrongOverload) {
         ExecutableElement methodElement = toElement(methodTree);
-        if (inCoreWrongOverload && methodElement.getKind() != ElementKind.CONSTRUCTOR) {
-            print(" : any");
-        } else {
-            if (methodTree.getReturnType() != null) {
-                Element returnTypeElement = toElement(methodTree.getReturnType());
-                TypeMirror returnType = toType(methodTree.getReturnType());
-                if (returnType.getKind() != TypeKind.VOID) {
 
-                    print(" : ");
+        if (methodTree.getReturnType() != null) {
+            Element returnTypeElement = toElement(methodTree.getReturnType());
+            TypeMirror returnType = toType(methodTree.getReturnType());
+            if (returnType.getKind() != TypeKind.VOID) {
 
-                    boolean promisify = isAsyncMethod(methodTree)
-                            && !util().getQualifiedName(returnTypeElement).endsWith(".Promise");
-                    if (promisify) {
-                        print("Promise<");
-                    }
+                print(" : ");
 
+                boolean promisify = isAsyncMethod(methodTree)
+                        && !util().getQualifiedName(returnTypeElement).endsWith(".Promise");
+                if (promisify) {
+                    print("Promise<");
+                }
+
+                if (inCoreWrongOverload && methodElement.getKind() != ElementKind.CONSTRUCTOR) {
+                    print("any");
+                } else {
                     substituteAndPrintType(methodTree.getReturnType());
+                }
 
-                    if (promisify) {
-                        print(">");
-                    }
+                if (promisify) {
+                    print(">");
                 }
             }
         }
@@ -2827,7 +2831,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
         }
 
         if (isAsyncMethod(methodDecl)) {
-            print(" async ");
+            print("async ");
         }
     }
 
