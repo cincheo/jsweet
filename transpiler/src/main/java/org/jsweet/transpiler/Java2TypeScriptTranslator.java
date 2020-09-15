@@ -4082,9 +4082,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
         }
 
         boolean anonymous = isAnonymousMethod(methName);
-        boolean targetIsThisOrStaticImported = /*
-                                                * !"super".equals(methName) &&
-                                                */ (meth.equals(methName) || meth.equals("this." + methName));
+        boolean targetIsThis = meth.equals("this." + methName);
+        boolean targetIsThisOrStaticImported = (meth.equals(methName) || targetIsThis);
 
         ExecutableType type = toType(methodInvocationTree.getMethodSelect()) instanceof ExecutableType
                 ? toType(methodInvocationTree.getMethodSelect())
@@ -4095,7 +4094,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
         boolean keywordHandled = false;
         if (targetIsThisOrStaticImported) {
             ImportTree staticImport = getStaticGlobalImport(methName);
-            if (staticImport == null) {
+            if (staticImport == null || targetIsThis) {
                 ClassTree p = getParent(ClassTree.class);
                 methSym = p == null ? null : util().findMethodDeclarationInType(toElement(p), methName, type);
                 if (methSym != null) {
