@@ -1127,6 +1127,11 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
                                 .print(invocationElement.getTargetExpression()).print(")");
                         return true;
                     }
+                case "isFinite":
+                    printMacroName(targetMethodName);
+                    print("((value) => !isNaN(value) && Number.NEGATIVE_INFINITY !== value && Number.POSITIVE_INFINITY !== value)(")
+                            .printArgList(invocationElement.getArguments()).print(")");
+                    return true;
                 case "intValue":
                     printMacroName(targetMethodName);
                     print("(").print(invocationElement.getTargetExpression()).print("|0").print(")");
