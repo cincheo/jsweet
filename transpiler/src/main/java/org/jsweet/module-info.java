@@ -10,7 +10,6 @@ open module org.jsweet {
 	requires transitive com.google.debugging.sourcemap;
 	requires transitive jsap;
 	requires static java.desktop;
-	requires static org.jsweet.candies.threejs;
 	exports org.jsweet;
 	exports org.jsweet.transpiler;
 	exports org.jsweet.transpiler.candy;
