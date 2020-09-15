@@ -2816,8 +2816,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
                 print(": ");
 
-                boolean promisify = isAsyncMethod(methodTree) && returnTypeElement != null
-                        && !util().getQualifiedName(returnTypeElement).endsWith(".Promise");
+                boolean promisify = isAsyncMethod(methodTree) && (returnTypeElement == null
+                        || !util().getQualifiedName(returnTypeElement).endsWith(".Promise"));
                 if (promisify) {
                     print("Promise<");
                 }

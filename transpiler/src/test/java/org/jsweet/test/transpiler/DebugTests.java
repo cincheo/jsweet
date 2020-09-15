@@ -13,7 +13,7 @@ public class DebugTests extends AbstractTest {
         transpilerTest().getTranspiler().setDebugMode(true);
         transpile(ModuleKind.none, handler -> {
             handler.assertReportedProblems(JSweetProblem.MAPPED_TSC_ERROR, JSweetProblem.MAPPED_TSC_ERROR,
-                    JSweetProblem.MAPPED_TSC_ERROR);
+                    JSweetProblem.MAPPED_TSC_ERROR, JSweetProblem.MAPPED_TSC_ERROR);
         }, getSourceFile(Simple.class));
     }
 
