@@ -2812,11 +2812,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
         if (methodTree.getReturnType() != null) {
             Element returnTypeElement = toElement(methodTree.getReturnType());
             TypeMirror returnType = toType(methodTree.getReturnType());
-            if (returnTypeElement != null && returnType.getKind() != TypeKind.VOID) {
+            if (returnType.getKind() != TypeKind.VOID) {
 
                 print(": ");
 
-                boolean promisify = isAsyncMethod(methodTree)
+                boolean promisify = isAsyncMethod(methodTree) && returnTypeElement != null
                         && !util().getQualifiedName(returnTypeElement).endsWith(".Promise");
                 if (promisify) {
                     print("Promise<");
