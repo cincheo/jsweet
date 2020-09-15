@@ -706,6 +706,13 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
         context = factory.createContext(this);
         context.setUsingJavaRuntime(forceJavaRuntime ? isUsingJavaRuntime
                 : (candiesProcessor == null ? false : candiesProcessor.isUsingJavaRuntime()));
+        context.useModules = isUsingModules();
+        context.useRequireForModules = moduleKind != ModuleKind.es2015;
+        
+        if (context.useModules && bundle) {
+            context.useModules = false;
+            context.moduleBundleMode = true;
+        }
 
         JavaCompilationComponents.Options javaCompilationOptions = new JavaCompilationComponents.Options();
         javaCompilationOptions.classPath = getClassPath();
@@ -724,6 +731,8 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 
         transpilationHandler.setDisabled(false);
         context.compilationUnits = util().iterableToList(compilUnits);
+        
+        adapter = factory.createAdapter(context);
 
         if (transpilationHandler.getErrorCount() > 0) {
             return null;
@@ -731,15 +740,6 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
         if (!generateTsFiles) {
             return null;
         }
-        context.useModules = isUsingModules();
-        context.useRequireForModules = moduleKind != ModuleKind.es2015;
-
-        if (context.useModules && bundle) {
-            context.useModules = false;
-            context.moduleBundleMode = true;
-        }
-
-        adapter = factory.createAdapter(context);
 
         return context;
     }

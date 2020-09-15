@@ -295,8 +295,6 @@ public class CandyProcessor {
 		logger.info("extract candy: " + jarFile.getName() + " javaOutputDirectory=" + javaOutputDirectory
 				+ " tsDefOutputDirectory=" + tsDefOutputDirectory + " jsOutputDir=" + jsOutputDirectory);
 
-		File nodeModuleDir = new File(tsOutputDir, "node_modules");
-
 		jarFile.stream()
 				.filter(entry -> entry.getName().endsWith(".d.ts")
 						&& (entry.getName().startsWith("src/") || entry.getName().startsWith("META-INF/resources/"))) //
@@ -311,12 +309,6 @@ public class CandyProcessor {
 							return;
 						}
 						out = new File(tsDefOutputDirectory + "/" + entry.getName());
-
-						// additionally extract ts def files to node modules dir
-						File destinationFileInNodeModules = new File(nodeModuleDir,
-								FilenameUtils.getName(FilenameUtils.getFullPathNoEndSeparator(entry.getName())) + File.separator
-										+ FilenameUtils.getName(entry.getName()));
-						extractEntry(jarFile, entry, destinationFileInNodeModules);
 					} else {
 						out = null;
 					}
