@@ -51,7 +51,9 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
@@ -1398,7 +1400,7 @@ public class JSweetContext {
         }
         return signature;
     }
-
+    
     /**
      * Gets the actual (simple) name of a symbol from a JSweet convention, so
      * including potential <code>jsweet.lang.Name</code> annotation.

@@ -44,6 +44,9 @@ public class Keywords {
         s.add("first");
         String r = new KeywordWithPackage().function(s);
         assert r == "first";
+        
+        var myVar = "test";
+        assert myVar == "test";
     }
 
     String in;

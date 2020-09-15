@@ -42,6 +42,7 @@ import source.api.ForeachIteration;
 import source.api.J4TSInvocations;
 import source.api.JdkInvocations;
 import source.api.Numbers;
+import source.api.Optionals;
 import source.api.PrimitiveInstantiation;
 import source.api.PromisesAsyncAwait;
 import source.api.QualifiedInstantiation;
@@ -297,4 +298,10 @@ public class ApiTests extends AbstractTest {
         }, getSourceFile(Dates.class));
     }
 
+    @Test
+    public void testOptional() {
+        eval((logHandler, result) -> {
+            logHandler.assertNoProblems();
+        }, getSourceFile(Optionals.class));
+    }
 }
