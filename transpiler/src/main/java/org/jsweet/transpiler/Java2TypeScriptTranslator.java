@@ -3330,14 +3330,16 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
             if (Class.class.getName().equals(context.types.erasure(paramType).toString())) {
                 List<? extends TypeMirror> typeArguments = ((DeclaredType) paramType).getTypeArguments();
-                if (typeArguments.size() > 0
-                        && types().asElement(typeArguments.get(0)).getKind() == ElementKind.INTERFACE) {
+                if (typeArguments.size() > 0) {
 
-                    print(avoidJSKeyword(overload.getCoreMethod().getParameters().get(i).getName().toString()))
-                            .print(" === ");
-                    print(getStringLiteralQuote()).print(typeArguments.get(0).toString())
-                            .print(getStringLiteralQuote());
-                    print(" || ");
+                    Element firstArgTypeElement = types().asElement(typeArguments.get(0));
+                    if (firstArgTypeElement != null && firstArgTypeElement.getKind() == ElementKind.INTERFACE) {
+                        print(avoidJSKeyword(overload.getCoreMethod().getParameters().get(i).getName().toString()))
+                                .print(" === ");
+                        print(getStringLiteralQuote()).print(typeArguments.get(0).toString())
+                                .print(getStringLiteralQuote());
+                        print(" || ");
+                    }
                 }
             }
 
