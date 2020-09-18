@@ -3892,6 +3892,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 
         if (context.isAwaitInvocation(inv)) {
+        	if (getParent() instanceof JCMethodInvocation) {
+        		print("(");
+        	}
             print("await ");
         }
         
@@ -4247,6 +4250,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 
 		print(")");
+		
+		if (context.isAwaitInvocation(inv) && getParent() instanceof JCMethodInvocation) {
+			print(")");
+		}
 
 	}
 
