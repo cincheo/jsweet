@@ -258,7 +258,7 @@ public class PrinterAdapter {
             break;
         case TYPEVAR:
         case WILDCARD:
-            if (resolvedTypeArgs != null && resolvedTypeArgs.get(type) != null) {
+            if (resolvedTypeArgs != null && resolvedTypeArgs.get(type) != null && resolvedTypeArgs.get(type) != type) {
                 buildMappedType(stringBuilder, resolvedTypeArgs.get(type), resolvedTypeArgs);
             } else {
                 stringBuilder.append("any");
