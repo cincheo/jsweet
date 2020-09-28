@@ -145,12 +145,32 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 
         extTypesMapping.put(Method.class.getName(), "{ owner: any, name: string, fn : Function }");
 
-        addTypeMapping(
-                (typeTree,
-                        name) -> name.startsWith("java.") && typeTree.getType() != null
-                                && types().isSubtype(typeTree.getType(), util().getType(Throwable.class)) ? "Error"
-                                        : null);
+        // replace java.*
+        addTypeMapping((ExtendedElement typeElement, String qualifiedName) -> {
+            TypeMirror type = typeElement.getType();
+            if (!qualifiedName.startsWith("java.") || type == null) {
+                return null;
+            }
+
+            // Throwable
+            if (types().isSubtype(type, util().getType(Throwable.class))) {
+                return "Error";
+            }
+
+            // Optional
+            if (types().isSubtype(types().erasure(type), types().erasure(util().getType(Optional.class)))
+                    && type instanceof DeclaredType) {
+                List<? extends TypeMirror> typeArgs = ((DeclaredType) type).getTypeArguments();
+                if (typeArgs.size() > 0) {
+                    return getMappedType(typeArgs.get(0));
+                }
+            }
+
+            return null;
+        });
+
         addTypeMapping((ExtendedElement typeTree, String name) -> mapWeakReferenceType(typeTree, name));
+
         excludedJavaSuperTypes.add(EventObject.class.getName());
     }
 
@@ -295,6 +315,11 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 
             case "java.util.Objects":
                 if (substituteMethodInvocationOnObjects(invocation, targetMethodName, delegate)) {
+                    return true;
+                }
+                break;
+            case "java.util.Optional":
+                if (substituteMethodInvocationOnOptional(invocation, targetMethodName, delegate)) {
                     return true;
                 }
                 break;
@@ -474,6 +499,67 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
         }
 
         return super.substituteMethodInvocation(invocation);
+    }
+
+    private boolean substituteMethodInvocationOnOptional(MethodInvocationElement invocation, String targetMethodName,
+            boolean delegate) {
+        switch (targetMethodName) {
+        case "of":
+            print(invocation.getArgument(0));
+            return true;
+        case "empty":
+            print("null");
+            return true;
+        case "ofNullable":
+            print(invocation.getArgument(0));
+            return true;
+        case "equals":
+            printDefaultEquals(invocation.getTargetExpression(), invocation.getArgument(0));
+            return true;
+        case "filter":
+            printMacroName(targetMethodName);
+            print("((o, condition) => condition(o) ? o : null)(").print(invocation.getTargetExpression()).print(",")
+                    .print(invocation.getArgument(0)).print(")");
+            return true;
+        case "orElse":
+            printMacroName(targetMethodName);
+            print("((v, v2) => v == null ? v2 : v)(").print(invocation.getTargetExpression()).print(",")
+                    .print(invocation.getArgument(0)).print(")");
+            return true;
+        case "orElseGet":
+        case "or":
+            printMacroName(targetMethodName);
+            print("((v, get) => v == null ? get() : v)(").print(invocation.getTargetExpression()).print(",")
+                    .print(invocation.getArgument(0)).print(")");
+            return true;
+        case "ifPresent":
+            printMacroName(targetMethodName);
+            print("((v, action) => v != null ? action(v) : null)(").print(invocation.getTargetExpression()).print(",")
+                    .print(invocation.getArgument(0)).print(")");
+            return true;
+        case "ifPresentOrElse":
+            printMacroName(targetMethodName);
+            print("((v, action, fallbackAction) => v != null ? action(v) : fallbackAction())(")
+                    .print(invocation.getTargetExpression()).print(",").print(invocation.getArgument(0)).print(",")
+                    .print(invocation.getArgument(1)).print(")");
+            return true;
+        case "map":
+        case "flatMap":
+            printMacroName(targetMethodName);
+            print("(").print(invocation.getArgument(0)).print(")(").print(invocation.getTargetExpression()).print(")");
+            return true;
+        case "orElseThrow":
+            printMacroName(targetMethodName);
+            if (invocation.getArgumentCount() > 0) {
+                print("((v, throwError) => { if (v == null) throwError(); return v; })(")
+                        .print(invocation.getTargetExpression()).print(",").print(invocation.getArgument(0)).print(")");
+            } else {
+                print("(v => { if (v == null) throw new Error('value is null'); return v; })(")
+                        .print(invocation.getTargetExpression()).print(")");
+            }
+            return true;
+        }
+        return false;
     }
 
     protected boolean substituteMethodInvocationOnObjects(MethodInvocationElement invocation, String targetMethodName,
