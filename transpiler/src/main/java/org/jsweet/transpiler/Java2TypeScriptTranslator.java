@@ -49,6 +49,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -1340,7 +1341,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     return this;
                 }
             }
-            for (BiFunction<ExtendedElement, String, Object> mapping : context.getFunctionalTypeMappings()) {
+            for (BiFunction<ExtendedElement, String, Object> mapping : context.getTypeTreeMappings()) {
                 Object mapped = mapping.apply(createExtendedElement(typeTree), typeFullName);
                 if (mapped instanceof String) {
                     print((String) mapped);
@@ -1350,6 +1351,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     return this;
                 } else if (mapped instanceof TypeMirror) {
                     print(getAdapter().getMappedType((TypeMirror) mapped));
+                    return this;
+                }
+            }
+            for (Function<TypeMirror, String> mapping : context.getTypeMappings()) {
+                String mapped = mapping.apply(typeType);
+                if (mapped != null) {
+                    print(mapped);
                     return this;
                 }
             }

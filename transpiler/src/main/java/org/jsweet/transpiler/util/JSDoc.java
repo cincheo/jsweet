@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -94,6 +95,14 @@ public class JSDoc {
 			qualifiedName = parametrizedType.toString();
 		}
 		boolean isMapped = false;
+        for (Function<TypeMirror, String> mapping : context.getTypeMappings()) {
+            String mapped = mapping.apply(type);
+            if (mapped != null) {
+                isMapped = true;
+                qualifiedName = mapped;
+            }
+        }
+		
 		if (typeTree != null) {
 		    if (type instanceof TypeVariable) {
 		        TypeVariable typeVar = (TypeVariable) type;
@@ -105,17 +114,17 @@ public class JSDoc {
 		    }
 			ExtendedElement extendedElement = ExtendedElementFactory.INSTANCE
 					.create(TreePath.getPath(compilationUnit, typeTree), context);
-			for (BiFunction<ExtendedElement, String, Object> mapping : context.getFunctionalTypeMappings()) {
-				Object mapped = mapping.apply(extendedElement, qualifiedName);
-				if (mapped instanceof String) {
-					isMapped = true;
-					qualifiedName = (String) mapped;
-				} else if (mapped instanceof Tree) {
-					isMapped = true;
-					qualifiedName = getMappedDocType(context, (Tree) mapped,
-							context.util.getTypeForTree((Tree) mapped, compilationUnit), compilationUnit);
-				}
-			}
+			for (BiFunction<ExtendedElement, String, Object> mapping : context.getTypeTreeMappings()) {
+                Object mapped = mapping.apply(extendedElement, qualifiedName);
+                if (mapped instanceof String) {
+                    isMapped = true;
+                    qualifiedName = (String) mapped;
+                } else if (mapped instanceof Tree) {
+                    isMapped = true;
+                    qualifiedName = getMappedDocType(context, (Tree) mapped,
+                            context.util.getTypeForTree((Tree) mapped, compilationUnit), compilationUnit);
+                }
+            }
 		}
 		if (context.isMappedType(qualifiedName)) {
 			isMapped = true;

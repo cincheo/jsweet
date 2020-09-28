@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.lang.model.element.Element;
@@ -189,8 +190,8 @@ public class PrinterAdapter {
     /**
      * Gets the functional type mappings.
      */
-    protected final List<BiFunction<ExtendedElement, String, Object>> getFunctionalTypeMappings() {
-        return context.getFunctionalTypeMappings();
+    protected final List<BiFunction<ExtendedElement, String, Object>> getTypeTreeMappings() {
+        return context.getTypeTreeMappings();
     }
 
     /**
@@ -201,8 +202,25 @@ public class PrinterAdapter {
      *                        and returns a substitution (either under the form of a
      *                        string, or of a string, or of another type tree).
      */
-    public void addTypeMapping(BiFunction<ExtendedElement, String, Object> mappingFunction) {
+    public void addTypeTreeMapping(BiFunction<ExtendedElement, String, Object> mappingFunction) {
+        context.addTypeTreeMapping(mappingFunction);
+    }
+
+    /**
+     * Adds a functional type mapping.
+     * 
+     * @param mappingFunction a function that takes the type , and returns a mapped
+     *                        type as string.
+     */
+    protected final void addTypeMapping(Function<TypeMirror, String> mappingFunction) {
         context.addTypeMapping(mappingFunction);
+    }
+
+    /**
+     * Returns the functional type mappings.
+     */
+    protected final List<Function<TypeMirror, String>> getTypeMappings() {
+        return context.getTypeMappings();
     }
 
     /**

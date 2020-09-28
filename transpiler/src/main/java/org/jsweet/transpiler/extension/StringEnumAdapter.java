@@ -74,7 +74,7 @@ public class StringEnumAdapter extends PrinterAdapter {
 	public StringEnumAdapter(PrinterAdapter parent) {
 		super(parent);
 		// eligible enums will be translated to string in JS
-		addTypeMapping((typeTree, name) -> isStringEnum(typeTree.getTypeAsElement()) ? "string" : null);
+		addTypeTreeMapping((extendedElement, name) -> isStringEnum(extendedElement.getTypeAsElement()) ? "string" : null);
 
 		// ignore enum declarations with a programmatic annotation manager
 		addAnnotationManager(new AnnotationManager() {

@@ -72,6 +72,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -1475,24 +1476,44 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
         }
     }
 
-    public boolean substituteAndPrintType(ExtendedElement element, TypeElement type) {
-        String typeFullName = type.toString();
-
-        String mappedType = context.getTypeMappingTarget(typeFullName);
+    public boolean substituteAndPrintType(TypeMirror type) {
+        String qualifiedName = util().getQualifiedName(type);
+        String mappedType = context.getTypeMappingTarget(qualifiedName);
         if (mappedType != null) {
             if (mappedType.endsWith("<>")) {
                 print(mappedType.substring(0, mappedType.length() - 2));
             } else {
                 print(mappedType);
 
-                if (!type.getTypeParameters().isEmpty() && !context.getTypeMappingTarget(typeFullName).equals("any")) {
-                    getPrinter().printAnyTypeArguments(type.getTypeParameters().size());
+                if (type instanceof DeclaredType) {
+                    List<? extends TypeMirror> typeArguments = ((DeclaredType)type).getTypeArguments();
+                    if (!typeArguments.isEmpty()
+                            && !context.getTypeMappingTarget(qualifiedName).equals("any")) {
+                        getPrinter().printAnyTypeArguments(typeArguments.size());
+                    }
                 }
             }
             return true;
         }
 
-        for (BiFunction<ExtendedElement, String, Object> mapping : context.getFunctionalTypeMappings()) {
+        for (Function<TypeMirror, String> mapping : context.getTypeMappings()) {
+            String mapped = mapping.apply(type);
+            if (mapped != null) {
+                print(mapped);
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
+    public boolean substituteAndPrintType(ExtendedElement element, TypeElement type) {
+        if (substituteAndPrintType(type.asType())) {
+            return true;
+        }
+
+        String typeFullName = type.toString();
+        for (BiFunction<ExtendedElement, String, Object> mapping : context.getTypeTreeMappings()) {
             Object mapped = mapping.apply(element, typeFullName);
             if (mapped instanceof String) {
                 print((String) mapped);

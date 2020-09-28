@@ -146,8 +146,8 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
         extTypesMapping.put(Method.class.getName(), "{ owner: any, name: string, fn : Function }");
 
         // replace java.*
-        addTypeMapping((ExtendedElement typeElement, String qualifiedName) -> {
-            TypeMirror type = typeElement.getType();
+        addTypeMapping((TypeMirror type) -> {
+            String qualifiedName = util().getQualifiedName(type);
             if (!qualifiedName.startsWith("java.") || type == null) {
                 return null;
             }
@@ -169,7 +169,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
             return null;
         });
 
-        addTypeMapping((ExtendedElement typeTree, String name) -> mapWeakReferenceType(typeTree, name));
+        addTypeTreeMapping((ExtendedElement typeTree, String name) -> mapWeakReferenceType(typeTree, name));
 
         excludedJavaSuperTypes.add(EventObject.class.getName());
     }

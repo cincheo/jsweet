@@ -39,6 +39,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -51,9 +52,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.ExecutableType;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
@@ -161,7 +160,10 @@ public class JSweetContext {
 
     private List<AnnotationManager> annotationManagers = new ArrayList<>();
     private Map<String, String> typesMapping = new HashMap<String, String>();
-    private List<BiFunction<ExtendedElement, String, Object>> functionalTypesMapping = new ArrayList<>();
+    
+    private List<BiFunction<ExtendedElement, String, Object>> functionalTypeTreeMappings = new ArrayList<>();
+    private List<Function<TypeMirror, String>> functionalTypeMappings = new ArrayList<>();
+    
     protected Map<String, String> langTypesMapping = new HashMap<String, String>();
     protected Set<String> langTypesSimpleNames = new HashSet<String>();
     protected Set<String> baseThrowables = new HashSet<String>();
@@ -269,15 +271,32 @@ public class JSweetContext {
      *                        and returns a mapped type (either under the form of a
      *                        string, or another TypeMirror, or a tree).
      */
-    public final void addTypeMapping(BiFunction<ExtendedElement, String, Object> mappingFunction) {
-        functionalTypesMapping.add(mappingFunction);
+    public final void addTypeTreeMapping(BiFunction<ExtendedElement, String, Object> mappingFunction) {
+        functionalTypeTreeMappings.add(mappingFunction);
     }
 
     /**
      * Returns the functional type mappings.
      */
-    public final List<BiFunction<ExtendedElement, String, Object>> getFunctionalTypeMappings() {
-        return functionalTypesMapping;
+    public final List<BiFunction<ExtendedElement, String, Object>> getTypeTreeMappings() {
+        return functionalTypeTreeMappings;
+    }
+    
+    /**
+     * Adds a functional type mapping.
+     * 
+     * @param mappingFunction a function that takes the type ,
+     *                        and returns a mapped type as string.
+     */
+    public final void addTypeMapping(Function<TypeMirror, String> mappingFunction) {
+        functionalTypeMappings.add(mappingFunction);
+    }
+
+    /**
+     * Returns the functional type mappings.
+     */
+    public final List<Function<TypeMirror, String>> getTypeMappings() {
+        return functionalTypeMappings;
     }
 
     /**
@@ -1373,7 +1392,7 @@ public class JSweetContext {
 
     /**
      * Adds an extra annotation type to a symbol (no args). See
-     * {@link #hasAnnotationType(Symbol, String...)}.
+     * {@link #hasAnnotationType(Element, String...)}.
      * 
      * @param symbol             the symbol to add the annotation to
      * @param annotationTypeName the annotation type name
