@@ -130,7 +130,7 @@ public class UtilSupport implements Util {
         if (typeElement != null) {
             return typeElement.asType();
         }
-        
+		
 		return null;
 	}
 
