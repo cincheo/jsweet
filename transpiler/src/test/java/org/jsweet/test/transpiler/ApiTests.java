@@ -40,6 +40,7 @@ import source.api.ForeachIteration;
 import source.api.J4TSInvocations;
 import source.api.JdkInvocations;
 import source.api.Numbers;
+import source.api.Optionals;
 import source.api.PrimitiveInstantiation;
 import source.api.PromisesAsyncAwait;
 import source.api.QualifiedInstantiation;
@@ -49,244 +50,246 @@ import source.api.WrongJdkInvocations;
 
 public class ApiTests extends AbstractTest {
 
-	// J4TS messes up with forbidden invocations...
-	@Ignore
-	@Test
-	public void testWrongJdkInvocations() {
-		transpile(logHandler -> {
-			// assertEquals(11, logHandler.reportedProblems.size());
-			assertEquals(19, logHandler.reportedSourcePositions.get(0).getStartLine());
-			assertEquals(39, logHandler.reportedSourcePositions.get(1).getStartLine());
-			// assertEquals(41,
-			// logHandler.reportedSourcePositions.get(2).getStartLine());
-			assertEquals(48, logHandler.reportedSourcePositions.get(3).getStartLine());
-			assertEquals(52, logHandler.reportedSourcePositions.get(4).getStartLine());
-			assertEquals(72, logHandler.reportedSourcePositions.get(5).getStartLine());
-			// assertEquals(78,
-			// logHandler.reportedSourcePositions.get(6).getStartLine());
-			// assertEquals(83,
-			// logHandler.reportedSourcePositions.get(7).getStartLine());
-			assertEquals(87, logHandler.reportedSourcePositions.get(8).getStartLine());
-			assertEquals(97, logHandler.reportedSourcePositions.get(9).getStartLine());
-			assertEquals(118, logHandler.reportedSourcePositions.get(10).getStartLine());
-			// assertEquals(120,
-			// logHandler.reportedSourcePositions.get(11).getStartLine());
-			assertEquals(127, logHandler.reportedSourcePositions.get(12).getStartLine());
-			assertEquals(131, logHandler.reportedSourcePositions.get(13).getStartLine());
-		}, getSourceFile(J4TSInvocations.class), getSourceFile(WrongJdkInvocations.class));
-	}
+    // J4TS messes up with forbidden invocations...
+    @Ignore
+    @Test
+    public void testWrongJdkInvocations() {
+        transpile(logHandler -> {
+            // assertEquals(11, logHandler.reportedProblems.size());
+            assertEquals(19, logHandler.reportedSourcePositions.get(0).getStartLine());
+            assertEquals(39, logHandler.reportedSourcePositions.get(1).getStartLine());
+            // assertEquals(41,
+            // logHandler.reportedSourcePositions.get(2).getStartLine());
+            assertEquals(48, logHandler.reportedSourcePositions.get(3).getStartLine());
+            assertEquals(52, logHandler.reportedSourcePositions.get(4).getStartLine());
+            assertEquals(72, logHandler.reportedSourcePositions.get(5).getStartLine());
+            // assertEquals(78,
+            // logHandler.reportedSourcePositions.get(6).getStartLine());
+            // assertEquals(83,
+            // logHandler.reportedSourcePositions.get(7).getStartLine());
+            assertEquals(87, logHandler.reportedSourcePositions.get(8).getStartLine());
+            assertEquals(97, logHandler.reportedSourcePositions.get(9).getStartLine());
+            assertEquals(118, logHandler.reportedSourcePositions.get(10).getStartLine());
+            // assertEquals(120,
+            // logHandler.reportedSourcePositions.get(11).getStartLine());
+            assertEquals(127, logHandler.reportedSourcePositions.get(12).getStartLine());
+            assertEquals(131, logHandler.reportedSourcePositions.get(13).getStartLine());
+        }, getSourceFile(J4TSInvocations.class), getSourceFile(WrongJdkInvocations.class));
+    }
 
-	@Test
-	public void testJ4TSInvocations() {
-	    // with J4TS
-	    transpilerTest().getTranspiler().setUsingJavaRuntime(true);
-		eval(ModuleKind.none, (logHandler, result) -> {
-			logHandler.assertNoProblems();
-		}, getSourceFile(J4TSInvocations.class));
-		// without J4TS
+    @Test
+    public void testJ4TSInvocations() {
+        // with J4TS
+        transpilerTest().getTranspiler().setUsingJavaRuntime(true);
+        eval(ModuleKind.none, (logHandler, result) -> {
+            logHandler.assertNoProblems();
+        }, getSourceFile(J4TSInvocations.class));
+        // without J4TS
         transpilerTest().getTranspiler().setUsingJavaRuntime(false);
         eval(ModuleKind.none, (logHandler, result) -> {
             logHandler.assertNoProblems();
         }, getSourceFile(J4TSInvocations.class));
-	}
+    }
 
-	@Test
-	public void testJdkInvocations() {
-		eval(ModuleKind.none, (logHandler, result) -> {
-			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-			assertEquals("test", result.<String>get("s1"));
-			assertEquals("m1", result.<String>get("s2"));
-			assertEquals("e", result.<String>get("s3"));
-			assertEquals("testc", result.<String>get("s4"));
-			assertEquals(2, result.<Number>get("i1").intValue());
-			assertEquals(-1, result.<Number>get("i2").intValue());
-			assertEquals(4, result.<Number>get("l").intValue());
-			assertEquals("t1st", result.<String>get("r"));
-		}, getSourceFile(JdkInvocations.class));
-	}
+    @Test
+    public void testJdkInvocations() {
+        eval(ModuleKind.none, (logHandler, result) -> {
+            Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+            assertEquals("test", result.<String>get("s1"));
+            assertEquals("m1", result.<String>get("s2"));
+            assertEquals("e", result.<String>get("s3"));
+            assertEquals("testc", result.<String>get("s4"));
+            assertEquals(2, result.<Number>get("i1").intValue());
+            assertEquals(-1, result.<Number>get("i2").intValue());
+            assertEquals(4, result.<Number>get("l").intValue());
+            assertEquals("t1st", result.<String>get("r"));
+        }, getSourceFile(JdkInvocations.class));
+    }
 
-	@Test
-	public void testThreadLocal() {
-		eval((logHandler, result) -> {
-			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-			assertEquals("coucou", result.get("out"));
-			assertEquals("nakach", result.get("out2"));
-			assertEquals("nakach", result.get("out3"));
-		}, getSourceFile(ThreadLocalFake.class));
-	}
+    @Test
+    public void testThreadLocal() {
+        eval((logHandler, result) -> {
+            Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+            assertEquals("coucou", result.get("out"));
+            assertEquals("nakach", result.get("out2"));
+            assertEquals("nakach", result.get("out3"));
+        }, getSourceFile(ThreadLocalFake.class));
+    }
 
-	@Test
-	public void testPromisesAsyncAwaits() {
-		eval((logHandler, result) -> {
-			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+    @Test
+    public void testPromisesAsyncAwaits() {
+        eval((logHandler, result) -> {
+            Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
 
-			// async await style
-			assertNotNull(result.get("t0"));
-			assertNotNull(result.get("t1"));
-			assertNotNull(result.get("t2"));
+            // async await style
+            assertNotNull(result.get("t0"));
+            assertNotNull(result.get("t1"));
+            assertNotNull(result.get("t2"));
 
-			long t0 = result.<Number>get("t0").longValue();
-			long t1 = result.<Number>get("t1").longValue();
-			long t2 = result.<Number>get("t2").longValue();
+            long t0 = result.<Number>get("t0").longValue();
+            long t1 = result.<Number>get("t1").longValue();
+            long t2 = result.<Number>get("t2").longValue();
 
-			assertTrue(t1 - t0 >= PromisesAsyncAwait.WAIT_BETWEEN_STEPS_MS);
-			assertTrue(t2 - t1 >= PromisesAsyncAwait.WAIT_BETWEEN_STEPS_MS);
+            assertTrue(t1 - t0 >= PromisesAsyncAwait.WAIT_BETWEEN_STEPS_MS);
+            assertTrue(t2 - t1 >= PromisesAsyncAwait.WAIT_BETWEEN_STEPS_MS);
 
-			assertEquals(new Integer(42), result.get("r1"));
-			assertEquals("my answer", result.get("r2"));
-			assertEquals("supermessage", result.get("e"));
+            assertEquals(new Integer(42), result.get("r1"));
+            assertEquals("my answer", result.get("r2"));
+            assertEquals("supermessage", result.get("e"));
 
-			// promise style
-			assertNotNull(result.get("2_t0"));
-			assertNotNull(result.get("2_t1"));
-			assertNotNull(result.get("2_t2"));
+            // promise style
+            assertNotNull(result.get("2_t0"));
+            assertNotNull(result.get("2_t1"));
+            assertNotNull(result.get("2_t2"));
 
-			t0 = result.<Number>get("2_t0").longValue();
-			t1 = result.<Number>get("2_t1").longValue();
-			t2 = result.<Number>get("2_t2").longValue();
+            t0 = result.<Number>get("2_t0").longValue();
+            t1 = result.<Number>get("2_t1").longValue();
+            t2 = result.<Number>get("2_t2").longValue();
 
-			assertTrue(t1 - t0 >= PromisesAsyncAwait.WAIT_BETWEEN_STEPS_MS);
-			assertTrue(t2 - t1 >= PromisesAsyncAwait.WAIT_BETWEEN_STEPS_MS);
+            assertTrue(t1 - t0 >= PromisesAsyncAwait.WAIT_BETWEEN_STEPS_MS);
+            assertTrue(t2 - t1 >= PromisesAsyncAwait.WAIT_BETWEEN_STEPS_MS);
 
-			assertEquals(new Integer(42), result.get("2_r1"));
-			assertEquals("my answer", result.get("2_r2"));
-			assertEquals("supermessage", result.get("2_e"));
-			
-			assertTrue(result.get("subMethod1"));
-			assertTrue(result.get("subMethod2"));
-			assertEquals("subMethod2", result.get("resultSubMethod2"));
-			
-			
-		}, getSourceFile(PromisesAsyncAwait.class));
-	}
+            assertEquals(new Integer(42), result.get("2_r1"));
+            assertEquals("my answer", result.get("2_r2"));
+            assertEquals("supermessage", result.get("2_e"));
 
-	@Test
-	public void testForeachIteration() {
-		eval((logHandler, r) -> {
-			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-			Assert.assertEquals("Wrong behavior output trace", "abc", r.get("out"));
-		}, getSourceFile(ForeachIteration.class));
-	}
+            assertTrue(result.get("subMethod1"));
+            assertTrue(result.get("subMethod2"));
+            assertEquals("subMethod2", result.get("resultSubMethod2"));
 
-	@Test
-	public void testPrimitiveInstantiation() {
-		transpile(logHandler -> {
-			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-		}, getSourceFile(PrimitiveInstantiation.class));
-	}
+        }, getSourceFile(PromisesAsyncAwait.class));
+    }
 
-	@Test
-	public void testAccessStaticMethod() {
-		transpile(logHandler -> {
-			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-		}, getSourceFile(AccessStaticMethod.class));
-	}
+    @Test
+    public void testForeachIteration() {
+        eval((logHandler, r) -> {
+            Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+            Assert.assertEquals("Wrong behavior output trace", "abc", r.get("out"));
+        }, getSourceFile(ForeachIteration.class));
+    }
 
-	@Test
-	public void testQualifiedInstantiation() {
-		transpile(logHandler -> {
-			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-		}, getSourceFile(QualifiedInstantiation.class));
-	}
+    @Test
+    public void testPrimitiveInstantiation() {
+        transpile(logHandler -> {
+            Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+        }, getSourceFile(PrimitiveInstantiation.class));
+    }
 
-	@Test
-	public void testCastMethods() {
-		transpile(logHandler -> {
-			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
-		}, getSourceFile(CastMethods.class));
-	}
+    @Test
+    public void testAccessStaticMethod() {
+        transpile(logHandler -> {
+            Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+        }, getSourceFile(AccessStaticMethod.class));
+    }
 
-	@Test
-	public void testErasingJava() {
-		transpile(logHandler -> {
-			logHandler.assertNoProblems();
-		}, getSourceFile(ErasingJava.class));
-	}
+    @Test
+    public void testQualifiedInstantiation() {
+        transpile(logHandler -> {
+            Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+        }, getSourceFile(QualifiedInstantiation.class));
+    }
 
-	@Test
-	public void testStrings() {
-		eval(ModuleKind.none, (logHandler, r) -> {
-			logHandler.assertNoProblems();
-			Assert.assertEquals(
-					"b,bc,c,bc,3,true,ab,32,b,0,false,true,source.api.Strings,Strings,abc,cdcdcd,true,false,true,false,true,true,false,a,aa",
-					r.get("trace"));
-		}, getSourceFile(Strings.class));
-	}
+    @Test
+    public void testCastMethods() {
+        transpile(logHandler -> {
+            Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
+        }, getSourceFile(CastMethods.class));
+    }
 
-	@Test
-	public void testCharacters() {
-		eval(ModuleKind.none, (logHandler, r) -> {
-			logHandler.assertNoProblems();
+    @Test
+    public void testErasingJava() {
+        transpile(logHandler -> {
+            logHandler.assertNoProblems();
+        }, getSourceFile(ErasingJava.class));
+    }
 
-			assertEquals(true, r.get("switch_int"));
-			assertEquals(true, r.get("switch_char"));
-			assertEquals(true, r.get("switch_char_cast_int"));
-			assertEquals(true, r.get("switch_char_cast_char"));
-			assertEquals(true, r.get("switch_int_cast_int"));
-			assertEquals(true, r.get("switch_int_cast_char"));
+    @Test
+    public void testStrings() {
+        eval(ModuleKind.none, (logHandler, r) -> {
+            logHandler.assertNoProblems();
+            Assert.assertEquals(
+                    "b,bc,c,bc,3,true,ab,32,b,0,false,true,source.api.Strings,Strings,abc,cdcdcd,true,false,true,false,true,true,false,a,aa",
+                    r.get("trace"));
+        }, getSourceFile(Strings.class));
+    }
 
-		}, getSourceFile(Characters.class));
-	}
+    @Test
+    public void testCharacters() {
+        eval(ModuleKind.none, (logHandler, r) -> {
+            logHandler.assertNoProblems();
 
-	@Test
-	public void testNumbers() {
-		eval(ModuleKind.none, (logHandler, r) -> {
-			logHandler.assertNoProblems();
-		}, getSourceFile(Numbers.class));
-	}
+            assertEquals(true, r.get("switch_int"));
+            assertEquals(true, r.get("switch_char"));
+            assertEquals(true, r.get("switch_char_cast_int"));
+            assertEquals(true, r.get("switch_char_cast_char"));
+            assertEquals(true, r.get("switch_int_cast_int"));
+            assertEquals(true, r.get("switch_int_cast_char"));
 
-	@Test
-	public void testBooleans() {
-		eval(ModuleKind.none, (logHandler, r) -> {
-			logHandler.assertNoProblems();
-		}, getSourceFile(Booleans.class));
-	}
+        }, getSourceFile(Characters.class));
+    }
 
-	@Test
-	public void testArrayBuffers() {
-		eval(ModuleKind.none, (logHandler, r) -> {
-			logHandler.assertNoProblems();
-			Assert.assertEquals("0,0,1", r.get("trace"));
-		}, getSourceFile(ArrayBuffers.class));
-	}
+    @Test
+    public void testNumbers() {
+        eval(ModuleKind.none, (logHandler, r) -> {
+            logHandler.assertNoProblems();
+        }, getSourceFile(Numbers.class));
+    }
 
-	@Test
-	public void testExpressionBuilder() {
-		// evalWithJavaSupport((logHandler, r) -> {
-		// logHandler.assertNoProblems();
-		// Assert.assertEquals(30, (int) r.get("result"));
-		// Assert.assertEquals(30, (int) r.get("result2"));
-		// }, getSourceFile(ExpressionBuilderTest.class),
-		// getSourceFile(ExpressionBuilderTest2.class));
-		eval((logHandler, r) -> {
-			logHandler.assertNoProblems();
-			Assert.assertEquals(30, (int) r.get("result"));
-		}, getSourceFile(ExpressionBuilderTest.class));
-		eval((logHandler, r) -> {
-			logHandler.assertNoProblems();
-			Assert.assertEquals(30, (int) r.get("result2"));
-		}, getSourceFile(ExpressionBuilderTest2.class));
-	}
-	
-	@Test
-	public void testEquals() {
-		eval(ModuleKind.none, (logHandler, r) -> {
-			logHandler.assertNoProblems();
-			Assert.assertEquals("false,true,false,true,false,true,false,false,true", r.get("trace"));
-		}, getSourceFile(Equals.class));
-	}
+    @Test
+    public void testBooleans() {
+        eval(ModuleKind.none, (logHandler, r) -> {
+            logHandler.assertNoProblems();
+        }, getSourceFile(Booleans.class));
+    }
 
-	@Test
-	public void testDates() {
-		eval(ModuleKind.none, (logHandler, r) -> {
-			logHandler.assertNoProblems();
+    @Test
+    public void testArrayBuffers() {
+        eval(ModuleKind.none, (logHandler, r) -> {
+            logHandler.assertNoProblems();
+            Assert.assertEquals("0,0,1", r.get("trace"));
+        }, getSourceFile(ArrayBuffers.class));
+    }
+
+    @Test
+    public void testExpressionBuilder() {
+        // evalWithJavaSupport((logHandler, r) -> {
+        // logHandler.assertNoProblems();
+        // Assert.assertEquals(30, (int) r.get("result"));
+        // Assert.assertEquals(30, (int) r.get("result2"));
+        // }, getSourceFile(ExpressionBuilderTest.class),
+        // getSourceFile(ExpressionBuilderTest2.class));
+        eval((logHandler, r) -> {
+            logHandler.assertNoProblems();
+            Assert.assertEquals(30, (int) r.get("result"));
+        }, getSourceFile(ExpressionBuilderTest.class));
+        eval((logHandler, r) -> {
+            logHandler.assertNoProblems();
+            Assert.assertEquals(30, (int) r.get("result2"));
+        }, getSourceFile(ExpressionBuilderTest2.class));
+    }
+
+    @Test
+    public void testEquals() {
+        eval(ModuleKind.none, (logHandler, r) -> {
+            logHandler.assertNoProblems();
+            Assert.assertEquals("false,true,false,true,false,true,false,false,true", r.get("trace"));
+        }, getSourceFile(Equals.class));
+    }
+
+    @Test
+    public void testDates() {
+        eval(ModuleKind.none, (logHandler, r) -> {
+            logHandler.assertNoProblems();
             System.out.println("result = " + r.get("localeString"));
-			assertTrue(asList(
-					"1/1/2020, 1:00:00 AM", 
-					"2020-1-1 1:00:00 AM").contains( 
-					r.get("localeString")));
-			
-		}, getSourceFile(Dates.class));
-	}
+            assertTrue(asList("1/1/2020, 1:00:00 AM", "2020-1-1 1:00:00 AM").contains(r.get("localeString")));
 
+        }, getSourceFile(Dates.class));
+    }
+
+    @Test
+    public void testOptional() {
+        eval((logHandler, result) -> {
+            logHandler.assertNoProblems();
+        }, getSourceFile(Optionals.class));
+    }
 }

@@ -1947,4 +1947,7 @@ public class JSweetContext extends Context {
         }
     }
 
+    public Elements elements() {
+        return JavacElements.instance(this);
+    }
 }
