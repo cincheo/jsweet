@@ -18,7 +18,9 @@ package source.api;
 
 import static jsweet.util.Lang.$export;
 
+import java.util.Base64;
 import java.util.Objects;
+
 
 
 public class JdkInvocations {
@@ -44,6 +46,8 @@ public class JdkInvocations {
 		s.lastIndexOf("", 10);
 		Other4 o2 = new Other4();
 		o2.toString();
+		
+		Base64 b64 = new Base64();
 	}
 
 	String m1() {

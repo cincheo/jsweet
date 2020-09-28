@@ -214,12 +214,29 @@ public class PrinterAdapter {
      * adapters.
      */
     public final String getMappedType(TypeMirror type) {
+        return getMappedType(type, null);
+    }
+
+    /**
+     * Gets the string that corresponds to the given type, taking into account all
+     * type mappings.
+     * 
+     * <p>
+     * Some type mappings are set by default, some are added in the context by
+     * adapters.
+     * 
+     * @param resolvedTypeArgs Optional (can be null) map of generic type to
+     *                         resolved type. For instance Map<T => String> for a
+     *                         GenericType<T>
+     */
+    public final String getMappedType(TypeMirror type, Map<TypeMirror, TypeMirror> resolvedTypeArgs) {
         StringBuilder stringBuilder = new StringBuilder();
-        buildMappedType(stringBuilder, type);
+        buildMappedType(stringBuilder, type, resolvedTypeArgs);
         return stringBuilder.toString();
     }
 
-    private final void buildMappedType(StringBuilder stringBuilder, TypeMirror type) {
+    private final void buildMappedType(StringBuilder stringBuilder, TypeMirror type,
+            Map<TypeMirror, TypeMirror> resolvedTypeArgs) {
         switch (type.getKind()) {
         case DECLARED:
             DeclaredType declaredType = (DeclaredType) type;
@@ -234,7 +251,7 @@ public class PrinterAdapter {
             if (!"any".equals(mapped) && !declaredType.getTypeArguments().isEmpty()) {
                 stringBuilder.append("<");
                 for (TypeMirror arg : declaredType.getTypeArguments()) {
-                    buildMappedType(stringBuilder, arg);
+                    buildMappedType(stringBuilder, arg, resolvedTypeArgs);
                     stringBuilder.append(", ");
                 }
                 stringBuilder.delete(stringBuilder.length() - 2, stringBuilder.length());
@@ -242,12 +259,17 @@ public class PrinterAdapter {
             }
             break;
         case ARRAY:
-            buildMappedType(stringBuilder, ((javax.lang.model.type.ArrayType) type).getComponentType());
+            buildMappedType(stringBuilder, ((javax.lang.model.type.ArrayType) type).getComponentType(),
+                    resolvedTypeArgs);
             stringBuilder.append("[]");
             break;
         case TYPEVAR:
         case WILDCARD:
-            stringBuilder.append("any");
+            if (resolvedTypeArgs != null && resolvedTypeArgs.get(type) != null && resolvedTypeArgs.get(type) != type) {
+                buildMappedType(stringBuilder, resolvedTypeArgs.get(type), resolvedTypeArgs);
+            } else {
+                stringBuilder.append("any");
+            }
             break;
         default:
             if (context.isMappedType(type.toString())) {
