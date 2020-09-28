@@ -265,9 +265,9 @@ public class JSweetContext {
     /**
      * Adds a functional type mapping.
      * 
-     * @param mappingFunction a function that takes the type tree, the type name,
+     * @param mappingFunction a function that takes the type element, the type name,
      *                        and returns a mapped type (either under the form of a
-     *                        string, or of a string, or of another type tree).
+     *                        string, or another TypeMirror, or a tree).
      */
     public final void addTypeMapping(BiFunction<ExtendedElement, String, Object> mappingFunction) {
         functionalTypesMapping.add(mappingFunction);
@@ -1400,7 +1400,7 @@ public class JSweetContext {
         }
         return signature;
     }
-    
+
     /**
      * Gets the actual (simple) name of a symbol from a JSweet convention, so
      * including potential <code>jsweet.lang.Name</code> annotation.
@@ -2035,7 +2035,7 @@ public class JSweetContext {
         CompilationUnitTree compilationUnit = compilationUnitsMapping.get(tree);
         return compilationUnit;
     }
-    
+
     private Set<MethodInvocationTree> awaitInvocations;
 
     public void addAwaitInvocation(MethodInvocationTree invocation) {

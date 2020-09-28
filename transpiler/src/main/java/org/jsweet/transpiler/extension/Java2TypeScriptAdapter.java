@@ -1475,12 +1475,8 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
         }
     }
 
-    /**
-     * @param enclosingElement is required for functional (ie dynamic) type mappings
-     */
-    public boolean substituteAndPrintType(ExtendedElement enclosingElement, TypeElement type) {
+    public boolean substituteAndPrintType(ExtendedElement element, TypeElement type) {
         String typeFullName = type.toString();
-        boolean completeRawTypes = true;
 
         String mappedType = context.getTypeMappingTarget(typeFullName);
         if (mappedType != null) {
@@ -1489,8 +1485,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
             } else {
                 print(mappedType);
 
-                if (completeRawTypes && !type.getTypeParameters().isEmpty()
-                        && !context.getTypeMappingTarget(typeFullName).equals("any")) {
+                if (!type.getTypeParameters().isEmpty() && !context.getTypeMappingTarget(typeFullName).equals("any")) {
                     getPrinter().printAnyTypeArguments(type.getTypeParameters().size());
                 }
             }
@@ -1498,7 +1493,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
         }
 
         for (BiFunction<ExtendedElement, String, Object> mapping : context.getFunctionalTypeMappings()) {
-            Object mapped = mapping.apply(enclosingElement, typeFullName);
+            Object mapped = mapping.apply(element, typeFullName);
             if (mapped instanceof String) {
                 print((String) mapped);
                 return true;
