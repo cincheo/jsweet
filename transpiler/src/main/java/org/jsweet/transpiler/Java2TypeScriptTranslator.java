@@ -4078,6 +4078,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
         }
 
         if (context.isAwaitInvocation(methodInvocationTree)) {
+            if (getParent() instanceof MethodInvocationTree) {
+                print("(");
+            }
             print("await ");
         }
 
@@ -4469,6 +4472,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
         print(")");
 
+        if (context.isAwaitInvocation(methodInvocationTree) && getParent() instanceof MethodInvocationTree) {
+            print(")");
+        }
     }
 
     private boolean isAnonymousMethod(String methName) {
