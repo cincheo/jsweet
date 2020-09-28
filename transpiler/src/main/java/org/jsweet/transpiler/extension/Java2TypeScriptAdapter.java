@@ -72,7 +72,6 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -1476,6 +1475,23 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
         }
     }
 
+    protected void printTypeArguments(TypeMirror typeMirror) {
+        List<? extends TypeMirror> typeArguments = util().getTypeArguments(typeMirror);
+        if (typeArguments.size() > 0) {
+            print("<");
+            for (TypeMirror typeArg : typeArguments) {
+                if (typeArg.getKind() == TypeKind.TYPEVAR || typeArg.getKind() == TypeKind.WILDCARD) {
+                    print("any");
+                } else {
+                    if (!substituteAndPrintType(typeArg)) {
+                        print(typeArg.toString());
+                    }
+                }
+            }
+            print(">");
+        }
+    }
+
     public boolean substituteAndPrintType(TypeMirror type) {
         String qualifiedName = util().getQualifiedName(type);
         String mappedType = context.getTypeMappingTarget(qualifiedName);
@@ -1484,26 +1500,24 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
                 print(mappedType.substring(0, mappedType.length() - 2));
             } else {
                 print(mappedType);
-
-                if (type instanceof DeclaredType) {
-                    List<? extends TypeMirror> typeArguments = ((DeclaredType)type).getTypeArguments();
-                    if (!typeArguments.isEmpty()
-                            && !context.getTypeMappingTarget(qualifiedName).equals("any")) {
-                        getPrinter().printAnyTypeArguments(typeArguments.size());
-                    }
+                if (mappedType.endsWith(">") && !mappedType.equals("any")) {
+                    printTypeArguments(type);
                 }
             }
             return true;
         }
 
         for (Function<TypeMirror, String> mapping : context.getTypeMappings()) {
-            String mapped = mapping.apply(type);
-            if (mapped != null) {
-                print(mapped);
+            mappedType = mapping.apply(type);
+            if (mappedType != null) {
+                print(mappedType);
+                if (mappedType.endsWith(">") && !mappedType.equals("any")) {
+                    printTypeArguments(type);
+                }
                 return true;
             }
         }
-        
+
         return false;
     }
 
