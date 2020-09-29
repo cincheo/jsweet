@@ -207,7 +207,9 @@ public class PrinterAdapter {
     }
 
     /**
-     * Adds a functional type mapping.
+     * Adds a functional type mapping. <br />
+     * NOTE: If TypeMirror is generic, the mapper should include generic
+     * specification if relevant
      * 
      * @param mappingFunction a function that takes the type , and returns a mapped
      *                        type as string.

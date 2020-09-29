@@ -50,7 +50,9 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.PrimitiveType;
@@ -129,6 +131,134 @@ public class Util {
 
     public Util(JSweetContext context) {
         this.context = context;
+    }
+
+    /**
+     * @return true if given type is not null and Set or subtype of Set (generic or
+     *         not)
+     */
+    public boolean isSetType(TypeMirror type) {
+        if (type == null) {
+            return false;
+        }
+        type = context.types.erasure(type);
+        TypeMirror setType = context.util.getTypeElementByName(context, Set.class.getName()).asType();
+        return context.types.isAssignable(type, context.types.erasure(setType));
+    }
+
+    /**
+     * @return true if given type is not null and Collection or subtype of
+     *         Collection (generic or not)
+     */
+    public boolean isCollectionType(TypeMirror type) {
+        if (type == null) {
+            return false;
+        }
+        type = context.types.erasure(type);
+        TypeMirror setType = context.util.getTypeElementByName(context, Collection.class.getName()).asType();
+        return context.types.isAssignable(type, context.types.erasure(setType));
+    }
+
+    /**
+     * @return true if given type is not null and an array of anything
+     */
+    public boolean isArrayType(TypeMirror type) {
+        return type instanceof ArrayType;
+    }
+
+    /**
+     * @return true if given type is not null and Map or subtype of Map (generic or
+     *         not)
+     */
+    public boolean isMapType(TypeMirror type) {
+        if (type == null) {
+            return false;
+        }
+        type = context.types.erasure(type);
+        TypeMirror setType = context.util.getTypeElementByName(context, Map.class.getName()).asType();
+        return context.types.isAssignable(type, context.types.erasure(setType));
+    }
+
+    /**
+     * @return enclosing package of given element if any, or null otherwise
+     */
+    public PackageElement getPackage(Element element) {
+        Element packageElement = element;
+        do {
+            packageElement = packageElement.getEnclosingElement();
+        } while (packageElement != null && !(packageElement instanceof PackageElement));
+        return (PackageElement) packageElement;
+    }
+
+    private static final String TYPE_PARAMETERS_REGEX = "\\<[a-zA-Z0-9., ]+\\>";
+
+    /**
+     * @return given type name without generic type arguments. e.g.
+     *         <code>stripTypeParameters("List&lt;String&gt;")</code> will return
+     *         <code>"List"</code>
+     */
+    public String stripTypeParameters(String typeName) {
+        String previous = typeName;
+        String current = previous.replaceAll(TYPE_PARAMETERS_REGEX, "");
+        while (!current.equals(previous)) {
+            previous = current;
+            current = previous.replaceAll(TYPE_PARAMETERS_REGEX, "");
+        }
+        return current;
+    }
+
+    /**
+     * @return non static field of the given type
+     */
+    public Collection<VariableElement> getFieldElements(TypeElement typeElement) {
+        return typeElement.getEnclosedElements().stream() //
+                .filter(member -> member.getKind() == ElementKind.FIELD) //
+                .filter(member -> !member.getModifiers().contains(Modifier.STATIC)) //
+                .map(field -> (VariableElement) field).collect(toList());
+    }
+
+    private void collectTypeAndTypeArgmentsRecursively(TypeMirror type, Collection<TypeMirror> types) {
+        types.add(type);
+        if (type instanceof DeclaredType) {
+            for (TypeMirror typeArg : ((DeclaredType) type).getTypeArguments()) {
+                collectTypeAndTypeArgmentsRecursively(typeArg, types);
+            }
+        }
+    }
+
+    /**
+     * Collects given type and its type arguments, and the type arguments of them,
+     * recursively
+     */
+    public Collection<TypeMirror> collectTypeAndTypeArgmentsRecursively(TypeMirror type) {
+        Collection<TypeMirror> types = new ArrayList<>();
+        collectTypeAndTypeArgmentsRecursively(type, types);
+        return types;
+    }
+
+    /**
+     * Returns generic version of given type's type parameters elements. For
+     * instance, if you have a ResponseSuccess<String>, it will return you [T]
+     * because generic class declares ResponseSuccess<T>, where T is type parameter
+     * generic symbol
+     * 
+     * @param type Generic or parameterized type
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public List<TypeParameterElement> getGenericTypeParameters(DeclaredType type) {
+        return (List) ((TypeElement) ((DeclaredType) context.types.erasure(type)).asElement()).getTypeParameters();
+    }
+
+    /**
+     * @return type of given collection's items/elements
+     */
+    public TypeMirror getCollectionItemType(TypeMirror collectionType) {
+        DeclaredType collectionDeclaredType = (DeclaredType) collectionType;
+        if (collectionDeclaredType.getTypeArguments().size() > 0) {
+            TypeMirror collectionElementType = collectionDeclaredType.getTypeArguments().get(0);
+            return collectionElementType;
+        }
+        return context.util.getType(Object.class);
     }
 
     /**

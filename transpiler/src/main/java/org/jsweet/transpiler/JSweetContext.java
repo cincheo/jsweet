@@ -160,10 +160,10 @@ public class JSweetContext {
 
     private List<AnnotationManager> annotationManagers = new ArrayList<>();
     private Map<String, String> typesMapping = new HashMap<String, String>();
-    
+
     private List<BiFunction<ExtendedElement, String, Object>> functionalTypeTreeMappings = new ArrayList<>();
     private List<Function<TypeMirror, String>> functionalTypeMappings = new ArrayList<>();
-    
+
     protected Map<String, String> langTypesMapping = new HashMap<String, String>();
     protected Set<String> langTypesSimpleNames = new HashSet<String>();
     protected Set<String> baseThrowables = new HashSet<String>();
@@ -281,12 +281,14 @@ public class JSweetContext {
     public final List<BiFunction<ExtendedElement, String, Object>> getTypeTreeMappings() {
         return functionalTypeTreeMappings;
     }
-    
+
     /**
-     * Adds a functional type mapping.
+     * Adds a functional type mapping. <br />
+     * NOTE: If TypeMirror is generic, the mapper should include generic
+     * specification if relevant
      * 
-     * @param mappingFunction a function that takes the type ,
-     *                        and returns a mapped type as string.
+     * @param mappingFunction a function that takes the type, and returns a mapped
+     *                        type as string.
      */
     public final void addTypeMapping(Function<TypeMirror, String> mappingFunction) {
         functionalTypeMappings.add(mappingFunction);

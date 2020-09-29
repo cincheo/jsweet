@@ -1477,17 +1477,24 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 
     protected void printTypeArguments(TypeMirror typeMirror) {
         List<? extends TypeMirror> typeArguments = util().getTypeArguments(typeMirror);
-        if (typeArguments.size() > 0) {
+        if (typeArguments != null && typeArguments.size() > 0) {
             print("<");
             for (TypeMirror typeArg : typeArguments) {
                 if (typeArg.getKind() == TypeKind.TYPEVAR || typeArg.getKind() == TypeKind.WILDCARD) {
                     print("any");
                 } else {
                     if (!substituteAndPrintType(typeArg)) {
-                        print(typeArg.toString());
+                        String mappedType = getMappedType(typeArg);
+                        if (mappedType != null) {
+                            print(mappedType);
+                        } else {
+                            print(typeArg.toString());
+                        }
                     }
                 }
+                print(",");
             }
+            removeLastChar(',');
             print(">");
         }
     }
@@ -1500,7 +1507,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
                 print(mappedType.substring(0, mappedType.length() - 2));
             } else {
                 print(mappedType);
-                if (mappedType.endsWith(">") && !mappedType.equals("any")) {
+                if (!mappedType.endsWith(">") && !mappedType.equals("any")) {
                     printTypeArguments(type);
                 }
             }
@@ -1511,9 +1518,6 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
             mappedType = mapping.apply(type);
             if (mappedType != null) {
                 print(mappedType);
-                if (mappedType.endsWith(">") && !mappedType.equals("any")) {
-                    printTypeArguments(type);
-                }
                 return true;
             }
         }
