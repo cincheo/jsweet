@@ -18,9 +18,12 @@
  */
 package org.jsweet.transpiler.extension;
 
+import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.joining;
 import static org.jsweet.JSweetConfig.ANNOTATION_ERASED;
 import static org.jsweet.JSweetConfig.ANNOTATION_KEEP_USES;
 import static org.jsweet.JSweetConfig.ANNOTATION_OBJECT_TYPE;
+import static org.jsweet.JSweetConfig.ANNOTATION_STRING_ENUM;
 import static org.jsweet.JSweetConfig.ANNOTATION_STRING_TYPE;
 import static org.jsweet.JSweetConfig.DEPRECATED_UTIL_CLASSNAME;
 import static org.jsweet.JSweetConfig.GLOBALS_CLASS_NAME;
@@ -37,6 +40,7 @@ import static org.jsweet.JSweetConfig.LANG_PACKAGE_ALT;
 import static org.jsweet.JSweetConfig.UTIL_CLASSNAME;
 import static org.jsweet.JSweetConfig.UTIL_PACKAGE;
 import static org.jsweet.JSweetConfig.isJSweetPath;
+import static org.jsweet.transpiler.Java2TypeScriptTranslator.*;
 
 import java.util.Date;
 import java.util.List;
@@ -66,6 +70,7 @@ import java.util.function.LongSupplier;
 import java.util.function.LongToDoubleFunction;
 import java.util.function.LongToIntFunction;
 import java.util.function.LongUnaryOperator;
+import java.util.stream.Stream;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -466,7 +471,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
         if (targetTypeElement != null && targetTypeElement.getKind() == ElementKind.ENUM
                 && (invocationElement.getTargetExpression() != null
                         && !"this".equals(invocationElement.getTargetExpression().toString()))) {
-            String relTarget = getRootRelativeName((Element) targetTypeElement);
+            String relTarget = getRootRelativeName(targetTypeElement);
             switch (targetMethodName) {
             case "name":
                 printMacroName("Enum." + targetMethodName);
@@ -486,10 +491,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
                 }
                 break;
             case "values":
-                printMacroName("Enum." + targetMethodName);
-                print("function() { " + VAR_DECL_KEYWORD + " result: number[] = []; for(" + VAR_DECL_KEYWORD
-                        + " val in ").print(relTarget).print(
-                                ") { if (!isNaN(<any>val)) { result.push(parseInt(val,10)); } } return result; }()");
+                printEnumValuesJSCode((TypeElement) targetTypeElement);
                 return true;
             case "equals":
                 printMacroName("Enum." + targetMethodName);
@@ -533,13 +535,10 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 
         // enum static methods
         if (targetTypeElement != null && targetTypeElement.getKind() == ElementKind.ENUM) {
-            String relTarget = getRootRelativeName(targetTypeElement);
+
             switch (targetMethodName) {
             case "values":
-                printMacroName("Enum." + targetMethodName);
-                print("function() { " + VAR_DECL_KEYWORD + " result: number[] = []; for(" + VAR_DECL_KEYWORD
-                        + " val in ").print(relTarget).print(
-                                ") { if (!isNaN(<any>val)) { result.push(parseInt(val,10)); } } return result; }()");
+                printEnumValuesJSCode((TypeElement) targetTypeElement);
                 return true;
             }
         }
@@ -1408,6 +1407,35 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 
         return true;
 
+    }
+
+    /**
+     * Returns a quote string (single or double quote depending on the
+     * <code>useSingleQuotesForStringLiterals</code> option).
+     */
+    public String getStringLiteralQuote() {
+        return getPrinter().getStringLiteralQuote();
+    }
+
+    private final static List<String> ENUM_SPECIAL_MEMBERS = asList(CLASS_NAME_IN_CONSTRUCTOR, INTERFACES_FIELD_NAME,
+            ENUM_WRAPPER_CLASS_WRAPPERS);
+
+    private void printEnumValuesJSCode(TypeElement enumElement) {
+        boolean isStringEnum = context.hasAnnotationType(enumElement, ANNOTATION_STRING_ENUM);
+        String enumFullName = getRootRelativeName(enumElement);
+        String addItemJS;
+        if (isStringEnum) {
+            String specialMembersList = ENUM_SPECIAL_MEMBERS.stream()
+                    .map(member -> getStringLiteralQuote() + member + getStringLiteralQuote()).collect(joining(", "));
+            
+            addItemJS = "if ([" + specialMembersList
+                    + "].indexOf(val) === -1) result.push(val as " + enumFullName + ");";
+        } else {
+            addItemJS = "if (!isNaN(<any>val)) { result.push(parseInt(val,10)); }";
+        }
+        printMacroName("Enum.values");
+        print("function() { " + VAR_DECL_KEYWORD + " result: " + enumFullName + "[] = []; for(" + VAR_DECL_KEYWORD
+                + " val in ").print(enumFullName).print(") { " + addItemJS + " } return result; }()");
     }
 
     protected void printDefaultEquals(ExtendedElement left, ExtendedElement right) {

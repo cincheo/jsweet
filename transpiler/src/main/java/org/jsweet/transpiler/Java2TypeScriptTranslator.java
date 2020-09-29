@@ -165,7 +165,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
     public static final String STATIC_INITIALIZATION_SUFFIX = "_$LI$";
     /**
      * The name of the field where the class name is stored in the class
-     * constructor.
+     * constructor. 
      */
     public static final String CLASS_NAME_IN_CONSTRUCTOR = "__class";
     /**
@@ -296,7 +296,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
         private boolean enumWrapperClassScope = false;
 
-        private boolean enumString = false;
+        private boolean stringEnumScope = false;
 
         private boolean removedSuperclass = false;
 
@@ -1565,7 +1565,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                         print("enum ");
                         getScope().enumScope = true;
                         if (context.hasAnnotationType(classTypeElement, ANNOTATION_STRING_ENUM)) {
-                            getScope().enumString = true;
+                            getScope().stringEnumScope = true;
                             getScope().enumWrapperClassScope = false;
                             getScope().isComplexEnum = false;
                         }
@@ -1867,7 +1867,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             int pos = getCurrentPosition();
             print(def);
 
-            if (getScope().enumScope && def.getKind() == Kind.VARIABLE && getScope().enumString) {
+            if (getScope().enumScope && def.getKind() == Kind.VARIABLE && getScope().stringEnumScope) {
                 print(" =  " + getStringLiteralQuote());
                 print(def);
                 print(getStringLiteralQuote());
@@ -2176,7 +2176,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
         if (getScope().enumScope && getScope().isComplexEnum && !getScope().anonymousClasses.contains(classTree)) {
             println().printIndent().print(classTypeElement.getSimpleName().toString()).print(
-                    "[" + getStringLiteralQuote() + ENUM_WRAPPER_CLASS_WRAPPERS + getStringLiteralQuote() + "] = [");
+                    "[" + getStringLiteralQuote() + ENUM_WRAPPER_CLASS_WRAPPERS + getStringLiteralQuote() + "] = {");
             int index = 0;
             for (Tree tree : classTree.getMembers()) {
                 Element memberElement = toElement(tree);
@@ -2188,6 +2188,16 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     NewClassTree newClass = (NewClassTree) varDecl.getInitializer();
                     ClassTree clazz = classTree;
                     try {
+
+                        if (getScope().stringEnumScope) {
+                            print(getStringLiteralQuote());
+                            print(memberElement.getSimpleName().toString());
+                            print(getStringLiteralQuote());
+                        } else {
+                            print("" + index);
+                        }
+                        print(": ");
+
                         int anonymousClassIndex = getScope().anonymousClasses.indexOf(newClass.getClassBody());
                         if (anonymousClassIndex >= 0) {
                             print("new ")
@@ -2212,7 +2222,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                 }
             }
             removeLastChars(2);
-            print("];").println();
+            print("};").println();
         }
 
         if (getScope().mainMethod != null && getScope().mainMethod.getParameters().size() < 2

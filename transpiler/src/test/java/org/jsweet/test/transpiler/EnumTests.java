@@ -43,6 +43,7 @@ import source.enums.ErasedEnum;
 import source.enums.FailingEnums;
 import source.enums.MyComplexEnum2;
 import source.enums.PassingEnums;
+import source.enums.RemovedStringEnums;
 import source.enums.StringEnumType;
 import source.enums.StringEnums;
 import source.enums.SwitchWithEnumWrapper;
@@ -171,7 +172,7 @@ public class EnumTests extends AbstractTest {
     }
 
     @Test
-    public void testStringEnums() {
+    public void testRemovedStringEnums() {
         TranspilerTestRunner transpilerTest = new TranspilerTestRunner(getCurrentTestOutDir(), new JSweetFactory() {
             @Override
             public PrinterAdapter createAdapter(JSweetContext context) {
@@ -180,7 +181,8 @@ public class EnumTests extends AbstractTest {
         });
         transpilerTest.eval((logHandler, r) -> {
             logHandler.assertNoProblems();
-        }, getSourceFile(StringEnums.class));
+            assertEquals("A", r.get("value"));
+        }, getSourceFile(RemovedStringEnums.class));
     }
 
     @Test
@@ -221,7 +223,12 @@ public class EnumTests extends AbstractTest {
     }
 
     @Test
-    public void testStringEnum() {
-        transpile(TestTranspilationHandler::assertNoProblems, getSourceFile(StringEnumType.class));
+    public void testStringEnums() {
+        eval((logHandler, r) -> {
+            logHandler.assertNoProblems();
+            assertEquals("TEST3", r.get("value"));
+            assertEquals("VAL2", r.get("value2"));
+            assertEquals("V2", r.get("value2_getValue"));
+        }, getSourceFile(StringEnumType.class), getSourceFile(StringEnums.class));
     }
 }
