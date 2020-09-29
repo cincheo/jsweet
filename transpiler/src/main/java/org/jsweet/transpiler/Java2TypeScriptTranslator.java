@@ -6288,9 +6288,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
                 boolean isStringEnum = context.hasAnnotationType(typeElement, ANNOTATION_STRING_ENUM);
                 if (isStringEnum) {
-                    print(" === 'number'");
-                } else {
                     print(" === 'string'");
+                } else {
+                    print(" === 'number'");
                 }
             } else if (type.toString().startsWith(JSweetConfig.FUNCTION_CLASSES_PACKAGE + ".")
                     || type.toString().startsWith("java.util.function.")
