@@ -1,4 +1,4 @@
-package source.structural.defaultMethods;
+package source.structural.defaultMethodsPackage;
 
 public abstract class IntermediateAbstractViewController extends AbstractViewController implements I2, I3 {
 

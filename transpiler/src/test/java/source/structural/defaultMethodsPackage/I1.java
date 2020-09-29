@@ -1,4 +1,4 @@
-package source.structural.defaultMethods;
+package source.structural.defaultMethodsPackage;
 
 public interface I1 {
 

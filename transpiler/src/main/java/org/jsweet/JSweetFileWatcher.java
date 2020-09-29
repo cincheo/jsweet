@@ -281,7 +281,7 @@ public class JSweetFileWatcher {
 					}
 					__Lock.unlock();
 				}
-				yield();
+				Thread.yield();
 			}
 		}
 	}
