@@ -165,7 +165,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
     public static final String STATIC_INITIALIZATION_SUFFIX = "_$LI$";
     /**
      * The name of the field where the class name is stored in the class
-     * constructor. 
+     * constructor.
      */
     public static final String CLASS_NAME_IN_CONSTRUCTOR = "__class";
     /**
@@ -1767,6 +1767,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             }
             print("} }").println().println();
             String qualifiedClassName = getQualifiedTypeName(classTypeElement, globals, true);
+            if (util().isPartOfAnEnum(classTypeElement)) {
+                qualifiedClassName += ENUM_WRAPPER_CLASS_SUFFIX;
+            }
             context.addTopFooterStatement(
                     (isBlank(qualifiedClassName) ? "" : qualifiedClassName + ".__static_initialize();"));
         }
@@ -2228,6 +2231,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
         if (getScope().mainMethod != null && getScope().mainMethod.getParameters().size() < 2
                 && getScope().getMainMethodElement().getEnclosingElement().equals(classTypeElement)) {
             String mainClassName = getQualifiedTypeName(classTypeElement, globals, true);
+            if (util().isPartOfAnEnum(classTypeElement)) {
+                mainClassName += ENUM_WRAPPER_CLASS_SUFFIX;
+            }
+
             String mainMethodQualifier = mainClassName;
             if (!isBlank(mainClassName)) {
                 mainMethodQualifier = mainClassName + ".";
@@ -2798,6 +2805,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     if (!util().isGlobalsClassName(parent.getSimpleName().toString())) {
                         if (methodElement.getModifiers().contains(Modifier.STATIC)) {
                             print(getQualifiedTypeName(parentElement, false, false).toString());
+                            if (util().isPartOfAnEnum(parentElement)) {
+                                print(ENUM_WRAPPER_CLASS_SUFFIX);
+                            }
                         } else {
                             print("this");
                         }
@@ -3758,6 +3768,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                 print(" return ").print(prefix).print(name).print("; }");
                 if (!globals && context.bundleMode) {
                     String qualifiedClassName = getQualifiedTypeName(classTypeElement, globals, true);
+
+                    if (util().isPartOfAnEnum(classTypeElement)) {
+                        qualifiedClassName += ENUM_WRAPPER_CLASS_SUFFIX;
+                    }
                     context.addTopFooterStatement((isBlank(qualifiedClassName) ? "" : qualifiedClassName + ".") + name
                             + STATIC_INITIALIZATION_SUFFIX + "();");
                 }
@@ -6271,7 +6285,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                 print(exprStr, expr);
                 if (checkFirstArrayElement)
                     print("[0]");
-                print(" === 'number'");
+
+                boolean isStringEnum = context.hasAnnotationType(typeElement, ANNOTATION_STRING_ENUM);
+                if (isStringEnum) {
+                    print(" === 'number'");
+                } else {
+                    print(" === 'string'");
+                }
             } else if (type.toString().startsWith(JSweetConfig.FUNCTION_CLASSES_PACKAGE + ".")
                     || type.toString().startsWith("java.util.function.")
                     || Runnable.class.getName().equals(type.toString())
@@ -6355,6 +6375,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                             }
                         } else {
                             qualifiedName = getQualifiedTypeName(typeElement, false, false);
+
+                            if (util().isPartOfAnEnum(typeElement)) {
+                                qualifiedName += ENUM_WRAPPER_CLASS_SUFFIX;
+                            }
                         }
 
                         if (qualifiedName.startsWith("{")) {
@@ -6639,9 +6663,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     qualifiedName = qualifiedName.substring(0, dotIndex);
                 }
             }
-        }
-        if (util().isPartOfAnEnum(type)) {
-            qualifiedName += ENUM_WRAPPER_CLASS_SUFFIX;
         }
         return qualifiedName;
     }

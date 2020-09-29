@@ -1,14 +1,25 @@
 package source.api;
 
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import def.js.Error;
 
 public class Optionals {
     private static final String PREFERRED_VALUE = "c'est la vie";
+    
+    public static enum My {
+        A, B, C
+    }
 
     public static void main(String[] args) {
-
+        executePresentTests();
+        executeAbsentTests();
+        
+        Optional<My> m = Optional.of(My.B);
+        assert m.get() == My.B;
+        Optional<My> m2 = Optional.empty();
+        assert m2.isEmpty();
     }
 
     static void executePresentTests() {
@@ -76,6 +87,7 @@ public class Optionals {
         o = o.or(() -> Optional.of("lala"));
         assertContains(o, "lala");
 
+        o = Optional.empty();
         final String[] modified = { "", "" };
         o.ifPresent(__ -> modified[0] = "what");
         o.ifPresentOrElse(__ -> modified[1] = "what", () -> modified[1] = "valid");
@@ -96,12 +108,11 @@ public class Optionals {
     static void assertEmpty(Optional<?> o) {
         assert o.isEmpty();
         assert !o.isPresent();
-        assert o != null;
 
         boolean caught = false;
         try {
             o.get();
-        } catch (Error e) {
+        } catch (NoSuchElementException e) {
             caught = true;
         }
         assert caught;

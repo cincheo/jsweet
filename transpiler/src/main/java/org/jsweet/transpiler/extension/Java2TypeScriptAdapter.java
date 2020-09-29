@@ -40,7 +40,9 @@ import static org.jsweet.JSweetConfig.LANG_PACKAGE_ALT;
 import static org.jsweet.JSweetConfig.UTIL_CLASSNAME;
 import static org.jsweet.JSweetConfig.UTIL_PACKAGE;
 import static org.jsweet.JSweetConfig.isJSweetPath;
-import static org.jsweet.transpiler.Java2TypeScriptTranslator.*;
+import static org.jsweet.transpiler.Java2TypeScriptTranslator.CLASS_NAME_IN_CONSTRUCTOR;
+import static org.jsweet.transpiler.Java2TypeScriptTranslator.ENUM_WRAPPER_CLASS_WRAPPERS;
+import static org.jsweet.transpiler.Java2TypeScriptTranslator.INTERFACES_FIELD_NAME;
 
 import java.util.Date;
 import java.util.List;
@@ -70,7 +72,6 @@ import java.util.function.LongSupplier;
 import java.util.function.LongToDoubleFunction;
 import java.util.function.LongToIntFunction;
 import java.util.function.LongUnaryOperator;
-import java.util.stream.Stream;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;

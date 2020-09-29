@@ -34,10 +34,12 @@ import java.text.Collator;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
 import org.jsweet.transpiler.JSweetContext;
@@ -162,7 +164,17 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
                     && type instanceof DeclaredType) {
                 List<? extends TypeMirror> typeArgs = ((DeclaredType) type).getTypeArguments();
                 if (typeArgs.size() > 0) {
-                    return getMappedType(typeArgs.get(0));
+                    TypeMirror backingType = typeArgs.get(0);
+                    Element backingTypeElement = context.types.asElement(backingType);
+                    if (backingType.getKind() == TypeKind.TYPEVAR) {
+                        return backingType.toString();
+                    } else if (backingType.getKind() == TypeKind.WILDCARD) {
+                        return "any";
+                    } else if (backingTypeElement == null) {
+                        return getMappedType(backingType);
+                    } else {
+                        return getPrinter().getQualifiedTypeName(backingTypeElement, false, true);
+                    }
                 }
             }
 
@@ -505,7 +517,8 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
             boolean delegate) {
         switch (targetMethodName) {
         case "of":
-            print(invocation.getArgument(0));
+            print("(v => { if (v == null) throw new Error('value is null'); return v; })(")
+                    .print(invocation.getArgument(0)).print(")");
             return true;
         case "empty":
             print("null");
@@ -548,10 +561,19 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
             printMacroName(targetMethodName);
             print("(").print(invocation.getArgument(0)).print(")(").print(invocation.getTargetExpression()).print(")");
             return true;
+        case "isEmpty":
+            printMacroName(targetMethodName);
+            print("(").print(invocation.getTargetExpression()).print(" == null)");
+            return true;
+        case "isPresent":
+            printMacroName(targetMethodName);
+            print("(").print(invocation.getTargetExpression()).print(" != null)");
+            return true;
+        case "get":
         case "orElseThrow":
             printMacroName(targetMethodName);
             if (invocation.getArgumentCount() > 0) {
-                print("((v, throwError) => { if (v == null) throwError(); return v; })(")
+                print("((v, getError) => { if (v == null) throw getError(); return v; })(")
                         .print(invocation.getTargetExpression()).print(",").print(invocation.getArgument(0)).print(")");
             } else {
                 print("(v => { if (v == null) throw new Error('value is null'); return v; })(")
