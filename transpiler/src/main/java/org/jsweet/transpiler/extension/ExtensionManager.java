@@ -77,7 +77,7 @@ public class ExtensionManager {
 		JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 		StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
 		List<String> optionList = new ArrayList<String>();
-		optionList.addAll(Arrays.asList("-classpath", compileClassPath));
+		optionList.addAll(Arrays.asList("-classpath", compileClassPath, "-parameters", "-g"));
 
 		File extensionDescriptorFile = new File(workingDir, "extension.json");
 		Map<String, String> extensionDescriptor = new HashMap<>();
