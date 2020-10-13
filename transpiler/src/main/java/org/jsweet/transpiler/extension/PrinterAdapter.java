@@ -1035,6 +1035,16 @@ public class PrinterAdapter {
             parentAdapter.afterType(type);
         }
     }
+    
+    /**
+     * This method is called before starting printing a compilation unit (its namespace and content).
+     * getCompilationUnit() is available on this adapter at this stage.
+     */
+    public void beforeCompilationUnit() {
+        if (parentAdapter != null) {
+            parentAdapter.beforeCompilationUnit();
+        }
+    }
 
     /**
      * This method is called before starting printing the body of a type.

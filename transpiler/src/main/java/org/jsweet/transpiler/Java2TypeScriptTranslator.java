@@ -741,6 +741,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 		setCompilationUnit(topLevel);
 		
+		getAdapter().beforeCompilationUnit();
+		
 		String packge = topLevel.packge.toString();
 
 		boolean globalModule = JSweetConfig.GLOBALS_PACKAGE_NAME.equals(packge)
