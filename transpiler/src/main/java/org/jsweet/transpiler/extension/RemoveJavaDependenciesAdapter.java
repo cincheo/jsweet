@@ -779,12 +779,12 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
 		case "append":
 			printMacroName(targetMethodName);
 			if (invocation.getArgumentCount() == 1) {
-				print("(sb => { sb.str = sb.str.concat(<any>").printArgList(invocation.getArguments())
-						.print("); return sb; })(");
+				print("(sb => { sb.str += <any>").printArgList(invocation.getArguments())
+						.print("; return sb; })(");
 				print(invocation.getTargetExpression(), delegate).print(")");
 			} else {
-				print("(sb => { sb.str = sb.str.concat((<any>").print(invocation.getArgument(0)).print(").substr(")
-						.printArgList(invocation.getArgumentTail()).print(")); return sb; })(");
+				print("(sb => { sb.str += (<any>").print(invocation.getArgument(0)).print(").substr(")
+						.printArgList(invocation.getArgumentTail()).print("); return sb; })(");
 				print(invocation.getTargetExpression(), delegate).print(")");
 			}
 			return true;
