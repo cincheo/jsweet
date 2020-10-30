@@ -1260,12 +1260,22 @@ public class JSweetContext extends Context {
 	}
 
 	/**
-	 * Tells if the given type is a Java interface.
+	 * Tells if the given type is an interface.
 	 */
 	public boolean isInterface(TypeSymbol typeSymbol) {
 		return (typeSymbol.type.isInterface() || hasAnnotationType(typeSymbol, JSweetConfig.ANNOTATION_INTERFACE));
 	}
 
+	/**
+	 * Tells if the given type is an interface.
+	 */
+	public boolean isInterface(Element element) {
+		if (element instanceof TypeSymbol) {
+			return isInterface((TypeSymbol)element);
+		}
+		return false;
+	}
+	
 	/**
 	 * Tells if the given symbol is annotated with one of the given annotation
 	 * types.
