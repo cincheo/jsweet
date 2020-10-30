@@ -958,7 +958,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 						print("((str, index, len) => str.join('').substring(index, index + len))(")
 								.printArgList(invocationElement.getArguments()).print(")");
 					} else {
-						print("new String(").printArgList(invocationElement.getArguments()).print(").toString()");
+						print("String(").printArgList(invocationElement.getArguments()).print(").toString()");
 					}
 					return true;
 				case "subSequence":
