@@ -103,6 +103,7 @@ import org.jsweet.transpiler.model.support.VariableAccessElementSupport;
 import org.jsweet.transpiler.util.Util;
 
 import com.sun.codemodel.internal.JJavaName;
+import com.sun.source.tree.TypeCastTree;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
@@ -118,6 +119,7 @@ import com.sun.tools.javac.tree.JCTree.JCImport;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.JCTree.JCTypeApply;
+import com.sun.tools.javac.tree.JCTree.JCTypeCast;
 import com.sun.tools.javac.tree.JCTree.Tag;
 
 /**
@@ -1654,8 +1656,15 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 	}
 
 	protected void printForEachLoop(JCEnhancedForLoop loop, String indexVarName) {
-		getPrinter().print("for(" + VAR_DECL_KEYWORD + " " + indexVarName + "=").print(loop.expr)
-				.print(".iterator();" + indexVarName + ".hasNext();) {").println().startIndent().printIndent();
+		getPrinter().print("for(" + VAR_DECL_KEYWORD + " " + indexVarName + "=");
+		if (loop.expr instanceof JCTypeCast) {
+			print("(");
+		}
+		getPrinter().print(loop.expr);
+		if (loop.expr instanceof JCTypeCast) {
+			print(")");
+		}
+		print(".iterator();" + indexVarName + ".hasNext();) {").println().startIndent().printIndent();
 		getPrinter().print(VAR_DECL_KEYWORD + " " + loop.var.name.toString() + " = ").print(indexVarName + ".next();")
 				.println();
 		getPrinter().printIndent().print(loop.body);
