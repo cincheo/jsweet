@@ -7,11 +7,23 @@ public class OverloadWithGenerics {
 	public static String[] trace = {};
 
 	public static void main(String[] args) {
-		new WithGenerics2<String, Integer>().m("test", "test");
+        new WithGenerics2<String, Integer>().m("test", "test");
         new WithGenerics2<String, Integer>().m("test", 2, "2", true);
+        
+
+        m("test");
+        m("test", 2);
+        
 		$export("trace", trace);
 	}
 
+	static <U> void m(U u) {
+        array(OverloadWithGenerics.trace).push("2.1");
+    }
+    
+	static <U, U2> void m(U u, U2 u2) {
+        array(OverloadWithGenerics.trace).push("2.2");
+    }
 }
 
 class WithGenerics2<T1, T2 extends Number> {

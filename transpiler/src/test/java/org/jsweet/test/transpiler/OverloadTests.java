@@ -175,7 +175,7 @@ public class OverloadTests extends AbstractTest {
     public void testOverloadWithGenerics() {
         eval((logHandler, r) -> {
             logHandler.assertNoProblems();
-            assertEquals("1,2", r.get("trace"));
+            assertEquals("1,2,2.1,2.2", r.get("trace"));
         }, getSourceFile(OverloadWithGenerics.class));
     }
 
