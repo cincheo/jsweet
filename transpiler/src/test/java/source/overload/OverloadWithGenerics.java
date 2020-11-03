@@ -11,7 +11,7 @@ public class OverloadWithGenerics {
         new WithGenerics2<String, Integer>().m("test", 2, "2", true);
         
 
-        m("test");
+        OverloadWithGenerics.<String>m("test");
         m("test", 2);
         
 		$export("trace", trace);

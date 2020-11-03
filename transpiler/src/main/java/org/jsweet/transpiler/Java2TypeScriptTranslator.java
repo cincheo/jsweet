@@ -753,7 +753,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
         setCompilationUnit(compilationUnit);
 
         getAdapter().beforeCompilationUnit();
-        
+
         boolean globalModule = JSweetConfig.GLOBALS_PACKAGE_NAME.equals(packageFullName)
                 || packageFullName.endsWith("." + JSweetConfig.GLOBALS_PACKAGE_NAME);
         String rootRelativePackageName = "";
@@ -4388,21 +4388,33 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
         if (applyVarargs) {
             print(".apply");
         } else {
+            TypeElement targetType = (TypeElement) methSym.getEnclosingElement();
             if (methodInvocationTree.getTypeArguments() != null && !methodInvocationTree.getTypeArguments().isEmpty()) {
                 print("<");
                 for (Tree argument : methodInvocationTree.getTypeArguments()) {
                     substituteAndPrintType(argument).print(",");
                 }
-                removeLastChar();
+
+                // with overloads, missing generic types need to be added because core method
+                // has all generics
+                if (methSym != null) {
+                    Overload overload = context.getOverload(targetType, methSym);
+                    if (overload != null && overload.getMethodsCount() > 1) {
+                        int missingArgsCount = overload.getCoreMethodElement().getTypeParameters().size()
+                                - methodInvocationTree.getTypeArguments().size();
+                        print("any,".repeat(missingArgsCount));
+                    }
+                }
+
+                removeLastChar(',');
                 print(">");
             } else {
                 // force type arguments to any because they are inferred to
                 // {} by default
                 if (methSym != null && !methSym.getTypeParameters().isEmpty()) {
-                    TypeElement target = (TypeElement) methSym.getEnclosingElement();
-                    if (!target.getQualifiedName().toString().startsWith(JSweetConfig.LIBS_PACKAGE + ".")) {
+                    if (!targetType.getQualifiedName().toString().startsWith(JSweetConfig.LIBS_PACKAGE + ".")) {
                         // invalid overload type parameters are erased
-                        Overload overload = context.getOverload(target, methSym);
+                        Overload overload = context.getOverload(targetType, methSym);
                         boolean inOverload = overload != null && overload.getMethodsCount() > 1;
                         if (!(inOverload && !overload.isValid)) {
                             printAnyTypeArguments(methSym.getTypeParameters().size());
