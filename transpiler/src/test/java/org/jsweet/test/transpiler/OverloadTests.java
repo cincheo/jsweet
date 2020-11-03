@@ -70,6 +70,7 @@ import source.overload.Overload;
 import source.overload.OverloadInInnerClass;
 import source.overload.OverloadWithAbstractClass;
 import source.overload.OverloadWithEnums;
+import source.overload.OverloadWithGenerics;
 import source.overload.OverloadWithInterfaces;
 import source.overload.OverloadWithStaticAndInstanceMethods;
 import source.overload.OverloadWithSuperclass;
@@ -171,10 +172,18 @@ public class OverloadTests extends AbstractTest {
     }
 
     @Test
+    public void testOverloadWithGenerics() {
+        eval((logHandler, r) -> {
+            logHandler.assertNoProblems();
+            assertEquals("1,2", r.get("trace"));
+        }, getSourceFile(OverloadWithGenerics.class));
+    }
+
+    @Test
     public void testWrongOverloadWithGenerics() {
         eval((logHandler, r) -> {
             logHandler.assertNoProblems();
-            assertEquals("1,2,3,4", r.get("trace"));
+            assertEquals("1,2,3,4,5", r.get("trace"));
         }, getSourceFile(WrongOverloadWithGenerics.class));
     }
 
