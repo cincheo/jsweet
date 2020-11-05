@@ -70,6 +70,7 @@ import source.overload.Overload;
 import source.overload.OverloadInInnerClass;
 import source.overload.OverloadWithAbstractClass;
 import source.overload.OverloadWithEnums;
+import source.overload.OverloadWithFunctionalnterface;
 import source.overload.OverloadWithGenerics;
 import source.overload.OverloadWithInterfaces;
 import source.overload.OverloadWithStaticAndInstanceMethods;
@@ -116,6 +117,20 @@ public class OverloadTests extends AbstractTest {
         eval((logHandler, result) -> {
             logHandler.assertNoProblems();
         }, getSourceFile(OverloadWithSuperclass.class));
+    }
+
+    @Test
+    public void testOverloadWithFunctionalnterface() {
+        eval((logHandler, result) -> {
+            logHandler.assertNoProblems();
+            
+            assertEquals("first", result.get("result"));
+            assertEquals("called", result.get("result_MyLambda"));
+            assertEquals("called", result.get("result_MyLambdaImpl"));
+            assertEquals("called", result.get("result_MyLambda2"));
+            assertEquals("called", result.get("result_MyLambdaImpl2"));
+            
+        }, getSourceFile(OverloadWithFunctionalnterface.class));
     }
 
     @Test

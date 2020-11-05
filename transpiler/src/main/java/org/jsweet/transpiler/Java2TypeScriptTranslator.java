@@ -6548,6 +6548,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             print("(<any>Math).fround(").print(expression).print(")");
             return true;
         } else {
+
             if (expression instanceof LambdaExpressionTree) {
                 if (util().isInterface(assignedTypeElement)
                         && !context.isFunctionalType((TypeElement) assignedTypeElement)) {
@@ -6584,32 +6585,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     // object assignment to functional type
                     if ((newClass.getClassBody() == null
                             && context.isFunctionalType((TypeElement) assignedTypeElement))) {
-                        ExecutableElement method;
-                        for (Element s : assignedTypeElement.getEnclosedElements()) {
-                            if (s instanceof ExecutableElement) {
-                                // TODO also check that the method is compatible
-                                // (here we just apply to the first found
-                                // method)
-                                method = (ExecutableElement) s;
-                                print("(");
-                                for (VariableElement p : method.getParameters()) {
-                                    print(p.getSimpleName().toString()).print(", ");
-                                }
-                                if (!method.getParameters().isEmpty()) {
-                                    removeLastChars(2);
-                                }
-                                print(") => { return new ").print(newClass.getIdentifier()).print("(")
-                                        .printArgList(null, newClass.getArguments());
-                                print(").").print(method.getSimpleName().toString()).print("(");
-                                for (VariableElement p : method.getParameters()) {
-                                    print(p.getSimpleName().toString()).print(", ");
-                                }
-                                if (!method.getParameters().isEmpty()) {
-                                    removeLastChars(2);
-                                }
-                                print("); }");
-                                return true;
-                            }
+
+                        boolean lambdaPrinted = printFunctionalTypeAsLambda((TypeElement) assignedTypeElement, () -> {
+                            print("new ").print(newClass.getIdentifier()).print("(");
+                            printArgList(null, newClass.getArguments());
+                            print(")");
+                        });
+                        if (lambdaPrinted) {
+                            return true;
                         }
 
                     }
@@ -6624,7 +6607,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     && context.isFunctionalType(assignedTypeElement)) {
                 // disallow typing to force objects to be passed as function
                 // (may require runtime checks later on)
-                print("<any>(").print(expression).print(")");
+                print("<any>(");
+                printFunctionalTypeAsLambda((TypeElement) assignedTypeElement, () -> print(expression));
+                print(")");
                 return true;
             } else if (expression instanceof MethodInvocationTree) {
                 // disable type checking when the method returns a type variable
@@ -6643,6 +6628,45 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             }
             return false;
         }
+    }
+
+    private boolean printFunctionalTypeAsLambda(TypeElement assignedTypeElement, Runnable printInstance) {
+        if (context.isFunctionalType(assignedTypeElement)) {
+            ExecutableElement method;
+            for (Element s : assignedTypeElement.getEnclosedElements()) {
+                if (s instanceof ExecutableElement) {
+                    // TODO also check that the method is compatible
+                    // (here we just apply to the first found
+                    // method)
+                    method = (ExecutableElement) s;
+                    String functionalMethodName = method.getSimpleName().toString();
+
+                    print("(");
+                    for (VariableElement p : method.getParameters()) {
+                        print(p.getSimpleName().toString()).print(", ");
+                    }
+                    if (!method.getParameters().isEmpty()) {
+                        removeLastChars(2);
+                    }
+                    print(") => { ");
+                    print("var funcInst: any = (");
+                    printInstance.run();
+                    print("); ");
+                    print("return (funcInst['" + functionalMethodName + "'] ? funcInst['" + functionalMethodName
+                            + "'] : funcInst) ");
+                    print("(");
+                    for (VariableElement p : method.getParameters()) {
+                        print(p.getSimpleName().toString()).print(", ");
+                    }
+                    if (!method.getParameters().isEmpty()) {
+                        removeLastChars(2);
+                    }
+                    print("); }");
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
