@@ -6641,18 +6641,15 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     method = (ExecutableElement) s;
                     String functionalMethodName = method.getSimpleName().toString();
 
-                    print("(");
+                    print("((funcInst: any) => { if (typeof funcInst == 'function') { return funcInst } ");
+                    print("return (");
                     for (VariableElement p : method.getParameters()) {
                         print(p.getSimpleName().toString()).print(", ");
                     }
                     if (!method.getParameters().isEmpty()) {
                         removeLastChars(2);
                     }
-                    print(") => { ");
-                    print("var funcInst: any = (");
-                    printInstance.run();
-                    print("); ");
-                    print("return (funcInst['" + functionalMethodName + "'] ? funcInst['" + functionalMethodName
+                    print(") =>  (funcInst['" + functionalMethodName + "'] ? funcInst['" + functionalMethodName
                             + "'] : funcInst) ");
                     print("(");
                     for (VariableElement p : method.getParameters()) {
@@ -6661,7 +6658,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     if (!method.getParameters().isEmpty()) {
                         removeLastChars(2);
                     }
-                    print("); }");
+                    print(")");
+                    print("})(");
+                    printInstance.run();
+                    print(")");
                     return true;
                 }
             }
