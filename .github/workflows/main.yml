@@ -12,14 +12,14 @@ jobs:
 
     - name: runs exhaustive tests
       run: |
-      echo "clone test repositories"
+      echo 'clone test repositories'
       git clone -b JSweet3.0 --single-branch https://github.com/lgrignon/jsweet-java-runtime-transpilation-tests.git
       git clone https://github.com/lgrignon/j4ts-example.git
-      echo "transpile legacy j4ts sources"
+      echo 'transpile legacy j4ts sources'
       cd jsweet-java-runtime-transpilation-tests
       mvn clean generate-sources
       cd ..
-      echo "run j4ts tests"
+      echo 'run j4ts tests'
       cd j4ts-example
       mvn clean compile && node target/j4ts-example-bundle.js
 
