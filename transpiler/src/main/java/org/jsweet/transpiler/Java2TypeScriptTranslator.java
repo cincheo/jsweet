@@ -6651,13 +6651,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     }
                     print(") =>  (funcInst['" + functionalMethodName + "'] ? funcInst['" + functionalMethodName
                             + "'] : funcInst) ");
-                    print("(");
+                    print(".call(funcInst, ");
                     for (VariableElement p : method.getParameters()) {
                         print(p.getSimpleName().toString()).print(", ");
                     }
-                    if (!method.getParameters().isEmpty()) {
-                        removeLastChars(2);
-                    }
+                    removeLastChar(' ');
+                    removeLastChar(',');
                     print(")");
                     print("})(");
                     printInstance.run();

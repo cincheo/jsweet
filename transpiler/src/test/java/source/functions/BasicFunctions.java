@@ -15,6 +15,8 @@ public class BasicFunctions {
         
         // useful for overload
         assert ff instanceof MyFunc;
+        
+        applyItFourTimes(new MyFuncImplWithState());
     }
 
     static MyFuncImpl getFunc() {
@@ -23,6 +25,13 @@ public class BasicFunctions {
 
     static String applyIt(MyFunc f) {
         return f.doThis();
+    }
+    
+    static void applyItFourTimes(MyFunc f) {
+        for (int i = 0; i < 4; i++) {
+            String res = applyIt(f);
+            assert res == "good" + i;
+        }
     }
 }
 
@@ -35,5 +44,13 @@ class MyFuncImpl implements MyFunc {
     @Override
     public String doThis() {
         return "good";
+    }
+}
+
+class MyFuncImplWithState implements MyFunc {
+    int i = 0;
+    @Override
+    public String doThis() {
+        return "good" + (i++);
     }
 }
