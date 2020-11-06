@@ -114,6 +114,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeCastTree;
 
 /**
  * This is an adapter for the TypeScript code generator. It overrides the
@@ -970,7 +971,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
                         print("((str, index, len) => str.join('').substring(index, index + len))(")
                                 .printArgList(invocationElement.getArguments()).print(")");
                     } else {
-                        print("new String(").printArgList(invocationElement.getArguments()).print(").toString()");
+                        print("String(").printArgList(invocationElement.getArguments()).print(").toString()");
                     }
                     return true;
                 case "subSequence":
@@ -1745,8 +1746,16 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
     }
 
     protected void printForEachLoop(EnhancedForLoopTree loop, String indexVarName) {
-        getPrinter().print("for(" + VAR_DECL_KEYWORD + " " + indexVarName + "=").print(loop.getExpression())
-                .print(".iterator();" + indexVarName + ".hasNext();) {").println().startIndent().printIndent();
+        getPrinter().print("for(" + VAR_DECL_KEYWORD + " " + indexVarName + "=");
+        if (loop.getExpression() instanceof TypeCastTree) {
+            print("(");
+        }
+        getPrinter().print(loop.getExpression());
+        if (loop.getExpression() instanceof TypeCastTree) {
+            print(")");
+        }
+        print(".iterator();" + indexVarName + ".hasNext();) {").println().startIndent().printIndent();
+        
         getPrinter().print(VAR_DECL_KEYWORD + " " + loop.getVariable().getName().toString() + " = ")
                 .print(indexVarName + ".next();").println();
         getPrinter().printIndent().print(loop.getStatement());
