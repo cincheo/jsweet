@@ -18,7 +18,7 @@ jobs:
     - name: runs exhaustive tests
       run: |
         echo 'clone test repositories'
-        git clone -b JSweet3.0 --single-branch https://github.com/lgrignon/jsweet-java-runtime-transpilation-tests.git
+        git clone https://github.com/lgrignon/jsweet-java-runtime-transpilation-tests.git
         git clone https://github.com/lgrignon/j4ts-example.git
         echo 'transpile legacy j4ts sources'
         cd jsweet-java-runtime-transpilation-tests
