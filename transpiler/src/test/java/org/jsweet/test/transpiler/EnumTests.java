@@ -50,6 +50,9 @@ import source.enums.SwitchWithEnumWrapper;
 import source.enums.other.ComplexEnumsAccess;
 import source.enums.other.EnumInOtherPackage;
 import source.enums.other.EnumWrapper;
+import source.enums.samepackage.VarbitCallerNotWorking;
+import source.enums.samepackage.VarbitWrapper;
+import source.enums.samepackage.Varbits;
 
 public class EnumTests extends AbstractTest {
 
@@ -230,5 +233,12 @@ public class EnumTests extends AbstractTest {
             assertEquals("VAL2", r.get("value2"));
             assertEquals("V2", r.get("value2_getValue"));
         }, getSourceFile(StringEnumType.class), getSourceFile(StringEnums.class));
+    }
+    
+    @Test
+    public void testEnumWrapperSamePackage() {
+        eval((logHandler, r) -> {
+            logHandler.assertNoProblems();
+        }, getSourceFile(Varbits.class), getSourceFile(VarbitWrapper.class), getSourceFile(VarbitCallerNotWorking.class));
     }
 }

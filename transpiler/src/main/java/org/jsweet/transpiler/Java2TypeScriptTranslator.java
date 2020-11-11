@@ -6523,6 +6523,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
         if (util().isInterface(assignedTypeElement) && expressionTypeElement != null
                 && util().isPartOfAnEnum(expressionTypeElement)) {
             String relTarget = getRootRelativeName(expressionTypeElement);
+            
+            TypeElement  targetTypeElement = (TypeElement) expressionTypeElement;
+            useModule(getAdapter().getModuleImportDescriptor(getAdapter().getCompilationUnit(),
+                    context.getActualName(targetTypeElement), (TypeElement) targetTypeElement));
             print("((wrappers, value) => wrappers===undefined?value:wrappers[value])(")
                     .print(relTarget).print("[" + getStringLiteralQuote()
                             + Java2TypeScriptTranslator.ENUM_WRAPPER_CLASS_WRAPPERS + getStringLiteralQuote() + "], ")

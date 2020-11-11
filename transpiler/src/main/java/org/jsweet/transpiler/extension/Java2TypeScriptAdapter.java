@@ -529,6 +529,9 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
                     return true;
                 }
             }
+
+            getPrinter().useModule(getModuleImportDescriptor(getCompilationUnit(),
+                    context.getActualName(targetTypeElement), (TypeElement) targetTypeElement));
             print(relTarget).print("[\"" + Java2TypeScriptTranslator.ENUM_WRAPPER_CLASS_WRAPPERS + "\"][")
                     .print(invocationElement.getTargetExpression()).print("].").print(invocationElement.getMethodName())
                     .print("(").printArgList(invocationElement.getArguments()).print(")");
@@ -1429,9 +1432,9 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
         if (isStringEnum) {
             String specialMembersList = ENUM_SPECIAL_MEMBERS.stream()
                     .map(member -> getStringLiteralQuote() + member + getStringLiteralQuote()).collect(joining(", "));
-            
-            addItemJS = "if ([" + specialMembersList
-                    + "].indexOf(val) === -1) result.push(val as " + enumFullName + ");";
+
+            addItemJS = "if ([" + specialMembersList + "].indexOf(val) === -1) result.push(val as " + enumFullName
+                    + ");";
         } else {
             addItemJS = "if (!isNaN(<any>val)) { result.push(parseInt(val,10)); }";
         }
@@ -1641,6 +1644,10 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
                     && !util().isPartOfAnEnum(fieldAccessElement)
                     && !"this".equals(fieldAccess.getExpression().toString()) && !"class".equals(targetFieldName)) {
                 String relTarget = getRootRelativeName((Element) targetType);
+                
+                TypeElement  targetTypeElement = (TypeElement) targetType;
+                getPrinter().useModule(getModuleImportDescriptor(getCompilationUnit(),
+                        context.getActualName(targetTypeElement), (TypeElement) targetTypeElement));
                 getPrinter().print(relTarget)
                         .print("[\"" + Java2TypeScriptTranslator.ENUM_WRAPPER_CLASS_WRAPPERS + "\"][")
                         .print(fieldAccess.getExpression()).print("].").print(fieldAccess.getIdentifier().toString());
@@ -1755,7 +1762,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
             print(")");
         }
         print(".iterator();" + indexVarName + ".hasNext();) {").println().startIndent().printIndent();
-        
+
         getPrinter().print(VAR_DECL_KEYWORD + " " + loop.getVariable().getName().toString() + " = ")
                 .print(indexVarName + ".next();").println();
         getPrinter().printIndent().print(loop.getStatement());
