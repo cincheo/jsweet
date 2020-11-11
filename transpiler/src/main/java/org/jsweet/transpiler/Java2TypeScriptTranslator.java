@@ -589,8 +589,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
     private PackageElement topLevelPackage;
 
     public void useModule(ModuleImportDescriptor moduleImport) {
-        useModule(false, moduleImport.isDirect(), moduleImport.getTargetPackage(), null, moduleImport.getImportedName(),
-                moduleImport.getPathToImportedClass(), null);
+        if (moduleImport != null) {
+            useModule(false, moduleImport.isDirect(), moduleImport.getTargetPackage(), null,
+                    moduleImport.getImportedName(), moduleImport.getPathToImportedClass(), null);
+        }
     }
 
     private void useModule(boolean require, boolean direct, PackageElement targetPackage, Tree sourceTree,
@@ -6523,8 +6525,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
         if (util().isInterface(assignedTypeElement) && expressionTypeElement != null
                 && util().isPartOfAnEnum(expressionTypeElement)) {
             String relTarget = getRootRelativeName(expressionTypeElement);
-            
-            TypeElement  targetTypeElement = (TypeElement) expressionTypeElement;
+
+            TypeElement targetTypeElement = (TypeElement) expressionTypeElement;
             useModule(getAdapter().getModuleImportDescriptor(getAdapter().getCompilationUnit(),
                     context.getActualName(targetTypeElement), (TypeElement) targetTypeElement));
             print("((wrappers, value) => wrappers===undefined?value:wrappers[value])(")
