@@ -1,4 +1,4 @@
-name: PR Checks
+name: Continuous integration build
 on:
   push:
   pull_request:
@@ -17,8 +17,9 @@ jobs:
 
     - name: runs exhaustive tests
       run: |
+        export JSWEET_VERBOSE=false
         cd transpiler
-        mvn install
+        mvn clean install -DskipSigning=true
         cd ..
         echo 'clone test repositories'
         git clone https://github.com/lgrignon/jsweet-java-runtime-transpilation-tests.git
