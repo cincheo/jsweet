@@ -17,6 +17,7 @@ jobs:
 
     - name: runs exhaustive tests
       run: |
+        mvn install
         echo 'clone test repositories'
         git clone https://github.com/lgrignon/jsweet-java-runtime-transpilation-tests.git
         git clone https://github.com/lgrignon/j4ts-example.git
