@@ -1315,11 +1315,8 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
                                 print(")");
                             }
                         } else {
-                            printMacroName(targetMethodName);
-                            print("(<any>((o1: any, o2: any) => { if(o1 && o1.equals) { return o1.equals(o2); } else { return o1 === o2; } })(");
-                            printTarget(invocationElement.getTargetExpression()).print(",")
-                                    .print(invocationElement.getArgument(0));
-                            print("))");
+                            printDefaultEquals(invocationElement.getTargetExpression(),
+                                    invocationElement.getArgument(0));
                         }
                         return true;
                     case "compareTo":
@@ -1411,6 +1408,12 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
                     .print("):(<any>target).").print(functionName).print("(").printArgList(arguments).print("))(")
                     .print(target).print(")");
         }
+    }
+    
+    protected void printDefaultEquals(ExtendedElement left, ExtendedElement right) {
+        print("(<any>((o1: any, o2: any) => o1 && o1.equals ? o1.equals(o2) : o1 === o2)(");
+        printTarget(left).print(",").print(right);
+        print("))");
     }
 
     protected void printFunctionalInvocation2(ExtendedElement target, String functionName,
@@ -1676,5 +1679,6 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
         }
         return super.substituteForEachLoop(foreachLoop, targetHasLength, indexVarName);
     }
+
 
 }

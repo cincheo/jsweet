@@ -33,7 +33,6 @@ public interface Util {
 	 * Gets the type from an existing runtime class when possible (return null
 	 * when the type cannot be found in the compiler's symbol table).
 	 * <p/>
-	 * This method only looks up well-known Java types.
 	 */
 	TypeMirror getType(Class<?> clazz);
 

@@ -125,6 +125,12 @@ public class UtilSupport implements Util {
 		case "java.util.List":
 			return context.symtab.listType;
 		}
+		
+		TypeElement typeElement = context.elements().getTypeElement(clazz.getName());
+        if (typeElement != null) {
+            return typeElement.asType();
+        }
+		
 		return null;
 	}
 
