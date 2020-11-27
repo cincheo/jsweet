@@ -1529,7 +1529,6 @@ public class JSweetContext extends Context {
             }
         }
 
-<<<<<<< HEAD
         AnnotationMirror anno = getAnnotation(symbol, annotationType);
         T val = defaultValue;
         if (anno != null) {
@@ -1565,30 +1564,6 @@ public class JSweetContext extends Context {
         return defaultValue;
     }
 
-    // /**
-    // * Gets the value of the given annotation property.
-    // *
-    // * @param annotation
-    // * the annotation
-    // * @param propertyName
-    // * the name of the annotation property to get the value of
-    // * @param defaultValue
-    // * the value to return if not found
-    // */
-    // @SuppressWarnings("unchecked")
-    // private static <T> T getAnnotationValue(AnnotationMirror annotation,
-    // String propertyName, T defaultValue) {
-    // for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue>
-    // annoProperty : annotation
-    // .getElementValues().entrySet()) {
-    // if
-    // (annoProperty.getKey().getSimpleName().toString().equals(propertyName)) {
-    // return (T) annoProperty.getValue().getValue();
-    // }
-    // }
-    // return defaultValue;
-    // }
-
     /**
      * Gets the symbol's annotation that correspond to the given annotation type
      * name if exists.
@@ -1601,19 +1576,6 @@ public class JSweetContext extends Context {
         }
         return null;
     }
-
-    // /**
-    // * Gets the annotation tree that matches the given type name.
-    // */
-    // private static JCAnnotation getAnnotation(List<JCAnnotation> annotations,
-    // String annotationType) {
-    // for (JCAnnotation a : annotations) {
-    // if (annotationType.equals(a.type.toString())) {
-    // return a;
-    // }
-    // }
-    // return null;
-    // }
 
     /**
      * Grabs the names of all the support interfaces in the class and interface
