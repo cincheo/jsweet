@@ -2,7 +2,7 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.jsweet.v3</groupId>
+	<groupId>org.jsweet</groupId>
 	<artifactId>jsweet-transpiler</artifactId>
 	<version>3.0.0</version>
 	<name>JSweet transpiler</name>
@@ -265,45 +265,87 @@
 
 		<!-- Test-only dependencies for testing candies -->
 		<dependency>
-			<groupId>org.jsweet.v3</groupId>
+			<groupId>org.jsweet</groupId>
 			<artifactId>jsweet-core</artifactId>
 			<version>6.0.0</version>
 			<scope>compile</scope>
 			<optional>true</optional>
 		</dependency>
-		<dependency>
-			<groupId>org.jsweet.v3.candies</groupId>
-			<artifactId>jquery</artifactId>
-			<version>1.10.0-20200915</version>
-			<scope>test</scope>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>org.jsweet.v3.candies</groupId>
-			<artifactId>backbone</artifactId>
-			<version>1.3.0-20200915</version>
-			<scope>test</scope>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>org.jsweet.v3.candies</groupId>
-			<artifactId>angular</artifactId>
-			<version>1.4.0-20200915</version>
-			<scope>test</scope>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>org.jsweet.v3.candies</groupId>
-			<artifactId>angular-route</artifactId>
-			<version>1.2.0-20200915</version>
-			<scope>test</scope>
-			<optional>true</optional>
-		</dependency>
 
 		<dependency>
-			<groupId>org.jsweet.v3.candies</groupId>
+			<groupId>org.jsweet.candies</groupId>
+			<artifactId>jquery</artifactId>
+			<version>1.10.0-20170726</version>
+			<scope>test</scope>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.jsweet.candies</groupId>
 			<artifactId>jqueryui</artifactId>
-			<version>1.11.0-20200915</version>
+			<version>1.11.0-20170726</version>
+			<scope>test</scope>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.jsweet.candies</groupId>
+			<artifactId>backbone</artifactId>
+			<version>1.3.0-20170726</version>
+			<scope>test</scope>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.jsweet.candies</groupId>
+			<artifactId>angular</artifactId>
+			<version>1.4.0-20170726</version>
+			<scope>test</scope>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.jsweet.candies</groupId>
+			<artifactId>angular-route</artifactId>
+			<version>1.2.0-20170726</version>
+			<scope>test</scope>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.jsweet.candies</groupId>
+			<artifactId>node</artifactId>
+			<version>7.5.0-20170726</version>
+			<scope>test</scope>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.jsweet.candies</groupId>
+			<artifactId>express</artifactId>
+			<version>4.14.0-20170726</version>
+			<scope>test</scope>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.jsweet.candies</groupId>
+			<artifactId>express-errorhandler</artifactId>
+			<version>4.14.0-20170726</version>
+			<scope>test</scope>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.jsweet.candies</groupId>
+			<artifactId>express-body-parser</artifactId>
+			<version>4.14.0-20170726</version>
+			<scope>test</scope>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.jsweet.candies</groupId>
+			<artifactId>socket.io</artifactId>
+			<version>1.4.5-20170726</version>
+			<scope>test</scope>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.jsweet.candies</groupId>
+			<artifactId>threejs</artifactId>
+			<version>75-20171101</version>
 			<scope>test</scope>
 			<optional>true</optional>
 		</dependency>

@@ -2,7 +2,7 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.jsweet.v3</groupId>
+	<groupId>org.jsweet</groupId>
 	<artifactId>jsweet-core</artifactId>
 	<version>6.0.0</version>
 	<name>JSweet Core Lib</name>
@@ -12,7 +12,7 @@
 		<timestamp>${maven.build.timestamp}</timestamp>
 		<maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<java.version.release>11</java.version.release>
+		<java.version.release>8</java.version.release>
 		<java.version>1.${java.version.release}</java.version>
 	</properties>
 	<developers>
