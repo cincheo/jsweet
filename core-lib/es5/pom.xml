@@ -6,7 +6,7 @@
 	<artifactId>jsweet-core</artifactId>
 	<name>JSweet Core Lib</name>
 	<description>JavaScript API for JSweet</description>
-	<version>5.0.0</version>
+	<version>5.3.0</version>
 	<properties>
 		<timestamp>${maven.build.timestamp}</timestamp>
 		<maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>

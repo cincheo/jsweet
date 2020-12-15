@@ -86,6 +86,8 @@ public class JavaCompilationComponents implements AutoCloseable {
 		}
 
 		compilerOptions.put("-Xlint:path");
+		// always generate target of 1.8 to ensure candies backward compatibility
+		// compilerOptions.put("-target", "1.8");
 
 		Charset charset = null;
 		if (encoding != null) {

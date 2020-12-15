@@ -267,7 +267,7 @@
 		<dependency>
 			<groupId>org.jsweet</groupId>
 			<artifactId>jsweet-core</artifactId>
-			<version>6.0.0</version>
+			<version>6.3.0</version>
 			<scope>compile</scope>
 			<optional>true</optional>
 		</dependency>
