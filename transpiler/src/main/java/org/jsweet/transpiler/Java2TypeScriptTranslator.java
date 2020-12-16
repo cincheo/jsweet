@@ -3972,7 +3972,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                         if (CONSTRUCTOR_TYPE_MAPPING.containsKey(name)) {
                             print(mapConstructorType(name));
                         } else {
-                        	print("<any>");
                             print(memberSelectTree.getExpression());
                         }
                     }
