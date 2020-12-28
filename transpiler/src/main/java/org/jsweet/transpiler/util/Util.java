@@ -1728,7 +1728,7 @@ public class Util {
     /**
      * Tells if the given expression is a constant.
      */
-    public boolean isConstant(ExpressionTree expr, CompilationUnitTree compilationUnit) {
+    public boolean isConstant(ExpressionTree expr) {
         boolean constant = false;
         if (expr instanceof LiteralTree) {
             constant = true;
@@ -2198,30 +2198,6 @@ public class Util {
     }
 
     /**
-     * Returns an Element corresponding to given tree (for given compilationUnit).
-     * Will return null if no element matches tree.
-     * 
-     * For instance:
-     * <ul>
-     * <li>getElementForTree(VariableTree, ...) would likely return a
-     * VariableElement.
-     * <li>getElementForTree(NewClassTree, ...) would, on the other hand, return a
-     * TypeElement.
-     * </ul>
-     */
-//    public <T extends Element> T getElementForTree(Tree tree, CompilationUnitTree compilationUnit) {
-//        if (tree == null) {
-//            return null;
-//        }
-//        return (T)Util.getElement(tree);
-////        TreePath treePath = trees().getPath(compilationUnit, tree);
-////        if (treePath == null) {
-////            return getElementFromLegacySymbolField(tree);
-////        }
-////        return getElementForTreePath(treePath);
-//    }
-
-    /**
      * Returns the element corresponding to given treePath or null if treePath is
      * null or matches no element
      */
@@ -2252,83 +2228,6 @@ public class Util {
     public <T extends TypeMirror> T getElementTypeForTreePath(TreePath treePath) {
         Element element = getElementForTreePath(treePath);
         return element == null ? null : (T) element.asType();
-    }
-
-    /**
-     * If this tree has a type (getTypeForTree(tree, compilationUnit) doesn't return
-     * null), returns the corresponding TypeElement, if any, otherwise null.
-     * 
-     * Can return TypeElement or TypeParameterElement
-     */
-//    public <T extends Element> T getTypeElementForTree(Tree tree, CompilationUnitTree compilationUnit) {
-//        TreePath treePath = TreePath.getPath(compilationUnit, tree);
-//        if (treePath == null) {
-//            TypeMirror treeType = getTypeFromLegacyTypeField(tree);
-//            if (treeType != null) {
-//                return getTypeElementFromType(treeType);
-//            }
-//        }
-//
-//        return getTypeElementForTreePath(treePath);
-//    }
-
-    /**
-     * @see #getTypeElementForTreePath(TreePath)
-     */
-//    public <T extends Element> T getTypeElementForTreePath(TreePath treePath) {
-//        TypeMirror treeType = getTypeForTreePath(treePath);
-//        return getTypeElementFromType(treeType);
-//    }
-
-    @SuppressWarnings("unchecked")
-    private <T extends Element> T getTypeElementFromType(TypeMirror treeType) {
-        if (treeType != null && treeType.getKind() == TypeKind.PACKAGE) {
-            return (T) getPackageByName(treeType.toString());
-        }
-
-        if (treeType == null) {
-            return null;
-        }
-
-        if (treeType.getKind() == TypeKind.ARRAY) {
-            return (T) getTypeElementFromLegacyTypeSymbolField(treeType);
-        }
-
-        return (T) types().asElement(treeType);
-    }
-
-    /**
-     * Returns type associated with given tree
-     * 
-     * @see #getTypeForTreePath(TreePath)
-     */
-//    public <T extends TypeMirror> T getTypeForTree(Tree tree, CompilationUnitTree compilationUnit) {
-//        if (tree == null) {
-//            return null;
-//        }
-//
-//        TreePath treePath = trees().getPath(compilationUnit, tree);
-//        if (treePath == null) {
-//            return getTypeFromLegacyTypeField(tree);
-//        }
-//
-//        return getTypeForTreePath(treePath);
-//    }
-
-    /**
-     * @see #getTypeForTreePath(TreePath)
-     */
-    public <T extends TypeMirror> T getTypeForTree(Tree tree, TreePath parentTreePath) {
-        if (tree == null || parentTreePath == null) {
-            return null;
-        }
-
-        TreePath treePath = TreePath.getPath(parentTreePath, tree);
-        if (treePath == null) {
-            return getTypeFromLegacyTypeField(tree);
-        }
-
-        return getTypeForTreePath(treePath);
     }
 
     /**
@@ -2514,54 +2413,6 @@ public class Util {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private <T extends Element> T getElementFromLegacySymbolField(Tree tree) {
-        if (tree == null) {
-            return null;
-        }
-
-        Field symbolField = javacInternals().getSymbolField(tree);
-        if (symbolField == null) {
-            return null;
-        }
-
-        try {
-            return (T) symbolField.get(tree);
-        } catch (IllegalArgumentException | IllegalAccessException e) {
-            return null;
-        }
-    }
-
-    private TypeElement getTypeElementFromLegacyTypeSymbolField(TypeMirror type) {
-        if (type == null) {
-            return null;
-        }
-
-        Field typeSymbolField = javacInternals().getTypeSymbolField(type);
-        if (typeSymbolField == null) {
-            return null;
-        }
-
-        try {
-            return (TypeElement) typeSymbolField.get(type);
-        } catch (IllegalArgumentException | IllegalAccessException e) {
-            return null;
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private <T extends TypeMirror> T getTypeFromLegacyTypeField(Tree tree) {
-        if (tree == null) {
-            return null;
-        }
-
-        try {
-            return (T) javacInternals().treeTypeField.get(tree);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
     /**
      * should not be used, backward compatibility purpose only
      */
@@ -2635,36 +2486,6 @@ public class Util {
             }
         }
 
-        Field getSymbolField(Tree tree) {
-            Class<? extends Tree> treeClass = tree.getClass();
-            if (!treeClassToSymbolField.containsKey(treeClass)) {
-                Field field;
-                try {
-                    field = treeClass.getField("sym");
-                } catch (NoSuchFieldException | SecurityException e) {
-                    field = null;
-                }
-                treeClassToSymbolField.put(treeClass, field);
-            }
-
-            return treeClassToSymbolField.get(treeClass);
-        }
-
-        Field getTypeSymbolField(TypeMirror type) {
-            Class<? extends TypeMirror> typeClass = type.getClass();
-            if (!treeClassToTypeSymbolField.containsKey(typeClass)) {
-                Field field;
-                try {
-                    field = typeClass.getField("tsym");
-                } catch (NoSuchFieldException | SecurityException e) {
-                    field = null;
-                }
-                treeClassToSymbolField.put(typeClass, field);
-            }
-
-            return treeClassToSymbolField.get(typeClass);
-        }
-
         static JavacInternals instance(Types types) {
             if (instance == null) {
                 instance = new JavacInternals(types);
@@ -2702,7 +2523,25 @@ public class Util {
 		}
 	}
 
-    
+    static private JavaFileObject getSourceFileObjectFromElement(TypeElement element) {
+        try {
+            if (element == null) {
+                return null;
+            }
+            Field internalSourceFileField = element.getClass().getDeclaredField("sourcefile");
+            return (JavaFileObject) internalSourceFileField.get(element);
+        } catch (Exception e) {
+            throw new RuntimeException("Cannot call internal Javac API :( please adapt this code if API changed",
+                    e);
+        }
+    }
+
+	
+    /**
+     * Returns type associated with given tree
+     * 
+     * @see #getTypeForTreePath(TreePath)
+     */
     public static <T extends TypeMirror> T getType(Tree tree) {
     	try {
 			return (T) typeField.get(tree);
@@ -2719,11 +2558,29 @@ public class Util {
 		}
     }
 
+    /**
+     * If this tree has a type (getType(tree) doesn't return
+     * null), returns the corresponding TypeElement, if any, otherwise null.
+     * 
+     * Can return TypeElement or TypeParameterElement
+     */
     public static <E extends Element> E getTypeElement(Tree tree) {
     	TypeMirror type = getType(tree);
     	return type == null ? null : getElement(type);
     }
     
+    /**
+     * Returns an Element corresponding to given tree (for given compilationUnit).
+     * May return an error if the tree has no corresponding element possible.
+     * 
+     * For instance:
+     * <ul>
+     * <li>getElementForTree(VariableTree, ...) would likely return a
+     * VariableElement.
+     * <li>getElementForTree(NewClassTree, ...) would, on the other hand, return a
+     * TypeElement.
+     * </ul>
+     */
     public static <T extends Element> T getElement(Tree tree) {
     	if (tree == null) {
     		return null;
@@ -2747,6 +2604,18 @@ public class Util {
 		}
     }
 
+    /**
+     * Returns an Element corresponding to given tree (for given compilationUnit).
+     * Will return null if no element matches tree.
+     * 
+     * For instance:
+     * <ul>
+     * <li>getElementForTree(VariableTree, ...) would likely return a
+     * VariableElement.
+     * <li>getElementForTree(NewClassTree, ...) would, on the other hand, return a
+     * TypeElement.
+     * </ul>
+     */
     public static <T extends Element> T getElementNoErrors(Tree tree) {
     	if (tree == null) {
     		return null;

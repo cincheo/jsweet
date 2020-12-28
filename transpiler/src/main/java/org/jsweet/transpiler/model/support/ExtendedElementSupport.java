@@ -89,8 +89,7 @@ public class ExtendedElementSupport<T extends Tree> implements ExtendedElement {
 			return false;
 		}
 		return JSweetContext.current.get().util.isConstant(
-				(ExpressionTree) getTree(), 
-				JSweetContext.currentCompilationUnit.get());
+				(ExpressionTree) getTree());
 	}
 
 	@Override
@@ -100,14 +99,6 @@ public class ExtendedElementSupport<T extends Tree> implements ExtendedElement {
 
 	protected ExtendedElement createElement(Tree tree) {
 		return ExtendedElementFactory.INSTANCE.create(tree);
-//		TreePath treePath = TreePath.getPath(this.treePath, tree);
-//		if (treePath == null) {
-//			treePath = TreePath.getPath(compilationUnit, tree);
-//		}
-//		if (treePath == null) {
-//			return null;
-//		}
-//		return ExtendedElementFactory.INSTANCE.create(treePath, context);
 	}
 
 	@Override
