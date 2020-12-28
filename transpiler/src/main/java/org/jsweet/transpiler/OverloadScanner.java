@@ -237,9 +237,9 @@ public class OverloadScanner extends AbstractTreeScanner {
 					for (int j = 0; j < m1.getParameters().size(); j++) {
 
 						TypeMirror m1ParamType = types
-								.erasure(util.getTypeForTree(m1.getParameters().get(j), m1Entry.methodCompilationUnit));
+								.erasure(Util.getType(m1.getParameters().get(j)));
 						TypeMirror m2ParamType = types
-								.erasure(util.getTypeForTree(m2.getParameters().get(j), m2Entry.methodCompilationUnit));
+								.erasure(Util.getType(m2.getParameters().get(j)));
 						if (types.isAssignable(m1ParamType, m2ParamType)) {
 							i--;
 						}
@@ -405,12 +405,10 @@ public class OverloadScanner extends AbstractTreeScanner {
 						if (subOverloadMethod.getParameters().size() == overloadMethod.getParameters().size()) {
 							overriden = true;
 							for (int i = 0; i < subOverloadMethod.getParameters().size(); i++) {
-								TypeMirror overloadParamType = util.getTypeForTree(
-										overloadMethod.getParameters().get(i),
-										overloadMethodEntry.methodCompilationUnit);
-								TypeMirror subOverloadParamType = util.getTypeForTree(
-										subOverloadMethod.getParameters().get(i),
-										subOverloadMethodEntry.methodCompilationUnit);
+								TypeMirror overloadParamType = Util.getType(
+										overloadMethod.getParameters().get(i));
+								TypeMirror subOverloadParamType = Util.getType(
+										subOverloadMethod.getParameters().get(i));
 
 								if (!types.isAssignable(overloadParamType, subOverloadParamType)) {
 									overriden = false;
@@ -433,10 +431,9 @@ public class OverloadScanner extends AbstractTreeScanner {
 					if (subOverloadMethod.getParameters().size() == overloadMethod.getParameters().size()) {
 						overrides = true;
 						for (int i = 0; i < subOverloadMethod.getParameters().size(); i++) {
-							TypeMirror overloadParamType = util.getTypeForTree(overloadMethod.getParameters().get(i),
-									overloadEntry.methodCompilationUnit);
-							TypeMirror subOverloadParamType = util.getTypeForTree(
-									subOverloadMethod.getParameters().get(i), subOverloadEntry.methodCompilationUnit);
+							TypeMirror overloadParamType = Util.getType(overloadMethod.getParameters().get(i));
+							TypeMirror subOverloadParamType = Util.getType(
+									subOverloadMethod.getParameters().get(i));
 							if (!types.isAssignable(overloadParamType, subOverloadParamType)) {
 								overrides = false;
 							}
@@ -473,8 +470,8 @@ public class OverloadScanner extends AbstractTreeScanner {
 				ClassTree owningClassTree, //
 				MethodTree methodTree) {
 
-			Element classElement = util.getElementForTree(classTree, classCompilationUnit);
-			ExecutableElement methodElement = util.getElementForTree(methodTree, methodCompilationUnit);
+			Element classElement = Util.getElement(classTree);
+			ExecutableElement methodElement = Util.getElement(methodTree);
 			safeAdd(new OverloadMethodEntry(classCompilationUnit, //
 					classTree, //
 					classElement, //
@@ -512,7 +509,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 
 	@Override
 	public Void visitClass(ClassTree classTree, Trees trees) {
-		TypeElement classElement = toElement(classTree);
+		TypeElement classElement = Util.getElement(classTree);
 		if (classElement.getQualifiedName().toString().startsWith(JSweetConfig.LIBS_PACKAGE + ".") || context
 				.hasAnnotationType(classElement, JSweetConfig.ANNOTATION_ERASED, JSweetConfig.ANNOTATION_AMBIENT)) {
 			return null;
@@ -541,11 +538,11 @@ public class OverloadScanner extends AbstractTreeScanner {
 			CompilationUnitTree methodCompilationUnit, //
 			ClassTree owningClassTree, //
 			MethodTree methodTree) {
-		ExecutableElement methodElement = util().getElementForTree(methodTree, methodCompilationUnit);
+		ExecutableElement methodElement = Util.getElement(methodTree);
 		if (context.hasAnnotationType(methodElement, JSweetConfig.ANNOTATION_ERASED, JSweetConfig.ANNOTATION_AMBIENT)) {
 			return;
 		}
-		TypeElement classElement = util().getElementForTree(currentClassTree, currentClassCompilationUnit);
+		TypeElement classElement = Util.getElement(currentClassTree);
 		Overload overload = context.getOrCreateOverload(classElement, methodElement);
 		if (pass == 1) {
 			overload.register(currentClassCompilationUnit, currentClassTree, methodCompilationUnit, owningClassTree,

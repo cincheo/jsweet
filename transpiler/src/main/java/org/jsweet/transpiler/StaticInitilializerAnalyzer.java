@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
@@ -35,6 +34,7 @@ import org.apache.log4j.Logger;
 import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.util.DirectedGraph;
 import org.jsweet.transpiler.util.ReferenceGrabber;
+import org.jsweet.transpiler.util.Util;
 
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
@@ -140,17 +140,17 @@ public class StaticInitilializerAnalyzer extends TreePathScanner<Void, Trees> {
 
 	private TypeMirror getImportedType(CompilationUnitTree compilationUnit, ImportTree importTree) {
 		Tree importedIdentifier = importTree.getQualifiedIdentifier();
-		TypeMirror importedType = context.util.getTypeForTree(importedIdentifier, compilationUnit);
+		TypeMirror importedType = Util.getType(importedIdentifier);
 		return importedType;
 	}
 
 	@Override
 	public Void visitClass(ClassTree classTree, Trees trees) {
 		if (pass == 1) {
-			typesToCompilationUnits.put((TypeElement) toElement(classTree), currentCompilationUnit);
+			typesToCompilationUnits.put((TypeElement) Util.getElement(classTree), currentCompilationUnit);
 		} else {
 			if (classTree.getExtendsClause() != null) {
-				CompilationUnitTree target = typesToCompilationUnits.get(toElement(classTree.getExtendsClause()));
+				CompilationUnitTree target = typesToCompilationUnits.get(Util.getTypeElement(classTree.getExtendsClause()));
 				if (target != null && getGraph().contains(target)) {
 					logger.debug("adding inheritance dependency: " + currentCompilationUnit.getSourceFile() + " -> "
 							+ target.getSourceFile());
@@ -162,7 +162,7 @@ public class StaticInitilializerAnalyzer extends TreePathScanner<Void, Trees> {
 				if (member instanceof VariableTree) {
 					VariableTree field = (VariableTree) member;
 					if (field.getModifiers().getFlags().contains(Modifier.STATIC) && field.getInitializer() != null
-							&& !context.hasAnnotationType(toElement(field), JSweetConfig.ANNOTATION_STRING_TYPE,
+							&& !context.hasAnnotationType(Util.getElement(field), JSweetConfig.ANNOTATION_STRING_TYPE,
 									JSweetConfig.ANNOTATION_ERASED)) {
 						acceptReferences(field.getInitializer());
 					}
@@ -178,13 +178,13 @@ public class StaticInitilializerAnalyzer extends TreePathScanner<Void, Trees> {
 	}
 
 	private void acceptReferences(Tree tree) {
-		ReferenceGrabber refGrabber = new ReferenceGrabber(context, currentCompilationUnit);
+		ReferenceGrabber refGrabber = new ReferenceGrabber();
 		refGrabber.scan(tree, context.trees);
 		for (TypeMirror referencedType : refGrabber.referencedTypes) {
 			TypeElement referencedTypeElement = (TypeElement) context.types.asElement(referencedType);
 			PackageElement referencedPackageElement = context.util.getParentElement(referencedTypeElement,
 					PackageElement.class);
-			PackageElement currentPackageElement = (PackageElement) toElement(currentCompilationUnit.getPackage());
+			PackageElement currentPackageElement = (PackageElement) Util.getElement(currentCompilationUnit.getPackage());
 
 			if (!context.useModules || (Objects.equals(currentPackageElement, referencedPackageElement))) {
 				CompilationUnitTree target = typesToCompilationUnits.get(referencedTypeElement);
@@ -204,10 +204,6 @@ public class StaticInitilializerAnalyzer extends TreePathScanner<Void, Trees> {
 		scan(compilationUnits, context.trees);
 		pass++;
 		scan(compilationUnits, context.trees);
-	}
-
-	private Element toElement(Tree tree) {
-		return context.util.getElementForTree(tree, currentCompilationUnit);
 	}
 
 }

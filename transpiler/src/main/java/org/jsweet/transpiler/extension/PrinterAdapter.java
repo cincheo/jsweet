@@ -190,8 +190,8 @@ public class PrinterAdapter {
     /**
      * Gets the functional type mappings.
      */
-    protected final List<BiFunction<ExtendedElement, String, Object>> getTypeTreeMappings() {
-        return context.getTypeTreeMappings();
+    protected final List<BiFunction<ExtendedElement, String, Object>> getFunctionalTypeMappings() {
+        return context.getFunctionalTypeMappings();
     }
 
     /**
@@ -202,8 +202,8 @@ public class PrinterAdapter {
      *                        and returns a substitution (either under the form of a
      *                        string, or of a string, or of another type tree).
      */
-    public void addTypeTreeMapping(BiFunction<ExtendedElement, String, Object> mappingFunction) {
-        context.addTypeTreeMapping(mappingFunction);
+    public void addTypeMapping(BiFunction<ExtendedElement, String, Object> mappingFunction) {
+        context.addTypeMapping(mappingFunction);
     }
 
     /**
@@ -221,8 +221,8 @@ public class PrinterAdapter {
     /**
      * Returns the functional type mappings.
      */
-    protected final List<Function<TypeMirror, String>> getTypeMappings() {
-        return context.getTypeMappings();
+    protected final List<Function<TypeMirror, String>> getTypeMirrorMappings() {
+        return context.getFunctionalTypeMirrorMappings();
     }
 
     /**
@@ -1223,8 +1223,7 @@ public class PrinterAdapter {
      * Returns the current compilation unit element.
      */
     public CompilationUnitElement getCompilationUnit() {
-        return new CompilationUnitElementSupport(printer.getTreePath(getCompilationUnitTree()),
-                getCompilationUnitTree(), toElement(getCompilationUnitTree()), context);
+        return new CompilationUnitElementSupport(getCompilationUnitTree());
     }
 
     protected final CompilationUnitTree getCompilationUnitTree() {
@@ -1232,15 +1231,15 @@ public class PrinterAdapter {
     }
 
     protected final PackageElement getPackageElement() {
-        return toElement(getCompilationUnitTree().getPackage());
+        return Util.getElement(getCompilationUnitTree().getPackage());
     }
 
-    protected final <T extends Element> T toElement(Tree tree) {
-        return util().getElementForTree(tree, getCompilationUnitTree());
-    }
-
-    @SuppressWarnings("unchecked")
-    protected final <T extends TypeMirror> T toType(Tree tree) {
-        return (T) util().getTypeForTree(tree, getCompilationUnitTree());
-    }
+//    protected final <T extends Element> T toElement(Tree tree) {
+//        return Util.getElement(tree);
+//    }
+//
+//    @SuppressWarnings("unchecked")
+//    protected final <T extends TypeMirror> T toType(Tree tree) {
+//        return (T) util().getTypeForTree(tree, getCompilationUnitTree());
+//    }
 }

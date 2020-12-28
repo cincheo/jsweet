@@ -84,6 +84,7 @@ import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.MethodInvocationElement;
 import org.jsweet.transpiler.util.AbstractTreePrinter;
 import org.jsweet.transpiler.util.JSDoc;
+import org.jsweet.transpiler.util.Util;
 
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
@@ -360,13 +361,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
         }
 
         public ExecutableElement getMainMethodElement() {
-            return context.util.getElementForTree(mainMethod, compilationUnit);
+            return Util.getElement(mainMethod);
         }
 
         public List<DeclaredType> getLocalClassesTypes() {
             return getLocalClasses().stream() //
-                    .map((ClassTree localClassTree) -> (DeclaredType) context.util.getTypeForTree(localClassTree,
-                            compilationUnit))
+                    .map((ClassTree localClassTree) -> (DeclaredType) context.util.getType(localClassTree))
                     .collect(toList());
         }
 
@@ -599,7 +599,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             String targetName, String moduleName, Element sourceElement) {
         if (context.useModules) {
             context.packageDependencies.add((PackageElement) targetPackage);
-            PackageElement packageElement = toElement(compilationUnit.getPackage());
+            PackageElement packageElement = Util.getElement(compilationUnit.getPackage());
             context.packageDependencies.add(packageElement);
             context.packageDependencies.addEdge(packageElement, (PackageElement) targetPackage);
         }
@@ -721,7 +721,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
     @Override
     public Void visitCompilationUnit(final CompilationUnitTree compilationUnit, final Trees trees) {
 
-        PackageElement packageElement = toElement(compilationUnit.getPackage());
+        PackageElement packageElement = Util.getElement(compilationUnit.getPackage());
         if (context.isPackageErased(packageElement)) {
             return returnNothing();
         }
@@ -807,8 +807,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
             @Override
             public Void visitIdentifier(final IdentifierTree identifier, final Trees trees) {
-                PackageElement compilationUnitPackageElement = toElement(compilationUnit.getPackage());
-                Element identifierElement = toElement(identifier);
+                PackageElement compilationUnitPackageElement = Util.getElement(compilationUnit.getPackage());
+                Element identifierElement = Util.getElement(identifier);
                 if (identifierElement instanceof PackageElement) {
                     // ignore packages in imports
                     if (getParent(ImportTree.class) != null) {
@@ -821,7 +821,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                             break;
                         } else {
                             MemberSelectTree selectTree = (MemberSelectTree) tree;
-                            Element selectElement = toElement(selectTree);
+                            Element selectElement = Util.getElement(selectTree);
                             if ((selectElement instanceof TypeElement) && util().isSourceElement(selectElement)) {
                                 isSourceType = true;
                                 break;
@@ -867,13 +867,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
             @Override
             public Void visitMethodInvocation(final MethodInvocationTree invocation, final Trees trees) {
-                PackageElement compilationUnitPackageElement = toElement(compilationUnit.getPackage());
+                PackageElement compilationUnitPackageElement = Util.getElement(compilationUnit.getPackage());
 
                 // TODO: same for static variables
                 if (invocation.getMethodSelect() instanceof IdentifierTree && JSweetConfig.TS_STRICT_MODE_KEYWORDS
                         .contains(invocation.getMethodSelect().toString().toLowerCase())) {
 
-                    Element invokedMethodElement = toElement((IdentifierTree) invocation.getMethodSelect());
+                    Element invokedMethodElement = Util.getElement((IdentifierTree) invocation.getMethodSelect());
                     PackageElement invocationPackage = util().getParentElement(invokedMethodElement,
                             PackageElement.class);
                     String rootRelativeInvocationPackageName = getRootRelativeName(invocationPackage);
@@ -956,7 +956,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                 public Void scan(Tree tree, Trees trees) {
                     if (tree instanceof MemberSelectTree) {
                         MemberSelectTree qualified = (MemberSelectTree) tree;
-                        Element memberSelectElement = toElement(tree);
+                        Element memberSelectElement = Util.getElement(tree);
                         if (memberSelectElement != null) {
                             // regular import case (qualified.sym is a package)
                             if (context.hasAnnotationType(memberSelectElement, JSweetConfig.ANNOTATION_MODULE)) {
@@ -969,7 +969,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                             // static import case (imported fields and methods)
                             if (qualified.getExpression() instanceof MemberSelectTree) {
                                 MemberSelectTree qualifier = (MemberSelectTree) qualified.getExpression();
-                                Element subMemberSelectElement = toElement(qualifier);
+                                Element subMemberSelectElement = Util.getElement(qualifier);
                                 if (subMemberSelectElement != null) {
                                     try {
                                         for (Element importedMember : subMemberSelectElement.getEnclosedElements()) {
@@ -1004,7 +1004,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     if (importTree.isStatic() && (qualified.getExpression() instanceof MemberSelectTree)) {
                         qualified = (MemberSelectTree) qualified.getExpression();
                     }
-                    Element qualifiedElement = toElement(qualified);
+                    Element qualifiedElement = Util.getElement(qualified);
                     if (qualifiedElement instanceof TypeElement) {
                         boolean globals = JSweetConfig.GLOBALS_CLASS_NAME
                                 .equals(qualifiedElement.getSimpleName().toString());
@@ -1029,7 +1029,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
     }
 
     private String createImportAliasFromFieldAccess(MemberSelectTree access) {
-        String name = extractNameFromAnnotatedSymbol(toElement(access));
+        String name = extractNameFromAnnotatedSymbol(Util.getElement(access));
         if (name != null) {
             return name;
         } else {
@@ -1060,8 +1060,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
     private void printDocComment(Tree tree, boolean newline) {
         if (compilationUnit != null) {
-            TreePath treePath = getTreePath(tree);
-            Element element = toElement(tree);
+            TreePath treePath = TreePath.getPath(compilationUnit, tree);
+            Element element = Util.getElement(tree);
             if (treePath == null && element != null) {
                 treePath = trees().getPath(element);
             }
@@ -1099,7 +1099,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                 boolean printed = false;
                 print("<");
                 for (Tree typeArg : tapply.getTypeArguments()) {
-                    TypeMirror typeArgType = toType(typeArg);
+                    TypeMirror typeArgType = Util.getType(typeArg);
                     if (typeArgType instanceof TypeVariable) {
                         printed = true;
                         print(typeArg).print(", ");
@@ -1170,8 +1170,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             return this;
         }
 
-        Element typeElement = toTypeElement(typeTree);
-        TypeMirror typeType = toType(typeTree);
+        Element typeElement = Util.getTypeElement(typeTree);
+        TypeMirror typeType = Util.getType(typeTree);
         if (typeElement instanceof TypeParameterElement) {
             if (getAdapter().typeVariablesToErase.contains(typeElement)) {
                 return print("any");
@@ -1200,7 +1200,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             }
             if (typeTree instanceof ParameterizedTypeTree) {
                 ParameterizedTypeTree typeApply = ((ParameterizedTypeTree) typeTree);
-                TypeElement parametrizedTypeElement = toElement(typeApply.getType());
+                TypeElement parametrizedTypeElement = Util.getTypeElement(typeApply.getType());
                 String typeName = parametrizedTypeElement.getSimpleName().toString();
                 String mappedTypeName = context.getTypeMappingTarget(typeName);
                 if (mappedTypeName != null && mappedTypeName.endsWith("<>")) {
@@ -1345,7 +1345,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     return this;
                 }
             }
-            for (BiFunction<ExtendedElement, String, Object> mapping : context.getTypeTreeMappings()) {
+            for (BiFunction<ExtendedElement, String, Object> mapping : context.getFunctionalTypeMappings()) {
                 Object mapped = mapping.apply(createExtendedElement(typeTree), typeFullName);
                 if (mapped instanceof String) {
                     print((String) mapped);
@@ -1358,7 +1358,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     return this;
                 }
             }
-            for (Function<TypeMirror, String> mapping : context.getTypeMappings()) {
+            for (Function<TypeMirror, String> mapping : context.getFunctionalTypeMirrorMappings()) {
                 String mapped = mapping.apply(typeType);
                 if (mapped != null) {
                     print(mapped);
@@ -1436,7 +1436,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
     @Override
     public Void visitClass(final ClassTree classTree, final Trees trees) {
-        TypeElement classTypeElement = toElement(classTree);
+        TypeElement classTypeElement = Util.getElement(classTree);
         if (getAdapter().substituteType(classTypeElement)) {
             getAdapter().afterType(classTypeElement);
             return null;
@@ -1477,7 +1477,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                 getScope().innerClassNotStatic = true;
                 if (parent.getTypeParameters() != null) {
                     parentTypeVars.addAll(parent.getTypeParameters().stream()
-                            .map(t -> (TypeParameterElement) toElement(t)).collect(Collectors.toList()));
+                            .map(t -> (TypeParameterElement) Util.getTypeElement(t)).collect(Collectors.toList()));
                     getAdapter().typeVariablesToErase.addAll(parentTypeVars);
                 }
             }
@@ -1536,7 +1536,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
         if (!globals) {
             if (classTree.getExtendsClause() != null && JSweetConfig.GLOBALS_CLASS_NAME
-                    .equals(toElement(classTree.getExtendsClause()).getSimpleName().toString())) {
+                    .equals(Util.getTypeElement(classTree.getExtendsClause()).getSimpleName().toString())) {
                 report(classTree, JSweetProblem.GLOBALS_CLASS_CANNOT_BE_SUBCLASSED);
                 return returnNothing();
             }
@@ -1628,7 +1628,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             // print EXTENDS
             boolean extendsInterface = false;
             if (classTree.getExtendsClause() != null) {
-                TypeElement superTypeElement = toElement(classTree.getExtendsClause());
+                TypeElement superTypeElement = Util.getTypeElement(classTree.getExtendsClause());
                 TypeMirror superType = superTypeElement.asType();
 
                 boolean removeIterable = false;
@@ -1675,7 +1675,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
                     if (context.hasAnnotationType(classTypeElement, JSweetConfig.ANNOTATION_SYNTACTIC_ITERABLE)) {
                         for (Tree implementsTree : classTree.getImplementsClause()) {
-                            TypeElement implementsElement = toElement(implementsTree);
+                            TypeElement implementsElement = Util.getTypeElement(implementsTree);
                             if (implementsElement.getQualifiedName().toString().equals(Iterable.class.getName())) {
                                 implementing.remove(implementsTree);
                             }
@@ -1683,7 +1683,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     }
 
                     for (Tree implementsTree : classTree.getImplementsClause()) {
-                        TypeElement implementsElement = toElement(implementsTree);
+                        TypeElement implementsElement = Util.getTypeElement(implementsTree);
                         // erase Java interfaces
                         if (context.isFunctionalType(implementsElement) //
                                 || getAdapter().eraseSuperInterface(classTypeElement, implementsElement)) {
@@ -1702,7 +1702,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                             print(", ");
                         }
                         for (Tree implementsTree : implementing) {
-                            TypeMirror implementsType = toType(implementsTree);
+                            TypeMirror implementsType = Util.getType(implementsTree);
                             disableTypeSubstitution = !getAdapter().isSubstituteSuperTypes();
                             substituteAndPrintType(implementsTree);
                             disableTypeSubstitution = false;
@@ -1751,7 +1751,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             }
             if (def instanceof VariableTree) {
                 VariableTree var = (VariableTree) def;
-                VariableElement varElement = toElement(var);
+                VariableElement varElement = Util.getElement(var);
                 if (!varElement.getModifiers().contains(Modifier.STATIC) && var.getInitializer() != null) {
                     getScope().fieldsWithInitializers.add(var);
                 }
@@ -1827,7 +1827,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                             .println();
                 }
 
-                registerMethodTreeCompilationUnit(entry.methodTree, entry.compilationUnit);
                 printIndent().print(defaultMethod).println();
 
                 getAdapter().typeVariablesToErase
@@ -1839,7 +1838,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
             if (getScope().interfaceScope) {
                 // static interface members are printed in a namespace
-                Element memberElement = toElement(def);
+                Element memberElement = Util.getElementNoErrors(def);
                 if (memberElement != null && (def instanceof MethodTree || def instanceof VariableTree)
                         && memberElement.getModifiers().contains(Modifier.STATIC)) {
                     continue;
@@ -1848,7 +1847,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             if (getScope().interfaceScope && def instanceof MethodTree) {
                 // object method should not be defined otherwise they will have
                 // to be implemented
-                if (util().isOverridingBuiltInJavaObjectMethod(toElement(def))) {
+                if (util().isOverridingBuiltInJavaObjectMethod(Util.getElement(def))) {
                     continue;
                 }
             }
@@ -1857,7 +1856,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                 continue;
             }
             if (def instanceof VariableTree) {
-                if (getScope().enumScope && toElement(def).getKind() != ElementKind.ENUM_CONSTANT) {
+                if (getScope().enumScope && Util.getElement(def).getKind() != ElementKind.ENUM_CONSTANT) {
                     getScope().isComplexEnum = true;
                     continue;
                 }
@@ -1994,7 +1993,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
                 print(") {").startIndent().println();
                 if (classTree.getExtendsClause() != null && !getScope().removedSuperclass) {
-                    TypeElement superTypeElement = toElement(classTree.getExtendsClause());
+                    TypeElement superTypeElement = Util.getTypeElement(classTree.getExtendsClause());
                     if (!context.isInterface(superTypeElement)) {
                         printIndent().print("super(");
                         boolean hasArg = false;
@@ -2088,7 +2087,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
         if (getScope().interfaceScope) {
             // print static members of interfaces
             for (Tree def : classTree.getMembers()) {
-                Element memberElement = toElement(def);
+                Element memberElement = Util.getElementNoErrors(def);
                 if ((def instanceof MethodTree || def instanceof VariableTree)
                         && memberElement.getModifiers().contains(Modifier.STATIC)) {
 
@@ -2186,7 +2185,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     "[" + getStringLiteralQuote() + ENUM_WRAPPER_CLASS_WRAPPERS + getStringLiteralQuote() + "] = {");
             int index = 0;
             for (Tree tree : classTree.getMembers()) {
-                Element memberElement = toElement(tree);
+                Element memberElement = Util.getElementNoErrors(tree);
 
                 if (tree instanceof VariableTree && memberElement.getKind() == ElementKind.ENUM_CONSTANT) {
                     VariableTree varDecl = (VariableTree) tree;
@@ -2271,7 +2270,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
     }
 
     private String getTSMethodName(MethodTree methodDecl) {
-        ExecutableElement methodElement = toElement(methodDecl);
+        ExecutableElement methodElement = Util.getElement(methodDecl);
         String name = context.getActualName(methodElement);
         switch (name) {
         case CONSTRUCTOR_METHOD_NAME:
@@ -2300,21 +2299,21 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
     private boolean printCoreMethodDelegate = false;
 
     protected boolean isDebugMode(MethodTree methodDecl) {
-        ExecutableElement methodElement = toElement(methodDecl);
+        ExecutableElement methodElement = Util.getElement(methodDecl);
         return methodDecl != null && !getScope().constructor && context.options.isDebugMode()
                 && !(context.hasAnnotationType(methodElement, JSweetConfig.ANNOTATION_NO_DEBUG) || context
                         .hasAnnotationType(methodElement.getEnclosingElement(), JSweetConfig.ANNOTATION_NO_DEBUG));
     }
 
     private boolean isInterfaceMethod(ClassTree parent, MethodTree method) {
-        ExecutableElement methodElement = toElement(method);
-        TypeElement parentElement = toElement(parent);
+        ExecutableElement methodElement = Util.getElement(method);
+        TypeElement parentElement = Util.getElement(parent);
         return context.isInterface(parentElement) && !methodElement.getModifiers().contains(Modifier.STATIC);
     }
 
     @Override
     public Void visitMethod(final MethodTree methodTree, final Trees trees) {
-        ExecutableElement methodElement = toElement(methodTree);
+        ExecutableElement methodElement = Util.getElement(methodTree);
 
         if (getAdapter().substituteExecutable(methodElement)) {
             return returnNothing();
@@ -2326,7 +2325,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
         }
 
         final ClassTree parent = (ClassTree) getParent();
-        TypeElement parentElement = toElement(parent);
+        TypeElement parentElement = Util.getElement(parent);
 
         if (!getScope().enumWrapperClassScope //
                 && parent != null //
@@ -2360,10 +2359,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
         // } cannot be overriden with { scale(number) } only)
         if (getScope().isDeclareClassScope() && parent.getExtendsClause() != null && !getScope().constructor) {
 
-            TypeElement superTypeElement = toTypeElement(parent.getExtendsClause());
+            TypeElement superTypeElement = Util.getTypeElement(parent.getExtendsClause());
 
             ExecutableElement superMethod = util().findMethodDeclarationInType(superTypeElement,
-                    methodTree.getName().toString(), toType(methodTree));
+                    methodTree.getName().toString(), Util.getType(methodTree));
             if (superMethod != null && util().isSourceElement(superMethod)) {
                 return returnNothing();
             }
@@ -2465,7 +2464,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             }
             print("." + GENERATOR_PREFIX + getTSMethodName(methodTree) + "(");
             for (VariableTree param : methodTree.getParameters()) {
-                VariableElement paramElement = toElement(param);
+                VariableElement paramElement = Util.getElement(param);
                 print(context.getActualName(paramElement) + ", ");
             }
             if (!methodTree.getParameters().isEmpty()) {
@@ -2594,7 +2593,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                 report(methodTree, methodTree.getName(), JSweetProblem.WRONG_USE_OF_AMBIENT, methodTree.getName());
             }
         }
-        if (parent == null || !context.isFunctionalType(toElement(parent))) {
+        if (parent == null || !context.isFunctionalType(Util.getTypeElement(parent))) {
             if (isDebugMode(methodTree)) {
                 print("*").print(GENERATOR_PREFIX);
             }
@@ -2708,7 +2707,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                                 replacedBody = INDENT_MARKER.matcher(replacedBody).replaceAll(INDENT);
                                 replacedBody = METHOD_NAME_MARKER.matcher(replacedBody)
                                         .replaceAll(methodTree.getName().toString());
-                                TypeElement parentTypeElement = toElement(parent);
+                                TypeElement parentTypeElement = Util.getElement(parent);
                                 replacedBody = CLASS_NAME_MARKER.matcher(replacedBody)
                                         .replaceAll(parentTypeElement.getQualifiedName().toString());
                             }
@@ -2742,7 +2741,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
     }
 
     private void printCoreOverloadMethod(MethodTree methodDecl, ClassTree parent, Overload overload) {
-        if (getAdapter().substituteOverloadMethodBody(toElement(parent), overload)) {
+        if (getAdapter().substituteOverloadMethodBody(Util.getElement(parent), overload)) {
             return;
         }
 
@@ -2756,7 +2755,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     && !method.getModifiers().getFlags().contains(Modifier.STATIC)) {
                 continue;
             }
-            TypeElement parentElement = toElement(parent);
+            TypeElement parentElement = Util.getElement(parent);
             if (!util().isParent(parentElement, (TypeElement) methodElement.getEnclosingElement())) {
                 continue;
             }
@@ -2783,7 +2782,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                         print(" throw new Error('cannot invoke abstract overloaded method... check your argument(s) type(s)'); ");
                     } else {
                         String tsMethodAccess = getTSMemberAccess(getTSMethodName(methodDecl), true);
-                        if (!"void".equals(toType(method.getReturnType()).toString())) {
+                        if (!"void".equals(Util.getType(method.getReturnType()).toString())) {
                             print("return ");
                         }
 
@@ -2839,11 +2838,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
     }
 
     protected void printMethodReturnDeclaration(MethodTree methodTree, boolean inCoreWrongOverload) {
-        ExecutableElement methodElement = toElement(methodTree);
+        ExecutableElement methodElement = Util.getElement(methodTree);
 
         if (methodTree.getReturnType() != null) {
-            Element returnTypeElement = toElement(methodTree.getReturnType());
-            TypeMirror returnType = toType(methodTree.getReturnType());
+            Element returnTypeElement = Util.getTypeElement(methodTree.getReturnType());
+            TypeMirror returnType = Util.getType(methodTree.getReturnType());
             if (returnType.getKind() != TypeKind.VOID) {
 
                 print(": ");
@@ -2883,13 +2882,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
     }
 
     protected boolean isAsyncMethod(MethodTree methodTree) {
-        return context.hasAnnotationType(toElement(methodTree), JSweetConfig.ANNOTATION_ASYNC);
+        return context.hasAnnotationType(Util.getElement(methodTree), JSweetConfig.ANNOTATION_ASYNC);
     }
 
     protected void printMethodArgs(MethodTree methodTree, Overload overload, boolean inOverload,
             boolean inCoreWrongOverload, ClassScope scope) {
 
-        ExecutableElement methodElement = toElement(methodTree);
+        ExecutableElement methodElement = Util.getElement(methodTree);
         boolean isWrapped = false;
         if (this.context.hasAnnotationType(methodElement, JSweetConfig.ANNOTATION_WRAP_PARAMETERS)) {
             isWrapped = true;
@@ -2979,7 +2978,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
     }
 
     private boolean shouldPrintFieldInitializationInConstructor(VariableTree var) {
-        VariableElement varElement = toElement(var);
+        VariableElement varElement = Util.getElement(var);
         if (varElement.getModifiers().contains(Modifier.STATIC)) {
             return false;
         }
@@ -2989,7 +2988,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
     }
 
     protected void printVariableInitialization(ClassTree clazz, VariableTree var) {
-        VariableElement varElement = toElement(var);
+        VariableElement varElement = Util.getElement(var);
 
         String name = var.getName().toString();
         if (context.getFieldNameMapping(varElement) != null) {
@@ -3042,7 +3041,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
         if (method == null || method.getKind() == ElementKind.CONSTRUCTOR) {
             getScope().hasDeclaredConstructor = true;
 
-            TypeElement typeElement = toElement(clazz);
+            TypeElement typeElement = Util.getElement(clazz);
             // this workaround will not work on all browsers (see
             // https://github.com/Microsoft/TypeScript-wiki/blob/master/Breaking-Changes.md#extending-built-ins-like-error-array-and-map-may-no-longer-work)
             if (types().isAssignable(typeElement.asType(), util().getType(Throwable.class))) {
@@ -3056,7 +3055,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             for (Tree member : clazz.getMembers()) {
                 if (member instanceof VariableTree) {
                     VariableTree var = (VariableTree) member;
-                    VariableElement varElement = toElement(var);
+                    VariableElement varElement = Util.getElement(var);
                     if (!varElement.getModifiers().contains(Modifier.STATIC)
                             && !context.hasAnnotationType(varElement, JSweetConfig.ANNOTATION_ERASED)) {
                         printVariableInitialization(clazz, var);
@@ -3091,7 +3090,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     printIndent().print(VAR_DECL_KEYWORD + " ")
                             .print(avoidJSKeyword(method.getParameters().get(j).getName().toString())).print(": ")
                             .print("any")
-                            .print(util().isVarargs(method.getParameters().get(j), getCompilationUnit()) ? "[]" : "")
+                            .print(util().isVarargs(method.getParameters().get(j)) ? "[]" : "")
                             .print(" = ").print("__args[" + j + "]").print(";").println();
                 }
             } else {
@@ -3099,18 +3098,18 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     continue;
                 } else {
                     getScope().inlinedConstructorArgs = method.getParameters().stream()
-                            .map((VariableTree p) -> toElement(p).getSimpleName().toString())
+                            .map((VariableTree p) -> Util.getElement(p).getSimpleName().toString())
                             .collect(Collectors.toList());
                     printIndent().print(VAR_DECL_KEYWORD + " ")
                             .print(avoidJSKeyword(method.getParameters().get(j).getName().toString())).print(": ")
                             .print("any")
-                            .print(util().isVarargs(method.getParameters().get(j), getCompilationUnit()) ? "[]" : "")
+                            .print(util().isVarargs(method.getParameters().get(j)) ? "[]" : "")
                             .print(" = ").print(args.get(j)).print(";").println();
                     getScope().inlinedConstructorArgs = null;
                 }
             }
         }
-        ExecutableElement methodElement = toElement(method);
+        ExecutableElement methodElement = Util.getElement(method);
         if (method.getBody() != null) {
             boolean skipFirst = false;
             List<? extends StatementTree> statements = method.getBody().getStatements();
@@ -3200,7 +3199,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
         for (Tree t : clazz.getMembers()) {
             if (t instanceof VariableTree && !getScope().fieldsWithInitializers.contains(t)) {
                 VariableTree field = (VariableTree) t;
-                VariableElement fieldElement = toElement(field);
+                VariableElement fieldElement = Util.getElement(field);
                 if (!fieldElement.getModifiers().contains(Modifier.STATIC)
                         && !context.hasAnnotationType(fieldElement, JSweetConfig.ANNOTATION_ERASED)) {
                     String name = getIdentifier(fieldElement);
@@ -3222,7 +3221,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             }
         }
         for (VariableTree field : getScope().fieldsWithInitializers) {
-            VariableElement fieldElement = toElement(field);
+            VariableElement fieldElement = Util.getElement(field);
             if (context.hasAnnotationType(fieldElement, JSweetConfig.ANNOTATION_ERASED)) {
                 continue;
             }
@@ -3357,8 +3356,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             print("(");
 
             VariableTree parameter = method.getParameters().get(i);
-            TypeMirror paramType = util().getTypeForTree(parameter, methodEntry.methodCompilationUnit);
-            Element paramTypeElement = util().getTypeElementForTree(parameter, methodEntry.methodCompilationUnit);
+            TypeMirror paramType = Util.getType(parameter);
+            Element paramTypeElement = Util.getTypeElement(parameter);
 
             if (Class.class.getName().equals(context.types.erasure(paramType).toString())) {
                 List<? extends TypeMirror> typeArguments = ((DeclaredType) paramType).getTypeArguments();
@@ -3489,7 +3488,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
         @Override
         public Void visitMethodInvocation(MethodInvocationTree methodInvocation, Trees trees) {
-            Element methodSymbol = toElement(methodInvocation.getMethodSelect());
+            Element methodSymbol = Util.getElement(methodInvocation.getMethodSelect());
             if (methodSymbol instanceof ExecutableElement) {
                 ExecutableElement method = (ExecutableElement) methodSymbol;
 
@@ -3519,12 +3518,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
         return context.options.isLazyInitializedStatics() && var.getModifiers().contains(Modifier.STATIC)
                 && context.lazyInitializedStatics.contains(var)
                 && /* enum fields are not lazy initialized */ !(util().isPartOfAnEnum(var)
-                        && var.getEnclosingElement().equals(toTypeElement(var)));
+                        && var.getEnclosingElement().equals(Util.getElement(var.asType())));
     }
 
     @Override
     public Void visitVariable(VariableTree varTree, Trees trees) {
-        VariableElement varElement = toElement(varTree);
+        VariableElement varElement = Util.getElement(varTree);
 
         if (getAdapter().substituteVariable(varElement)) {
             return returnNothing();
@@ -3567,7 +3566,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             boolean confictInDefinitionScope = false;
 
             if (parent instanceof ClassTree) {
-                ExecutableElement parentMethod = util().findMethodDeclarationInType(toElement((ClassTree) parent), name,
+                ExecutableElement parentMethod = util().findMethodDeclarationInType(Util.getElement((ClassTree) parent), name,
                         null);
                 if (parentMethod != null) {
                     if (!isDefinitionScope) {
@@ -3683,7 +3682,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                 }
             }
 
-            if (util().isVarargs(varTree, getCompilationUnitForTree(varTree))) {
+            if (util().isVarargs(varTree)) {
                 print("...");
             }
 
@@ -3693,27 +3692,25 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                 print(name);
             }
 
-            if (!util().isVarargs(varTree, getCompilationUnitForTree(varTree))
+            if (!util().isVarargs(varTree)
                     && (getScope().isEraseVariableTypes() || (getScope().interfaceScope
                             && context.hasAnnotationType(varElement, JSweetConfig.ANNOTATION_OPTIONAL)))) {
                 print("?");
             }
             if (!getScope().skipTypeAnnotations && !getScope().enumWrapperClassScope) {
                 if (typeChecker.checkType(varTree, varTree.getName(), varTree.getType(),
-                        getCompilationUnitForTree(varTree))) {
+                        compilationUnit)) {
                     print(": ");
                     if (confictInDefinitionScope) {
                         print("any");
                     } else {
                         if (getScope().isEraseVariableTypes()) {
                             print("any");
-                            if (util().isVarargs(varTree, getCompilationUnitForTree(varTree))) {
+                            if (util().isVarargs(varTree)) {
                                 print("[]");
                             }
                         } else {
-                            CompilationUnitTree compilationUnit = getCompilationUnitForTree(varTree);
-                            registerTreeCompilationUnit(varTree.getType(), compilationUnit);
-                            Element varTypeElement = util().getElementForTree(varTree.getType(), compilationUnit);
+                            Element varTypeElement = Util.getTypeElement(varTree.getType());
                             if (varTypeElement != null
                                     && context.hasAnnotationType(varTypeElement, ANNOTATION_STRING_TYPE)
                                     && !util().isPartOfAnEnum(varTypeElement)) {
@@ -3730,7 +3727,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             }
             if (isLazyInitialized(varElement)) {
                 ClassTree clazz = (ClassTree) parent;
-                TypeElement classTypeElement = toElement(clazz);
+                TypeElement classTypeElement = Util.getElement(clazz);
                 String prefix = getClassName(classTypeElement);
                 if (GLOBALS_CLASS_NAME.equals(prefix)) {
                     prefix = "";
@@ -3763,7 +3760,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                      * ).print(clazz.getSimpleName().toString()).print("(") .printArgList(null,
                      * newClass.args).print(")"); } else {
                      */
-                    if (!substituteAssignedExpression(toType(varTree), varTree.getInitializer())) {
+                    if (!substituteAssignedExpression(Util.getType(varTree), varTree.getInitializer())) {
                         print(varTree.getInitializer());
                     }
                     // }
@@ -3790,7 +3787,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                         } else {
                             if (!getScope().fieldsWithInitializers.contains(varTree)) {
                                 print(" = ");
-                                if (!substituteAssignedExpression(toType(varTree), varTree.getInitializer())) {
+                                if (!substituteAssignedExpression(Util.getType(varTree), varTree.getInitializer())) {
                                     print(varTree.getInitializer());
                                 }
                             }
@@ -3900,14 +3897,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
     private void printInnerClassAccess(String accessedElementName, ElementKind kind, Integer methodArgsCount) {
         print("this.");
         ClassTree parent = getParent(ClassTree.class);
-        TypeElement parentTypeElement = toElement(parent);
+        TypeElement parentTypeElement = Util.getElement(parent);
         int level = 0;
         boolean foundInParent = util().findFirstDeclarationInClassAndSuperClasses(parentTypeElement,
                 accessedElementName, kind, methodArgsCount) != null;
         if (!foundInParent) {
             while (getScope(level++).innerClassNotStatic) {
                 parent = getParent(ClassTree.class, parent);
-                parentTypeElement = toElement(parent);
+                parentTypeElement = Util.getElement(parent);
                 if (parent != null && util().findFirstDeclarationInClassAndSuperClasses(parentTypeElement,
                         accessedElementName, kind, methodArgsCount) != null) {
                     foundInParent = true;
@@ -3928,12 +3925,16 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
     @Override
     public Void visitMemberSelect(MemberSelectTree memberSelectTree, Trees trees) {
         if (!getAdapter().substitute(createExtendedElement(memberSelectTree))) {
-            Element selectedElement = toElement(memberSelectTree.getExpression());
-            TypeMirror selectedType = toType(memberSelectTree.getExpression());
-            Element selectedTypeElement = toTypeElement(memberSelectTree.getExpression());
-            Element memberElement = toElement(memberSelectTree);
-            TypeMirror memberType = toType(memberSelectTree);
-            Element memberTypeElement = toTypeElement(memberSelectTree);
+            Element selectedElement = null;
+            if (memberSelectTree.getExpression() instanceof MemberSelectTree 
+            		|| memberSelectTree.getExpression() instanceof IdentifierTree) {
+            	selectedElement = Util.getElement(memberSelectTree.getExpression());
+            }
+            TypeMirror selectedType = Util.getType(memberSelectTree.getExpression());
+            Element selectedTypeElement = Util.getTypeElement(memberSelectTree.getExpression());
+            Element memberElement = Util.getElement(memberSelectTree);
+            TypeMirror memberType = Util.getType(memberSelectTree);
+            Element memberTypeElement = Util.getTypeElement(memberSelectTree);
             if (selectedElement instanceof PackageElement) {
                 if (context.isRootPackage(selectedElement)) {
                     if (memberTypeElement != null) {
@@ -3981,13 +3982,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
                 if (getScope().innerClassNotStatic) {
                     ClassTree parent = getParent(ClassTree.class);
-                    TypeElement parentTypeElement = toElement(parent);
+                    TypeElement parentTypeElement = Util.getElement(parent);
 
                     int level = 0;
                     boolean foundInParent = false;
                     while (getScope(level++).innerClassNotStatic) {
                         parent = getParent(ClassTree.class, parent);
-                        parentTypeElement = toElement(parent);
+                        parentTypeElement = Util.getElement(parent);
                         if (parent != null && parentTypeElement.equals(selectedTypeElement)) {
                             foundInParent = true;
                             break;
@@ -4079,7 +4080,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
         boolean debugMode = false;
         if (context.options.isDebugMode()) {
-            Element methodElement = toElement(methodInvocationTree.getMethodSelect());
+            Element methodElement = Util.getElement(methodInvocationTree.getMethodSelect());
             if (methodElement instanceof ExecutableElement) {
                 if (methodElement.getKind() != ElementKind.CONSTRUCTOR && util().isSourceElement(methodElement)) {
                     debugMode = true;
@@ -4124,8 +4125,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
         boolean targetIsThis = meth.equals("this." + methName);
         boolean targetIsThisOrStaticImported = (meth.equals(methName) || targetIsThis);
 
-        ExecutableType type = toType(methodInvocationTree.getMethodSelect()) instanceof ExecutableType
-                ? toType(methodInvocationTree.getMethodSelect())
+        ExecutableType type = Util.getType(methodInvocationTree.getMethodSelect()) instanceof ExecutableType
+                ? Util.getType(methodInvocationTree.getMethodSelect())
                 : null;
 
         ExecutableElement methSym = null;
@@ -4135,7 +4136,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             ImportTree staticImport = getStaticGlobalImport(methName);
             if (staticImport == null || targetIsThis) {
                 ClassTree p = getParent(ClassTree.class);
-                methSym = p == null ? null : util().findMethodDeclarationInType(toElement(p), methName, type);
+                methSym = p == null ? null : util().findMethodDeclarationInType(Util.getElement(p), methName, type);
                 if (methSym != null) {
                     typeChecker.checkApply(methodInvocationTree, methSym);
                     if (!methSym.getModifiers().contains(Modifier.STATIC)) {
@@ -4182,7 +4183,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                         if (parent != null) {
                             while (getScope(level++).innerClass) {
                                 parent = getParent(ClassTree.class, parent);
-                                if ((method = util().findMethodDeclarationInType(toElement(parent), methName,
+                                if ((method = util().findMethodDeclarationInType(Util.getElement(parent), methName,
                                         type)) != null) {
                                     break;
                                 }
@@ -4208,7 +4209,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                 }
             } else {
                 MemberSelectTree staticFieldAccess = (MemberSelectTree) staticImport.getQualifiedIdentifier();
-                methSym = util().findMethodDeclarationInType(toTypeElement(staticFieldAccess.getExpression()), methName,
+                methSym = util().findMethodDeclarationInType(Util.getTypeElement(staticFieldAccess.getExpression()), methName,
                         type);
                 if (methSym != null) {
                     Map<String, VariableElement> vars = new HashMap<>();
@@ -4242,7 +4243,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
         } else {
             if (methodInvocationTree.getMethodSelect() instanceof MemberSelectTree) {
                 ExpressionTree selected = ((MemberSelectTree) methodInvocationTree.getMethodSelect()).getExpression();
-                Element selectedTypeElement = toTypeElement(selected);
+                Element selectedTypeElement = Util.getTypeElement(selected);
                 if (context.isFunctionalType(selectedTypeElement)) {
                     anonymous = true;
                 }
@@ -4267,9 +4268,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
         boolean isStatic = methSym == null || methSym.getModifiers().contains(Modifier.STATIC);
         List<? extends ExpressionTree> arguments = methodInvocationTree.getArguments();
         if (!util().hasVarargs(methSym) //
-                || !arguments.isEmpty() && (toType(util().last(arguments)).getKind() != TypeKind.ARRAY
+                || !arguments.isEmpty() && (Util.getType(util().last(arguments)).getKind() != TypeKind.ARRAY
                         // we dont use apply if var args type differ
-                        || !types().erasure(((ArrayType) toType(util().last(arguments))).getComponentType())
+                        || !types().erasure(((ArrayType) Util.getType(util().last(arguments))).getComponentType())
                                 .equals(types().erasure(((ArrayType) util().last(methSym.getParameters()).asType())
                                         .getComponentType())))) {
             applyVarargs = false;
@@ -4293,7 +4294,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                             .toString();
                 } else {
                     if (methSym == null) {
-                        methSym = toElement((MemberSelectTree) methodInvocationTree.getMethodSelect());
+                        methSym = Util.getElement((MemberSelectTree) methodInvocationTree.getMethodSelect());
                     }
                     if (methSym != null) {
                         accessedMemberName = context.getActualName(methSym);
@@ -4310,14 +4311,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     print(methodInvocationTree.getMethodSelect());
                 } else {
                     if (methSym == null && methodInvocationTree.getMethodSelect() instanceof MemberSelectTree
-                            && toElement((MemberSelectTree) methodInvocationTree
+                            && Util.getElement((MemberSelectTree) methodInvocationTree
                                     .getMethodSelect()) instanceof ExecutableElement) {
-                        methSym = toElement((MemberSelectTree) methodInvocationTree.getMethodSelect());
+                        methSym = Util.getElement((MemberSelectTree) methodInvocationTree.getMethodSelect());
                     }
                     if (methSym != null && methodInvocationTree.getMethodSelect() instanceof MemberSelectTree) {
                         ExpressionTree selected = ((MemberSelectTree) methodInvocationTree.getMethodSelect())
                                 .getExpression();
-                        Element selectedTypeElement = toTypeElement(selected);
+                        Element selectedTypeElement = Util.getTypeElement(selected);
                         if (selectedTypeElement == null
                                 || !GLOBALS_CLASS_NAME.equals(selectedTypeElement.getSimpleName().toString())) {
                             if (getScope().innerClassNotStatic
@@ -4327,7 +4328,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                             } else {
                                 if (methSym.getModifiers().contains(Modifier.STATIC)
                                         && selected instanceof IdentifierTree
-                                        && toElement(selected) instanceof VariableElement) {
+                                        && Util.getElement(selected) instanceof VariableElement) {
                                     // case of instance static access
                                     if (context.useModules && !context.moduleBundleMode) {
                                         print(getClassName((TypeElement) selectedTypeElement));
@@ -4449,7 +4450,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                 : methodInvocationTree.getArguments().size();
 
         if (getScope().innerClassNotStatic && "super".equals(methName)) {
-            TypeElement s = toTypeElement(getParent(ClassTree.class).getExtendsClause());
+            TypeElement s = Util.getTypeElement(getParent(ClassTree.class).getExtendsClause());
             if (s.getEnclosingElement() instanceof TypeElement && !s.getModifiers().contains(Modifier.STATIC)) {
                 print(Java2TypeScriptTranslator.PARENT_CLASS_FIELD_NAME);
                 if (argsLength > 0) {
@@ -4468,10 +4469,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
         if ("super".equals(methName)) {
             ClassTree p = getParent(ClassTree.class);
-            methSym = p == null ? null : util().findMethodDeclarationInType(toElement(p), "this", type);
+            methSym = p == null ? null : util().findMethodDeclarationInType(Util.getElement(p), "this", type);
         }
 
-        TypeMirror methodType = toType(methodInvocationTree.getMethodSelect());
+        TypeMirror methodType = Util.getType(methodInvocationTree.getMethodSelect());
         for (int i = 0; i < argsLength; i++) {
             ExpressionTree arg = methodInvocationTree.getArguments().get(i);
             if (methodType != null && methodType.getKind() == TypeKind.EXECUTABLE) {
@@ -4479,8 +4480,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                 List<? extends TypeMirror> argTypes = ((ExecutableType) methodType).getParameterTypes();
                 TypeMirror paramType = i < argTypes.size() ? argTypes.get(i) : util().last(argTypes);
                 if (i == argsLength - 1 && !applyVarargs && methSym != null && methSym.isVarArgs()) {
-                    if (arg instanceof IdentifierTree && toElement((IdentifierTree) arg) instanceof VariableElement) {
-                        VariableElement var = toElement((IdentifierTree) arg);
+                    if (arg instanceof IdentifierTree && Util.getElement((IdentifierTree) arg) instanceof VariableElement) {
+                        VariableElement var = Util.getElement((IdentifierTree) arg);
                         if (var.getEnclosingElement() instanceof ExecutableElement) {
                             if (util().isVarargs(var)) {
                                 print("...");
@@ -4553,7 +4554,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
     private String getStaticContainerFullName(ImportTree importDecl) {
         if (importDecl.getQualifiedIdentifier() instanceof MemberSelectTree) {
             MemberSelectTree fa = (MemberSelectTree) importDecl.getQualifiedIdentifier();
-            String name = context.getRootRelativeJavaName(toTypeElement(fa.getExpression()));
+            String name = context.getRootRelativeJavaName(Util.getTypeElement(fa.getExpression()));
             // function is a top-level global function (no need to import)
             if (JSweetConfig.GLOBALS_CLASS_NAME.equals(name)) {
                 return null;
@@ -4574,7 +4575,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
     @Override
     public Void visitIdentifier(IdentifierTree identifierTree, Trees trees) {
-        Element identifierElement = toElement(identifierTree);
+        Element identifierElement =Util.getElement(identifierTree);
         String name = identifierTree.toString();
 
         if (getScope().inlinedConstructorArgs != null) {
@@ -4608,7 +4609,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                             if (!util().getQualifiedName(varEnclosingElement).toString()
                                     .endsWith("." + GLOBALS_CLASS_NAME)) {
                                 if (!context.useModules
-                                        && !varEnclosingElement.equals(toElement(getParent(ClassTree.class)))) {
+                                        && !varEnclosingElement.equals(Util.getElement(getParent(ClassTree.class)))) {
                                     String prefix = context.getRootRelativeName(null, varEnclosingElement);
                                     if (!StringUtils.isEmpty(prefix)) {
                                         print(context.getRootRelativeName(null, varEnclosingElement));
@@ -4669,7 +4670,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                             print(rootRelativeName + ".");
                             PackageElement identifierPackage = util().getParentElement(classIdentifierTypeElement,
                                     PackageElement.class);
-                            String pathToModulePackage = util().getRelativePath(toElement(compilationUnit.getPackage()),
+                            String pathToModulePackage = util().getRelativePath(Util.getElement(compilationUnit.getPackage()),
                                     identifierPackage);
                             if (pathToModulePackage == null) {
                                 pathToModulePackage = ".";
@@ -4693,7 +4694,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                         // if the class has not been imported, we need to add
                         // the containing class prefix
                         if (!getCompilationUnit().getImports().stream()
-                                .map(i -> toTypeElement(i.getQualifiedIdentifier()))
+                                .map(i -> Util.getTypeElement(i.getQualifiedIdentifier()))
                                 .anyMatch(t -> t == classIdentifierTypeElement)) {
                             if (classIdentifierTypeElement.getEnclosingElement() instanceof TypeElement) {
                                 print(getClassName((TypeElement) classIdentifierTypeElement.getEnclosingElement())
@@ -4706,7 +4707,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     }
                 }
                 if (!prefixAdded && !context.useModules
-                        && !classIdentifierTypeElement.equals(toElement(getParent(ClassTree.class)))) {
+                        && !classIdentifierTypeElement.equals(Util.getElement(getParent(ClassTree.class)))) {
                     print(getRootRelativeName(classIdentifierTypeElement));
                 } else {
                     if (context.hasClassNameMapping(classIdentifierTypeElement)) {
@@ -4756,12 +4757,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             LinkedHashSet<VariableElement> finalVars = new LinkedHashSet<>();
             getScope().finalVariables.add(finalVars);
 
-            Element newClassTypeElement = toElement(newClass.getClassBody());
+            Element newClassTypeElement = Util.getElement(newClass.getClassBody());
             new TreeScanner<Void, Trees>() {
                 @Override
                 public Void visitIdentifier(IdentifierTree var, Trees trees) {
-                    if (toElement(var) instanceof VariableElement) {
-                        VariableElement varElement = toElement(var);
+                    if (Util.getElement(var) instanceof VariableElement) {
+                        VariableElement varElement = Util.getElement(var);
                         if (varElement.getEnclosingElement() instanceof ExecutableElement) {
                             Element methodEnclosingTypeElement = varElement.getEnclosingElement().getEnclosingElement();
 
@@ -4797,7 +4798,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
      */
     @Override
     public Void visitNewClass(NewClassTree newClass, Trees trees) {
-        TypeElement classTypeElement = toTypeElement(newClass.getIdentifier());
+        TypeElement classTypeElement = Util.getTypeElement(newClass.getIdentifier());
         if (classTypeElement.getSimpleName().toString().equals(JSweetConfig.GLOBALS_CLASS_NAME)) {
             report(newClass, JSweetProblem.GLOBAL_CANNOT_BE_INSTANTIATED);
             return returnNothing();
@@ -4903,7 +4904,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                         }
                         if (m instanceof MethodTree) {
                             MethodTree method = (MethodTree) m;
-                            if (toElement(method).getKind() != ElementKind.CONSTRUCTOR) {
+                            if (Util.getElement(method).getKind() != ElementKind.CONSTRUCTOR) {
                                 printIndent().print(method.getName() + ": (");
                                 for (VariableTree param : method.getParameters()) {
                                     print(param.getName() + ", ");
@@ -5016,14 +5017,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
      * Prints a new-class expression tree (default behavior).
      */
     public void printDefaultNewClass(NewClassTree newClass) {
-        TypeMirror classType = toType(newClass.getIdentifier());
-        TypeElement classTypeElement = toTypeElement(newClass.getIdentifier());
+        TypeMirror classType = Util.getType(newClass.getIdentifier());
+        TypeElement classTypeElement = Util.getTypeElement(newClass.getIdentifier());
         String mappedType = context.getTypeMappingTarget(classType.toString());
         if (typeChecker.checkType(newClass, null, newClass.getIdentifier(), getCompilationUnit())) {
 
             boolean applyVarargs = true;
 
-            Element constructorElement = toElement(newClass);
+            Element constructorElement = Util.getElement(newClass);
             if (!(constructorElement instanceof ExecutableElement)) {
                 // not in source path
                 print("null /*cannot resolve " + newClass.getIdentifier() + "*/");
@@ -5032,9 +5033,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             ExecutableElement constructorExecutableElement = (ExecutableElement) constructorElement;
 
             if (newClass.getArguments().size() == 0 || !util().hasVarargs(constructorExecutableElement) //
-                    || toType(util().last(newClass.getArguments())).getKind() != TypeKind.ARRAY
+                    || Util.getType(util().last(newClass.getArguments())).getKind() != TypeKind.ARRAY
                     // we dont use apply if var args type differ
-                    || !types().erasure(((ArrayType) toType(util().last(newClass.getArguments()))).getComponentType())
+                    || !types().erasure(((ArrayType) Util.getType(util().last(newClass.getArguments()))).getComponentType())
                             .equals(types().erasure(
                                     ((ArrayType) util().last(constructorExecutableElement.getParameters()).asType())
                                             .getComponentType()))) {
@@ -5059,7 +5060,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             } else {
                 if (newClass.getIdentifier() instanceof ParameterizedTypeTree) {
                     ParameterizedTypeTree typeApply = (ParameterizedTypeTree) newClass.getIdentifier();
-                    mappedType = context.getTypeMappingTarget(toType(typeApply.getType()).toString());
+                    mappedType = context.getTypeMappingTarget(Util.getType(typeApply.getType()).toString());
                     print("new ");
                     if (mappedType != null) {
                         print(Java2TypeScriptTranslator.mapConstructorType(mappedType));
@@ -5105,7 +5106,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
     @Override
     public AbstractTreePrinter printConstructorArgList(NewClassTree newClass, boolean localClass) {
-        TypeElement classTypeElement = toTypeElement(newClass.getIdentifier());
+        TypeElement classTypeElement = Util.getTypeElement(newClass.getIdentifier());
 
         boolean printed = false;
         if (localClass || (getScope().anonymousClasses.contains(newClass.getClassBody())
@@ -5120,7 +5121,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                 && !isStaticAnonymousClass(newClass, getCompilationUnit()))) {
             print("this");
             ClassTree parent = getParent(ClassTree.class);
-            TypeElement parentSymbol = parent == null ? null : toElement(parent);
+            TypeElement parentSymbol = parent == null ? null : Util.getElement(parent);
             if (classTypeElement.getEnclosingElement() != parentSymbol) {
                 print("." + PARENT_CLASS_FIELD_NAME);
             }
@@ -5130,7 +5131,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             printed = true;
         }
 
-        ExecutableType methodType = toElementType(newClass);
+        ExecutableType methodType = (ExecutableType)Util.getElement(newClass).asType();
 
         printArgList(methodType == null ? null : methodType.getParameterTypes(), newClass.getArguments());
         int index = getScope().anonymousClasses.indexOf(newClass.getClassBody());
@@ -5142,7 +5143,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
                 Element paramEnclosingTypeElement = paramToBeTransmittedToAnonymous.getEnclosingElement()
                         .getEnclosingElement();
-                Element anonymousClassEnclosingTypeElement = toElement(getParent(ClassTree.class));
+                Element anonymousClassEnclosingTypeElement = Util.getElement(getParent(ClassTree.class));
                 if (anonymousClassEnclosingTypeElement != paramEnclosingTypeElement) {
                     print("this.");
                 }
@@ -5157,7 +5158,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
     @Override
     public Void visitLiteral(LiteralTree literal, Trees trees) {
         String s = literal.toString();
-        switch (toType(literal).getKind()) {
+        switch (Util.getType(literal).getKind()) {
         case FLOAT:
             if (s.endsWith("F")) {
                 s = s.substring(0, s.length() - 1);
@@ -5194,8 +5195,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
     public Void visitEnhancedForLoop(EnhancedForLoopTree foreachLoop, Trees trees) {
         String indexVarName = "index" + util().getId();
         boolean[] hasLength = { false };
-        TypeElement targetType = toTypeElement(foreachLoop.getExpression());
-        TypeMirror collectionType = toType(foreachLoop.getExpression());
+        TypeElement targetType = Util.getTypeElement(foreachLoop.getExpression());
+        TypeMirror collectionType = Util.getType(foreachLoop.getExpression());
 
         if (collectionType.getKind() == TypeKind.ARRAY) {
             hasLength[0] = true;
@@ -5249,7 +5250,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
      */
     @Override
     public Void visitPrimitiveType(PrimitiveTypeTree type, Trees trees) {
-        switch (toType(type).getKind()) {
+        switch (Util.getType(type).getKind()) {
         case BYTE:
         case DOUBLE:
         case FLOAT:
@@ -5277,7 +5278,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             boolean forceParens = false;
             boolean booleanOp = false;
             if (types().isSameType(util().getType(boolean.class),
-                    util().unboxedTypeOrType(toType(binary.getLeftOperand())))) {
+                    util().unboxedTypeOrType(Util.getType(binary.getLeftOperand())))) {
                 booleanOp = true;
                 if ("^".equals(op)) {
                     forceParens = true;
@@ -5289,9 +5290,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                 }
             }
 
-            TypeMirror binaryType = toType(binary);
-            TypeMirror leftType = toType(binary.getLeftOperand());
-            TypeMirror rightType = toType(binary.getRightOperand());
+            TypeMirror binaryType = Util.getType(binary);
+            TypeMirror leftType = Util.getType(binary.getLeftOperand());
+            TypeMirror rightType = Util.getType(binary.getRightOperand());
             TypeMirror stringType = util().getType(String.class);
 
             boolean closeParen = false;
@@ -5314,7 +5315,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             boolean actualCharWrapping = false;
             if (charWrapping
                     && types().isSameType(util().getType(char.class),
-                            util().unboxedTypeOrType(toType(binary.getLeftOperand())))
+                            util().unboxedTypeOrType(Util.getType(binary.getLeftOperand())))
                     && !types().isSameType(rightType, stringType)) {
                 actualCharWrapping = true;
                 if (binary.getLeftOperand() instanceof LiteralTree) {
@@ -5447,11 +5448,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
         if (returnStatement.getExpression() != null) {
             Tree parentFunction = getFirstParent(MethodTree.class, LambdaExpressionTree.class);
 
-            // needed when print method from another compilation unit
-            registerTreeCompilationUnit(returnStatement, getCompilationUnitForTree(parentFunction));
-            registerTreeCompilationUnit(returnStatement.getExpression(), getCompilationUnitForTree(parentFunction));
-
-            if (toType(returnStatement.getExpression()) == null) {
+            if (Util.getType(returnStatement.getExpression()) == null) {
                 report(returnStatement, JSweetProblem.CANNOT_ACCESS_THIS,
                         parentFunction == null ? returnStatement.toString() : parentFunction.toString());
                 return returnNothing();
@@ -5460,7 +5457,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             TypeMirror returnType = null;
             if (parentFunction != null) {
                 if (parentFunction instanceof MethodTree) {
-                    returnType = toType(((MethodTree) parentFunction).getReturnType());
+                    returnType = Util.getType(((MethodTree) parentFunction).getReturnType());
                 } else {
                     // TODO: this cannot work! Calculate the return type of the
                     // lambda
@@ -5480,7 +5477,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
     private boolean staticInitializedAssignment = false;
 
     private VariableElement getStaticInitializedField(Tree expr) {
-        Element element = toElement(expr);
+    	if (expr instanceof ArrayAccessTree) {
+    		return null;
+    	}
+        Element element = Util.getElement(expr);
         if (element instanceof VariableElement && context.lazyInitializedStatics.contains(element)) {
             return (VariableElement) element;
         }
@@ -5497,8 +5497,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             boolean expand = staticInitializedAssignment = (getStaticInitializedField(
                     assignOpTree.getVariable()) != null);
 
-            TypeMirror variableType = toType(assignOpTree.getVariable());
-            TypeMirror expressionType = toType(assignOpTree.getExpression());
+            TypeMirror variableType = Util.getType(assignOpTree.getVariable());
+            TypeMirror expressionType = Util.getType(assignOpTree.getExpression());
 
             boolean expandChar = types().isSameType(util().getType(char.class), util().unboxedTypeOrType(variableType));
             print(assignOpTree.getVariable());
@@ -5701,7 +5701,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             typeChecker.checkType(newArray, null, newArray.getType(), getCompilationUnit());
         }
         if (newArray.getDimensions() != null && !newArray.getDimensions().isEmpty()) {
-            TypeMirror newArrayElementType = toType(newArray.getType());
+            TypeMirror newArrayElementType = Util.getType(newArray.getType());
             if (newArray.getDimensions().size() == 1) {
                 if (newArray.getDimensions().get(0) instanceof LiteralTree
                         && ((int) ((LiteralTree) newArray.getDimensions().get(0)).getValue()) <= 10) {
@@ -5814,7 +5814,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
         if (!getAdapter().substituteSwitchStatementSelector(createExtendedElement(switchStatement.getExpression()))) {
             print(switchStatement.getExpression());
             if (types().isSameType(util().getType(char.class),
-                    util().unboxedTypeOrType(toType(switchStatement.getExpression())))) {
+                    util().unboxedTypeOrType(Util.getType(switchStatement.getExpression())))) {
                 print(".charCodeAt(0)");
             }
         }
@@ -5837,7 +5837,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
     @Override
     public Void visitCase(CaseTree caseTree, Trees trees) {
         if (caseTree.getExpression() != null) {
-            TypeMirror expressionType = toType(caseTree.getExpression());
+            TypeMirror expressionType = Util.getType(caseTree.getExpression());
 
             print("case ");
             if (!getAdapter().substituteCaseStatementPattern(createExtendedElement(caseTree),
@@ -5845,7 +5845,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                 if (util().isPrimitiveOrVoid(expressionType)
                         || types().isSameType(util().getType(String.class), expressionType)) {
                     if (caseTree.getExpression() instanceof IdentifierTree) {
-                        VariableElement varElement = toElement((IdentifierTree) caseTree.getExpression());
+                        VariableElement varElement = Util.getElement((IdentifierTree) caseTree.getExpression());
                         Object value = varElement.getConstantValue();
                         if (types().isSameType(util().getType(String.class), expressionType)) {
                             print(getStringLiteralQuote() + value + getStringLiteralQuote() + " /* "
@@ -5908,9 +5908,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
      */
     @Override
     public Void visitTypeCast(TypeCastTree cast, Trees trees) {
-        TypeMirror fromType = toType(cast.getExpression());
+        TypeMirror fromType = Util.getType(cast.getExpression());
         Element fromTypeElement = types().asElement(fromType);
-        TypeMirror toType = toType(cast.getType());
+        TypeMirror toType = Util.getType(cast.getType());
         Element toTypeElement = types().asElement(toType);
 
         if (substituteAssignedExpression(toType, cast.getExpression())) {
@@ -6002,7 +6002,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
         if (!getAdapter().substituteAssignment(createExtendedElement(assign))) {
             staticInitializedAssignment = getStaticInitializedField(assign.getVariable()) != null;
             print(assign.getVariable()).print(isAnnotationScope ? ": " : " = ");
-            if (!substituteAssignedExpression(toType(assign.getVariable()), assign.getExpression())) {
+            if (!substituteAssignedExpression(Util.getType(assign.getVariable()), assign.getExpression())) {
                 print(assign.getExpression());
             }
             staticInitializedAssignment = false;
@@ -6029,7 +6029,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             print(" catch(__e) {").startIndent();
             for (CatchTree catcher : tryStatement.getCatches()) {
                 println().printIndent().print("if");
-                printInstanceOf("__e", null, toType(catcher.getParameter()));
+                printInstanceOf("__e", null, Util.getType(catcher.getParameter()));
                 print(" {").startIndent().println().printIndent();
                 // if (!context.options.isUseJavaApis() &&
                 // catcher.param.type.toString().startsWith("java.")) {
@@ -6151,12 +6151,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
     @Override
     public Void visitMemberReference(MemberReferenceTree memberReference, Trees trees) {
-        Element element = toElement(memberReference);
+        Element element = Util.getElement(memberReference);
         String memberReferenceSimpleName;
         if (memberReference.getQualifierExpression() instanceof ArrayTypeTree) {
             memberReferenceSimpleName = "Array";
         } else {
-            memberReferenceSimpleName = toTypeElement(memberReference.getQualifierExpression()).getSimpleName()
+            memberReferenceSimpleName = Util.getTypeElement(memberReference.getQualifierExpression()).getSimpleName()
                     .toString();
         }
         boolean printAsInstanceMethod = !element.getModifiers().contains(Modifier.STATIC)
@@ -6164,13 +6164,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                 && !JSweetConfig.GLOBALS_CLASS_NAME.equals(memberReferenceSimpleName);
         boolean exprIsInstance = memberReference.getQualifierExpression().toString().equals("this")
                 || memberReference.getQualifierExpression().toString().equals("super")
-                || (memberReference.getQualifierExpression() instanceof IdentifierTree && toElement(
+                || (memberReference.getQualifierExpression() instanceof IdentifierTree && Util.getElement(
                         (IdentifierTree) memberReference.getQualifierExpression()) instanceof VariableElement)
-                || (memberReference.getQualifierExpression() instanceof MemberSelectTree && toElement(
+                || (memberReference.getQualifierExpression() instanceof MemberSelectTree && Util.getElement(
                         (MemberSelectTree) memberReference.getQualifierExpression()) instanceof VariableElement);
 
         if (element instanceof ExecutableElement) {
-            ExecutableElement method = toElement(memberReference);
+            ExecutableElement method = (ExecutableElement) element;
             if (getParent() instanceof TypeCastTree) {
                 print("(");
             }
@@ -6199,7 +6199,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             print(memberReference.getName().toString());
         } else {
             if (CONSTRUCTOR_METHOD_NAME.equals(memberReference.getName().toString())) {
-                if (toType(memberReference.getQualifierExpression()).getKind() == TypeKind.ARRAY) {
+                if (Util.getType(memberReference.getQualifierExpression()).getKind() == TypeKind.ARRAY) {
                     print("new Array<");
                     substituteAndPrintType(((ArrayTypeTree) memberReference.getQualifierExpression()).getType());
                     print(">");
@@ -6444,7 +6444,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
      */
     @Override
     public Void visitInstanceOf(InstanceOfTree instanceOf, Trees trees) {
-        printInstanceOf(null, instanceOf.getExpression(), toType(instanceOf.getType()));
+        printInstanceOf(null, instanceOf.getExpression(), Util.getType(instanceOf.getType()));
         return returnNothing();
     }
 
@@ -6469,7 +6469,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
     @Override
     public Void visitAnnotation(AnnotationTree annotation, Trees trees) {
-        if (!context.hasAnnotationType(toElement(annotation), JSweetConfig.ANNOTATION_DECORATOR)) {
+        if (!context.hasAnnotationType(Util.getTypeElement(annotation), JSweetConfig.ANNOTATION_DECORATOR)) {
             return returnNothing();
         }
         if (getScope().isInterfaceScope()) {
@@ -6492,7 +6492,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             boolean parens = true;
             if (annotation.getAnnotationType() instanceof IdentifierTree) {
                 GlobalMethodInfos globalDecoratorFunction = context
-                        .lookupGlobalMethod(toElement(annotation.getAnnotationType()).toString());
+                        .lookupGlobalMethod(Util.getElement(annotation.getAnnotationType()).toString());
                 if (globalDecoratorFunction != null) {
                     if (!globalDecoratorFunction.methodTree.getParameters().isEmpty()) {
                         parens = false;
@@ -6519,8 +6519,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
         if (getAdapter().substituteAssignedExpression(assignedType, createExtendedElement(expression))) {
             return true;
         }
-        Element expressionTypeElement = toTypeElement(expression);
-        TypeMirror expressionType = toType(expression);
+        Element expressionTypeElement = Util.getTypeElement(expression);
+        TypeMirror expressionType = Util.getType(expression);
         Element assignedTypeElement = types().asElement(assignedType);
         if (util().isInterface(assignedTypeElement) && expressionTypeElement != null
                 && util().isPartOfAnEnum(expressionTypeElement)) {
@@ -6574,7 +6574,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                                 // should never happen... report error?
                             }
                             MethodTree method = (MethodTree) def;
-                            if (toElement(method).getKind() == ElementKind.CONSTRUCTOR) {
+                            if (Util.getElement(method).getKind() == ElementKind.CONSTRUCTOR) {
                                 continue;
                             }
                             getStack().push(method);
@@ -6603,7 +6603,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
                     }
                     // raw generic type
-                    TypeElement newClassElement = toTypeElement(newClass);
+                    TypeElement newClassElement = Util.getTypeElement(newClass);
                     if (!newClassElement.getTypeParameters().isEmpty() && newClass.getTypeArguments().isEmpty()) {
                         print("<any>(").print(expression).print(")");
                         return true;
@@ -6621,8 +6621,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                 // disable type checking when the method returns a type variable
                 // because it may to be correctly set in the invocation
                 ExpressionTree methodSelectTree = ((MethodInvocationTree) expression).getMethodSelect();
-                registerTreeCompilationUnit(methodSelectTree, getCompilationUnitForTree(expression));
-                Element m = toElement(methodSelectTree);
+                Element m = Util.getElement(methodSelectTree);
                 if (m instanceof ExecutableElement) {
                     ExecutableElement methodElement = (ExecutableElement) m;
                     if (methodElement.getReturnType().getKind() == TypeKind.TYPEVAR
@@ -6735,7 +6734,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
         }
 
         ExecutableElement parentMethodElement = null;
-        Element newClassElement = util().getElementForTree(newClass, compilationUnit);
+        Element newClassElement = Util.getElement(newClass);
         do {
             if (newClassElement.getModifiers().contains(Modifier.STATIC)) {
                 return false;
@@ -6776,9 +6775,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                 return returnNothing();
             }
             if (tree != null) {
-                Element treeElement = toElement(tree);
+                Element treeElement = Util.getElementNoErrors(tree);
                 if (!(treeElement instanceof TypeElement)) {
-                    treeElement = toTypeElement(tree);
+                    treeElement = Util.getTypeElement(tree);
                 }
                 if (treeElement instanceof TypeElement) {
                     if (!(tree instanceof ParameterizedTypeTree)

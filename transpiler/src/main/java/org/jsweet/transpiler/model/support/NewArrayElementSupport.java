@@ -21,14 +21,10 @@ package org.jsweet.transpiler.model.support;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.lang.model.element.Element;
-
-import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.NewArrayElement;
 
 import com.sun.source.tree.NewArrayTree;
-import com.sun.source.util.TreePath;
 
 /**
  * See {@link NewArrayElement}.
@@ -38,8 +34,8 @@ import com.sun.source.util.TreePath;
  */
 public class NewArrayElementSupport extends ExtendedElementSupport<NewArrayTree> implements NewArrayElement {
 
-	public NewArrayElementSupport(TreePath treePath, NewArrayTree tree, Element element, JSweetContext context) {
-		super(treePath, tree, element, context);
+	public NewArrayElementSupport(NewArrayTree tree) {
+		super(tree);
 	}
 
 	public List<ExtendedElement> getDimensions() {

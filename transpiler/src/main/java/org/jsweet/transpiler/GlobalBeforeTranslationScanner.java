@@ -36,6 +36,7 @@ import javax.lang.model.type.TypeMirror;
 
 import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.util.AbstractTreeScanner;
+import org.jsweet.transpiler.util.Util;
 
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
@@ -77,7 +78,7 @@ public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {
 
     @Override
     public Void visitClass(ClassTree classDeclaration, Trees trees) {
-        TypeElement classElement = util().getElementForTree(classDeclaration, compilationUnit);
+        TypeElement classElement = Util.getElement(classDeclaration);
 
         String docComment = trees.getDocComment(trees.getPath(compilationUnit, classDeclaration));
         if (isNotBlank(docComment)) {
@@ -109,7 +110,7 @@ public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {
         for (Tree def : classDeclaration.getMembers()) {
             if (def instanceof VariableTree) {
                 VariableTree fieldDeclaration = (VariableTree) def;
-                VariableElement fieldElement = util().getElementForTree(fieldDeclaration, compilationUnit);
+                VariableElement fieldElement = Util.getElement(fieldDeclaration);
 
                 String fieldDocComment = trees.getDocComment(trees.getPath(compilationUnit, fieldDeclaration));
                 if (isNotBlank(docComment)) {
@@ -131,7 +132,7 @@ public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {
                 }
             }
             if (def instanceof MethodTree) {
-                Element methodElement = toElement(def);
+                Element methodElement = Util.getElement(def);
                 if (methodElement != null) {
                     if (globals && methodElement.getModifiers().contains(Modifier.STATIC)) {
                         context.registerGlobalMethod(classDeclaration, (MethodTree) def, compilationUnit);
@@ -231,7 +232,7 @@ public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {
 
         String docComment = trees.getDocComment(trees.getPath(compilationUnit, methodDeclaration));
         if (isNotBlank(docComment)) {
-            ExecutableElement methodElement = util().getElementForTree(methodDeclaration, compilationUnit);
+            ExecutableElement methodElement = Util.getElement(methodDeclaration);
             context.docComments.put(methodElement, docComment);
         }
 
@@ -250,7 +251,7 @@ public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {
         ExecutableElement container = null;
         MethodTree method = getParent(MethodTree.class);
         if (method != null) {
-            container = util().getElementForTree(method, compilationUnit);
+            container = Util.getElement(method);
         }
         if (container != null) {
             getContext().registerWildcard(container, wildcard);
@@ -274,8 +275,7 @@ public class GlobalBeforeTranslationScanner extends AbstractTreeScanner {
                 continue;
             }
 
-            CompilationUnitTree varCompilationUnit = trees().getPath(enclosingClass).getCompilationUnit();
-            VariableElement varElement = util().getElementForTree(var, varCompilationUnit);
+            VariableElement varElement = Util.getElement(var);
             context.lazyInitializedStatics.add(varElement);
         }
     }

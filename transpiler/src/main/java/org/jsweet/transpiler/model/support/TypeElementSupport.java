@@ -14,22 +14,20 @@ import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.TypeMirror;
 
-import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.TypeElement;
+import org.jsweet.transpiler.util.Util;
 
 import com.sun.source.tree.Tree;
-import com.sun.source.util.TreePath;
 
 public class TypeElementSupport extends ExtendedElementSupport<Tree> implements TypeElement {
 
-    public TypeElementSupport(TreePath treePath, Tree tree,
-            javax.lang.model.element.TypeElement typeElement, JSweetContext context) {
-        super(treePath, tree, typeElement, context);
+    public TypeElementSupport(Tree tree) {
+        super(tree);
     }
 
     @Override
     public javax.lang.model.element.TypeElement getStandardElement() {
-        return (javax.lang.model.element.TypeElement) element;
+        return (javax.lang.model.element.TypeElement) Util.getElement(tree);
     }
 
     @Override

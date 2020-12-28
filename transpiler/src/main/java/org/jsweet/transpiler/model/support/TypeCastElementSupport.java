@@ -18,14 +18,10 @@
  */
 package org.jsweet.transpiler.model.support;
 
-import javax.lang.model.element.Element;
-
-import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.TypeCastElement;
 
 import com.sun.source.tree.TypeCastTree;
-import com.sun.source.util.TreePath;
 
 /**
  * See {@link TypeCastElement}.
@@ -34,9 +30,8 @@ import com.sun.source.util.TreePath;
  */
 public class TypeCastElementSupport extends ExtendedElementSupport<TypeCastTree> implements TypeCastElement {
 
-    public TypeCastElementSupport(TreePath treePath, TypeCastTree tree,
-            Element element, JSweetContext context) {
-        super(treePath, tree, element, context);
+    public TypeCastElementSupport(TypeCastTree tree) {
+        super(tree);
     }
 
 	@Override

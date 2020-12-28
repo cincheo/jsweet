@@ -21,15 +21,13 @@ package org.jsweet.transpiler.model.support;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 
-import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.NewClassElement;
+import org.jsweet.transpiler.util.Util;
 
 import com.sun.source.tree.NewClassTree;
-import com.sun.source.util.TreePath;
 
 /**
  * See {@link NewClassElement}.
@@ -39,8 +37,8 @@ import com.sun.source.util.TreePath;
  */
 public class NewClassElementSupport extends ExtendedElementSupport<NewClassTree> implements NewClassElement {
 
-	public NewClassElementSupport(TreePath treePath, NewClassTree tree, Element element, JSweetContext context) {
-		super(treePath, tree, element, context);
+	public NewClassElementSupport(NewClassTree tree) {
+		super(tree);
 	}
 
 	public List<ExtendedElement> getArguments() {
@@ -64,7 +62,7 @@ public class NewClassElementSupport extends ExtendedElementSupport<NewClassTree>
 
 	@Override
 	public ExecutableElement getConstructor() {
-		return (ExecutableElement) trees().getElement(trees().getPath(compilationUnit, tree));
+		return (ExecutableElement) Util.getElement(tree);
 	}
 
 	@Override

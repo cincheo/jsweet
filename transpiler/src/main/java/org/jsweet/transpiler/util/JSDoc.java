@@ -90,12 +90,11 @@ public class JSDoc {
 			CompilationUnitTree compilationUnit) {
 		String qualifiedName = type.toString();
 		if (typeTree instanceof ParameterizedTypeTree) {
-			TypeMirror parametrizedType = context.util.getTypeForTree(((ParameterizedTypeTree) typeTree).getType(),
-					compilationUnit);
+			TypeMirror parametrizedType = Util.getType(((ParameterizedTypeTree) typeTree).getType());
 			qualifiedName = parametrizedType.toString();
 		}
 		boolean isMapped = false;
-        for (Function<TypeMirror, String> mapping : context.getTypeMappings()) {
+        for (Function<TypeMirror, String> mapping : context.getFunctionalTypeMirrorMappings()) {
             String mapped = mapping.apply(type);
             if (mapped != null) {
                 isMapped = true;
@@ -113,8 +112,8 @@ public class JSDoc {
 		        }
 		    }
 			ExtendedElement extendedElement = ExtendedElementFactory.INSTANCE
-					.create(TreePath.getPath(compilationUnit, typeTree), context);
-			for (BiFunction<ExtendedElement, String, Object> mapping : context.getTypeTreeMappings()) {
+					.create(typeTree);
+			for (BiFunction<ExtendedElement, String, Object> mapping : context.getFunctionalTypeMappings()) {
                 Object mapped = mapping.apply(extendedElement, qualifiedName);
                 if (mapped instanceof String) {
                     isMapped = true;
@@ -122,7 +121,7 @@ public class JSDoc {
                 } else if (mapped instanceof Tree) {
                     isMapped = true;
                     qualifiedName = getMappedDocType(context, (Tree) mapped,
-                            context.util.getTypeForTree((Tree) mapped, compilationUnit), compilationUnit);
+                            Util.getType((Tree) mapped), compilationUnit);
                 }
             }
 		}
@@ -135,12 +134,11 @@ public class JSDoc {
 		}
 		if ("Array".equals(qualifiedName) && typeTree instanceof ParameterizedTypeTree) {
 			Tree firstTypeArgTree = ((ParameterizedTypeTree) typeTree).getTypeArguments().get(0);
-			TypeMirror firstTypeArgType = context.util.getTypeForTree(firstTypeArgTree, compilationUnit);
+			TypeMirror firstTypeArgType = Util.getType(firstTypeArgTree);
 			return getMappedDocType(context, firstTypeArgTree, firstTypeArgType, compilationUnit) + "[]";
 		}
 		if (typeTree instanceof ParameterizedTypeTree) {
-			TypeMirror parametrizedType = context.util.getTypeForTree(((ParameterizedTypeTree) typeTree).getType(),
-					compilationUnit);
+			TypeMirror parametrizedType = Util.getType(((ParameterizedTypeTree) typeTree).getType());
 			return getMappedDocType(context, ((ParameterizedTypeTree) typeTree).getType(), parametrizedType,
 					compilationUnit);
 		}

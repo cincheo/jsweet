@@ -190,7 +190,7 @@ public class JSweetContext {
      */
     public void registerGlobalMethod(ClassTree owner, MethodTree method, CompilationUnitTree compilationUnit) {
 
-        ExecutableElement methodElement = util.getElementForTree(method, compilationUnit);
+        ExecutableElement methodElement = Util.getElement(method);
 
         String name = ((TypeElement) methodElement.getEnclosingElement()).getQualifiedName().toString();
         name += "." + method.getName();
@@ -216,7 +216,7 @@ public class JSweetContext {
      * Registers a decorator annotation in the context.
      */
     public void registerDecoratorAnnotation(ClassTree annotationDeclaration, CompilationUnitTree compilationUnit) {
-        TypeElement annotationElement = util.getElementForTree(annotationDeclaration, compilationUnit);
+        TypeElement annotationElement = Util.getElement(annotationDeclaration);
         decoratorAnnotations.put(annotationElement.getQualifiedName().toString(), annotationDeclaration);
     }
 
@@ -271,14 +271,14 @@ public class JSweetContext {
      *                        and returns a mapped type (either under the form of a
      *                        string, or another TypeMirror, or a tree).
      */
-    public final void addTypeTreeMapping(BiFunction<ExtendedElement, String, Object> mappingFunction) {
+    public final void addTypeMapping(BiFunction<ExtendedElement, String, Object> mappingFunction) {
         functionalTypeTreeMappings.add(mappingFunction);
     }
 
     /**
      * Returns the functional type mappings.
      */
-    public final List<BiFunction<ExtendedElement, String, Object>> getTypeTreeMappings() {
+    public final List<BiFunction<ExtendedElement, String, Object>> getFunctionalTypeMappings() {
         return functionalTypeTreeMappings;
     }
 
@@ -297,7 +297,7 @@ public class JSweetContext {
     /**
      * Returns the functional type mappings.
      */
-    public final List<Function<TypeMirror, String>> getTypeMappings() {
+    public final List<Function<TypeMirror, String>> getFunctionalTypeMirrorMappings() {
         return functionalTypeMappings;
     }
 
@@ -390,6 +390,16 @@ public class JSweetContext {
     }
 
     /**
+     * A thread local holding the JSweet transpilation context for the current thread.
+     */
+    public static ThreadLocal<JSweetContext> current = new ThreadLocal<JSweetContext>();
+
+    /**
+     * A thread local holding the current compilation unit.
+     */
+    public static ThreadLocal<CompilationUnitTree> currentCompilationUnit = new ThreadLocal<CompilationUnitTree>();
+    
+    /**
      * Creates a new JSweet transpilation context.
      * 
      * @param options the JSweet transpilation options
@@ -404,6 +414,7 @@ public class JSweetContext {
         for (Entry<String, Collection<AnnotationFilterDescriptor>> e : annotationFilters.entrySet()) {
             logger.info("annotation filter descriptor: " + e);
         }
+        current.set(this);
     }
 
     /**
@@ -1156,14 +1167,14 @@ public class JSweetContext {
      * Stores a default method AST for the given type.
      */
     public void addDefaultMethod(CompilationUnitTree compilationUnit, ClassTree classTree, MethodTree defaultMethod) {
-        TypeElement classElement = util.getElementForTree(classTree, compilationUnit);
+        TypeElement classElement = Util.getElement(classTree);
         Set<DefaultMethodEntry> methods = defaultMethods.get(classElement);
         if (methods == null) {
             methods = new HashSet<>();
             defaultMethods.put(classElement, methods);
         }
-        ExecutableElement methodElement = util.getElementForTree(defaultMethod, compilationUnit);
-        TypeElement enclosingClassElement = util.getElementForTree(classTree, compilationUnit);
+        ExecutableElement methodElement = Util.getElement(defaultMethod);
+        TypeElement enclosingClassElement = Util.getElement(classTree);
         methods.add(new DefaultMethodEntry(compilationUnit, classTree, enclosingClassElement, defaultMethod,
                 methodElement));
         defaultMethodsCompilationUnits.put(defaultMethod, compilationUnit);
@@ -1767,7 +1778,7 @@ public class JSweetContext {
      */
     public boolean isAnonymousClass(NewClassTree newClass, CompilationUnitTree compilationUnit) {
         if (newClass.getIdentifier() != null && newClass.getClassBody() != null) {
-            TypeElement newClassTypeElement = util.getElementForTree(newClass.getIdentifier(), compilationUnit);
+            TypeElement newClassTypeElement = Util.getTypeElement(newClass.getIdentifier());
 
             if (hasAnnotationType(newClassTypeElement, JSweetConfig.ANNOTATION_OBJECT_TYPE)
                     || hasAnnotationType(newClassTypeElement, JSweetConfig.ANNOTATION_INTERFACE)) {
@@ -1788,7 +1799,7 @@ public class JSweetContext {
                 }
                 if (memberTree instanceof MethodTree) {
                     MethodTree methodTree = (MethodTree) memberTree;
-                    ExecutableElement methodElement = util.getElementForTree(methodTree, compilationUnit);
+                    ExecutableElement methodElement = Util.getElement(methodTree);
                     if (!(methodElement.getKind() == ElementKind.CONSTRUCTOR
                             && methodElement.getParameters().isEmpty())) {
                         // no regular methods or non-empty constructors in maps
@@ -1949,7 +1960,7 @@ public class JSweetContext {
      * Returns true if this class declaration is not to be output by the transpiler.
      */
     public boolean isIgnored(ClassTree classdecl, CompilationUnitTree compilationUnit) {
-        Element classElement = util.getElementForTree(classdecl, compilationUnit);
+        Element classElement = Util.getElement(classdecl);
 
         if (hasAnnotationType(classElement, JSweetConfig.ANNOTATION_OBJECT_TYPE)) {
             // object types are ignored
@@ -2052,10 +2063,10 @@ public class JSweetContext {
      * Returns compilation unit for given tree if a specific mapping has been
      * defined, or null otherwise
      */
-    public CompilationUnitTree getCompilationUnitForTree(Tree tree) {
-        CompilationUnitTree compilationUnit = compilationUnitsMapping.get(tree);
-        return compilationUnit;
-    }
+//    public CompilationUnitTree getCompilationUnitForTree(Tree tree) {
+//        CompilationUnitTree compilationUnit = compilationUnitsMapping.get(tree);
+//        return compilationUnit;
+//    }
 
     private Set<MethodInvocationTree> awaitInvocations;
 

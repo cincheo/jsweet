@@ -95,6 +95,7 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.PackageTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.StatementTree;
@@ -601,23 +602,23 @@ public class Util {
             statements = ((CaseTree) parent).getStatements();
             break;
         case CATCH:
-            putVar(vars, getElementForTree(((CatchTree) parent).getParameter(), compilationUnit));
+            putVar(vars, Util.getElement(((CatchTree) parent).getParameter()));
             break;
         case FOR_LOOP:
             if (((ForLoopTree) parent).getInitializer() != null) {
                 for (StatementTree s : ((ForLoopTree) parent).getInitializer()) {
                     if (s instanceof VariableTree) {
-                        putVar(vars, getElementForTree(s, compilationUnit));
+                        putVar(vars, Util.getElement(s));
                     }
                 }
             }
             break;
         case ENHANCED_FOR_LOOP:
-            putVar(vars, getElementForTree(((EnhancedForLoopTree) parent).getVariable(), compilationUnit));
+            putVar(vars, Util.getElement(((EnhancedForLoopTree) parent).getVariable()));
             break;
         case METHOD:
             for (VariableTree var : ((MethodTree) parent).getParameters()) {
-                putVar(vars, getElementForTree(var, compilationUnit));
+                putVar(vars, Util.getElement(var));
             }
             break;
         default:
@@ -628,7 +629,7 @@ public class Util {
                 if (s == from) {
                     break;
                 } else if (s instanceof VariableTree) {
-                    putVar(vars, getElementForTree(s, compilationUnit));
+                    putVar(vars, Util.getElement(s));
                 }
             }
         }
@@ -674,7 +675,7 @@ public class Util {
         new TreeScanner<Void, Trees>() {
             @Override
             public Void visitIdentifier(IdentifierTree identifierTree, Trees trees) {
-                Element element = getElementForTree(identifierTree, compilationUnit);
+                Element element = Util.getElement(identifierTree);
                 if (element.getKind() == ElementKind.LOCAL_VARIABLE) {
                     putVar(vars, (VariableElement) element);
                 }
@@ -699,7 +700,7 @@ public class Util {
         ExpressionTree method = invocation.getMethodSelect();
         String methName = method.toString().substring(method.toString().lastIndexOf('.') + 1);
 
-        TypeMirror methodType = getTypeForTree(method, trees().getPath(typeSymbol).getCompilationUnit());
+        TypeMirror methodType = getType(method);
 
         return findMethodDeclarationInType(typeSymbol, methName, (ExecutableType) methodType);
     }
@@ -1098,8 +1099,8 @@ public class Util {
     /**
      * Tells if this parameter declaration is varargs.
      */
-    public boolean isVarargs(VariableTree varDecl, CompilationUnitTree compilationUnitTree) {
-        VariableElement varElement = getElementForTree(varDecl, compilationUnitTree);
+    public boolean isVarargs(VariableTree varDecl) {
+        VariableElement varElement = (VariableElement)Util.getElement(varDecl);
         return isVarargs(varElement);
     }
 
@@ -1706,7 +1707,7 @@ public class Util {
      */
     public TypeElement getImportedTypeElement(ImportTree importTree, CompilationUnitTree compilationUnit) {
         if (!importTree.isStatic()) {
-            TypeMirror importedType = getTypeForTree(importTree.getQualifiedIdentifier(), compilationUnit);
+            TypeMirror importedType = getType(importTree.getQualifiedIdentifier());
             return importedType == null ? null : (TypeElement) types().asElement(importedType);
         } else {
             if (importTree.getQualifiedIdentifier() instanceof MemberSelectTree) {
@@ -1715,7 +1716,7 @@ public class Util {
                     qualified = (MemberSelectTree) qualified.getExpression();
                 }
 
-                Element importedElement = getElementForTree(qualified, compilationUnit);
+                Element importedElement = Util.getElement(qualified);
                 if (importedElement instanceof TypeElement) {
                     return (TypeElement) importedElement;
                 }
@@ -1728,12 +1729,11 @@ public class Util {
      * Tells if the given expression is a constant.
      */
     public boolean isConstant(ExpressionTree expr, CompilationUnitTree compilationUnit) {
-        Element element = getElementForTree(expr, compilationUnit);
-
         boolean constant = false;
         if (expr instanceof LiteralTree) {
             constant = true;
         } else if (expr instanceof MemberSelectTree || expr instanceof IdentifierTree) {
+            Element element = Util.getElement(expr);
             if (element.getModifiers().containsAll(asList(Modifier.STATIC, Modifier.FINAL))) {
                 constant = true;
             }
@@ -1857,7 +1857,7 @@ public class Util {
 
         DirectedGraph<ClassTree> defs = new DirectedGraph<>();
         List<TypeElement> typeElements = classDecls.stream()
-                .map(d -> (TypeElement) getElementForTree(d, compilationUnit)).collect(toList());
+                .map(d -> (TypeElement) Util.getElement(d)).collect(toList());
         defs.add(classDecls.toArray(new ClassTree[0]));
         for (int i = 0; i < typeElements.size(); i++) {
             int superClassIndex = indexOfSuperclass(typeElements, typeElements.get(i));
@@ -2209,16 +2209,17 @@ public class Util {
      * TypeElement.
      * </ul>
      */
-    public <T extends Element> T getElementForTree(Tree tree, CompilationUnitTree compilationUnit) {
-        if (tree == null) {
-            return null;
-        }
-        TreePath treePath = trees().getPath(compilationUnit, tree);
-        if (treePath == null) {
-            return getElementFromLegacySymbolField(tree);
-        }
-        return getElementForTreePath(treePath);
-    }
+//    public <T extends Element> T getElementForTree(Tree tree, CompilationUnitTree compilationUnit) {
+//        if (tree == null) {
+//            return null;
+//        }
+//        return (T)Util.getElement(tree);
+////        TreePath treePath = trees().getPath(compilationUnit, tree);
+////        if (treePath == null) {
+////            return getElementFromLegacySymbolField(tree);
+////        }
+////        return getElementForTreePath(treePath);
+//    }
 
     /**
      * Returns the element corresponding to given treePath or null if treePath is
@@ -2237,7 +2238,7 @@ public class Util {
      */
     @SuppressWarnings("unchecked")
     public <T extends TypeMirror> T getElementTypeForTree(Tree tree, CompilationUnitTree compilationUnit) {
-        Element element = getElementForTree(tree, compilationUnit);
+        Element element = Util.getElement(tree);
         return element == null ? null : (T) element.asType();
     }
 
@@ -2259,25 +2260,25 @@ public class Util {
      * 
      * Can return TypeElement or TypeParameterElement
      */
-    public <T extends Element> T getTypeElementForTree(Tree tree, CompilationUnitTree compilationUnit) {
-        TreePath treePath = TreePath.getPath(compilationUnit, tree);
-        if (treePath == null) {
-            TypeMirror treeType = getTypeFromLegacyTypeField(tree);
-            if (treeType != null) {
-                return getTypeElementFromType(treeType);
-            }
-        }
-
-        return getTypeElementForTreePath(treePath);
-    }
+//    public <T extends Element> T getTypeElementForTree(Tree tree, CompilationUnitTree compilationUnit) {
+//        TreePath treePath = TreePath.getPath(compilationUnit, tree);
+//        if (treePath == null) {
+//            TypeMirror treeType = getTypeFromLegacyTypeField(tree);
+//            if (treeType != null) {
+//                return getTypeElementFromType(treeType);
+//            }
+//        }
+//
+//        return getTypeElementForTreePath(treePath);
+//    }
 
     /**
      * @see #getTypeElementForTreePath(TreePath)
      */
-    public <T extends Element> T getTypeElementForTreePath(TreePath treePath) {
-        TypeMirror treeType = getTypeForTreePath(treePath);
-        return getTypeElementFromType(treeType);
-    }
+//    public <T extends Element> T getTypeElementForTreePath(TreePath treePath) {
+//        TypeMirror treeType = getTypeForTreePath(treePath);
+//        return getTypeElementFromType(treeType);
+//    }
 
     @SuppressWarnings("unchecked")
     private <T extends Element> T getTypeElementFromType(TypeMirror treeType) {
@@ -2301,18 +2302,18 @@ public class Util {
      * 
      * @see #getTypeForTreePath(TreePath)
      */
-    public <T extends TypeMirror> T getTypeForTree(Tree tree, CompilationUnitTree compilationUnit) {
-        if (tree == null) {
-            return null;
-        }
-
-        TreePath treePath = trees().getPath(compilationUnit, tree);
-        if (treePath == null) {
-            return getTypeFromLegacyTypeField(tree);
-        }
-
-        return getTypeForTreePath(treePath);
-    }
+//    public <T extends TypeMirror> T getTypeForTree(Tree tree, CompilationUnitTree compilationUnit) {
+//        if (tree == null) {
+//            return null;
+//        }
+//
+//        TreePath treePath = trees().getPath(compilationUnit, tree);
+//        if (treePath == null) {
+//            return getTypeFromLegacyTypeField(tree);
+//        }
+//
+//        return getTypeForTreePath(treePath);
+//    }
 
     /**
      * @see #getTypeForTreePath(TreePath)
@@ -2685,4 +2686,89 @@ public class Util {
         }
 
     }
+
+    private static Field typeField;
+    private static Field tsymField;
+    private static Map<Class<?>, Field> symFields = new HashMap<Class<?>, Field>();
+    
+	static {
+		try {
+			typeField = Class.forName("com.sun.tools.javac.tree.JCTree").getDeclaredField("type");
+			typeField.setAccessible(true);
+			tsymField = Class.forName( "com.sun.tools.javac.code.Type").getDeclaredField("tsym");
+			tsymField.setAccessible(true);
+		} catch (Exception e) {
+			throw new RuntimeException("Fatal error - cannot access legacy Javac API", e);
+		}
+	}
+
+    
+    public static <T extends TypeMirror> T getType(Tree tree) {
+    	try {
+			return (T) typeField.get(tree);
+		} catch (Exception e) {
+			throw new RuntimeException("Fatal error - cannot access legacy Javac API", e);
+		}
+    }
+    
+    public static <E extends Element> E getElement(TypeMirror type) {
+    	try {
+			return (E) tsymField.get(type);
+		} catch (Exception e) {
+			throw new RuntimeException("Fatal error - cannot access legacy Javac API", e);
+		}
+    }
+
+    public static <E extends Element> E getTypeElement(Tree tree) {
+    	TypeMirror type = getType(tree);
+    	return type == null ? null : getElement(type);
+    }
+    
+    public static <T extends Element> T getElement(Tree tree) {
+    	if (tree == null) {
+    		return null;
+    	}
+    	try {
+    		Field symField = symFields.get(tree.getClass());
+    		if (symField == null) {
+    			if (PackageTree.class.isAssignableFrom(tree.getClass())) {
+        			symField = tree.getClass().getDeclaredField("packge");
+    			} else if (NewClassTree.class.isAssignableFrom(tree.getClass())) {
+        			symField = tree.getClass().getDeclaredField("constructor");
+    			} else {
+        			symField = tree.getClass().getDeclaredField("sym");
+    			}
+    			symField.setAccessible(true);
+    			symFields.put(tree.getClass(), symField);
+    		}
+			return (T) symField.get(tree);
+		} catch (Exception e) {
+			throw new RuntimeException("Fatal error - cannot access legacy Javac API - " + tree.getClass(), e);
+		}
+    }
+
+    public static <T extends Element> T getElementNoErrors(Tree tree) {
+    	if (tree == null) {
+    		return null;
+    	}
+    	try {
+    		Field symField = symFields.get(tree.getClass());
+    		if (symField == null) {
+    			if (PackageTree.class.isAssignableFrom(tree.getClass())) {
+        			symField = tree.getClass().getDeclaredField("packge");
+    			} else if (NewClassTree.class.isAssignableFrom(tree.getClass())) {
+        			symField = tree.getClass().getDeclaredField("constructor");
+    			} else {
+        			symField = tree.getClass().getDeclaredField("sym");
+    			}
+    			symField.setAccessible(true);
+    			symFields.put(tree.getClass(), symField);
+    		}
+			return (T) symField.get(tree);
+		} catch (Exception e) {
+			return null;
+		}
+    }
+    
+    
 }

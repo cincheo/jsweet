@@ -173,7 +173,7 @@ public class TypeChecker {
 						compilationUnit);
 			}
 
-			TypeMirror type = util().getTypeForTree(typeExpression, compilationUnit);
+			TypeMirror type = Util.getType(typeExpression);
             if (type != null) {
     			String typeName = type.toString();
     			if (!jdkAllowed && !translator.getContext().strictMode && typeName.startsWith("java.")) {
@@ -196,7 +196,7 @@ public class TypeChecker {
 	public boolean checkSelect(MemberSelectTree select, CompilationUnitTree compilationUnit) {
 		if (!JSweetConfig.isJDKReplacementMode()) {
 
-			TypeMirror selectedType = util().getTypeForTree(select.getExpression(), compilationUnit);
+			TypeMirror selectedType = Util.getType(select.getExpression());
 			if (selectedType instanceof DeclaredType) {
 				String type = context.types.asElement(selectedType).toString();
 				if (type.startsWith("java.")) {
@@ -214,11 +214,11 @@ public class TypeChecker {
 	private boolean checkUnionTypeAssignment(Tree parent, TypeMirror assigned, MethodInvocationTree union,
 			CompilationUnitTree compilationUnit) {
 
-		TypeElement firstArgTypeElement = util().getTypeElementForTree(union.getArguments().get(0), compilationUnit);
+		TypeElement firstArgTypeElement = Util.getTypeElement(union.getArguments().get(0));
 		if (firstArgTypeElement != null
 				&& util().getQualifiedName(firstArgTypeElement).startsWith(JSweetConfig.UNION_CLASS_NAME)) {
 
-			VariableElement unionVariableElement = util().getElementForTree(union.getArguments().get(0), compilationUnit);
+			VariableElement unionVariableElement = Util.getElement(union.getArguments().get(0));
 			List<? extends TypeMirror> typeArguments = ((DeclaredType) unionVariableElement.asType()).getTypeArguments();
 
 			// union type -> simple type
@@ -240,7 +240,7 @@ public class TypeChecker {
 			}
 			if (assigned instanceof DeclaredType
 					&& !util().containsAssignableType(((DeclaredType) assigned).getTypeArguments(),
-							util().getTypeForTree(union.getArguments().get(0), compilationUnit))) {
+							Util.getType(union.getArguments().get(0)))) {
 				translator.report(parent, JSweetProblem.UNION_TYPE_MISMATCH);
 				return false;
 			}
@@ -256,20 +256,20 @@ public class TypeChecker {
 		if (parent instanceof VariableTree) {
 			VariableTree decl = (VariableTree) parent;
 			if (decl.getInitializer() == union) {
-				TypeMirror varType = util().getTypeForTree(decl, compilationUnit);
+				TypeMirror varType = Util.getType(decl);
 				return checkUnionTypeAssignment(parent, varType, union, compilationUnit);
 			}
 		} else if (parent instanceof AssignmentTree) {
 			AssignmentTree assign = (AssignmentTree) parent;
 			if (assign.getExpression() == union) {
-				TypeMirror varType = util().getTypeForTree(assign.getVariable(), compilationUnit);
+				TypeMirror varType = Util.getType(assign.getVariable());
 				return checkUnionTypeAssignment(parent, varType, union, compilationUnit);
 			}
 		} else if (parent instanceof MethodInvocationTree) {
 			MethodInvocationTree invocation = (MethodInvocationTree) parent;
 			for (Tree arg : invocation.getArguments()) {
 				if (arg == union) {
-					TypeMirror varType = util().getTypeForTree(arg, compilationUnit);
+					TypeMirror varType = Util.getType(arg);
 					return checkUnionTypeAssignment(parent, varType, union, compilationUnit);
 				}
 			}

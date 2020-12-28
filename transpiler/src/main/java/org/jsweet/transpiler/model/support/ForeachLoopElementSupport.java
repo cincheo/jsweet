@@ -18,17 +18,16 @@
  */
 package org.jsweet.transpiler.model.support;
 
-import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
 
 import org.jsweet.transpiler.ConstAnalyzer;
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.ForeachLoopElement;
+import org.jsweet.transpiler.util.Util;
 
 import com.sun.source.tree.DoWhileLoopTree;
 import com.sun.source.tree.EnhancedForLoopTree;
-import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
 
@@ -41,9 +40,8 @@ import com.sun.source.util.Trees;
 public class ForeachLoopElementSupport extends ExtendedElementSupport<EnhancedForLoopTree>
         implements ForeachLoopElement {
 
-    public ForeachLoopElementSupport(TreePath treePath, EnhancedForLoopTree tree, Element element,
-            JSweetContext context) {
-        super(treePath, tree, element, context);
+    public ForeachLoopElementSupport(EnhancedForLoopTree tree) {
+        super(tree);
     }
 
     @Override
@@ -53,7 +51,7 @@ public class ForeachLoopElementSupport extends ExtendedElementSupport<EnhancedFo
 
     @Override
     public VariableElement getIterationVariable() {
-        return (VariableElement) util().getElementForTree(getTree().getVariable(), compilationUnit);
+        return (VariableElement) Util.getElement(getTree().getVariable());
     }
 
     @Override
@@ -106,15 +104,14 @@ public class ForeachLoopElementSupport extends ExtendedElementSupport<EnhancedFo
                 return null;
             }
 
-        }.scan(getTree().getStatement(), context.trees);
+        }.scan(getTree().getStatement(), JSweetContext.current.get().trees);
         return hasControlFlowStatement[0];
     }
 
     @Override
     public boolean isIterationVariableModified() {
-        ConstAnalyzer a = new ConstAnalyzer(context);
-        a.setCompilationUnitTree(compilationUnit);
-        a.scan(getTree().getStatement(), context.trees);
+        ConstAnalyzer a = new ConstAnalyzer();
+        a.scan(getTree().getStatement(), JSweetContext.current.get().trees);
         return a.getModifiedVariables().contains(getIterationVariable());
     }
 

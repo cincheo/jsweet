@@ -18,10 +18,8 @@
  */
 package org.jsweet.transpiler.model;
 
-import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
 
-import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.support.ArrayAccessElementSupport;
 import org.jsweet.transpiler.model.support.AssignmentElementSupport;
 import org.jsweet.transpiler.model.support.AssignmentWithOperatorElementSupport;
@@ -41,6 +39,7 @@ import org.jsweet.transpiler.model.support.TypeCastElementSupport;
 import org.jsweet.transpiler.model.support.UnaryOperatorElementSupport;
 import org.jsweet.transpiler.model.support.VariableAccessElementSupport;
 import org.jsweet.transpiler.model.support.VariableElementSupport;
+import org.jsweet.transpiler.util.Util;
 
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssignmentTree;
@@ -52,6 +51,7 @@ import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
@@ -60,8 +60,6 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
-import com.sun.source.util.TreePath;
-import com.sun.source.util.Trees;
 
 /**
  * A factory to create extended elements. It defines an overloaded create method
@@ -96,36 +94,29 @@ public class ExtendedElementFactory {
      * element can be mapped back to a javac tree using the
      * {@link #toTree(ExtendedElement)} method.
      */
-    public ExtendedElement create(TreePath treePath, JSweetContext context) {
-        if (treePath == null) {
-            return null;
-        }
-        Trees trees = context.trees;
-        Tree tree = treePath.getLeaf();
-        Element element = trees.getElement(treePath);
+    public ExtendedElement create(Tree tree) {
         switch (tree.getKind()) {
         case METHOD:
-            return new ExecutableElementSupport(treePath, (MethodTree) tree,
-                    (javax.lang.model.element.ExecutableElement) element, context);
+            return new ExecutableElementSupport((MethodTree) tree);
         case VARIABLE:
-            return new VariableElementSupport(treePath, (VariableTree) tree, (VariableElement) element, context);
+            return new VariableElementSupport((VariableTree) tree);
         case TYPE_CAST:
-            return new TypeCastElementSupport(treePath, (TypeCastTree) tree, element, context);
+            return new TypeCastElementSupport((TypeCastTree) tree);
         case METHOD_INVOCATION:
-            return new MethodInvocationElementSupport(treePath, (MethodInvocationTree) tree, element, context);
+            return new MethodInvocationElementSupport((MethodInvocationTree) tree);
         case MEMBER_SELECT:
-            if (element instanceof VariableElement) {
-                return new VariableAccessElementSupport(treePath, tree, (VariableElement) element, context);
+            if (Util.getElement(tree) instanceof VariableElement) {
+                return new VariableAccessElementSupport((MemberSelectTree)tree);
             } else {
-                return new ExtendedElementSupport<>(treePath, tree, element, context);
+                return new ExtendedElementSupport<>(tree);
             }
         case NEW_CLASS:
-            return new NewClassElementSupport(treePath, (NewClassTree) tree, element, context);
+            return new NewClassElementSupport((NewClassTree) tree);
         case IDENTIFIER:
-            if (element instanceof VariableElement) {
-                return new VariableAccessElementSupport(treePath, tree, (VariableElement) element, context);
+            if (Util.getElement(tree) instanceof VariableElement) {
+                return new VariableAccessElementSupport(tree);
             } else {
-                return new IdentifierElementSupport(treePath, (IdentifierTree) tree, element, context);
+                return new IdentifierElementSupport((IdentifierTree) tree);
             }
         case BOOLEAN_LITERAL:
         case CHAR_LITERAL:
@@ -135,15 +126,15 @@ public class ExtendedElementFactory {
         case LONG_LITERAL:
         case NULL_LITERAL:
         case STRING_LITERAL:
-            return new LiteralElementSupport(treePath, (LiteralTree) tree, element, context);
+            return new LiteralElementSupport((LiteralTree) tree);
         case CASE:
-            return new CaseElementSupport(treePath, (CaseTree) tree, element, context);
+            return new CaseElementSupport((CaseTree) tree);
         case NEW_ARRAY:
-            return new NewArrayElementSupport(treePath, (NewArrayTree) tree, element, context);
+            return new NewArrayElementSupport((NewArrayTree) tree);
         case ARRAY_ACCESS:
-            return new ArrayAccessElementSupport(treePath, (ArrayAccessTree) tree, element, context);
+            return new ArrayAccessElementSupport((ArrayAccessTree) tree);
         case ENHANCED_FOR_LOOP:
-            return new ForeachLoopElementSupport(treePath, (EnhancedForLoopTree) tree, element, context);
+            return new ForeachLoopElementSupport((EnhancedForLoopTree) tree);
         case AND_ASSIGNMENT:
         case DIVIDE_ASSIGNMENT:
         case LEFT_SHIFT_ASSIGNMENT:
@@ -155,13 +146,13 @@ public class ExtendedElementFactory {
         case RIGHT_SHIFT_ASSIGNMENT:
         case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT:
         case XOR_ASSIGNMENT:
-            return new AssignmentWithOperatorElementSupport(treePath, (CompoundAssignmentTree) tree, element, context);
+            return new AssignmentWithOperatorElementSupport((CompoundAssignmentTree) tree);
         case ASSIGNMENT:
-            return new AssignmentElementSupport(treePath, (AssignmentTree) tree, element, context);
+            return new AssignmentElementSupport((AssignmentTree) tree);
         case IMPORT:
-            return new ImportElementSupport(treePath, (ImportTree) tree, element, context);
+            return new ImportElementSupport((ImportTree) tree);
         case COMPILATION_UNIT:
-            return new CompilationUnitElementSupport(treePath, (CompilationUnitTree) tree, element, context);
+            return new CompilationUnitElementSupport((CompilationUnitTree) tree);
         case MINUS:
         case PLUS:
         case MULTIPLY:
@@ -181,7 +172,7 @@ public class ExtendedElementFactory {
         case NOT_EQUAL_TO:
         case REMAINDER:
         case UNSIGNED_RIGHT_SHIFT:
-            return new BinaryOperatorElementSupport(treePath, (BinaryTree) tree, element, context);
+            return new BinaryOperatorElementSupport((BinaryTree) tree);
         case POSTFIX_DECREMENT:
         case PREFIX_DECREMENT:
         case POSTFIX_INCREMENT:
@@ -190,9 +181,9 @@ public class ExtendedElementFactory {
         case UNARY_PLUS:
         case BITWISE_COMPLEMENT:
         case LOGICAL_COMPLEMENT:
-            return new UnaryOperatorElementSupport(treePath, (UnaryTree) tree, element, context);
+            return new UnaryOperatorElementSupport((UnaryTree) tree);
         default:
-            return new ExtendedElementSupport<>(treePath, tree, element, context);
+            return new ExtendedElementSupport<>(tree);
         }
     }
 

@@ -22,8 +22,6 @@ import java.util.Objects;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Elements;
-import javax.lang.model.util.Types;
 
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.SourcePosition;
@@ -31,12 +29,9 @@ import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.ExtendedElementFactory;
 import org.jsweet.transpiler.util.Util;
 
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
-import com.sun.source.util.TreePath;
-import com.sun.source.util.Trees;
 
 /**
  * See {@link ExtendedElement}.
@@ -46,26 +41,14 @@ import com.sun.source.util.Trees;
  */
 public class ExtendedElementSupport<T extends Tree> implements ExtendedElement {
 
-	protected final CompilationUnitTree compilationUnit;
 	protected final T tree;
-	protected final TreePath treePath;
-	protected final Element element;
-	protected final JSweetContext context;
 
 	/**
 	 * Creates an extended element, wrapping the given javac tree node.
 	 */
-	public ExtendedElementSupport(TreePath treePath, T tree, Element element, JSweetContext context) {
-		Objects.requireNonNull(treePath);
+	public ExtendedElementSupport(T tree) {
 		Objects.requireNonNull(tree);
-		Objects.requireNonNull(context);
-
-		this.context = context;
-
 		this.tree = tree;
-		this.compilationUnit = treePath.getCompilationUnit();
-		this.treePath = treePath;
-		this.element = element;
 	}
 
 	/**
@@ -79,7 +62,7 @@ public class ExtendedElementSupport<T extends Tree> implements ExtendedElement {
 	 * Gets the type that corresponds to this element, if any.
 	 */
 	public TypeMirror getType() {
-		return util().getTypeForTreePath(treePath);
+		return Util.getType(tree);
 	}
 
 	/**
@@ -87,7 +70,7 @@ public class ExtendedElementSupport<T extends Tree> implements ExtendedElement {
 	 */
 	public Element getTypeAsElement() {
 		TypeMirror type = getType();
-		return type == null ? null : types().asElement(type);
+		return type == null ? null : Util.getElement(type);
 	}
 
 	@Override
@@ -105,7 +88,9 @@ public class ExtendedElementSupport<T extends Tree> implements ExtendedElement {
 		if (!(getTree() instanceof ExpressionTree)) {
 			return false;
 		}
-		return context.util.isConstant((ExpressionTree) getTree(), compilationUnit);
+		return JSweetContext.current.get().util.isConstant(
+				(ExpressionTree) getTree(), 
+				JSweetContext.currentCompilationUnit.get());
 	}
 
 	@Override
@@ -114,34 +99,19 @@ public class ExtendedElementSupport<T extends Tree> implements ExtendedElement {
 	}
 
 	protected ExtendedElement createElement(Tree tree) {
-		TreePath treePath = TreePath.getPath(this.treePath, tree);
-		if (treePath == null) {
-			treePath = TreePath.getPath(compilationUnit, tree);
-		}
-		if (treePath == null) {
-			return null;
-		}
-		return ExtendedElementFactory.INSTANCE.create(treePath, context);
+		return ExtendedElementFactory.INSTANCE.create(tree);
+//		TreePath treePath = TreePath.getPath(this.treePath, tree);
+//		if (treePath == null) {
+//			treePath = TreePath.getPath(compilationUnit, tree);
+//		}
+//		if (treePath == null) {
+//			return null;
+//		}
+//		return ExtendedElementFactory.INSTANCE.create(treePath, context);
 	}
 
-	protected Util util() {
-		return context.util;
-	}
-
-	protected Elements elements() {
-		return context.elements;
-	}
-
-	protected Trees trees() {
-		return context.trees;
-	}
-
-	protected Types types() {
-		return context.types;
-	}
-	
 	@Override
 	public SourcePosition getSourcePosition() {
-	    return context.util.getSourcePosition(tree, compilationUnit);
+		return JSweetContext.current.get().util.getSourcePosition(tree, JSweetContext.currentCompilationUnit.get());
 	}
 }

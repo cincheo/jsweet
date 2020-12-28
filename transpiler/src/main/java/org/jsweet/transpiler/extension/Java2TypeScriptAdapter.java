@@ -103,6 +103,7 @@ import org.jsweet.transpiler.model.MethodInvocationElement;
 import org.jsweet.transpiler.model.NewClassElement;
 import org.jsweet.transpiler.model.VariableAccessElement;
 import org.jsweet.transpiler.model.support.MethodInvocationElementSupport;
+import org.jsweet.transpiler.util.Util;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.EnhancedForLoopTree;
@@ -268,7 +269,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
                     return null;
                 }
 
-                TypeElement typeElementForStaticImport = toElement(staticImportSelect.getExpression());
+                TypeElement typeElementForStaticImport = Util.getTypeElement(staticImportSelect.getExpression());
                 String name = getPrinter().getRootRelativeName(typeElementForStaticImport, false);
                 String methodName = staticImportSelect.getIdentifier().toString();
 
@@ -301,7 +302,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
                         return null;
                     }
                 }
-                Element nameSymbol = toElement(staticImportSelect);
+                Element nameSymbol = Util.getElement(staticImportSelect);
                 if (nameSymbol == null) {
                     nameSymbol = util().findFirstDeclarationInType(typeElementForStaticImport, methodName);
                 }
@@ -316,7 +317,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
                 // check if inner class and do not import
                 if (importDecl.getQualifiedIdentifier() instanceof MemberSelectTree) {
                     MemberSelectTree qualified = (MemberSelectTree) importDecl.getQualifiedIdentifier();
-                    Element importedElement = toElement(qualified);
+                    Element importedElement = Util.getElement(qualified);
                     if (importedElement instanceof TypeElement
                             && importedElement.getEnclosingElement() instanceof TypeElement) {
                         return null;
@@ -335,7 +336,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
         if (targetClassName == null
                 || (targetClassName.equals(UTIL_CLASSNAME) || targetClassName.equals(DEPRECATED_UTIL_CLASSNAME))) {
             ClassTree parentClassTree = getPrinter().getParent(ClassTree.class);
-            TypeElement parentClassElement = toElement(parentClassTree);
+            TypeElement parentClassElement = Util.getElement(parentClassTree);
             return parentClassTree != null
                     && parentClassElement.getQualifiedName().toString().endsWith("." + GLOBALS_CLASS_NAME);
         } else {
@@ -349,8 +350,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
         if (invocation.getMethodSelect() instanceof MemberSelectTree) {
             MemberSelectTree fieldAccess = (MemberSelectTree) invocation.getMethodSelect();
             String methName = fieldAccess.getIdentifier().toString();
-            TypeElement typeElement = util().getTypeElementForTree(fieldAccess.getExpression(),
-                    getCompilationUnitTree());
+            TypeElement typeElement = Util.getTypeElement(fieldAccess.getExpression());
             String typeName = typeElement != null ? typeElement.toString() : null;
             if (typeName != null && "isInstance".equals(methName) && Class.class.getName().equals(typeName)) {
                 printMacroName(fieldAccess.toString());
@@ -445,7 +445,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
             // interface
             ClassTree parentClassTree = getPrinter().getParent(ClassTree.class);
             if (parentClassTree.getExtendsClause() == null //
-                    || context.isInterface(toElement(parentClassTree.getExtendsClause()))) {
+                    || context.isInterface(Util.getTypeElement(parentClassTree.getExtendsClause()))) {
                 return true;
             }
             // special case when subclassing a Java exception type
@@ -453,7 +453,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
                 IdentifierTree methodSelectIdentifier = (IdentifierTree) methodInvocationTree.getMethodSelect();
 
                 String superClassName = util()
-                        .getQualifiedName(toElement(methodSelectIdentifier).getEnclosingElement());
+                        .getQualifiedName(Util.getElement(methodSelectIdentifier).getEnclosingElement());
                 if (context.getBaseThrowables().contains(superClassName)) {
                     // ES6 would take the cause, but we ignore it so far for
                     // backward compatibility
@@ -1392,7 +1392,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
                 if (invocationElement.getTargetExpression() != null
                         && "super".equals(invocationElement.getTargetExpression().toString())) {
                     ClassTree parent = getPrinter().getParent(ClassTree.class);
-                    TypeElement parentElement = toElement(parent);
+                    TypeElement parentElement = Util.getElement(parent);
                     if (parentElement.getSuperclass() != null
                             && !util().isType(parentElement.getSuperclass(), Object.class)) {
                         print("((o: any) => { if (super.clone != undefined) { return super.clone(); } else { let clone = Object.create(o); for(let p in o) { if (o.hasOwnProperty(p)) clone[p] = o[p]; } return clone; } })(this)");
@@ -1547,7 +1547,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
             return true;
         }
 
-        for (Function<TypeMirror, String> mapping : context.getTypeMappings()) {
+        for (Function<TypeMirror, String> mapping : context.getFunctionalTypeMirrorMappings()) {
             mappedType = mapping.apply(type);
             if (mappedType != null) {
                 print(mappedType);
@@ -1564,7 +1564,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
         }
 
         String typeFullName = type.toString();
-        for (BiFunction<ExtendedElement, String, Object> mapping : context.getTypeTreeMappings()) {
+        for (BiFunction<ExtendedElement, String, Object> mapping : context.getFunctionalTypeMappings()) {
             Object mapped = mapping.apply(element, typeFullName);
             if (mapped instanceof String) {
                 print((String) mapped);
@@ -1631,7 +1631,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
                 return true;
             }
 
-            Element fieldAccessElement = toElement(fieldAccess);
+            Element fieldAccessElement = Util.getElement(fieldAccess);
             if (fieldAccess.getExpression().toString().equals("this")) {
                 if (fieldAccessElement != null && fieldAccessElement.getModifiers().contains(Modifier.STATIC)) {
                     report(variableAccess, JSweetProblem.CANNOT_ACCESS_STATIC_MEMBER_ON_THIS,
@@ -1670,9 +1670,9 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
                 }
             }
             IdentifierTree identifier = ExtendedElementFactory.toTree(variableAccess);
-            if (context.hasAnnotationType(toElement(identifier), ANNOTATION_STRING_TYPE)) {
+            if (context.hasAnnotationType(Util.getElement(identifier), ANNOTATION_STRING_TYPE)) {
                 print("\"");
-                getPrinter().print((String) context.getAnnotationValue(toElement(identifier), ANNOTATION_STRING_TYPE,
+                getPrinter().print((String) context.getAnnotationValue(Util.getElement(identifier), ANNOTATION_STRING_TYPE,
                         String.class, identifier.toString()));
                 print("\"");
                 return true;
@@ -1706,11 +1706,11 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
             print(">");
         }
         // macros
-        if (util().isStringType(toType(newClass.getIdentifier()))) {
+        if (util().isStringType(Util.getType(newClass.getIdentifier()))) {
             if (newClass.getArguments().size() >= 3) {
                 getPrinter().print("((str, index, len) => ").print("str.substring(index, index + len))((")
                         .print(newClass.getArguments().get(0)).print(")");
-                if ("byte[]".equals(toType(newClass.getArguments().get(0)).toString())) {
+                if ("byte[]".equals(Util.getType(newClass.getArguments().get(0)).toString())) {
                     print(".map(s => String.fromCharCode(s))");
                 }
                 print(".join(''), ");

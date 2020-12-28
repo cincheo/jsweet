@@ -436,7 +436,7 @@ public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 
         for (int i = 0; i < arguments.size(); i++) {
             ExpressionTree arg = arguments.get(i);
-            TypeMirror methodType = util().getTypeForTree(invocationTree.getMethodSelect(), compilationUnit);
+            TypeMirror methodType = Util.getType(invocationTree.getMethodSelect());
             if (methodType != null) {
                 List<? extends TypeMirror> argTypes = ((ExecutableType) methodType).getParameterTypes();
                 TypeMirror paramType = i < argTypes.size() ? argTypes.get(i) : argTypes.get(argTypes.size() - 1);

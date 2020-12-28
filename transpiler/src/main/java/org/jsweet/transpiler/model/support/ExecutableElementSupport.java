@@ -15,22 +15,20 @@ import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 
-import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.ExecutableElement;
+import org.jsweet.transpiler.util.Util;
 
 import com.sun.source.tree.MethodTree;
-import com.sun.source.util.TreePath;
 
 public class ExecutableElementSupport extends ExtendedElementSupport<MethodTree> implements ExecutableElement {
 
-    public ExecutableElementSupport(TreePath treePath, MethodTree tree,
-            javax.lang.model.element.ExecutableElement element, JSweetContext context) {
-        super(treePath, tree, element, context);
+    public ExecutableElementSupport(MethodTree tree) {
+        super(tree);
     }
 
     @Override
     public javax.lang.model.element.ExecutableElement getStandardElement() {
-        return (javax.lang.model.element.ExecutableElement) element;
+        return (javax.lang.model.element.ExecutableElement) Util.getElement(tree);
     }
 
     @Override

@@ -18,24 +18,20 @@
  */
 package org.jsweet.transpiler.model.support;
 
-import static org.jsweet.transpiler.model.ExtendedElementFactory.toTree;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeMirror;
 
-import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.MethodInvocationElement;
+import org.jsweet.transpiler.util.Util;
 
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.util.TreePath;
 
 /**
  * See {@link MethodInvocationElement}.
@@ -46,9 +42,8 @@ import com.sun.source.util.TreePath;
 public class MethodInvocationElementSupport extends ExtendedElementSupport<MethodInvocationTree>
 		implements MethodInvocationElement {
 
-	public MethodInvocationElementSupport(TreePath treePath, MethodInvocationTree tree, Element element,
-			JSweetContext context) {
-		super(treePath, tree, element, context);
+	public MethodInvocationElementSupport(MethodInvocationTree tree) {
+		super(tree);
 	}
 
 	public List<ExtendedElement> getArguments() {
@@ -84,10 +79,14 @@ public class MethodInvocationElementSupport extends ExtendedElementSupport<Metho
 
 	@Override
 	public ExecutableElement getMethod() {
-		Tree methTree = tree.getMethodSelect();
-		TreePath treePath = TreePath.getPath(this.treePath, methTree);
-		Element methodElement = trees().getElement(treePath);
-		return (ExecutableElement) methodElement;
+		Tree methodTree = tree.getMethodSelect();
+		return (ExecutableElement)Util.getElement(methodTree);
+		
+		
+//		Tree methTree = tree.getMethodSelect();
+//		TreePath treePath = TreePath.getPath(this.treePath, methTree);
+//		Element methodElement = trees().getElement(treePath);
+//		return (ExecutableElement) methodElement;
 	}
 
 	@Override
@@ -103,6 +102,7 @@ public class MethodInvocationElementSupport extends ExtendedElementSupport<Metho
 	@Override
 	public TypeMirror getTargetType() {
 		ExtendedElement targetExpression = getTargetExpression();
-		return targetExpression == null ? null : util().getTypeForTree(toTree(targetExpression), compilationUnit);
+		return targetExpression == null ? null : targetExpression.getType();
+		//		return targetExpression == null ? null : util().getTypeForTree(toTree(targetExpression), compilationUnit);
 	}
 }

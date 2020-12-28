@@ -40,6 +40,7 @@ import org.jsweet.transpiler.model.ForeachLoopElement;
 import org.jsweet.transpiler.model.MethodInvocationElement;
 import org.jsweet.transpiler.model.NewClassElement;
 import org.jsweet.transpiler.model.support.ForeachLoopElementSupport;
+import org.jsweet.transpiler.util.Util;
 
 import com.sun.source.tree.EnhancedForLoopTree;
 
@@ -73,7 +74,7 @@ public class RemoveJavaDependenciesES6Adapter extends RemoveJavaDependenciesAdap
     public boolean substituteForEachLoop(ForeachLoopElement foreachLoop, boolean targetHasLength, String indexVarName) {
         EnhancedForLoopTree loop = ((ForeachLoopElementSupport) foreachLoop).getTree();
         if (!targetHasLength
-                && SET_CLASS_NAMES.contains(context.types.erasure(toType(loop.getExpression())).toString())) {
+                && SET_CLASS_NAMES.contains(context.types.erasure(Util.getType(loop.getExpression())).toString())) {
             getPrinter().print(loop.getExpression())
                     .print(".forEach((" + loop.getVariable().getName().toString() + ")=>");
             getPrinter().printIndent().print(loop.getStatement());

@@ -133,17 +133,16 @@ public abstract class AbstractTreeScanner extends TreePathScanner<Void, Trees> {
      * Returns the current compilation unit element.
      */
     public CompilationUnitElement getCompilationUnitElement() {
-        return new CompilationUnitElementSupport(getTreePath(getCompilationUnit()), getCompilationUnit(),
-                toElement(getCompilationUnit()), context);
+        return new CompilationUnitElementSupport(getCompilationUnit());
     }
 
-    protected void registerTreeCompilationUnit(Tree tree, CompilationUnitTree compilationUnit) {
-        context.registerTreeCompilationUnit(tree, compilationUnit);
-    }
-
-    protected void registerMethodTreeCompilationUnit(MethodTree methodTree, CompilationUnitTree compilationUnit) {
-        context.registerMethodTreeCompilationUnit(methodTree, compilationUnit);
-    }
+//    protected void registerTreeCompilationUnit(Tree tree, CompilationUnitTree compilationUnit) {
+//        context.registerTreeCompilationUnit(tree, compilationUnit);
+//    }
+//
+//    protected void registerMethodTreeCompilationUnit(MethodTree methodTree, CompilationUnitTree compilationUnit) {
+//        context.registerMethodTreeCompilationUnit(methodTree, compilationUnit);
+//    }
 
     /**
      * Returns compilation unit for given tree if a specific mapping has been
@@ -151,32 +150,32 @@ public abstract class AbstractTreeScanner extends TreePathScanner<Void, Trees> {
      * 
      * @see #getCompilationUnit()
      */
-    protected CompilationUnitTree getCompilationUnitForTree(Tree tree) {
-        CompilationUnitTree compilationUnit = context.getCompilationUnitForTree(tree);
-        if (compilationUnit != null) {
-            return compilationUnit;
-        }
-
-        return getCompilationUnit();
-    }
-
-    private Collection<CompilationUnitTree> getPossibleCompilationUnitsForTree(Tree tree) {
-        Collection<CompilationUnitTree> possibleCompilationUnits = new HashSet<>();
-        CompilationUnitTree compilationUnit = context.getCompilationUnitForTree(tree);
-        if (compilationUnit != null) {
-            possibleCompilationUnits.add(compilationUnit);
-        }
-        possibleCompilationUnits.add(getCompilationUnit());
-
-        for (Tree parent : this.stack) {
-            compilationUnit = context.getCompilationUnitForTree(parent);
-            if (compilationUnit != null) {
-                possibleCompilationUnits.add(compilationUnit);
-            }
-        }
-
-        return possibleCompilationUnits;
-    }
+//    protected CompilationUnitTree getCompilationUnitForTree(Tree tree) {
+//        CompilationUnitTree compilationUnit = context.getCompilationUnitForTree(tree);
+//        if (compilationUnit != null) {
+//            return compilationUnit;
+//        }
+//
+//        return getCompilationUnit();
+//    }
+//
+//    private Collection<CompilationUnitTree> getPossibleCompilationUnitsForTree(Tree tree) {
+//        Collection<CompilationUnitTree> possibleCompilationUnits = new HashSet<>();
+//        CompilationUnitTree compilationUnit = context.getCompilationUnitForTree(tree);
+//        if (compilationUnit != null) {
+//            possibleCompilationUnits.add(compilationUnit);
+//        }
+//        possibleCompilationUnits.add(getCompilationUnit());
+//
+//        for (Tree parent : this.stack) {
+//            compilationUnit = context.getCompilationUnitForTree(parent);
+//            if (compilationUnit != null) {
+//                possibleCompilationUnits.add(compilationUnit);
+//            }
+//        }
+//
+//        return possibleCompilationUnits;
+//    }
 
     protected final JSweetContext context;
 
@@ -244,7 +243,8 @@ public abstract class AbstractTreeScanner extends TreePathScanner<Void, Trees> {
      * Sets the compilation unit to be scanned.
      */
     protected final void setCompilationUnit(CompilationUnitTree compilationUnit) {
-        if (compilationUnit != null) {
+        JSweetContext.currentCompilationUnit.set(compilationUnit);
+    	if (compilationUnit != null) {
             this.compilationUnit = compilationUnit;
             for (ImportTree importTree : this.compilationUnit.getImports()) {
                 if (importTree.isStatic()) {
@@ -304,7 +304,7 @@ public abstract class AbstractTreeScanner extends TreePathScanner<Void, Trees> {
      * This is useful for reporting internal errors and give information about what
      * happened to the user.
      */
-    protected void dumpStackTrace() {
+    public void dumpStackTrace() {
         System.err.println("dumping transpiler's strack trace:");
         for (int i = stack.size() - 1; i >= 0; i--) {
             Tree tree = stack.get(i);
@@ -412,20 +412,7 @@ public abstract class AbstractTreeScanner extends TreePathScanner<Void, Trees> {
      * @see #getStack()
      */
     public ExtendedElement getParentElement() {
-        return ExtendedElementFactory.INSTANCE.create(getParentPath(), context);
-    }
-
-    protected TreePath getParentPath() {
-        Tree parent = getParent();
-        if (parent == null) {
-            return null;
-        }
-
-        TreePath path = getCurrentPath();
-        while (path != null && (path = path.getParentPath()) != null && path.getLeaf() != parent) {
-        }
-
-        return path;
+        return ExtendedElementFactory.INSTANCE.create(getParent());
     }
 
     /**
@@ -517,66 +504,72 @@ public abstract class AbstractTreeScanner extends TreePathScanner<Void, Trees> {
     /**
      * @see Util#getElementForTree(Tree, CompilationUnitTree)
      */
-    protected <T extends Element> T toElement(Tree tree) {
-        T element = getFromTreePath(tree, treePath -> util().getElementForTreePath(treePath));
-        if (element != null) {
-            return element;
-        }
-
-        return util().getElementForTree(tree, compilationUnit);
-    }
+//    protected <T extends Element> T toElement(Tree tree) {
+    	
+//    	return (T) Util.getElement(tree);
+//        T element = getFromTreePath(tree, treePath -> util().getElementForTreePath(treePath));
+//        if (element != null) {
+//            return element;
+//        }
+//
+//        return util().getElementForTree(tree, compilationUnit);
+//    }
 
     /**
      * @see Util#getElementTypeForTree(Tree, CompilationUnitTree)
      */
-    protected <T extends TypeMirror> T toElementType(Tree tree) {
-        T type = getFromTreePath(tree, treePath -> util().getElementTypeForTreePath(treePath));
-        if (type != null) {
-            return type;
-        }
-
-        return util().getElementTypeForTree(tree, compilationUnit);
-    }
+//    protected <T extends TypeMirror> T toElementType(Tree tree) {
+//    	T t = Util.getElement(tree);
+//    	return t == null ? null : t instanceof TypeElement ? (T)((TypeElement)t).asType() : null;
+//        T type = getFromTreePath(tree, treePath -> util().getElementTypeForTreePath(treePath));
+//        if (type != null) {
+//            return type;
+//        }
+//
+//        return util().getElementTypeForTree(tree, compilationUnit);
+//    }
 
     /**
      * @see Util#getTypeForTree(Tree, CompilationUnitTree)
      */
-    protected <T extends TypeMirror> T toType(Tree tree) {
-        T type = getFromTreePath(tree, treePath -> util().getTypeForTreePath(treePath));
-        if (type != null) {
-            return type;
-        }
+//    protected <T extends TypeMirror> T toType(Tree tree) {
+//    	return (T)Util.getType(tree);
+//        T type = getFromTreePath(tree, treePath -> util().getTypeForTreePath(treePath));
+//        if (type != null) {
+//            return type;
+//        }
+//
+//        return util().getTypeForTree(tree, compilationUnit);
+//    }
 
-        return util().getTypeForTree(tree, compilationUnit);
-    }
-
-    public TreePath getTreePath(Tree tree) {
-        return getFromTreePath(tree, Function.identity());
-    }
+//    public TreePath getTreePath(Tree tree) {
+//        return getFromTreePath(tree, Function.identity());
+//    }
 
     /**
      * @see Util#getTypeElementForTree(Tree, CompilationUnitTree)
      */
-    protected <T extends Element> T toTypeElement(Tree tree) {
-        T element = getFromTreePath(tree, treePath -> util().getTypeElementForTreePath(treePath));
-        if (element != null) {
-            return element;
-        }
+//    protected <T extends Element> T toTypeElement(Tree tree) {
+//    	return (T)Util.getElement(Util.getType(tree));
+//        T element = getFromTreePath(tree, treePath -> util().getTypeElementForTreePath(treePath));
+//        if (element != null) {
+//            return element;
+//        }
+//
+//        return util().getTypeElementForTree(tree, compilationUnit);
+//    }
 
-        return util().getTypeElementForTree(tree, compilationUnit);
-    }
-
-    protected TypeElement toTypeElement(Element element) {
-        TypeMirror elementType = element.asType();
-        return elementType == null ? null : (TypeElement) types().asElement(elementType);
-    }
+//    protected TypeElement toTypeElement(Element element) {
+//        TypeMirror elementType = element.asType();
+//        return elementType == null ? null : (TypeElement) types().asElement(elementType);
+//    }
 
     @SuppressWarnings("unchecked")
     protected <T extends ExtendedElement> T createExtendedElement(Tree tree) {
         if (tree == null) {
             return null;
         }
-        return (T) ExtendedElementFactory.INSTANCE.create(getTreePath(tree), getContext());
+        return (T) ExtendedElementFactory.INSTANCE.create(tree);
     }
 
     /**
@@ -585,38 +578,38 @@ public abstract class AbstractTreeScanner extends TreePathScanner<Void, Trees> {
      */
     // TODO this is way too complicated, we should keep it simpler
     // please see https://github.com/cincheo/jsweet/pull/575
-    private <T> T getFromTreePath(Tree tree, Function<TreePath, T> transform) {
-        T result = null;
-        if (tree == null) {
-            return result;
-        }
-        TreePath currentPath = getCurrentPath();
-        TreePath treePath = currentPath == null ? null : TreePath.getPath(currentPath, tree);
-        if (treePath != null) {
-            result = transform.apply(treePath);
-        }
-        if (result != null) {
-            return result;
-        }
-
-        treePath = TreePath.getPath(getCompilationUnitForTree(tree), tree);
-        if (treePath != null) {
-            result = transform.apply(treePath);
-        }
-        if (result != null) {
-            return result;
-        }
-
-        for (CompilationUnitTree compilationUnit : getPossibleCompilationUnitsForTree(tree)) {
-            treePath = TreePath.getPath(compilationUnit, tree);
-            if (treePath != null) {
-                result = transform.apply(treePath);
-            }
-            if (result != null) {
-                return result;
-            }
-        }
-
-        return null;
-    }
+//    private <T> T getFromTreePath(Tree tree, Function<TreePath, T> transform) {
+//        T result = null;
+//        if (tree == null) {
+//            return result;
+//        }
+//        TreePath currentPath = getCurrentPath();
+//        TreePath treePath = currentPath == null ? null : TreePath.getPath(currentPath, tree);
+//        if (treePath != null) {
+//            result = transform.apply(treePath);
+//        }
+//        if (result != null) {
+//            return result;
+//        }
+//
+//        treePath = TreePath.getPath(getCompilationUnitForTree(tree), tree);
+//        if (treePath != null) {
+//            result = transform.apply(treePath);
+//        }
+//        if (result != null) {
+//            return result;
+//        }
+//
+//        for (CompilationUnitTree compilationUnit : getPossibleCompilationUnitsForTree(tree)) {
+//            treePath = TreePath.getPath(compilationUnit, tree);
+//            if (treePath != null) {
+//                result = transform.apply(treePath);
+//            }
+//            if (result != null) {
+//                return result;
+//            }
+//        }
+//
+//        return null;
+//    }
 }

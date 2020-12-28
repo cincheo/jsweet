@@ -12,22 +12,20 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.type.TypeMirror;
 
-import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.VariableElement;
+import org.jsweet.transpiler.util.Util;
 
 import com.sun.source.tree.VariableTree;
-import com.sun.source.util.TreePath;
 
 public class VariableElementSupport extends ExtendedElementSupport<VariableTree> implements VariableElement {
 
-    public VariableElementSupport(TreePath treePath, VariableTree tree,
-            javax.lang.model.element.VariableElement variableElement, JSweetContext context) {
-        super(treePath, tree, variableElement, context);
+    public VariableElementSupport(VariableTree tree) {
+        super(tree);
     }
 
     @Override
     public javax.lang.model.element.VariableElement getStandardElement() {
-        return (javax.lang.model.element.VariableElement) element;
+        return (javax.lang.model.element.VariableElement) Util.getElement(tree);
     }
 
     @Override

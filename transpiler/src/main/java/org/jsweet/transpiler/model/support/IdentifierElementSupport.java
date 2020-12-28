@@ -20,11 +20,10 @@ package org.jsweet.transpiler.model.support;
 
 import javax.lang.model.element.Element;
 
-import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.IdentifierElement;
+import org.jsweet.transpiler.util.Util;
 
 import com.sun.source.tree.IdentifierTree;
-import com.sun.source.util.TreePath;
 
 /**
  * See {@link IdentifierElement}.
@@ -34,13 +33,13 @@ import com.sun.source.util.TreePath;
  */
 public class IdentifierElementSupport extends ExtendedElementSupport<IdentifierTree> implements IdentifierElement {
 
-	public IdentifierElementSupport(TreePath treePath, IdentifierTree tree, Element element, JSweetContext context) {
-		super(treePath, tree, element, context);
+	public IdentifierElementSupport(IdentifierTree tree) {
+		super(tree);
 	}
 
 	@Override
 	public Element getReferencedElement() {
-		return util().getElementForTree(getTree(), compilationUnit);
+		return Util.getElement(tree);
 	}
 
 }

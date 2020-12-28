@@ -29,6 +29,7 @@ import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.OverloadScanner.Overload;
 import org.jsweet.transpiler.OverloadScanner.OverloadMethodEntry;
 import org.jsweet.transpiler.util.AbstractTreeScanner;
+import org.jsweet.transpiler.util.Util;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -65,7 +66,7 @@ public class AsyncAwaitPropagationScanner extends AbstractTreeScanner {
     @Override
     public Void visitMethodInvocation(MethodInvocationTree invocation, Trees trees) {
         try {
-            ExecutableElement method = toElement(invocation.getMethodSelect());
+            ExecutableElement method = Util.getElement(invocation.getMethodSelect());
             if (method == null) {
                 return null;
             }
@@ -74,7 +75,7 @@ public class AsyncAwaitPropagationScanner extends AbstractTreeScanner {
                     && !"void".equals(method.getReturnType().toString())) {
                 MethodTree parent = getParent(MethodTree.class);
                 if (parent != null) {
-                    ExecutableElement parentMethodElement = toElement(parent);
+                    ExecutableElement parentMethodElement = Util.getElement(parent);
                     if (!context.hasAnnotationType(parentMethodElement, JSweetConfig.ANNOTATION_ASYNC)) {
                         context.addExtraAnnotationType(parentMethodElement, JSweetConfig.ANNOTATION_ASYNC);
 
@@ -100,8 +101,8 @@ public class AsyncAwaitPropagationScanner extends AbstractTreeScanner {
                 }
                 Tree directParent = getParent();
                 if (!(context.isAwaitInvocation(invocation) || (directParent instanceof MethodInvocationTree
-                        && (toElement(directParent).toString().equals("await")
-                                || toElement((MethodInvocationTree) directParent).toString().endsWith(".await"))))) {
+                        && (Util.getElement(directParent).toString().equals("await")
+                                || Util.getElement((MethodInvocationTree) directParent).toString().endsWith(".await"))))) {
 
                     context.addAwaitInvocation(invocation);
                     stillWorking = true;

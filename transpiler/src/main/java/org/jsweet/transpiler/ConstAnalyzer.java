@@ -26,6 +26,9 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.VariableElement;
 
+import org.jsweet.transpiler.util.Util;
+
+import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
@@ -45,10 +48,6 @@ public class ConstAnalyzer extends TreeScanner<Void, Trees> {
 
     private Set<VariableElement> modifiedVariables = new HashSet<>();
 
-    private CompilationUnitTree compilationUnitTree;
-
-    private final JSweetContext context;
-
     /**
      * Gets all the local variables that are modified within the program. All other
      * local variables can be assumed as constant.
@@ -63,8 +62,7 @@ public class ConstAnalyzer extends TreeScanner<Void, Trees> {
     /**
      * Create a constant variable analyzer on local variables only (default).
      */
-    public ConstAnalyzer(JSweetContext context) {
-        this.context = context;
+    public ConstAnalyzer() {
     }
 
     /**
@@ -75,14 +73,16 @@ public class ConstAnalyzer extends TreeScanner<Void, Trees> {
      * @param initializationOnly only takes into account direct assignments and not
      *                           self-dependent modifications
      */
-    public ConstAnalyzer(JSweetContext context, ElementKind variableKind, boolean initializationOnly) {
-        this(context);
+    public ConstAnalyzer(ElementKind variableKind, boolean initializationOnly) {
         this.variableKind = variableKind;
         this.initializationOnly = initializationOnly;
     }
 
     private void registerModification(Tree tree) {
-        Element element = context.util.getElementForTree(tree, compilationUnitTree);
+    	if (tree instanceof ArrayAccessTree) {
+    		return;
+    	}
+        Element element = Util.getElement(tree);
         if (element != null && (variableKind == null || element.getKind() == variableKind)) {
             modifiedVariables.add((VariableElement) element);
         }
@@ -90,7 +90,7 @@ public class ConstAnalyzer extends TreeScanner<Void, Trees> {
 
     @Override
     public Void visitCompilationUnit(CompilationUnitTree compilationUnit, Trees trees) {
-        this.compilationUnitTree = compilationUnit;
+        JSweetContext.currentCompilationUnit.set(compilationUnit);
         return super.visitCompilationUnit(compilationUnit, trees);
     }
 
@@ -133,7 +133,4 @@ public class ConstAnalyzer extends TreeScanner<Void, Trees> {
         }
     }
     
-    public void setCompilationUnitTree(CompilationUnitTree compilationUnitTree) {
-        this.compilationUnitTree = compilationUnitTree;
-    }
 }

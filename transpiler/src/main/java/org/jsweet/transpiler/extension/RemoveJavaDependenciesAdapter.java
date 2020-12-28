@@ -55,6 +55,7 @@ import org.jsweet.transpiler.model.MethodInvocationElement;
 import org.jsweet.transpiler.model.NewArrayElement;
 import org.jsweet.transpiler.model.NewClassElement;
 import org.jsweet.transpiler.model.VariableAccessElement;
+import org.jsweet.transpiler.util.Util;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.EnhancedForLoopTree;
@@ -181,7 +182,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
             return null;
         });
 
-        addTypeTreeMapping((ExtendedElement typeTree, String name) -> mapWeakReferenceType(typeTree, name));
+        addTypeMapping((ExtendedElement typeTree, String name) -> mapWeakReferenceType(typeTree, name));
 
         excludedJavaSuperTypes.add(EventObject.class.getName());
     }
@@ -1779,7 +1780,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
     @Override
     public boolean substituteForEachLoop(ForeachLoopElement foreachLoop, boolean targetHasLength, String indexVarName) {
         EnhancedForLoopTree loop = ExtendedElementFactory.toTree(foreachLoop);
-        TypeMirror expressionType = toType(loop.getExpression());
+        TypeMirror expressionType = Util.getType(loop.getExpression());
         if (!targetHasLength && !isJDKPath(expressionType.toString())
                 && types().isSubtype(expressionType, types().erasure(util().getType(Iterable.class)))) {
             printForEachLoop(loop, indexVarName);

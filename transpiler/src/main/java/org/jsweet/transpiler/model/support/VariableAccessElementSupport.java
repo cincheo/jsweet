@@ -21,13 +21,12 @@ package org.jsweet.transpiler.model.support;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
 
-import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.VariableAccessElement;
+import org.jsweet.transpiler.util.Util;
 
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.util.TreePath;
 
 /**
  * See {@link VariableAccessElement}.
@@ -37,11 +36,8 @@ import com.sun.source.util.TreePath;
  */
 public class VariableAccessElementSupport extends ExtendedElementSupport<Tree> implements VariableAccessElement {
 
-	private VariableElement variableElement;
-
-	public VariableAccessElementSupport(TreePath treePath, Tree tree, VariableElement variableElement, JSweetContext context) {
-		super(treePath, tree, variableElement, context);
-		this.variableElement = variableElement;
+	public VariableAccessElementSupport(Tree tree) {
+		super(tree);
 	}
 
 	public ExtendedElement getTargetExpression() {
@@ -54,7 +50,7 @@ public class VariableAccessElementSupport extends ExtendedElementSupport<Tree> i
 
 	@Override
 	public VariableElement getVariable() {
-		return variableElement;
+		return (VariableElement)Util.getElement(tree);
 	}
 
 	@Override

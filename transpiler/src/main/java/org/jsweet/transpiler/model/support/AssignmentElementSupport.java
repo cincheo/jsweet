@@ -18,15 +18,11 @@
  */
 package org.jsweet.transpiler.model.support;
 
-import javax.lang.model.element.Element;
-
-import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.AssignmentElement;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.VariableAccessElement;
 
 import com.sun.source.tree.AssignmentTree;
-import com.sun.source.util.TreePath;
 
 /**
  * See {@link AssignmentElement}.
@@ -36,8 +32,8 @@ import com.sun.source.util.TreePath;
  */
 public class AssignmentElementSupport extends ExtendedElementSupport<AssignmentTree> implements AssignmentElement {
 
-	public AssignmentElementSupport(TreePath treePath, AssignmentTree tree, Element element, JSweetContext context) {
-		super(treePath, tree, element, context);
+	public AssignmentElementSupport(AssignmentTree tree) {
+		super(tree);
 	}
 
 	@Override

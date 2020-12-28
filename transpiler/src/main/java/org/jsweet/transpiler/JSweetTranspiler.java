@@ -914,7 +914,7 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
             List<CompilationUnitTree> compilationUnits) throws IOException {
         // regular file-to-file generation
         new OverloadScanner(transpilationHandler, context).process(compilationUnits);
-        context.constAnalyzer = new ConstAnalyzer(context);
+        context.constAnalyzer = new ConstAnalyzer();
         context.constAnalyzer.scan(compilationUnits, context.trees);
 
         if (isVerbose()) {
@@ -954,7 +954,7 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
                 cuName = s[0];
 
                 String packageFullName = util().getPackageFullNameForCompilationUnit(cu);
-                Element packageElement = util().getElementForTree(cu.getPackage(), cu);
+                Element packageElement = Util.getElement(cu.getPackage());
 
                 String javaSourceFileRelativeFullName = (packageFullName.replace(".", File.separator) + File.separator
                         + cuName + ".java");
@@ -1058,7 +1058,7 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
         }
 
         new OverloadScanner(transpilationHandler, context).process(orderedCompilationUnits);
-        context.constAnalyzer = new ConstAnalyzer(context);
+        context.constAnalyzer = new ConstAnalyzer();
         context.constAnalyzer.scan(orderedCompilationUnits, context.trees);
 
         if (isAutoPropagateAsyncAwaits()) {

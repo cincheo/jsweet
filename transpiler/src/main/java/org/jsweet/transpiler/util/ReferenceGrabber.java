@@ -36,7 +36,6 @@ import com.sun.source.util.Trees;
  * A utility scanner that grabs all references to types used within a code tree.
  * 
  * @author Renaud Pawlak
- * @author Louis Grignon
  */
 public class ReferenceGrabber extends TreeScanner<Void, Trees> {
 
@@ -44,20 +43,13 @@ public class ReferenceGrabber extends TreeScanner<Void, Trees> {
 	 * The grabbed references.
 	 */
 	public final Set<TypeMirror> referencedTypes = new HashSet<>();
-	private final JSweetContext context;
-	private final CompilationUnitTree compilationUnit;
-
-	public ReferenceGrabber(JSweetContext context, CompilationUnitTree compilationUnit) {
-		this.context = context;
-		this.compilationUnit = compilationUnit;
-	}
 
 	/**
 	 * Grab references on the given new-class tree.
 	 */
 	@Override
 	public Void visitNewClass(NewClassTree newClass, Trees trees) {
-		add(context.util.getTypeForTree(newClass.getIdentifier(), compilationUnit));
+		add(Util.getType(newClass.getIdentifier()));
 
 		return super.visitNewClass(newClass, trees);
 	}
@@ -67,7 +59,7 @@ public class ReferenceGrabber extends TreeScanner<Void, Trees> {
 	 */
 	@Override
 	public Void visitMemberSelect(MemberSelectTree memberSelectTree, Trees trees) {
-		TypeMirror typeOfSelected = context.util.getTypeForTree(memberSelectTree.getExpression(), compilationUnit);
+		TypeMirror typeOfSelected = Util.getType(memberSelectTree.getExpression());
 		if (typeOfSelected != null && typeOfSelected.getKind() == TypeKind.DECLARED) {
 			add(typeOfSelected);
 		}
