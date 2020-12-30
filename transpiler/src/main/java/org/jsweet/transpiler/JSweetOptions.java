@@ -124,6 +124,10 @@ public interface JSweetOptions {
      */
     String extraSystemPath = "extraSystemPath";
     /**
+     * Constant string for the 'javaCompilerExtraOptions' option.
+     */
+    String javaCompilerExtraOptions = "javaCompilerExtraOptions";
+    /**
      * Constant string for the 'useSingleQuotesForStringLiterals' option.
      */
     String useSingleQuotesForStringLiterals = "useSingleQuotesForStringLiterals";
@@ -384,4 +388,10 @@ public interface JSweetOptions {
      * If true, auto propagates async methods and await invocations.
      */
     boolean isAutoPropagateAsyncAwaits();
+
+    /**
+     * Gets additional options passed to the Java Compiler.
+     */
+    String[] getJavaCompilerExtraOptions();
+
 }

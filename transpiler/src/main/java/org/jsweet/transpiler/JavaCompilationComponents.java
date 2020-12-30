@@ -6,7 +6,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
@@ -59,6 +62,7 @@ public class JavaCompilationComponents implements AutoCloseable {
 	public static class Options {
 		public String classPath;
 		public String encoding;
+		public Map<String, String> extraOptions = new HashMap<>();
 		public TranspilationHandler transpilationHandler = new ConsoleTranspilationHandler();
 	}
 
@@ -86,8 +90,6 @@ public class JavaCompilationComponents implements AutoCloseable {
 		}
 
 		compilerOptions.put("-Xlint:path");
-		// always generate target of 1.8 to ensure candies backward compatibility
-		// compilerOptions.put("-target", "1.8");
 
 		Charset charset = null;
 		if (encoding != null) {
@@ -104,6 +106,10 @@ public class JavaCompilationComponents implements AutoCloseable {
 		logger.debug("charset: " + charset);
 		logger.debug("strict mode: " + context.strictMode);
 
+		for (Entry<String, String> extraOption : options.extraOptions.entrySet()) {
+			compilerOptions.put(extraOption.getKey(), extraOption.getValue());
+		}
+		
 		JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 		StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, context.locale, charset);
 

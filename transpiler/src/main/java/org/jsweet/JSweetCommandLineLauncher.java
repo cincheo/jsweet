@@ -205,6 +205,11 @@ import com.martiansoftware.jsap.stringparsers.FileStringParser;
         to emulate the Java behavior. When disables, the code is more readable 
         but it may result into runtime static initialization issues (cross-class
         static dependencies).
+        
+  [--javaCompilerExtraOptions <optionValueList>]
+        Allow extra options to be passed directly to the Java compiler (may 
+        override other regular options). 
+        For example: --javaCompilerExtraOptions -source,1.8,-target,1.8
  * 
  * </pre>
  * 
@@ -614,6 +619,16 @@ public class JSweetCommandLineLauncher {
                 "and automatically adds await keywords when invoking async methods.");
         jsap.registerParameter(switchArg);
         
+        // Extra Java Compiler Options
+        optionArg = new FlaggedOption(JSweetOptions.javaCompilerExtraOptions);
+        optionArg.setLongFlag(JSweetOptions.javaCompilerExtraOptions);
+        optionArg.setHelp("Allow extra options to be passed directly to the Java compiler (may " + 
+        "override other regular options). For example: --javaCompilerExtraOptions -source,1.8,-target,1.8");
+        optionArg.setList(true);
+        optionArg.setListSeparator(',');
+        optionArg.setRequired(false);
+        jsap.registerParameter(optionArg);
+        
         return jsap;
     }
 
@@ -847,6 +862,9 @@ public class JSweetCommandLineLauncher {
                     }
                     if (jsapArgs.userSpecified(JSweetOptions.autoPropagateAsyncAwaits)) {
                         transpiler.setAutoPropagateAsyncAwaits(jsapArgs.getBoolean(JSweetOptions.autoPropagateAsyncAwaits));
+                    }    
+                    if (jsapArgs.userSpecified(JSweetOptions.javaCompilerExtraOptions)) {
+                        transpiler.setJavaCompilerExtraOptions(jsapArgs.getStringArray(JSweetOptions.javaCompilerExtraOptions));
                     }    
                     
                     if (tsOutputDir != null) {

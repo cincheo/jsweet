@@ -230,6 +230,7 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
     private boolean sortClassMembers = false;
 
     private boolean autoPropagateAsyncAwaits = false;
+    private String[] javaCompilerExtraOptions = {};
 
     private ArrayList<String> adapters = new ArrayList<>();
     private File configurationFile;
@@ -718,6 +719,12 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
         javaCompilationOptions.classPath = getClassPath();
         javaCompilationOptions.encoding = getEncoding();
         javaCompilationOptions.transpilationHandler = transpilationHandler;
+        if (getJavaCompilerExtraOptions() != null && getJavaCompilerExtraOptions().length > 1) {
+        	logger.info("extra Java compiler options: " + Arrays.asList(getJavaCompilerExtraOptions()));
+        	for (int i = 0; i < getJavaCompilerExtraOptions().length - 1; i += 2) {
+            	javaCompilationOptions.extraOptions.put(getJavaCompilerExtraOptions()[i], getJavaCompilerExtraOptions()[i + 1]);
+        	}
+        }
         javaCompilationComponents = JavaCompilationComponents.prepareFor(javaFiles, context, factory,
                 javaCompilationOptions);
 
@@ -1889,6 +1896,15 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
         this.autoPropagateAsyncAwaits = autoPropagateAsyncAwaits;
     }
 
+    @Override
+    public String[] getJavaCompilerExtraOptions() {
+        return javaCompilerExtraOptions;
+    }
+
+    public void setJavaCompilerExtraOptions(String[] javaCompilerExtraOptions) {
+        this.javaCompilerExtraOptions = javaCompilerExtraOptions;
+    }
+    
     @Override
     public void close() throws Exception {
         if (javaCompilationComponents != null) {
