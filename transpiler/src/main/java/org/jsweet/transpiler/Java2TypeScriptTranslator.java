@@ -1172,6 +1172,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
         Element typeElement = Util.getTypeElement(typeTree);
         TypeMirror typeType = Util.getType(typeTree);
+        
         if (typeElement instanceof TypeParameterElement) {
             if (getAdapter().typeVariablesToErase.contains(typeElement)) {
                 return print("any");
@@ -1322,7 +1323,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                         return this;
                     }
                 }
-                if (typeFullName.startsWith(Class.class.getName() + "<")) {
+                if (typeType.toString().startsWith(Class.class.getName() + "<")) {
                     return print("any");
                 }
             } else {
