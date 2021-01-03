@@ -1288,6 +1288,16 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
                     printTarget(invocationElement.getTargetExpression());
                     print(")");
                     return true;
+                case "isAssignableFrom":
+                    printMacroName(targetMethodName);
+                    print("((candidateBase, clazz) => candidateBase != null && clazz != null && " + //
+                            "(candidateBase == clazz || clazz.prototype instanceof candidateBase)" + //
+                            ")(");
+                    printTarget(invocationElement.getTargetExpression());
+                    print(",");
+                    print(invocationElement.getArgument(0));
+                    print(")");
+                    return true;
                 case "getFields":
                 case "getDeclaredFields":
                     printMacroName(targetMethodName);
@@ -1304,10 +1314,9 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
                                 } else {
                                     fields = targetClass.getFields();
                                 }
-                                System.out.println("tesseeee " + targetMethodName + " == " + fields.length);
                                 print("[");
                                 for (Field f : fields) {
-                                    
+
                                     print("{");
                                     print(" name: '" + f.getName() + "',");
                                     print(" getName: () => this.name,");
