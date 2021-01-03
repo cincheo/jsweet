@@ -17,12 +17,23 @@ public class OverloadWithGenerics {
 		$export("trace", trace);
 	}
 
-	static <U> void m(U u) {
+    static <U> void m(U u) {
         array(OverloadWithGenerics.trace).push("2.1");
     }
     
-	static <U, U2> void m(U u, U2 u2) {
+    static <U, U2> void m(U u, U2 u2) {
         array(OverloadWithGenerics.trace).push("2.2");
+    }
+    
+
+
+    static void zblah() {
+    }
+    
+    static <U, U2> void zblah(U u, U2 u2) {
+    }
+    
+    static <U, U2, U3, U4> void zblah(U u, U2 u2, U4 u4) {
     }
 }
 

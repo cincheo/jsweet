@@ -3933,11 +3933,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             if (CONSTRUCTOR_TYPE_MAPPING.containsKey(target)) {
                 print(mapConstructorType(target));
                 return true;
-            } else if (type instanceof DeclaredType) {
-                Element firstTypeArgumentAsElement = util()
-                        .getFirstTypeArgumentAsElement((DeclaredType) type);
+            } else if (typeElement != null) {
                 print(getStringLiteralQuote())
-                        .print(context.getRootRelativeJavaName(firstTypeArgumentAsElement))
+                        .print(context.getRootRelativeJavaName(typeElement))
                         .print(getStringLiteralQuote());
                 return true;
             }
@@ -3985,7 +3983,17 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                             .print(getStringLiteralQuote());
                 } else {
                     if (!printClass(selectedType)) {
-                        print(memberSelectTree.getExpression());
+                        String name = selectedTypeElement == null ? selectedType.toString()
+                                : selectedTypeElement.toString();
+                        if (context.isMappedType(name)) {
+                                Element firstTypeArgumentAsElement = util()
+                                        .getFirstTypeArgumentAsElement((DeclaredType) memberType);
+                                print(getStringLiteralQuote())
+                                        .print(context.getRootRelativeJavaName(firstTypeArgumentAsElement))
+                                        .print(getStringLiteralQuote());
+                        } else {
+                            print(memberSelectTree.getExpression());
+                        }
                     }
                 }
             } else if ("this".equals(memberSelectTree.getIdentifier().toString())) {
