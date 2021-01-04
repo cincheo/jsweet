@@ -70,6 +70,16 @@ public class ExtendedElementSupport<T extends JCTree> implements ExtendedElement
 		}
 	}
 
+	@SuppressWarnings("rawtypes")
+	@Override
+	public boolean equals(Object obj) {
+		if (!(obj instanceof ExtendedElementSupport)) {
+			return false;
+		} else {
+			return this.tree == ((ExtendedElementSupport)obj).tree;
+		}
+	}
+	
 	@Override
 	public int hashCode() {
 		return tree.hashCode();

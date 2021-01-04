@@ -53,6 +53,7 @@ import org.jsweet.transpiler.model.CaseElement;
 import org.jsweet.transpiler.model.TypeCastElement;
 import org.jsweet.transpiler.model.CompilationUnitElement;
 import org.jsweet.transpiler.model.ExtendedElement;
+import org.jsweet.transpiler.model.ExtendedElementFactory;
 import org.jsweet.transpiler.model.ForeachLoopElement;
 import org.jsweet.transpiler.model.IdentifierElement;
 import org.jsweet.transpiler.model.ImportElement;
@@ -580,6 +581,13 @@ public class PrinterAdapter {
 		return printer.getParentElement();
 	}
 
+	/**
+	 * Gets currently scanned element.
+	 */
+	public final ExtendedElement getCurrentElement() {
+		return ExtendedElementFactory.INSTANCE.create(printer.getCurrent());
+	}
+	
 	/**
 	 * Gets the parent element in the printer's scanning stack.
 	 */

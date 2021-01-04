@@ -4,4 +4,6 @@ public interface VariableElement extends ExtendedElement, javax.lang.model.eleme
 
     javax.lang.model.element.VariableElement getStandardElement();
     
+    ExtendedElement getVariableTypeTree();
+    
 }
