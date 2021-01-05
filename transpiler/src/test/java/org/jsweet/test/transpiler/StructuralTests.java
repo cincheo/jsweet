@@ -18,13 +18,18 @@ package org.jsweet.test.transpiler;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
+import java.io.IOException;
+
+import org.apache.commons.io.FileUtils;
 import org.jsweet.test.transpiler.util.TranspilerTestRunner;
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetFactory;
 import org.jsweet.transpiler.JSweetOptions;
 import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.ModuleKind;
+import org.jsweet.transpiler.SourceFile;
 import org.jsweet.transpiler.extension.Java2TypeScriptAdapter;
 import org.junit.Assert;
 import org.junit.Test;
@@ -575,12 +580,25 @@ public class StructuralTests extends AbstractTest {
 
 	@Test
 	public void testDefaultMethodsHierarchy() {
-		eval(ModuleKind.commonjs, (logHandler, r) -> {
-			logHandler.assertNoProblems();
-		}, getSourceFile(MyAnnotation.class), getSourceFile(II1.class), getSourceFile(CC1.class),
+		SourceFile[] sourceFiles = new SourceFile[] {
+				getSourceFile(MyAnnotation.class), getSourceFile(II1.class), getSourceFile(CC1.class),
 				getSourceFile(CC2.class), getSourceFile(I1.class), getSourceFile(I2.class), getSourceFile(I3.class),
 				getSourceFile(I4.class), getSourceFile(I5.class), getSourceFile(AbstractViewController.class),
-				getSourceFile(IntermediateAbstractViewController.class), getSourceFile(FinalViewController.class));
+				getSourceFile(IntermediateAbstractViewController.class), getSourceFile(FinalViewController.class)	
+		};
+		eval(ModuleKind.commonjs, (logHandler, r) -> {
+			logHandler.assertNoProblems();
+			try {
+				String cc1Ts = FileUtils.readFileToString(sourceFiles[2].getTsFile());
+				assertTrue(cc1Ts.contains("CC1 implements I3"));
+				assertTrue(cc1Ts.contains("m3() {"));
+				String cc2Ts = FileUtils.readFileToString(sourceFiles[3].getTsFile());
+				assertTrue(cc2Ts.contains("CC1 implements I3"));
+				assertTrue(!cc2Ts.contains("m3() {"));
+			} catch (IOException e) {
+				fail();
+			}
+		}, sourceFiles);
 	}
 
 	@Test
