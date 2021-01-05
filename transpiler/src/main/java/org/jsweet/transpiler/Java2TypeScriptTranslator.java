@@ -1581,6 +1581,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     }
                     defaultMethods = new HashSet<>();
                     util().findDefaultMethodsInType(defaultMethods, context, classTypeElement);
+                    TypeElement superClass = Util.getElement(classTypeElement.getSuperclass());
+					if (util().isSourceElement(superClass) && !isMappedOrErasedType(superClass)) {
+						Set<DefaultMethodEntry> superClassDefaultMethods = new HashSet<>();
+						util().findDefaultMethodsInType(superClassDefaultMethods, context, superClass);
+						defaultMethods.removeAll(superClassDefaultMethods);
+					}
+                    
                     if (classTree.getModifiers().getFlags().contains(Modifier.ABSTRACT)) {
                         print("abstract ");
                     }
