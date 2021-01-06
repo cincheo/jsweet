@@ -3922,6 +3922,31 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             }
         }
     }
+    
+    public boolean printClass(TypeMirror type) {
+        Element element = Util.getElement(type);
+        TypeElement typeElement = element instanceof TypeElement ? (TypeElement) element : null;
+        String className = typeElement == null ? type.toString() : typeElement.toString();
+        
+        if (context.isMappedType(className)) {
+            String target = context.getTypeMappingTarget(className);
+            if (CONSTRUCTOR_TYPE_MAPPING.containsKey(target)) {
+                print(mapConstructorType(target));
+                return true;
+            } else if (typeElement != null) {
+                print(getStringLiteralQuote())
+                        .print(context.getRootRelativeJavaName(typeElement))
+                        .print(getStringLiteralQuote());
+                return true;
+            }
+        } else {
+            if (CONSTRUCTOR_TYPE_MAPPING.containsKey(className)) {
+                print(mapConstructorType(className));
+                return true;
+            }
+        }
+        return false;
+    }
 
     @Override
     public Void visitMemberSelect(MemberSelectTree memberSelectTree, Trees trees) {
@@ -3957,22 +3982,15 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                                     util().getFirstTypeArgumentAsElement((DeclaredType) memberType)))
                             .print(getStringLiteralQuote());
                 } else {
-                    String name = selectedTypeElement == null ? selectedType.toString()
-                            : selectedTypeElement.toString();
-                    if (context.isMappedType(name)) {
-                        String target = context.getTypeMappingTarget(name);
-                        if (CONSTRUCTOR_TYPE_MAPPING.containsKey(target)) {
-                            print(mapConstructorType(target));
-                        } else {
-                            Element firstTypeArgumentAsElement = util()
-                                    .getFirstTypeArgumentAsElement((DeclaredType) memberType);
-                            print(getStringLiteralQuote())
-                                    .print(context.getRootRelativeJavaName(firstTypeArgumentAsElement))
-                                    .print(getStringLiteralQuote());
-                        }
-                    } else {
-                        if (CONSTRUCTOR_TYPE_MAPPING.containsKey(name)) {
-                            print(mapConstructorType(name));
+                    if (!printClass(selectedType)) {
+                        String name = selectedTypeElement == null ? selectedType.toString()
+                                : selectedTypeElement.toString();
+                        if (context.isMappedType(name)) {
+                                Element firstTypeArgumentAsElement = util()
+                                        .getFirstTypeArgumentAsElement((DeclaredType) memberType);
+                                print(getStringLiteralQuote())
+                                        .print(context.getRootRelativeJavaName(firstTypeArgumentAsElement))
+                                        .print(getStringLiteralQuote());
                         } else {
                             print(memberSelectTree.getExpression());
                         }

@@ -239,6 +239,8 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
         if (delegate) {
             targetClassName = jdkSuperclass.toString();
         }
+        
+        TypeMirror targetType = invocation.getTargetType();
 
         if (targetClassName != null
                 && (targetExpression != null || invocation.getMethod().getModifiers().contains(Modifier.STATIC))) {
@@ -441,7 +443,7 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
                 break;
 
             case "java.lang.Class":
-                if (substituteMethodInvocationOnClass(invocation, targetMethodName, delegate)) {
+                if (substituteMethodInvocationOnClass(invocation, targetType, targetMethodName, delegate)) {
                     return true;
                 }
                 break;
@@ -654,22 +656,22 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
         return false;
     }
 
-    protected boolean substituteMethodInvocationOnClass(MethodInvocationElement invocation, String targetMethodName,
+    protected boolean substituteMethodInvocationOnClass(MethodInvocationElement invocationElement, TypeMirror targetType, String targetMethodName,
             boolean delegate) {
 
         switch (targetMethodName) {
         case "forName":
             printMacroName(targetMethodName);
             if (getContext().options.getModuleKind() != ModuleKind.none) {
-                print("eval(").print(invocation.getArgument(0)).print(".split('.').slice(-1)[0])");
+                print("eval(").print(invocationElement.getArgument(0)).print(".split('.').slice(-1)[0])");
             } else {
-                print("eval(").print(invocation.getArgument(0)).print(")");
+                print("eval(").print(invocationElement.getArgument(0)).print(")");
             }
             return true;
         case "newInstance":
             printMacroName(targetMethodName);
             print("new (");
-            print(invocation.getTargetExpression(), delegate).print(")(").printArgList(invocation.getArguments())
+            print(invocationElement.getTargetExpression(), delegate).print(")(").printArgList(invocationElement.getArguments())
                     .print(")");
             return true;
         case "isInstance":
@@ -680,33 +682,79 @@ public class RemoveJavaDependenciesAdapter extends Java2TypeScriptAdapter {
                     .print("[\"" + Java2TypeScriptTranslator.INTERFACES_FIELD_NAME + "\"] && o")
                     .print("[\"" + Java2TypeScriptTranslator.INTERFACES_FIELD_NAME
                             + "\"].indexOf(c) >= 0); else if(typeof c === 'function') return (o instanceof c) || (o.constructor && o.constructor === c); })(");
-            print(invocation.getTargetExpression(), delegate).print(", ").printArgList(invocation.getArguments())
+            print(invocationElement.getTargetExpression(), delegate).print(", ").printArgList(invocationElement.getArguments())
                     .print(")");
             return true;
         case "isPrimitive":
             // primitive class types are never used in JSweet, so it
             // will always return false
             printMacroName(targetMethodName);
-            print("(").print(invocation.getTargetExpression()).print(" === <any>'__erasedPrimitiveType__'").print(")");
+            print("(").print(invocationElement.getTargetExpression()).print(" === <any>'__erasedPrimitiveType__'").print(")");
             return true;
         case "getMethods":
         case "getDeclaredMethods":
             printMacroName(targetMethodName);
             print("(c => Object.getOwnPropertyNames(c.prototype).filter(n => typeof c.prototype[n] == 'function').map(n => ({owner:c,name:n,fn:c.prototype[n]}) ) )(")
-                    .print(invocation.getTargetExpression()).print(")");
+                    .print(invocationElement.getTargetExpression()).print(")");
             return true;
         case "getMethod":
         case "getDeclaredMethod":
             printMacroName(targetMethodName);
             print("((c,p) => { if(c.prototype.hasOwnProperty(p) && typeof c.prototype[p] == 'function') return {owner:c,name:p,fn:c.prototype[p]}; else return null; })(")
-                    .print(invocation.getTargetExpression()).print(",").print(invocation.getArgument(0)).print(")");
+                    .print(invocationElement.getTargetExpression()).print(",").print(invocationElement.getArgument(0)).print(")");
             return true;
         case "getField":
         case "getDeclaredField":
             printMacroName(targetMethodName);
-            print("((c,p) => { return {owner:c,name:p}; })(").print(invocation.getTargetExpression()).print(",")
-                    .print(invocation.getArgument(0)).print(")");
+            print("((c,p) => { return {owner:c,name:p}; })(").print(invocationElement.getTargetExpression()).print(",")
+                    .print(invocationElement.getArgument(0)).print(")");
             return true;
+
+        case "isAssignableFrom":
+            printMacroName(targetMethodName);
+            print("((candidateBase, clazz) => candidateBase != null && clazz != null && " + //
+                    "(candidateBase == clazz || clazz.prototype instanceof candidateBase)" + //
+                    ")(");
+            printTarget(invocationElement.getTargetExpression());
+            print(",");
+            print(invocationElement.getArgument(0));
+            print(")");
+            return true;
+        case "getFields":
+        case "getDeclaredFields":
+            printMacroName(targetMethodName);
+            if (targetType instanceof DeclaredType) {
+                List<? extends TypeMirror> typeArgs = ((DeclaredType) targetType).getTypeArguments();
+                if (typeArgs != null && typeArgs.size() > 0 && !util().isType(typeArgs.get(0), Object.class)) {
+                    TypeMirror targetClassType = typeArgs.get(0);
+                    Class<?> targetClass = util().getTypeClass(targetClassType);
+
+                    if (targetClass != null) {
+                        Field[] fields;
+                        if (targetMethodName.equals("getDeclaredFields")) {
+                            fields = targetClass.getDeclaredFields();
+                        } else {
+                            fields = targetClass.getFields();
+                        }
+                        print("[");
+                        for (Field field : fields) {
+
+                            print("{");
+                            print(" name: '" + field.getName() + "',");
+                            print(" getName: () => this.name,");
+                            print(" getType: () => ");
+                            if (!getPrinter().printClass(util().getType(field.getType()))) {
+                                print("Object");
+                            }
+                            print(",");
+                            print("},");
+                        }
+                        print("]");
+                        return true;
+                    }
+                }
+            }
+            break;
         }
         return false;
     }

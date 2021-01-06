@@ -44,6 +44,7 @@ import static org.jsweet.transpiler.Java2TypeScriptTranslator.CLASS_NAME_IN_CONS
 import static org.jsweet.transpiler.Java2TypeScriptTranslator.ENUM_WRAPPER_CLASS_WRAPPERS;
 import static org.jsweet.transpiler.Java2TypeScriptTranslator.INTERFACES_FIELD_NAME;
 
+import java.lang.reflect.Field;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -78,10 +79,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.ExecutableType;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.*;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jsweet.JSweetConfig;
@@ -206,6 +204,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
         addTypeMapping("short", "number");
         addTypeMapping("char", "string");
         addTypeMapping("Class", "any");
+        addTypeMapping(Field.class.getName(), "any");
         addTypeMapping(LANG_PACKAGE + ".Object", "Object");
         addTypeMapping(LANG_PACKAGE + ".Boolean", "boolean");
         addTypeMapping(LANG_PACKAGE + ".String", "string");
@@ -1644,8 +1643,8 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
                     && !util().isPartOfAnEnum(fieldAccessElement)
                     && !"this".equals(fieldAccess.getExpression().toString()) && !"class".equals(targetFieldName)) {
                 String relTarget = getRootRelativeName((Element) targetType);
-                
-                TypeElement  targetTypeElement = (TypeElement) targetType;
+
+                TypeElement targetTypeElement = (TypeElement) targetType;
                 getPrinter().useModule(getModuleImportDescriptor(getCompilationUnit(),
                         context.getActualName(targetTypeElement), (TypeElement) targetTypeElement));
                 getPrinter().print(relTarget)
@@ -1672,8 +1671,8 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
             IdentifierTree identifier = ExtendedElementFactory.toTree(variableAccess);
             if (context.hasAnnotationType(Util.getElement(identifier), ANNOTATION_STRING_TYPE)) {
                 print("\"");
-                getPrinter().print((String) context.getAnnotationValue(Util.getElement(identifier), ANNOTATION_STRING_TYPE,
-                        String.class, identifier.toString()));
+                getPrinter().print((String) context.getAnnotationValue(Util.getElement(identifier),
+                        ANNOTATION_STRING_TYPE, String.class, identifier.toString()));
                 print("\"");
                 return true;
             }

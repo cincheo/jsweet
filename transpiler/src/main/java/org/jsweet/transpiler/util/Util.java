@@ -298,6 +298,16 @@ public class Util {
         return type.toString();
     }
 
+    @SuppressWarnings("unchecked")
+    public <T> Class<T> getTypeClass(TypeMirror type) {
+        try {
+            Class<?> clazz = Class.forName(getQualifiedName(type));
+            return (Class<T>)clazz;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     /**
      * Gets the type from an existing runtime class when possible (return null when
      * the type cannot be found in the compiler's symbol table).
@@ -1100,7 +1110,7 @@ public class Util {
      * Tells if this parameter declaration is varargs.
      */
     public boolean isVarargs(VariableTree varDecl) {
-        VariableElement varElement = (VariableElement)Util.getElement(varDecl);
+        VariableElement varElement = (VariableElement) Util.getElement(varDecl);
         return isVarargs(varElement);
     }
 
@@ -1856,8 +1866,8 @@ public class Util {
                 .collect(Collectors.toList());
 
         DirectedGraph<ClassTree> defs = new DirectedGraph<>();
-        List<TypeElement> typeElements = classDecls.stream()
-                .map(d -> (TypeElement) Util.getElement(d)).collect(toList());
+        List<TypeElement> typeElements = classDecls.stream().map(d -> (TypeElement) Util.getElement(d))
+                .collect(toList());
         defs.add(classDecls.toArray(new ClassTree[0]));
         for (int i = 0; i < typeElements.size(); i++) {
             int superClassIndex = indexOfSuperclass(typeElements, typeElements.get(i));
@@ -2511,17 +2521,17 @@ public class Util {
     private static Field typeField;
     private static Field tsymField;
     private static Map<Class<?>, Field> symFields = new HashMap<Class<?>, Field>();
-    
-	static {
-		try {
-			typeField = Class.forName("com.sun.tools.javac.tree.JCTree").getDeclaredField("type");
-			typeField.setAccessible(true);
-			tsymField = Class.forName( "com.sun.tools.javac.code.Type").getDeclaredField("tsym");
-			tsymField.setAccessible(true);
-		} catch (Exception e) {
-			throw new RuntimeException("Fatal error - cannot access legacy Javac API", e);
-		}
-	}
+
+    static {
+        try {
+            typeField = Class.forName("com.sun.tools.javac.tree.JCTree").getDeclaredField("type");
+            typeField.setAccessible(true);
+            tsymField = Class.forName("com.sun.tools.javac.code.Type").getDeclaredField("tsym");
+            tsymField.setAccessible(true);
+        } catch (Exception e) {
+            throw new RuntimeException("Fatal error - cannot access legacy Javac API", e);
+        }
+    }
 
     static private JavaFileObject getSourceFileObjectFromElement(TypeElement element) {
         try {
@@ -2531,44 +2541,42 @@ public class Util {
             Field internalSourceFileField = element.getClass().getDeclaredField("sourcefile");
             return (JavaFileObject) internalSourceFileField.get(element);
         } catch (Exception e) {
-            throw new RuntimeException("Cannot call internal Javac API :( please adapt this code if API changed",
-                    e);
+            throw new RuntimeException("Cannot call internal Javac API :( please adapt this code if API changed", e);
         }
     }
 
-	
     /**
      * Returns type associated with given tree
      * 
      * @see #getTypeForTreePath(TreePath)
      */
     public static <T extends TypeMirror> T getType(Tree tree) {
-    	try {
-			return (T) typeField.get(tree);
-		} catch (Exception e) {
-			throw new RuntimeException("Fatal error - cannot access legacy Javac API", e);
-		}
+        try {
+            return (T) typeField.get(tree);
+        } catch (Exception e) {
+            throw new RuntimeException("Fatal error - cannot access legacy Javac API", e);
+        }
     }
-    
+
     public static <E extends Element> E getElement(TypeMirror type) {
-    	try {
-			return (E) tsymField.get(type);
-		} catch (Exception e) {
-			throw new RuntimeException("Fatal error - cannot access legacy Javac API", e);
-		}
+        try {
+            return (E) tsymField.get(type);
+        } catch (Exception e) {
+            throw new RuntimeException("Fatal error - cannot access legacy Javac API", e);
+        }
     }
 
     /**
-     * If this tree has a type (getType(tree) doesn't return
-     * null), returns the corresponding TypeElement, if any, otherwise null.
+     * If this tree has a type (getType(tree) doesn't return null), returns the
+     * corresponding TypeElement, if any, otherwise null.
      * 
      * Can return TypeElement or TypeParameterElement
      */
     public static <E extends Element> E getTypeElement(Tree tree) {
-    	TypeMirror type = getType(tree);
-    	return type == null ? null : getElement(type);
+        TypeMirror type = getType(tree);
+        return type == null ? null : getElement(type);
     }
-    
+
     /**
      * Returns an Element corresponding to given tree (for given compilationUnit).
      * May return an error if the tree has no corresponding element possible.
@@ -2582,26 +2590,26 @@ public class Util {
      * </ul>
      */
     public static <T extends Element> T getElement(Tree tree) {
-    	if (tree == null) {
-    		return null;
-    	}
-    	try {
-    		Field symField = symFields.get(tree.getClass());
-    		if (symField == null) {
-    			if (PackageTree.class.isAssignableFrom(tree.getClass())) {
-        			symField = tree.getClass().getDeclaredField("packge");
-    			} else if (NewClassTree.class.isAssignableFrom(tree.getClass())) {
-        			symField = tree.getClass().getDeclaredField("constructor");
-    			} else {
-        			symField = tree.getClass().getDeclaredField("sym");
-    			}
-    			symField.setAccessible(true);
-    			symFields.put(tree.getClass(), symField);
-    		}
-			return (T) symField.get(tree);
-		} catch (Exception e) {
-			throw new RuntimeException("Fatal error - cannot access legacy Javac API - " + tree.getClass(), e);
-		}
+        if (tree == null) {
+            return null;
+        }
+        try {
+            Field symField = symFields.get(tree.getClass());
+            if (symField == null) {
+                if (PackageTree.class.isAssignableFrom(tree.getClass())) {
+                    symField = tree.getClass().getDeclaredField("packge");
+                } else if (NewClassTree.class.isAssignableFrom(tree.getClass())) {
+                    symField = tree.getClass().getDeclaredField("constructor");
+                } else {
+                    symField = tree.getClass().getDeclaredField("sym");
+                }
+                symField.setAccessible(true);
+                symFields.put(tree.getClass(), symField);
+            }
+            return (T) symField.get(tree);
+        } catch (Exception e) {
+            throw new RuntimeException("Fatal error - cannot access legacy Javac API - " + tree.getClass(), e);
+        }
     }
 
     /**
@@ -2617,27 +2625,26 @@ public class Util {
      * </ul>
      */
     public static <T extends Element> T getElementNoErrors(Tree tree) {
-    	if (tree == null) {
-    		return null;
-    	}
-    	try {
-    		Field symField = symFields.get(tree.getClass());
-    		if (symField == null) {
-    			if (PackageTree.class.isAssignableFrom(tree.getClass())) {
-        			symField = tree.getClass().getDeclaredField("packge");
-    			} else if (NewClassTree.class.isAssignableFrom(tree.getClass())) {
-        			symField = tree.getClass().getDeclaredField("constructor");
-    			} else {
-        			symField = tree.getClass().getDeclaredField("sym");
-    			}
-    			symField.setAccessible(true);
-    			symFields.put(tree.getClass(), symField);
-    		}
-			return (T) symField.get(tree);
-		} catch (Exception e) {
-			return null;
-		}
+        if (tree == null) {
+            return null;
+        }
+        try {
+            Field symField = symFields.get(tree.getClass());
+            if (symField == null) {
+                if (PackageTree.class.isAssignableFrom(tree.getClass())) {
+                    symField = tree.getClass().getDeclaredField("packge");
+                } else if (NewClassTree.class.isAssignableFrom(tree.getClass())) {
+                    symField = tree.getClass().getDeclaredField("constructor");
+                } else {
+                    symField = tree.getClass().getDeclaredField("sym");
+                }
+                symField.setAccessible(true);
+                symFields.put(tree.getClass(), symField);
+            }
+            return (T) symField.get(tree);
+        } catch (Exception e) {
+            return null;
+        }
     }
-    
-    
+
 }

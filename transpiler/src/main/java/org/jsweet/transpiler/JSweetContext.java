@@ -1537,19 +1537,19 @@ public class JSweetContext {
         return getFirstEnclosingRootPackage(util.getParentPackage(packageElement));
     }
 
-    private void getRootRelativeJavaName(StringBuilder sb, Element symbol) {
-        if (!isRootPackage(symbol)) {
-            if (sb.length() > 0 && !"".equals(symbol.toString())) {
+    private void getRootRelativeJavaName(StringBuilder sb, Element element) {
+        if (!isRootPackage(element)) {
+            if (sb.length() > 0 && !"".equals(element.toString())) {
                 sb.insert(0, ".");
             }
 
-            String name = symbol.getSimpleName().toString();
+            String name = element.getSimpleName().toString();
 
             sb.insert(0, name);
-            symbol = (symbol instanceof PackageElement) ? util.getParentPackage((PackageElement) symbol)
-                    : symbol.getEnclosingElement();
-            if (symbol != null) {
-                getRootRelativeJavaName(sb, symbol);
+            element = (element instanceof PackageElement) ? util.getParentPackage((PackageElement) element)
+                    : element.getEnclosingElement();
+            if (element != null) {
+                getRootRelativeJavaName(sb, element);
             }
         }
     }

@@ -20,10 +20,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import source.reflection.ArrayMethods;
-import source.reflection.BasicBeanReflection;
-import source.reflection.FieldAccess;
-import source.reflection.GetClass;
+import source.reflection.*;
 
 public class ReflectionTests extends AbstractTest {
 
@@ -66,5 +63,11 @@ public class ReflectionTests extends AbstractTest {
 			assertEquals("Number", r.get("number"));
 		}, getSourceFile(GetClass.class));
 	}
-	
+
+	@Test
+	public void testClassMethods() {
+		eval((handler, result) -> {
+			handler.assertNoProblems();
+		}, getSourceFile(ClassMethods.class));
+	}
 }
