@@ -662,7 +662,7 @@ public class Document extends Node {
       * @param elementId String that specifies the ID value. Case-insensitive.
       */
     native public HTMLElement getElementById(java.lang.String elementId);
-    native public NodeList getElementsByClassName(java.lang.String classNames);
+    native public NodeListOf<Element> getElementsByClassName(java.lang.String classNames);
     /**
       * Gets a collection of objects based on the value of the NAME or ID attribute.
       * @param elementName Gets a collection of objects based on the value of the NAME or ID attribute.
