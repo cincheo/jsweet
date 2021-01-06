@@ -111,15 +111,6 @@ public class Util {
 	private Util() {
 	}
 
-	private static long id = 121;
-
-	/**
-	 * Returns a unique id (incremental).
-	 */
-	public static long getId() {
-		return id++;
-	}
-
 	/**
 	 * Tells if the given element is within the Java sources being compiled.
 	 */

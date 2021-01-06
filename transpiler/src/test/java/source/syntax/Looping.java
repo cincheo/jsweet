@@ -61,8 +61,54 @@ public class Looping {
 		System.out.println(">"+i);
 		assert i==-1;
 
+		int[] array = new int[] { 1, 2, 3 }; 
+		int pos = 1;
+		for (int integer : array) {
+			assert integer == pos;
+			pos++;
+		}
+
+		pos = 1;
+		for (int integer : array) {
+			assert integer == pos;
+			pos++;
+		}
+
+		// nested loops
+		pos = 1;
+		for (int integer : array) {
+			assert integer == pos;
+			pos++;
+			int pos2 = 1;
+			int index1 = 4;
+			for (int integer2 : array) {
+				assert integer2 == pos2;
+				assert index1 == 4;
+				pos2++;
+			}
+		}
+		
+		// test clash between iteration variable and local variable
+		int index = 12;
+		pos = 1;
+		for (int integer : array) {
+			assert index == 12;
+			assert integer == pos;
+			pos++;
+		}
+		
+		loop(array, 14);
 	}
 
+	public static void loop(int[] array, int index) {
+		int pos = 1;
+		for (int integer : array) {
+			assert index == 14;
+			assert integer == pos;
+			pos++;
+		}
+	}
+	
 	public static <T extends Object & Comparable<? super T>> T max(Collection<? extends T> coll) {
 		Collection<String> c = null;
 		// TODO: Java accepts this assignment without casting but TypeScript
