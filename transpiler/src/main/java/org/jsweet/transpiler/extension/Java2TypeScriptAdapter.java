@@ -1288,50 +1288,6 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
                     printTarget(invocationElement.getTargetExpression());
                     print(")");
                     return true;
-                case "isAssignableFrom":
-                    printMacroName(targetMethodName);
-                    print("((candidateBase, clazz) => candidateBase != null && clazz != null && " + //
-                            "(candidateBase == clazz || clazz.prototype instanceof candidateBase)" + //
-                            ")(");
-                    printTarget(invocationElement.getTargetExpression());
-                    print(",");
-                    print(invocationElement.getArgument(0));
-                    print(")");
-                    return true;
-                case "getFields":
-                case "getDeclaredFields":
-                    printMacroName(targetMethodName);
-                    if (targetType instanceof DeclaredType) {
-                        List<? extends TypeMirror> typeArgs = ((DeclaredType) targetType).getTypeArguments();
-                        if (typeArgs != null && typeArgs.size() > 0 && !util().isType(typeArgs.get(0), Object.class)) {
-                            TypeMirror targetClassType = typeArgs.get(0);
-                            Class<?> targetClass = util().getTypeClass(targetClassType);
-
-                            if (targetClass != null) {
-                                Field[] fields;
-                                if (targetMethodName.equals("getDeclaredFields")) {
-                                    fields = targetClass.getDeclaredFields();
-                                } else {
-                                    fields = targetClass.getFields();
-                                }
-                                print("[");
-                                for (Field f : fields) {
-
-                                    print("{");
-                                    print(" name: '" + f.getName() + "',");
-                                    print(" getName: () => this.name,");
-                                    print(" getType: () => ");
-                                    if (!getPrinter().printClass(util().getType(f.getType()))) {
-                                        print("Object");
-                                    }
-                                    print(",");
-                                    print("},");
-                                }
-                                print("]");
-                                return true;
-                            }
-                        }
-                    }
                 }
                 break;
 
