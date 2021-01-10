@@ -3209,6 +3209,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	}
 
 	private String getOverloadMethodName(MethodSymbol method) {
+		//return getAdapter().getOverloadMethodName(method);
 		if (method.isConstructor()) {
 			return "constructor";
 		}

@@ -28,6 +28,7 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
@@ -1268,5 +1269,36 @@ public class PrinterAdapter {
     public boolean substituteVariableDeclarationKeyword(VariableElement variable) {
         return parentAdapter == null ? false : parentAdapter.substituteVariableDeclarationKeyword(variable);
     }
+    
+    /**
+     * Gets the overload name for the given executable, which is assumed to be part of an overload.
+     * 
+     * By default, an overload executable name is formed of the original executable name 
+     * ("constructor" for a constructor), concatenated to the arguments types where the '.' are 
+     * replaced with '_'. Argument types separators are '$'.
+     * 
+     * For instance: m(String s, int i) would give: m$java_lang_Strin$int
+     * 
+     * Programmers may override this method to change the default names (for simplification and 
+     * readability for instance).
+     * 
+     * @param exectuable the executable to get the overload name
+     * @return the overload name
+     */
+	public String getOverloadMethodName(ExecutableElement executable) {
+		if (executable.getKind() == ElementKind.CONSTRUCTOR) {
+			return "constructor";
+		}
+		StringBuilder sb = new StringBuilder(executable.getSimpleName().toString());
+		sb.append("$");
+		for (VariableElement p : executable.getParameters()) {
+			sb.append(types.erasure(p.asType()).toString().replace('.', '_').replace("[]", "_A"));
+			sb.append("$");
+		}
+		if (!executable.getParameters().isEmpty()) {
+			sb.deleteCharAt(sb.length() - 1);
+		}
+		return sb.toString();
+	}
     
 }

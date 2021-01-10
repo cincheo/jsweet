@@ -435,19 +435,16 @@ public class OverloadScanner extends AbstractTreeScanner {
 		for (JCCompilationUnit cu : cuList) {
 			scan(cu);
 		}
-		System.out.println("\nPASS 1");
-		context.dumpOverloads(System.out);
 		pass++;
 		for (JCCompilationUnit cu : cuList) {
 			scan(cu);
 		}
+		// another pass to complete subclasses
 		if (!context.options.isGenerateOverloadStubs()) {
 			for (JCCompilationUnit cu : cuList) {
 				scan(cu);
 			}
 		}
-		System.out.println("\nPASS 2");
-		context.dumpOverloads(System.out);
 		for (Overload overload : context.getAllOverloads()) {
 			overload.calculate(types, context.symtab);
 			if (overload.methods.size() > 1 && !overload.isValid) {
@@ -456,8 +453,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 				}
 			}
 		}
-		System.out.println("\nPASS 3");
-		context.dumpOverloads(System.out);
+		//context.dumpOverloads(System.out);
 	}
 
 }
