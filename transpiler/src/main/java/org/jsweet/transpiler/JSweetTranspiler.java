@@ -244,6 +244,7 @@ public class JSweetTranspiler implements JSweetOptions {
 	private boolean nonEnumerableTransients = false;
 	private boolean sortClassMembers = false;
 	private boolean autoPropagateAsyncAwaits = false;
+	private boolean generateOverloadStubs = true;
 	
 	private ArrayList<String> adapters = new ArrayList<>();
 	private File configurationFile;
@@ -1978,4 +1979,15 @@ public class JSweetTranspiler implements JSweetOptions {
         this.autoPropagateAsyncAwaits = autoPropagateAsyncAwaits;
     }
 
+	@Override
+	public boolean isGenerateOverloadStubs() {
+		return this.generateOverloadStubs;
+	}
+
+	public void setGenerateOverloadStubs(boolean generateOverloadStubs) {
+		this.generateOverloadStubs = generateOverloadStubs;
+	}
+
+	
+	
 }

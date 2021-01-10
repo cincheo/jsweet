@@ -1842,17 +1842,19 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				context.grabMethodsToBeImplemented(methods, t.tsym);
 			}
 			methods.sort((m1, m2) -> m1.getSimpleName().compareTo(m2.getSimpleName()));
-			Map<Name, String> signatures = new HashMap<>();
+			Set<String> signatures = new HashSet<String>();
 			for (MethodSymbol meth : methods) {
-				if (meth.type instanceof MethodType && !context.hasAnnotationType(meth, JSweetConfig.ANNOTATION_ERASED)
+				Type methodType = context.types.erasureRecursive(meth.type);
+				
+				if (methodType instanceof MethodType && !context.hasAnnotationType(meth, JSweetConfig.ANNOTATION_ERASED)
 						&& !isMappedOrErasedType(meth.owner)) {
 					// do not generate default abstract method for already
 					// generated methods
 					if (getScope().generatedMethodNames.contains(meth.name.toString())) {
 						continue;
 					}
-					MethodSymbol s = Util.findMethodDeclarationInType(getContext().types, classdecl.sym,
-							meth.getSimpleName().toString(), (MethodType) meth.type, true);
+					MethodSymbol s = Util.findMethodDeclarationInType2(getContext().types, classdecl.sym,
+							meth.getSimpleName().toString(), (MethodType) methodType);
 					if (Object.class.getName().equals(s.getEnclosingElement().toString())) {
 						s = null;
 					}
@@ -1865,20 +1867,22 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							}
 						}
 					}
-
+					
+					boolean invalidOverload = false;
 					if (printAbstractDeclaration) {
-						Overload o = context.getOverload(classdecl.sym, meth);
+						Overload o = context.getOverload((TypeElement)s.getEnclosingElement(), s);
 						if (o != null && o.methods.size() > 1 && !o.isValid) {
-							if (!meth.type.equals(o.coreMethod.type)) {
+							invalidOverload = true;
+							if (context.options.isGenerateOverloadStubs() && !meth.type.equals(o.coreMethod.type)) {
 								printAbstractDeclaration = false;
 							}
 						}
 					}
 					if (s == null || printAbstractDeclaration) {
-						String signature = getContext().types.erasure(meth.type).toString();
-						if (!(signatures.containsKey(meth.name) && signatures.get(meth.name).equals(signature))) {
-							printAbstractMethodDeclaration(meth);
-							signatures.put(meth.name, signature);
+						String signature = meth.name + " : " + methodType.toString();
+						if (!(signatures.contains(signature))) {
+							printAbstractMethodDeclaration(meth, invalidOverload);
+							signatures.add(signature);
 						}
 					}
 				}
@@ -2156,18 +2160,32 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	}
 
-	private void printAbstractMethodDeclaration(MethodSymbol method) {
-		printIndent().print("public abstract ").print(method.getSimpleName().toString());
-		print("(");
-		if (method.getParameters() != null && !method.getParameters().isEmpty()) {
-			for (VarSymbol var : method.getParameters()) {
-				print(var.name.toString()).print("?: any");
-				print(", ");
+	private void printAbstractMethodDeclaration(MethodSymbol method, boolean invalidOverload) {
+		if (context.options.isGenerateOverloadStubs() || !invalidOverload) {
+			printIndent().print("public abstract ").print(method.getSimpleName().toString());
+			print("(");
+			if (method.getParameters() != null && !method.getParameters().isEmpty()) {
+				for (VarSymbol var : method.getParameters()) {
+					print(var.name.toString()).print("?: any");
+					print(", ");
+				}
+				removeLastChars(2);
 			}
-			removeLastChars(2);
+			print(")");
+			print(": any;").println();
+		} else {
+			printIndent().print("public abstract ").print(getOverloadMethodName(method));
+			print("(");
+			if (method.getParameters() != null && !method.getParameters().isEmpty()) {
+				for (VarSymbol var : method.getParameters()) {
+					print(var.name.toString()).print("?: any");
+					print(", ");
+				}
+				removeLastChars(2);
+			}
+			print(")");
+			print(": any;").println();
 		}
-		print(")");
-		print(": any;").println();
 	}
 
 	private String getTSMethodName(JCMethodDecl methodDecl) {
@@ -2273,13 +2291,22 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (!overload.isValid) {
 					if (!printCoreMethodDelegate) {
 						if (overload.coreMethod.equals(methodDecl)) {
-							inCoreWrongOverload = true;
-							if (!isInterfaceMethod(parent, methodDecl) && !methodDecl.sym.isConstructor()
-									&& parent.sym.equals(overload.coreMethod.sym.getEnclosingElement())) {
-								printCoreMethodDelegate = true;
-								visitMethodDef(overload.coreMethod);
-								println().println().printIndent();
-								printCoreMethodDelegate = false;
+							if (context.options.isGenerateOverloadStubs()) {
+								inCoreWrongOverload = true;
+								if (!isInterfaceMethod(parent, methodDecl) && !methodDecl.sym.isConstructor()
+										&& parent.sym.equals(overload.coreMethod.sym.getEnclosingElement())) {
+									printCoreMethodDelegate = true;
+									visitMethodDef(overload.coreMethod);
+									println().println().printIndent();
+									printCoreMethodDelegate = false;
+								}
+							} else {
+								inCoreWrongOverload = true;
+								if (methodDecl.sym.isDefault() || (!methodDecl.sym.isConstructor()
+										&& parent.sym.equals(overload.coreMethod.sym.getEnclosingElement()))) {
+									// print overload method with the right signature
+									inCoreWrongOverload = false;
+								}
 							}
 						} else {
 							if (methodDecl.sym.isConstructor()) {
@@ -2305,7 +2332,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 								}
 							}
 							if (isInterfaceMethod(parent, methodDecl)) {
-								return;
+								if (context.options.isGenerateOverloadStubs()) {
+									return;
+								}
 							}
 						}
 					}
@@ -2317,6 +2346,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 		}
 
+		if (!context.options.isGenerateOverloadStubs() 
+				&& !methodDecl.sym.isConstructor() && inCoreWrongOverload && !printCoreMethodDelegate && !methodDecl.sym.isDefault()) {
+			return;
+		}
+		
 		boolean ambient = context.hasAnnotationType(methodDecl.sym, JSweetConfig.ANNOTATION_AMBIENT);
 
 		if (inOverload && !inCoreWrongOverload && (ambient || isDefinitionScope)) {
@@ -4137,10 +4171,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						}
 					}
 					if (methSym != null) {
-						if (context.isInvalidOverload(methSym) && !Util.hasTypeParameters(methSym)
+						if (context.isInvalidOverload(methSym) && ((!Util.hasTypeParameters(methSym)
 								&& !methSym.isDefault() && getParent(JCMethodDecl.class) != null
-								&& !getParent(JCMethodDecl.class).sym.isDefault()) {
-							if (context.isInterface((TypeSymbol) methSym.getEnclosingElement())) {
+								&& !getParent(JCMethodDecl.class).sym.isDefault()) || !context.options.isGenerateOverloadStubs())) {
+							if (context.options.isGenerateOverloadStubs() && context.isInterface((TypeSymbol) methSym.getEnclosingElement())) {
 								removeLastChar('.');
 								print("['" + getOverloadMethodName(methSym) + "']");
 							} else {
@@ -4905,7 +4939,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	private String getFreeVariableName(String variablePrefix, int index) {
 		String name = variablePrefix + (index == 0 ? "" : "" + index);
-		System.out.println("candidate name: " + name);
 		
 		Set<String> generatedVariableNames = getGeneratedVariableNames();
 		

@@ -210,6 +210,14 @@ import com.martiansoftware.jsap.stringparsers.FileStringParser;
         to emulate the Java behavior. When disables, the code is more readable 
         but it may result into runtime static initialization issues (cross-class
         static dependencies).
+        
+  [--disableOverloadStubs]
+        Do not generate overload stubs, but directly call the overloads instead.
+        Overload stubs are methods that implement a runtime switch on the parameter
+        types in order to automatically call the right overload. By default, overload
+        stubs are generated in order to ensure maximum interop, but they may
+        complicate the generated code and lead to runtime errors when the passed
+        argument types do not allow directing to the right overload at runtime.
  * </pre>
  * 
  * @author Renaud Pawlak
@@ -632,6 +640,18 @@ public class JSweetCommandLineLauncher {
                 "Propagate automatically the async modifier when a method invokes an async method "+
                 "and automatically adds await keywords when invoking async methods.");
         jsap.registerParameter(switchArg);
+
+        // Disable overload stubs
+        switchArg = new Switch(JSweetOptions.disableOverloadStubs);
+        switchArg.setLongFlag(JSweetOptions.disableOverloadStubs);
+        switchArg.setHelp(
+                "Do not generate overload stubs, but directly call the overloads instead." + 
+                "Overload stubs are methods that implement a runtime switch on the parameter" + 
+                "types in order to automatically call the right overload. By default, overload" + 
+                "stubs are generated in order to ensure maximum interop, but they may" + 
+                "complicate the generated code and lead to runtime errors when the passed" + 
+                "argument types do not allow directing to the right overload at runtime.");
+        jsap.registerParameter(switchArg);
         
 		return jsap;
 	}
@@ -870,6 +890,9 @@ public class JSweetCommandLineLauncher {
                 }                               
                 if (jsapArgs.userSpecified(JSweetOptions.autoPropagateAsyncAwaits)) {
                     transpiler.setAutoPropagateAsyncAwaits(jsapArgs.getBoolean(JSweetOptions.autoPropagateAsyncAwaits));
+                }                               
+                if (jsapArgs.userSpecified(JSweetOptions.disableOverloadStubs)) {
+                    transpiler.setGenerateOverloadStubs(!jsapArgs.getBoolean(JSweetOptions.disableOverloadStubs));
                 }                               
 				
 				if (tsOutputDir != null) {

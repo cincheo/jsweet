@@ -63,7 +63,9 @@ import source.overload.InterfaceInheritance;
 import source.overload.LocalVariablesNameCollision;
 import source.overload.NonPublicRootMethod;
 import source.overload.OverLoadClassAndObject;
+import source.overload.OverLoadClassAndObjectNoStubs;
 import source.overload.OverLoadVarags;
+import source.overload.OverLoadVaragsNoStubs;
 import source.overload.OverLoadWithClassParam;
 import source.overload.Overload;
 import source.overload.OverloadInInnerClass;
@@ -107,6 +109,14 @@ public class OverloadTests extends AbstractTest {
 			assertEquals("s11", result.<String>get("res2"));
 			assertEquals("s22", result.<String>get("res3"));
 		}, getSourceFile(Overload.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(false);
+		eval((logHandler, result) -> {
+			logHandler.assertNoProblems();
+			assertEquals("default1", result.<String>get("res1"));
+			assertEquals("s11", result.<String>get("res2"));
+			assertEquals("s22", result.<String>get("res3"));
+		}, getSourceFile(Overload.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(true);
 	}
 
 	@Test
@@ -114,6 +124,11 @@ public class OverloadTests extends AbstractTest {
 		eval((logHandler, result) -> {
 			logHandler.assertNoProblems();
 		}, getSourceFile(OverloadWithSuperclass.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(false);
+		eval((logHandler, result) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(OverloadWithSuperclass.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(true);
 	}
 
 	@Test
@@ -122,6 +137,12 @@ public class OverloadTests extends AbstractTest {
 			logHandler.assertNoProblems();
 			assertEquals("1,2,3,4,5,6,7", r.get("trace"));
 		}, getSourceFile(WrongOverload.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(false);
+		eval((logHandler, r) -> {
+			logHandler.assertNoProblems();
+			assertEquals("1,2,3,4,5,6,7", r.get("trace"));
+		}, getSourceFile(WrongOverload.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(true);
 	}
 
 	@Test
@@ -130,6 +151,12 @@ public class OverloadTests extends AbstractTest {
 			logHandler.assertNoProblems();
 			assertEquals("1,5,2,3,2,4,test5,tutu,2,4,1,tutu,6", r.get("trace"));
 		}, getSourceFile(WrongOverloads.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(false);
+		eval((logHandler, r) -> {
+			logHandler.assertNoProblems();
+			assertEquals("1,5,2,3,2,4,test5,tutu,2,4,1,tutu,6", r.get("trace"));
+		}, getSourceFile(WrongOverloads.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(true);
 	}
 
 	@Test
@@ -138,6 +165,12 @@ public class OverloadTests extends AbstractTest {
 			logHandler.assertNoProblems();
 			assertEquals("draw0,draw1", r.get("trace"));
 		}, getSourceFile(WrongOverloadsWithDefaultMethods.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(false);
+		eval((logHandler, r) -> {
+			logHandler.assertNoProblems();
+			assertEquals("draw0,draw1", r.get("trace"));
+		}, getSourceFile(WrongOverloadsWithDefaultMethods.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(true);
 	}
 
 	@Test
@@ -146,6 +179,12 @@ public class OverloadTests extends AbstractTest {
 			logHandler.assertNoProblems();
 			assertEquals("draw0,draw1,double1,float1", r.get("trace"));
 		}, getSourceFile(WrongOverloadsWithNonCoreMethod.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(false);
+		eval((logHandler, r) -> {
+			logHandler.assertNoProblems();
+			assertEquals("draw0,draw1,double1,float1", r.get("trace"));
+		}, getSourceFile(WrongOverloadsWithNonCoreMethod.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(true);
 	}
 
 	@Test
@@ -153,6 +192,11 @@ public class OverloadTests extends AbstractTest {
 		transpile(ModuleKind.none, (logHandler) -> {
 			logHandler.assertNoProblems();
 		}, getSourceFile(OverloadInInnerClass.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(false);
+		transpile(ModuleKind.none, (logHandler) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(OverloadInInnerClass.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(true);
 	}
 
 	@Test
@@ -160,6 +204,11 @@ public class OverloadTests extends AbstractTest {
 		transpile(ModuleKind.none, (logHandler) -> {
 			logHandler.assertNoProblems();
 		}, getSourceFile(WrongOverloadInInnerClass.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(false);
+		transpile(ModuleKind.none, (logHandler) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(WrongOverloadInInnerClass.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(true);
 	}
 
 	@Test
@@ -167,6 +216,11 @@ public class OverloadTests extends AbstractTest {
 		eval((logHandler, r) -> {
 			logHandler.assertNoProblems();
 		}, getSourceFile(WrongOverloadWithArraysAndObjects.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(false);
+		eval((logHandler, r) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(WrongOverloadWithArraysAndObjects.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(true);
 	}
 
 	@Test
@@ -175,6 +229,12 @@ public class OverloadTests extends AbstractTest {
 			logHandler.assertNoProblems();
 			assertEquals("1,2,3,4", r.get("trace"));
 		}, getSourceFile(WrongOverloadWithGenerics.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(false);
+		eval((logHandler, r) -> {
+			logHandler.assertNoProblems();
+			assertEquals("1,2,3,4", r.get("trace"));
+		}, getSourceFile(WrongOverloadWithGenerics.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(true);
 	}
 
 	@Test
@@ -183,6 +243,12 @@ public class OverloadTests extends AbstractTest {
 			logHandler.assertNoProblems();
 			assertEquals("0-88,0-99,1-s1,m2,2-99-s2,3-true,m1,4,5-5,5-6,m3,6,7,test2,test1", r.get("trace"));
 		}, getSourceFile(WrongOverloadWithInheritance.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(false);
+		eval((logHandler, r) -> {
+			logHandler.assertNoProblems();
+			assertEquals("0-88,0-99,1-s1,m2,2-99-s2,3-true,m1,4,5-5,5-6,m3,6,7,test2,test1", r.get("trace"));
+		}, getSourceFile(WrongOverloadWithInheritance.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(true);
 	}
 
 	@Test
@@ -192,6 +258,13 @@ public class OverloadTests extends AbstractTest {
 			assertEquals(true, r.get("static"));
 			assertEquals(true, r.get("instance"));
 		}, getSourceFile(OverloadWithStaticAndInstanceMethods.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(false);
+		eval((logHandler, r) -> {
+			logHandler.assertNoProblems();
+			assertEquals(true, r.get("static"));
+			assertEquals(true, r.get("instance"));
+		}, getSourceFile(OverloadWithStaticAndInstanceMethods.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(true);
 	}
 
 	@Test
@@ -200,6 +273,12 @@ public class OverloadTests extends AbstractTest {
 			logHandler.assertNoProblems();
 			assertEquals("remove1: abc,remove2: 1", r.get("trace"));
 		}, getSourceFile(WrongOverloadFrom2Interfaces.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(false);
+		eval(ModuleKind.none, (logHandler, r) -> {
+			logHandler.assertNoProblems();
+			assertEquals("remove1: abc,remove2: 1", r.get("trace"));
+		}, getSourceFile(WrongOverloadFrom2Interfaces.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(true);
 	}
 
 	@Test
@@ -207,6 +286,11 @@ public class OverloadTests extends AbstractTest {
 		transpile(ModuleKind.none, (logHandler) -> {
 			logHandler.assertNoProblems();
 		}, getSourceFile(InterfaceInheritance.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(false);
+		transpile(ModuleKind.none, (logHandler) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(InterfaceInheritance.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(true);
 	}
 
 	@Test
@@ -214,6 +298,11 @@ public class OverloadTests extends AbstractTest {
 		transpile(ModuleKind.none, (logHandler) -> {
 			logHandler.assertNoProblems();
 		}, getSourceFile(NonPublicRootMethod.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(false);
+		transpile(ModuleKind.none, (logHandler) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(NonPublicRootMethod.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(true);
 	}
 
 	@Test
@@ -223,6 +312,13 @@ public class OverloadTests extends AbstractTest {
 			assertEquals("1-1-X,1-1-0,1-2-X,1-2-0,1-3-X,1-3-0,2-1-X,2-1-0,2-2-X,2-2-0,2-3-X,2-3-0,0-3-X",
 					r.get("trace"));
 		}, getSourceFile(BasicOverride.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(false);
+		eval(ModuleKind.none, (logHandler, r) -> {
+			logHandler.assertNoProblems();
+			assertEquals("1-1-X,1-1-0,1-2-X,1-2-0,1-3-X,1-3-0,2-1-X,2-1-0,2-2-X,2-2-0,2-3-X,2-3-0,0-3-X",
+					r.get("trace"));
+		}, getSourceFile(BasicOverride.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(true);
 	}
 
 	@Test
@@ -230,6 +326,11 @@ public class OverloadTests extends AbstractTest {
 		eval(ModuleKind.none, (logHandler, r) -> {
 			logHandler.assertNoProblems();
 		}, getSourceFile(OverloadWithAbstractClass.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(false);
+		eval(ModuleKind.none, (logHandler, r) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(OverloadWithAbstractClass.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(true);
 	}
 
 	@Test
@@ -238,6 +339,12 @@ public class OverloadTests extends AbstractTest {
 			logHandler.assertNoProblems();
 			assertEquals("m,m,m,read1,read2", r.get("trace"));
 		}, getSourceFile(WrongOverloadWithSpecialParameters.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(false);
+		eval(ModuleKind.none, (logHandler, r) -> {
+			logHandler.assertNoProblems();
+			assertEquals("m,m,m,read1,read2", r.get("trace"));
+		}, getSourceFile(WrongOverloadWithSpecialParameters.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(true);
 	}
 
 	@Test
@@ -246,6 +353,12 @@ public class OverloadTests extends AbstractTest {
 			logHandler.assertNoProblems();
 			assertEquals("c11,t12,c13,t14", r.get("trace"));
 		}, getSourceFile(WrongOverloadConstructorWithVarargs.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(false);
+		eval(ModuleKind.none, (logHandler, r) -> {
+			logHandler.assertNoProblems();
+			assertEquals("c11,t12,c13,t14", r.get("trace"));
+		}, getSourceFile(WrongOverloadConstructorWithVarargs.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(true);
 	}
 
 	@Test
@@ -254,6 +367,12 @@ public class OverloadTests extends AbstractTest {
 			logHandler.assertNoProblems();
 			assertEquals("1,2,3,4,5,6,7", r.get("trace"));
 		}, getSourceFile(WrongOverloadConstructorWithParamNameCollision.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(false);
+		eval(ModuleKind.none, (logHandler, r) -> {
+			logHandler.assertNoProblems();
+			assertEquals("1,2,3,4,5,6,7", r.get("trace"));
+		}, getSourceFile(WrongOverloadConstructorWithParamNameCollision.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(true);
 	}
 
 	@Test
@@ -262,6 +381,12 @@ public class OverloadTests extends AbstractTest {
 			logHandler.assertNoProblems();
 			assertEquals("test,1", r.get("trace"));
 		}, getSourceFile(ConstructorOverloadWithFieldInitializer.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(false);
+		eval(ModuleKind.none, (logHandler, r) -> {
+			logHandler.assertNoProblems();
+			assertEquals("test,1", r.get("trace"));
+		}, getSourceFile(ConstructorOverloadWithFieldInitializer.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(true);
 	}
 
     @Test
@@ -281,12 +406,32 @@ public class OverloadTests extends AbstractTest {
     }
 
     @Test
+    public void testOverloadClassAndObjectWithoutStubMethods() {
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(false);
+        eval(ModuleKind.none, (logHandler, r) -> {
+            logHandler.assertNoProblems();
+        }, getSourceFile(OverLoadClassAndObjectNoStubs.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(true);
+    }
+    
+    @Test
     public void testOverloadVarargs() {
         transpilerTest().getTranspiler().setUsingJavaRuntime(true);
         eval(ModuleKind.none, (logHandler, r) -> {
             logHandler.assertNoProblems();
         }, getSourceFile(OverLoadVarags.class));
         transpilerTest().getTranspiler().setUsingJavaRuntime(false);
+    }
+
+    @Test
+    public void testOverloadVarargsWithoutStubMethods() {
+        transpilerTest().getTranspiler().setUsingJavaRuntime(true);
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(false);
+        eval(ModuleKind.none, (logHandler, r) -> {
+            logHandler.assertNoProblems();
+        }, getSourceFile(OverLoadVaragsNoStubs.class));
+        transpilerTest().getTranspiler().setUsingJavaRuntime(false);
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(true);
     }
     
 	@Test
@@ -295,6 +440,12 @@ public class OverloadTests extends AbstractTest {
 			logHandler.assertNoProblems();
 			assertTrue("1,2,3,4,3".equals(r.get("trace")) || "1,2,3,4,4".equals(r.get("trace")));
 		}, getSourceFile(ConstructorOverLoadWithArray.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(false);
+		eval(ModuleKind.none, (logHandler, r) -> {
+			logHandler.assertNoProblems();
+			assertTrue("1,2,3,4,3".equals(r.get("trace")) || "1,2,3,4,4".equals(r.get("trace")));
+		}, getSourceFile(ConstructorOverLoadWithArray.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(true);
 	}
 
 	@Test
@@ -302,6 +453,11 @@ public class OverloadTests extends AbstractTest {
 		eval(ModuleKind.none, (logHandler, r) -> {
 			logHandler.assertNoProblems();
 		}, getSourceFile(LocalVariablesNameCollision.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(false);
+		eval(ModuleKind.none, (logHandler, r) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(LocalVariablesNameCollision.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(true);
 	}
 
 	@Test
@@ -310,6 +466,12 @@ public class OverloadTests extends AbstractTest {
 			logHandler.assertNoProblems();
 			assertEquals("1,2,3,4", r.get("trace"));
 		}, getSourceFile(OverloadWithEnums.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(false);
+		eval((logHandler, r) -> {
+			logHandler.assertNoProblems();
+			assertEquals("1,2,3,4", r.get("trace"));
+		}, getSourceFile(OverloadWithEnums.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(true);
 	}
 
 	@Test
@@ -318,6 +480,12 @@ public class OverloadTests extends AbstractTest {
 			logHandler.assertNoProblems();
 			assertEquals("1,2,3,3", r.get("trace"));
 		}, getSourceFile(OverloadWithInterfaces.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(false);
+		eval((logHandler, r) -> {
+			logHandler.assertNoProblems();
+			assertEquals("1,2,3,3", r.get("trace"));
+		}, getSourceFile(OverloadWithInterfaces.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(true);
 	}
 
 	@Test
@@ -331,6 +499,17 @@ public class OverloadTests extends AbstractTest {
 					+ "m_overload_class;OverLoadWithClassParam;4;0," //
 					+ "m_overload_class;OverLoadWithClassParam;10;100", r.get("trace"));
 		}, getSourceFile(OverLoadWithClassParam.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(false);
+		eval((logHandler, r) -> {
+			logHandler.assertNoProblems();
+			assertEquals("ctor_overload_class;OverLoadWithClassParam;0;0," //
+					+ "ctor_overload_class;OverLoadWithClassParam;4;0," //
+					+ "ctor_overload_class;OverLoadWithClassParam;10;100," //
+					+ "m_overload_class;OverLoadWithClassParam;0;0," //
+					+ "m_overload_class;OverLoadWithClassParam;4;0," //
+					+ "m_overload_class;OverLoadWithClassParam;10;100", r.get("trace"));
+		}, getSourceFile(OverLoadWithClassParam.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(true);
 	}
 
 	@Test
@@ -338,6 +517,11 @@ public class OverloadTests extends AbstractTest {
 		transpile(ModuleKind.none, (logHandler) -> {
 			logHandler.assertNoProblems();
 		}, getSourceFile(WithAmbients.class), getSourceFile(AmbientWithOverload.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(false);
+		transpile(ModuleKind.none, (logHandler) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(WithAmbients.class), getSourceFile(AmbientWithOverload.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(true);
 	}
 
 	@Test
@@ -345,6 +529,11 @@ public class OverloadTests extends AbstractTest {
 		transpile(ModuleKind.none, (logHandler) -> {
 			logHandler.assertNoProblems();
 		}, getSourceFile(AbstractMethodOverloadInAnonymousClass.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(false);
+		transpile(ModuleKind.none, (logHandler) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(AbstractMethodOverloadInAnonymousClass.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(true);
 	}
 
 	@Test
@@ -353,6 +542,12 @@ public class OverloadTests extends AbstractTest {
 			logHandler.assertNoProblems();
 		}, getSourceFile(A1.class), getSourceFile(A2.class), getSourceFile(A3.class), getSourceFile(F1.class),
 				getSourceFile(F.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(false);
+		transpile((logHandler) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(A1.class), getSourceFile(A2.class), getSourceFile(A3.class), getSourceFile(F1.class),
+				getSourceFile(F.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(true);
 	}
 
 	@Test
@@ -362,6 +557,13 @@ public class OverloadTests extends AbstractTest {
 		}, getSourceFile(source.overload.visitor2.b.A1.class), getSourceFile(source.overload.visitor2.c.A2.class),
 				getSourceFile(source.overload.visitor2.c.A3.class), getSourceFile(source.overload.visitor2.a.F1.class),
 				getSourceFile(source.overload.visitor2.a.F.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(false);
+		transpile((logHandler) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(source.overload.visitor2.b.A1.class), getSourceFile(source.overload.visitor2.c.A2.class),
+				getSourceFile(source.overload.visitor2.c.A3.class), getSourceFile(source.overload.visitor2.a.F1.class),
+				getSourceFile(source.overload.visitor2.a.F.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(true);
 	}
 
 	@Test
@@ -371,6 +573,13 @@ public class OverloadTests extends AbstractTest {
 			assertEquals("1.1(24,7):1.2(6):1.3(true):2.1(24,7):2.2(6):2.3(true):3.1(24,7):3.2(6):3.3(true)",
 					r.get("trace"));
 		}, getSourceFile(WrongOverloadConstructor.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(false);
+		eval(ModuleKind.none, (logHandler, r) -> {
+			logHandler.assertNoProblems();
+			assertEquals("1.1(24,7):1.2(6):1.3(true):2.1(24,7):2.2(6):2.3(true):3.1(24,7):3.2(6):3.3(true)",
+					r.get("trace"));
+		}, getSourceFile(WrongOverloadConstructor.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(true);
 	}
 
 	@Test
@@ -378,6 +587,11 @@ public class OverloadTests extends AbstractTest {
 		eval(ModuleKind.none, (logHandler, r) -> {
 			logHandler.assertNoProblems();
 		}, getSourceFile(WrongOverloadConstructor2.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(false);
+		eval(ModuleKind.none, (logHandler, r) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(WrongOverloadConstructor2.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(true);
 	}
 
 	@Test
@@ -424,6 +638,12 @@ public class OverloadTests extends AbstractTest {
 			logHandler.assertNoProblems();
 		}, getSourceFile(AnInterfaceWithDefaultOverloadedMethods.class),
 				getSourceFile(AClassImplementingInterfaceWithDefaultOverloadedMethods.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(false);
+		eval((logHandler, result) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(AnInterfaceWithDefaultOverloadedMethods.class),
+				getSourceFile(AClassImplementingInterfaceWithDefaultOverloadedMethods.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(true);
 	}
 
 	@Test
@@ -431,6 +651,11 @@ public class OverloadTests extends AbstractTest {
 		eval(ModuleKind.none, (logHandler, result) -> {
 			logHandler.assertNoProblems();
 		}, getSourceFile(SuperClass.class), getSourceFile(SubClass.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(false);
+		eval(ModuleKind.none, (logHandler, result) -> {
+			logHandler.assertNoProblems();
+		}, getSourceFile(SuperClass.class), getSourceFile(SubClass.class));
+        transpilerTest().getTranspiler().setGenerateOverloadStubs(true);
 	}
 
 }
