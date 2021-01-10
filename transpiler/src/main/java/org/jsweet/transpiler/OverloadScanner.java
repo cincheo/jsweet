@@ -305,14 +305,14 @@ public class OverloadScanner extends AbstractTreeScanner {
 		}
 
 		/**
-		 * Merges the given overload with a subclass one.
+		 * Merges the given overload with another one.
 		 */
-		public void merge(Types types, Overload subOverload) {
+		public void merge(Types types, Overload otherOverload) {
 			// merge default methods
 			for (JCMethodDecl m : methods) {
 				if (m.getModifiers().getFlags().contains(Modifier.DEFAULT)) {
 					boolean overriden = false;
-					for (JCMethodDecl subm : new ArrayList<>(subOverload.methods)) {
+					for (JCMethodDecl subm : new ArrayList<>(otherOverload.methods)) {
 						if (subm.getParameters().size() == m.getParameters().size()) {
 							overriden = true;
 							for (int i = 0; i < subm.getParameters().size(); i++) {
@@ -324,13 +324,13 @@ public class OverloadScanner extends AbstractTreeScanner {
 						}
 					}
 					if (!overriden) {
-						safeAdd(types, subOverload, m);
+						safeAdd(types, otherOverload, m);
 					}
 				}
 			}
 			// merge other methods
 			boolean merge = false;
-			for (JCMethodDecl subm : new ArrayList<>(subOverload.methods)) {
+			for (JCMethodDecl subm : new ArrayList<>(otherOverload.methods)) {
 				boolean overrides = false;
 				for (JCMethodDecl m : new ArrayList<>(methods)) {
 					if (subm.getParameters().size() == m.getParameters().size()) {
@@ -349,7 +349,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 
 			if (merge) {
 				for (JCMethodDecl m : methods) {
-					safeAdd(types, subOverload, m);
+					safeAdd(types, otherOverload, m);
 				}
 			}
 		}
@@ -363,6 +363,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 		this.types = Types.instance(context);
 	}
 
+	// only in pass 2 when all overloads have been created
 	private void inspectSuperTypes(ClassSymbol clazz, Overload overload, JCMethodDecl method) {
 		if (clazz == null) {
 			return;
@@ -370,6 +371,9 @@ public class OverloadScanner extends AbstractTreeScanner {
 		Overload superOverload = context.getOverload(clazz, method.sym);
 		if (superOverload != null && superOverload != overload) {
 			superOverload.merge(types, overload);
+			if (!context.options.isGenerateOverloadStubs()) {
+				overload.merge(types, superOverload);
+			}
 		}
 		inspectSuperTypes((ClassSymbol) clazz.getSuperclass().tsym, overload, method);
 		for (Type t : clazz.getInterfaces()) {
@@ -431,10 +435,19 @@ public class OverloadScanner extends AbstractTreeScanner {
 		for (JCCompilationUnit cu : cuList) {
 			scan(cu);
 		}
+		System.out.println("\nPASS 1");
+		context.dumpOverloads(System.out);
 		pass++;
 		for (JCCompilationUnit cu : cuList) {
 			scan(cu);
 		}
+		if (!context.options.isGenerateOverloadStubs()) {
+			for (JCCompilationUnit cu : cuList) {
+				scan(cu);
+			}
+		}
+		System.out.println("\nPASS 2");
+		context.dumpOverloads(System.out);
 		for (Overload overload : context.getAllOverloads()) {
 			overload.calculate(types, context.symtab);
 			if (overload.methods.size() > 1 && !overload.isValid) {
@@ -443,7 +456,8 @@ public class OverloadScanner extends AbstractTreeScanner {
 				}
 			}
 		}
-		// context.dumpOverloads(System.out);
+		System.out.println("\nPASS 3");
+		context.dumpOverloads(System.out);
 	}
 
 }

@@ -148,6 +148,11 @@ public interface JSweetOptions {
      * Constant string for the 'autoPropagateAsyncs' option.
      */
     String autoPropagateAsyncAwaits  = "autoPropagateAsyncAwaits";
+
+    /**
+     * Constant string for the 'disableOverloadStubs' option.
+     */
+    String disableOverloadStubs  = "disableOverloadStubs";
     
 	/**
 	 * All the supported options (used to report non-blocking errors when options do not exist).
@@ -156,7 +161,7 @@ public interface JSweetOptions {
             declaration, tsOnly, ignoreDefinitions, ignoreJavaErrors, header, disableSinglePrecisionFloats,
             disableStaticsLazyInitialization, targetVersion, tsout, dtsout, jsout, candiesJsOut, moduleResolution,
             extraSystemPath, useSingleQuotesForStringLiterals, nonEnumerableTransients, classpath, sortClassMembers,
-            autoPropagateAsyncAwaits };
+            autoPropagateAsyncAwaits, disableOverloadStubs };
 
 	/**
 	 * Returns the configuration from the configuration file.
@@ -386,5 +391,14 @@ public interface JSweetOptions {
      * If true, auto propagates async methods and await invocations.
      */
     boolean isAutoPropagateAsyncAwaits();
+    
+    /**
+     * If true (default), generates overload stubs. Overload stubs are switch 
+     * methods to invoke the overload with the original name. They perform runtime 
+     * type check to invoke the right overload.
+     */
+    boolean isGenerateOverloadStubs();
+	
+
     
 }

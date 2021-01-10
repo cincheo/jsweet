@@ -26,6 +26,18 @@ public class WrongOverloadWithInheritance {
 
 }
 
+class C01 {
+	void m(String s) {
+		
+	};
+}
+
+class C02 extends C01 {
+	void m(int s) {
+		
+	};
+}
+
 interface MyInterface<T> {
 	void overloaded(T arg);
 

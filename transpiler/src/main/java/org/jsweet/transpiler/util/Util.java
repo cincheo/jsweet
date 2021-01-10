@@ -426,14 +426,13 @@ public class Util {
 
 		// score them
 		for (MethodSymbol candidate : candidates) {
-			if(types.isSubSignature(candidate.type, methodType)) {
+			if(types.isSubSignature(types.erasureRecursive(candidate.type), types.erasureRecursive(methodType))) {
 				return candidate;
 			}
 		}
 		return null;
 	}
-	
-	
+
 	/**
 	 * Finds the method in the given type that matches the given name and
 	 * signature.
