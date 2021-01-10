@@ -3209,20 +3209,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	}
 
 	private String getOverloadMethodName(MethodSymbol method) {
-		//return getAdapter().getOverloadMethodName(method);
-		if (method.isConstructor()) {
-			return "constructor";
-		}
-		StringBuilder sb = new StringBuilder(method.getSimpleName().toString());
-		sb.append("$");
-		for (VarSymbol p : method.getParameters()) {
-			sb.append(context.types.erasure(p.type).toString().replace('.', '_').replace("[]", "_A"));
-			sb.append("$");
-		}
-		if (!method.getParameters().isEmpty()) {
-			sb.deleteCharAt(sb.length() - 1);
-		}
-		return sb.toString();
+		return getAdapter().getOverloadName(method);
 	}
 
 	private void checkType(TypeSymbol type) {

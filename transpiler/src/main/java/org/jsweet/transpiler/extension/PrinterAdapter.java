@@ -1285,14 +1285,14 @@ public class PrinterAdapter {
      * @param exectuable the executable to get the overload name
      * @return the overload name
      */
-	public String getOverloadMethodName(ExecutableElement executable) {
+	public String getOverloadName(ExecutableElement executable) {
 		if (executable.getKind() == ElementKind.CONSTRUCTOR) {
 			return "constructor";
 		}
 		StringBuilder sb = new StringBuilder(executable.getSimpleName().toString());
 		sb.append("$");
 		for (VariableElement p : executable.getParameters()) {
-			sb.append(types.erasure(p.asType()).toString().replace('.', '_').replace("[]", "_A"));
+			sb.append(types().erasure(p.asType()).toString().replace('.', '_').replace("[]", "_A"));
 			sb.append("$");
 		}
 		if (!executable.getParameters().isEmpty()) {
