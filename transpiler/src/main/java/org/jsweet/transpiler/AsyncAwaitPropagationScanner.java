@@ -81,7 +81,7 @@ public class AsyncAwaitPropagationScanner extends AbstractTreeScanner {
                         }
                     }
                     List<MethodSymbol> candidates = new LinkedList<>();
-                    Util.collectMatchingMethodDeclarationsInType(context.types, (TypeSymbol)parent.sym.getEnclosingElement(), parent.name.toString(), (MethodType)parent.sym.type, true, candidates);
+                    Util.collectMatchingMethodDeclarationsInType(context.types, (TypeSymbol)parent.sym.getEnclosingElement(), parent.name.toString(), (MethodType)context.types.erasureRecursive(parent.sym.type), true, candidates);
                     for (MethodSymbol candidate : candidates) {
                         context.addExtraAnnotationType(candidate, JSweetConfig.ANNOTATION_ASYNC);
                     }
