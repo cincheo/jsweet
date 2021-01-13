@@ -406,7 +406,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 	}
 
 	private void processMethod(JCClassDecl enclosingClassdecl, JCMethodDecl method) {
-		if (context.hasAnnotationType(method.sym, JSweetConfig.ANNOTATION_ERASED, JSweetConfig.ANNOTATION_AMBIENT)) {
+		if (method.sym == null || context.hasAnnotationType(method.sym, JSweetConfig.ANNOTATION_ERASED, JSweetConfig.ANNOTATION_AMBIENT)) {
 			return;
 		}
 		Overload overload = context.getOrCreateOverload(enclosingClassdecl.sym, method.sym);
