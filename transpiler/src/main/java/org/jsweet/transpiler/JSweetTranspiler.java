@@ -273,7 +273,7 @@ public class JSweetTranspiler implements JSweetOptions {
 				+ noRootDirectories + "\nignoreAssertions=" + ignoreAssertions + "\nignoreJavaFileNameError="
 				+ ignoreJavaFileNameError + "\ngenerateDeclarations=" + generateDeclarations
 				+ "\ndeclarationsOutputDir=" + declarationsOutputDir + "\ngenerateDefinitions=" + generateDefinitions
-				+ "\njsLibFiles=" + jsLibFiles;
+				+ "\njsLibFiles=" + jsLibFiles + "\ngenerateOverloadStubs=" + generateOverloadStubs;
 	}
 
 	/**
@@ -404,6 +404,9 @@ public class JSweetTranspiler implements JSweetOptions {
             }
             if (options.containsKey(JSweetOptions.nonEnumerableTransients)) {
                 setNonEnumerableTransients((Boolean) getMapValue(options, JSweetOptions.nonEnumerableTransients));
+            }
+            if (options.containsKey(JSweetOptions.disableOverloadStubs)) {
+                setGenerateOverloadStubs(!(Boolean) getMapValue(options, JSweetOptions.disableOverloadStubs));
             }
 		}
 
