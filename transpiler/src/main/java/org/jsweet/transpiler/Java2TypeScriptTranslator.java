@@ -1537,7 +1537,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					defaultMethods = new HashSet<>();
 					Util.findDefaultMethodsInType(defaultMethods, context, classdecl.sym);
 					
-					if (Util.isSourceElement(classdecl.sym.getSuperclass().tsym) && !isMappedOrErasedType(classdecl.sym.getSuperclass().tsym)) {
+					if (!defaultMethods.isEmpty() && Util.isSourceElement(classdecl.sym.getSuperclass().tsym) && !isMappedOrErasedType(classdecl.sym.getSuperclass().tsym)) {
 						HashSet<Entry<JCClassDecl, JCMethodDecl>> superClassDefaultMethods = new HashSet<>();
 						Util.findDefaultMethodsInType(superClassDefaultMethods, context, (ClassSymbol)classdecl.sym.getSuperclass().tsym);;
 						defaultMethods.removeAll(superClassDefaultMethods);
@@ -1742,7 +1742,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	            }
 	        }
 		}
-		
+
 		for (JCTree def : defs) {
 		    if (injectedDefaultMethods.contains(def)) {
 		        JCMethodDecl defaultMethod = (JCMethodDecl) def;
@@ -1769,8 +1769,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     printIndent()
                             .print("/* Default method injected from " + defaultMethod.sym.getEnclosingElement() + " */")
                             .println();
+                    printIndent();
                 }
-                printIndent().print(defaultMethod).println();
+                print(defaultMethod);
+                if (!context.hasAnnotationType(defaultMethod.sym, JSweetConfig.ANNOTATION_ERASED)) {
+                    println();
+                }
                 getAdapter().typeVariablesToErase.removeAll(((ClassSymbol) s.getEnclosingElement()).getTypeParameters());
                 getScope().defaultMethodScope = false;
                 continue;
@@ -1808,6 +1812,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				printIndent();
 			}
 			int pos = getCurrentPosition();
+
 			print(def);
 
 			if (getScope().enumScope && JCTree.Tag.VARDEF == def.getTag() && getScope().enumString) {
