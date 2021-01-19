@@ -718,6 +718,28 @@ public class JSweetContext extends Context {
 	}
 
 	/**
+	 * Tells if the given element is within the Java sources being compiled, but also is excluded from code generation
+	 * through the "extraInput" option.
+	 * 
+	 * @see Util#isSourceElement(Element)
+	 */
+	public boolean isExcludedSourceElement(Element element) {
+		if (element == null || element instanceof PackageSymbol) {
+			return false;
+		}
+		if (element instanceof ClassSymbol) {
+			ClassSymbol clazz = (ClassSymbol) element;
+			// hack to know if it is a source file or a class file
+			if (clazz.sourcefile != null
+					&& clazz.sourcefile.getClass().getName().equals("com.sun.tools.javac.file.RegularFileObject")
+					&& excludedSourcePaths.contains(clazz.sourcefile.getName())) {
+				return true;
+			}
+		}
+		return isExcludedSourceElement(element.getEnclosingElement());
+	}
+		
+	/**
 	 * The compilation units that correspond to the source files.
 	 */
 	public JCCompilationUnit[] compilationUnits;

@@ -52,9 +52,11 @@ import java.util.stream.Collectors;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
@@ -3214,9 +3216,40 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	}
 
 	private String getOverloadMethodName(MethodSymbol method) {
-		return getAdapter().getOverloadName(method);
+		String overloadName = getAdapter().getOverloadName(method);
+		return overloadName != null ? overloadName : getDefaultOverloadName(method);
 	}
 
+	/**
+	 * Gets the default overload name for the given executable, which is assumed to
+	 * be part of an overload.
+	 * 
+	 * By default, an overload executable name is formed of the original executable
+	 * name ("constructor" for a constructor), concatenated to the arguments types
+	 * where the '.' are replaced with '_'. Argument types separators are '$'.
+	 * 
+	 * For instance: m(String s, int i) would give: m$java_lang_Strin$int
+	 * 
+	 * @param exectuable the executable to get the overload name
+	 * @return the default overload name
+	 */
+	public final String getDefaultOverloadName(ExecutableElement executable) {
+		if (executable.getKind() == ElementKind.CONSTRUCTOR) {
+			return "constructor";
+		}
+		StringBuilder sb = new StringBuilder(executable.getSimpleName().toString());
+		sb.append("$");
+		for (VariableElement p : executable.getParameters()) {
+			sb.append(context.modelTypes.erasure(p.asType()).toString().replace('.', '_').replace("[]", "_A"));
+			sb.append("$");
+		}
+		if (!executable.getParameters().isEmpty()) {
+			sb.deleteCharAt(sb.length() - 1);
+		}
+		return sb.toString();
+	}
+	
+	
 	private void checkType(TypeSymbol type) {
 		if (type instanceof ClassSymbol && !isMappedOrErasedType(type)) {
 			String name = type.getSimpleName().toString();
@@ -4166,7 +4199,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					if (methSym != null) {
 						if (context.isInvalidOverload(methSym) && ((!Util.hasTypeParameters(methSym)
 								&& !methSym.isDefault() && getParent(JCMethodDecl.class) != null
-								&& !getParent(JCMethodDecl.class).sym.isDefault()) || !context.options.isGenerateOverloadStubs())) {
+								&& !getParent(JCMethodDecl.class).sym.isDefault()) || !context.options.isGenerateOverloadStubs())
+								&& !context.isExcludedSourceElement(methSym)) {
 							if (context.options.isGenerateOverloadStubs() && context.isInterface((TypeSymbol) methSym.getEnclosingElement())) {
 								removeLastChar('.');
 								print("['" + getOverloadMethodName(methSym) + "']");
