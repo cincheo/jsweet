@@ -171,6 +171,10 @@ import com.sun.tools.javac.util.Name;
  */
 public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
+	
+	/* Set to true to expose the overloads in the interfaces (will cause issues with abstract classes) */
+	private boolean __EXPERIMENTAL_expose = false;
+	
 	/**
 	 * The name of the field where the parent class is stored in the generated
 	 * TypeScript code.
@@ -2168,6 +2172,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	}
 
 	private void printAbstractMethodDeclaration(MethodSymbol method, boolean invalidOverload) {
+		printIndent().println("/* Automatically added abstract method to conform the interface */");
 		if (context.options.isGenerateOverloadStubs() || !invalidOverload) {
 			printIndent().print("public abstract ").print(method.getSimpleName().toString());
 			print("(");
@@ -2179,7 +2184,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				removeLastChars(2);
 			}
 			print(")");
-			print(": any;").println();
+			print(": any;").println().println();
 		} else {
 			printIndent().print("public abstract ").print(getOverloadMethodName(method));
 			print("(");
@@ -2191,7 +2196,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				removeLastChars(2);
 			}
 			print(")");
-			print(": any;").println();
+			print(": any;").println().println();
 		}
 	}
 
@@ -2307,6 +2312,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 									println().println().printIndent();
 									printCoreMethodDelegate = false;
 								}
+								if (__EXPERIMENTAL_expose && isInterfaceMethod(parent, methodDecl) && !methodDecl.sym.isConstructor()) {
+									printCoreMethodDelegate = true;
+									visitMethodDef(overload.coreMethod);
+									println().println().printIndent();
+									printCoreMethodDelegate = false;
+								}
 							} else {
 								inCoreWrongOverload = true;
 								if (methodDecl.sym.isDefault() || (!methodDecl.sym.isConstructor()
@@ -2339,7 +2350,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 								}
 							}
 							if (isInterfaceMethod(parent, methodDecl)) {
-								if (context.options.isGenerateOverloadStubs()) {
+								if (context.options.isGenerateOverloadStubs() && !__EXPERIMENTAL_expose) {
 									return;
 								}
 							}
