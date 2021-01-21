@@ -724,7 +724,7 @@ public class JSweetContext extends Context {
 	 * @see Util#isSourceElement(Element)
 	 */
 	public boolean isExcludedSourceElement(Element element) {
-		if (element == null || element instanceof PackageSymbol) {
+		if (element == null || element instanceof PackageSymbol || excludedSourcePaths == null) {
 			return false;
 		}
 		if (element instanceof ClassSymbol) {
