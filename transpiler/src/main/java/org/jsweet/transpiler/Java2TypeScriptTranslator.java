@@ -4210,8 +4210,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					if (methSym != null) {
 						if (context.isInvalidOverload(methSym) && ((!Util.hasTypeParameters(methSym)
 								&& !methSym.isDefault() && getParent(JCMethodDecl.class) != null
-								&& !getParent(JCMethodDecl.class).sym.isDefault()) || !context.options.isGenerateOverloadStubs())
-								&& !context.isExcludedSourceElement(methSym)) {
+								&& !getParent(JCMethodDecl.class).sym.isDefault()) || !context.options.isGenerateOverloadStubs())) {
 							if (context.options.isGenerateOverloadStubs() && context.isInterface((TypeSymbol) methSym.getEnclosingElement())) {
 								removeLastChar('.');
 								print("['" + getOverloadMethodName(methSym) + "']");
