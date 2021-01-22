@@ -32,6 +32,10 @@ import org.jsweet.transpiler.extension.PrinterAdapter;
 public interface JSweetOptions {
 
 	/**
+	 * Constant string for the 'stats' option.
+	 */
+	String stats = "stats";
+	/**
 	 * Constant string for the 'bundle' option.
 	 */
 	String bundle = "bundle";
@@ -157,7 +161,7 @@ public interface JSweetOptions {
 	/**
 	 * All the supported options (used to report non-blocking errors when options do not exist).
 	 */
-    String[] options = { bundle, noRootDirectories, sourceMap, module, encoding, outEncoding, enableAssertions,
+    String[] options = { stats, bundle, noRootDirectories, sourceMap, module, encoding, outEncoding, enableAssertions,
             declaration, tsOnly, ignoreDefinitions, ignoreJavaErrors, header, disableSinglePrecisionFloats,
             disableStaticsLazyInitialization, targetVersion, tsout, dtsout, jsout, candiesJsOut, moduleResolution,
             extraSystemPath, useSingleQuotesForStringLiterals, nonEnumerableTransients, classpath, sortClassMembers,
@@ -168,6 +172,11 @@ public interface JSweetOptions {
 	 */
 	Map<String, Object> getConfiguration();
 
+	/**
+	 * Turn on stats.
+	 */
+	boolean isStats();
+	
 	/**
 	 * Tells if the transpiler generates js.map files for Java debugging.
 	 * 

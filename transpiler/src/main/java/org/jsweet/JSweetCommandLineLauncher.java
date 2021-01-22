@@ -64,10 +64,13 @@ import com.martiansoftware.jsap.stringparsers.FileStringParser;
         re-run transpilation on-the-fly.
 
   [-v|--verbose]
-        Turn on general information logging (INFO LEVEL)
+        Turn on general information logging (INFO LEVEL).
         
   [-V|--veryVerbose]
-        Turn on all levels of logging
+        Turn on all levels of logging.
+
+  [--stats]
+        Turn on stats (results to be printed at the end of the transpilation).
 
   [--encoding <encoding>]
         Force the Java compiler to use a specific encoding (UTF-8, UTF-16, ...).
@@ -320,7 +323,7 @@ public class JSweetCommandLineLauncher {
 		switchArg.setHelp("Turn on general information logging (INFO LEVEL)");
 		switchArg.setDefault("false");
 		jsap.registerParameter(switchArg);
-
+			
 		switchArg = new Switch("veryVerbose");
 		switchArg.setLongFlag("veryVerbose");
 		switchArg.setShortFlag('V');
@@ -328,6 +331,13 @@ public class JSweetCommandLineLauncher {
 		switchArg.setDefault("false");
 		jsap.registerParameter(switchArg);
 
+		// Stats
+		switchArg = new Switch(JSweetOptions.stats);
+		switchArg.setLongFlag("stats");
+		switchArg.setHelp("Turn on stats (results to be printed at the end of the transpilation).");
+		switchArg.setDefault("false");
+		jsap.registerParameter(switchArg);
+				
 		// Java compiler's encoding
 		optionArg = new FlaggedOption(JSweetOptions.encoding);
 		optionArg.setLongFlag(JSweetOptions.encoding);

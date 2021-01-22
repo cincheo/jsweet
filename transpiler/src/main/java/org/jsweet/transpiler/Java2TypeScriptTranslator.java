@@ -20,16 +20,16 @@ package org.jsweet.transpiler;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.jsweet.JSweetConfig.ANNOTATION_ERASED;
-import static org.jsweet.JSweetConfig.ANNOTATION_STRING_ENUM;
-import static org.jsweet.JSweetConfig.UTIL_CLASSNAME;
 import static org.jsweet.JSweetConfig.ANNOTATION_FUNCTIONAL_INTERFACE;
 import static org.jsweet.JSweetConfig.ANNOTATION_OBJECT_TYPE;
+import static org.jsweet.JSweetConfig.ANNOTATION_STRING_ENUM;
 import static org.jsweet.JSweetConfig.ANNOTATION_STRING_TYPE;
 import static org.jsweet.JSweetConfig.GLOBALS_CLASS_NAME;
 import static org.jsweet.JSweetConfig.GLOBALS_PACKAGE_NAME;
 import static org.jsweet.JSweetConfig.TS_IDENTIFIER_FORBIDDEN_CHARS;
 import static org.jsweet.JSweetConfig.TUPLE_CLASSES_PACKAGE;
 import static org.jsweet.JSweetConfig.UNION_CLASS_NAME;
+import static org.jsweet.JSweetConfig.UTIL_CLASSNAME;
 import static org.jsweet.JSweetConfig.UTIL_PACKAGE;
 import static org.jsweet.transpiler.util.Util.isGlobalsClassName;
 
@@ -47,6 +47,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 import java.util.function.BiFunction;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -89,7 +90,6 @@ import org.jsweet.transpiler.util.JSDoc;
 import org.jsweet.transpiler.util.RollbackException;
 import org.jsweet.transpiler.util.Util;
 
-import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.Attribute.Compound;
@@ -161,7 +161,6 @@ import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.JCTree.JCWhileLoop;
 import com.sun.tools.javac.tree.JCTree.JCWildcard;
 import com.sun.tools.javac.tree.TreeScanner;
-import com.sun.tools.javac.util.Name;
 
 /**
  * This is a TypeScript printer for translating the Java AST to a TypeScript
@@ -759,6 +758,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		footer.delete(0, footer.length());
 
 		setCompilationUnit(topLevel);
+		if (context.options.isStats()) {
+			context.stats.javaFileCount++;
+			context.stats.javaLineCount += getGetSource(topLevel).length;
+		}
 		
 		String packge = topLevel.packge.toString();
 
@@ -1409,11 +1412,30 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	@Override
 	public void visitClassDef(JCClassDecl classdecl) {
+		
+		if (context.options.isStats()) {
+			switch (classdecl.getKind()) {
+			case ENUM:
+				context.stats.javaEnumCount++;
+				break;
+			case INTERFACE:
+				context.stats.javaInterfaceCount++;
+				break;
+			default:
+				context.stats.javaClassCount++;
+			}
+			context.stats.javaMethodCount += classdecl.sym.getEnclosedElements().stream()
+					.filter(e -> e instanceof ExecutableElement).count();
+		}
+		
 		if (getAdapter().substituteType(classdecl.sym)) {
 			getAdapter().afterType(classdecl.sym);
 			return;
 		}
 		if (context.isIgnored(classdecl)) {
+			if (context.options.isStats()) {
+				context.stats.erasedJavaClassCount++;
+			}
 			getAdapter().afterType(classdecl.sym);
 			return;
 		}
@@ -1515,6 +1537,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 			if (context.isInterface(classdecl.sym)) {
 				print("interface ");
+				if (context.options.isStats()) {
+					context.stats.tsInterfaceCount++;
+				}
 				getScope().interfaceScope = true;
 			} else {
 				if (classdecl.getKind() == Kind.ENUM) {
@@ -1526,9 +1551,15 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							print("abstract ");
 						}
 						print("class ");
+						if (context.options.isStats()) {
+							context.stats.tsClassCount++;
+						}
 						getScope().enumWrapperClassScope = true;
 					} else {
 						print("enum ");
+						if (context.options.isStats()) {
+							context.stats.tsEnumCount++;
+						}
 						getScope().enumScope = true;
 						if (context.hasAnnotationType(classdecl.sym, ANNOTATION_STRING_ENUM)) {
 							getScope().enumString = true;
@@ -1553,6 +1584,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						print("abstract ");
 					}
 					print("class ");
+					if (context.options.isStats()) {
+						context.stats.tsClassCount++;
+					}
 				}
 			}
 
@@ -2249,6 +2283,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 
 		if (context.hasAnnotationType(methodDecl.sym, JSweetConfig.ANNOTATION_ERASED)) {
+			if (context.options.isStats()) {
+				context.stats.erasedJavaMethodCount++;
+			}
 			// erased elements are ignored
 			return;
 		}
@@ -2545,6 +2582,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					print(tsMethodName);
 				}
 			}
+		}
+		if (context.options.isStats()) {
+			context.stats.tsMethodCount++;
 		}
 		if ((methodDecl.typarams != null && !methodDecl.typarams.isEmpty())
 				|| (getContext().getWildcards(methodDecl.sym) != null)) {

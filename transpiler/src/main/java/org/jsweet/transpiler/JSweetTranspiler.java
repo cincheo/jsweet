@@ -245,6 +245,7 @@ public class JSweetTranspiler implements JSweetOptions {
 	private boolean sortClassMembers = false;
 	private boolean autoPropagateAsyncAwaits = false;
 	private boolean generateOverloadStubs = true;
+	private boolean stats = false;
 	
 	private ArrayList<String> adapters = new ArrayList<>();
 	private File configurationFile;
@@ -334,6 +335,9 @@ public class JSweetTranspiler implements JSweetOptions {
 				if (!ArrayUtils.contains(JSweetOptions.options, key)) {
 					logger.error("unsupported option: " + key);
 				}
+			}
+			if (options.containsKey(JSweetOptions.stats)) {
+				setStats(getMapValue(options, JSweetOptions.stats));
 			}
 			if (options.containsKey(JSweetOptions.bundle)) {
 				setBundle(getMapValue(options, JSweetOptions.bundle));
@@ -637,6 +641,10 @@ public class JSweetTranspiler implements JSweetOptions {
 
 	private void initJavac(final TranspilationHandler transpilationHandler) {
 		context = factory.createContext(this);
+		if (isStats()) {
+			context.stats = new JSweetStats();
+			context.stats.totalTime = System.currentTimeMillis();
+		}
 		context.setUsingJavaRuntime(forceJavaRuntime ? isUsingJavaRuntime
 				: (candiesProcessor == null ? false : candiesProcessor.isUsingJavaRuntime()));
 		options = Options.instance(context);
@@ -915,6 +923,12 @@ public class JSweetTranspiler implements JSweetOptions {
 				+ " ms \n" //
 				+ "> java2ts: " + ((endJava2TsTimeNanos - startJava2TsTimeNanos) / 1e6) + "ms\n" + "> ts2js: "
 				+ ((endTs2JsTimeNanos - startTs2JsTimeNanos) / 1e6) + "ms\n");
+		
+		if (isStats()) {
+			System.out.println();
+			System.out.println(context.stats.toString());
+		}
+		
 	}
 
 	private void ts2js(ErrorCountTranspilationHandler transpilationHandler, SourceFile[] sourceFiles)
@@ -978,6 +992,9 @@ public class JSweetTranspiler implements JSweetOptions {
 			} else {
 				generateTsFiles(transpilationHandler, files, compilationUnits);
 			}
+		}
+		if (isStats()) {
+			context.stats.totalTime = System.currentTimeMillis() - context.stats.totalTime;
 		}
 		log.flush();
 	}
@@ -1067,6 +1084,10 @@ public class JSweetTranspiler implements JSweetOptions {
 				files[i].setSourceMap(printer.sourceMap);
 				if (generateSourceMaps && !generateJsFiles) {
 					generateTypeScriptSourceMapFile(files[i]);
+				}
+				if (isStats()) {
+					context.stats.tsFileCount++;
+					context.stats.tsLineCount += printer.getCurrentLine();
 				}
 				logger.info("created " + outputFilePath);
 			} finally {
@@ -1233,7 +1254,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		try {
 			String headers = context.getHeaders();
 			out.print(headers);
-			lineCount = StringUtils.countMatches(headers, "\n");
+			lineCount += StringUtils.countMatches(headers, "\n");
 			for (SourceFile f : bundledFiles) {
 				f.getSourceMap().shiftOutputPositions(lineCount);
 			}
@@ -1268,6 +1289,10 @@ public class JSweetTranspiler implements JSweetOptions {
 			}
 		} finally {
 			out.close();
+			if (isStats()) {
+				context.stats.tsFileCount++;
+				context.stats.tsLineCount += lineCount;
+			}
 		}
 		for (int i = 0; i < orderedCompilationUnits.size(); i++) {
 			JCCompilationUnit cu = orderedCompilationUnits.get(i);
@@ -1782,6 +1807,9 @@ public class JSweetTranspiler implements JSweetOptions {
 		Java2TypeScriptTranslator translator = factory.createTranslator(adapter, handler, context, null, false);
 		translator.enterScope();
 		translator.scan(tree);
+		if (isStats()) {
+			context.stats.tsLineCount += translator.getCurrentLine();
+		}
 		translator.exitScope();
 		String tsCode = translator.getResult();
 		return ts2js(handler, tsCode, targetFileName);
@@ -1991,6 +2019,14 @@ public class JSweetTranspiler implements JSweetOptions {
 		this.generateOverloadStubs = generateOverloadStubs;
 	}
 
+	@Override
+	public boolean isStats() {
+		return this.stats;
+	}
+
+	public void setStats(boolean stats) {
+		this.stats = stats;
+	}
 	
 	
 }

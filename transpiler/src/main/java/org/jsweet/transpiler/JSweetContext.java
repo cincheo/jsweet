@@ -131,6 +131,8 @@ public class JSweetContext extends Context {
 
 	public StaticInitilializerAnalyzer referenceAnalyzer;
 
+	public JSweetStats stats;
+	
 	/**
 	 * Maps the name of a class to the JDK type it extends.
 	 */
