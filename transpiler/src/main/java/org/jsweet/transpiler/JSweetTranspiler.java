@@ -1243,7 +1243,7 @@ public class JSweetTranspiler implements JSweetOptions {
 		if (!bundleDirectory.exists()) {
 			bundleDirectory.mkdirs();
 		}
-		String bundleName = "bundle" + (definitionBundle ? ".d.ts" : ".ts");
+		String bundleName = "bundle" + (definitionBundle ? "-defs.d.ts" : ".ts");
 
 		File outputFile = new File(bundleDirectory, bundleName);
 
