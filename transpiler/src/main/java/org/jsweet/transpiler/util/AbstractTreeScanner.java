@@ -381,6 +381,15 @@ public abstract class AbstractTreeScanner extends TreeScanner {
 	}
 
 	/**
+	 * Gets the parent element in the printer's scanning stack.
+	 * 
+	 * @see #getStack()
+	 */
+	public ExtendedElement getParentElement(int position) {
+		return ExtendedElementFactory.INSTANCE.create(this.stack.get(this.stack.size() - 1 - position));
+	}
+	
+	/**
 	 * Gets the first parent in the scanning stack matching the given type.
 	 * 
 	 * @param type

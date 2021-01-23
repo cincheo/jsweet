@@ -582,6 +582,14 @@ public class PrinterAdapter {
 	}
 
 	/**
+	 * Gets the parent element in the printer's scanning stack, at the given relative position.
+	 * Position: 1 is direct parent, 2 is parent of parent, etc.
+	 */
+	public final ExtendedElement getParentElement(int position) {
+		return printer.getParentElement(position);
+	}
+	
+	/**
 	 * Gets currently scanned element.
 	 */
 	public final ExtendedElement getCurrentElement() {

@@ -72,7 +72,6 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
@@ -85,6 +84,7 @@ import org.jsweet.transpiler.Java2TypeScriptTranslator;
 import org.jsweet.transpiler.Java2TypeScriptTranslator.ComparisonMode;
 import org.jsweet.transpiler.ModuleImportDescriptor;
 import org.jsweet.transpiler.TypeChecker;
+import org.jsweet.transpiler.model.BinaryOperatorElement;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.ForeachLoopElement;
 import org.jsweet.transpiler.model.IdentifierElement;
@@ -103,7 +103,6 @@ import org.jsweet.transpiler.model.support.VariableAccessElementSupport;
 import org.jsweet.transpiler.util.Util;
 
 import com.sun.codemodel.internal.JJavaName;
-import com.sun.source.tree.TypeCastTree;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
@@ -1290,13 +1289,23 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 					case "equals":
 					    TypeMirror t1 = util().toPrimitiveTypeOrType(invocationElement.getTargetExpression().getType());
                         TypeMirror t2 = util().toPrimitiveTypeOrType(invocationElement.getArgument(0).getType());
-                        if (types().isSameType(t1, t2) && util().isCoreType(t1)) {
-                            if (isInlinedExpression(invocationElement)) {
+                        if (util().isCoreType(t1) || util().isCoreType(t2)) {
+                        	boolean inv = false;
+                        	if (getPrinter().getLastPrintedChar() == '!') {
+                        		inv = true;
+                        		getPrinter().removeLastChar();
+                        	}
+                            ExtendedElement arg = invocationElement.getArgument(0);
+                        	boolean inlinedExpression = isInlinedExpression(invocationElement);
+                        	if (inv && !(getParentElement(2) instanceof BinaryOperatorElement)) {
+                        		inlinedExpression = false;
+                        	}
+                        	
+                            if (inlinedExpression) {
                                 print("(");
                             }
-                            print(invocationElement.getTargetExpression()).print(" === ");
-                            ExtendedElement arg = invocationElement.getArgument(0);
-                            boolean inlinable = arg instanceof VariableAccessElement
+							print(invocationElement.getTargetExpression()).print(inv ? " !== " : " === ");
+                            boolean inlinable = arg instanceof VariableAccessElement || arg instanceof LiteralElement
                                     || (arg instanceof MethodInvocationElement
                                             && !"equals".equals(((MethodInvocationElement) arg).getMethodName()));
                             if (!inlinable) {
@@ -1306,7 +1315,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
                             if (!inlinable) {
                                 print(")");
                             }
-                            if (isInlinedExpression(invocationElement)) {
+                            if (inlinedExpression) {
                                 print(")");
                             }
                         } else {
