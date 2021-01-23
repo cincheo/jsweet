@@ -1236,6 +1236,9 @@ public class JSweetTranspiler implements JSweetOptions {
 
 			initSourceFileJavaPaths(files[permutation[i]], cu);
 		}
+		if (isStats()) {
+			context.stats.tsLineCount += lineCount;
+		}
 
 		context.bundleMode = false;
 
@@ -1254,7 +1257,10 @@ public class JSweetTranspiler implements JSweetOptions {
 		try {
 			String headers = context.getHeaders();
 			out.print(headers);
-			lineCount += StringUtils.countMatches(headers, "\n");
+			lineCount = StringUtils.countMatches(headers, "\n");
+			if (isStats()) {
+				context.stats.tsLineCount += lineCount;
+			}
 			for (SourceFile f : bundledFiles) {
 				f.getSourceMap().shiftOutputPositions(lineCount);
 			}
@@ -1291,7 +1297,6 @@ public class JSweetTranspiler implements JSweetOptions {
 			out.close();
 			if (isStats()) {
 				context.stats.tsFileCount++;
-				context.stats.tsLineCount += lineCount;
 			}
 		}
 		for (int i = 0; i < orderedCompilationUnits.size(); i++) {
