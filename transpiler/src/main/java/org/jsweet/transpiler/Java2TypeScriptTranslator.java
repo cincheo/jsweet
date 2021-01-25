@@ -2453,19 +2453,19 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			print("}").println().println().printIndent();
 		}
 
-		if (inOverload && !overload.isValid) {
-			// spread all annotations of the overload to the methods
-			for (JCMethodDecl m : overload.methods) {
-				if (m != methodDecl) {
-					for (JCAnnotation anno : m.mods.annotations) {
-						if (!methodDecl.mods.annotations.stream().anyMatch(
-								a -> a.getAnnotationType().toString().equals(anno.getAnnotationType().toString()))) {
-							methodDecl.mods.annotations = methodDecl.mods.annotations.append(anno);
-						}
-					}
-				}
-			}
-		}
+//		if (inOverload && !overload.isValid) {
+//			// spread all annotations of the overload to the methods
+//			for (JCMethodDecl m : overload.methods) {
+//				if (m != methodDecl) {
+//					for (JCAnnotation anno : m.mods.annotations) {
+//						if (!methodDecl.mods.annotations.stream().anyMatch(
+//								a -> a.getAnnotationType().toString().equals(anno.getAnnotationType().toString()))) {
+//							methodDecl.mods.annotations = methodDecl.mods.annotations.append(anno);
+//						}
+//					}
+//				}
+//			}
+//		}
 
 		print(methodDecl.mods);
 
