@@ -4164,10 +4164,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			applyVarargs = false;
 		}
 
-		List<JCExpression> substitutionArgs = null; 
+		List<JCExpression> substitutionArgs = inv.args; 
 		if (methSym != null && applyVarargs && inv.args.length() == methSym.getParameters().length()) {
-			substitutionArgs = new ArrayList<>(inv.args.subList(0, inv.args.size() - 1));
-			applyVarargs = false;
 			JCExpression expr = inv.args.last();
 			JCNewArray newArrayExpr = null;
 			if (expr instanceof JCNewArray) {
@@ -4176,10 +4174,15 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				newArrayExpr =(JCNewArray) ((JCTypeCast)expr).expr;
 			}
 			if (newArrayExpr != null) {
+				substitutionArgs = new ArrayList<>(inv.args.subList(0, inv.args.size() - 1));
+				applyVarargs = false;
 				substitutionArgs.addAll(newArrayExpr.elems);
 			}
-		} else {
-			substitutionArgs = inv.args;			
+			if (expr instanceof JCLiteral && "null".equals(expr.toString()) ||
+					expr instanceof JCTypeCast && ((JCTypeCast)expr).expr instanceof JCLiteral && "null".equals(((JCTypeCast)expr).expr.toString())) {
+				substitutionArgs = new ArrayList<>(inv.args.subList(0, inv.args.size() - 1));
+				applyVarargs = false;
+			}
 		}
 		
 		if (anonymous) {
