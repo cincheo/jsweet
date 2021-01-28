@@ -4164,6 +4164,24 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			applyVarargs = false;
 		}
 
+		List<JCExpression> substitutionArgs = null; 
+		if (methSym != null && applyVarargs && inv.args.length() == methSym.getParameters().length()) {
+			substitutionArgs = new ArrayList<>(inv.args.subList(0, inv.args.size() - 1));
+			applyVarargs = false;
+			JCExpression expr = inv.args.last();
+			JCNewArray newArrayExpr = null;
+			if (expr instanceof JCNewArray) {
+				newArrayExpr =(JCNewArray) expr;
+			} else if (expr instanceof JCTypeCast && ((JCTypeCast)expr).expr instanceof JCNewArray) {
+				newArrayExpr =(JCNewArray) ((JCTypeCast)expr).expr;
+			}
+			if (newArrayExpr != null) {
+				substitutionArgs.addAll(newArrayExpr.elems);
+			}
+		} else {
+			substitutionArgs = inv.args;			
+		}
+		
 		if (anonymous) {
 			applyVarargs = false;
 			if (inv.meth instanceof JCFieldAccess) {
@@ -4311,7 +4329,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 		}
 
-		int argsLength = applyVarargs ? inv.args.size() - 1 : inv.args.size();
+		int argsLength = applyVarargs ? substitutionArgs.size() - 1 : substitutionArgs.size();
 
 		if (getScope().innerClassNotStatic && "super".equals(methName)) {
 			TypeSymbol s = getParent(JCClassDecl.class).extending.type.tsym;
@@ -4336,7 +4354,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			methSym = p == null ? null : Util.findMethodDeclarationInType(context.types, p.sym, "this", type);
 		}
 		for (int i = 0; i < argsLength; i++) {
-			JCExpression arg = inv.args.get(i);
+			JCExpression arg = substitutionArgs.get(i);
 			if (inv.meth.type instanceof MethodType) {
 				// varargs transmission with TS ... notation
 				List<Type> argTypes = ((MethodType) inv.meth.type).argtypes;
@@ -4363,16 +4381,16 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 
 		if (applyVarargs) {
-			if (inv.args.size() > 1) {
+			if (substitutionArgs.size() > 1) {
 				// we cast array to any[] to avoid concat error on
 				// different
 				// types
 				print("].concat(<any[]>");
 			}
 
-			print(inv.args.last());
+			print(substitutionArgs.get(substitutionArgs.size() - 1));
 
-			if (inv.args.size() > 1) {
+			if (substitutionArgs.size() > 1) {
 				print(")");
 			}
 			if (inv.meth instanceof JCFieldAccess && !targetIsThisOrStaticImported && !isStatic) {
