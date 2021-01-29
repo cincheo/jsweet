@@ -4176,7 +4176,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			if (newArrayExpr != null) {
 				substitutionArgs = new ArrayList<>(inv.args.subList(0, inv.args.size() - 1));
 				applyVarargs = false;
-				substitutionArgs.addAll(newArrayExpr.elems);
+				if (newArrayExpr.elems != null) {
+					substitutionArgs.addAll(newArrayExpr.elems);
+				}
 			}
 			if (expr instanceof JCLiteral && "null".equals(expr.toString()) ||
 					expr instanceof JCTypeCast && ((JCTypeCast)expr).expr instanceof JCLiteral && "null".equals(((JCTypeCast)expr).expr.toString())) {
@@ -4391,7 +4393,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				print("].concat(<any[]>");
 			}
 
-			print(substitutionArgs.get(substitutionArgs.size() - 1));
+			if (!substitutionArgs.isEmpty()) {
+				print(substitutionArgs.get(substitutionArgs.size() - 1));
+			}
 
 			if (substitutionArgs.size() > 1) {
 				print(")");
