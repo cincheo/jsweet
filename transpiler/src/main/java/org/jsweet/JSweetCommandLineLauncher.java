@@ -903,7 +903,10 @@ public class JSweetCommandLineLauncher {
                 }                               
                 if (jsapArgs.userSpecified(JSweetOptions.disableOverloadStubs)) {
                     transpiler.setGenerateOverloadStubs(!jsapArgs.getBoolean(JSweetOptions.disableOverloadStubs));
-                }                               
+                }
+				if (jsapArgs.userSpecified(JSweetOptions.stats)) {
+					transpiler.setStats(jsapArgs.getBoolean(JSweetOptions.stats));
+				}
 				
 				if (tsOutputDir != null) {
 					transpiler.setTsOutputDir(tsOutputDir);

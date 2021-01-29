@@ -4165,7 +4165,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		}
 
 		List<JCExpression> substitutionArgs = inv.args; 
-		if (methSym != null && applyVarargs && inv.args.length() == methSym.getParameters().length()) {
+		if (methSym != null && applyVarargs && inv.args.length() > 0 && inv.args.length() == methSym.getParameters().length()) {
 			JCExpression expr = inv.args.last();
 			JCNewArray newArrayExpr = null;
 			if (expr instanceof JCNewArray) {
