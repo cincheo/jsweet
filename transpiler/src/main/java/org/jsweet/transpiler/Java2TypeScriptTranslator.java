@@ -2610,26 +2610,43 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                 }
             }
         }
-        if ((methodTree.getTypeParameters() != null && !methodTree.getTypeParameters().isEmpty())
-                || (getContext().getWildcards(methodElement) != null)) {
-            inTypeParameters = true;
-            print("<");
-            if (methodTree.getTypeParameters() != null && !methodTree.getTypeParameters().isEmpty()) {
-                printArgList(null, methodTree.getTypeParameters());
-                if (getContext().getWildcards(methodElement) != null) {
-                    print(", ");
+        
+        if (inOverload && inCoreWrongOverload) {
+            // for overload, we print the maximum number of type args, with default values
+            int maxTypeArgs = 0;
+            for (OverloadMethodEntry entry : overload.getEntries()) {
+                maxTypeArgs = Math.max(maxTypeArgs, entry.methodElement.getTypeParameters().size());
+            }
+            if (maxTypeArgs > 0) {
+                print("<");
+                for (int i = 0; i < maxTypeArgs; i++) {
+                    print("T" + i + " = any, ");
                 }
+                removeLastChars(2);
+                print(">");
             }
-            if (getContext().getWildcards(methodElement) != null) {
-                printArgList(null, getContext().getWildcards(methodElement), this::substituteAndPrintType);
+        } else {
+            if ((methodTree.getTypeParameters() != null && !methodTree.getTypeParameters().isEmpty())
+                    || (getContext().getWildcards(methodElement) != null)) {
+                inTypeParameters = true;
+                print("<");
+                if (methodTree.getTypeParameters() != null && !methodTree.getTypeParameters().isEmpty()) {
+                    printArgList(null, methodTree.getTypeParameters());
+                    if (getContext().getWildcards(methodElement) != null) {
+                        print(", ");
+                    }
+                }
+                if (getContext().getWildcards(methodElement) != null) {
+                    printArgList(null, getContext().getWildcards(methodElement), this::substituteAndPrintType);
+                }
+                print(">");
+                inTypeParameters = false;
             }
-            print(">");
-            inTypeParameters = false;
         }
         print("(");
         printMethodArgs(methodTree, overload, inOverload, inCoreWrongOverload, getScope());
         print(")");
-        printMethodReturnDeclaration(methodTree, inCoreWrongOverload);
+        printMethodReturnDeclaration(methodTree, overload, inCoreWrongOverload);
         if (inCoreWrongOverload && isInterfaceMethod(parent, methodTree)) {
             print(";");
             return returnNothing();
@@ -2664,7 +2681,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                 if (inCoreWrongOverload) {
                     print(" {").println().startIndent().printIndent();
 
-                    printCoreOverloadMethod(methodTree, parent, overload);
+                    printCoreOverloadMethodBody(methodTree, parent, overload);
 
                     print(" else throw new Error('invalid overload');");
                     endIndent().println().printIndent().print("}");
@@ -2741,7 +2758,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
         return returnNothing();
     }
 
-    private void printCoreOverloadMethod(MethodTree methodDecl, ClassTree parent, Overload overload) {
+    private void printCoreOverloadMethodBody(MethodTree methodDecl, ClassTree parent, Overload overload) {
         if (getAdapter().substituteOverloadMethodBody(Util.getElement(parent), overload)) {
             return;
         }
@@ -2838,7 +2855,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
         }
     }
 
-    protected void printMethodReturnDeclaration(MethodTree methodTree, boolean inCoreWrongOverload) {
+    protected void printMethodReturnDeclaration(MethodTree methodTree, Overload overload, boolean inCoreWrongOverload) {
         ExecutableElement methodElement = Util.getElement(methodTree);
 
         if (methodTree.getReturnType() != null) {
@@ -2854,7 +2871,17 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     print("Promise<");
                 }
 
-                if (inCoreWrongOverload && methodElement.getKind() != ElementKind.CONSTRUCTOR) {
+                boolean eraseOverloadsReturnTypeToAny = false;
+                if (inCoreWrongOverload  && methodElement.getKind() != ElementKind.CONSTRUCTOR) {
+                    for (OverloadMethodEntry overloadEntry : overload.getEntries()) {
+                        if (!context.types.isSameType(returnType, overloadEntry.methodElement.getReturnType())) {
+                            eraseOverloadsReturnTypeToAny = true;
+                            break;
+                        }
+                    }
+                    
+                }
+                if (eraseOverloadsReturnTypeToAny) {
                     print("any");
                 } else {
                     substituteAndPrintType(methodTree.getReturnType());
