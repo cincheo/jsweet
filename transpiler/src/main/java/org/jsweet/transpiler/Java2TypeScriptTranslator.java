@@ -344,6 +344,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
         private boolean decoratorScope = false;
 
+        public Stack<ForeachLoopScope> foreachLoopContext;
+        
         private final JSweetContext context;
         private final CompilationUnitTree compilationUnit;
 
@@ -492,6 +494,17 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
     }
 
+	private static class ForeachLoopScope {
+		public EnhancedForLoopTree loop;
+		public String variableName;
+		public String arrayName;
+
+		public ForeachLoopScope(EnhancedForLoopTree loop) {
+			super();
+			this.loop = loop;
+		}
+	}
+    
     private Stack<ClassScope> scope = new Stack<>();
 
     private boolean isAnnotationScope = false;
@@ -1581,6 +1594,13 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     }
                     defaultMethods = new HashSet<>();
                     util().findDefaultMethodsInType(defaultMethods, context, classTypeElement);
+                    TypeElement superClass = Util.getElement(classTypeElement.getSuperclass());
+					if (util().isSourceElement(superClass) && !isMappedOrErasedType(superClass)) {
+						Set<DefaultMethodEntry> superClassDefaultMethods = new HashSet<>();
+						util().findDefaultMethodsInType(superClassDefaultMethods, context, superClass);
+						defaultMethods.removeAll(superClassDefaultMethods);
+					}
+                    
                     if (classTree.getModifiers().getFlags().contains(Modifier.ABSTRACT)) {
                         print("abstract ");
                     }
@@ -5234,12 +5254,71 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
         return returnNothing();
     }
 
+    private int getIndexVariableCount() {
+		return getScope().foreachLoopContext == null ? 0 : getScope().foreachLoopContext.size();
+	}
+
+	private Set<String> getGeneratedVariableNames() {
+		Set<String> names = new HashSet<>();
+		if (getScope().foreachLoopContext != null) {
+			getScope().foreachLoopContext.stream().forEach(s -> {
+				names.add(s.variableName);
+				if (s.arrayName != null) {
+					names.add(s.arrayName);
+				}
+			});
+		}
+		return names;
+	}
+
+	private int getArrayVariableCount() {
+		return getScope().foreachLoopContext == null ? 0
+				: (int) getScope().foreachLoopContext.stream().filter(s -> s.arrayName != null).count();
+	}    
+    
+	private String getFreeVariableName(String variablePrefix, int index) {
+		String name = variablePrefix + (index == 0 ? "" : "" + index);
+
+		Set<String> generatedVariableNames = getGeneratedVariableNames();
+
+		while (generatedVariableNames.contains(name)) {
+			name = variablePrefix + (++index);
+		}
+
+		int position = stack.size() - 2;
+		while (position >= 0 && !(stack.get(position) instanceof MethodTree)) {
+			if (stack.get(position) instanceof BlockTree) {
+				BlockTree block = (BlockTree) stack.get(position);
+				// analyze all the previous declarations in the block
+				for (Tree t : block.getStatements()) {
+					if (t == stack.get(position + 1)) {
+						// do not analyze post declarations
+						break;
+					}
+					// name clash: we try again with another index
+					if (t instanceof VariableTree && name.equals(((VariableTree) t).getName().toString())) {
+						return getFreeVariableName(variablePrefix, index + 1);
+					}
+				}
+			}
+			position--;
+		}
+		if (position >= 0 && stack.get(position) instanceof MethodTree) {
+			for (VariableTree param : ((MethodTree) stack.get(position)).getParameters()) {
+				if (name.equals(param.getName().toString())) {
+					return getFreeVariableName(variablePrefix, index + 1);
+				}
+			}
+		}
+		return name;
+	}
+    
     /**
      * Prints a foreach loop tree.
      */
     @Override
     public Void visitEnhancedForLoop(EnhancedForLoopTree foreachLoop, Trees trees) {
-        String indexVarName = "index" + util().getId();
+    	String indexVarName = getFreeVariableName("index", getIndexVariableCount());
         boolean[] hasLength = { false };
         TypeElement targetType = Util.getTypeElement(foreachLoop.getExpression());
         TypeMirror collectionType = Util.getType(foreachLoop.getExpression());
@@ -5259,20 +5338,27 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             });
         }
         if (!getAdapter().substituteForEachLoop(createExtendedElement(foreachLoop), hasLength[0], indexVarName)) {
-            boolean noVariable = foreachLoop.getExpression() instanceof IdentifierTree
+			if (getScope().foreachLoopContext == null) {
+				getScope().foreachLoopContext = new Stack<>();
+			}
+			ForeachLoopScope foreachLoopScope = new ForeachLoopScope(foreachLoop);
+			getScope().foreachLoopContext.push(foreachLoopScope);
+        	boolean noVariable = foreachLoop.getExpression() instanceof IdentifierTree
                     || foreachLoop.getExpression() instanceof MemberSelectTree;
-            if (noVariable) {
-                print("for(" + VAR_DECL_KEYWORD + " " + indexVarName + "=0; " + indexVarName + " < ")
+        	foreachLoopScope.variableName = indexVarName;
+        	if (noVariable) {
+        		print("for(" + VAR_DECL_KEYWORD + " " + indexVarName + " = 0; " + indexVarName + " < ")
                         .print(foreachLoop.getExpression()).print("." + "length" + "; " + indexVarName + "++) {")
                         .println().startIndent().printIndent();
                 print(VAR_DECL_KEYWORD + " " + avoidJSKeyword(foreachLoop.getVariable().getName().toString()) + " = ")
                         .print(foreachLoop.getExpression()).print("[" + indexVarName + "];").println();
             } else {
-                String arrayVarName = "array" + util().getId();
-                print("{").println().startIndent().printIndent();
+            	String arrayVarName = getFreeVariableName("array", getArrayVariableCount());
+            	foreachLoopScope.arrayName = arrayVarName;
+            	print("{").println().startIndent().printIndent();
                 print(VAR_DECL_KEYWORD + " " + arrayVarName + " = ").print(foreachLoop.getExpression()).print(";")
                         .println().printIndent();
-                print("for(" + VAR_DECL_KEYWORD + " " + indexVarName + "=0; " + indexVarName + " < " + arrayVarName
+                print("for(" + VAR_DECL_KEYWORD + " " + indexVarName + " = 0; " + indexVarName + " < " + arrayVarName
                         + ".length; " + indexVarName + "++) {").println().startIndent().printIndent();
                 print(VAR_DECL_KEYWORD + " " + avoidJSKeyword(foreachLoop.getVariable().getName().toString()) + " = "
                         + arrayVarName + "[" + indexVarName + "];").println();
@@ -5283,6 +5369,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             if (!noVariable) {
                 endIndent().println().printIndent().print("}");
             }
+            getScope().foreachLoopContext.pop();
         }
 
         return returnNothing();

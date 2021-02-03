@@ -12,6 +12,8 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.type.TypeMirror;
 
+import org.jsweet.transpiler.model.ExtendedElement;
+import org.jsweet.transpiler.model.ExtendedElementFactory;
 import org.jsweet.transpiler.model.VariableElement;
 import org.jsweet.transpiler.util.Util;
 
@@ -82,5 +84,10 @@ public class VariableElementSupport extends ExtendedElementSupport<VariableTree>
     public Object getConstantValue() {
         return getStandardElement().getConstantValue();
     }
+    
+	@Override
+	public ExtendedElement getVariableTypeTree() {
+		return ExtendedElementFactory.INSTANCE.create(tree.getType());
+	}    
 
 }

@@ -73,6 +73,16 @@ public class ExtendedElementSupport<T extends Tree> implements ExtendedElement {
 		return type == null ? null : Util.getElement(type);
 	}
 
+	@SuppressWarnings("rawtypes")
+	@Override
+	public boolean equals(Object obj) {
+		if (!(obj instanceof ExtendedElementSupport)) {
+			return false;
+		} else {
+			return this.tree == ((ExtendedElementSupport) obj).tree;
+		}
+	}
+	
 	@Override
 	public int hashCode() {
 		return tree.hashCode();

@@ -348,13 +348,6 @@ public class Util {
     private static long id = 121;
 
     /**
-     * Returns a unique id (incremental).
-     */
-    public long getId() {
-        return id++;
-    }
-
-    /**
      * Tells if the given element is within the Java sources being compiled.
      */
     public boolean isSourceElement(Element element) {

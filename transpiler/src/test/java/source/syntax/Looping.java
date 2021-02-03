@@ -78,9 +78,56 @@ public class Looping {
             lastIndex = j;
         }
         assert lastIndex == 602;
+
+		int[] array = new int[] { 1, 2, 3 };
+		int pos = 1;
+		for (int integer : array) {
+			assert integer == pos;
+			pos++;
+		}
+
+		pos = 1;
+		for (int integer : array) {
+			assert integer == pos;
+			pos++;
+		}
+
+		// nested loops
+		pos = 1;
+		for (int integer : array) {
+			assert integer == pos;
+			pos++;
+			int pos2 = 1;
+			int index1 = 4;
+			for (int integer2 : array) {
+				assert integer2 == pos2;
+				assert index1 == 4;
+				pos2++;
+			}
+		}
+
+		// test clash between iteration variable and local variable
+		int index = 12;
+		pos = 1;
+		for (int integer : array) {
+			assert index == 12;
+			assert integer == pos;
+			pos++;
+		}
+
+		loop(array, 14);
         
         System.out.println("DONE Looping test");
     }
+
+	public static void loop(int[] array, int index) {
+		int pos = 1;
+		for (int integer : array) {
+			assert index == 14;
+			assert integer == pos;
+			pos++;
+		}
+	}
     
     int divide(int j) {
         return j / 2;
