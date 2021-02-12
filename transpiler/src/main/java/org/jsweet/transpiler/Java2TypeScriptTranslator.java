@@ -81,6 +81,7 @@ import org.jsweet.transpiler.model.support.ExtendedElementSupport;
 import org.jsweet.transpiler.model.support.ForeachLoopElementSupport;
 import org.jsweet.transpiler.model.support.ImportElementSupport;
 import org.jsweet.transpiler.model.support.MethodInvocationElementSupport;
+import org.jsweet.transpiler.model.support.NewArrayElementSupport;
 import org.jsweet.transpiler.model.support.NewClassElementSupport;
 import org.jsweet.transpiler.model.support.UnaryOperatorElementSupport;
 import org.jsweet.transpiler.util.AbstractTreePrinter;
@@ -5563,8 +5564,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 					}
 					print("]");
 				} else {
-					print("(s => { let a=[]; while(s-->0) a.push(" + Util.getTypeInitialValue(newArray.elemtype.type)
-							+ "); return a; })(").print(newArray.dims.head).print(")");
+					if (!getAdapter().substituteNewArrayWithVariableLength(new NewArrayElementSupport(newArray))) {
+						print("(s => { let a=[]; while(s-->0) a.push(" + Util.getTypeInitialValue(newArray.elemtype.type)
+								+ "); return a; })(").print(newArray.dims.head).print(")");
+					}
 				}
 			} else {
 				print("<any> (function(dims) { " + VAR_DECL_KEYWORD
