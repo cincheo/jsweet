@@ -1937,7 +1937,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		if (!getScope().hasDeclaredConstructor
 				&& !(getScope().interfaceScope || getScope().enumScope || getScope().declareClassScope)) {
 			Set<String> interfaces = new HashSet<>();
-			context.grabSupportedInterfaceNames(interfaces, classdecl.sym);
+			context.grabSupportedInterfaceNames(interfaces, classdecl.sym, getAdapter());
 			if (!interfaces.isEmpty() || getScope().innerClass || getScope().innerClassNotStatic
 					|| hasUninitializedFields) {
 				printIndent().print("constructor(");
@@ -2026,7 +2026,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 									+ getStringLiteralQuote() + ";");
 				}
 				Set<String> interfaces = new HashSet<>();
-				context.grabSupportedInterfaceNames(interfaces, classdecl.sym);
+				context.grabSupportedInterfaceNames(interfaces, classdecl.sym, getAdapter());
 				if (!interfaces.isEmpty()) {
 					println().printIndent()
 							.print(getScope().enumWrapperClassScope ? classdecl.sym.getSimpleName().toString() : name)
@@ -2926,7 +2926,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (!getScope().innerClass) {
 					if (!getScope().interfaceScope) {
 						if (!(inOverload && overload.coreMethod.equals(methodDecl) || getScope().hasInnerClass)) {
-							print("/*private*/ ");
+							print("private ");
 						}
 					} else {
 						if (!(inOverload && overload.coreMethod.equals(methodDecl))) {
@@ -4676,7 +4676,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 
 				Set<String> interfaces = new HashSet<>();
-				context.grabSupportedInterfaceNames(interfaces, clazz);
+				context.grabSupportedInterfaceNames(interfaces, clazz, getAdapter());
 				if (!interfaces.isEmpty()) {
 					print("Object.defineProperty(");
 				}
