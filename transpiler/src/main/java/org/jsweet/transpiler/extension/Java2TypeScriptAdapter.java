@@ -1734,7 +1734,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
                 print(context.getLangTypeMappings().get(identifierType.toString()));
                 return true;
             }
-            if (identifierType.toString().startsWith("java.lang.")) {
+            if (!context.useModules && identifierType.toString().startsWith("java.lang.")) {
                 if (("java.lang." + identifier.toString()).equals(identifierType.toString())) {
                     // it is a java.lang class being referenced, so we expand
                     // its name
