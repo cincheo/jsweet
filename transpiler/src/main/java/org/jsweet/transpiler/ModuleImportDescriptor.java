@@ -34,6 +34,12 @@ public class ModuleImportDescriptor {
 		this.pathToImportedClass = pathToImportedClass;
 	}
 
+	public ModuleImportDescriptor(String importedName, String pathToImportedClass) {
+		super();
+		this.importedName = importedName;
+		this.pathToImportedClass = pathToImportedClass;
+	}
+	
 	public ModuleImportDescriptor(boolean direct, PackageElement targetPackage, String importedName,
 			String pathToImportedClass) {
 		this(targetPackage, importedName, pathToImportedClass);

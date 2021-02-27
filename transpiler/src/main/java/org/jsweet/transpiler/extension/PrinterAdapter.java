@@ -28,6 +28,7 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
@@ -35,6 +36,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 
@@ -43,6 +45,7 @@ import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetOptions;
 import org.jsweet.transpiler.JSweetProblem;
+import org.jsweet.transpiler.Java2TypeScriptTranslator;
 import org.jsweet.transpiler.ModuleImportDescriptor;
 import org.jsweet.transpiler.OverloadScanner.Overload;
 import org.jsweet.transpiler.model.ArrayAccessElement;
@@ -837,6 +840,16 @@ public class PrinterAdapter {
 	}
 
 	/**
+	 * Ensures that the current file imports the given module (will have no effects when not using modules).
+	 * 
+	 * @param moduleImport a module import descriptor
+	 */
+	public void useModule(ModuleImportDescriptor moduleImport) {
+		((Java2TypeScriptTranslator)getPrinter()).useModule(moduleImport);
+	}
+
+	
+	/**
 	 * This method implements the default behavior to generate module imports.
 	 * It may be overridden by subclasses to implement specific behaviors.
 	 * 
@@ -869,7 +882,10 @@ public class PrinterAdapter {
 					importedClass = (ClassSymbol) importedClass.getEnclosingElement();
 				}
 
-				if (parent != null && !hasAnnotationType(importedClass, JSweetConfig.ANNOTATION_ERASED)) {
+				if (parent != null && !hasAnnotationType(importedClass, JSweetConfig.ANNOTATION_ERASED)
+						&& !(importedClass.getKind() == ElementKind.ANNOTATION_TYPE
+								&& !context.elementHasAnnotationType(importedClass, JSweetConfig.ANNOTATION_DECORATOR))) {
+
 					// '@' represents a common root in case there is no common
 					// root
 					// package => pathToImportedClass cannot be null because of

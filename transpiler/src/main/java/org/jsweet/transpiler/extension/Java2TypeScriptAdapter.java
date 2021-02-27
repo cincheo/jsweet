@@ -1435,16 +1435,59 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 
 	protected final void delegateToEmulLayer(String targetClassName, String targetMethodName,
 			InvocationElement invocation) {
-		print("javaemul.internal." + targetClassName.substring(10) + "Helper.").print(targetMethodName).print("(")
-				.printArgList(invocation.getArguments()).print(")");
+		String helperClassName = targetClassName.substring(10) + "Helper";
+		if (context.useModules) {
+			String pathToImportedClass = util().getRelativePath(
+					"@/" + getCompilationUnit().getPackage().toString().replace('.', '/'),
+					("@/javaemul.internal." + helperClassName).replace('.', '/'));
+			if (!pathToImportedClass.startsWith(".")) {
+				pathToImportedClass = "./" + pathToImportedClass;
+			}
+			useModule(new ModuleImportDescriptor(helperClassName, pathToImportedClass));
+			print(helperClassName).print(".").print(targetMethodName).print("(")
+					.printArgList(invocation.getArguments()).print(")");
+		} else {
+			print("javaemul.internal." + helperClassName).print(".").print(targetMethodName).print("(")
+					.printArgList(invocation.getArguments()).print(")");
+		}
 	}
 
 	protected final void delegateToEmulLayerStatic(String targetClassName, String targetMethodName,
 			ExtendedElement target) {
-		print("javaemul.internal." + targetClassName.substring(10) + "Helper.").print(targetMethodName).print("(");
-		printTarget(target).print(")");
+		String helperClassName = targetClassName.substring(10) + "Helper";
+		if (context.useModules) {
+			String pathToImportedClass = util().getRelativePath(
+					"@/" + getCompilationUnit().getPackage().toString().replace('.', '/'),
+					("@/javaemul.internal." + helperClassName).replace('.', '/'));
+			if (!pathToImportedClass.startsWith(".")) {
+				pathToImportedClass = "./" + pathToImportedClass;
+			}
+			useModule(new ModuleImportDescriptor(helperClassName, pathToImportedClass));
+			print(helperClassName).print(".").print(targetMethodName).print("(");
+			printTarget(target).print(")");
+		} else {
+			print("javaemul.internal." + helperClassName).print(".").print(targetMethodName).print("(");
+			printTarget(target).print(")");
+		}
 	}
 
+	protected final void delegateToEmulLayer(String targetClassName, VariableAccessElement fieldAccess) {
+		String helperClassName = targetClassName.substring(10) + "Helper";
+		if (context.useModules) {
+			String pathToImportedClass = util().getRelativePath(
+					"@/" + getCompilationUnit().getPackage().toString().replace('.', '/'),
+					("@/javaemul.internal." + helperClassName).replace('.', '/'));
+			if (!pathToImportedClass.startsWith(".")) {
+				pathToImportedClass = "./" + pathToImportedClass;
+			}
+			useModule(new ModuleImportDescriptor(helperClassName, pathToImportedClass));
+			print(helperClassName).print(".").print(fieldAccess.getVariableName());
+		} else {
+			print("javaemul.internal." + helperClassName).print(".").print(fieldAccess.getVariableName());
+		}
+	}
+
+	
 	protected final void printCastMethodInvocation(InvocationElement invocation) {
 		boolean needsParens = getPrinter().getParent() instanceof JCMethodInvocation;
 		if (needsParens) {
@@ -1595,10 +1638,6 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 		return super.substituteVariableAccess(variableAccess);
 	}
 
-	protected final void delegateToEmulLayer(String targetClassName, VariableAccessElement fieldAccess) {
-		print("javaemul.internal." + targetClassName.substring(10) + "Helper.").print(fieldAccess.getVariableName());
-	}
-
 	@Override
 	public boolean substituteNewClass(NewClassElement newClassElement) {
 		JCNewClass newClass = ((NewClassElementSupport) newClassElement).getTree();
@@ -1647,7 +1686,7 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 				print(context.getLangTypeMappings().get(identifier.type.toString()));
 				return true;
 			}
-			if (identifier.type.toString().startsWith("java.lang.")) {
+			if (!context.useModules && identifier.type.toString().startsWith("java.lang.")) {
 				if (("java.lang." + identifier.toString()).equals(identifier.type.toString())) {
 					// it is a java.lang class being referenced, so we expand
 					// its name
@@ -1659,6 +1698,23 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 		return super.substituteIdentifier(identifierElement);
 	}
 
+	@Override
+	public boolean substituteExtends(TypeElement type) {
+		// J4TS hack to avoid name clash between date classes (should be solved automatically)
+		if ("java.sql.Date".equals(type.getQualifiedName().toString())) {
+			String pathToImportedClass = util().getRelativePath(
+					"@/" + getCompilationUnit().getPackage().toString().replace('.', '/'),
+					("@/" + Date.class.getName()).replace('.', '/'));
+			if (!pathToImportedClass.startsWith(".")) {
+				pathToImportedClass = "./" + pathToImportedClass;
+			}
+			useModule(new ModuleImportDescriptor("Date as java_util_Date", pathToImportedClass));
+			print(" extends java_util_Date");
+			return true;
+		}
+		return super.substituteExtends(type);
+	}
+	
 	@Override
 	public Set<String> getErasedTypes() {
 		return context.getLangTypeMappings().keySet();

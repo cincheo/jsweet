@@ -1300,7 +1300,11 @@ public class JSweetContext extends Context {
 		}
 		return false;
 	}
-	
+
+	public boolean elementHasAnnotationType(Element element, String... annotationTypes) {
+		return hasAnnotationType((Symbol)element, annotationTypes);
+	}
+		
 	/**
 	 * Tells if the given symbol is annotated with one of the given annotation
 	 * types.

@@ -605,7 +605,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	private void useModule(boolean require, boolean direct, PackageElement targetPackage, JCTree sourceTree,
 			String targetName, String moduleName, Symbol sourceElement) {
-		if (context.useModules) {
+		if (context.useModules && targetPackage != null) {
 			context.packageDependencies.add((PackageSymbol) targetPackage);
 			context.packageDependencies.add(compilationUnit.packge);
 			context.packageDependencies.addEdge(compilationUnit.packge, (PackageSymbol) targetPackage);
@@ -1802,6 +1802,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                             scanner.scan(defaultMethod.typarams);
                             scanner.scan(defaultMethod.recvparam);
                         } else {
+                        	if (defaultMethod.getName().toString().equals("forEach")) {
+                        		System.out.println();
+                        	}
                             scanner.scan(defaultMethod);
                         }
                     }
@@ -6502,6 +6505,17 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						// AST
 						&& (t instanceof JCIdent && t.toString().equals(t.type.tsym.getSimpleName().toString()))) {
 					checkType(t.type.tsym);
+				}
+			}
+			// Check the owner of invoked static methods since those may be statically imported
+			if (t instanceof JCMethodInvocation) {
+				JCMethodInvocation inv = (JCMethodInvocation) t;
+				if (inv.meth instanceof JCIdent && ((JCIdent)inv.meth).sym instanceof MethodSymbol) {
+					MethodSymbol sym = (MethodSymbol)((JCIdent)inv.meth).sym;
+					if (sym.isStatic()) {
+						checkType(sym.owner);
+					}
+					
 				}
 			}
 			super.scan(t);
