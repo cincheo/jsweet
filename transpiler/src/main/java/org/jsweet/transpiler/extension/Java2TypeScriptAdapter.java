@@ -1701,7 +1701,8 @@ public class Java2TypeScriptAdapter extends PrinterAdapter {
 	@Override
 	public boolean substituteExtends(TypeElement type) {
 		// J4TS hack to avoid name clash between date classes (should be solved automatically)
-		if ("java.sql.Date".equals(type.getQualifiedName().toString())) {
+		if (context.useModules && type.getEnclosingElement() != null && "java.sql".equals(type.getEnclosingElement().toString()) 
+				&& Date.class.getName().equals(type.getSuperclass().toString())) {
 			String pathToImportedClass = util().getRelativePath(
 					"@/" + getCompilationUnit().getPackage().toString().replace('.', '/'),
 					("@/" + Date.class.getName()).replace('.', '/'));

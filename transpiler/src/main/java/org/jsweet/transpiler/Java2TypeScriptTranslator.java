@@ -605,6 +605,15 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	private void useModule(boolean require, boolean direct, PackageElement targetPackage, JCTree sourceTree,
 			String targetName, String moduleName, Symbol sourceElement) {
+		// avoid imports for names of types that are declared in this file
+		for (JCTree t : getCompilationUnit().getTypeDecls()) {
+			if (t instanceof JCClassDecl) {
+				if (targetName.equals(((JCClassDecl)t).sym.getSimpleName().toString())) {
+					return;
+				}
+			}
+		}
+		
 		if (targetName.equals(GLOBALS_CLASS_NAME)) {
 			return;
 		}
@@ -1805,9 +1814,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                             scanner.scan(defaultMethod.typarams);
                             scanner.scan(defaultMethod.recvparam);
                         } else {
-                        	if (defaultMethod.getName().toString().equals("forEach")) {
-                        		System.out.println();
-                        	}
                             scanner.scan(defaultMethod);
                         }
                     }
@@ -4258,18 +4264,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 								print(".");
 							}
 						} else {
-							if (context.useModules) {
-								if (!((ClassSymbol) selected.type.tsym).sourcefile.getName()
-										.equals(getCompilationUnit().sourcefile.getName())) {
-									// TODO: when using several qualified
-									// Globals classes, we
-									// need to disambiguate (use qualified
-									// name with
-									// underscores)
-									print(GLOBALS_CLASS_NAME).print(".");
-								}
-							}
-
 							Map<String, VarSymbol> vars = new HashMap<>();
 							Util.fillAllVariablesInScope(vars, getStack(), inv, getParent(JCMethodDecl.class));
 							if (vars.containsKey(methName)) {
@@ -4575,7 +4569,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				// current class
 				if (!prefixAdded && clazz.getEnclosingElement() instanceof ClassSymbol) {
 					if (context.useModules) {
-						print(clazz.getEnclosingElement().getSimpleName() + ".");
+						String enclosingName = clazz.getEnclosingElement().getSimpleName().toString();
+						if (context.hasClassNameMapping(clazz.getEnclosingElement())) {
+							enclosingName = context.getClassNameMapping(clazz.getEnclosingElement());
+						}
+						print(enclosingName + ".");
 						prefixAdded = true;
 					} else {
 						// if the class has not been imported, we need to add
@@ -4864,6 +4862,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 * Prints a new-class expression tree (default behavior).
 	 */
 	public void printDefaultNewClass(JCNewClass newClass) {
+		
 		String mappedType = context.getTypeMappingTarget(newClass.clazz.type.toString());
 		if (typeChecker.checkType(newClass, null, newClass.clazz)) {
 
