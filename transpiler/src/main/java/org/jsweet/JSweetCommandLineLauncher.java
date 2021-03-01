@@ -863,6 +863,7 @@ public class JSweetCommandLineLauncher {
                     if (jsapArgs.userSpecified(JSweetOptions.autoPropagateAsyncAwaits)) {
                         transpiler.setAutoPropagateAsyncAwaits(jsapArgs.getBoolean(JSweetOptions.autoPropagateAsyncAwaits));
                     }    
+                    
                     if (jsapArgs.userSpecified(JSweetOptions.javaCompilerExtraOptions)) {
                         transpiler.setJavaCompilerExtraOptions(jsapArgs.getStringArray(JSweetOptions.javaCompilerExtraOptions));
                     }    

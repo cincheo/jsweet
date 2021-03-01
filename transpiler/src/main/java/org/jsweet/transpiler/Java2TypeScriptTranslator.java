@@ -4341,6 +4341,31 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                                         .getComponentType())))) {
             applyVarargs = false;
         }
+        
+        List<ExpressionTree> substitutionArgs = new ArrayList<>(methodInvocationTree.getArguments()); 
+        if (methSym != null && applyVarargs && arguments.size() > 0 && arguments.size() == methSym.getParameters().size()) {
+            
+            ExpressionTree expr = arguments.get(arguments.size() - 1);
+            NewArrayTree newArrayExpr = null;
+            if (expr instanceof NewArrayTree) {
+                newArrayExpr =(NewArrayTree) expr;
+            } else if (expr instanceof TypeCastTree && ((TypeCastTree)expr).getExpression() instanceof NewArrayTree) {
+                newArrayExpr =(NewArrayTree) ((TypeCastTree)expr).getExpression();
+            }
+            if (newArrayExpr != null) {
+                substitutionArgs = new ArrayList<>(arguments.subList(0, arguments.size() - 1));
+                applyVarargs = false;
+                if (newArrayExpr.getInitializers() != null) {
+                    substitutionArgs.addAll(newArrayExpr.getInitializers());
+                }
+            }
+            if (expr instanceof LiteralTree && "null".equals(expr.toString()) ||
+                    expr instanceof TypeCastTree && ((TypeCastTree)expr).getExpression() instanceof LiteralTree 
+                    && "null".equals(((TypeCastTree)expr).getExpression().toString())) {
+                substitutionArgs = new ArrayList<>(arguments.subList(0, arguments.size() - 1));
+                applyVarargs = false;
+            }
+        }
 
         if (anonymous) {
             applyVarargs = false;
@@ -4512,8 +4537,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
             }
         }
 
-        int argsLength = applyVarargs ? methodInvocationTree.getArguments().size() - 1
-                : methodInvocationTree.getArguments().size();
+        int argsLength = applyVarargs ? substitutionArgs.size() - 1 : substitutionArgs.size();
 
         if (getScope().innerClassNotStatic && "super".equals(methName)) {
             TypeElement s = Util.getTypeElement(getParent(ClassTree.class).getExtendsClause());
@@ -4540,7 +4564,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
         TypeMirror methodType = Util.getType(methodInvocationTree.getMethodSelect());
         for (int i = 0; i < argsLength; i++) {
-            ExpressionTree arg = methodInvocationTree.getArguments().get(i);
+            ExpressionTree arg = substitutionArgs.get(i);
             if (methodType != null && methodType.getKind() == TypeKind.EXECUTABLE) {
                 // varargs transmission with TS ... notation
                 List<? extends TypeMirror> argTypes = ((ExecutableType) methodType).getParameterTypes();
@@ -4568,16 +4592,18 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
         }
 
         if (applyVarargs) {
-            if (methodInvocationTree.getArguments().size() > 1) {
+            if (substitutionArgs.size() > 1) {
                 // we cast array to any[] to avoid concat error on
                 // different
                 // types
                 print("].concat(<any[]>");
             }
 
-            print(util().last(methodInvocationTree.getArguments()));
+            if (!substitutionArgs.isEmpty()) {
+                print(substitutionArgs.get(substitutionArgs.size() - 1));
+            }
 
-            if (methodInvocationTree.getArguments().size() > 1) {
+            if (substitutionArgs.size() > 1) {
                 print(")");
             }
             if (methodInvocationTree.getMethodSelect() instanceof MemberSelectTree && !targetIsThisOrStaticImported
