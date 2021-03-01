@@ -82,6 +82,7 @@ import org.jsweet.transpiler.OverloadScanner.OverloadMethodEntry;
 import org.jsweet.transpiler.extension.PrinterAdapter;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.MethodInvocationElement;
+import org.jsweet.transpiler.model.support.CompilationUnitElementSupport;
 import org.jsweet.transpiler.model.support.NewArrayElementSupport;
 import org.jsweet.transpiler.util.AbstractTreePrinter;
 import org.jsweet.transpiler.util.JSDoc;
@@ -618,10 +619,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     return;
                 }
             }
-        }
-        
-        if (targetName.equals(GLOBALS_CLASS_NAME)) {
-            return;
         }
         
         if (context.useModules && targetPackage != null) {
@@ -4454,6 +4451,16 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                             }
                         } else {
                             
+                            if (methSym.getModifiers().contains(Modifier.STATIC)) {
+                                ModuleImportDescriptor moduleImport = getAdapter().getModuleImportDescriptor(
+                                        new CompilationUnitElementSupport(compilationUnit),
+                                        methSym.getSimpleName().toString(),
+                                        (TypeElement)  selectedTypeElement);
+                                if (moduleImport != null) {
+                                    useModule(moduleImport);
+                                }
+                            }
+                            
                             Map<String, VariableElement> vars = new HashMap<>();
                             util().fillAllVariablesInScope(vars, getStack(), methodInvocationTree,
                                     getParent(MethodTree.class), getCompilationUnit());
@@ -6923,7 +6930,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
         private HashSet<String> names = new HashSet<>();
 
-        private void checkType(TypeElement type) {
+        private void checkType(Element type) {
             if (type instanceof TypeElement) {
                 String name = type.getSimpleName().toString();
                 if (!names.contains(name)) {
@@ -6935,6 +6942,18 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                                 moduleImport.getImportedClass());
                     }
                 }
+            } else if (type instanceof ExecutableElement) {
+                String name = type.getSimpleName().toString();
+                if (!names.contains(name)) {
+                    names.add(name);
+                    ModuleImportDescriptor moduleImport = getModuleImportDescriptor(name, (TypeElement) type.getEnclosingElement());
+                    if (moduleImport != null) {
+                        useModule(false, moduleImport.isDirect(), moduleImport.getTargetPackage(), null,
+                                moduleImport.getImportedName(), moduleImport.getPathToImportedClass(),
+                                moduleImport.getImportedClass());
+                    }
+                }
+
             }
         }
 
@@ -6953,7 +6972,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                             // hack to include only explicit type declarations in AST
                             && (tree instanceof IdentifierTree
                                     && tree.toString().equals(treeElement.getSimpleName().toString()))) {
-                        checkType((TypeElement) treeElement);
+                        checkType(treeElement);
                     }
                 }
             }
@@ -6965,7 +6984,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                         instanceof ExecutableElement) {
                     ExecutableElement sym = Util.getElement(((IdentifierTree)inv.getMethodSelect()));
                     if (sym.getModifiers().contains(Modifier.STATIC)) {
-                        checkType((TypeElement) sym.getEnclosingElement());
+                        if (GLOBALS_CLASS_NAME.equals(sym.getEnclosingElement().getSimpleName().toString())) {
+                            checkType(sym);
+                        } else {
+                            checkType(sym.getEnclosingElement());
+                        }
                     }
 
                 }
