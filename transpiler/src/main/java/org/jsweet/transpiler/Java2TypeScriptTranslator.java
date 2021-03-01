@@ -611,6 +611,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
     private void useModule(boolean require, boolean direct, PackageElement targetPackage, Tree sourceTree,
             String targetName, String moduleName, Element sourceElement) {
+        if (targetName.equals(GLOBALS_CLASS_NAME)) {
+            return;
+        }
+        
         if (context.useModules && targetPackage != null) {
             context.packageDependencies.add((PackageElement) targetPackage);
             PackageElement packageElement = Util.getElement(compilationUnit.getPackage());
