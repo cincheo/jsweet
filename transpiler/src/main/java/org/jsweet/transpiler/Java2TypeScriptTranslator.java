@@ -611,6 +611,15 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
     private void useModule(boolean require, boolean direct, PackageElement targetPackage, Tree sourceTree,
             String targetName, String moduleName, Element sourceElement) {
+        // avoid imports for names of types that are declared in this file
+        for (Tree t : getCompilationUnit().getTypeDecls()) {
+            if (t instanceof ClassTree) {
+                if (targetName.equals(  Util.getElement(((ClassTree)t)).getSimpleName().toString())) {
+                    return;
+                }
+            }
+        }
+        
         if (targetName.equals(GLOBALS_CLASS_NAME)) {
             return;
         }
@@ -1843,9 +1852,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                             scanner.scan(entry.methodTree.getTypeParameters(), trees);
                             scanner.scan(entry.methodTree.getReceiverParameter(), trees);
                         } else {
-                            if (defaultMethod.getName().toString().equals("forEach")) {
-                                System.out.println();
-                            }
                             scanner.scan(entry.methodTree, trees);
                         }
                     }
@@ -4447,18 +4453,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                                 print(".");
                             }
                         } else {
-                            if (context.useModules) {
-                                if (selectedTypeElement == null || (util().isSourceElement(selectedTypeElement)
-                                        && !util().isInSameSourceFile(getCompilationUnit(), selectedTypeElement))) {
-                                    // TODO: when using several qualified
-                                    // Globals classes, we
-                                    // need to disambiguate (use qualified
-                                    // name with
-                                    // underscores)
-                                    print(GLOBALS_CLASS_NAME).print(".");
-                                }
-                            }
-
+                            
                             Map<String, VariableElement> vars = new HashMap<>();
                             util().fillAllVariablesInScope(vars, getStack(), methodInvocationTree,
                                     getParent(MethodTree.class), getCompilationUnit());
@@ -4788,7 +4783,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                 // current class
                 if (!prefixAdded && classIdentifierTypeElement.getEnclosingElement() instanceof TypeElement) {
                     if (context.useModules) {
-                        print(classIdentifierTypeElement.getEnclosingElement().getSimpleName() + ".");
+                        String enclosingName = classIdentifierTypeElement.getEnclosingElement().getSimpleName().toString();
+                        if (context.hasClassNameMapping((TypeElement)classIdentifierTypeElement.getEnclosingElement())) {
+                            enclosingName = context.getClassNameMapping((TypeElement)classIdentifierTypeElement.getEnclosingElement());
+                        }
+                        print(enclosingName + ".");
+                        
                         prefixAdded = true;
                     } else {
                         // if the class has not been imported, we need to add
