@@ -29,6 +29,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
@@ -823,6 +824,7 @@ public class PrinterAdapter {
                         : getRootRelativeName(importElement.getImportedType()))
                 : parentAdapter.needsImport(importElement, qualifiedName);
     }
+    
 
     /**
      * This method implements the default behavior to generate module imports. It
@@ -856,7 +858,9 @@ public class PrinterAdapter {
                     importedClass = (TypeElement) importedClass.getEnclosingElement();
                 }
 
-                if (parent != null && !hasAnnotationType(importedClass, JSweetConfig.ANNOTATION_ERASED)) {
+                if (parent != null && !hasAnnotationType(importedClass, JSweetConfig.ANNOTATION_ERASED)
+                        && !(importedClass.getKind() == ElementKind.ANNOTATION_TYPE
+                        && !context.elementHasAnnotationType(importedClass, JSweetConfig.ANNOTATION_DECORATOR))) {
                     // '@' represents a common root in case there is no common root
                     // package => pathToImportedClass cannot be null because of the
                     // common '@' root

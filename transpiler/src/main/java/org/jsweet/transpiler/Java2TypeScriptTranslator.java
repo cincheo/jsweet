@@ -611,7 +611,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
     private void useModule(boolean require, boolean direct, PackageElement targetPackage, Tree sourceTree,
             String targetName, String moduleName, Element sourceElement) {
-        if (context.useModules) {
+        if (context.useModules && targetPackage != null) {
             context.packageDependencies.add((PackageElement) targetPackage);
             PackageElement packageElement = Util.getElement(compilationUnit.getPackage());
             context.packageDependencies.add(packageElement);
@@ -1839,6 +1839,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                             scanner.scan(entry.methodTree.getTypeParameters(), trees);
                             scanner.scan(entry.methodTree.getReceiverParameter(), trees);
                         } else {
+                            if (defaultMethod.getName().toString().equals("forEach")) {
+                                System.out.println();
+                            }
                             scanner.scan(entry.methodTree, trees);
                         }
                     }
@@ -6948,6 +6951,19 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                                     && tree.toString().equals(treeElement.getSimpleName().toString()))) {
                         checkType((TypeElement) treeElement);
                     }
+                }
+            }
+
+            // Check the owner of invoked static methods since those may be statically imported
+            if (tree instanceof MethodInvocationTree) {
+                MethodInvocationTree inv = (MethodInvocationTree) tree;
+                if (inv.getMethodSelect() instanceof IdentifierTree && Util.getElement(((IdentifierTree)inv.getMethodSelect())) 
+                        instanceof ExecutableElement) {
+                    ExecutableElement sym = Util.getElement(((IdentifierTree)inv.getMethodSelect()));
+                    if (sym.getModifiers().contains(Modifier.STATIC)) {
+                        checkType((TypeElement) sym.getEnclosingElement());
+                    }
+
                 }
             }
             return super.scan(tree, trees);

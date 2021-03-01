@@ -1335,6 +1335,10 @@ public class JSweetContext {
     public boolean isInterface(Element typeElement) {
         return util.isInterface(typeElement) || hasAnnotationType(typeElement, JSweetConfig.ANNOTATION_INTERFACE);
     }
+    
+    public boolean elementHasAnnotationType(Element element, String... annotationTypes) {
+        return hasAnnotationType(element, annotationTypes);
+    }
 
     /**
      * Tells if the given symbol is annotated with one of the given annotation
