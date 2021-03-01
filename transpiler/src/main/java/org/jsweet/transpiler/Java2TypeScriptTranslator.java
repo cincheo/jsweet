@@ -614,9 +614,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			}
 		}
 		
-		if (targetName.equals(GLOBALS_CLASS_NAME)) {
-			return;
-		}
 		if (context.useModules && targetPackage != null) {
 			context.packageDependencies.add((PackageSymbol) targetPackage);
 			context.packageDependencies.add(compilationUnit.packge);
@@ -4264,6 +4261,15 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 								print(".");
 							}
 						} else {
+							if (methSym.isStatic()) {
+								ModuleImportDescriptor moduleImport = getAdapter().getModuleImportDescriptor(
+										new CompilationUnitElementSupport(compilationUnit),
+										methSym.getSimpleName().toString(),
+										(TypeElement) selected.type.tsym);
+								if (moduleImport != null) {
+									useModule(moduleImport);
+								}
+							}
 							Map<String, VarSymbol> vars = new HashMap<>();
 							Util.fillAllVariablesInScope(vars, getStack(), inv, getParent(JCMethodDecl.class));
 							if (vars.containsKey(methName)) {
@@ -4272,6 +4278,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						}
 					}
 					if (methSym != null) {
+						
 						if (context.isInvalidOverload(methSym) && ((!Util.hasTypeParameters(methSym)
 								&& !methSym.isDefault() && getParent(JCMethodDecl.class) != null
 								&& !getParent(JCMethodDecl.class).sym.isDefault()) || !context.options.isGenerateOverloadStubs())) {
@@ -6493,6 +6500,18 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 								(Symbol) moduleImport.getImportedClass());
 					}
 				}
+			} else if (symbol instanceof MethodSymbol) {
+				String name = symbol.getSimpleName().toString();
+				if (!names.contains(name)) {
+					names.add(name);
+					ModuleImportDescriptor moduleImport = getModuleImportDescriptor(name, (ClassSymbol) symbol.owner);
+					if (moduleImport != null) {
+						useModule(false, moduleImport.isDirect(), moduleImport.getTargetPackage(), null,
+								moduleImport.getImportedName(), moduleImport.getPathToImportedClass(),
+								(Symbol) moduleImport.getImportedClass());
+					}
+				}
+				
 			}
 		}
 
@@ -6515,7 +6534,11 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				if (inv.meth instanceof JCIdent && ((JCIdent)inv.meth).sym instanceof MethodSymbol) {
 					MethodSymbol sym = (MethodSymbol)((JCIdent)inv.meth).sym;
 					if (sym.isStatic()) {
-						checkType(sym.owner);
+						if (GLOBALS_CLASS_NAME.equals(sym.owner.getSimpleName().toString())) {
+							checkType(sym);
+						} else {
+							checkType(sym.owner);
+						}
 					}
 					
 				}
