@@ -82,6 +82,7 @@ import org.jsweet.transpiler.OverloadScanner.OverloadMethodEntry;
 import org.jsweet.transpiler.extension.PrinterAdapter;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.MethodInvocationElement;
+import org.jsweet.transpiler.model.support.NewArrayElementSupport;
 import org.jsweet.transpiler.util.AbstractTreePrinter;
 import org.jsweet.transpiler.util.JSDoc;
 import org.jsweet.transpiler.util.Util;
@@ -5875,8 +5876,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     }
                     print("]");
                 } else {
-                    print("(s => { let a=[]; while(s-->0) a.push(" + util().getTypeInitialValue(newArrayElementType)
-                            + "); return a; })(").print(newArray.getDimensions().get(0)).print(")");
+                    if (!getAdapter().substituteNewArrayWithVariableLength(new NewArrayElementSupport(newArray))) {
+                        print("(s => { let a=[]; while(s-->0) a.push(" + util().getTypeInitialValue(newArrayElementType)
+                                + "); return a; })(").print(newArray.getDimensions().get(0)).print(")");
+                    }
                 }
             } else {
                 print("<any> (function(dims) { " + VAR_DECL_KEYWORD

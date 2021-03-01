@@ -59,6 +59,7 @@ import org.jsweet.transpiler.model.ForeachLoopElement;
 import org.jsweet.transpiler.model.IdentifierElement;
 import org.jsweet.transpiler.model.ImportElement;
 import org.jsweet.transpiler.model.MethodInvocationElement;
+import org.jsweet.transpiler.model.NewArrayElement;
 import org.jsweet.transpiler.model.NewClassElement;
 import org.jsweet.transpiler.model.TypeCastElement;
 import org.jsweet.transpiler.model.UnaryOperatorElement;
@@ -882,6 +883,17 @@ public class PrinterAdapter {
      */
     public boolean substituteMethodInvocation(MethodInvocationElement invocation) {
         return parentAdapter == null ? false : parentAdapter.substituteMethodInvocation(invocation);
+    }
+    
+    /**
+     * Substitutes <em>new array</em> expressions, which length are initialized with a variable.
+     * 
+     * @param newArray
+     *            the new array being printed
+     * @return true if substituted
+     */
+    public boolean substituteNewArrayWithVariableLength(NewArrayElement newArray) {
+        return parentAdapter == null ? false : parentAdapter.substituteNewArrayWithVariableLength(newArray);
     }
 
     /**
