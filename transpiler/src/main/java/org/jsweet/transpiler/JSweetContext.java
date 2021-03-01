@@ -64,6 +64,7 @@ import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.OverloadScanner.Overload;
 import org.jsweet.transpiler.extension.AnnotationManager;
 import org.jsweet.transpiler.extension.AnnotationManager.Action;
+import org.jsweet.transpiler.extension.PrinterAdapter;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.util.DirectedGraph;
 import org.jsweet.transpiler.util.Util;
@@ -1708,18 +1709,24 @@ public class JSweetContext {
      * Grabs the names of all the support interfaces in the class and interface
      * hierarchy.
      */
-    public void grabSupportedInterfaceNames(Set<String> interfaces, TypeElement type) {
+    public void grabSupportedInterfaceNames(Set<String> interfaces, TypeElement type, PrinterAdapter adapter) {
         if (type == null) {
             return;
         }
-        if (isInterface(type)) {
+        if (isInterface(type) && !hasAnnotationType(type, JSweetConfig.ANNOTATION_ERASED)) {
             interfaces.add(type.getQualifiedName().toString());
         }
         if (type instanceof TypeElement) {
             for (TypeElement interfaceType : util.getInterfaces((TypeElement) type)) {
-                grabSupportedInterfaceNames(interfaces, interfaceType);
+                if (interfaceType != null && !adapter.eraseSuperInterface((TypeElement)type, interfaceType)) {
+                    grabSupportedInterfaceNames(interfaces, interfaceType, adapter);
+                }
             }
-            grabSupportedInterfaceNames(interfaces, util.getSuperclass((TypeElement) type));
+            
+            TypeElement superClassType = Util.getElement(((TypeElement) type).getSuperclass());
+            if (superClassType != null && !adapter.eraseSuperInterface((TypeElement)type, (TypeElement)superClassType)) {
+                grabSupportedInterfaceNames(interfaces, superClassType, adapter);
+            }
         }
     }
 

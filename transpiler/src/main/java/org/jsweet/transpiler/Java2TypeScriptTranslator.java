@@ -1982,7 +1982,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
         if (!getScope().hasDeclaredConstructor
                 && !(getScope().interfaceScope || getScope().enumScope || getScope().declareClassScope)) {
             Set<String> interfaces = new HashSet<>();
-            context.grabSupportedInterfaceNames(interfaces, classTypeElement);
+            context.grabSupportedInterfaceNames(interfaces, classTypeElement, getAdapter());
             if (!interfaces.isEmpty() || getScope().innerClass || getScope().innerClassNotStatic
                     || hasUninitializedFields) {
                 printIndent().print("constructor(");
@@ -2077,7 +2077,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                                     + getStringLiteralQuote() + ";");
                 }
                 Set<String> interfaces = new HashSet<>();
-                context.grabSupportedInterfaceNames(interfaces, classTypeElement);
+                context.grabSupportedInterfaceNames(interfaces, classTypeElement, getAdapter());
                 if (!interfaces.isEmpty()) {
                     println().printIndent()
                             .print(getScope().enumWrapperClassScope ? classTypeElement.getSimpleName().toString()
@@ -4923,7 +4923,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                 }
 
                 Set<String> interfaces = new HashSet<>();
-                context.grabSupportedInterfaceNames(interfaces, classTypeElement);
+                context.grabSupportedInterfaceNames(interfaces, classTypeElement, getAdapter());
                 if (!interfaces.isEmpty()) {
                     print("Object.defineProperty(");
                 }
