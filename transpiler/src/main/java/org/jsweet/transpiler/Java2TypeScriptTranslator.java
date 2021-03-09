@@ -5054,17 +5054,19 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	private String getFreeVariableName(String variablePrefix, int index) {
 		String name = variablePrefix + (index == 0 ? "" : "" + index);
-		
+
 		Set<String> generatedVariableNames = getGeneratedVariableNames();
-		
+
 		while (generatedVariableNames.contains(name)) {
 			name = variablePrefix + (++index);
 		}
-		
+
+		System.out.println(" => " + getCurrent());
+
 		int position = stack.size() - 2;
-		while(position >= 0 && !(stack.get(position) instanceof JCMethodDecl)) {
+		while (position >= 0 && !(stack.get(position) instanceof JCMethodDecl)) {
 			if (stack.get(position) instanceof JCBlock) {
-				JCBlock block = (JCBlock)stack.get(position);
+				JCBlock block = (JCBlock) stack.get(position);
 				// analyze all the previous declarations in the block
 				for (JCTree t : block.stats) {
 					if (t == stack.get(position + 1)) {
@@ -5072,7 +5074,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 						break;
 					}
 					// name clash: we try again with another index
-					if (t instanceof JCVariableDecl && name.equals(((JCVariableDecl)t).name.toString())) {
+					if (t instanceof JCVariableDecl && name.equals(((JCVariableDecl) t).name.toString())) {
 						return getFreeVariableName(variablePrefix, index + 1);
 					}
 				}
@@ -5080,10 +5082,27 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 			position--;
 		}
 		if (position >= 0 && stack.get(position) instanceof JCMethodDecl) {
-			for (JCVariableDecl param : ((JCMethodDecl)stack.get(position)).params) {
+			for (JCVariableDecl param : ((JCMethodDecl) stack.get(position)).params) {
 				if (name.equals(param.name.toString())) {
 					// name clash with method parameters
 					return getFreeVariableName(variablePrefix, index + 1);
+				}
+			}
+		}
+		if (getCurrent() instanceof JCEnhancedForLoop) {
+			JCEnhancedForLoop loop = (JCEnhancedForLoop) getCurrent();
+			if (name.equals(loop.var.name.toString())) {
+				return getFreeVariableName(variablePrefix, index + 1);
+			}
+			JCStatement body = loop.body;
+			if (body instanceof JCBlock) {
+				JCBlock block = (JCBlock) body;
+				// analyze all the previous declarations in the loop body
+				for (JCTree t : block.stats) {
+					// name clash: we try again with another index
+					if (t instanceof JCVariableDecl && name.equals(((JCVariableDecl) t).name.toString())) {
+						return getFreeVariableName(variablePrefix, index + 1);
+					}
 				}
 			}
 		}
@@ -5095,7 +5114,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	 */
 	@Override
 	public void visitForeachLoop(JCEnhancedForLoop foreachLoop) {
-		String indexVarName = getFreeVariableName("index", getIndexVariableCount());
+		String indexVarName = getFreeVariableName(
+				"index".equals(foreachLoop.var.name.toString()) ? "loopIndex" : "index", getIndexVariableCount());
 		boolean[] hasLength = { false };
 		TypeSymbol targetType = foreachLoop.expr.type.tsym;
 		Util.scanMemberDeclarationsInType(targetType, getAdapter().getErasedTypes(), element -> {
