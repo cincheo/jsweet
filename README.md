@@ -1,4 +1,4 @@
-# JSweet: a Java to JavaScript transpiler [![Build Status](https://travis-ci.org/cincheo/jsweet.svg?branch=master)](https://travis-ci.org/cincheo/jsweet) [ ![Download](https://api.bintray.com/packages/jsweet/maven/jsweet-transpiler/images/download.svg?version=2.2.0) ](https://bintray.com/jsweet/maven/jsweet-transpiler/2.2.0/link)
+# JSweet: a Java to JavaScript transpiler [![Build Status](https://travis-ci.org/cincheo/jsweet.svg?branch=master)](https://travis-ci.org/cincheo/jsweet) [ ![Download](https://api.bintray.com/packages/jsweet/maven/jsweet-transpiler/images/download.svg?version=2.2.0) ](https://bintray.com/jsweet/maven/jsweet-transpiler/2.2.0/link) 
 
 JSweet leverages TypeScript to write rich and responsive Web applications in Java through the use of JavaScript libraries and frameworks. With JSweet, Java programs are transpiled (source-to-source compiled) to TypeScript and JavaScript for being run in browsers, mobile Web views, or in Node.js. 
 
