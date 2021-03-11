@@ -20,4 +20,4 @@ jobs:
         export JSWEET_VERBOSE=false
         cd transpiler
         mvn clean install -DskipSigning
-	
+
