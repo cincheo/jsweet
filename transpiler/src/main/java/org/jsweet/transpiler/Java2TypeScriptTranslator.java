@@ -5351,6 +5351,23 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 				}
 			}
 		}
+		if (getCurrent() instanceof EnhancedForLoopTree) {
+            var loop = (EnhancedForLoopTree) getCurrent();
+            if (name.equals(loop.getVariable().getName().toString())) {
+                return getFreeVariableName(variablePrefix, index + 1);
+            }
+            StatementTree body = loop.getStatement();
+            if (body instanceof BlockTree) {
+                var block = (BlockTree) body;
+                // analyze all the previous declarations in the loop body
+                for (Tree t : block.getStatements()) {
+                    // name clash: we try again with another index
+                    if (t instanceof VariableTree && name.equals(((VariableTree) t).getName().toString())) {
+                        return getFreeVariableName(variablePrefix, index + 1);
+                    }
+                }
+            }
+        }
 		return name;
 	}
     
@@ -5359,7 +5376,8 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
      */
     @Override
     public Void visitEnhancedForLoop(EnhancedForLoopTree foreachLoop, Trees trees) {
-    	String indexVarName = getFreeVariableName("index", getIndexVariableCount());
+    	String indexVarName = getFreeVariableName(
+                "index".equals(foreachLoop.getVariable().getName().toString()) ? "loopIndex" : "index", getIndexVariableCount());
         boolean[] hasLength = { false };
         TypeElement targetType = Util.getTypeElement(foreachLoop.getExpression());
         TypeMirror collectionType = Util.getType(foreachLoop.getExpression());
