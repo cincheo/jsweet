@@ -19,5 +19,5 @@ jobs:
       run: |
         export JSWEET_VERBOSE=false
         cd transpiler
-	mvn clean install -DskipSigning
+        mvn clean install -DskipSigning
 	
