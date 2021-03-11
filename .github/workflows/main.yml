@@ -16,5 +16,8 @@ jobs:
       with:
         java-version: 1.8
     - name: Build with Maven
-      run: mvn clean install -DskipSigning
-
+      run: |
+        export JSWEET_VERBOSE=false
+        cd transpiler
+	mvn clean install -DskipSigning
+	
