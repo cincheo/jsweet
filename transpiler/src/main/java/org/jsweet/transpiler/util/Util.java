@@ -2452,11 +2452,11 @@ public class Util {
 
         private JavacInternals(Types types) {
             try {
-                typesClass = Class.forName("com.sun.tools.javac.code.Types");
-                typeClass = Class.forName("com.sun.tools.javac.code.Type");
+                typesClass = this.getClass().getClassLoader().loadClass("com.sun.tools.javac.code.Types");
+                typeClass = this.getClass().getClassLoader().loadClass("com.sun.tools.javac.code.Type");
                 typesErasureRecursiveMethod = typesClass.getMethod("erasureRecursive", typeClass);
 
-                Class<?> JCTreeClass = Class.forName("com.sun.tools.javac.tree.JCTree");
+                Class<?> JCTreeClass = this.getClass().getClassLoader().loadClass("com.sun.tools.javac.tree.JCTree");
 
                 binaryTreeOperatorField = Stream.of(JCTreeClass.getDeclaredClasses())
                         .filter(innerClass -> innerClass.getSimpleName().equals("JCBinary")) //
@@ -2480,7 +2480,7 @@ public class Util {
                         .findFirst().get();
                 modifiersAnnotationsField = JCModifiersClass.getDeclaredField("annotations");
 
-                Class<?> listClass = Class.forName("com.sun.tools.javac.util.List");
+                Class<?> listClass = this.getClass().getClassLoader().loadClass("com.sun.tools.javac.util.List");
                 listAppendMethod = listClass.getMethod("append", Object.class);
 
             } catch (Exception e) {
@@ -2517,9 +2517,10 @@ public class Util {
 
     static {
         try {
-            typeField = Class.forName("com.sun.tools.javac.tree.JCTree").getDeclaredField("type");
+            var classLoader = JavacInternals.class.getClassLoader();
+            typeField = classLoader.loadClass("com.sun.tools.javac.tree.JCTree").getDeclaredField("type");
             typeField.setAccessible(true);
-            tsymField = Class.forName("com.sun.tools.javac.code.Type").getDeclaredField("tsym");
+            tsymField = classLoader.loadClass("com.sun.tools.javac.code.Type").getDeclaredField("tsym");
             tsymField.setAccessible(true);
         } catch (Exception e) {
             throw new RuntimeException("Fatal error - cannot access legacy Javac API", e);
