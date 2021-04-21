@@ -21,6 +21,7 @@ import static jsweet.util.Lang.$export;
 import java.util.Objects;
 
 
+
 public class JdkInvocations {
 
 	String s = "test";

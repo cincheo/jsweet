@@ -1,6 +1,8 @@
 package source.nativestructures;
 
 import java.util.Iterator;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class Iterators {
 
@@ -20,6 +22,23 @@ public class Iterators {
 			assert i == j++;
 		}
 		assert j == 20;		
+		
+
+        // -----
+
+        Map<Integer, String> sortedMap = new TreeMap<Integer, String>();
+        sortedMap.put(1, "A");
+        sortedMap.put(2, "B");
+        sortedMap.put(3, "C");
+        final String [] strings = sortedMap.values().toArray(new String [sortedMap.size()]);
+        final int [] stringIndices = new int [strings.length];
+        final String [] strings2 = new String[strings.length];
+        int i = 0;
+        for (int index : sortedMap.keySet()) {
+          stringIndices [i] = index;
+          strings2 [i] = strings[i];
+          i++;
+        }
 	}
 
 }

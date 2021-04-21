@@ -1,7 +1,7 @@
 package source.ambient;
 
-import static source.ambient.three.Globals.globalFunction;
-import static source.ambient.three.Globals.globalVariable;
+import static source.ambient.testPackage.Globals.globalFunction;
+import static source.ambient.testPackage.Globals.globalVariable;
 
 public class GlobalsAccess {
 

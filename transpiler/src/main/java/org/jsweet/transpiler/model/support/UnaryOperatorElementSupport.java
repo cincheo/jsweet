@@ -18,38 +18,32 @@
  */
 package org.jsweet.transpiler.model.support;
 
-import javax.lang.model.type.ExecutableType;
-
+import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.ExtendedElement;
-import org.jsweet.transpiler.model.ExtendedElementFactory;
 import org.jsweet.transpiler.model.UnaryOperatorElement;
 
-import com.sun.tools.javac.tree.JCTree.JCUnary;
+import com.sun.source.tree.UnaryTree;
 
 /**
  * See {@link UnaryOperatorElement}.
  * 
  * @author Renaud Pawlak
+ * @author Louis Grignon
  */
-public class UnaryOperatorElementSupport extends ExtendedElementSupport<JCUnary> implements UnaryOperatorElement {
+public class UnaryOperatorElementSupport extends ExtendedElementSupport<UnaryTree> implements UnaryOperatorElement {
 
-	public UnaryOperatorElementSupport(JCUnary tree) {
+	public UnaryOperatorElementSupport(UnaryTree tree) {
 		super(tree);
 	}
 
 	@Override
 	public String getOperator() {
-		return tree.operator.getSimpleName().toString();
-	}
-
-	@Override
-	public ExecutableType getOperatorType() {
-		return (ExecutableType) tree.operator.type;
+		return JSweetContext.current.get().util.toOperator(getTree().getKind());
 	}
 
 	@Override
 	public ExtendedElement getArgument() {
-		return ExtendedElementFactory.INSTANCE.create(tree.arg);
+		return createElement( tree.getExpression());
 	}
 
 }

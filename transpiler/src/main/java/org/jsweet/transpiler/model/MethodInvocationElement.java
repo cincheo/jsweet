@@ -19,6 +19,7 @@
 package org.jsweet.transpiler.model;
 
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeMirror;
 
 /**
  * An AST node for a Java method invocation.
@@ -45,5 +46,11 @@ public interface MethodInvocationElement extends InvocationElement {
 	 *         (<code>target.name(..)</code>).
 	 */
 	ExtendedElement getTargetExpression();
+
+	/**
+	 * Get type of target
+	 * @see MethodInvocationElement#getTargetExpression()
+	 */
+	TypeMirror getTargetType();
 
 }

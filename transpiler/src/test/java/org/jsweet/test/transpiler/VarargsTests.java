@@ -22,7 +22,10 @@ import org.jsweet.transpiler.ModuleKind;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import source.varargs.VarargsAndOverloads;
 import source.varargs.VarargsCalledWithArray;
+import source.varargs.VarargsCalledWithArray2;
+import source.varargs.VarargsCalledWithoutArray;
 import source.varargs.VarargsOnAnonymous;
 import source.varargs.VarargsOnApi;
 import source.varargs.VarargsOnConstructor;
@@ -71,11 +74,44 @@ public class VarargsTests extends AbstractTest {
 	@Test
 	public void testVarargsCalledWithArray() {
 		eval((logHandler, res) -> {
-			assertEquals("3", res.get("argsLength").toString());
-			assertEquals("array", res.get("firstArg"));
+		    assertEquals("3", res.get("argsLength_a").toString());
+            assertEquals("array", res.get("firstArg_a"));
+            assertEquals("3", res.get("argsLength_b").toString());
+            assertEquals("array", res.get("firstArg_b"));
 		}, getSourceFile(VarargsCalledWithArray.class));
 	}
 
+	@Test
+    public void testVarargsCalledWithArray2() {
+        eval((logHandler, res) -> {
+            logHandler.assertNoProblems();
+        }, getSourceFile(VarargsCalledWithArray2.class));
+    }
+	
+	@Test
+    public void testVarargsCalledWithoutArray() {
+        eval((logHandler, res) -> {
+            assertEquals("3", res.get("argsLength_a").toString());
+            assertEquals("array", res.get("firstArg_a"));
+            assertEquals("3", res.get("argsLength_b").toString());
+            assertEquals("array", res.get("firstArg_b"));
+        }, getSourceFile(VarargsCalledWithoutArray.class));
+    }
+	
+	@Test
+    public void testVarargsAndOverloads() {
+        eval((logHandler, res) -> {
+            assertEquals("2.1", res.get("1").toString());
+            assertEquals("2.1-a,b", res.get("2").toString());
+            assertEquals("a", res.get("3").toString());
+            assertEquals("2.1", res.get("4").toString());
+            assertEquals("2.1-a", res.get("5").toString());
+            assertEquals("a", res.get("6").toString());
+            assertEquals("a,b,c", res.get("7").toString());
+        }, getSourceFile(VarargsAndOverloads.class));
+    }
+
+	
 	@Test
 	public void testVarargsOnApi() {
 		eval((logHandler, res) -> {

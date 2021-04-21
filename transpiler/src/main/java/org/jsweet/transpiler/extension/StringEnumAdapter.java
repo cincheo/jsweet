@@ -19,7 +19,6 @@
 package org.jsweet.transpiler.extension;
 
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 
 import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.model.CaseElement;
@@ -53,7 +52,7 @@ public class StringEnumAdapter extends PrinterAdapter {
 	private boolean isStringEnum(Element element) {
 		// note: this function could be improved to exclude enums that have
 		// fields or methods other than the enum constants
-		return element.getKind() == ElementKind.ENUM && hasAnnotationType(element, JSweetConfig.ANNOTATION_STRING_TYPE);
+		return util().isPartOfAnEnum(element) && hasAnnotationType(element, JSweetConfig.ANNOTATION_STRING_ENUM);
 	}
 
 	/**
@@ -63,7 +62,7 @@ public class StringEnumAdapter extends PrinterAdapter {
 	 * Performs the following initializations:
 	 * 
 	 * <ul>
-	 * <li>Type mapping: eligible enum types -&gt; string</li>
+	 * <li>TypeMirror mapping: eligible enum types -&gt; string</li>
 	 * <li>Adds an annotation manager that will add <code>@Erased</code> to all
 	 * eligible enum declarations</li>
 	 * </ul>
@@ -75,7 +74,7 @@ public class StringEnumAdapter extends PrinterAdapter {
 	public StringEnumAdapter(PrinterAdapter parent) {
 		super(parent);
 		// eligible enums will be translated to string in JS
-		addTypeMapping((typeTree, name) -> isStringEnum(typeTree.getTypeAsElement()) ? "string" : null);
+		addTypeMapping((extendedElement, name) -> isStringEnum(extendedElement.getTypeAsElement()) ? "string" : null);
 
 		// ignore enum declarations with a programmatic annotation manager
 		addAnnotationManager(new AnnotationManager() {

@@ -18,37 +18,37 @@
  */
 package org.jsweet.transpiler.model.support;
 
+import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.AssignmentWithOperatorElement;
 import org.jsweet.transpiler.model.ExtendedElement;
-import org.jsweet.transpiler.model.ExtendedElementFactory;
 import org.jsweet.transpiler.model.VariableAccessElement;
 
-import com.sun.tools.javac.tree.JCTree.JCAssignOp;
+import com.sun.source.tree.CompoundAssignmentTree;
 
 /**
  * See {@link AssignmentWithOperatorElement}.
  * 
  * @author Louis Grignon
  */
-public class AssignmentWithOperatorElementSupport extends ExtendedElementSupport<JCAssignOp> implements AssignmentWithOperatorElement {
+public class AssignmentWithOperatorElementSupport extends ExtendedElementSupport<CompoundAssignmentTree> implements AssignmentWithOperatorElement {
 
-	public AssignmentWithOperatorElementSupport(JCAssignOp tree) {
+	public AssignmentWithOperatorElementSupport(CompoundAssignmentTree tree) {
 		super(tree);
 	}
 
 	@Override
 	public VariableAccessElement getTarget() {
-		return (VariableAccessElement) ExtendedElementFactory.INSTANCE.create(getTree().lhs);
+		return (VariableAccessElement) createElement(getTree().getVariable());
 	}
 
 	@Override
 	public ExtendedElement getValue() {
-		return ExtendedElementFactory.INSTANCE.create(getTree().rhs);
+		return createElement(getTree().getExpression());
 	}
 	
 	@Override
 	public String getOperator() {
-		return getTree().operator.name.toString();
+		return JSweetContext.current.get().util.toOperator(getTree().getKind());
 	}
 
 }

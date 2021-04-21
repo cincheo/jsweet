@@ -24,7 +24,9 @@ import java.lang.annotation.Target;
 
 /**
  * This annotation type is used on elements that should be erased at generation
- * time (casts and constructor invocations are removed).
+ * time. For erased types, casts and constructor invocations are removed. For
+ * erased methods, invocation are removed, except if the {@link KeepUses}
+ * annotation is also defined on the erased method..
  * 
  * @author Renaud Pawlak
  */

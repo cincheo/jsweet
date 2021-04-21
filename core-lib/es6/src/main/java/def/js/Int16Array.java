@@ -180,7 +180,7 @@ public class Int16Array extends Iterable<java.lang.Double> {
       * @param index The index of the location to set.
       * @param value The value to set.
       */
-    native public void set(double index, double value);
+    native public void $set(double index, double value);
     /**
       * Sets a value or an array of values.
       * @param array A typed or untyped array of values to set.

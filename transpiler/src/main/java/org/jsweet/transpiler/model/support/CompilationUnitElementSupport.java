@@ -21,29 +21,31 @@ package org.jsweet.transpiler.model.support;
 import javax.lang.model.element.PackageElement;
 
 import org.jsweet.transpiler.model.CompilationUnitElement;
+import org.jsweet.transpiler.util.Util;
 
-import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
+import com.sun.source.tree.CompilationUnitTree;
 
 /**
  * See {@link CompilationUnitElement}.
  * 
  * @author Renaud Pawlak
+ * @author Louis Grignon
  */
-public class CompilationUnitElementSupport extends ExtendedElementSupport<JCCompilationUnit> implements CompilationUnitElement {
+public class CompilationUnitElementSupport extends ExtendedElementSupport<CompilationUnitTree>
+		implements CompilationUnitElement {
 
-	public CompilationUnitElementSupport(JCCompilationUnit tree) {
+	public CompilationUnitElementSupport(CompilationUnitTree tree) {
 		super(tree);
 	}
 
 	@Override
 	public PackageElement getPackage() {
-		return tree.packge;
+		return (PackageElement) Util.getElement(tree.getPackage());
 	}
 
 	@Override
 	public String getSourceFilePath() {
-		return tree.sourcefile.getName();
+		return tree.getSourceFile().getName();
 	}
-	
-	
+
 }

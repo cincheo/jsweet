@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software Foundation,
+ * aint with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 package org.jsweet.transpiler.util;
@@ -55,9 +55,9 @@ public final class Position implements Comparable<Position> {
 	@Override
 	public int compareTo(Position position) {
 		if (this.line != position.line) {
-			return this.line - position.line;
+			return (this.line - position.line);
 		} else {
-			return this.column - position.column;
+			return (this.column - position.column);
 		}
 	}
 

@@ -5,3 +5,6 @@ transpiler/jsweet-transpiler-2.0.1-SNAPSHOT
 core-lib/es5/jsweet-core/
 core-lib/es6/jsweet-core/
 /tmp
+node_modules/
+package-lock.json
+

@@ -1,4 +1,5 @@
 /* 
+
  * JSweet - http://www.jsweet.org
  * Copyright (C) 2015 CINCHEO SAS <renaud.pawlak@cincheo.fr>
  * 
@@ -16,76 +17,123 @@
  */
 package org.jsweet.test.transpiler;
 
+import static org.junit.Assert.assertEquals;
+
+import org.jsweet.transpiler.ModuleKind;
+import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import source.statics.AnonymousClasses;
 import source.statics.Classes;
 import source.statics.DefaultValues;
 import source.statics.InnerClasses;
-import source.statics.StaticsInInterfaces;
+import source.statics.NestedAnonymousClassesWithParams;
 import source.statics.StaticInitializer;
+import source.statics.StaticInitializerAsync;
 import source.statics.StaticInitializerWithNoFields;
-
-import org.junit.Assert;
-import org.junit.Ignore;
+import source.statics.StaticsInInterfaces;
+import source.statics.static_accesses.definitions.AClass;
+import source.statics.static_accesses.definitions.AnInterface;
+import source.statics.static_accesses.definitions.TestClassStaticAccess;
+import source.statics.static_accesses.definitions.TestEnumStaticAccess;
+import source.statics.static_accesses.uses.AccessThroughInstance;
+import source.statics.static_accesses.uses.FullPathAccess;
+import source.statics.static_accesses.uses.Using;
 
 public class StaticsTests extends AbstractTest {
 
-	@Ignore
-	@Test
-	public void testInnerClasses() {
-		eval((h, r) -> {
-			h.assertNoProblems();
-		}, getSourceFile(InnerClasses.class));
-	}
+    @Ignore
+    @Test
+    public void testInnerClasses() {
+        eval((h, r) -> {
+            h.assertNoProblems();
+        }, getSourceFile(InnerClasses.class));
+    }
 
-	@Test
-	public void testAnonymousClasses() {
-		eval((h, r) -> {
-			h.assertNoProblems();
-			Assert.assertTrue(r.get("m"));
-		}, getSourceFile(AnonymousClasses.class));
-	}
+    @Test
+    public void testAnonymousClasses() {
+        eval((h, r) -> {
+            h.assertNoProblems();
+            Assert.assertTrue(r.get("m"));
+        }, getSourceFile(AnonymousClasses.class));
+    }
 
-	@Test
-	public void testClasses() {
-		eval((h, r) -> {
-			h.assertNoProblems();
-			Assert.assertEquals("name", r.get("name1"));
-			Assert.assertEquals("name", r.get("name2"));
-		}, getSourceFile(Classes.class));
-	}
+    @Test
+    public void testNestedAnonymousClassesWithParams() {
+        eval((transpilationHandler, result) -> {
+            transpilationHandler.assertNoProblems();
+            assertEquals("TestParam1", result.get("methodInterface2_val"));
+        }, getSourceFile(NestedAnonymousClassesWithParams.class));
+    }
 
-	@Test
-	public void testStaticInitializer() {
-		eval((h, r) -> {
-			h.assertNoProblems();
-			Assert.assertEquals(4, (int) r.get("result"));
-		}, getSourceFile(StaticInitializer.class));
-	}
+    @Test
+    public void testClasses() {
+        eval((h, r) -> {
+            h.assertNoProblems();
+            Assert.assertEquals("name", r.get("name1"));
+            Assert.assertEquals("name", r.get("name2"));
+        }, getSourceFile(Classes.class));
+    }
 
-	@Test
-	public void testStaticInitializerWithNoFields() {
-		eval((h, r) -> {
-			h.assertNoProblems();
-			Assert.assertTrue(r.get("ok"));
-		}, getSourceFile(StaticInitializerWithNoFields.class));
-	}
+    @Test
+    public void testStaticInitializer() {
+        eval((h, r) -> {
+            h.assertNoProblems();
+            Assert.assertEquals(4, (int) r.get("result"));
+        }, getSourceFile(StaticInitializer.class));
+    }
 
-	@Test
-	public void testStaticsInInterfaces() {
-		eval((h, r) -> {
-			h.assertNoProblems();
-			Assert.assertEquals(1, (int) r.get("c1"));
-			Assert.assertEquals(2, (int) r.get("c2"));
-		}, getSourceFile(StaticsInInterfaces.class));
-	}
+    @Test
+    public void testStaticInitializerAsync() {
+        eval((handler, r) -> {
+            handler.assertNoProblems();
+            Assert.assertEquals("that's it", r.get("result"));
+        }, getSourceFile(StaticInitializerAsync.class));
+    }
 
-	@Test
-	public void testDefaultValues() {
-		eval((h, r) -> {
-			h.assertNoProblems();
-		}, getSourceFile(DefaultValues.class));
-	}
+    @Test
+    public void testStaticInitializerWithNoFields() {
+        eval((h, r) -> {
+            h.assertNoProblems();
+            Assert.assertTrue(r.get("ok"));
+        }, getSourceFile(StaticInitializerWithNoFields.class));
+    }
 
+    @Test
+    public void testStaticsInInterfaces() {
+        eval((h, r) -> {
+            h.assertNoProblems();
+            Assert.assertEquals(1, (int) r.get("c1"));
+            Assert.assertEquals(2, (int) r.get("c2"));
+        }, getSourceFile(StaticsInInterfaces.class));
+    }
+
+    @Test
+    public void testDefaultValues() {
+        eval((h, r) -> {
+            h.assertNoProblems();
+        }, getSourceFile(DefaultValues.class));
+    }
+
+    @Test
+    public void testImportInterface() {
+        transpile(TestTranspilationHandler::assertNoProblems, getSourceFile(AClass.class),
+                getSourceFile(AnInterface.class), getSourceFile(Using.class));
+    }
+
+    @Test
+    public void testFullPathStaticAccess() {
+        transpile(ModuleKind.commonjs,
+                
+                TestTranspilationHandler::assertNoProblems, getSourceFile(TestClassStaticAccess.class),
+                getSourceFile(TestEnumStaticAccess.class), getSourceFile(FullPathAccess.class));
+    }
+
+    @Test
+    public void testAccessThroughInstance() {
+        eval((h, r) -> {
+            h.assertNoProblems();
+        }, getSourceFile(TestClassStaticAccess.class), getSourceFile(AccessThroughInstance.class));
+    }
 }

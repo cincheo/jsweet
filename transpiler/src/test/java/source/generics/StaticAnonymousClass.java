@@ -21,7 +21,8 @@ public class StaticAnonymousClass<T> {
 	static <T> Interface1<T> m(T t) {
 		return new Interface1<T>() {
 			@Override
-			public void m(T t) {
+			public Interface2<T> m1(T t) {
+				return null;
 			}
 		};
 	}
@@ -29,7 +30,25 @@ public class StaticAnonymousClass<T> {
 	static void m() {
 		new Interface1<String>() {
 			@Override
-			public void m(String t) {
+			public Interface2<String> m1(String t) {
+				return null;
+			}
+		};
+	}
+
+	static <T> Interface1<T> nested() {
+		return new Interface1<T>() {
+			@Override
+			public Interface2<T> m1(T param) {
+				return new Interface2<T>() {
+					public T nextEntry = null;
+
+					@Override
+					public void m2(T next) {
+						nextEntry = next;
+						System.out.println(nextEntry);
+					}
+				};
 			}
 		};
 	}
@@ -37,5 +56,9 @@ public class StaticAnonymousClass<T> {
 }
 
 interface Interface1<T> {
-	void m(T t);
+	Interface2<T> m1(T t);
+}
+
+interface Interface2<T> {
+	void m2(T t);
 }

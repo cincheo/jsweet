@@ -24,8 +24,6 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
-import org.jsweet.transpiler.util.Util;
-
 /**
  * This simple adapter renames non-public members by adding two underscores as a
  * prefix.
@@ -69,7 +67,7 @@ public class AddPrefixToNonPublicMembersAdapter extends PrinterAdapter {
 			private boolean isNonPublicMember(Element element) {
 				return (element instanceof VariableElement || element instanceof ExecutableElement)
 						&& element.getEnclosingElement() instanceof TypeElement
-						&& !element.getModifiers().contains(Modifier.PUBLIC) && Util.isSourceElement(element);
+						&& !element.getModifiers().contains(Modifier.PUBLIC) && util().isSourceElement(element);
 
 			}
 		});

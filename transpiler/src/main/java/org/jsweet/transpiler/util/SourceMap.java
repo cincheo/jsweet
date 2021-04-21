@@ -82,8 +82,8 @@ public class SourceMap {
 	private SortedSet<Entry> entries = new TreeSet<>();
 	private List<Entry> insertionOrderEntries = new ArrayList<>();
 
-	private int minOutputLine = 0;
-	private int maxOutputLine = 0;
+	private long minOutputLine = 0;
+	private long maxOutputLine = 0;
 
 	/**
 	 * Adds an entry to the source map (entry must be added in order).
@@ -122,7 +122,7 @@ public class SourceMap {
 	 *            a column in the output source file
 	 * @return the mapped position in the input source file
 	 */
-	public final Position findInputPosition(int outputLine, int outputColumn) {
+	public final Position findInputPosition(long outputLine, long outputColumn) {
 		if (entries.isEmpty()) {
 			return null;
 		}

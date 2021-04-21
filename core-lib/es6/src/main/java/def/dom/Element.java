@@ -217,7 +217,7 @@ public class Element extends Node {
     native public NodeListOf<HTMLPhraseElement> getElementsByTagName(jsweet.util.StringTypes.u name);
     native public NodeListOf<HTMLUListElement> getElementsByTagName(jsweet.util.StringTypes.ul name);
     native public NodeListOf<SVGUseElement> getElementsByTagName(jsweet.util.StringTypes.use name);
-    native public NodeListOf<HTMLPhraseElement> getElementsByTagName(jsweet.util.StringTypes.var name);
+    native public NodeListOf<HTMLPhraseElement> getElementsByTagName(jsweet.util.StringTypes.Var name);
     native public NodeListOf<HTMLVideoElement> getElementsByTagName(jsweet.util.StringTypes.video name);
     native public NodeListOf<SVGViewElement> getElementsByTagName(jsweet.util.StringTypes.view name);
     native public NodeListOf<HTMLElement> getElementsByTagName(jsweet.util.StringTypes.wbr name);

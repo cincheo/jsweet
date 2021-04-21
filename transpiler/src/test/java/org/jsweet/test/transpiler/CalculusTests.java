@@ -25,6 +25,7 @@ import org.jsweet.transpiler.util.EvaluationResult;
 import org.junit.Assert;
 import org.junit.Test;
 
+import source.calculus.Boxing;
 import source.calculus.Chars;
 import source.calculus.Integers;
 import source.calculus.Longs;
@@ -78,6 +79,15 @@ public class CalculusTests extends AbstractTest {
 			Assert.assertEquals(0, (int) r.get("l"));
 			Assert.assertTrue((int) r.get("c") < 0);
 		}, getSourceFile(Longs.class));
+	}
+ 
+	@Test
+	public void testBoxing() {
+		eval(ModuleKind.none, (logHandler, r) -> {
+			logHandler.assertNoProblems();
+			assertEquals(true, r.get("unboxedEquals"));
+			
+		}, getSourceFile(Boxing.class));
 	}
 
 	@Test

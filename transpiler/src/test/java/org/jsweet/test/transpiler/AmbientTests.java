@@ -32,7 +32,7 @@ import source.ambient.WrongUseOfAmbientAnnotations;
 import source.ambient.lib.Base;
 import source.ambient.lib.Extension;
 import source.ambient.lib.sub.C;
-import source.ambient.three.Globals;
+import source.ambient.testPackage.Globals;
 
 public class AmbientTests extends AbstractTest {
 

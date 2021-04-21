@@ -28,7 +28,6 @@ public class Integers {
 		j /= 3;
 		System.out.println(j);
 		$export("j", j);
-		
 	}
 
 }

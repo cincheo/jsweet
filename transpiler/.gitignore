@@ -1,3 +1,5 @@
+/.idea/
+*.iml
 /target/
 .classpath
 .project
@@ -7,3 +9,4 @@
 /.jsweet/
 /bin/
 jsweet-transpiler-2.*
+jsweet-transpiler-3.*

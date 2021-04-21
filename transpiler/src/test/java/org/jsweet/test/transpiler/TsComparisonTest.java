@@ -41,126 +41,132 @@ import source.tscomparison.ThisIsThis;
 
 public class TsComparisonTest extends AbstractTest {
 
-	@Ignore
-	@Test
-	public void strongerTypingTest() {
-		// jsweet part
-		SourceFile file = getSourceFile(StrongerTyping.class);
-		eval(ModuleKind.none, null, file);
+    @Ignore
+    @Test
+    public void strongerTypingTest() {
+        // jsweet part
+        SourceFile file = getSourceFile(StrongerTyping.class);
+        eval(ModuleKind.none, null, file);
 
-		// ts part
-		evalTs(getTsSourceFile(file));
-	}
+        // ts part
+        evalTs(getTsSourceFile(file));
+    }
 
-	@Ignore
-	@Test
-	public void compileTimeWarningsTest() {
-		// jsweet part
-		SourceFile file = getSourceFile(CompileTimeWarnings.class);
-		eval(ModuleKind.none, null, file);
+    @Ignore
+    @Test
+    public void compileTimeWarningsTest() {
+        // jsweet part
+        SourceFile file = getSourceFile(CompileTimeWarnings.class);
+        eval(ModuleKind.none, null, file);
 
-		// ts part
-		evalTs(getTsSourceFile(file));
-	}
+        // ts part
+        evalTs(getTsSourceFile(file));
+    }
 
-	@Test
-	public void abstractClassesTest() {
-		// jsweet part
-		SourceFile file = getSourceFile(AbstractClasses.class);
-		eval(ModuleKind.none, null, file);
+    @Test
+    public void abstractClassesTest() {
+        // jsweet part
+        SourceFile file = getSourceFile(AbstractClasses.class);
+        eval(ModuleKind.none, null, file);
 
-		// ts part
-		evalTs(getTsSourceFile(file));
-	}
+        // ts part
+        evalTs(getTsSourceFile(file));
+    }
 
-	@Ignore
-	@Test
-	public void actualScopingTest() {
-		// jsweet part
-		SourceFile file = getSourceFile(ActualScoping.class);
-		eval(ModuleKind.none, null, file);
+    @Ignore
+    @Test
+    public void actualScopingTest() {
+        // jsweet part
+        SourceFile file = getSourceFile(ActualScoping.class);
+        eval(ModuleKind.none, null, file);
 
-		// ts part
-		evalTs(getTsSourceFile(file));
-	}
+        // ts part
+        evalTs(getTsSourceFile(file));
+    }
 
-	@Ignore
-	@Test
-	public void thisIsThisTest() {
-		// jsweet part
-		SourceFile file = getSourceFile(ThisIsThis.class);
-		eval(ModuleKind.none, null, file);
+    @Ignore
+    @Test
+    public void thisIsThisTest() {
+        // jsweet part
+        SourceFile file = getSourceFile(ThisIsThis.class);
+        eval(ModuleKind.none, null, file);
 
-		// ts part
-		evalTs(getTsSourceFile(file));
-	}
+        // ts part
+        evalTs(getTsSourceFile(file));
+    }
 
-	@Test
-	public void otherThisExampleTest() {
-		eval(ModuleKind.none, (logHandler, r) -> {
-			logHandler.assertNoProblems();
-			System.out.println("" + r.get("results"));
-			Assert.assertEquals("3,4,5", "" + r.get("results"));
-		}, getSourceFile(Globals.class), getSourceFile(OtherThisExample.class));
+    @Test
+    public void otherThisExampleTest() {
+        eval(ModuleKind.none, (logHandler, r) -> {
+            logHandler.assertNoProblems();
+            System.out.println("" + r.get("results"));
+            Assert.assertEquals("3,4,5", "" + r.get("results"));
+        }, getSourceFile(Globals.class), getSourceFile(OtherThisExample.class));
 
-	}
+    }
 
-	@Ignore
-	@Test
-	public void saferVarargsTest() {
-		// jsweet part
+    @Ignore
+    @Test
+    public void saferVarargsTest() {
+        // jsweet part
 
-		SourceFile file = getSourceFile(SaferVarargs.class);
-		eval(ModuleKind.none, (ctx, result) -> {
-			assertEquals("foo", result.get("firstArg"));
-		}, file);
+        SourceFile file = getSourceFile(SaferVarargs.class);
+        eval(ModuleKind.none, (ctx, result) -> {
+            assertEquals("foo", result.get("firstArg"));
+        }, file);
 
-		// ts part
-		EvaluationResult result = evalTs(getTsSourceFile(file));
+        // ts part
+        EvaluationResult result = evalTs(getTsSourceFile(file));
 
-		assertTrue(result.get("firstArg").getClass().isArray());
-		Object[] res = (Object[]) result.get("firstArg");
-		assertEquals("blah", res[0]);
-		assertEquals("bluh", res[1]);
-	}
+        assertTrue(result.get("firstArg").getClass().isArray());
+        Object[] res = (Object[]) result.get("firstArg");
+        assertEquals("blah", res[0]);
+        assertEquals("bluh", res[1]);
+    }
 
-	private TsSourceFile getTsSourceFile(SourceFile jsweetSourceFile) {
-		String javaTestFilePath = jsweetSourceFile.getJavaFile().getAbsolutePath();
-		File tsFile = new File(javaTestFilePath.substring(0, javaTestFilePath.length() - 5) + ".ts");
-		TsSourceFile tsSourceFile = new TsSourceFile(tsFile);
-		return tsSourceFile;
-	}
+    private TsSourceFile getTsSourceFile(SourceFile jsweetSourceFile) {
+        String javaTestFilePath = jsweetSourceFile.getJavaFile().getAbsolutePath();
+        File tsFile = new File(javaTestFilePath.substring(0, javaTestFilePath.length() - 5) + ".ts");
+        TsSourceFile tsSourceFile = new TsSourceFile(tsFile);
+        return tsSourceFile;
+    }
 
-	private EvaluationResult evalTs(TsSourceFile sourceFile) {
-		return evalTs(sourceFile, false);
-	}
+    private EvaluationResult evalTs(TsSourceFile sourceFile) {
+        return evalTs(sourceFile, false);
+    }
 
-	private EvaluationResult evalTs(TsSourceFile sourceFile, boolean expectErrors) {
-		try {
-			System.out.println("running tsc: " + sourceFile);
-			TestTranspilationHandler logHandler = new TestTranspilationHandler();
+    private EvaluationResult evalTs(TsSourceFile sourceFile, boolean expectErrors) {
+        try {
+            System.out.println("running tsc: " + sourceFile);
+            TestTranspilationHandler logHandler = new TestTranspilationHandler();
 
-			transpilerTest().getTranspiler().setTsOutputDir(sourceFile.getTsFile().getParentFile());
-			EvaluationResult result = transpilerTest().getTranspiler().eval(logHandler, sourceFile);
-			FileUtils.deleteQuietly(sourceFile.getJsFile());
+            transpilerTest().getTranspiler().setTsOutputDir(sourceFile.getTsFile().getParentFile());
+            EvaluationResult result = transpilerTest().getTranspiler().eval(logHandler, sourceFile);
+            FileUtils.deleteQuietly(sourceFile.getJsFile());
 
-			return result;
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail("Cannot compile Typescript file: " + sourceFile);
-			return null;
-		}
-	}
+            return result;
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail("Cannot compile Typescript file: " + sourceFile);
+            return null;
+        }
+    }
 
-	private class TsSourceFile extends SourceFile {
-		public TsSourceFile(File tsFile) {
-			super(null);
-			this.setTsFile(tsFile);
-		}
+    private class TsSourceFile extends SourceFile {
+        public TsSourceFile(File tsFile) {
+            super(null);
+            this.setTsFile(tsFile);
+        }
 
-		@Override
-		public String toString() {
-			return getTsFile().toString();
-		}
-	}
+        @Override
+        public String toString() {
+            return getTsFile().toString();
+        }
+
+        @Override
+        public void touch() {
+            // do nothing
+        }
+
+    }
 }

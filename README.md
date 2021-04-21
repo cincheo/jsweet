@@ -1,4 +1,6 @@
-# JSweet: a Java to JavaScript transpiler [![Build Status](https://travis-ci.org/cincheo/jsweet.svg?branch=master)](https://travis-ci.org/cincheo/jsweet)
+# JSweet: a Java to JavaScript transpiler 
+[![Continuous integration build](https://github.com/cincheo/jsweet/workflows/Continuous%20integration%20build/badge.svg)](https://github.com/cincheo/jsweet/actions?query=workflow%3A%22Continuous+integration+build%22) 
+[ ![Download](https://api.bintray.com/packages/jsweet/maven/jsweet-transpiler/images/download.svg?version=3.0.0) ](https://bintray.com/jsweet/maven/jsweet-transpiler/3.0.0/link)
 
 JSweet leverages TypeScript to write rich and responsive Web applications in Java through the use of JavaScript libraries and frameworks. With JSweet, Java programs are transpiled (source-to-source compiled) to TypeScript and JavaScript for being run in browsers, mobile Web views, or in Node.js. 
 
@@ -76,7 +78,7 @@ More with the [live sandbox](http://www.jsweet.org/jsweet-live-sandbox/).
 
 - Full syntax mapping between Java and TypeScript, including classes, interfaces, functional types, union types, tuple types, object types, string types, and so on.
 - Extensive support of Java constructs and semantics added since [version 1.1.0](https://github.com/cincheo/jsweet/releases/tag/v1.1.0) (inner classes, anonymous classes, final fields, method overloading, instanceof operator, static initializers, ...).
-- *Over 1000 JavaScript libraries*, frameworks and plugins to write Web and Mobile HTML5 applications (JQuery, Underscore, Angular, Backbone, Cordova, Node.js, and much [more](http://www.jsweet.org/candies-snapshots/)).
+- *Over 1000 JavaScript libraries*, frameworks and plugins to write Web and Mobile HTML5 applications (JQuery, Underscore, Angular, Backbone, Cordova, Node.js, and much [more](http://repository.jsweet.org/artifactory/webapp/#/artifacts/browse/tree/General/libs-snapshot-local/org/jsweet/candies)).
 - A [Maven repository](http://repository.jsweet.org/artifactory) containing all the available libraries in Maven artifacts (a.k.a. candies).
 - Support for Java basic APIs as the [J4TS](https://github.com/j4ts/j4ts) candy (forked from the GWT's JRE emulation).
 - An [Eclipse plugin](https://github.com/cincheo/jsweet-eclipse-plugin) for easy installation and use.
@@ -87,6 +89,7 @@ More with the [live sandbox](http://www.jsweet.org/jsweet-live-sandbox/).
 - Support for bundles to run the generated programs in the most simple way.
 - Support for JavaScript modules (commonjs, amd, umd). JSweet programs *can* run in a browser or in Node.js.
 - Support for various EcmaScript target versions (ES3 to ES6).
+- Support for async/await idiom
 - ...
 
 For more details, go to the [language specifications](https://github.com/cincheo/jsweet/blob/master/doc/jsweet-language-specifications.md) ([PDF](https://github.com/cincheo/jsweet/raw/master/doc/jsweet-language-specifications.pdf)).
@@ -146,6 +149,12 @@ Additionally, some tools for JSweet are available in external repositories.
 ## How to build
 
 Please check each sub-project README file.
+
+## Contributing
+
+JSweet uses [Git Flow](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow).
+You can fork this repository. Default branch is develop. Please use `git flow feature start myAwesomeFeature` to start working on something great :)
+When you are done, you can submit a regular [GitHub Pull Request](https://help.github.com/en/articles/about-pull-requests).
 
 ## License
 

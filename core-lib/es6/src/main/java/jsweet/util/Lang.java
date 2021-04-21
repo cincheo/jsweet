@@ -707,6 +707,8 @@ public final class Lang {
 
     public static native <R> R await(Promise<R> promise);
     
+    public static native <R> R await(R promise);
+    
     public static native <R> def.js.Function async(def.js.Function function);
     
     public static native <T> Promise<T> asyncReturn(T result);

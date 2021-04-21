@@ -21,23 +21,25 @@ package org.jsweet.transpiler.model.support;
 import javax.lang.model.element.Element;
 
 import org.jsweet.transpiler.model.IdentifierElement;
+import org.jsweet.transpiler.util.Util;
 
-import com.sun.tools.javac.tree.JCTree.JCIdent;
+import com.sun.source.tree.IdentifierTree;
 
 /**
  * See {@link IdentifierElement}.
  * 
  * @author Renaud Pawlak
+ * @author Louis Grignon
  */
-public class IdentifierElementSupport extends ExtendedElementSupport<JCIdent> implements IdentifierElement {
+public class IdentifierElementSupport extends ExtendedElementSupport<IdentifierTree> implements IdentifierElement {
 
-	public IdentifierElementSupport(JCIdent tree) {
+	public IdentifierElementSupport(IdentifierTree tree) {
 		super(tree);
 	}
 
 	@Override
 	public Element getReferencedElement() {
-		return getTree().sym;
+		return Util.getElement(tree);
 	}
 
 }

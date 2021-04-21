@@ -18,28 +18,31 @@
  */
 package org.jsweet.transpiler.util;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Stack;
 import java.util.function.Consumer;
 
+import javax.lang.model.element.Element;
+import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.TypeMirror;
+
 import org.jsweet.transpiler.JSweetContext;
+import org.jsweet.transpiler.SourcePosition;
 import org.jsweet.transpiler.TranspilationHandler;
 import org.jsweet.transpiler.TypeChecker;
 import org.jsweet.transpiler.extension.PrinterAdapter;
 
-import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.code.Symbol.TypeSymbol;
-import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.code.Type.MethodType;
-import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.JCBlock;
-import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
-import com.sun.tools.javac.tree.JCTree.JCExpression;
-import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
-import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
-import com.sun.tools.javac.tree.JCTree.JCNewClass;
-import com.sun.tools.javac.tree.JCTree.JCStatement;
-import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
+import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.StatementTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 
 /**
  * A tree printer is a kind of tree scanner specialized in pretty printing the
@@ -49,466 +52,477 @@ import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
  */
 public abstract class AbstractTreePrinter extends AbstractTreeScanner {
 
-	private Stack<Position> positionStack = new Stack<>();
+    private Stack<Position> positionStack = new Stack<>();
 
-	/**
-	 * A footer to be printed at the end of the output.
-	 */
-	public StringBuilder footer = new StringBuilder();
+    private Set<Tree> inlinedExpressions = new HashSet<>();
 
-	/**
-	 * The position stack of the scanner.
-	 */
-	public Stack<Position> getPositionStack() {
-		return positionStack;
-	}
+    /**
+     * Tells if the given expression is an inlined expression (and would require
+     * parenthesis).
+     */
+    public boolean isInlinedExpression(Tree tree) {
+        return this.inlinedExpressions.contains(tree);
+    }
 
-	/**
-	 * The constant string for indentation.
-	 */
-	protected static final String INDENT = "    ";
+    /**
+     * Adds an inlined expression.
+     */
+    public void addInlinedExpression(Tree tree) {
+        this.inlinedExpressions.add(tree);
+    }
 
-	private StringBuilder out = new StringBuilder();
+    /**
+     * Clears the inlined expressions.
+     */
+    public void clearInlinedExpression() {
+        this.inlinedExpressions.clear();
+    }
 
-	private int indent = 0;
+    /**
+     * A footer to be printed at the end of the output.
+     */
+    public StringBuilder footer = new StringBuilder();
 
-	private PrinterAdapter adapter;
+    /**
+     * The position stack of the scanner.
+     */
+    public Stack<Position> getPositionStack() {
+        return positionStack;
+    }
 
-	/** A type checker instance. */
-	public TypeChecker typeChecker;
+    /**
+     * The constant string for indentation.
+     */
+    protected static final String INDENT = "    ";
 
-	private int currentLine = 1;
+    private StringBuilder out = new StringBuilder();
 
-	private int currentColumn = 0;
+    private int indent = 0;
 
-	private boolean fillSourceMap = true;
+    private PrinterAdapter adapter;
 
-	/**
-	 * The object storing source map information while printing.
-	 */
-	public SourceMap sourceMap = new SourceMap();
+    /** A type checker instance. */
+    public TypeChecker typeChecker;
 
-	/**
-	 * Creates a new printer.
-	 * 
-	 * @param logHandler
-	 *            the handler that reports logs and problems
-	 * @param context
-	 *            the scanning context
-	 * @param compilationUnit
-	 *            the source file to be printed
-	 * @param adapter
-	 *            the printer adapter
-	 * @param fillSourceMap
-	 *            tells if printer fills the source map
-	 */
-	public AbstractTreePrinter(TranspilationHandler logHandler, JSweetContext context,
-			JCCompilationUnit compilationUnit, PrinterAdapter adapter, boolean fillSourceMap) {
-		super(logHandler, context, compilationUnit);
-		this.typeChecker = new TypeChecker(this);
-		this.adapter = adapter;
-		this.adapter.setPrinter(this);
-		this.fillSourceMap = fillSourceMap;
-	}
+    private int currentLine = 1;
 
-	/**
-	 * Gets this output of this printer.
-	 */
-	public String getOutput() {
-		return out.toString();
-	}
+    private int currentColumn = 0;
 
-	/**
-	 * Print a given AST.
-	 */
-	public AbstractTreePrinter print(JCTree tree) {
-		scan(tree);
-		return this;
-	}
+    private boolean fillSourceMap = true;
 
-	// /**
-	// * Print a given AST.
-	// */
-	// public AbstractTreePrinter print(ExtendedElement element) {
-	// scan(element);
-	// return this;
-	// }
+    /**
+     * The object storing source map information while printing.
+     */
+    public SourceMap sourceMap = new SourceMap();
 
-	/**
-	 * Enters the given tree (se {@link #scan(JCTree)}.
-	 */
-	protected void enter(JCTree tree) {
-		super.enter(tree);
-		positionStack.push(new Position(getCurrentPosition(), currentLine, currentColumn));
-		if (compilationUnit != null && tree.pos >= 0 && inSourceMap(tree)) {
-			sourceMap.addEntry(new Position(tree.pos, //
-					compilationUnit.lineMap.getLineNumber(tree.pos), //
-					compilationUnit.lineMap.getColumnNumber(tree.pos)), positionStack.peek());
-		}
-	}
+    /**
+     * Creates a new printer.
+     * 
+     * @param logHandler      the handler that reports logs and problems
+     * @param context         the scanning context
+     * @param compilationUnit the source file to be printed
+     * @param adapter         the printer adapter
+     * @param fillSourceMap   tells if printer fills the source map
+     */
+    public AbstractTreePrinter(TranspilationHandler logHandler, JSweetContext context,
+            CompilationUnitTree compilationUnit, PrinterAdapter adapter, boolean fillSourceMap) {
+        super(logHandler, context, compilationUnit);
+        this.typeChecker = new TypeChecker(this);
+        this.adapter = adapter;
+        this.adapter.setPrinter(this);
+        this.fillSourceMap = fillSourceMap;
+    }
 
-	private boolean inSourceMap(JCTree tree) {
-		return (tree instanceof JCExpression || tree instanceof JCStatement || tree instanceof JCMethodDecl);
-	}
+    /**
+     * Returns a quote string (single or double quote depending on the
+     * <code>useSingleQuotesForStringLiterals</code> option).
+     */
+    public String getStringLiteralQuote() {
+        return getContext().options.isUseSingleQuotesForStringLiterals() ? "'" : "\"";
+    }
 
-	@Override
-	protected void onRollbacked(JCTree target) {
-		super.onRollbacked(target);
-		Position position = positionStack.peek();
-		out.delete(position.getPosition(), out.length());
-		currentColumn = position.getColumn();
-		currentLine = position.getLine();
-	}
+    /**
+     * Gets this output of this printer.
+     */
+    public String getOutput() {
+        return out.toString();
+    }
 
-	/**
-	 * Exits the currently scanned tree.
-	 */
-	@Override
-	protected void exit() {
-		JCTree tree = stack.peek();
-		if (compilationUnit != null && tree instanceof JCBlock) {
-			int endPos = tree.getEndPosition(diagnosticSource.getEndPosTable());
-			sourceMap.addEntry(
-					new Position(endPos, //
-							compilationUnit.lineMap.getLineNumber(endPos), //
-							compilationUnit.lineMap.getColumnNumber(endPos)),
-					new Position(getCurrentPosition(), currentLine, currentColumn));
-		}
-		super.exit();
-		positionStack.pop();
-	}
+    /**
+     * Print a given AST.
+     */
+    public AbstractTreePrinter print(Tree tree) {
+        scan(tree, context.trees);
+        return this;
+    }
 
-	/**
-	 * Gets the current character count of the output.
-	 */
-	public int getCurrentPosition() {
-		return out.length();
-	}
+    /**
+     * Enters the given tree (se {@link #scan(Tree)}.
+     */
+    protected void enter(Tree tree) {
+        super.enter(tree);
+        positionStack.push(new Position(getCurrentPosition(), currentLine, currentColumn));
+        if (compilationUnit != null && inSourceMap(tree)) {
+            SourcePosition sourcePosition = util().getSourcePosition(tree, compilationUnit);
+            Position startPosition = sourcePosition.getStartPosition();
 
-	/**
-	 * Gets the lastly printed character.
-	 */
-	public char getLastPrintedChar() {
-		return out.charAt(out.length() - 1);
-	}
+            sourceMap.addEntry(startPosition, positionStack.peek());
+        }
+    }
 
-	/**
-	 * Gets the last printed string for the given length.
-	 */
-	public String getLastPrintedString(int length) {
-		return out.substring(out.length() - length);
-	}
+    private boolean inSourceMap(Tree tree) {
+        return (tree instanceof ExpressionTree || tree instanceof StatementTree || tree instanceof MethodTree);
+    }
 
-	/**
-	 * Prints an indentation for the current indentation value.
-	 */
-	public AbstractTreePrinter printIndent() {
-		for (int i = 0; i < indent; i++) {
-			print(INDENT);
-		}
-		return this;
-	}
+    @Override
+    protected void onRollbacked(Tree target) {
+        super.onRollbacked(target);
+        Position position = positionStack.peek();
+        out.delete(position.getPosition(), out.length());
+        currentColumn = position.getColumn();
+        currentLine = position.getLine();
+    }
 
-	/**
-	 * Returns the current indentation as a string.
-	 */
-	public String getIndentString() {
-		String indentString = "";
-		for (int i = 0; i < indent; i++) {
-			indentString += INDENT;
-		}
-		return indentString;
-	}
+    /**
+     * Exits the currently scanned tree.
+     */
+    @Override
+    protected void exit() {
+        Tree tree = stack.peek();
+        if (compilationUnit != null && tree instanceof BlockTree) {
+            SourcePosition sourcePosition = util().getSourcePosition(tree, compilationUnit);
+            Position endPosition = sourcePosition.getEndPosition();
 
-	/**
-	 * Increments the current indentation value.
-	 */
-	public AbstractTreePrinter startIndent() {
-		indent++;
-		return this;
-	}
+            sourceMap.addEntry(endPosition, new Position(getCurrentPosition(), currentLine, currentColumn));
+        }
+        super.exit();
+        positionStack.pop();
+    }
 
-	/**
-	 * Decrements the current indentation value.
-	 */
-	public AbstractTreePrinter endIndent() {
-		indent--;
-		return this;
-	}
+    /**
+     * Gets the current character count of the output.
+     */
+    public int getCurrentPosition() {
+        return out.length();
+    }
 
-	/**
-	 * Outputs a string (new lines are not allowed).
-	 */
-	public AbstractTreePrinter print(String string) {
-		out.append(string);
-		currentColumn += string.length();
-		return this;
-	}
-	
-	/**
-	 * Outputs a string and new line
-	 */
-	public AbstractTreePrinter println(String string) {
-		return print(string).println();
-	}
+    /**
+     * Gets the lastly printed character.
+     */
+    public char getLastPrintedChar() {
+        return out.charAt(out.length() - 1);
+    }
 
-	/**
-	 * Outputs an identifier.
-	 */
-	public AbstractTreePrinter printIdentifier(Symbol symbol) {
-		String adaptedIdentifier = context.getActualName(symbol);
-		return print(adaptedIdentifier);
-	}
+    /**
+     * Gets the last printed string for the given length.
+     */
+    public String getLastPrintedString(int length) {
+        return out.substring(out.length() - length);
+    }
 
-	public String getQualifiedTypeName(TypeSymbol type, boolean globals, boolean ignoreLangTypes) {
-		return getRootRelativeName(type);
-	}
+    /**
+     * Prints an indentation for the current indentation value.
+     */
+    public AbstractTreePrinter printIndent() {
+        for (int i = 0; i < indent; i++) {
+            print(INDENT);
+        }
+        return this;
+    }
 
-	public String getIdentifier(Symbol symbol) {
-		return context.getActualName(symbol);
-	}
+    /**
+     * Returns the current indentation as a string.
+     */
+    public String getIndentString() {
+        String indentString = "";
+        for (int i = 0; i < indent; i++) {
+            indentString += INDENT;
+        }
+        return indentString;
+    }
 
-	/**
-	 * Adds a space to the output.
-	 */
-	public AbstractTreePrinter space() {
-		return print(" ");
-	}
+    /**
+     * Increments the current indentation value.
+     */
+    public AbstractTreePrinter startIndent() {
+        indent++;
+        return this;
+    }
 
-	/**
-	 * removes last character if expectedChar
-	 */
-	public boolean removeLastChar(char expectedChar) {
-		if (getLastPrintedChar() == expectedChar) {
-			removeLastChar();
-			return true;
-		}
-		return false;
-	}
+    /**
+     * Decrements the current indentation value.
+     */
+    public AbstractTreePrinter endIndent() {
+        indent--;
+        return this;
+    }
 
-	/**
-	 * Removes the last output character.
-	 */
-	public AbstractTreePrinter removeLastChar() {
-		if (out.length() == 0) {
-			return this;
-		}
-		if (out.charAt(out.length() - 1) == '\n') {
-			currentLine--;
-			currentColumn = 0;
-		} else {
-			currentColumn--;
-		}
-		out.deleteCharAt(out.length() - 1);
-		return this;
-	}
+    /**
+     * Outputs a string (new lines are not allowed).
+     */
+    public AbstractTreePrinter print(String string) {
+        out.append(string);
+        currentColumn += string.length();
+        return this;
+    }
 
-	/**
-	 * Removes the last output characters.
-	 */
-	public AbstractTreePrinter removeLastChars(int count) {
-		for (int i = 0; i < count; i++) {
-			removeLastChar();
-		}
-		return this;
-	}
+    /**
+     * Outputs a string and new line
+     */
+    public AbstractTreePrinter println(String string) {
+        return print(string).println();
+    }
 
-	/**
-	 * Removes the last printed indentation.
-	 */
-	public AbstractTreePrinter removeLastIndent() {
-		removeLastChars(indent * INDENT.length());
-		return this;
-	}
+    /**
+     * Outputs an identifier.
+     */
+    public AbstractTreePrinter printIdentifier(Element symbol) {
+        String adaptedIdentifier = context.getActualName(symbol);
+        return print(adaptedIdentifier);
+    }
 
-	/**
-	 * Outputs a new line.
-	 */
-	public AbstractTreePrinter println() {
-		out.append("\n");
-		currentLine++;
-		currentColumn = 0;
-		return this;
-	}
+    public String getQualifiedTypeName(Element type, boolean globals, boolean ignoreLangTypes) {
+        return getRootRelativeName(type);
+    }
 
-	/**
-	 * Gets the printed result as a string.
-	 */
-	public String getResult() {
-		return out.toString();
-	}
+    public String getIdentifier(Element symbol) {
+        return context.getActualName(symbol);
+    }
 
-	/**
-	 * Gets the adapter attached to this printer.
-	 */
-	public PrinterAdapter getAdapter() {
-		return adapter;
-	}
+    /**
+     * Adds a space to the output.
+     */
+    public AbstractTreePrinter space() {
+        return print(" ");
+    }
 
-	/**
-	 * Sets the adapter attached to this printer.
-	 */
-	public void setAdapter(PrinterAdapter adapter) {
-		this.adapter = adapter;
-	}
+    /**
+     * removes last character if expectedChar
+     */
+    public boolean removeLastChar(char expectedChar) {
+        if (getLastPrintedChar() == expectedChar) {
+            removeLastChar();
+            return true;
+        }
+        return false;
+    }
 
-	protected boolean inArgListTail = false;
+    /**
+     * Removes the last output character.
+     */
+    public AbstractTreePrinter removeLastChar() {
+        if (out.length() == 0) {
+            return this;
+        }
+        if (out.charAt(out.length() - 1) == '\n') {
+            currentLine--;
+            currentColumn = 0;
+        } else {
+            currentColumn--;
+        }
+        out.deleteCharAt(out.length() - 1);
+        return this;
+    }
 
-	/**
-	 * Prints a comma-separated list of subtrees.
-	 */
-	public AbstractTreePrinter printArgList(List<Type> assignedTypes, List<? extends JCTree> args,
-			Consumer<JCTree> printer) {
-		int i = 0;
-		for (JCTree arg : args) {
-			if (printer != null) {
-				printer.accept(arg);
-			} else {
-				if (assignedTypes != null && (arg instanceof JCExpression) && i < assignedTypes.size()) {
-					if (!substituteAssignedExpression(assignedTypes.get(i++), (JCExpression) arg)) {
-						print(arg);
-					}
-				} else {
-					print(arg);
-				}
-			}
-			print(", ");
-			inArgListTail = true;
-		}
-		inArgListTail = false;
-		if (!args.isEmpty()) {
-			removeLastChars(2);
-		}
-		return this;
-	}
+    /**
+     * Removes the last output characters.
+     */
+    public AbstractTreePrinter removeLastChars(int count) {
+        for (int i = 0; i < count; i++) {
+            removeLastChar();
+        }
+        return this;
+    }
 
-	/**
-	 * Print an expression being assigned to a type (should handled necessary
-	 * wraping/unwraping).
-	 * 
-	 * @param assignedType
-	 *            the type the expression is being assigned to
-	 * @param expression
-	 *            the assigned expression
-	 */
-	public AbstractTreePrinter substituteAndPrintAssignedExpression(Type assignedType, JCExpression expression) {
-		if (!substituteAssignedExpression(assignedType, expression)) {
-			print(expression);
-		}
-		return this;
-	}
+    /**
+     * Removes the last printed indentation.
+     */
+    public AbstractTreePrinter removeLastIndent() {
+        removeLastChars(indent * INDENT.length());
+        return this;
+    }
 
-	/**
-	 * Conditionally substitutes an expression when it is assigned to a given
-	 * type.
-	 * 
-	 * @param assignedType
-	 *            the type the expression is being assigned to
-	 * @param expression
-	 *            the assigned expression
-	 * @return true if the expression what subtituted
-	 */
-	abstract protected boolean substituteAssignedExpression(Type assignedType, JCExpression expression);
+    /**
+     * Outputs a new line.
+     */
+    public AbstractTreePrinter println() {
+        out.append("\n");
+        currentLine++;
+        currentColumn = 0;
+        return this;
+    }
 
-	/**
-	 * Prints an invocation argument list, with type assignment.
-	 */
-	public AbstractTreePrinter printArgList(JCMethodInvocation inv) {
-		for (int i = 0; i < inv.args.size(); i++) {
-			JCExpression arg = inv.args.get(i);
-			if (inv.meth.type != null) {
-				List<Type> argTypes = ((MethodType) inv.meth.type).argtypes;
-				Type paramType = i < argTypes.size() ? argTypes.get(i) : argTypes.get(argTypes.size() - 1);
-				if (!substituteAssignedExpression(paramType, arg)) {
-					print(arg);
-				}
-			}
-			if (i < inv.args.size() - 1) {
-				print(", ");
-			}
-		}
-		return this;
-	}
+    /**
+     * Gets the printed result as a string.
+     */
+    public String getResult() {
+        return out.toString();
+    }
 
-	public AbstractTreePrinter printArgList(List<Type> assignedTypes, List<? extends JCTree> args) {
-		return printArgList(assignedTypes, args, null);
-	}
+    /**
+     * Gets the adapter attached to this printer.
+     */
+    public PrinterAdapter getAdapter() {
+        return adapter;
+    }
 
-	public abstract AbstractTreePrinter printConstructorArgList(JCNewClass newClass, boolean localClass);
+    /**
+     * Sets the adapter attached to this printer.
+     */
+    public void setAdapter(PrinterAdapter adapter) {
+        this.adapter = adapter;
+    }
 
-	public abstract AbstractTreePrinter substituteAndPrintType(JCTree typeTree);
+    protected boolean inArgListTail = false;
 
-	/**
-	 * Prints a comma-separated list of variable names (no types).
-	 */
-	public AbstractTreePrinter printVarNameList(List<JCVariableDecl> args) {
-		for (JCVariableDecl arg : args) {
-			print(arg.name.toString());
-			print(", ");
-		}
-		if (!args.isEmpty()) {
-			removeLastChars(2);
-		}
-		return this;
-	}
+    /**
+     * Prints a comma-separated list of subtrees.
+     */
+    public AbstractTreePrinter printArgList(List<? extends TypeMirror> assignedTypes, List<? extends Tree> args,
+            Consumer<Tree> printer) {
+        int i = 0;
+        for (Tree arg : args) {
+            if (printer != null) {
+                printer.accept(arg);
+            } else {
+                if (assignedTypes != null && (arg instanceof ExpressionTree) && i < assignedTypes.size()) {
+                    if (!substituteAssignedExpression(assignedTypes.get(i++), (ExpressionTree) arg)) {
+                        print(arg);
+                    }
+                } else {
+                    print(arg);
+                }
+            }
+            print(", ");
+            inArgListTail = true;
+        }
+        inArgListTail = false;
+        if (!args.isEmpty()) {
+            removeLastChars(2);
+        }
+        return this;
+    }
 
-	/**
-	 * Prints a comma-separated list of type subtrees.
-	 */
-	public AbstractTreePrinter printTypeArgList(List<? extends JCTree> args) {
-		for (JCTree arg : args) {
-			substituteAndPrintType(arg);
-			print(", ");
-		}
-		if (!args.isEmpty()) {
-			removeLastChars(2);
-		}
-		return this;
-	}
+    /**
+     * Print an expression being assigned to a type (should handled necessary
+     * wraping/unwraping).
+     * 
+     * @param assignedType the type the expression is being assigned to
+     * @param expression   the assigned expression
+     */
+    public AbstractTreePrinter substituteAndPrintAssignedExpression(TypeMirror assignedType,
+            ExpressionTree expression) {
+        if (!substituteAssignedExpression(assignedType, expression)) {
+            print(expression);
+        }
+        return this;
+    }
 
-	/**
-	 * Gets the current line of the printed output.
-	 */
-	public int getCurrentLine() {
-		return currentLine;
-	}
+    /**
+     * Conditionally substitutes an expression when it is assigned to a given type.
+     * 
+     * @param assignedType the type the expression is being assigned to
+     * @param expression   the assigned expression
+     * @return true if the expression what subtituted
+     */
+    abstract protected boolean substituteAssignedExpression(TypeMirror assignedType, ExpressionTree expression);
 
-	/**
-	 * Gets the current column of the printed output.
-	 */
-	public int getCurrentColumn() {
-		return currentColumn;
-	}
+    /**
+     * Prints an invocation argument list, with type assignment.
+     */
+    public AbstractTreePrinter printArgList(MethodInvocationTree invocationTree) {
 
-	/**
-	 * Gets the current compilation unit.
-	 */
-	public JCCompilationUnit getCompilationUnit() {
-		return compilationUnit;
-	}
+        List<? extends ExpressionTree> arguments = invocationTree.getArguments();
 
-	/**
-	 * Tells if this printer tries to preserve the original line numbers of the
-	 * Java input.
-	 */
-	public boolean isFillSourceMap() {
-		return fillSourceMap;
-	}
+        for (int i = 0; i < arguments.size(); i++) {
+            ExpressionTree arg = arguments.get(i);
+            TypeMirror methodType = Util.getType(invocationTree.getMethodSelect());
+            if (methodType != null) {
+                List<? extends TypeMirror> argTypes = ((ExecutableType) methodType).getParameterTypes();
+                TypeMirror paramType = i < argTypes.size() ? argTypes.get(i) : argTypes.get(argTypes.size() - 1);
+                if (!substituteAssignedExpression(paramType, arg)) {
+                    print(arg);
+                }
+            }
+            if (i < arguments.size() - 1) {
+                print(", ");
+            }
+        }
+        return this;
+    }
 
-	public String getRootRelativeName(Symbol symbol) {
-		return context.getRootRelativeName(
-				context.useModules ? context.getImportedElements(compilationUnit.getSourceFile().getName()) : null,
-				symbol);
-	}
+    public AbstractTreePrinter printArgList(List<? extends TypeMirror> assignedTypes, List<? extends Tree> args) {
+        return printArgList(assignedTypes, args, null);
+    }
 
-	public String getRootRelativeName(Symbol symbol, boolean useJavaNames) {
-		return context.getRootRelativeName(
-				context.useModules ? context.getImportedElements(compilationUnit.getSourceFile().getName()) : null,
-				symbol, useJavaNames);
-	}
+    public abstract AbstractTreePrinter printConstructorArgList(NewClassTree newClass, boolean localClass);
 
-	public int getIndent() {
-		return indent;
-	}
+    public abstract AbstractTreePrinter substituteAndPrintType(Tree typeTree);
+
+    /**
+     * Prints a comma-separated list of variable names (no types).
+     */
+    public AbstractTreePrinter printVarNameList(List<VariableTree> args) {
+        for (VariableTree arg : args) {
+            print(arg.getName().toString());
+            print(", ");
+        }
+        if (!args.isEmpty()) {
+            removeLastChars(2);
+        }
+        return this;
+    }
+
+    /**
+     * Prints a comma-separated list of type subtrees.
+     */
+    public AbstractTreePrinter printTypeArgList(List<? extends Tree> args) {
+        for (Tree arg : args) {
+            substituteAndPrintType(arg);
+            print(", ");
+        }
+        if (!args.isEmpty()) {
+            removeLastChars(2);
+        }
+        return this;
+    }
+
+    /**
+     * Gets the current line of the printed output.
+     */
+    public int getCurrentLine() {
+        return currentLine;
+    }
+
+    /**
+     * Gets the current column of the printed output.
+     */
+    public int getCurrentColumn() {
+        return currentColumn;
+    }
+
+    /**
+     * Tells if this printer tries to preserve the original line numbers of the Java
+     * input.
+     */
+    public boolean isFillSourceMap() {
+        return fillSourceMap;
+    }
+
+    public String getRootRelativeName(Element element) {
+        return context.getRootRelativeName(
+                context.useModules ? context.getImportedElements(compilationUnit.getSourceFile().getName()) : null,
+                element);
+    }
+
+    public String getRootRelativeName(Element element, boolean useJavaNames) {
+        return context.getRootRelativeName(
+                context.useModules ? context.getImportedElements(compilationUnit.getSourceFile().getName()) : null,
+                element, useJavaNames);
+    }
+
+    public int getIndent() {
+        return indent;
+    }
 
 }

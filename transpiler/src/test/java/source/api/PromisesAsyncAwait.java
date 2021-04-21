@@ -40,13 +40,28 @@ public class PromisesAsyncAwait {
 	public static void main(String[] args) {
 		new PromisesAsyncAwait().start();
 	}
-
+	
 	@Async
 	void start() {
 
 		await(testPlainAsyncAwait());
-
+		await(subMethod1());
+		String resultSubMethod2 = await(subMethod2());
+		$export("resultSubMethod2", resultSubMethod2);
+		
 		testPromises();
+	}
+
+	@Async
+	Void subMethod1() {
+		$export("subMethod1", "true");
+		return null;
+	}
+
+	@Async
+	String subMethod2() {
+		$export("subMethod2", "true");
+		return "subMethod2";
 	}
 
 	@Async

@@ -5,7 +5,7 @@
 	<artifactId>${{ARTIFACT_ID}}</artifactId>
 	<version>${{VERSION}}</version>
 	<properties>
-		<jsweet.transpiler.version>2.0.0</jsweet.transpiler.version>
+		<jsweet.transpiler.version>3.1.0-SNAPSHOT</jsweet.transpiler.version>
 	</properties>
 		<repositories>
 		<repository>
@@ -37,7 +37,7 @@
 		<dependency>
 			<groupId>org.jsweet</groupId>
 			<artifactId>jsweet-core</artifactId>
-			<version>5-SNAPSHOT</version>
+			<version>6.3.0</version>
 		</dependency>
 ${{DEPENDENCIES}}
 	</dependencies>
@@ -68,16 +68,28 @@ ${{DEPENDENCIES}}
 				<configuration>
 					<verbose>true</verbose>
 					<bundle>true</bundle>
-					<tsOut>src/main/resources/META-INF/resources/typings/${project.artifactId}/${project.version}</tsOut>
+					<declaration>true</declaration>
+					<outDir>src/main/resources/META-INF/resources/webjars/${project.artifactId}/${project.version}</outDir>
+					<dtsOut>src/main/resources/META-INF/resources/typings/${project.artifactId}/${project.version}</dtsOut>
 					<targetVersion>ES5</targetVersion>
                     <encoding>UTF-8</encoding>
+					<javaCompilerExtraOptions>-source,1.8,-target,1.8</javaCompilerExtraOptions>
 				</configuration>
 				<executions>
 					<execution>
 						<id>generate-js</id>
+						<!-- attach to the compile phase to avoid re-generating sources with 
+							maven-source-plugin -->
 						<phase>generate-sources</phase>
 						<goals>
 							<goal>jsweet</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>clean</id>
+						<phase>clean</phase>
+						<goals>
+							<goal>clean</goal>
 						</goals>
 					</execution>
 				</executions>
@@ -88,17 +100,11 @@ ${{DEPENDENCIES}}
 				<version>1.8</version>
 				<executions>
 					<execution>
-						<phase>package</phase>
+						<id>cleanTargetFolder</id>
+						<phase>validate</phase>
 						<configuration>
 							<target>
-								<echo message="copying generated bundles to dist..." />
-								
-								<mkdir dir="dist/"></mkdir>
-								
-								<copy
-									file="src/main/resources/META-INF/resources/typings/${project.artifactId}/${project.version}/bundle.d.ts"
-									tofile="dist/${project.artifactId}.d.ts" verbose="true"
-									failonerror="false" />
+								<delete dir="src/main/resources/META-INF/resources"></delete>
 							</target>
 						</configuration>
 						<goals>

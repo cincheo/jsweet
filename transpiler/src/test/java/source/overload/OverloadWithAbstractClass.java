@@ -40,10 +40,27 @@ interface Graph {
 }
 
 abstract class AbstractGraph implements Graph {
+    public abstract int read() throws Exception;
+
+    public int read(byte[] buffer) throws Exception {
+        return read(buffer, 0, buffer.length);
+    }
+
+    public int read(byte[] buffer, int byteOffset, int byteCount) throws Exception {
+        if (read() == 100) {
+            return 0;
+        }
+        return 2;
+    }
 }
 
 class MyGraph extends AbstractGraph {
 
+    @Override
+    public int read() throws Exception {
+        return 100;
+    }
+    
 	@Override
 	public Object createVertex() {
 		// TODO Auto-generated method stub

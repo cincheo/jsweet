@@ -18,20 +18,24 @@
  */
 package org.jsweet.transpiler.model.support;
 
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 
 import org.jsweet.transpiler.model.ImportElement;
+import org.jsweet.transpiler.util.Util;
 
-import com.sun.tools.javac.tree.JCTree.JCImport;
+import com.sun.source.tree.ImportTree;
+import com.sun.source.tree.Tree;
 
 /**
  * See {@link ImportElement}.
  * 
  * @author Renaud Pawlak
+ * @author Louis Grignon
  */
-public class ImportElementSupport extends ExtendedElementSupport<JCImport> implements ImportElement {
+public class ImportElementSupport extends ExtendedElementSupport<ImportTree> implements ImportElement {
 
-	public ImportElementSupport(JCImport tree) {
+	public ImportElementSupport(ImportTree tree) {
 		super(tree);
 	}
 
@@ -42,11 +46,14 @@ public class ImportElementSupport extends ExtendedElementSupport<JCImport> imple
 
 	@Override
 	public TypeElement getImportedType() {
-		if (getTree().isStatic() || getTree().getQualifiedIdentifier().type == null) {
+		Tree importedIdentifier = getTree().getQualifiedIdentifier();
+		Element importedElement = Util.getElement(importedIdentifier);
+		if (getTree().isStatic() || importedElement == null || importedElement.asType() == null) {
 			return null;
-		} else {
-			return (TypeElement) getTree().getQualifiedIdentifier().type.tsym;
+
 		}
+
+		return (TypeElement) importedElement;
 	}
 
 	@Override

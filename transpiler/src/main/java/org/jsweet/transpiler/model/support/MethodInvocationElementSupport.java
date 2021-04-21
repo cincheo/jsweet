@@ -22,54 +22,56 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeMirror;
 
 import org.jsweet.transpiler.model.ExtendedElement;
-import org.jsweet.transpiler.model.ExtendedElementFactory;
 import org.jsweet.transpiler.model.MethodInvocationElement;
+import org.jsweet.transpiler.util.Util;
 
-import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
-import com.sun.tools.javac.tree.JCTree.JCIdent;
-import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.Tree;
 
 /**
  * See {@link MethodInvocationElement}.
  * 
  * @author Renaud Pawlak
+ * @author Louis Grignon
  */
-public class MethodInvocationElementSupport extends ExtendedElementSupport<JCMethodInvocation> implements MethodInvocationElement {
+public class MethodInvocationElementSupport extends ExtendedElementSupport<MethodInvocationTree>
+		implements MethodInvocationElement {
 
-	public MethodInvocationElementSupport(JCMethodInvocation tree) {
+	public MethodInvocationElementSupport(MethodInvocationTree tree) {
 		super(tree);
 	}
 
 	public List<ExtendedElement> getArguments() {
-		return tree.args.stream().map(a -> ExtendedElementFactory.INSTANCE.create(a)).collect(Collectors.toList());
+		return tree.getArguments().stream().map(this::createElement).collect(Collectors.toList());
 	}
 
 	@Override
 	public int getArgumentCount() {
-		return tree.args.size();
+		return tree.getArguments().size();
 	}
 
 	@Override
 	public List<ExtendedElement> getArgumentTail() {
-		return tree.args.tail.stream().map(a -> ExtendedElementFactory.INSTANCE.create(a))
-				.collect(Collectors.toList());
+		return tree.getArguments().stream().skip(1).map(this::createElement).collect(Collectors.toList());
 	}
 
 	@Override
 	public ExtendedElement getArgument(int i) {
-		return ExtendedElementFactory.INSTANCE.create(tree.args.get(i));
+		return createElement(tree.getArguments().get(i));
 	}
 
 	@Override
 	public String getMethodName() {
-		JCTree methTree = tree.meth;
-		if (methTree instanceof JCIdent) {
-			return methTree.toString();
-		} else if (methTree instanceof JCFieldAccess) {
-			return ((JCFieldAccess) methTree).name.toString();
+		Tree methodTree = tree.getMethodSelect();
+		if (methodTree instanceof IdentifierTree) {
+			return methodTree.toString();
+		} else if (methodTree instanceof MemberSelectTree) {
+			return ((MemberSelectTree) methodTree).getIdentifier().toString();
 		} else {
 			return null;
 		}
@@ -77,24 +79,30 @@ public class MethodInvocationElementSupport extends ExtendedElementSupport<JCMet
 
 	@Override
 	public ExecutableElement getMethod() {
-		JCTree methTree = tree.meth;
-		if (methTree instanceof JCIdent) {
-			return (ExecutableElement) ((JCIdent) methTree).sym;
-		} else if (methTree instanceof JCFieldAccess) {
-			return (ExecutableElement) ((JCFieldAccess) methTree).sym;
+		Tree methodTree = tree.getMethodSelect();
+		return (ExecutableElement)Util.getElement(methodTree);
+		
+		
+//		Tree methTree = tree.getMethodSelect();
+//		TreePath treePath = TreePath.getPath(this.treePath, methTree);
+//		Element methodElement = trees().getElement(treePath);
+//		return (ExecutableElement) methodElement;
+	}
+
+	@Override
+	public ExtendedElement getTargetExpression() {
+		Tree methTree = tree.getMethodSelect();
+		if (methTree instanceof MemberSelectTree) {
+			return createElement(((MemberSelectTree) methTree).getExpression());
 		} else {
 			return null;
 		}
 	}
 
 	@Override
-	public ExtendedElement getTargetExpression() {
-		JCTree methTree = tree.meth;
-		if (methTree instanceof JCFieldAccess) {
-			return ExtendedElementFactory.INSTANCE.create(((JCFieldAccess) methTree).selected);
-		} else {
-			return null;
-		}
+	public TypeMirror getTargetType() {
+		ExtendedElement targetExpression = getTargetExpression();
+		return targetExpression == null ? null : targetExpression.getType();
+		//		return targetExpression == null ? null : util().getTypeForTree(toTree(targetExpression), compilationUnit);
 	}
-
 }

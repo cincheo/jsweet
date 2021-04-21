@@ -30,7 +30,7 @@ public abstract class TypeScript2JavaScriptTranspiler {
 					tsFiles.add(sourceFile.getTsFile());
 			}
 			for (File dir : tsDefDirs) {
-				Util.addFiles(".d.ts", dir, tsFiles);
+				Util.Static.addFiles(".d.ts", dir, tsFiles);
 			}
 
 			doTranspile(transpilationHandler, tsFiles, tsSourceFiles, options, ignoreErrors,
