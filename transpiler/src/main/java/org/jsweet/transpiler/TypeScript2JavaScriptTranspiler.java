@@ -22,7 +22,8 @@ public abstract class TypeScript2JavaScriptTranspiler {
 			Collection<File> tsDefDirs, //
 			JSweetOptions options, //
 			boolean ignoreErrors, //
-			OnTsTranspilationCompletedCallback onTsTranspilationCompleted) {
+			OnTsTranspilationCompletedCallback onTsTranspilationCompleted,//
+            int hangingTscTimeout) {
 		try {
 			
 			LinkedHashSet<File> tsFiles = new LinkedHashSet<>();
@@ -34,7 +35,7 @@ public abstract class TypeScript2JavaScriptTranspiler {
 			}
 
 			doTranspile(transpilationHandler, tsFiles, tsSourceFiles, options, ignoreErrors,
-					onTsTranspilationCompleted);
+					onTsTranspilationCompleted, hangingTscTimeout);
 
 		} catch (Exception e) {
 			logger.error("ts2js transpilation failed", e);
@@ -51,6 +52,7 @@ public abstract class TypeScript2JavaScriptTranspiler {
 			Collection<SourceFile> tsSourceFiles, //
 			JSweetOptions options, //
 			boolean ignoreErrors, //
-			OnTsTranspilationCompletedCallback onTsTranspilationCompleted) throws Exception;
+			OnTsTranspilationCompletedCallback onTsTranspilationCompleted,//
+            int hangingTscTimeout) throws Exception;
 
 }

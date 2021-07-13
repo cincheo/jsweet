@@ -18,6 +18,7 @@ public class TypeScript2JavaScriptWithTscTranspiler extends TypeScript2JavaScrip
 
     private Process tsCompilationProcess;
 
+    //Note that hangingTscTimeout is ignored
     @Override
     protected synchronized void doTranspile( //
             ErrorCountTranspilationHandler transpilationHandler, //
@@ -25,7 +26,8 @@ public class TypeScript2JavaScriptWithTscTranspiler extends TypeScript2JavaScrip
             Collection<SourceFile> tsSourceFiles, //
             JSweetOptions options, //
             boolean ignoreErrors, //
-            OnTsTranspilationCompletedCallback onTsTranspilationCompleted) throws Exception {
+            OnTsTranspilationCompletedCallback onTsTranspilationCompleted,//
+            int hangingTscTimeout) throws Exception {
 
         if (tsCompilationProcess != null && options.isTscWatchMode()) {
             return;

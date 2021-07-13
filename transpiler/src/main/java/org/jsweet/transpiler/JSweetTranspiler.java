@@ -21,6 +21,7 @@ package org.jsweet.transpiler;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.jsweet.transpiler.util.ProcessUtil.isVersionHighEnough;
+import ts.client.TypeScriptServiceClient;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -227,6 +228,7 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
     private boolean lazyInitializedStatics = true;
     private boolean useSingleQuotesForStringLiterals = false;
     private boolean nonEnumerableTransients = false;
+    private int hangingTscTimeout = 10;
     private boolean sortClassMembers = false;
 
     private boolean autoPropagateAsyncAwaits = false;
@@ -389,6 +391,10 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
             }
             if (options.containsKey(JSweetOptions.nonEnumerableTransients)) {
                 setNonEnumerableTransients((Boolean) getMapValue(options, JSweetOptions.nonEnumerableTransients));
+            }
+            if (options.containsKey(JSweetOptions.hangingTscTimeout)) {
+                String s=getMapValue(options, JSweetOptions.hangingTscTimeout);
+                if(s!=null) setHangingTscTimeout(Integer.parseInt(s));
             }
         }
 
@@ -860,7 +866,8 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
                 tsDefDirs, //
                 this, //
                 isIgnoreTypeScriptErrors(), //
-                this::onTsTranspilationCompleted);
+                this::onTsTranspilationCompleted, //
+                getHangingTscTimeout());
     }
 
     public void setUseTsserver(boolean useTsserver) {
@@ -1876,6 +1883,15 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 
     public void setNonEnumerableTransients(boolean nonEnumerableTransients) {
         this.nonEnumerableTransients = nonEnumerableTransients;
+    }
+
+    @Override
+    public int getHangingTscTimeout() {
+        return this.hangingTscTimeout;
+    }
+
+    public void setHangingTscTimeout(int hangingTscTimeoutInSeconds) {
+        this.hangingTscTimeout = hangingTscTimeoutInSeconds;
     }
 
     @Override
