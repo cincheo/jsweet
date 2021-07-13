@@ -138,6 +138,11 @@ public interface JSweetOptions {
     String nonEnumerableTransients = "nonEnumerableTransients";
 
     /**
+     * Constant string for the 'hangingTscTimeout' option.
+     */
+    String hangingTscTimeout = "hangingTscTimeout";
+
+    /**
      * Constant string for the 'classpath' option.
      */
     String classpath = "classpath";
@@ -159,7 +164,7 @@ public interface JSweetOptions {
     String[] options = { bundle, noRootDirectories, sourceMap, module, encoding, outEncoding, enableAssertions,
             declaration, tsOnly, ignoreDefinitions, ignoreJavaErrors, header, disableSinglePrecisionFloats,
             disableStaticsLazyInitialization, targetVersion, tsout, dtsout, jsout, candiesJsOut, moduleResolution,
-            extraSystemPath, useSingleQuotesForStringLiterals, nonEnumerableTransients, classpath, sortClassMembers,
+            extraSystemPath, useSingleQuotesForStringLiterals, nonEnumerableTransients, hangingTscTimeout, classpath, sortClassMembers,
             autoPropagateAsyncAwaits };
 
     /**
@@ -377,6 +382,13 @@ public interface JSweetOptions {
      * JavaScript properties.
      */
     boolean isNonEnumerableTransients();
+
+    /**
+     * The duration in seconds after which a transpilation of a
+     * TypeScript file to JavaScript is considered to be hanging. By
+     * default the compilation is aborted after 10 seconds.
+    */
+    int getHangingTscTimeout();
 
     /**
      * If true, class members are sorted using

@@ -429,6 +429,12 @@ public class JSweetCommandLineLauncher {
         switchArg.setHelp("Generate Java transient fields as non-enumerable JavaScript properties..");
         jsap.registerParameter(switchArg);
 
+        // Duration in seconds after which a TSC compilation is considered to be hanging and therefore aborted
+        switchArg = new Switch(JSweetOptions.hangingTscTimeout);
+        switchArg.setLongFlag(JSweetOptions.hangingTscTimeout);
+        switchArg.setHelp("Duration in seconds after which a TSC compilation is considered to be hanging and therefore aborted. Default is 10 seconds");
+        jsap.registerParameter(switchArg);
+
         // Do not generate JavaScript
         switchArg = new Switch(JSweetOptions.tsOnly);
         switchArg.setLongFlag(JSweetOptions.tsOnly);
@@ -819,6 +825,10 @@ public class JSweetCommandLineLauncher {
                     if (jsapArgs.userSpecified(JSweetOptions.nonEnumerableTransients)) {
                         transpiler
                                 .setNonEnumerableTransients(jsapArgs.getBoolean(JSweetOptions.nonEnumerableTransients));
+                    }
+                    if (jsapArgs.userSpecified(JSweetOptions.hangingTscTimeout)) {
+                        transpiler
+                                .setHangingTscTimeout(jsapArgs.getInt(JSweetOptions.hangingTscTimeout));
                     }
                     if (jsapArgs.userSpecified(JSweetOptions.enableAssertions)) {
                         transpiler.setIgnoreAssertions(!jsapArgs.getBoolean(JSweetOptions.enableAssertions));
