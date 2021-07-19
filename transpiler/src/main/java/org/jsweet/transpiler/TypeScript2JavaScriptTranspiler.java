@@ -35,7 +35,7 @@ public abstract class TypeScript2JavaScriptTranspiler {
 			}
 
 			doTranspile(transpilationHandler, tsFiles, tsSourceFiles, options, ignoreErrors,
-					onTsTranspilationCompleted, hangingTscTimeout);
+					onTsTranspilationCompleted);
 
 		} catch (Exception e) {
 			logger.error("ts2js transpilation failed", e);
@@ -52,7 +52,6 @@ public abstract class TypeScript2JavaScriptTranspiler {
 			Collection<SourceFile> tsSourceFiles, //
 			JSweetOptions options, //
 			boolean ignoreErrors, //
-			OnTsTranspilationCompletedCallback onTsTranspilationCompleted,//
-            int hangingTscTimeout) throws Exception;
+			OnTsTranspilationCompletedCallback onTsTranspilationCompleted) throws Exception;
 
 }

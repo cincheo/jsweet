@@ -38,8 +38,7 @@ public class TypeScript2JavaScriptWithTsserverTranspiler extends TypeScript2Java
 			Collection<SourceFile> tsSourceFiles, //
 			JSweetOptions options, //
 			boolean ignoreErrors, //
-			OnTsTranspilationCompletedCallback onTsTranspilationCompleted,//
-            int hangingTscTimeout) throws Exception {
+			OnTsTranspilationCompletedCallback onTsTranspilationCompleted) throws Exception {
 
 		if (options.isTscWatchMode()) {
 			throw new RuntimeException(
@@ -91,7 +90,7 @@ public class TypeScript2JavaScriptWithTsserverTranspiler extends TypeScript2Java
 		logger.debug("tsserver project opened: " + projectFileName);
 
 		for (String fileName : sourceFilePaths) {
-			client.updateFile(fileName, null,hangingTscTimeout, TimeUnit.SECONDS);
+			client.updateFile(fileName, null, options.getHangingTscTimeout(), TimeUnit.SECONDS);
 		}
 
 		for (String fileName : sourceFilePaths) {

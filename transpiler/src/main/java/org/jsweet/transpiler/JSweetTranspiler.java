@@ -394,7 +394,9 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
             }
             if (options.containsKey(JSweetOptions.hangingTscTimeout)) {
                 String s=getMapValue(options, JSweetOptions.hangingTscTimeout);
-                if(s!=null) setHangingTscTimeout(Integer.parseInt(s));
+                if(s!=null) {
+                    setHangingTscTimeout(Integer.parseInt(s));
+                }
             }
         }
 
