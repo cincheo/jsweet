@@ -25,7 +25,7 @@ public class TypeScript2JavaScriptWithTscTranspiler extends TypeScript2JavaScrip
             Collection<SourceFile> tsSourceFiles, //
             JSweetOptions options, //
             boolean ignoreErrors, //
-            OnTsTranspilationCompletedCallback onTsTranspilationCompleted) throws Exception {
+            OnTsTranspilationCompletedCallback onTsTranspilationCompleted)  throws Exception {
 
         if (tsCompilationProcess != null && options.isTscWatchMode()) {
             return;

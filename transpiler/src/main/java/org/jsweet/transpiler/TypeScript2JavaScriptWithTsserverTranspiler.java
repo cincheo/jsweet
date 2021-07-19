@@ -5,6 +5,7 @@ import static java.util.stream.Collectors.toList;
 import java.io.File;
 import java.util.Collection;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import org.jsweet.transpiler.util.ErrorCountTranspilationHandler;
 import org.jsweet.transpiler.util.Position;
@@ -89,7 +90,7 @@ public class TypeScript2JavaScriptWithTsserverTranspiler extends TypeScript2Java
 		logger.debug("tsserver project opened: " + projectFileName);
 
 		for (String fileName : sourceFilePaths) {
-			client.updateFile(fileName, null);
+			client.updateFile(fileName, null, options.getHangingTscTimeout(), TimeUnit.SECONDS);
 		}
 
 		for (String fileName : sourceFilePaths) {

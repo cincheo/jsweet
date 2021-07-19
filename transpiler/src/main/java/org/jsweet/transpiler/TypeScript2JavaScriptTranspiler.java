@@ -22,7 +22,8 @@ public abstract class TypeScript2JavaScriptTranspiler {
 			Collection<File> tsDefDirs, //
 			JSweetOptions options, //
 			boolean ignoreErrors, //
-			OnTsTranspilationCompletedCallback onTsTranspilationCompleted) {
+			OnTsTranspilationCompletedCallback onTsTranspilationCompleted,//
+            int hangingTscTimeout) {
 		try {
 			
 			LinkedHashSet<File> tsFiles = new LinkedHashSet<>();
