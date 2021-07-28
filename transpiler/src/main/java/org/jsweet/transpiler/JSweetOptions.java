@@ -31,277 +31,379 @@ import org.jsweet.transpiler.extension.PrinterAdapter;
  */
 public interface JSweetOptions {
 
-	/**
-	 * Constant string for the 'bundle' option.
-	 */
-	String bundle = "bundle";
-	/**
-	 * Constant string for the 'noRootDirectories' option.
-	 */
-	String noRootDirectories = "noRootDirectories";
-	/**
-	 * Constant string for the 'sourceMap' option.
-	 */
-	String sourceMap = "sourceMap";
-	/**
-	 * Constant string for the 'module' option.
-	 */
-	String module = "module";
-	/**
-	 * Constant string for the 'encoding' option.
-	 */
-	String encoding = "encoding";
-	/**
-	 * Constant string for the 'enableAssertions' option.
-	 */
-	String enableAssertions = "enableAssertions";
-	/**
-	 * Constant string for the 'declaration' option.
-	 */
-	String declaration = "declaration";
-	/**
-	 * Constant string for the 'tsOnly' option.
-	 */
-	String tsOnly = "tsOnly";
-	/**
-	 * Constant string for the 'ignoreDefinitions' option.
-	 */
-	String ignoreDefinitions = "ignoreDefinitions";
-	/**
-	 * Constant string for the 'header' option.
-	 */
-	String header = "header";
-	/**
-	 * Constant string for the 'disableSinglePrecisionFloats' option.
-	 */
-	String disableSinglePrecisionFloats = "disableSinglePrecisionFloats";
-	/**
-	 * Constant string for the 'targetVersion' option.
-	 */
-	String targetVersion = "targetVersion";
-	/**
-	 * Constant string for the 'tsout' option.
-	 */
-	String tsout = "tsout";
-	/**
-	 * Constant string for the 'dtsout' option.
-	 */
-	String dtsout = "dtsout";
-	/**
-	 * Constant string for the 'jsout' option.
-	 */
-	String jsout = "jsout";
-	/**
-	 * Constant string for the 'candiesJsOut' option.
-	 */
-	String candiesJsOut = "candiesJsOut";
-	/**
-	 * Constant string for the 'moduleResolution' option.
-	 */
-	String moduleResolution = "moduleResolution";
-	/**
-	 * Constant string for the 'extraSystemPath' option.
-	 */
-	String extraSystemPath = "extraSystemPath";
+    /**
+     * Constant string for the 'bundle' option.
+     */
+    String bundle = "bundle";
+    /**
+     * Constant string for the 'noRootDirectories' option.
+     */
+    String noRootDirectories = "noRootDirectories";
+    /**
+     * Constant string for the 'sourceMap' option.
+     */
+    String sourceMap = "sourceMap";
+    /**
+     * Constant string for the 'module' option.
+     */
+    String module = "module";
+    /**
+     * Constant string for the 'encoding' option.
+     */
+    String encoding = "encoding";
+    /**
+     * Constant string for the 'outEncoding' option.
+     */
+    String outEncoding = "outEncoding";
+    /**
+     * Constant string for the 'enableAssertions' option.
+     */
+    String enableAssertions = "enableAssertions";
+    /**
+     * Constant string for the 'declaration' option.
+     */
+    String declaration = "declaration";
+    /**
+     * Constant string for the 'tsOnly' option.
+     */
+    String tsOnly = "tsOnly";
+    /**
+     * Constant string for the 'ignoreDefinitions' option.
+     */
+    String ignoreDefinitions = "ignoreDefinitions";
+    /**
+     * Constant string for the 'ignoreJavaErrors' option.
+     */
+    String ignoreJavaErrors = "ignoreJavaErrors";
+    /**
+     * Constant string for the 'header' option.
+     */
+    String header = "header";
+    /**
+     * Constant string for the 'disableSinglePrecisionFloats' option.
+     */
+    String disableSinglePrecisionFloats = "disableSinglePrecisionFloats";
+    /**
+     * Constant string for the 'disableStaticsLazyInitialization' option.
+     */
+    String disableStaticsLazyInitialization = "disableStaticsLazyInitialization";
+    /**
+     * Constant string for the 'targetVersion' option.
+     */
+    String targetVersion = "targetVersion";
+    /**
+     * Constant string for the 'tsout' option.
+     */
+    String tsout = "tsout";
+    /**
+     * Constant string for the 'dtsout' option.
+     */
+    String dtsout = "dtsout";
+    /**
+     * Constant string for the 'jsout' option.
+     */
+    String jsout = "jsout";
+    /**
+     * Constant string for the 'sourceRoot' option.
+     */
+    String sourceRoot = "sourceRoot";
+    /**
+     * Constant string for the 'defInput' option.
+     */
+    String defInput = "defInput";
+    /**
+     * Constant string for the 'candiesJsOut' option.
+     */
+    String candiesJsOut = "candiesJsOut";
+    /**
+     * Constant string for the 'moduleResolution' option.
+     */
+    String moduleResolution = "moduleResolution";
+    /**
+     * Constant string for the 'extraSystemPath' option.
+     */
+    String extraSystemPath = "extraSystemPath";
+    /**
+     * Constant string for the 'javaCompilerExtraOptions' option.
+     */
+    String javaCompilerExtraOptions = "javaCompilerExtraOptions";
+    /**
+     * Constant string for the 'useSingleQuotesForStringLiterals' option.
+     */
+    String useSingleQuotesForStringLiterals = "useSingleQuotesForStringLiterals";
 
-	/**
-	 * All the supported options.
-	 */
-	String[] options = { bundle, noRootDirectories, sourceMap, module, encoding, enableAssertions, declaration, tsOnly,
-			ignoreDefinitions, header, disableSinglePrecisionFloats, targetVersion, tsout, dtsout, jsout, candiesJsOut,
-			moduleResolution, extraSystemPath };
+    /**
+     * Constant string for the 'nonEnumerableTransients' option.
+     */
+    String nonEnumerableTransients = "nonEnumerableTransients";
 
-	/**
-	 * Returns the configuration from the configuration file.
-	 */
-	Map<String, Object> getConfiguration();
+    /**
+     * Constant string for the 'hangingTscTimeout' option.
+     */
+    String hangingTscTimeout = "hangingTscTimeout";
 
-	/**
-	 * Tells if the transpiler generates js.map files for Java debugging.
-	 * 
-	 * @deprecated use {@link #isGenerateSourceMaps()} instead
-	 */
-	@Deprecated
-	boolean isPreserveSourceLineNumbers();
+    /**
+     * Constant string for the 'classpath' option.
+     */
+    String classpath = "classpath";
 
-	/**
-	 * Tells if the transpiler generates js.map files for Java debugging.
-	 */
-	boolean isGenerateSourceMaps();
+    /**
+     * Constant string for the 'sortClassMembers' option.
+     */
+    String sortClassMembers = "sortClassMembers";
 
-	/**
-	 * Gets the source root for the source map files. Use this option if the
-	 * Java source is located in a different place at runtime.
-	 */
-	File getSourceRoot();
+    /**
+     * Constant string for the 'autoPropagateAsyncs' option.
+     */
+    String autoPropagateAsyncAwaits = "autoPropagateAsyncAwaits";
 
-	/**
-	 * Gets the current TypeScript output directory.
-	 */
-	File getTsOutputDir();
+    /**
+     * All the supported options. (used to report non-blocking errors when options
+     * do not exist)
+     */
+    String[] options = { bundle, noRootDirectories, sourceMap, module, encoding, outEncoding, enableAssertions,
+            declaration, tsOnly, ignoreDefinitions, ignoreJavaErrors, header, disableSinglePrecisionFloats,
+            disableStaticsLazyInitialization, targetVersion, tsout, dtsout, jsout, candiesJsOut, moduleResolution,
+            extraSystemPath, useSingleQuotesForStringLiterals, nonEnumerableTransients, hangingTscTimeout, classpath, sortClassMembers,
+            autoPropagateAsyncAwaits };
 
-	/**
-	 * Gets the current JavaScript output directory.
-	 */
-	File getJsOutputDir();
+    /**
+     * Returns the configuration from the configuration file.
+     */
+    Map<String, Object> getConfiguration();
 
-	/**
-	 * Gets the current .d.ts output directory (only if the declaration option
-	 * is set).
-	 * 
-	 * <p>
-	 * By default, declarations are placed in the JavaScript output directory.
-	 */
-	File getDeclarationsOutputDir();
+    /**
+     * Tells if the transpiler generates js.map files for Java debugging.
+     * 
+     * @deprecated use {@link #isGenerateSourceMaps()} instead
+     */
+    @Deprecated
+    boolean isPreserveSourceLineNumbers();
 
-	/**
-	 * Gets the module kind when transpiling to code using JavaScript modules.
-	 */
-	ModuleKind getModuleKind();
+    /**
+     * Tells if the transpiler generates js.map files for Java debugging.
+     */
+    boolean isGenerateSourceMaps();
 
-	/**
-	 * Tells if this transpiler generates JavaScript bundles for running in a
-	 * Web browser.
-	 */
-	boolean isBundle();
+    /**
+     * Gets the source root for the source map files. Use this option if the Java
+     * source is located in a different place at runtime.
+     */
+    File getSourceRoot();
 
-	/**
-	 * Gets the expected Java source code encoding.
-	 */
-	String getEncoding();
+    /**
+     * Gets the current TypeScript output directory.
+     */
+    File getTsOutputDir();
 
-	/**
-	 * Tells if this transpiler skips the root directories (packages annotated
-	 * with @jsweet.lang.Root) so that the generated file hierarchy starts at
-	 * the root directories rather than including the entire directory
-	 * structure.
-	 */
-	boolean isNoRootDirectories();
+    /**
+     * Gets the current JavaScript output directory.
+     */
+    File getJsOutputDir();
 
-	/**
-	 * Tells if the transpiler should ignore the 'assert' statements or generate
-	 * appropriate code.
-	 */
-	boolean isIgnoreAssertions();
+    /**
+     * Gets the current .d.ts output directory (only if the declaration option is
+     * set).
+     * 
+     * <p>
+     * By default, declarations are placed in the JavaScript output directory.
+     */
+    File getDeclarationsOutputDir();
 
-	/**
-	 * Generates output code even if the main class is not placed within a file
-	 * of the same name.
-	 */
-	boolean isIgnoreJavaFileNameError();
+    /**
+     * Gets the module kind when transpiling to code using JavaScript modules.
+     */
+    ModuleKind getModuleKind();
 
-	/**
-	 * Generates d.ts files along with the js files.
-	 */
-	boolean isGenerateDeclarations();
+    /**
+     * Tells if this transpiler generates JavaScript bundles for running in a Web
+     * browser.
+     */
+    boolean isBundle();
 
-	/**
-	 * The directory where the transpiler should put the extracted JavaScript
-	 * files from candies. Candies can bundle one or more JavaScript files that
-	 * will be extracted to this directory.
-	 */
-	File getExtractedCandyJavascriptDir();
+    /**
+     * Gets the expected Java source code encoding.
+     */
+    String getEncoding();
 
-	/**
-	 * If false, do not compile TypeScript output (let an external TypeScript
-	 * compiler do so). Default is true.
-	 */
-	boolean isGenerateJsFiles();
+    /**
+     * Gets the encoding of generated TypeScript files.
+     */
+    String getOutEncoding();
 
-	/**
-	 * If false, do not generate TypeScript output (just validate the Java
-	 * source code and do not transpile anything). Default is true.
-	 */
-	boolean isGenerateTsFiles();
+    /**
+     * Tells if this transpiler skips the root directories (packages annotated
+     * with @jsweet.lang.Root) so that the generated file hierarchy starts at the
+     * root directories rather than including the entire directory structure.
+     */
+    boolean isNoRootDirectories();
 
-	/**
-	 * Generated definitions from def.* packages in d.ts files.
-	 */
-	boolean isGenerateDefinitions();
+    /**
+     * Tells if the transpiler should ignore the 'assert' statements or generate
+     * appropriate code.
+     */
+    boolean isIgnoreAssertions();
 
-	/**
-	 * If true, JSweet will ignore any message reported by TypeScript (including
-	 * error) and the compilation will be successful if no Java error is raised.
-	 */
-	boolean isIgnoreTypeScriptErrors();
+    /**
+     * Generates output code even if the main class is not placed within a file of
+     * the same name.
+     */
+    boolean isIgnoreJavaFileNameError();
 
-	/**
-	 * If true, JSweet will ignore any message reported by Java (including
-	 * error).
-	 */
-	boolean isIgnoreJavaErrors();
+    /**
+     * Generates d.ts files along with the js files.
+     */
+    boolean isGenerateDeclarations();
 
-	/**
-	 * Gets the file containing the header to be added to the generated files.
-	 * 
-	 * @return the header file, null if undefined
-	 */
-	File getHeaderFile();
+    /**
+     * The directory where the transpiler should put the extracted JavaScript files
+     * from candies. Candies can bundle one or more JavaScript files that will be
+     * extracted to this directory.
+     */
+    File getExtractedCandyJavascriptDir();
 
-	/**
-	 * If true, the transpiler generates code that can be debugged with
-	 * JavaScript.
-	 */
-	boolean isDebugMode();
+    /**
+     * If false, do not compile TypeScript output (let an external TypeScript
+     * compiler do so). Default is true.
+     */
+    boolean isGenerateJsFiles();
 
-	/**
-	 * If true, JSweet has been launched in verbose mode.
-	 */
-	boolean isVerbose();
+    /**
+     * If false, do not generate TypeScript output (just validate the Java source
+     * code and do not transpile anything). Default is true.
+     */
+    boolean isGenerateTsFiles();
 
-	/**
-	 * By default, for a target version >=ES5, JSweet will force Java floats to
-	 * be mapped to JavaScript numbers that will be constrained with the
-	 * Math.fround function. If this option is true, then the calls to
-	 * Math.fround are erased and the generated program will use the JavaScript
-	 * default precision (double precision).
-	 */
-	boolean isDisableSinglePrecisionFloats();
+    /**
+     * Generated definitions from def.* packages in d.ts files.
+     */
+    boolean isGenerateDefinitions();
 
-	/**
-	 * The targeted ECMAScript version.
-	 */
-	EcmaScriptComplianceLevel getEcmaTargetVersion();
+    /**
+     * If true, JSweet will ignore any message reported by TypeScript (including
+     * error) and the compilation will be successful if no Java error is raised.
+     */
+    boolean isIgnoreTypeScriptErrors();
 
-	/**
-	 * A list of adapter class names (fully qualified) to be used to extend the
-	 * transpiler behavior. As the name suggests, an adapter is an instance of
-	 * {@link PrinterAdapter} that adapts the TypeScript default printer in
-	 * order to tune the generated code. All the adapter classes must be
-	 * accessible within the 'jsweet_extension' directory to be created at the
-	 * root of the transpiled project. The adapter classes can be provided as
-	 * Java class files (*.class) or Java source files (*.java). In the latter
-	 * case, they will be on-the-fly compiled by JSweet.
-	 * 
-	 * @see PrinterAdapter
-	 */
-	List<String> getAdapters();
+    /**
+     * If true, JSweet will ignore any message reported by Java (including error).
+     * Do not use unless you know what you are doing.
+     */
+    boolean isIgnoreJavaErrors();
 
-	/**
-	 * Determines how modules get resolved. Either "Node" for Node.js/io.js
-	 * style resolution, or "Classic". See Tsc's <a href=
-	 * "https://www.typescriptlang.org/docs/handbook/module-resolution.html">
-	 * Module Resolution documentation</a> for more details.
-	 * 
-	 * @return the current module resolution strategy
-	 */
-	ModuleResolution getModuleResolution();
+    /**
+     * Gets the file containing the header to be added to the generated files.
+     * 
+     * @return the header file, null if undefined
+     */
+    File getHeaderFile();
 
-	/**
-	 * The configuration file, which is by default the
-	 * <code>jsweetconfig.json</code> file in the current project.
-	 */
-	File getConfigurationFile();
+    /**
+     * If true, the transpiler generates code that can be debugged with JavaScript.
+     */
+    boolean isDebugMode();
 
-	/**
-	 * @return true if module is set to somethind else than ModuleKind.none
-	 */
-	boolean isUsingModules();
+    /**
+     * If true, JSweet has been launched in verbose mode.
+     */
+    boolean isVerbose();
 
-	boolean isSkipTypeScriptChecks();
+    /**
+     * By default, for a target version >=ES5, JSweet will force Java floats to be
+     * mapped to JavaScript numbers that will be constrained with the Math.fround
+     * function. If this option is true, then the calls to Math.fround are erased
+     * and the generated program will use the JavaScript default precision (double
+     * precision).
+     */
+    boolean isDisableSinglePrecisionFloats();
 
-	/**
-	 * @return true to enable tsc watch mode
-	 */
-	boolean isTscWatchMode();
+    /**
+     * The targeted ECMAScript version.
+     */
+    EcmaScriptComplianceLevel getEcmaTargetVersion();
+
+    /**
+     * A list of adapter class names (fully qualified) to be used to extend the
+     * transpiler behavior. As the name suggests, an adapter is an instance of
+     * {@link PrinterAdapter} that adapts the TypeScript default printer in order to
+     * tune the generated code. All the adapter classes must be accessible within
+     * the 'jsweet_extension' directory to be created at the root of the transpiled
+     * project. The adapter classes can be provided as Java class files (*.class) or
+     * Java source files (*.java). In the latter case, they will be on-the-fly
+     * compiled by JSweet.
+     * 
+     * @see PrinterAdapter
+     */
+    List<String> getAdapters();
+
+    /**
+     * Determines how modules get resolved. Either "Node" for Node.js/io.js style
+     * resolution, or "Classic". See Tsc's <a href=
+     * "https://www.typescriptlang.org/docs/handbook/module-resolution.html"> Module
+     * Resolution documentation</a> for more details.
+     * 
+     * @return the current module resolution strategy
+     */
+    ModuleResolution getModuleResolution();
+
+    /**
+     * The configuration file, which is by default the
+     * <code>jsweetconfig.json</code> file in the current project.
+     */
+    File getConfigurationFile();
+
+    /**
+     * @return true if module is set to somethind else than ModuleKind.none
+     */
+    boolean isUsingModules();
+
+    boolean isSkipTypeScriptChecks();
+
+    /**
+     * @return true to enable tsc watch mode
+     */
+    boolean isTscWatchMode();
+
+    /**
+     * True (default) if JSweet generates code that lazily initializes statics in
+     * order to avoid initialization precedence issues (emulates Java behavior).
+     */
+    boolean isLazyInitializedStatics();
+
+    /**
+     * Generates string literals with single quotes rather than double quotes.
+     * 
+     * @return true if activated
+     */
+    boolean isUseSingleQuotesForStringLiterals();
+
+    /**
+     * If true, the transpiler generates Java transient fields as non-enumerable
+     * JavaScript properties.
+     */
+    boolean isNonEnumerableTransients();
+
+    /**
+     * The duration in seconds after which a transpilation of a
+     * TypeScript file to JavaScript is considered to be hanging. By
+     * default the compilation is aborted after 10 seconds.
+    */
+    int getHangingTscTimeout();
+
+    /**
+     * If true, class members are sorted using
+     * {@link PrinterAdapter#getClassMemberComparator()}.
+     */
+    boolean isSortClassMembers();
+
+    /**
+     * If true, auto propagates async methods and await invocations.
+     */
+    boolean isAutoPropagateAsyncAwaits();
+
+    /**
+     * Gets additional options passed to the Java Compiler.
+     */
+    String[] getJavaCompilerExtraOptions();
+
 }

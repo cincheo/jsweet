@@ -23,13 +23,17 @@ import static java.util.stream.Collectors.toList;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 import java.util.function.Function;
@@ -37,1562 +41,2604 @@ import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.tools.JavaFileManager;
+import javax.lang.model.type.TypeVariable;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import javax.tools.JavaFileObject;
+import javax.tools.StandardJavaFileManager;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.JSweetContext;
+import org.jsweet.transpiler.JSweetContext.DefaultMethodEntry;
+import org.jsweet.transpiler.SourcePosition;
 
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.BreakTree;
+import com.sun.source.tree.CaseTree;
+import com.sun.source.tree.CatchTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.DoWhileLoopTree;
+import com.sun.source.tree.EnhancedForLoopTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.ForLoopTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.IfTree;
+import com.sun.source.tree.ImportTree;
+import com.sun.source.tree.LabeledStatementTree;
+import com.sun.source.tree.LambdaExpressionTree;
+import com.sun.source.tree.LineMap;
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.PackageTree;
+import com.sun.source.tree.ReturnTree;
+import com.sun.source.tree.StatementTree;
+import com.sun.source.tree.SwitchTree;
+import com.sun.source.tree.SynchronizedTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
-import com.sun.tools.javac.code.Flags;
-import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.code.Symbol.ClassSymbol;
-import com.sun.tools.javac.code.Symbol.MethodSymbol;
-import com.sun.tools.javac.code.Symbol.PackageSymbol;
-import com.sun.tools.javac.code.Symbol.TypeSymbol;
-import com.sun.tools.javac.code.Symbol.VarSymbol;
-import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.code.Type.ClassType;
-import com.sun.tools.javac.code.Type.MethodType;
-import com.sun.tools.javac.code.Type.TypeVar;
-import com.sun.tools.javac.code.Types;
-import com.sun.tools.javac.file.JavacFileManager;
-import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.JCBinary;
-import com.sun.tools.javac.tree.JCTree.JCBlock;
-import com.sun.tools.javac.tree.JCTree.JCBreak;
-import com.sun.tools.javac.tree.JCTree.JCCase;
-import com.sun.tools.javac.tree.JCTree.JCCatch;
-import com.sun.tools.javac.tree.JCTree.JCClassDecl;
-import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
-import com.sun.tools.javac.tree.JCTree.JCDoWhileLoop;
-import com.sun.tools.javac.tree.JCTree.JCEnhancedForLoop;
-import com.sun.tools.javac.tree.JCTree.JCExpression;
-import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
-import com.sun.tools.javac.tree.JCTree.JCForLoop;
-import com.sun.tools.javac.tree.JCTree.JCIdent;
-import com.sun.tools.javac.tree.JCTree.JCIf;
-import com.sun.tools.javac.tree.JCTree.JCImport;
-import com.sun.tools.javac.tree.JCTree.JCLabeledStatement;
-import com.sun.tools.javac.tree.JCTree.JCLambda;
-import com.sun.tools.javac.tree.JCTree.JCLiteral;
-import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
-import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
-import com.sun.tools.javac.tree.JCTree.JCReturn;
-import com.sun.tools.javac.tree.JCTree.JCStatement;
-import com.sun.tools.javac.tree.JCTree.JCSwitch;
-import com.sun.tools.javac.tree.JCTree.JCSynchronized;
-import com.sun.tools.javac.tree.JCTree.JCTry;
-import com.sun.tools.javac.tree.JCTree.JCUnary;
-import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
-import com.sun.tools.javac.tree.JCTree.JCWhileLoop;
-import com.sun.tools.javac.tree.TreeScanner;
-import com.sun.tools.javac.util.Name;
+import com.sun.source.tree.TryTree;
+import com.sun.source.tree.UnaryTree;
+import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.WhileLoopTree;
+import com.sun.source.util.SourcePositions;
+import com.sun.source.util.TreePath;
+import com.sun.source.util.TreePathScanner;
+import com.sun.source.util.TreeScanner;
+import com.sun.source.util.Trees;
 
 /**
  * Various utilities.
  * 
+ * Static utilities (independent from JSweet context) are accessible through
+ * Util.Static.myHelper()
+ * 
  * @author Renaud Pawlak
+ * @author Louis Grignon
  */
 public class Util {
 
-	private final static Logger logger = Logger.getLogger(Util.class);
-
-	private Util() {
-	}
-
-	private static long id = 121;
-
-	/**
-	 * Returns a unique id (incremental).
-	 */
-	public static long getId() {
-		return id++;
-	}
-
-	/**
-	 * Tells if the given element is within the Java sources being compiled.
-	 */
-	public static boolean isSourceElement(Element element) {
-		if (element == null || element instanceof PackageSymbol) {
-			return false;
-		}
-		if (element instanceof ClassSymbol) {
-			ClassSymbol clazz = (ClassSymbol) element;
-			// hack to know if it is a source file or a class file
-			if (clazz.sourcefile != null
-					&& clazz.sourcefile.getClass().getName().equals("com.sun.tools.javac.file.RegularFileObject")) {
-				return true;
-			}
-		}
-		return isSourceElement(element.getEnclosingElement());
-	}
-
-	/**
-	 * Gets the source file path of the given element.
-	 */
-	public static String getSourceFilePath(Element element) {
-		if (element == null || element instanceof PackageSymbol) {
-			return null;
-		}
-		if (element instanceof ClassSymbol) {
-			ClassSymbol clazz = (ClassSymbol) element;
-			// hack to know if it is a source file or a class file
-			if (clazz.sourcefile != null
-					&& clazz.sourcefile.getClass().getName().equals("com.sun.tools.javac.file.RegularFileObject")) {
-				return clazz.sourcefile.getName();
-			}
-		}
-		return getSourceFilePath(element);
-	}
-
-	/**
-	 * Gets the tree that corresponds to the given element (this is a slow
-	 * implementation - do not use intensively).
-	 * 
-	 * @param context
-	 *            the transpiler's context
-	 * @param element
-	 *            the element to lookup
-	 * @return the javac AST that corresponds to that element
-	 */
-	public static JCTree lookupTree(JSweetContext context, Element element) {
-		if (element == null || element instanceof PackageSymbol) {
-			return null;
-		}
-		Element rootClass = getRootClassElement(element);
-		if (rootClass instanceof ClassSymbol) {
-			ClassSymbol clazz = (ClassSymbol) rootClass;
-			// hack to know if it is a source file or a class file
-			if (clazz.sourcefile != null
-					&& clazz.sourcefile.getClass().getName().equals("com.sun.tools.javac.file.RegularFileObject")) {
-				JCTree[] result = { null };
-				for (int i = 0; i < context.sourceFiles.length; i++) {
-					if (new File(clazz.sourcefile.getName()).equals(context.sourceFiles[i].getJavaFile())) {
-						JCCompilationUnit cu = context.compilationUnits[i];
-						new TreeScanner() {
-							public void visitClassDef(JCClassDecl tree) {
-								if (tree.sym == element) {
-									result[0] = tree;
-								} else {
-									super.visitClassDef(tree);
-								}
-							}
-
-							public void visitMethodDef(JCMethodDecl tree) {
-								if (tree.sym == element) {
-									result[0] = tree;
-								}
-							}
-
-							public void visitVarDef(JCVariableDecl tree) {
-								if (tree.sym == element) {
-									result[0] = tree;
-								} else {
-									super.visitVarDef(tree);
-								}
-							}
-						}.scan(cu);
-						return result[0];
-					}
-				}
-			}
-		}
-		return null;
-	}
-
-	private static Element getRootClassElement(Element element) {
-		if (element == null) {
-			return null;
-		}
-		if (element instanceof ClassSymbol
-				&& (element.getEnclosingElement() == null || element.getEnclosingElement() instanceof PackageElement)) {
-			return element;
-		} else {
-			return getRootClassElement(element.getEnclosingElement());
-		}
-	}
-
-	/**
-	 * Recursively adds files to the given list.
-	 * 
-	 * @param extension
-	 *            the extension to filter with
-	 * @param file
-	 *            the root file/directory to look into recursively
-	 * @param files
-	 *            the list to add the files matching the extension
-	 */
-	public static void addFiles(String extension, File file, Collection<File> files) {
-		addFiles(f -> f.getName().endsWith(extension), file, files);
-	}
-
-	/**
-	 * Recursively adds files to the given list.
-	 * 
-	 * @param filter
-	 *            the filter predicate to apply (only files matching the predicate
-	 *            will be added)
-	 * @param file
-	 *            the root file/directory to look into recursively
-	 * @param files
-	 *            the list to add the files matching the extension
-	 */
-	public static void addFiles(Predicate<File> filter, File file, Collection<File> files) {
-		if (file.isDirectory()) {
-			for (File f : file.listFiles()) {
-				addFiles(filter, f, files);
-			}
-		} else if (filter.test(file)) {
-			files.add(file);
-		}
-	}
-
-	/**
-	 * Gets the full signature of the given method.
-	 */
-	public static String getFullMethodSignature(MethodSymbol method) {
-		return method.getEnclosingElement().getQualifiedName() + "." + method.toString();
-	}
-
-	/**
-	 * Tells if the given type declaration contains some method declarations.
-	 */
-	public static boolean containsMethods(JCClassDecl classDeclaration) {
-		for (JCTree member : classDeclaration.getMembers()) {
-			if (member instanceof JCMethodDecl) {
-				JCMethodDecl method = (JCMethodDecl) member;
-				if (method.pos == classDeclaration.pos) {
-					continue;
-				}
-				return true;
-				// if (method.body != null) {
-				// return true;
-				// }
-			} else if (member instanceof JCVariableDecl) {
-				if (((JCVariableDecl) member).mods.getFlags().contains(Modifier.STATIC)) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
-	private static void putVar(Map<String, VarSymbol> vars, VarSymbol varSymbol) {
-		vars.put(varSymbol.getSimpleName().toString(), varSymbol);
-	}
-
-	/**
-	 * Finds all the variables accessible within the current scanning scope.
-	 */
-	public static void fillAllVariablesInScope(Map<String, VarSymbol> vars, Stack<JCTree> scanningStack, JCTree from,
-			JCTree to) {
-		if (from == to) {
-			return;
-		}
-		int i = scanningStack.indexOf(from);
-		if (i == -1 || i == 0) {
-			return;
-		}
-		JCTree parent = scanningStack.get(i - 1);
-		List<JCStatement> statements = null;
-		switch (parent.getKind()) {
-		case BLOCK:
-			statements = ((JCBlock) parent).stats;
-			break;
-		case CASE:
-			statements = ((JCCase) parent).stats;
-			break;
-		case CATCH:
-			putVar(vars, ((JCCatch) parent).param.sym);
-			break;
-		case FOR_LOOP:
-			if (((JCForLoop) parent).init != null) {
-				for (JCStatement s : ((JCForLoop) parent).init) {
-					if (s instanceof JCVariableDecl) {
-						putVar(vars, ((JCVariableDecl) s).sym);
-					}
-				}
-			}
-			break;
-		case ENHANCED_FOR_LOOP:
-			putVar(vars, ((JCEnhancedForLoop) parent).var.sym);
-			break;
-		case METHOD:
-			for (JCVariableDecl var : ((JCMethodDecl) parent).params) {
-				putVar(vars, var.sym);
-			}
-			break;
-		default:
-
-		}
-		if (statements != null) {
-			for (JCStatement s : statements) {
-				if (s == from) {
-					break;
-				} else if (s instanceof JCVariableDecl) {
-					putVar(vars, ((JCVariableDecl) s).sym);
-				}
-			}
-		}
-		fillAllVariablesInScope(vars, scanningStack, parent, to);
-	}
-
-	public static List<JCClassDecl> findTypeDeclarationsInCompilationUnits(List<JCCompilationUnit> compilationUnits) {
-		List<JCClassDecl> symbols = new LinkedList<>();
-		for (JCCompilationUnit compilationUnit : compilationUnits) {
-			for (JCTree definition : compilationUnit.defs) {
-				if (definition instanceof JCClassDecl) {
-					symbols.add((JCClassDecl) definition);
-				}
-			}
-		}
-
-		return symbols;
-	}
-
-	public static List<JCMethodDecl> findMethodDeclarations(JCClassDecl typeDeclaration) {
-		List<JCMethodDecl> methods = new LinkedList<>();
-		for (JCTree definition : typeDeclaration.defs) {
-			if (definition instanceof JCMethodDecl) {
-				methods.add((JCMethodDecl) definition);
-			}
-		}
-
-		return methods;
-	}
-
-	public static JCMethodDecl findFirstMethodDeclaration(JCClassDecl typeDeclaration, String methodName) {
-		return findMethodDeclarations(typeDeclaration).stream() //
-				.filter(methodDecl -> methodDecl.getName().toString().equals(methodName)) //
-				.findFirst().orElse(null);
-	}
-
-	/**
-	 * Fills the given map with all the variables beeing accessed within the given
-	 * code tree.
-	 */
-	public static void fillAllVariableAccesses(final Map<String, VarSymbol> vars, final JCTree tree) {
-		new TreeScanner() {
-			@Override
-			public void visitIdent(JCIdent ident) {
-				if (ident.sym.getKind() == ElementKind.LOCAL_VARIABLE) {
-					putVar(vars, (VarSymbol) ident.sym);
-				}
-			}
-
-			@Override
-			public void visitLambda(JCLambda lambda) {
-				if (lambda == tree) {
-					super.visitLambda(lambda);
-				}
-			}
-		}.scan(tree);
-	}
-
-	/**
-	 * Finds the method declaration within the given type, for the given invocation.
-	 */
-	public static MethodSymbol findMethodDeclarationInType(Types types, TypeSymbol typeSymbol,
-			JCMethodInvocation invocation) {
-		String meth = invocation.meth.toString();
-		String methName = meth.substring(meth.lastIndexOf('.') + 1);
-		return findMethodDeclarationInType(types, typeSymbol, methName, (MethodType) invocation.meth.type);
-	}
-
-	/**
-	 * Finds the method in the given type that matches the given name and signature.
-	 */
-	public static MethodSymbol findMethodDeclarationInType(Types types, TypeSymbol typeSymbol, String methodName,
-			MethodType methodType) {
-		return findMethodDeclarationInType(types, typeSymbol, methodName, methodType, false);
-	}
-
-	/**
-	 * Finds the method in the given type that matches the given name and signature.
-	 */
-	public static MethodSymbol findMethodDeclarationInType(Types types, TypeSymbol typeSymbol, String methodName,
-			MethodType methodType, boolean overrides) {
-
-		// gathers all the potential method matches
-		List<MethodSymbol> candidates = new LinkedList<>();
-		collectMatchingMethodDeclarationsInType(types, typeSymbol, methodName, methodType, overrides, candidates);
-
-		// score them
-		MethodSymbol bestMatch = null;
-		int lastScore = Integer.MIN_VALUE;
-		for (MethodSymbol candidate : candidates) {
-			int currentScore = getCandidateMethodMatchScore(candidate, methodType, types);
-			if (bestMatch == null || currentScore > lastScore) {
-				bestMatch = candidate;
-				lastScore = currentScore;
-			}
-		}
-
-		// return the best match
-		if (logger.isTraceEnabled()) {
-			logger.trace("method declaration match for " + typeSymbol + "." + methodName + " - " + methodType + " : "
-					+ bestMatch + " score=" + lastScore);
-		}
-		return bestMatch;
-	}
-
-	private static int getCandidateMethodMatchScore(MethodSymbol candidate, MethodType methodType, Types types) {
-
-		if (methodType == null || candidate.getParameters().size() != methodType.argtypes.size()) {
-			return -50;
-		}
-
-		int score = 0;
-
-		boolean isAbstract = (candidate.flags() & Flags.ABSTRACT) != 0;
-		if (isAbstract) {
-			score -= 30;
-		}
-		for (int i = 0; i < candidate.getParameters().size(); i++) {
-			Type candidateParamType = candidate.getParameters().get(i).type;
-			Type paramType = methodType.argtypes.get(i);
-
-			if (!candidateParamType.equals(paramType)) {
-				score--;
-			}
-		}
-
-		return score;
-	}
-
-	private static void collectMatchingMethodDeclarationsInType(Types types, TypeSymbol typeSymbol, String methodName,
-			MethodType methodType, boolean overrides, List<MethodSymbol> collector) {
-		if (typeSymbol == null) {
-			return;
-		}
-		if (typeSymbol.getEnclosedElements() != null) {
-			for (Element element : typeSymbol.getEnclosedElements()) {
-				if ((element instanceof MethodSymbol) && (methodName.equals(element.getSimpleName().toString())
-						|| ((MethodSymbol) element).getKind() == ElementKind.CONSTRUCTOR
-								&& ("this".equals(methodName) /* || "super".equals(methodName) */))) {
-					MethodSymbol methodSymbol = (MethodSymbol) element;
-					if (methodType == null) {
-						collector.add(methodSymbol);
-					} else if (overrides ? isInvocable(types, methodSymbol.type.asMethodType(), methodType)
-							: isInvocable(types, methodType, methodSymbol.type.asMethodType())) {
-						collector.add(methodSymbol);
-					}
-				}
-			}
-		}
-		if (typeSymbol instanceof ClassSymbol && ((ClassSymbol) typeSymbol).getSuperclass() != null) {
-			if (!overrides || !Object.class.getName().equals(((ClassSymbol) typeSymbol).getSuperclass().toString())) {
-				collectMatchingMethodDeclarationsInType(types, ((ClassSymbol) typeSymbol).getSuperclass().tsym,
-						methodName, methodType, overrides, collector);
-			}
-		}
-		if (typeSymbol instanceof ClassSymbol && ((ClassSymbol) typeSymbol).getInterfaces() != null) {
-			for (Type t : ((ClassSymbol) typeSymbol).getInterfaces()) {
-				collectMatchingMethodDeclarationsInType(types, t.tsym, methodName, methodType, overrides, collector);
-			}
-		}
-	}
-
-	/**
-	 * Finds methods by name.
-	 */
-	public static void findMethodDeclarationsInType(TypeSymbol typeSymbol, Collection<String> methodNames,
-			Set<String> ignoredTypeNames, List<MethodSymbol> result) {
-		if (typeSymbol == null) {
-			return;
-		}
-		if (ignoredTypeNames.contains(typeSymbol.getQualifiedName().toString())) {
-			return;
-		}
-		if (typeSymbol.getEnclosedElements() != null) {
-			for (Element element : typeSymbol.getEnclosedElements()) {
-				if ((element instanceof MethodSymbol) && (methodNames.contains(element.getSimpleName().toString()))) {
-					result.add((MethodSymbol) element);
-				}
-			}
-		}
-		if (typeSymbol instanceof ClassSymbol && ((ClassSymbol) typeSymbol).getSuperclass() != null) {
-			findMethodDeclarationsInType(((ClassSymbol) typeSymbol).getSuperclass().tsym, methodNames, ignoredTypeNames,
-					result);
-		}
-		if (result == null) {
-			if (typeSymbol instanceof ClassSymbol && ((ClassSymbol) typeSymbol).getInterfaces() != null) {
-				for (Type t : ((ClassSymbol) typeSymbol).getInterfaces()) {
-					findMethodDeclarationsInType(t.tsym, methodNames, ignoredTypeNames, result);
-				}
-			}
-		}
-	}
-
-	/**
-	 * Finds first method matching name (no super types lookup).
-	 */
-	public static MethodSymbol findFirstMethodDeclarationInType(Element typeSymbol, String methodName) {
-		if (typeSymbol == null) {
-			return null;
-		}
-		if (typeSymbol.getEnclosedElements() != null) {
-			for (Element element : typeSymbol.getEnclosedElements()) {
-				if ((element instanceof MethodSymbol) && (methodName.equals(element.getSimpleName().toString()))) {
-					return (MethodSymbol) element;
-				}
-			}
-		}
-		return null;
-	}
-
-	public static boolean isDeprecated(Element element) {
-		return ((Symbol) element).isDeprecated();
-	}
-
-	/**
-	 * Find first declaration (of any kind) matching the given name.
-	 */
-	public static Symbol findFirstDeclarationInType(Element typeSymbol, String name) {
-		if (typeSymbol == null) {
-			return null;
-		}
-		if (typeSymbol.getEnclosedElements() != null) {
-			for (Element element : typeSymbol.getEnclosedElements()) {
-				if (name.equals(element.getSimpleName().toString())) {
-					return (Symbol) element;
-				}
-			}
-		}
-		return null;
-	}
-
-	/**
-	 * Find first declaration (of any kind) matching the given name.
-	 */
-	public static Symbol findFirstDeclarationInClassAndSuperClasses(TypeSymbol typeSymbol, String name,
-			ElementKind kind) {
-		if (typeSymbol == null) {
-			return null;
-		}
-		if (typeSymbol.getEnclosedElements() != null) {
-			for (Element element : typeSymbol.getEnclosedElements()) {
-				if (name.equals(element.getSimpleName().toString()) && element.getKind() == kind) {
-					return (Symbol) element;
-				}
-			}
-		}
-		if (typeSymbol instanceof ClassSymbol) {
-			Symbol s = findFirstDeclarationInClassAndSuperClasses(((ClassSymbol) typeSymbol).getSuperclass().tsym, name,
-					kind);
-			if (s == null && kind == ElementKind.METHOD) {
-				// also looks up in interfaces for methods
-				for (Type type : ((ClassSymbol) typeSymbol).getInterfaces()) {
-					s = findFirstDeclarationInClassAndSuperClasses(type.tsym, name, kind);
-					if (s != null) {
-						break;
-					}
-				}
-			}
-			return s;
-		} else {
-			return null;
-		}
-	}
-
-	/**
-	 * Scans member declarations in type hierachy.
-	 */
-	public static boolean scanMemberDeclarationsInType(TypeSymbol typeSymbol, Set<String> ignoredTypeNames,
-			Function<Element, Boolean> scanner) {
-		if (typeSymbol == null) {
-			return true;
-		}
-		if (ignoredTypeNames.contains(typeSymbol.getQualifiedName().toString())) {
-			return true;
-		}
-		if (typeSymbol.getEnclosedElements() != null) {
-			for (Element element : typeSymbol.getEnclosedElements()) {
-				if (!scanner.apply(element)) {
-					return false;
-				}
-			}
-		}
-		if (typeSymbol instanceof ClassSymbol && ((ClassSymbol) typeSymbol).getSuperclass() != null) {
-			if (!scanMemberDeclarationsInType(((ClassSymbol) typeSymbol).getSuperclass().tsym, ignoredTypeNames,
-					scanner)) {
-				return false;
-			}
-		}
-		if (typeSymbol instanceof ClassSymbol && ((ClassSymbol) typeSymbol).getInterfaces() != null) {
-			for (Type t : ((ClassSymbol) typeSymbol).getInterfaces()) {
-				if (!scanMemberDeclarationsInType(t.tsym, ignoredTypeNames, scanner)) {
-					return false;
-				}
-			}
-		}
-		return true;
-	}
-
-	/**
-	 * Finds and returns the parameter matching the given name if any.
-	 */
-	public static JCVariableDecl findParameter(JCMethodDecl method, String name) {
-		for (JCVariableDecl parameter : method.getParameters()) {
-			if (name.equals(parameter.name.toString())) {
-				return parameter;
-			}
-		}
-		return null;
-	}
-
-	/**
-	 * Tells if a method can be invoked with some given parameter types.
-	 * 
-	 * @param types
-	 *            a reference to the types in the compilation scope
-	 * @param from
-	 *            the caller method signature to test (contains the parameter types)
-	 * @param target
-	 *            the callee method signature
-	 * @return true if the callee can be invoked by the caller
-	 */
-	public static boolean isInvocable(Types types, MethodType from, MethodType target) {
-		if (from.getParameterTypes().length() != target.getParameterTypes().length()) {
-			return false;
-		}
-		for (int i = 0; i < from.getParameterTypes().length(); i++) {
-			if (!types.isAssignable(types.erasure(from.getParameterTypes().get(i)),
-					types.erasure(target.getParameterTypes().get(i)))) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	/**
-	 * Gets the TypeScript initial default value for a type.
-	 */
-	public String getTypeInitalValue(String typeName) {
-		if (typeName == null) {
-			return "null";
-		}
-		switch (typeName) {
-		case "void":
-			return null;
-		case "boolean":
-			return "false";
-		case "number":
-			return "0";
-		default:
-			return "null";
-		}
-	}
-
-	/**
-	 * Fills the given set with all the default methods found in the current type
-	 * and super interfaces.
-	 */
-	public static void findDefaultMethodsInType(Set<Entry<JCClassDecl, JCMethodDecl>> defaultMethods,
-			JSweetContext context, ClassSymbol classSymbol) {
-		if (context.getDefaultMethods(classSymbol) != null) {
-			defaultMethods.addAll(context.getDefaultMethods(classSymbol));
-		}
-		for (Type t : classSymbol.getInterfaces()) {
-			findDefaultMethodsInType(defaultMethods, context, (ClassSymbol) t.tsym);
-		}
-	}
-
-	/**
-	 * Finds the field in the given type that matches the given name.
-	 */
-	public static VarSymbol findFieldDeclaration(ClassSymbol classSymbol, Name name) {
-		if (classSymbol == null) {
-			return null;
-		}
-		Iterator<Symbol> it = classSymbol.members_field.getElementsByName(name, (symbol) -> {
-			return symbol instanceof VarSymbol;
-		}).iterator();
-		if (it.hasNext()) {
-			return (VarSymbol) it.next();
-		} else {
-			if (classSymbol.getSuperclass().tsym instanceof ClassSymbol) {
-				return findFieldDeclaration((ClassSymbol) classSymbol.getSuperclass().tsym, name);
-			} else {
-				return null;
-			}
-		}
-	}
-
-	/**
-	 * Tells if this qualified name denotes a JSweet globals class.
-	 */
-	public static boolean isGlobalsClassName(String qualifiedName) {
-		return qualifiedName != null && (JSweetConfig.GLOBALS_CLASS_NAME.equals(qualifiedName)
-				|| qualifiedName.endsWith("." + JSweetConfig.GLOBALS_CLASS_NAME));
-	}
-
-	/**
-	 * Tells if this parameter declaration is varargs.
-	 */
-	public static boolean isVarargs(JCVariableDecl varDecl) {
-		return (varDecl.mods.flags & Flags.VARARGS) == Flags.VARARGS;
-	}
-
-	/**
-	 * Gets the file from a Java file object.
-	 */
-	public static File toFile(JavaFileObject javaFileObject) {
-		return new File(javaFileObject.getName());
-	}
-
-	/**
-	 * Transforms a Java iterable to a javac list.
-	 */
-	public static <T> com.sun.tools.javac.util.List<T> toJCList(Iterable<T> collection) {
-		return com.sun.tools.javac.util.List.from(collection);
-	}
-
-	/**
-	 * Transforms a list of source files to Java file objects (used by javac).
-	 */
-	public static com.sun.tools.javac.util.List<JavaFileObject> toJavaFileObjects(JavaFileManager fileManager,
-			Collection<File> sourceFiles) throws IOException {
-		com.sun.tools.javac.util.List<JavaFileObject> fileObjects = com.sun.tools.javac.util.List.nil();
-		JavacFileManager javacFileManager = (JavacFileManager) fileManager;
-		for (JavaFileObject fo : javacFileManager.getJavaFileObjectsFromFiles(sourceFiles)) {
-			fileObjects = fileObjects.append(fo);
-		}
-		if (fileObjects.length() != sourceFiles.size()) {
-			throw new IOException("invalid file list");
-		}
-		return fileObjects;
-	}
-
-	/**
-	 * Transforms a source file to a Java file object (used by javac).
-	 */
-	public static JavaFileObject toJavaFileObject(JavaFileManager fileManager, File sourceFile) throws IOException {
-		List<JavaFileObject> javaFileObjects = toJavaFileObjects(fileManager, asList(sourceFile));
-		return javaFileObjects.isEmpty() ? null : javaFileObjects.get(0);
-	}
-
-	private final static Pattern REGEX_CHARS = Pattern.compile("([\\\\*+\\[\\](){}\\$.?\\^|])");
-
-	/**
-	 * This function will escape special characters within a string to ensure that
-	 * the string will not be parsed as a regular expression. This is helpful with
-	 * accepting using input that needs to be used in functions that take a regular
-	 * expression as an argument (such as String.replaceAll(), or String.split()).
-	 * 
-	 * @param regex
-	 *            - argument which we wish to escape.
-	 * @return - Resulting string with the following characters escaped:
-	 *         [](){}+*^?$.\
-	 */
-	public static String escapeRegex(final String regex) {
-		Matcher match = REGEX_CHARS.matcher(regex);
-		return match.replaceAll("\\\\$1");
-	}
-
-	/**
-	 * Varargs to mutable list.
-	 */
-	@SafeVarargs
-	public static final <T> List<T> list(T... items) {
-		ArrayList<T> list = new ArrayList<T>(items.length);
-		for (T item : items) {
-			list.add(item);
-		}
-		return list;
-	}
-
-	/**
-	 * Tells if two type symbols are assignable.
-	 */
-	public static boolean isAssignable(Types types, TypeSymbol to, TypeSymbol from) {
-		if (to.equals(from)) {
-			return true;
-		} else {
-			return types.isAssignable(from.asType(), to.asType());
-		}
-	}
-
-	/**
-	 * Tells if the given list contains an type which is assignable from type.
-	 */
-	public static boolean containsAssignableType(Types types, List<Type> list, Type type) {
-		for (Type t : list) {
-			if (types.isAssignable(t, type)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	/**
-	 * Get the relative path to reach a symbol from another one.
-	 * 
-	 * @param fromSymbol
-	 *            the start path
-	 * @param toSymbol
-	 *            the end path
-	 * @return the '/'-separated path
-	 * @see #getRelativePath(String, String)
-	 */
-	public static String getRelativePath(Symbol fromSymbol, Symbol toSymbol) {
-		return Util.getRelativePath("/" + fromSymbol.getQualifiedName().toString().replace('.', '/'),
-				"/" + toSymbol.getQualifiedName().toString().replace('.', '/'));
-	}
-
-	/**
-	 * Gets the relative path that links the two given paths.
-	 * 
-	 * <pre>
-	 * assertEquals("../c", Util.getRelativePath("/a/b", "/a/c"));
-	 * assertEquals("..", Util.getRelativePath("/a/b", "/a"));
-	 * assertEquals("../e", Util.getRelativePath("/a/b/c", "/a/b/e"));
-	 * assertEquals("d", Util.getRelativePath("/a/b/c", "/a/b/c/d"));
-	 * assertEquals("d/e", Util.getRelativePath("/a/b/c", "/a/b/c/d/e"));
-	 * assertEquals("../../../d/e/f", Util.getRelativePath("/a/b/c", "/d/e/f"));
-	 * assertEquals("../..", Util.getRelativePath("/a/b/c", "/a"));
-	 * assertEquals("..", Util.getRelativePath("/a/b/c", "/a/b"));
-	 * </pre>
-	 * 
-	 * <p>
-	 * Thanks to:
-	 * http://mrpmorris.blogspot.com/2007/05/convert-absolute-path-to-relative-
-	 * path.html
-	 * 
-	 * <p>
-	 * Bug fix: Renaud Pawlak
-	 * 
-	 * @param fromPath
-	 *            the path to start from
-	 * @param toPath
-	 *            the path to reach
-	 */
-	public static String getRelativePath(String fromPath, String toPath) {
-		StringBuilder relativePath = null;
-
-		fromPath = fromPath.replaceAll("\\\\", "/");
-		toPath = toPath.replaceAll("\\\\", "/");
-
-		if (!fromPath.equals(toPath)) {
-			String[] fromSegments = fromPath.split("/");
-			String[] toSegments = toPath.split("/");
-
-			// Get the shortest of the two paths
-			int length = fromSegments.length < toSegments.length ? fromSegments.length : toSegments.length;
-
-			// Use to determine where in the loop we exited
-			int lastCommonRoot = -1;
-			int index;
-
-			// Find common root
-			for (index = 0; index < length; index++) {
-				if (fromSegments[index].equals(toSegments[index])) {
-					lastCommonRoot = index;
-				} else {
-					break;
-					// If we didn't find a common prefix then throw
-				}
-			}
-			if (lastCommonRoot != -1) {
-				// Build up the relative path
-				relativePath = new StringBuilder();
-				// Add on the ..
-				for (index = lastCommonRoot + 1; index < fromSegments.length; index++) {
-					if (fromSegments[index].length() > 0) {
-						relativePath.append("../");
-					}
-				}
-				for (index = lastCommonRoot + 1; index < toSegments.length - 1; index++) {
-					relativePath.append(toSegments[index] + "/");
-				}
-				if (!fromPath.startsWith(toPath)) {
-					relativePath.append(toSegments[toSegments.length - 1]);
-				} else {
-					if (relativePath.length() > 0) {
-						relativePath.deleteCharAt(relativePath.length() - 1);
-					}
-				}
-			}
-		}
-		return relativePath == null ? null : relativePath.toString();
-	}
-
-	/**
-	 * Removes the extensions of the given file name.
-	 * 
-	 * @param fileName
-	 *            the given file name (can contain path)
-	 * @return the file name without the extension
-	 */
-	public static String removeExtension(String fileName) {
-		int index = fileName.lastIndexOf('.');
-		if (index == -1) {
-			return fileName;
-		} else {
-			return fileName.substring(0, index);
-		}
-	}
-
-	/**
-	 * Tells if the given directory or any of its sub-directory contains one of the
-	 * given files.
-	 * 
-	 * @param dir
-	 *            the directory to look into
-	 * @param files
-	 *            the files to be found
-	 * @return true if one of the given files is found
-	 */
-	public static boolean containsFile(File dir, File[] files) {
-		for (File child : dir.listFiles()) {
-			if (child.isDirectory()) {
-				if (containsFile(child, files)) {
-					return true;
-				}
-			} else {
-				for (File file : files) {
-					if (child.getAbsolutePath().equals(file.getAbsolutePath())) {
-						return true;
-					}
-				}
-			}
-		}
-		return false;
-	}
-
-	/**
-	 * Returns true is the type is an integral numeric value.
-	 */
-	public static boolean isIntegral(Type type) {
-		if (type == null) {
-			return false;
-		}
-		switch (type.getKind()) {
-		case BYTE:
-		case SHORT:
-		case INT:
-		case LONG:
-			return true;
-		default:
-			return false;
-		}
-	}
-
-	/**
-	 * Returns true is the type is a number.
-	 */
-	public static boolean isNumber(TypeMirror type) {
-		if (type == null) {
-			return false;
-		}
-		switch (type.getKind()) {
-		case BYTE:
-		case SHORT:
-		case INT:
-		case LONG:
-		case DOUBLE:
-		case FLOAT:
-			return true;
-		default:
-			return false;
-		}
-	}
-
-	/**
-	 * Returns true is the type is a core.
-	 */
-	public static boolean isCoreType(TypeMirror type) {
-		if (type == null) {
-			return false;
-		}
-		if (String.class.getName().equals(type.toString())) {
-			return true;
-		}
-		switch (type.getKind()) {
-		case BYTE:
-		case SHORT:
-		case INT:
-		case LONG:
-		case DOUBLE:
-		case FLOAT:
-		case BOOLEAN:
-		case CHAR:
-			return true;
-		default:
-			return false;
-		}
-	}
-
-	/**
-	 * Returns true is an arithmetic operator.
-	 */
-	public static boolean isArithmeticOrLogicalOperator(Kind kind) {
-		switch (kind) {
-		case MINUS:
-		case PLUS:
-		case MULTIPLY:
-		case DIVIDE:
-		case AND:
-		case AND_ASSIGNMENT:
-		case OR_ASSIGNMENT:
-		case DIVIDE_ASSIGNMENT:
-		case REMAINDER_ASSIGNMENT:
-		case LEFT_SHIFT_ASSIGNMENT:
-		case RIGHT_SHIFT_ASSIGNMENT:
-		case MINUS_ASSIGNMENT:
-		case MULTIPLY_ASSIGNMENT:
-		case PLUS_ASSIGNMENT:
-		case XOR_ASSIGNMENT:
-		case LEFT_SHIFT:
-		case RIGHT_SHIFT:
-		case OR:
-		case XOR:
-			return true;
-		default:
-			return false;
-		}
-	}
-
-	/**
-	 * Returns true is an arithmetic operator.
-	 */
-	public static boolean isArithmeticOperator(Kind kind) {
-		switch (kind) {
-		case MINUS:
-		case PLUS:
-		case MULTIPLY:
-		case DIVIDE:
-			return true;
-		default:
-			return false;
-		}
-	}
-
-	/**
-	 * Returns true is an comparison operator.
-	 */
-	public static boolean isComparisonOperator(Kind kind) {
-		switch (kind) {
-		case GREATER_THAN:
-		case GREATER_THAN_EQUAL:
-		case LESS_THAN:
-		case LESS_THAN_EQUAL:
-		case EQUAL_TO:
-		case NOT_EQUAL_TO:
-			return true;
-		default:
-			return false;
-		}
-	}
-
-	/**
-	 * Looks up a class in the given class hierarchy and returns true if found.
-	 */
-	public static boolean isParent(TypeSymbol type, TypeSymbol toFind) {
-		if (!(type instanceof ClassSymbol)) {
-			return false;
-		}
-		ClassSymbol clazz = (ClassSymbol) type;
-		if (clazz.equals(toFind)) {
-			return true;
-		}
-		if (isParent((ClassSymbol) clazz.getSuperclass().tsym, toFind)) {
-			return true;
-		}
-		for (Type t : clazz.getInterfaces()) {
-			if (isParent((ClassSymbol) t.tsym, toFind)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	/**
-	 * Recursively looks up one of the given types in the type hierachy of the given
-	 * class.
-	 * 
-	 * @return true if one of the given names is found as a superclass or a
-	 *         superinterface
-	 */
-	public static boolean hasParent(ClassSymbol clazz, String... qualifiedNamesToFind) {
-		if (clazz == null) {
-			return false;
-		}
-		if (ArrayUtils.contains(qualifiedNamesToFind, clazz.getQualifiedName().toString())) {
-			return true;
-		}
-		if (hasParent((ClassSymbol) clazz.getSuperclass().tsym, qualifiedNamesToFind)) {
-			return true;
-		}
-		for (Type t : clazz.getInterfaces()) {
-			if (hasParent((ClassSymbol) t.tsym, qualifiedNamesToFind)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	/**
-	 * Looks up a package element from its qualified name.
-	 * 
-	 * @return null if not found
-	 */
-	public static PackageSymbol getPackageByName(JSweetContext context, String qualifiedName) {
-		return context.symtab.packages.get(context.names.fromString(qualifiedName));
-	}
-
-	/**
-	 * Looks up a type element from its qualified name.
-	 * 
-	 * @return null if not found
-	 */
-	public static ClassSymbol getTypeByName(JSweetContext context, String qualifiedName) {
-		return context.symtab.classes.get(context.names.fromString(qualifiedName));
-	}
-
-	/**
-	 * Tells if the given method has varargs.
-	 */
-	public static boolean hasVarargs(MethodSymbol methodSymbol) {
-		return methodSymbol != null && methodSymbol.getParameters().length() > 0
-				&& (methodSymbol.flags() & Flags.VARARGS) != 0;
-	}
-
-	/**
-	 * Tells if the method uses a type parameter.
-	 */
-	public static boolean hasTypeParameters(MethodSymbol methodSymbol) {
-		if (methodSymbol != null && methodSymbol.getParameters().length() > 0) {
-			for (VarSymbol p : methodSymbol.getParameters()) {
-				if (p.type instanceof TypeVar) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
-	/**
-	 * Tells if the given type is imported in the given compilation unit.
-	 */
-	public static boolean isImported(JCCompilationUnit compilationUnit, TypeSymbol type) {
-		for (JCImport i : compilationUnit.getImports()) {
-			if (i.isStatic() || i.qualid.type == null) {
-				continue;
-			}
-			if (i.qualid.type.tsym == type) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	/**
-	 * Tells if the given symbol is statically imported in the given compilation
-	 * unit.
-	 */
-	public static TypeSymbol getStaticImportTarget(JCCompilationUnit compilationUnit, String name) {
-		if (compilationUnit == null) {
-			return null;
-		}
-		for (JCImport i : compilationUnit.getImports()) {
-			if (!i.isStatic()) {
-				continue;
-			}
-			if (!i.qualid.toString().endsWith("." + name)) {
-				continue;
-			}
-			if (i.qualid instanceof JCFieldAccess) {
-				JCFieldAccess qualified = (JCFieldAccess) i.qualid;
-				if (qualified.selected instanceof JCFieldAccess) {
-					qualified = (JCFieldAccess) qualified.selected;
-				}
-				if (qualified.sym instanceof TypeSymbol) {
-					return (TypeSymbol) qualified.sym;
-				}
-			}
-			return null;
-		}
-		return null;
-	}
-
-	/**
-	 * Gets the imported type (wether statically imported or not).
-	 */
-	public static TypeSymbol getImportedType(JCImport i) {
-		if (!i.isStatic()) {
-			return i.qualid.type == null ? null : i.qualid.type.tsym;
-		} else {
-			if (i.qualid instanceof JCFieldAccess) {
-				JCFieldAccess qualified = (JCFieldAccess) i.qualid;
-				if (qualified.selected instanceof JCFieldAccess) {
-					qualified = (JCFieldAccess) qualified.selected;
-				}
-				if (qualified.sym instanceof TypeSymbol) {
-					return (TypeSymbol) qualified.sym;
-				}
-			}
-		}
-		return null;
-	}
-
-	/**
-	 * Tells if the given expression is a constant.
-	 */
-	public static boolean isConstant(JCExpression expr) {
-		boolean constant = false;
-		if (expr instanceof JCLiteral) {
-			constant = true;
-		} else if (expr instanceof JCFieldAccess) {
-			if (((JCFieldAccess) expr).sym.isStatic()
-					&& ((JCFieldAccess) expr).sym.getModifiers().contains(Modifier.FINAL)) {
-				constant = true;
-			}
-		} else if (expr instanceof JCIdent) {
-			if (((JCIdent) expr).sym.isStatic() && ((JCIdent) expr).sym.getModifiers().contains(Modifier.FINAL)) {
-				constant = true;
-			}
-		}
-		return constant;
-	}
-
-	/**
-	 * Tells if that tree is the null literal.
-	 */
-	public static boolean isNullLiteral(JCTree tree) {
-		return tree instanceof JCLiteral && ((JCLiteral) tree).getValue() == null;
-	}
-
-	/**
-	 * Tells if that variable is a non-static final field initialized with a literal
-	 * value.
-	 */
-	public static boolean isConstantOrNullField(JCVariableDecl var) {
-		return !var.getModifiers().getFlags().contains(Modifier.STATIC) && (var.init == null
-				|| var.getModifiers().getFlags().contains(Modifier.FINAL) && var.init instanceof JCLiteral);
-	}
-
-	/**
-	 * Returns the literal for a given type inital value.
-	 */
-	public static String getTypeInitialValue(Type type) {
-		if (type == null) {
-			return "null";
-		}
-		if (isNumber(type)) {
-			return "0";
-		} else if (type.getKind() == TypeKind.BOOLEAN) {
-			return "false";
-		} else if (type.getKind() == TypeKind.VOID) {
-			return null;
-		} else {
-			return "null";
-		}
-	}
-
-	/**
-	 * Gets the symbol on JCFieldAccess or JCIdent if possible, or return null.
-	 * Could return either a MethodSymbol, or VariableSymbol
-	 */
-	public static Symbol getAccessedSymbol(JCTree tree) {
-		if (tree instanceof JCFieldAccess) {
-			return ((JCFieldAccess) tree).sym;
-		} else if (tree instanceof JCIdent) {
-			return ((JCIdent) tree).sym;
-		}
-		return null;
-	}
-
-	/**
-	 * Returns true if the given class declares an abstract method.
-	 */
-	public static boolean hasAbstractMethod(ClassSymbol classSymbol) {
-		for (Element member : classSymbol.getEnclosedElements()) {
-			if (member instanceof MethodSymbol && ((MethodSymbol) member).getModifiers().contains(Modifier.ABSTRACT)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public static boolean isOverridingBuiltInJavaObjectMethod(MethodSymbol method) {
-		switch (method.toString()) {
-		case "toString()":
-		case "hashCode()":
-		case "equals(java.lang.Object)":
-			return true;
-		}
-		return false;
-	}
-
-	/**
-	 * Gets the inheritance-based sorted class declarations.
-	 * 
-	 * <p>
-	 * This method aims at overcoming TypeScrit limitation that forces a parent
-	 * class to be declared before its child class (it is not the case in Java). So
-	 * far this is a partial implementation that should cover most cases... for a
-	 * 100% coverage we would need a much more complicated implementation that is
-	 * probably not worth it.
-	 */
-	public static List<JCClassDecl> getSortedClassDeclarations(List<JCTree> decls) {
-		// return (List<JCClassDecl>)(Object)decls;
-		List<JCClassDecl> classDecls = decls.stream().filter(d -> d instanceof JCClassDecl).map(d -> (JCClassDecl) d)
-				.collect(Collectors.toList());
-
-		DirectedGraph<JCClassDecl> defs = new DirectedGraph<>();
-		List<ClassSymbol> symbols = classDecls.stream().map(d -> ((JCClassDecl) d).sym).collect(Collectors.toList());
-		defs.add(classDecls.toArray(new JCClassDecl[0]));
-		for (int i = 0; i < symbols.size(); i++) {
-			int superClassIndex = indexOfSuperclass(symbols, symbols.get(i)); // symbols.indexOf(symbols.get(i).getSuperclass().tsym);
-			if (superClassIndex >= 0) {
-				defs.addEdge(classDecls.get(superClassIndex), classDecls.get(i));
-			}
-		}
-		// we assume no cycles are possible
-		return defs.topologicalSort(null);
-	}
-
-	private static int indexOfSuperclass(List<ClassSymbol> symbols, ClassSymbol clazz) {
-		int superClassIndex = symbols.indexOf(clazz.getSuperclass().tsym);
-		// looks up also if any inner class extends a class in the list
-		if (superClassIndex < 0) {
-			for (Symbol s : clazz.getEnclosedElements()) {
-				if (s instanceof ClassSymbol) {
-					return indexOfSuperclass(symbols, ((ClassSymbol) s));
-				}
-			}
-		}
-		return superClassIndex;
-	}
-
-	/**
-	 * Finds the first inner class declaration of the given name in the given class
-	 * hierarchy.
-	 */
-	public static ClassSymbol findInnerClassDeclaration(ClassSymbol clazz, String name) {
-		if (clazz == null) {
-			return null;
-		}
-		for (Symbol s : clazz.getEnclosedElements()) {
-			if (s instanceof ClassSymbol && s.getSimpleName().toString().equals(name)) {
-				return (ClassSymbol) s;
-			}
-		}
-		if (clazz.getSuperclass() != null) {
-			return findInnerClassDeclaration((ClassSymbol) clazz.getSuperclass().tsym, name);
-		}
-		return null;
-	}
-
-	public static boolean isLiteralExpression(JCExpression expression) {
-		if (expression == null) {
-			return false;
-		}
-
-		if (expression instanceof JCLiteral) {
-			return true;
-		}
-
-		if (expression instanceof JCBinary) {
-			return isLiteralExpression(((JCBinary) expression).lhs) && isLiteralExpression(((JCBinary) expression).rhs);
-		}
-
-		if (expression instanceof JCUnary) {
-			return isLiteralExpression(((JCUnary) expression).arg);
-		}
-
-		return false;
-	}
-
-	public static List<List<JCTree>> getExecutionPaths(JCMethodDecl methodDeclaration) {
-
-		List<List<JCTree>> executionPaths = new LinkedList<>();
-		executionPaths.add(new LinkedList<>());
-		List<List<JCTree>> currentPaths = new LinkedList<>(executionPaths);
-		List<JCBreak> activeBreaks = new LinkedList<>();
-		for (JCStatement statement : methodDeclaration.body.stats) {
-			collectExecutionPaths(statement, executionPaths, currentPaths, activeBreaks);
-		}
-
-		return executionPaths;
-	}
-
-	private static void collectExecutionPaths(JCStatement currentNode, List<List<JCTree>> allExecutionPaths,
-			List<List<JCTree>> currentPaths, List<JCBreak> activeBreaks) {
-
-		for (List<JCTree> currentPath : new ArrayList<>(currentPaths)) {
-			JCTree lastStatement = currentPath.isEmpty() ? null : currentPath.get(currentPath.size() - 1);
-			if (lastStatement instanceof JCReturn
-					|| (lastStatement instanceof JCBreak && activeBreaks.contains(lastStatement))) {
-				continue;
-			}
-
-			if (allExecutionPaths.size() > 20000) {
-				throw new RuntimeException("too many execution paths, aborting");
-			}
-
-			currentPath.add(currentNode);
-
-			List<List<JCTree>> currentPathForksList = pathsList(currentPath);
-			if (currentNode instanceof JCIf) {
-				JCIf ifNode = (JCIf) currentNode;
-
-				boolean lastIsCurrentPath = true;
-				JCStatement[] forks = { ifNode.thenpart, ifNode.elsepart };
-
-				evaluateForksExecutionPaths(allExecutionPaths, currentPathForksList, currentPath, lastIsCurrentPath,
-						activeBreaks, forks);
-
-			} else if (currentNode instanceof JCBlock) {
-				for (JCStatement statement : ((JCBlock) currentNode).stats) {
-					collectExecutionPaths(statement, allExecutionPaths, currentPathForksList, activeBreaks);
-				}
-			} else if (currentNode instanceof JCLabeledStatement) {
-				collectExecutionPaths(((JCLabeledStatement) currentNode).body, allExecutionPaths, currentPaths,
-						activeBreaks);
-			} else if (currentNode instanceof JCForLoop) {
-				collectExecutionPaths(((JCForLoop) currentNode).body, allExecutionPaths, currentPaths, activeBreaks);
-
-				activeBreaks.clear();
-			} else if (currentNode instanceof JCEnhancedForLoop) {
-				collectExecutionPaths(((JCEnhancedForLoop) currentNode).body, allExecutionPaths, currentPaths,
-						activeBreaks);
-
-				activeBreaks.clear();
-			} else if (currentNode instanceof JCWhileLoop) {
-				collectExecutionPaths(((JCWhileLoop) currentNode).body, allExecutionPaths, currentPaths, activeBreaks);
-
-				activeBreaks.clear();
-			} else if (currentNode instanceof JCDoWhileLoop) {
-				collectExecutionPaths(((JCDoWhileLoop) currentNode).body, allExecutionPaths, currentPaths,
-						activeBreaks);
-
-				activeBreaks.clear();
-			} else if (currentNode instanceof JCSynchronized) {
-				collectExecutionPaths(((JCSynchronized) currentNode).body, allExecutionPaths, currentPaths,
-						activeBreaks);
-			} else if (currentNode instanceof JCTry) {
-				JCTry tryNode = (JCTry) currentNode;
-				collectExecutionPaths(tryNode.getBlock(), allExecutionPaths, currentPaths, activeBreaks);
-
-				JCStatement[] catchForks = (JCStatement[]) tryNode.getCatches().stream().map(catchExp -> catchExp.body)
-						.collect(toList()).toArray(new JCStatement[0]);
-
-				evaluateForksExecutionPaths(allExecutionPaths, currentPathForksList, currentPath, false, activeBreaks,
-						catchForks);
-				if (tryNode.getFinallyBlock() != null) {
-					collectExecutionPaths(tryNode.getFinallyBlock(), allExecutionPaths, currentPathForksList,
-							activeBreaks);
-				}
-			} else if (currentNode instanceof JCSwitch) {
-				JCSwitch switchNode = (JCSwitch) currentNode;
-				evaluateForksExecutionPaths(allExecutionPaths, currentPathForksList, currentPath, true, activeBreaks,
-						switchNode.cases.toArray(new JCCase[0]));
-
-				activeBreaks.clear();
-			} else if (currentNode instanceof JCCase) {
-				for (JCStatement statement : ((JCCase) currentNode).stats) {
-					collectExecutionPaths(statement, allExecutionPaths, currentPathForksList, activeBreaks);
-				}
-			}
-
-			addAllWithoutDuplicates(currentPaths, currentPathForksList);
-		}
-	}
-
-	/**
-	 * @return generated paths
-	 */
-	private static void evaluateForksExecutionPaths( //
-			List<List<JCTree>> allExecutionPaths, //
-			List<List<JCTree>> currentPaths, //
-			List<JCTree> currentPath, //
-			boolean lastIsCurrentPath, //
-			List<JCBreak> activeBreaks, //
-			JCStatement[] forks) {
-		int i = 0;
-		List<List<JCTree>> generatedExecutionPaths = new LinkedList<>();
-		for (JCStatement fork : forks) {
-			if (fork != null) {
-				List<List<JCTree>> currentPathsForFork;
-				if (lastIsCurrentPath && ++i == forks.length) {
-					currentPathsForFork = pathsList(currentPath);
-				} else {
-					List<JCTree> forkedPath = new LinkedList<>(currentPath);
-					allExecutionPaths.add(forkedPath);
-					currentPathsForFork = pathsList(forkedPath);
-				}
-				collectExecutionPaths(fork, allExecutionPaths, currentPathsForFork, activeBreaks);
-
-				generatedExecutionPaths.addAll(currentPathsForFork);
-			}
-		}
-
-		// we need to merge with paths created by fork
-		addAllWithoutDuplicates(currentPaths, generatedExecutionPaths);
-	}
-
-	private static List<List<JCTree>> addAllWithoutDuplicates(List<List<JCTree>> pathsListUnique,
-			List<List<JCTree>> listToBeAdded) {
-		for (List<JCTree> path : listToBeAdded) {
-			boolean pathAlreadyAdded = false;
-			for (List<JCTree> pathFromUnique : pathsListUnique) {
-				if (path == pathFromUnique) {
-					pathAlreadyAdded = true;
-				}
-			}
-			if (!pathAlreadyAdded) {
-				pathsListUnique.add(path);
-			}
-		}
-		return pathsListUnique;
-	}
-
-	@SafeVarargs
-	private static List<List<JCTree>> pathsList(List<JCTree>... executionPaths) {
-		List<List<JCTree>> pathsList = new LinkedList<>();
-		for (List<JCTree> path : executionPaths) {
-			pathsList.add(path);
-		}
-		return pathsList;
-	}
-
-	public static boolean isDeclarationOrSubClassDeclaration(javax.lang.model.util.Types types, ClassType classType,
-			String searchedClassName) {
-
-		while (classType != null) {
-			if (classType.tsym.getQualifiedName().toString().equals(searchedClassName)) {
-				return true;
-			}
-			List<? extends TypeMirror> superTypes = types.directSupertypes(classType);
-			classType = superTypes == null || superTypes.isEmpty() ? null : (ClassType) superTypes.get(0);
-		}
-
-		return false;
-	}
-
-	public static boolean isDeclarationOrSubClassDeclarationBySimpleName(javax.lang.model.util.Types types,
-			ClassType classType, String searchedClassSimpleName) {
-
-		while (classType != null) {
-			if (classType.tsym.getSimpleName().toString().equals(searchedClassSimpleName)) {
-				return true;
-			}
-			List<? extends TypeMirror> superTypes = types.directSupertypes(classType);
-			classType = superTypes == null || superTypes.isEmpty() ? null : (ClassType) superTypes.get(0);
-		}
-
-		return false;
-	}
+    public static final String CONSTRUCTOR_METHOD_NAME = "<init>";
+
+    private final static Logger logger = Logger.getLogger(Util.class);
+
+    protected JSweetContext context;
+
+    public Util(JSweetContext context) {
+        this.context = context;
+    }
+
+    /**
+     * @return true if given type is not null and Set or subtype of Set (generic or
+     *         not)
+     */
+    public boolean isSetType(TypeMirror type) {
+        if (type == null) {
+            return false;
+        }
+        type = context.types.erasure(type);
+        TypeMirror setType = context.util.getTypeElementByName(context, Set.class.getName()).asType();
+        return context.types.isAssignable(type, context.types.erasure(setType));
+    }
+
+    /**
+     * @return true if given type is not null and Collection or subtype of
+     *         Collection (generic or not)
+     */
+    public boolean isCollectionType(TypeMirror type) {
+        if (type == null) {
+            return false;
+        }
+        type = context.types.erasure(type);
+        TypeMirror setType = context.util.getTypeElementByName(context, Collection.class.getName()).asType();
+        return context.types.isAssignable(type, context.types.erasure(setType));
+    }
+
+    /**
+     * @return true if given type is not null and an array of anything
+     */
+    public boolean isArrayType(TypeMirror type) {
+        return type instanceof ArrayType;
+    }
+
+    /**
+     * @return true if given type is not null and Map or subtype of Map (generic or
+     *         not)
+     */
+    public boolean isMapType(TypeMirror type) {
+        if (type == null) {
+            return false;
+        }
+        type = context.types.erasure(type);
+        TypeMirror setType = context.util.getTypeElementByName(context, Map.class.getName()).asType();
+        return context.types.isAssignable(type, context.types.erasure(setType));
+    }
+
+    /**
+     * @return enclosing package of given element if any, or null otherwise
+     */
+    public PackageElement getPackage(Element element) {
+        Element packageElement = element;
+        do {
+            packageElement = packageElement.getEnclosingElement();
+        } while (packageElement != null && !(packageElement instanceof PackageElement));
+        return (PackageElement) packageElement;
+    }
+
+    private static final String TYPE_PARAMETERS_REGEX = "\\<[a-zA-Z0-9., ]+\\>";
+
+    /**
+     * @return given type name without generic type arguments. e.g.
+     *         <code>stripTypeParameters("List&lt;String&gt;")</code> will return
+     *         <code>"List"</code>
+     */
+    public String stripTypeParameters(String typeName) {
+        String previous = typeName;
+        String current = previous.replaceAll(TYPE_PARAMETERS_REGEX, "");
+        while (!current.equals(previous)) {
+            previous = current;
+            current = previous.replaceAll(TYPE_PARAMETERS_REGEX, "");
+        }
+        return current;
+    }
+
+    /**
+     * @return non static field of the given type
+     */
+    public Collection<VariableElement> getFieldElements(TypeElement typeElement) {
+        return typeElement.getEnclosedElements().stream() //
+                .filter(member -> member.getKind() == ElementKind.FIELD) //
+                .filter(member -> !member.getModifiers().contains(Modifier.STATIC)) //
+                .map(field -> (VariableElement) field).collect(toList());
+    }
+
+    private void collectTypeAndTypeArgmentsRecursively(TypeMirror type, Collection<TypeMirror> types) {
+        types.add(type);
+        if (type instanceof DeclaredType) {
+            for (TypeMirror typeArg : ((DeclaredType) type).getTypeArguments()) {
+                collectTypeAndTypeArgmentsRecursively(typeArg, types);
+            }
+        }
+    }
+
+    /**
+     * Collects given type and its type arguments, and the type arguments of them,
+     * recursively
+     */
+    public Collection<TypeMirror> collectTypeAndTypeArgmentsRecursively(TypeMirror type) {
+        Collection<TypeMirror> types = new ArrayList<>();
+        collectTypeAndTypeArgmentsRecursively(type, types);
+        return types;
+    }
+
+    /**
+     * Returns generic version of given type's type parameters elements. For
+     * instance, if you have a ResponseSuccess<String>, it will return you [T]
+     * because generic class declares ResponseSuccess<T>, where T is type parameter
+     * generic symbol
+     * 
+     * @param type Generic or parameterized type
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public List<TypeParameterElement> getGenericTypeParameters(DeclaredType type) {
+        return (List) ((TypeElement) ((DeclaredType) context.types.erasure(type)).asElement()).getTypeParameters();
+    }
+
+    /**
+     * @return type of given collection's items/elements
+     */
+    public TypeMirror getCollectionItemType(TypeMirror collectionType) {
+        DeclaredType collectionDeclaredType = (DeclaredType) collectionType;
+        if (collectionDeclaredType.getTypeArguments().size() > 0) {
+            TypeMirror collectionElementType = collectionDeclaredType.getTypeArguments().get(0);
+            return collectionElementType;
+        }
+        return context.util.getType(Object.class);
+    }
+
+    /**
+     * If the given type is a capture and has an upper bound, returns it, else
+     * return the given type unchanged.
+     */
+    public TypeMirror getUpperBound(TypeMirror type) {
+        if (type instanceof TypeVariable && ((TypeVariable) type).getUpperBound() != null) {
+            return ((TypeVariable) type).getUpperBound();
+        } else {
+            return type;
+        }
+    }
+
+    /**
+     * Gets the type arguments of a given type (if any).
+     */
+    public List<? extends TypeMirror> getTypeArguments(TypeMirror type) {
+        if (type instanceof DeclaredType) {
+            return ((DeclaredType) type).getTypeArguments();
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Gets the qualified name for the given type.
+     */
+    public String getQualifiedName(TypeMirror type) {
+        if (type instanceof DeclaredType) {
+            Element e = ((DeclaredType) type).asElement();
+            if (e instanceof TypeElement) {
+                return ((TypeElement) e).getQualifiedName().toString();
+            }
+        }
+        return type.toString();
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> Class<T> getTypeClass(TypeMirror type) {
+        try {
+            Class<?> clazz = Class.forName(getQualifiedName(type));
+            return (Class<T>)clazz;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * Gets the type from an existing runtime class when possible (return null when
+     * the type cannot be found in the compiler's symbol table).
+     */
+    public TypeMirror getType(Class<?> clazz) {
+        if (clazz.isPrimitive()) {
+            return types().getPrimitiveType(TypeKind.valueOf(clazz.getName().toUpperCase()));
+        }
+        TypeElement typeElement = getTypeElementByName(context, clazz.getName());
+        return typeElement == null ? null : typeElement.asType();
+    }
+
+    /**
+     * Gets the source type from the fully qualified name when possible (return null
+     * when the type cannot be found).
+     * <p/>
+     * This method looks up well-known Java types and all the types that are in the
+     * complied source files.
+     */
+    public TypeMirror getType(String fullyQualifiedName) {
+        TypeMirror result = null;
+        try {
+            Class<?> clazz = Class.forName(fullyQualifiedName);
+            result = getType(clazz);
+            if (result != null) {
+                return result;
+            }
+        } catch (Exception e) {
+            // swallow
+        }
+        TypeElement typeElement = context.elements.getTypeElement(fullyQualifiedName);
+        if (typeElement != null) {
+            return typeElement.asType();
+        }
+        return null;
+    }
+
+    private static long id = 121;
+
+    /**
+     * Tells if the given element is within the Java sources being compiled.
+     */
+    public boolean isSourceElement(Element element) {
+        if (element == null || element instanceof PackageElement) {
+            return false;
+        }
+        if (element instanceof TypeElement) {
+            TypeElement clazz = (TypeElement) element;
+            // hack to know if it is a source file or a class file
+            JavaFileObject sourceFile = javacInternals().getSourceFileObjectFromElement(clazz);
+            if (sourceFile != null
+                    && (sourceFile.getClass().getName().equals("com.sun.tools.javac.file.RegularFileObject")
+                            || sourceFile.getClass().getName()
+                                    .equals("com.sun.tools.javac.file.PathFileObject$SimpleFileObject"))) {
+                return true;
+            }
+        }
+        return isSourceElement(element.getEnclosingElement());
+    }
+
+    /**
+     * Gets the source file path of the given element.
+     */
+    public String getSourceFilePath(Element element) {
+        if (element == null || element instanceof PackageElement) {
+            return null;
+        }
+        if (element instanceof TypeElement) {
+            TypeElement clazz = (TypeElement) element;
+            if (isSourceElement(clazz)) {
+                return javacInternals().getSourceFileObjectFromElement(clazz).getName();
+            }
+        }
+        return getSourceFilePath(element.getEnclosingElement());
+    }
+
+    public boolean isInSameSourceFile(CompilationUnitTree compilationUnitTree, Element element) {
+        if (compilationUnitTree == null || element == null) {
+            return false;
+        }
+        assert isSourceElement(element) : "unsupported element type (from a class file and not a source file)";
+
+        return getSourceFilePath(element).equals(compilationUnitTree.getSourceFile().getName());
+    }
+
+    public static <T> T firstOrDefault(Iterable<T> iterable) {
+        return iterable.iterator().next();
+    }
+
+    /**
+     * Gets the tree that corresponds to the given element (this is a slow
+     * implementation - do not use intensively).
+     * 
+     * @param context the transpiler's context
+     * @param element the element to lookup
+     * @return the javac AST that corresponds to that element
+     */
+    public Tree lookupTree(JSweetContext context, Element element) {
+        if (element == null || element instanceof PackageElement) {
+            return null;
+        }
+        Element rootClass = getRootClassElement(element);
+        if (rootClass instanceof TypeElement) {
+            TypeElement clazz = (TypeElement) rootClass;
+            if (isSourceElement(clazz)) {
+                Tree[] result = { null };
+                for (int i = 0; i < context.sourceFiles.length; i++) {
+                    if (new File(javacInternals().getSourceFileObjectFromElement(clazz).getName())
+                            .equals(context.sourceFiles[i].getJavaFile())) {
+                        CompilationUnitTree cu = context.compilationUnits.get(i);
+                        new TreePathScanner<Void, Trees>() {
+
+                            @Override
+                            public Void visitClass(ClassTree tree, Trees trees) {
+                                if (trees.getElement(getCurrentPath()) == element) {
+                                    result[0] = tree;
+                                } else {
+                                    super.visitClass(tree, trees);
+                                }
+                                return null;
+                            }
+
+                            @Override
+                            public Void visitMethod(MethodTree tree, Trees trees) {
+                                if (trees.getElement(getCurrentPath()) == element) {
+                                    result[0] = tree;
+                                }
+                                return null;
+                            }
+
+                            @Override
+                            public Void visitVariable(VariableTree tree, Trees trees) {
+                                if (trees.getElement(getCurrentPath()) == element) {
+                                    result[0] = tree;
+                                } else {
+                                    super.visitVariable(tree, trees);
+                                }
+                                return null;
+                            }
+                        }.scan(cu, trees());
+                        return result[0];
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private static Element getRootClassElement(Element element) {
+        if (element == null) {
+            return null;
+        }
+        if (element instanceof TypeElement
+                && (element.getEnclosingElement() == null || element.getEnclosingElement() instanceof PackageElement)) {
+            return element;
+        } else {
+            return getRootClassElement(element.getEnclosingElement());
+        }
+    }
+
+    public static class Static {
+
+        /**
+         * Recursively adds files to the given list.
+         * 
+         * @param extension the extension to filter with
+         * @param file      the root file/directory to look into recursively
+         * @param files     the list to add the files matching the extension
+         */
+        public static void addFiles(String extension, File file, Collection<File> files) {
+            addFiles(f -> f.getName().endsWith(extension), file, files);
+        }
+
+        /**
+         * Recursively adds files to the given list.
+         * 
+         * @param filter the filter predicate to apply (only files matching the
+         *               predicate will be added)
+         * @param file   the root file/directory to look into recursively
+         * @param files  the list to add the files matching the extension
+         */
+        public static void addFiles(Predicate<File> filter, File file, Collection<File> files) {
+            if (file.isDirectory()) {
+                for (File f : file.listFiles()) {
+                    addFiles(filter, f, files);
+                }
+            } else if (filter.test(file)) {
+                files.add(file);
+            }
+        }
+
+        @SuppressWarnings({ "unchecked", "rawtypes" })
+        public static <T> T newInstance(String fullClassName) {
+            String errorMessage = "cannot find or instantiate class: " + fullClassName
+                    + " (make sure the class is in the plugin's classpath and that it defines an empty public constructor)";
+
+            Class<T> clazz = null;
+            try {
+                clazz = (Class) Thread.currentThread().getContextClassLoader().loadClass(fullClassName);
+            } catch (Exception e) {
+                try {
+                    // try forName just in case
+                    clazz = (Class) Class.forName(fullClassName);
+                } catch (Exception e2) {
+                    throw new RuntimeException(errorMessage, e2);
+                }
+            }
+
+            try {
+                Constructor<T> constructor = clazz.getConstructor();
+                return constructor.newInstance();
+            } catch (Exception e) {
+                throw new RuntimeException(errorMessage, e);
+            }
+        }
+    }
+
+    /**
+     * Recursively adds files to the given list.
+     * 
+     * @param extension the extension to filter with
+     * @param file      the root file/directory to look into recursively
+     * @param files     the list to add the files matching the extension
+     */
+    public void addFiles(String extension, File file, Collection<File> files) {
+        Static.addFiles(extension, file, files);
+    }
+
+    /**
+     * Recursively adds files to the given list.
+     * 
+     * @param filter the filter predicate to apply (only files matching the
+     *               predicate will be added)
+     * @param file   the root file/directory to look into recursively
+     * @param files  the list to add the files matching the extension
+     */
+    public void addFiles(Predicate<File> filter, File file, Collection<File> files) {
+        Static.addFiles(filter, file, files);
+    }
+
+    /**
+     * Gets the full signature of the given method.
+     */
+    public String getFullMethodSignature(ExecutableElement method) {
+        TypeElement enclosingType = getParentElement(method, TypeElement.class);
+        return enclosingType.getQualifiedName() + "." + method.toString();
+    }
+
+    /**
+     * Tells if the given type declaration contains some method declarations.
+     */
+    public boolean containsMethods(ClassTree classDeclaration, CompilationUnitTree compilationUnit) {
+        for (Tree member : classDeclaration.getMembers()) {
+            if (member instanceof MethodTree) {
+                MethodTree method = (MethodTree) member;
+
+                long methodPos = sourcePositions().getStartPosition(compilationUnit, method);
+                long classDeclarationPos = sourcePositions().getStartPosition(compilationUnit, classDeclaration);
+                if (methodPos == classDeclarationPos) {
+                    continue;
+                }
+                return true;
+            } else if (member instanceof VariableTree) {
+                if (((VariableTree) member).getModifiers().getFlags().contains(Modifier.STATIC)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static void putVar(Map<String, VariableElement> vars, VariableElement varSymbol) {
+        vars.put(varSymbol.getSimpleName().toString(), varSymbol);
+    }
+
+    /**
+     * Finds all the variables accessible within the current scanning scope.
+     */
+    public void fillAllVariablesInScope(Map<String, VariableElement> vars, Stack<Tree> scanningStack, Tree from,
+            Tree to, CompilationUnitTree compilationUnit) {
+        if (from == to) {
+            return;
+        }
+        int i = scanningStack.indexOf(from);
+        if (i == -1 || i == 0) {
+            return;
+        }
+        Tree parent = scanningStack.get(i - 1);
+        List<? extends StatementTree> statements = null;
+        switch (parent.getKind()) {
+        case BLOCK:
+            statements = ((BlockTree) parent).getStatements();
+            break;
+        case CASE:
+            statements = ((CaseTree) parent).getStatements();
+            break;
+        case CATCH:
+            putVar(vars, Util.getElement(((CatchTree) parent).getParameter()));
+            break;
+        case FOR_LOOP:
+            if (((ForLoopTree) parent).getInitializer() != null) {
+                for (StatementTree s : ((ForLoopTree) parent).getInitializer()) {
+                    if (s instanceof VariableTree) {
+                        putVar(vars, Util.getElement(s));
+                    }
+                }
+            }
+            break;
+        case ENHANCED_FOR_LOOP:
+            putVar(vars, Util.getElement(((EnhancedForLoopTree) parent).getVariable()));
+            break;
+        case METHOD:
+            for (VariableTree var : ((MethodTree) parent).getParameters()) {
+                putVar(vars, Util.getElement(var));
+            }
+            break;
+        default:
+
+        }
+        if (statements != null) {
+            for (StatementTree s : statements) {
+                if (s == from) {
+                    break;
+                } else if (s instanceof VariableTree) {
+                    putVar(vars, Util.getElement(s));
+                }
+            }
+        }
+        fillAllVariablesInScope(vars, scanningStack, parent, to, compilationUnit);
+    }
+
+    public List<ClassTree> findTypeDeclarationsInCompilationUnits(List<CompilationUnitTree> compilationUnits) {
+        List<ClassTree> symbols = new LinkedList<>();
+        for (CompilationUnitTree compilationUnit : compilationUnits) {
+            for (Tree definition : compilationUnit.getTypeDecls()) {
+                if (definition instanceof ClassTree) {
+                    symbols.add((ClassTree) definition);
+                }
+            }
+        }
+
+        return symbols;
+    }
+
+    public List<MethodTree> findMethodDeclarations(ClassTree typeDeclaration) {
+        List<MethodTree> methods = new LinkedList<>();
+        for (Tree definition : typeDeclaration.getMembers()) {
+            if (definition instanceof MethodTree) {
+                methods.add((MethodTree) definition);
+            }
+        }
+
+        return methods;
+    }
+
+    public MethodTree findFirstMethodDeclaration(ClassTree typeDeclaration, String methodName) {
+        return findMethodDeclarations(typeDeclaration).stream() //
+                .filter(methodDecl -> methodDecl.getName().toString().equals(methodName)) //
+                .findFirst().orElse(null);
+    }
+
+    /**
+     * Fills the given map with all the variables beeing accessed within the given
+     * code tree.
+     */
+    public void fillAllVariableAccesses(final Map<String, VariableElement> vars, final Tree tree,
+            final CompilationUnitTree compilationUnit) {
+        new TreeScanner<Void, Trees>() {
+            @Override
+            public Void visitIdentifier(IdentifierTree identifierTree, Trees trees) {
+                Element element = Util.getElement(identifierTree);
+                if (element.getKind() == ElementKind.LOCAL_VARIABLE) {
+                    putVar(vars, (VariableElement) element);
+                }
+                return null;
+            }
+
+            public Void visitLambdaExpression(LambdaExpressionTree lambdaTree, Trees trees) {
+                if (lambdaTree == tree) {
+                    super.visitLambdaExpression(lambdaTree, trees);
+                }
+                return null;
+            }
+
+        }.scan(tree, trees());
+    }
+
+    /**
+     * Finds the method declaration within the given type, for the given invocation.
+     */
+    @Deprecated
+    public ExecutableElement findMethodDeclarationInType(TypeElement typeSymbol, MethodInvocationTree invocation) {
+        ExpressionTree method = invocation.getMethodSelect();
+        String methName = method.toString().substring(method.toString().lastIndexOf('.') + 1);
+
+        TypeMirror methodType = getType(method);
+
+        return findMethodDeclarationInType(typeSymbol, methName, (ExecutableType) methodType);
+    }
+
+    /**
+     * Finds the method in the given type that matches the given name and signature.
+     */
+    @Deprecated
+    public ExecutableElement findMethodDeclarationInType(TypeElement typeSymbol, String methodName,
+            ExecutableType methodType) {
+        return findMethodDeclarationInType(typeSymbol, methodName, methodType, false);
+    }
+
+    /**
+     * Finds the method in the given type that matches the given name and signature.
+     */
+    @Deprecated
+    public ExecutableElement findMethodDeclarationInType(TypeElement typeSymbol, String methodName,
+            ExecutableType methodType, boolean overrides) {
+
+        // gathers all the potential method matches
+        List<ExecutableElement> candidates = new LinkedList<>();
+        collectMatchingMethodDeclarationsInType(typeSymbol, methodName, methodType, overrides, candidates);
+
+        // score them
+        ExecutableElement bestMatch = null;
+        int lastScore = Integer.MIN_VALUE;
+        for (ExecutableElement candidate : candidates) {
+            int currentScore = getCandidateMethodMatchScore(candidate, methodType);
+            if (bestMatch == null || currentScore > lastScore) {
+                bestMatch = candidate;
+                lastScore = currentScore;
+            }
+        }
+
+        // return the best match
+        if (logger.isTraceEnabled()) {
+            logger.trace("method declaration match for " + typeSymbol + "." + methodName + " - " + methodType + " : "
+                    + (bestMatch == null ? "" : bestMatch.getEnclosingElement() + ".") + bestMatch + " score="
+                    + lastScore);
+        }
+        return bestMatch;
+    }
+
+    /**
+     * Finds the method in the given type that matches the given name and signature.
+     */
+    public ExecutableElement findMethodDeclarationInType2(TypeElement typeSymbol, String methodName,
+            ExecutableType methodType) {
+
+        // gathers all the potential method matches
+        List<ExecutableElement> candidates = new LinkedList<>();
+        collectMatchingMethodDeclarationsInType(typeSymbol, methodName, methodType, false, candidates);
+
+        // score them
+        for (ExecutableElement candidate : candidates) {
+            if (context.types.isSubsignature((ExecutableType) candidate.asType(), methodType)) {
+                return candidate;
+            }
+        }
+        return null;
+    }
+
+    @Deprecated
+    private static int getCandidateMethodMatchScore(ExecutableElement candidate, ExecutableType methodType) {
+
+        if (methodType == null || candidate.getParameters().size() != methodType.getParameterTypes().size()) {
+            return -50;
+        }
+
+        int score = 0;
+
+        boolean isAbstract = candidate.getModifiers().contains(Modifier.ABSTRACT) && !candidate.isDefault();
+        if (isAbstract) {
+            score -= 30;
+        }
+        for (int i = 0; i < candidate.getParameters().size(); i++) {
+            TypeMirror candidateParamType = candidate.getParameters().get(i).asType();
+            TypeMirror paramType = methodType.getParameterTypes().get(i);
+
+            if (!candidateParamType.equals(paramType)) {
+                score--;
+            }
+        }
+
+        return score;
+    }
+
+    public void collectMatchingMethodDeclarationsInType(TypeElement typeSymbol, String methodName,
+            ExecutableType methodType, boolean overrides, List<ExecutableElement> collector) {
+        if (typeSymbol == null) {
+            return;
+        }
+        if (typeSymbol.getEnclosedElements() != null) {
+            for (Element element : typeSymbol.getEnclosedElements()) {
+                if ((element instanceof ExecutableElement) && (methodName.equals(element.getSimpleName().toString())
+                        || ((ExecutableElement) element).getKind() == ElementKind.CONSTRUCTOR
+                                && ("this".equals(methodName) /* || "super".equals(methodName) */))) {
+                    ExecutableElement methodSymbol = (ExecutableElement) element;
+                    if (methodType == null) {
+                        collector.add(methodSymbol);
+                    } else if (overrides ? isInvocable((ExecutableType) methodSymbol.asType(), methodType)
+                            : isInvocable(methodType, (ExecutableType) methodSymbol.asType())) {
+                        collector.add(methodSymbol);
+                    }
+                }
+            }
+        }
+        if (typeSymbol.getSuperclass() != null) {
+            if (!overrides || !Object.class.getName().equals(typeSymbol.getSuperclass().toString())) {
+
+                collectMatchingMethodDeclarationsInType((TypeElement) types().asElement(typeSymbol.getSuperclass()),
+                        methodName, methodType, overrides, collector);
+            }
+        }
+        if (typeSymbol.getInterfaces() != null) {
+            for (TypeElement interfaceElement : getInterfaces(typeSymbol)) {
+                collectMatchingMethodDeclarationsInType(interfaceElement, methodName, methodType, overrides, collector);
+            }
+        }
+    }
+
+    /**
+     * Finds methods by name.
+     */
+    public void findMethodDeclarationsInType(TypeElement typeSymbol, Collection<String> methodNames,
+            Set<String> ignoredTypeNames, List<ExecutableElement> result) {
+        if (typeSymbol == null) {
+            return;
+        }
+        if (ignoredTypeNames.contains(typeSymbol.getQualifiedName().toString())) {
+            return;
+        }
+        if (typeSymbol.getEnclosedElements() != null) {
+            for (Element element : typeSymbol.getEnclosedElements()) {
+                if ((element instanceof ExecutableElement)
+                        && (methodNames.contains(element.getSimpleName().toString()))) {
+                    result.add((ExecutableElement) element);
+                }
+            }
+        }
+        if (typeSymbol instanceof TypeElement && ((TypeElement) typeSymbol).getSuperclass() != null) {
+            findMethodDeclarationsInType(getSuperclass((TypeElement) typeSymbol), methodNames, ignoredTypeNames,
+                    result);
+        }
+        if (result == null) {
+            if (typeSymbol instanceof TypeElement && ((TypeElement) typeSymbol).getInterfaces() != null) {
+                for (TypeElement interfaceElement : getInterfaces(typeSymbol)) {
+                    findMethodDeclarationsInType(interfaceElement, methodNames, ignoredTypeNames, result);
+                }
+            }
+        }
+    }
+
+    public TypeElement getSuperclass(TypeElement element) {
+        return (TypeElement) types().asElement(element.getSuperclass());
+    }
+
+    public List<TypeElement> getInterfaces(TypeElement element) {
+        return element.getInterfaces().stream().map(interfaceType -> (TypeElement) types().asElement(interfaceType))
+                .collect(toList());
+    }
+
+    /**
+     * Finds first method matching name (no super types lookup).
+     */
+    public ExecutableElement findFirstMethodDeclarationInType(Element typeSymbol, String methodName) {
+        if (typeSymbol == null) {
+            return null;
+        }
+        if (typeSymbol.getEnclosedElements() != null) {
+            for (Element element : typeSymbol.getEnclosedElements()) {
+                if ((element instanceof ExecutableElement) && (methodName.equals(element.getSimpleName().toString()))) {
+                    return (ExecutableElement) element;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns true is the type is a boolean.
+     */
+    public boolean isBoolean(TypeMirror type) {
+        if (type == null) {
+            return false;
+        }
+        switch (type.getKind()) {
+        case BOOLEAN:
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    /**
+     * Tells if the given element is deprecated.
+     */
+    public boolean isDeprecated(Element element) {
+        return element.getAnnotation(Deprecated.class) != null;
+    }
+
+    /**
+     * Find first declaration (of any kind) matching the given name.
+     */
+    public Element findFirstDeclarationInType(Element typeSymbol, String name) {
+        if (typeSymbol == null) {
+            return null;
+        }
+        if (typeSymbol.getEnclosedElements() != null) {
+            for (Element element : typeSymbol.getEnclosedElements()) {
+                if (name.equals(element.getSimpleName().toString())) {
+                    return (Element) element;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @see #findFirstDeclarationInClassAndSuperClasses(TypeElement, String,
+     *      ElementKind, Integer)
+     */
+    public Element findFirstDeclarationInClassAndSuperClasses(TypeElement typeSymbol, String name, ElementKind kind) {
+        return findFirstDeclarationInClassAndSuperClasses(typeSymbol, name, kind, null);
+    }
+
+    /**
+     * Find first declaration (of any kind) matching the given name (and optionally
+     * the given number of arguments for methods)
+     */
+    public Element findFirstDeclarationInClassAndSuperClasses(TypeElement typeSymbol, String name, ElementKind kind,
+            Integer methodArgsCount) {
+        if (typeSymbol == null) {
+            return null;
+        }
+        if (typeSymbol.getEnclosedElements() != null) {
+            for (Element element : typeSymbol.getEnclosedElements()) {
+                if (name.equals(element.getSimpleName().toString()) && element.getKind() == kind
+                        && (methodArgsCount == null
+                                || methodArgsCount.equals(((ExecutableElement) element).getParameters().size()))) {
+                    return (Element) element;
+                }
+            }
+        }
+        if (typeSymbol instanceof TypeElement) {
+            Element s = findFirstDeclarationInClassAndSuperClasses(getSuperclass((TypeElement) typeSymbol), name, kind,
+                    methodArgsCount);
+            if (s == null && kind == ElementKind.METHOD) {
+                // also looks up in interfaces for methods
+                for (TypeElement interfaceElement : getInterfaces((TypeElement) typeSymbol)) {
+                    s = findFirstDeclarationInClassAndSuperClasses(interfaceElement, name, kind, methodArgsCount);
+                    if (s != null) {
+                        break;
+                    }
+                }
+            }
+            return s;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Scans member declarations in type hierachy.
+     */
+    public boolean scanMemberDeclarationsInType(TypeElement typeSymbol, Set<String> ignoredTypeNames,
+            Function<Element, Boolean> scanner) {
+        if (typeSymbol == null) {
+            return true;
+        }
+        if (ignoredTypeNames.contains(typeSymbol.getQualifiedName().toString())) {
+            return true;
+        }
+        if (typeSymbol.getEnclosedElements() != null) {
+            for (Element element : typeSymbol.getEnclosedElements()) {
+                if (!scanner.apply(element)) {
+                    return false;
+                }
+            }
+        }
+        if (typeSymbol instanceof TypeElement && ((TypeElement) typeSymbol).getSuperclass() != null) {
+            if (!scanMemberDeclarationsInType(getSuperclass((TypeElement) typeSymbol), ignoredTypeNames, scanner)) {
+                return false;
+            }
+        }
+        if (typeSymbol instanceof TypeElement && ((TypeElement) typeSymbol).getInterfaces() != null) {
+            for (TypeElement interfaceElement : getInterfaces((TypeElement) typeSymbol)) {
+                if (!scanMemberDeclarationsInType(interfaceElement, ignoredTypeNames, scanner)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Finds and returns the parameter matching the given name if any.
+     */
+    public VariableTree findParameter(MethodTree method, String name) {
+        for (VariableTree parameter : method.getParameters()) {
+            if (name.equals(parameter.getName().toString())) {
+                return parameter;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Tells if a method can be invoked with some given parameter types.
+     * 
+     * @param types  a reference to the types in the compilation scope
+     * @param from   the caller method signature to test (contains the parameter
+     *               types)
+     * @param target the callee method signature
+     * @return true if the callee can be invoked by the caller
+     */
+    public boolean isInvocable(ExecutableType from, ExecutableType target) {
+        if (from.getParameterTypes().size() != target.getParameterTypes().size()) {
+            return false;
+        }
+        for (int i = 0; i < from.getParameterTypes().size(); i++) {
+            if (!types().isAssignable(types().erasure(from.getParameterTypes().get(i)),
+                    types().erasure(target.getParameterTypes().get(i)))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Gets the TypeScript initial default value for a type.
+     */
+    public String getTypeInitalValue(String typeName) {
+        if (typeName == null) {
+            return "null";
+        }
+        switch (typeName) {
+        case "void":
+            return null;
+        case "boolean":
+            return "false";
+        case "number":
+            return "0";
+        default:
+            return "null";
+        }
+    }
+
+    /**
+     * Fills the given set with all the default methods found in the current type
+     * and super interfaces.
+     */
+    public void findDefaultMethodsInType(Set<DefaultMethodEntry> defaultMethods, JSweetContext context,
+            TypeElement typeElement) {
+        if (context.getDefaultMethods(typeElement) != null) {
+            defaultMethods.addAll(context.getDefaultMethods(typeElement));
+        }
+        for (TypeElement interfaceElement : getInterfaces((TypeElement) typeElement)) {
+            findDefaultMethodsInType(defaultMethods, context, interfaceElement);
+        }
+    }
+
+    /**
+     * Finds the field in the given type that matches the given name.
+     */
+    public VariableElement findFieldDeclaration(TypeElement classSymbol, Name name) {
+        if (classSymbol == null) {
+            return null;
+        }
+
+        for (Element member : classSymbol.getEnclosedElements()) {
+            if (member instanceof VariableElement) {
+                VariableElement field = (VariableElement) member;
+                if (field.getSimpleName().toString().equals(name.toString())) {
+                    return field;
+                }
+            }
+        }
+
+        if (classSymbol.getSuperclass() != null) {
+            return findFieldDeclaration(getSuperclass(classSymbol), name);
+        }
+
+        return null;
+    }
+
+    /**
+     * Tells if this qualified name denotes a JSweet globals class.
+     */
+    public boolean isGlobalsClassName(String qualifiedName) {
+        return qualifiedName != null && (JSweetConfig.GLOBALS_CLASS_NAME.equals(qualifiedName)
+                || qualifiedName.endsWith("." + JSweetConfig.GLOBALS_CLASS_NAME));
+    }
+
+    /**
+     * Tells if this parameter declaration is varargs.
+     */
+    public boolean isVarargs(VariableTree varDecl) {
+        VariableElement varElement = (VariableElement) Util.getElement(varDecl);
+        return isVarargs(varElement);
+    }
+
+    /**
+     * Tells if this variable is a varargs parameter element
+     */
+    public boolean isVarargs(VariableElement varElement) {
+        Element varOwner = varElement.getEnclosingElement();
+        if (!(varOwner instanceof ExecutableElement)) {
+            return false;
+        }
+        ExecutableElement methodElement = (ExecutableElement) varOwner;
+        return methodElement.isVarArgs() //
+                && methodElement.getParameters().size() > 0 //
+                && last(methodElement.getParameters()) == varElement;
+    }
+
+    /**
+     * Gets the file from a Java file object.
+     */
+    public File toFile(JavaFileObject javaFileObject) {
+        return new File(javaFileObject.getName());
+    }
+
+    /**
+     * Transforms a list of source files to Java file objects (used by javac).
+     */
+    public List<JavaFileObject> toJavaFileObjects(StandardJavaFileManager fileManager, Collection<File> sourceFiles) {
+        Iterable<? extends JavaFileObject> javaFileObjectsIterable = fileManager
+                .getJavaFileObjectsFromFiles(sourceFiles);
+        return iterableToList(javaFileObjectsIterable);
+    }
+
+    public <T> List<T> iterableToList(Iterable<? extends T> iterable) {
+        List<T> result = new ArrayList<T>();
+        iterable.forEach(result::add);
+        return result;
+    }
+
+    /**
+     * Transforms a source file to a Java file object (used by javac).
+     */
+    public JavaFileObject toJavaFileObject(StandardJavaFileManager fileManager, File sourceFile) throws IOException {
+        List<JavaFileObject> javaFileObjects = toJavaFileObjects(fileManager, asList(sourceFile));
+        return javaFileObjects.isEmpty() ? null : javaFileObjects.get(0);
+    }
+
+    private final static Pattern REGEX_CHARS = Pattern.compile("([\\\\*+\\[\\](){}\\$.?\\^|])");
+
+    /**
+     * This function will escape special characters within a string to ensure that
+     * the string will not be parsed as a regular expression. This is helpful with
+     * accepting using input that needs to be used in functions that take a regular
+     * expression as an argument (such as String.replaceAll(), or String.split()).
+     * 
+     * @param regex - argument which we wish to escape.
+     * @return - Resulting string with the following characters escaped:
+     *         [](){}+*^?$.\
+     */
+    public String escapeRegex(final String regex) {
+        Matcher match = REGEX_CHARS.matcher(regex);
+        return match.replaceAll("\\\\$1");
+    }
+
+    /**
+     * Varargs to mutable list.
+     */
+    @SafeVarargs
+    public final <T> List<T> list(T... items) {
+        ArrayList<T> list = new ArrayList<T>(items.length);
+        for (T item : items) {
+            list.add(item);
+        }
+        return list;
+    }
+
+    /**
+     * Tells if two type symbols are assignable.
+     */
+    public boolean isAssignable(Types types, TypeElement to, TypeElement from) {
+        if (to.equals(from)) {
+            return true;
+        } else {
+            return types.isAssignable(from.asType(), to.asType());
+        }
+    }
+
+    private final static List<TypeKind> IS_ASSIGABLE_FORBBIDEN_TYPES = asList(TypeKind.EXECUTABLE, TypeKind.PACKAGE,
+            TypeKind.MODULE);
+
+    /**
+     * Tells if the given list contains an type which is assignable from type.
+     */
+    public boolean containsAssignableType(List<? extends TypeMirror> list, TypeMirror type) {
+        for (TypeMirror t : list) {
+            if (types().isSameType(t, type)) {
+                return true;
+            }
+
+            if (!IS_ASSIGABLE_FORBBIDEN_TYPES.contains(t.getKind()) //
+                    && !IS_ASSIGABLE_FORBBIDEN_TYPES.contains(type.getKind()) //
+                    && types().isAssignable(t, type)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Get the relative path to reach a symbol from another one.
+     * 
+     * @param fromSymbol the start path
+     * @param toSymbol   the end path
+     * @return the '/'-separated path
+     * @see #getRelativePath(String, String)
+     */
+    public String getRelativePath(Element fromSymbol, Element toSymbol) {
+        return getRelativePath("/" + getQualifiedName(fromSymbol).replace('.', '/'),
+                "/" + getQualifiedName(toSymbol).replace('.', '/'));
+    }
+
+    /**
+     * Gets the relative path that links the two given paths.
+     * 
+     * <pre>
+     * assertEquals("../c", util.getRelativePath("/a/b", "/a/c"));
+     * assertEquals("..", util.getRelativePath("/a/b", "/a"));
+     * assertEquals("../e", util.getRelativePath("/a/b/c", "/a/b/e"));
+     * assertEquals("d", util.getRelativePath("/a/b/c", "/a/b/c/d"));
+     * assertEquals("d/e", util.getRelativePath("/a/b/c", "/a/b/c/d/e"));
+     * assertEquals("../../../d/e/f", util.getRelativePath("/a/b/c", "/d/e/f"));
+     * assertEquals("../..", util.getRelativePath("/a/b/c", "/a"));
+     * assertEquals("..", util.getRelativePath("/a/b/c", "/a/b"));
+     * </pre>
+     * 
+     * <p>
+     * Thanks to:
+     * http://mrpmorris.blogspot.com/2007/05/convert-absolute-path-to-relative-
+     * path.html
+     * 
+     * <p>
+     * Bug fix: Renaud Pawlak
+     * 
+     * @param fromPath the path to start from
+     * @param toPath   the path to reach
+     */
+    public String getRelativePath(String fromPath, String toPath) {
+        StringBuilder relativePath = null;
+
+        fromPath = fromPath.replaceAll("\\\\", "/");
+        toPath = toPath.replaceAll("\\\\", "/");
+
+        if (!fromPath.equals(toPath)) {
+            String[] fromSegments = fromPath.split("/");
+            String[] toSegments = toPath.split("/");
+
+            // Get the shortest of the two paths
+            int length = fromSegments.length < toSegments.length ? fromSegments.length : toSegments.length;
+
+            // Use to determine where in the loop we exited
+            int lastCommonRoot = -1;
+            int index;
+
+            // Find common root
+            for (index = 0; index < length; index++) {
+                if (fromSegments[index].equals(toSegments[index])) {
+                    lastCommonRoot = index;
+                } else {
+                    break;
+                    // If we didn't find a common prefix then throw
+                }
+            }
+            if (lastCommonRoot != -1) {
+                // Build up the relative path
+                relativePath = new StringBuilder();
+                // Add on the ..
+                for (index = lastCommonRoot + 1; index < fromSegments.length; index++) {
+                    if (fromSegments[index].length() > 0) {
+                        relativePath.append("../");
+                    }
+                }
+                for (index = lastCommonRoot + 1; index < toSegments.length - 1; index++) {
+                    relativePath.append(toSegments[index] + "/");
+                }
+                if (!fromPath.startsWith(toPath)) {
+                    relativePath.append(toSegments[toSegments.length - 1]);
+                } else {
+                    if (relativePath.length() > 0) {
+                        relativePath.deleteCharAt(relativePath.length() - 1);
+                    }
+                }
+            }
+        }
+        return relativePath == null ? null : relativePath.toString();
+    }
+
+    /**
+     * Removes the extensions of the given file name.
+     * 
+     * @param fileName the given file name (can contain path)
+     * @return the file name without the extension
+     */
+    public String removeExtension(String fileName) {
+        int index = fileName.lastIndexOf('.');
+        if (index == -1) {
+            return fileName;
+        } else {
+            return fileName.substring(0, index);
+        }
+    }
+
+    /**
+     * Tells if the given directory or any of its sub-directory contains one of the
+     * given files.
+     * 
+     * @param dir   the directory to look into
+     * @param files the files to be found
+     * @return true if one of the given files is found
+     */
+    public boolean containsFile(File dir, File[] files) {
+        for (File child : dir.listFiles()) {
+            if (child.isDirectory()) {
+                if (containsFile(child, files)) {
+                    return true;
+                }
+            } else {
+                for (File file : files) {
+                    if (child.getAbsolutePath().equals(file.getAbsolutePath())) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns true is the type is an integral numeric value.
+     */
+    public boolean isIntegral(TypeMirror type) {
+        if (type == null) {
+            return false;
+        }
+        switch (type.getKind()) {
+        case BYTE:
+        case SHORT:
+        case INT:
+        case LONG:
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    /**
+     * Returns true is the type is a number.
+     */
+    public boolean isNumber(TypeMirror type) {
+        if (type == null) {
+            return false;
+        }
+        switch (type.getKind()) {
+        case BYTE:
+        case SHORT:
+        case INT:
+        case LONG:
+        case DOUBLE:
+        case FLOAT:
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    public boolean isStringType(TypeMirror type) {
+        return isType(type, String.class);
+    }
+
+    public boolean isVoidType(TypeMirror type) {
+        return isType(type, Void.class) || type.getKind() == TypeKind.VOID;
+    }
+
+    /**
+     * Returns true if given type is the type of given class instance
+     */
+    public boolean isType(TypeMirror type, Class<?> potentielTypeClass) {
+        return type != null && potentielTypeClass != null && types().isSameType(getType(potentielTypeClass), type);
+    }
+
+    /**
+     * Returns true is the type is a core (String or primitive)
+     */
+    public boolean isCoreType(TypeMirror type) {
+        if (type == null) {
+            return false;
+        }
+        if (isStringType(type)) {
+            return true;
+        }
+        switch (type.getKind()) {
+        case BYTE:
+        case SHORT:
+        case INT:
+        case LONG:
+        case DOUBLE:
+        case FLOAT:
+        case BOOLEAN:
+        case CHAR:
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    /**
+     * Returns operator equivalent of given tree's kind. For instance, PLUS would
+     * return "+"
+     */
+    public String toOperator(Kind kind) {
+        switch (kind) {
+        case MINUS:
+        case UNARY_MINUS:
+            return "-";
+        case PLUS:
+        case UNARY_PLUS:
+            return "+";
+        case MULTIPLY:
+            return "*";
+        case DIVIDE:
+            return "/";
+        case AND:
+            return "&";
+        case AND_ASSIGNMENT:
+            return "&=";
+        case OR_ASSIGNMENT:
+            return "|=";
+        case DIVIDE_ASSIGNMENT:
+            return "/=";
+        case REMAINDER_ASSIGNMENT:
+            return "%=";
+        case LEFT_SHIFT_ASSIGNMENT:
+            return "<<=";
+        case RIGHT_SHIFT_ASSIGNMENT:
+            return ">>=";
+        case MINUS_ASSIGNMENT:
+            return "-=";
+        case MULTIPLY_ASSIGNMENT:
+            return "*=";
+        case PLUS_ASSIGNMENT:
+            return "+=";
+        case XOR_ASSIGNMENT:
+            return "^=";
+        case LEFT_SHIFT:
+            return "<<";
+        case RIGHT_SHIFT:
+            return ">>";
+        case OR:
+            return "|";
+        case XOR:
+            return "^";
+        case ASSIGNMENT:
+            return "=";
+        case BITWISE_COMPLEMENT:
+            return "~";
+        case CONDITIONAL_AND:
+            return "&&";
+        case CONDITIONAL_OR:
+            return "||";
+        case EQUAL_TO:
+            return "==";
+        case GREATER_THAN:
+            return ">";
+        case GREATER_THAN_EQUAL:
+            return ">=";
+        case LESS_THAN:
+            return "<";
+        case LESS_THAN_EQUAL:
+            return "<=";
+        case LOGICAL_COMPLEMENT:
+            return "!";
+        case NOT_EQUAL_TO:
+            return "!=";
+        case POSTFIX_DECREMENT:
+        case PREFIX_DECREMENT:
+            return "--";
+        case POSTFIX_INCREMENT:
+        case PREFIX_INCREMENT:
+            return "++";
+        case REMAINDER:
+            return "%";
+        case UNSIGNED_RIGHT_SHIFT:
+            return ">>>";
+        case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT:
+            return ">>>=";
+        default:
+            return null;
+        }
+
+    }
+
+    /**
+     * Returns true is an arithmetic operator.
+     */
+    public boolean isArithmeticOrLogicalOperator(Kind kind) {
+        switch (kind) {
+        case MINUS:
+        case PLUS:
+        case MULTIPLY:
+        case DIVIDE:
+        case AND:
+        case AND_ASSIGNMENT:
+        case OR_ASSIGNMENT:
+        case DIVIDE_ASSIGNMENT:
+        case REMAINDER_ASSIGNMENT:
+        case LEFT_SHIFT_ASSIGNMENT:
+        case RIGHT_SHIFT_ASSIGNMENT:
+        case MINUS_ASSIGNMENT:
+        case MULTIPLY_ASSIGNMENT:
+        case PLUS_ASSIGNMENT:
+        case XOR_ASSIGNMENT:
+        case LEFT_SHIFT:
+        case RIGHT_SHIFT:
+        case UNSIGNED_RIGHT_SHIFT:
+        case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT:
+        case OR:
+        case XOR:
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    /**
+     * Returns true is an arithmetic operator.
+     */
+    public boolean isArithmeticOperator(Kind kind) {
+        switch (kind) {
+        case MINUS:
+        case PLUS:
+        case MULTIPLY:
+        case DIVIDE:
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    /**
+     * Returns true is an comparison operator.
+     */
+    public boolean isComparisonOperator(Kind kind) {
+        switch (kind) {
+        case GREATER_THAN:
+        case GREATER_THAN_EQUAL:
+        case LESS_THAN:
+        case LESS_THAN_EQUAL:
+        case EQUAL_TO:
+        case NOT_EQUAL_TO:
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    /**
+     * Looks up a class in the given class hierarchy and returns true if found.
+     */
+    public boolean isParent(TypeElement type, TypeElement toFind) {
+        if (!(type instanceof TypeElement)) {
+            return false;
+        }
+        TypeElement clazz = (TypeElement) type;
+        if (clazz.equals(toFind)) {
+            return true;
+        }
+        if (isParent(getSuperclass(clazz), toFind)) {
+            return true;
+        }
+        for (TypeElement interfaceElement : getInterfaces(clazz)) {
+            if (isParent(interfaceElement, toFind)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Recursively looks up one of the given types in the type hierachy of the given
+     * class.
+     * 
+     * @return true if one of the given names is found as a superclass or a
+     *         superinterface
+     */
+    public boolean hasParent(TypeElement clazz, String... qualifiedNamesToFind) {
+        if (clazz == null) {
+            return false;
+        }
+        if (ArrayUtils.contains(qualifiedNamesToFind, clazz.getQualifiedName().toString())) {
+            return true;
+        }
+        if (hasParent(getSuperclass(clazz), qualifiedNamesToFind)) {
+            return true;
+        }
+        for (TypeElement interfaceElement : getInterfaces(clazz)) {
+            if (hasParent(interfaceElement, qualifiedNamesToFind)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Looks up a package element from its qualified name.
+     * 
+     * @return null if not found
+     */
+    public PackageElement getPackageByName(String qualifiedName) {
+        Iterator<? extends PackageElement> matchingPackagesIterator = elements().getAllPackageElements(qualifiedName)
+                .iterator();
+        return matchingPackagesIterator.hasNext() ? matchingPackagesIterator.next() : null;
+    }
+
+    /**
+     * Returns given compilation unit's package full name
+     */
+    public String getPackageFullNameForCompilationUnit(CompilationUnitTree compilationUnitTree) {
+        PackageTree compilUnitPackage = compilationUnitTree.getPackage();
+        if (compilUnitPackage == null) {
+            return "";
+        }
+
+        return compilUnitPackage.getPackageName().toString();
+    }
+
+    /**
+     * Looks up a type element from its qualified name.
+     * 
+     * @return null if not found
+     */
+    public TypeElement getTypeElementByName(JSweetContext context, String qualifiedName) {
+        return elements().getTypeElement(qualifiedName);
+    }
+
+    /**
+     * Tells if the given method has varargs.
+     */
+    public boolean hasVarargs(ExecutableElement methodSymbol) {
+        return methodSymbol != null && methodSymbol.getParameters().size() > 0 && methodSymbol.isVarArgs();
+    }
+
+    /**
+     * Tells if the method uses a type parameter.
+     */
+    public boolean hasTypeParameters(ExecutableElement methodSymbol) {
+        if (methodSymbol != null && methodSymbol.getParameters().size() > 0) {
+            for (VariableElement p : methodSymbol.getParameters()) {
+                TypeMirror paramType = p.asType();
+                if (p.getKind() == ElementKind.TYPE_PARAMETER || paramType.getKind() == TypeKind.TYPEVAR) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Tells if the given type is imported in the given compilation unit.
+     */
+    public boolean isImported(CompilationUnitTree compilationUnit, TypeElement type) {
+        for (ImportTree importTree : compilationUnit.getImports()) {
+            if (importTree.isStatic()) {
+                continue;
+            }
+            TypeElement importedTypeElement = getImportedTypeElement(importTree, compilationUnit);
+            if (importedTypeElement == type) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Tells if the given symbol is statically imported in the given compilation
+     * unit.
+     */
+    public TypeElement getStaticImportTarget(CompilationUnitTree compilationUnit, String name) {
+        if (compilationUnit == null) {
+            return null;
+        }
+        for (ImportTree importTree : compilationUnit.getImports()) {
+            if (!importTree.isStatic()) {
+                continue;
+            }
+            if (!importTree.getQualifiedIdentifier().toString().endsWith("." + name)) {
+                continue;
+            }
+            return getImportedTypeElement(importTree, compilationUnit);
+        }
+        return null;
+    }
+
+    /**
+     * Gets the imported type (wether statically imported or not).
+     */
+    public TypeElement getImportedTypeElement(ImportTree importTree, CompilationUnitTree compilationUnit) {
+        if (!importTree.isStatic()) {
+            TypeMirror importedType = getType(importTree.getQualifiedIdentifier());
+            return importedType == null ? null : (TypeElement) types().asElement(importedType);
+        } else {
+            if (importTree.getQualifiedIdentifier() instanceof MemberSelectTree) {
+                MemberSelectTree qualified = (MemberSelectTree) importTree.getQualifiedIdentifier();
+                if (qualified.getExpression() instanceof MemberSelectTree) {
+                    qualified = (MemberSelectTree) qualified.getExpression();
+                }
+
+                Element importedElement = Util.getElement(qualified);
+                if (importedElement instanceof TypeElement) {
+                    return (TypeElement) importedElement;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Tells if the given expression is a constant.
+     */
+    public boolean isConstant(ExpressionTree expr) {
+        boolean constant = false;
+        if (expr instanceof LiteralTree) {
+            constant = true;
+        } else if (expr instanceof MemberSelectTree || expr instanceof IdentifierTree) {
+            Element element = Util.getElement(expr);
+            if (element.getModifiers().containsAll(asList(Modifier.STATIC, Modifier.FINAL))) {
+                constant = true;
+            }
+        }
+        return constant;
+    }
+
+    /**
+     * Tells if that tree is the null literal.
+     */
+    public boolean isNullLiteral(Tree tree) {
+        return tree instanceof LiteralTree && ((LiteralTree) tree).getValue() == null;
+    }
+
+    /**
+     * Tells if that variable is a non-static final field initialized with a literal
+     * value.
+     */
+    public boolean isConstantOrNullField(VariableTree var) {
+        return !var.getModifiers().getFlags().contains(Modifier.STATIC)
+                && (var.getInitializer() == null || var.getModifiers().getFlags().contains(Modifier.FINAL)
+                        && var.getInitializer() instanceof LiteralTree);
+    }
+
+    /**
+     * Returns the literal for a given type inital value.
+     */
+    public String getTypeInitialValue(TypeMirror type) {
+        if (type == null) {
+            return "null";
+        }
+        if (isNumber(type)) {
+            return "0";
+        } else if (type.getKind() == TypeKind.BOOLEAN) {
+            return "false";
+        } else if (type.getKind() == TypeKind.VOID) {
+            return null;
+        } else {
+            return "null";
+        }
+    }
+
+    /**
+     * Gets all the members of the given type, including members within the super
+     * classes.
+     * 
+     * @param typeElement the typeElement
+     * @return a list of all the members
+     */
+    public List<Element> getAllMembers(TypeElement typeElement) {
+        if (typeElement == null) {
+            return Collections.emptyList();
+        }
+        List<Element> elements = new ArrayList<Element>();
+        for (Element e : typeElement.getEnclosedElements()) {
+            elements.add(e);
+        }
+        elements.addAll(getAllMembers(typeElement.getSuperclass()));
+        return elements;
+    }
+
+    private List<Element> getAllMembers(TypeMirror type) {
+        if (type == null) {
+            return Collections.emptyList();
+        }
+        return getAllMembers((TypeElement) context.types.asElement(type));
+    }
+
+    public Element getFirstTypeArgumentAsElement(DeclaredType type) {
+        if (type == null || type.getTypeArguments().isEmpty()) {
+            return null;
+        }
+        TypeMirror firstTypeArg = type.getTypeArguments().get(0);
+        return types().asElement(firstTypeArg);
+    }
+
+    public TypeMirror getFirstTypeArgument(DeclaredType type) {
+        if (type == null || type.getTypeArguments().isEmpty()) {
+            return null;
+        }
+        return type.getTypeArguments().get(0);
+    }
+
+    /**
+     * Returns true if the given class declares an abstract method.
+     */
+    public boolean hasAbstractMethod(TypeElement classSymbol) {
+        for (Element member : classSymbol.getEnclosedElements()) {
+            if (member instanceof ExecutableElement
+                    && ((ExecutableElement) member).getModifiers().contains(Modifier.ABSTRACT)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isOverridingBuiltInJavaObjectMethod(ExecutableElement method) {
+        switch (method.toString()) {
+        case "toString()":
+        case "hashCode()":
+        case "equals(java.lang.Object)":
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Gets the inheritance-based sorted class declarations.
+     * 
+     * <p>
+     * This method aims at overcoming TypeScrit limitation that forces a parent
+     * class to be declared before its child class (it is not the case in Java). So
+     * far this is a partial implementation that should cover most cases... for a
+     * 100% coverage we would need a much more complicated implementation that is
+     * probably not worth it.
+     */
+    public List<ClassTree> getSortedClassDeclarations(List<? extends Tree> decls, CompilationUnitTree compilationUnit) {
+        // return (List<ClassTree>)(Object)decls;
+        List<ClassTree> classDecls = decls.stream().filter(d -> d instanceof ClassTree).map(d -> (ClassTree) d)
+                .collect(Collectors.toList());
+
+        DirectedGraph<ClassTree> defs = new DirectedGraph<>();
+        List<TypeElement> typeElements = classDecls.stream().map(d -> (TypeElement) Util.getElement(d))
+                .collect(toList());
+        defs.add(classDecls.toArray(new ClassTree[0]));
+        for (int i = 0; i < typeElements.size(); i++) {
+            int superClassIndex = indexOfSuperclass(typeElements, typeElements.get(i));
+            if (superClassIndex >= 0) {
+                defs.addEdge(classDecls.get(superClassIndex), classDecls.get(i));
+            }
+        }
+        // we assume no cycles are possible
+        return defs.topologicalSort(null);
+    }
+
+    private int indexOfSuperclass(List<TypeElement> symbols, TypeElement clazz) {
+        int superClassIndex = symbols.indexOf(types().asElement(clazz.getSuperclass()));
+        // looks up also if any inner class extends a class in the list
+        if (superClassIndex < 0) {
+            for (Element s : clazz.getEnclosedElements()) {
+                if (s instanceof TypeElement) {
+                    return indexOfSuperclass(symbols, ((TypeElement) s));
+                }
+            }
+        }
+        return superClassIndex;
+    }
+
+    /**
+     * Finds the first inner class declaration of the given name in the given class
+     * hierarchy.
+     */
+    public TypeElement findInnerClassDeclaration(TypeElement clazz, String name) {
+        if (clazz == null) {
+            return null;
+        }
+        for (Element s : clazz.getEnclosedElements()) {
+            if (s instanceof TypeElement && s.getSimpleName().toString().equals(name)) {
+                return (TypeElement) s;
+            }
+        }
+        if (clazz.getSuperclass() != null) {
+            return findInnerClassDeclaration((TypeElement) types().asElement(clazz.getSuperclass()), name);
+        }
+        return null;
+    }
+
+    /**
+     * Returns resulting type for this binary operation
+     */
+    public TypeMirror getOperatorType(BinaryTree binaryTree) {
+        if (binaryTree == null) {
+            return null;
+        }
+        return getOperatorElement(binaryTree).getReturnType();
+    }
+
+    /**
+     * Returns resulting type for this operation
+     */
+    public TypeMirror getOperatorType(CompoundAssignmentTree compoundAssignmentTree) {
+        if (compoundAssignmentTree == null) {
+            return null;
+        }
+        return getOperatorElement(compoundAssignmentTree).getReturnType();
+    }
+
+    public ExecutableElement getOperatorElement(BinaryTree binaryTree) {
+        if (binaryTree == null) {
+            return null;
+        }
+        try {
+            return (ExecutableElement) javacInternals().binaryTreeOperatorField.get(binaryTree);
+        } catch (Exception e) {
+            throw new RuntimeException("Cannot call internal Javac API :( please adapt this code if API changed", e);
+        }
+    }
+
+    public ExecutableElement getOperatorElement(CompoundAssignmentTree assignmentTree) {
+        if (assignmentTree == null) {
+            return null;
+        }
+        try {
+            return (ExecutableElement) javacInternals().assignOpOperatorField.get(assignmentTree);
+        } catch (Exception e) {
+            throw new RuntimeException("Cannot call internal Javac API :( please adapt this code if API changed", e);
+        }
+    }
+
+    public boolean isLiteralExpression(ExpressionTree expression) {
+        if (expression == null) {
+            return false;
+        }
+
+        if (expression instanceof LiteralTree) {
+            return true;
+        }
+
+        if (expression instanceof BinaryTree) {
+            return isLiteralExpression(((BinaryTree) expression).getLeftOperand())
+                    && isLiteralExpression(((BinaryTree) expression).getRightOperand());
+        }
+
+        if (expression instanceof UnaryTree) {
+            return isLiteralExpression(((UnaryTree) expression).getExpression());
+        }
+
+        return false;
+    }
+
+    public List<List<Tree>> getExecutionPaths(MethodTree methodDeclaration) {
+
+        List<List<Tree>> executionPaths = new LinkedList<>();
+        executionPaths.add(new LinkedList<>());
+        List<List<Tree>> currentPaths = new LinkedList<>(executionPaths);
+        List<BreakTree> activeBreaks = new LinkedList<>();
+        for (StatementTree statement : methodDeclaration.getBody().getStatements()) {
+            collectExecutionPaths(statement, executionPaths, currentPaths, activeBreaks);
+        }
+
+        return executionPaths;
+    }
+
+    private static void collectExecutionPaths(Tree currentNode, List<List<Tree>> allExecutionPaths,
+            List<List<Tree>> currentPaths, List<BreakTree> activeBreaks) {
+
+        for (List<Tree> currentPath : new ArrayList<>(currentPaths)) {
+            Tree lastStatement = currentPath.isEmpty() ? null : currentPath.get(currentPath.size() - 1);
+            if (lastStatement instanceof ReturnTree
+                    || (lastStatement instanceof BreakTree && activeBreaks.contains(lastStatement))) {
+                continue;
+            }
+
+            if (allExecutionPaths.size() > 20000) {
+                throw new RuntimeException("too many execution paths, aborting");
+            }
+
+            currentPath.add(currentNode);
+
+            List<List<Tree>> currentPathForksList = pathsList(currentPath);
+            if (currentNode instanceof IfTree) {
+                IfTree ifNode = (IfTree) currentNode;
+
+                boolean lastIsCurrentPath = true;
+                StatementTree[] forks = { ifNode.getThenStatement(), ifNode.getElseStatement() };
+
+                evaluateForksExecutionPaths(allExecutionPaths, currentPathForksList, currentPath, lastIsCurrentPath,
+                        activeBreaks, forks);
+
+            } else if (currentNode instanceof BlockTree) {
+                for (StatementTree statement : ((BlockTree) currentNode).getStatements()) {
+                    collectExecutionPaths(statement, allExecutionPaths, currentPathForksList, activeBreaks);
+                }
+            } else if (currentNode instanceof LabeledStatementTree) {
+                collectExecutionPaths(((LabeledStatementTree) currentNode).getStatement(), allExecutionPaths,
+                        currentPaths, activeBreaks);
+            } else if (currentNode instanceof ForLoopTree) {
+                collectExecutionPaths(((ForLoopTree) currentNode).getStatement(), allExecutionPaths, currentPaths,
+                        activeBreaks);
+
+                activeBreaks.clear();
+            } else if (currentNode instanceof EnhancedForLoopTree) {
+                collectExecutionPaths(((EnhancedForLoopTree) currentNode).getStatement(), allExecutionPaths,
+                        currentPaths, activeBreaks);
+
+                activeBreaks.clear();
+            } else if (currentNode instanceof WhileLoopTree) {
+                collectExecutionPaths(((WhileLoopTree) currentNode).getStatement(), allExecutionPaths, currentPaths,
+                        activeBreaks);
+
+                activeBreaks.clear();
+            } else if (currentNode instanceof DoWhileLoopTree) {
+                collectExecutionPaths(((DoWhileLoopTree) currentNode).getStatement(), allExecutionPaths, currentPaths,
+                        activeBreaks);
+
+                activeBreaks.clear();
+            } else if (currentNode instanceof SynchronizedTree) {
+                collectExecutionPaths(((SynchronizedTree) currentNode).getBlock(), allExecutionPaths, currentPaths,
+                        activeBreaks);
+            } else if (currentNode instanceof TryTree) {
+                TryTree tryNode = (TryTree) currentNode;
+                collectExecutionPaths(tryNode.getBlock(), allExecutionPaths, currentPaths, activeBreaks);
+
+                StatementTree[] catchForks = (StatementTree[]) tryNode.getCatches().stream()
+                        .map(catchExp -> catchExp.getBlock()).collect(toList()).toArray(new StatementTree[0]);
+
+                evaluateForksExecutionPaths(allExecutionPaths, currentPathForksList, currentPath, false, activeBreaks,
+                        catchForks);
+                if (tryNode.getFinallyBlock() != null) {
+                    collectExecutionPaths(tryNode.getFinallyBlock(), allExecutionPaths, currentPathForksList,
+                            activeBreaks);
+                }
+            } else if (currentNode instanceof SwitchTree) {
+                SwitchTree switchNode = (SwitchTree) currentNode;
+
+                evaluateForksExecutionPaths(allExecutionPaths, currentPathForksList, currentPath, true, activeBreaks,
+                        switchNode.getCases().toArray(new CaseTree[0]));
+
+                activeBreaks.clear();
+            } else if (currentNode instanceof CaseTree) {
+                for (StatementTree statement : ((CaseTree) currentNode).getStatements()) {
+                    collectExecutionPaths(statement, allExecutionPaths, currentPathForksList, activeBreaks);
+                }
+            }
+
+            addAllWithoutDuplicates(currentPaths, currentPathForksList);
+        }
+    }
+
+    /**
+     * @return generated paths
+     */
+    private static void evaluateForksExecutionPaths( //
+            List<List<Tree>> allExecutionPaths, //
+            List<List<Tree>> currentPaths, //
+            List<Tree> currentPath, //
+            boolean lastIsCurrentPath, //
+            List<BreakTree> activeBreaks, //
+            Tree[] forks) {
+        int i = 0;
+        List<List<Tree>> generatedExecutionPaths = new LinkedList<>();
+        for (Tree fork : forks) {
+            if (fork != null) {
+                List<List<Tree>> currentPathsForFork;
+                if (lastIsCurrentPath && ++i == forks.length) {
+                    currentPathsForFork = pathsList(currentPath);
+                } else {
+                    List<Tree> forkedPath = new LinkedList<>(currentPath);
+                    allExecutionPaths.add(forkedPath);
+                    currentPathsForFork = pathsList(forkedPath);
+                }
+                collectExecutionPaths(fork, allExecutionPaths, currentPathsForFork, activeBreaks);
+
+                generatedExecutionPaths.addAll(currentPathsForFork);
+            }
+        }
+
+        // we need to merge with paths created by fork
+        addAllWithoutDuplicates(currentPaths, generatedExecutionPaths);
+    }
+
+    private static List<List<Tree>> addAllWithoutDuplicates(List<List<Tree>> pathsListUnique,
+            List<List<Tree>> listToBeAdded) {
+        for (List<Tree> path : listToBeAdded) {
+            boolean pathAlreadyAdded = false;
+            for (List<Tree> pathFromUnique : pathsListUnique) {
+                if (path == pathFromUnique) {
+                    pathAlreadyAdded = true;
+                }
+            }
+            if (!pathAlreadyAdded) {
+                pathsListUnique.add(path);
+            }
+        }
+        return pathsListUnique;
+    }
+
+    @SafeVarargs
+    private static List<List<Tree>> pathsList(List<Tree>... executionPaths) {
+        List<List<Tree>> pathsList = new LinkedList<>();
+        for (List<Tree> path : executionPaths) {
+            pathsList.add(path);
+        }
+        return pathsList;
+    }
+
+    public boolean isDeclarationOrSubClassDeclaration(TypeMirror classType, String searchedClassName) {
+
+        while (classType != null) {
+            TypeElement typeElement = (TypeElement) types().asElement(classType);
+            if (typeElement.getQualifiedName().toString().equals(searchedClassName)) {
+                return true;
+            }
+            List<? extends TypeMirror> superTypes = types().directSupertypes(classType);
+            classType = superTypes == null || superTypes.isEmpty() ? null : superTypes.get(0);
+        }
+
+        return false;
+    }
+
+    public boolean isDeclarationOrSubClassDeclarationBySimpleName(TypeMirror classType,
+            String searchedClassSimpleName) {
+
+        while (classType != null) {
+            TypeElement typeElement = (TypeElement) types().asElement(classType);
+            if (typeElement.getSimpleName().toString().equals(searchedClassSimpleName)) {
+                return true;
+            }
+            List<? extends TypeMirror> superTypes = types().directSupertypes(classType);
+            classType = superTypes == null || superTypes.isEmpty() ? null : superTypes.get(0);
+        }
+
+        return false;
+    }
+
+    public long getStartPosition(Tree tree, CompilationUnitTree compilationUnit) {
+        return sourcePositions().getStartPosition(compilationUnit, tree);
+    }
+
+    public SourcePosition getSourcePosition(Tree tree, CompilationUnitTree compilationUnit) {
+        return getSourcePosition(tree, null, compilationUnit);
+    }
+
+    public SourcePosition getSourcePosition(Tree tree, Name nameOffsetForEndPosition,
+            CompilationUnitTree compilationUnit) {
+        // map offsets to line numbers in source file
+        LineMap lineMap = compilationUnit.getLineMap();
+        if (lineMap == null) {
+            return null;
+        }
+        // find offset of the specified AST node
+        long startPosition = getStartPosition(tree, compilationUnit);
+        long endPosition = sourcePositions().getEndPosition(compilationUnit, tree);
+        if (endPosition == -1) {
+            endPosition = startPosition;
+        }
+        if (nameOffsetForEndPosition != null) {
+            endPosition += nameOffsetForEndPosition.length();
+        }
+
+        return new SourcePosition( //
+                new File(compilationUnit.getSourceFile().getName()), //
+                tree, //
+                (int) lineMap.getLineNumber(startPosition), (int) lineMap.getColumnNumber(startPosition), //
+                (int) lineMap.getLineNumber(endPosition), (int) lineMap.getColumnNumber(endPosition));
+    }
+
+    private SourcePositions sourcePositions() {
+        return trees().getSourcePositions();
+    }
+
+    private Trees trees() {
+        return context.trees;
+    }
+
+    private Types types() {
+        return context.types;
+    }
+
+    private Elements elements() {
+        return context.elements;
+    }
+
+    /**
+     * Returns the element corresponding to given treePath or null if treePath is
+     * null or matches no element
+     */
+    @SuppressWarnings("unchecked")
+    public <T extends Element> T getElementForTreePath(TreePath treePath) {
+        return (T) trees().getElement(treePath);
+    }
+
+    /**
+     * If given tree has a corresponding element (getElementForTree(tree,
+     * compilationUnit) doesn't return null), it will return its type
+     * (ExecutableType for an ExecutableElement, DeclaredType for a TypeElement,
+     * ...)
+     */
+    @SuppressWarnings("unchecked")
+    public <T extends TypeMirror> T getElementTypeForTree(Tree tree, CompilationUnitTree compilationUnit) {
+        Element element = Util.getElement(tree);
+        return element == null ? null : (T) element.asType();
+    }
+
+    /**
+     * If given tree has a corresponding element (getElementForTree(tree,
+     * compilationUnit) doesn't return null), it will return its type
+     * (ExecutableType for an ExecutableElement, DeclaredType for a TypeElement,
+     * ...)
+     */
+    @SuppressWarnings("unchecked")
+    public <T extends TypeMirror> T getElementTypeForTreePath(TreePath treePath) {
+        Element element = getElementForTreePath(treePath);
+        return element == null ? null : (T) element.asType();
+    }
+
+    /**
+     * Returns type associated with given tree
+     * 
+     * @see Trees#getTypeMirror(com.sun.source.util.TreePath)
+     */
+    @SuppressWarnings("unchecked")
+    public <T extends TypeMirror> T getTypeForTreePath(TreePath treePath) {
+        if (treePath == null) {
+            return null;
+        }
+        TypeMirror typeMirror = trees().getTypeMirror(treePath);
+        return (T) typeMirror;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T extends Element> T getParentElement(Element element, Class<T> parentElementClass) {
+        Element parent = element;
+        while ((parent = parent.getEnclosingElement()) != null) {
+            if (parentElementClass.isAssignableFrom(parent.getClass())) {
+                return (T) parent;
+            }
+        }
+        return null;
+    }
+
+    public CompilationUnitTree getCompilationUnit(Element element) {
+        TreePath treePath = trees().getPath(element);
+        if (treePath == null) {
+            return null;
+        }
+        return treePath.getCompilationUnit();
+    }
+
+    /**
+     * Backward compatibility method delegating to
+     * com.sun.tools.javac.code.Types.erasureRecursive(Type) behind the scene
+     */
+    public TypeMirror erasureRecursive(TypeMirror type) {
+        try {
+            Method erasureRecursiveMethod = javacInternals().typesErasureRecursiveMethod;
+            return (TypeMirror) erasureRecursiveMethod.invoke(javacInternals().typesInstance, type);
+        } catch (Exception e) {
+            throw new RuntimeException("Cannot call internal Javac API :( please adapt this code if API changed", e);
+        }
+    }
+
+    public boolean isPrimitiveOrVoid(TypeMirror type) {
+        return type != null && (type.getKind() == TypeKind.VOID || type instanceof PrimitiveType);
+    }
+
+    /**
+     * Returns parent (enclosing) package, for instance it will return
+     * <code>com.foo</code> if <code>com.foo.bar</code> is given as packageElement.
+     * <br />
+     * Will return null if packageElement is null or topmost package
+     */
+    public PackageElement getParentPackage(PackageElement packageElement) {
+        if (packageElement == null) {
+            return null;
+        }
+
+        String packageFullName = packageElement.getQualifiedName().toString();
+        int lastDotIndex = packageFullName.lastIndexOf('.');
+        if (lastDotIndex == -1) {
+            return null;
+        }
+
+        return getPackageByName(packageFullName.substring(0, lastDotIndex));
+    }
+
+    /**
+     * Returns qualified name (simple name including parent name with full package
+     * name). For instance, a method parameter's could have for qualified name:
+     * my.awesome.package.MyClass.myMethod.myParam
+     */
+    public String getQualifiedName(Element element) {
+        if (element == null) {
+            return null;
+        }
+
+        if (element instanceof PackageElement || element instanceof TypeElement) {
+            return element.toString();
+        }
+
+        String simpleName = element.getSimpleName().toString();
+        if (element.getEnclosingElement() != null) {
+            return getQualifiedName(element.getEnclosingElement()) + "." + simpleName;
+        } else {
+            return simpleName;
+        }
+    }
+
+    public <T> T last(List<T> list) {
+        if (list == null || list.isEmpty()) {
+            return null;
+        }
+        return list.get(list.size() - 1);
+    }
+
+    /**
+     * Returns true if given element is an interface TypeElement. <br />
+     * WARNING: does not include JSweet @Interface
+     */
+    public boolean isInterface(Element typeElement) {
+        return typeElement != null && typeElement.getKind() == ElementKind.INTERFACE;
+    }
+
+    /**
+     * Returns true if given element is part of an enum: either an Enum element, or
+     * an enum constant
+     */
+    public boolean isPartOfAnEnum(Element element) {
+        if (element == null) {
+            return false;
+        }
+
+        return element.getKind() == ElementKind.ENUM || element.getKind() == ElementKind.ENUM_CONSTANT;
+    }
+
+    public Element getMethodOwner(ExecutableElement methodElement) {
+        Element targetType = methodElement.getEnclosingElement();
+        if (targetType != null) {
+            return targetType;
+        }
+
+        TypeMirror ownerType = ((ExecutableType) methodElement.asType()).getReceiverType();
+
+        return ownerType == null ? null : types().asElement(ownerType);
+    }
+
+    public boolean isGeneratedConstructor(MethodTree methodTree, ClassTree parentClassTree,
+            ExecutableElement methodElement) {
+        if (!methodTree.getName().toString().equals(CONSTRUCTOR_METHOD_NAME)) {
+            return false;
+        }
+        if (methodElement.getAnnotationMirrors().size() > 0) {
+            return false;
+        }
+
+        try {
+            int methodPos = (int) javacInternals().treePosField.get(methodTree);
+            int parentClassPos = (int) javacInternals().treePosField.get(parentClassTree);
+
+            return methodPos == parentClassPos;
+        } catch (Exception e) {
+            throw new RuntimeException("Cannot call internal Javac API :( please adapt this code if API changed", e);
+        }
+
+    }
+
+    /**
+     * Gets the type as a primitive type (by unboxing it) when possible.
+     * 
+     * @param type the origin type
+     * @return the origin type or the corresponding primitive type if possible
+     */
+    public TypeMirror unboxedTypeOrType(TypeMirror type) {
+        try {
+            if (isPrimitiveOrVoid(type)) {
+                return type;
+            }
+
+            return types().unboxedType(type);
+        } catch (Exception e) {
+            return type;
+        }
+    }
+
+    public boolean isNullType(TypeMirror type) {
+        return type == null || type.getKind() == TypeKind.NULL;
+    }
+
+    public void addAnnotation(ModifiersTree modifiers, AnnotationTree annotation) {
+        if (modifiers != null) {
+            try {
+                Object newList = javacInternals().listAppendMethod.invoke(modifiers.getAnnotations(), annotation);
+                javacInternals().modifiersAnnotationsField.set(modifiers, newList);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    /**
+     * should not be used, backward compatibility purpose only
+     */
+    private JavacInternals javacInternals() {
+        return JavacInternals.instance(types());
+    }
+
+    /**
+     * should not be used, backward compatibility purpose only
+     */
+    private static class JavacInternals {
+
+        private static JavacInternals instance;
+
+        final Class<?> typesClass;
+        final Class<?> typeClass;
+        final Method typesErasureRecursiveMethod;
+        final Object typesInstance;
+
+        final Field binaryTreeOperatorField;
+        final Field assignOpOperatorField;
+        final Field treePosField;
+        final Field treeTypeField;
+
+        final Field modifiersAnnotationsField;
+
+        final Method listAppendMethod;
+
+        @SuppressWarnings("rawtypes")
+        private final Map<Class, Field> treeClassToSymbolField = new HashMap<>();
+
+        @SuppressWarnings("rawtypes")
+        private final Map<Class, Field> treeClassToTypeSymbolField = new HashMap<>();
+
+        private JavacInternals(Types types) {
+            try {
+                typesClass = this.getClass().getClassLoader().loadClass("com.sun.tools.javac.code.Types");
+                typeClass = this.getClass().getClassLoader().loadClass("com.sun.tools.javac.code.Type");
+                typesErasureRecursiveMethod = typesClass.getMethod("erasureRecursive", typeClass);
+
+                Class<?> JCTreeClass = this.getClass().getClassLoader().loadClass("com.sun.tools.javac.tree.JCTree");
+
+                binaryTreeOperatorField = Stream.of(JCTreeClass.getDeclaredClasses())
+                        .filter(innerClass -> innerClass.getSimpleName().equals("JCBinary")) //
+                        .findFirst().get() //
+                        .getField("operator");
+
+                assignOpOperatorField = Stream.of(JCTreeClass.getDeclaredClasses())
+                        .filter(innerClass -> innerClass.getSimpleName().equals("JCAssignOp")) //
+                        .findFirst().get() //
+                        .getField("operator");
+
+                Field typesField = types.getClass().getDeclaredField("types");
+                typesField.trySetAccessible();
+                typesInstance = typesField.get(types);
+
+                treePosField = JCTreeClass.getDeclaredField("pos");
+                treeTypeField = JCTreeClass.getDeclaredField("type");
+
+                Class<?> JCModifiersClass = Stream.of(JCTreeClass.getDeclaredClasses())
+                        .filter(innerClass -> innerClass.getSimpleName().equals("JCModifiers")) //
+                        .findFirst().get();
+                modifiersAnnotationsField = JCModifiersClass.getDeclaredField("annotations");
+
+                Class<?> listClass = this.getClass().getClassLoader().loadClass("com.sun.tools.javac.util.List");
+                listAppendMethod = listClass.getMethod("append", Object.class);
+
+            } catch (Exception e) {
+                throw new RuntimeException("Cannot call internal Javac API :( please adapt this code if API changed",
+                        e);
+            }
+        }
+
+        static JavacInternals instance(Types types) {
+            if (instance == null) {
+                instance = new JavacInternals(types);
+            }
+            return instance;
+        }
+
+        JavaFileObject getSourceFileObjectFromElement(TypeElement element) {
+            try {
+                if (element == null) {
+                    return null;
+                }
+                Field internalSourceFileField = element.getClass().getDeclaredField("sourcefile");
+                return (JavaFileObject) internalSourceFileField.get(element);
+            } catch (Exception e) {
+                throw new RuntimeException("Cannot call internal Javac API :( please adapt this code if API changed",
+                        e);
+            }
+        }
+
+    }
+
+    private static Field typeField;
+    private static Field tsymField;
+    private static Map<Class<?>, Field> symFields = new HashMap<Class<?>, Field>();
+
+    static {
+        try {
+            var classLoader = JavacInternals.class.getClassLoader();
+            typeField = classLoader.loadClass("com.sun.tools.javac.tree.JCTree").getDeclaredField("type");
+            typeField.setAccessible(true);
+            tsymField = classLoader.loadClass("com.sun.tools.javac.code.Type").getDeclaredField("tsym");
+            tsymField.setAccessible(true);
+        } catch (Exception e) {
+            throw new RuntimeException("Fatal error - cannot access legacy Javac API", e);
+        }
+    }
+
+    static private JavaFileObject getSourceFileObjectFromElement(TypeElement element) {
+        try {
+            if (element == null) {
+                return null;
+            }
+            Field internalSourceFileField = element.getClass().getDeclaredField("sourcefile");
+            return (JavaFileObject) internalSourceFileField.get(element);
+        } catch (Exception e) {
+            throw new RuntimeException("Cannot call internal Javac API :( please adapt this code if API changed", e);
+        }
+    }
+
+    /**
+     * Returns type associated with given tree
+     * 
+     * @see #getTypeForTreePath(TreePath)
+     */
+    public static <T extends TypeMirror> T getType(Tree tree) {
+        try {
+            return (T) typeField.get(tree);
+        } catch (Exception e) {
+            throw new RuntimeException("Fatal error - cannot access legacy Javac API", e);
+        }
+    }
+
+    public static <E extends Element> E getElement(TypeMirror type) {
+        try {
+            return (E) tsymField.get(type);
+        } catch (Exception e) {
+            throw new RuntimeException("Fatal error - cannot access legacy Javac API", e);
+        }
+    }
+
+    /**
+     * If this tree has a type (getType(tree) doesn't return null), returns the
+     * corresponding TypeElement, if any, otherwise null.
+     * 
+     * Can return TypeElement or TypeParameterElement
+     */
+    public static <E extends Element> E getTypeElement(Tree tree) {
+        TypeMirror type = getType(tree);
+        return type == null ? null : getElement(type);
+    }
+
+    /**
+     * Returns an Element corresponding to given tree (for given compilationUnit).
+     * May return an error if the tree has no corresponding element possible.
+     * 
+     * For instance:
+     * <ul>
+     * <li>getElementForTree(VariableTree, ...) would likely return a
+     * VariableElement.
+     * <li>getElementForTree(NewClassTree, ...) would, on the other hand, return a
+     * TypeElement.
+     * </ul>
+     */
+    public static <T extends Element> T getElement(Tree tree) {
+        if (tree == null) {
+            return null;
+        }
+        try {
+            Field symField = symFields.get(tree.getClass());
+            if (symField == null) {
+                if (PackageTree.class.isAssignableFrom(tree.getClass())) {
+                    symField = tree.getClass().getDeclaredField("packge");
+                } else if (NewClassTree.class.isAssignableFrom(tree.getClass())) {
+                    symField = tree.getClass().getDeclaredField("constructor");
+                } else {
+                    symField = tree.getClass().getDeclaredField("sym");
+                }
+                symField.setAccessible(true);
+                symFields.put(tree.getClass(), symField);
+            }
+            return (T) symField.get(tree);
+        } catch (Exception e) {
+            throw new RuntimeException("Fatal error - cannot access legacy Javac API - " + tree.getClass(), e);
+        }
+    }
+
+    /**
+     * Returns an Element corresponding to given tree (for given compilationUnit).
+     * Will return null if no element matches tree.
+     * 
+     * For instance:
+     * <ul>
+     * <li>getElementForTree(VariableTree, ...) would likely return a
+     * VariableElement.
+     * <li>getElementForTree(NewClassTree, ...) would, on the other hand, return a
+     * TypeElement.
+     * </ul>
+     */
+    public static <T extends Element> T getElementNoErrors(Tree tree) {
+        if (tree == null) {
+            return null;
+        }
+        try {
+            Field symField = symFields.get(tree.getClass());
+            if (symField == null) {
+                if (PackageTree.class.isAssignableFrom(tree.getClass())) {
+                    symField = tree.getClass().getDeclaredField("packge");
+                } else if (NewClassTree.class.isAssignableFrom(tree.getClass())) {
+                    symField = tree.getClass().getDeclaredField("constructor");
+                } else {
+                    symField = tree.getClass().getDeclaredField("sym");
+                }
+                symField.setAccessible(true);
+                symFields.put(tree.getClass(), symField);
+            }
+            return (T) symField.get(tree);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
 }

@@ -1,18 +1,34 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.jsweet</groupId>
 	<artifactId>jsweet-transpiler</artifactId>
-	<version>2.2.0-SNAPSHOT</version>
+	<version>3.2.0-SNAPSHOT</version>
 	<name>JSweet transpiler</name>
 	<description>A Java to TypeScript/JavaScript Open Transpiler</description>
+	<url>http://www.jsweet.org</url>
 	<developers>
 		<developer>
 			<id>rpawlak</id>
 			<name>Renaud Pawlak</name>
 			<email>renaud.pawlak@gmail.com</email>
 		</developer>
+		<developer>
+			<id>lgrignon</id>
+			<name>Louis Grignon</name>
+			<email>louis.grignon@gmail.com</email>
+		</developer>
 	</developers>
+	<issueManagement>
+		<url>https://github.com/cincheo/jsweet/issues</url>
+		<system>GitHub Issues</system>
+	</issueManagement>
+	<scm>
+		<url>https://github.com/cincheo/jsweet</url>
+		<connection>scm:git:git://github.com/cincheo/jsweet.git</connection>
+		<developerConnection>scm:git:git@github.com:cincheo/jsweet.git</developerConnection>
+	</scm>
 	<licenses>
 		<license>
 			<name>The Apache Software License, Version 2.0</name>
@@ -24,23 +40,25 @@
 		<timestamp>${maven.build.timestamp}</timestamp>
 		<maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<java.version.release>11</java.version.release>
+		<java.version>1.${java.version.release}</java.version>
 	</properties>
 	<repositories>
 		<repository>
 			<id>jsweet-central</id>
 			<name>libs-release</name>
-			<url>http://repository.jsweet.org/artifactory/libs-release-local</url>
+			<url>https://repository.jsweet.org/artifactory/libs-release-local</url>
 		</repository>
 		<repository>
 			<snapshots />
 			<id>jsweet-snapshots</id>
 			<name>libs-snapshot</name>
-			<url>http://repository.jsweet.org/artifactory/libs-snapshot-local</url>
+			<url>https://repository.jsweet.org/artifactory/libs-snapshot-local</url>
 		</repository>
 		<repository>
 			<id>jsweet-external</id>
 			<name>libs-release</name>
-			<url>http://repository.jsweet.org/artifactory/ext-release-local</url>
+			<url>https://repository.jsweet.org/artifactory/ext-release-local</url>
 		</repository>
 	</repositories>
 	<build>
@@ -53,18 +71,26 @@
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.1</version>
+				<version>3.8.1</version>
 				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
+					<release>${java.version.release}</release>
+					<compilerVersion>${java.version}</compilerVersion>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
 					<encoding>${project.build.sourceEncoding}</encoding>
+					<compilerArgs>
+
+					</compilerArgs>
 				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.18.1</version>
+				<version>3.0.0-M4</version>
 				<configuration>
+					<forkCount>0</forkCount>
+					<reuseForks>false</reuseForks>
+					<useSystemClassLoader>false</useSystemClassLoader>
 					<includes>
 						<include>**/*.java</include>
 					</includes>
@@ -72,7 +98,7 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-clean-plugin</artifactId>
-				<version>3.0.0</version>
+				<version>3.1.0</version>
 				<configuration>
 					<filesets>
 						<fileset>
@@ -85,7 +111,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
-				<version>2.4</version>
+				<version>3.1.1</version><!--$NO-MVN-MAN-VER$ -->
 				<configuration>
 					<archive>
 						<manifest>
@@ -101,7 +127,7 @@
 						<id>make-assembly</id>
 						<phase>package</phase>
 						<goals>
-							<goal>attached</goal>
+							<goal>single</goal>
 						</goals>
 					</execution>
 				</executions>
@@ -109,7 +135,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
-				<version>3.0.0</version>
+				<version>3.1.0</version>
 				<executions>
 					<execution>
 						<id>attach-sources</id>
@@ -122,9 +148,8 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.10.3</version>
+				<version>3.1.1</version>
 				<configuration>
-					<javadocVersion>1.8</javadocVersion>
 					<sourcepath>src/main/java</sourcepath>
 					<encoding>${project.build.sourceEncoding}</encoding>
 					<skip>${skipJavadoc}</skip>
@@ -149,13 +174,31 @@
 					</execution>
 				</executions>
 			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-gpg-plugin</artifactId>
+				<version>1.6</version>
+				<configuration>
+					<skip>${skipSigning}</skip>
+				</configuration>
+				<executions>
+					<execution>
+						<id>sign-artifacts</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>sign</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
-			<version>3.7</version>
+			<version>3.9</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -165,12 +208,18 @@
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
-			<version>2.4</version>
+			<version>2.7</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.12</version>
+			<version>4.13.1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<version>3.1.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -181,7 +230,7 @@
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
-			<version>2.2.4</version>
+			<version>2.8.6</version>
 			<scope>compile</scope>
 			<optional>false</optional>
 		</dependency>
@@ -196,34 +245,33 @@
 			<version>1.6.5</version>
 			<scope>provided</scope>
 		</dependency>
-		<dependency>
-			<groupId>com.google.javascript</groupId>
-			<artifactId>closure-compiler</artifactId>
-			<version>v20161201</version>
-		</dependency>
 
 		<dependency>
-			<groupId>fr.opensagres.js</groupId>
-			<artifactId>ts.core</artifactId>
-			<version>1.4.0-SNAPSHOT</version>
+			<groupId>org.jsweet.ext</groupId>
+			<artifactId>typescript.java-ts.core</artifactId>
+			<version>2.0.4</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jsweet.ext</groupId>
+			<artifactId>sourcemap-builder</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.osgi</groupId>
+			<artifactId>org.osgi.core</artifactId>
+			<version>4.3.0</version>
+			<scope>compile</scope>
 		</dependency>
 
-		<!-- Compile-time only dependency (JSweet looks up installed JDK at runtime 
-			to conform to legal obligations) -->
-		<dependency>
-			<groupId>com.sun</groupId>
-			<artifactId>tools</artifactId>
-			<version>8</version>
-			<scope>provided</scope>
-		</dependency>
 		<!-- Test-only dependencies for testing candies -->
 		<dependency>
 			<groupId>org.jsweet</groupId>
 			<artifactId>jsweet-core</artifactId>
-			<version>6-SNAPSHOT</version>
-			<scope>test</scope>
+			<version>6.3.0</version>
+			<scope>compile</scope>
 			<optional>true</optional>
 		</dependency>
+
 		<dependency>
 			<groupId>org.jsweet.candies</groupId>
 			<artifactId>jquery</artifactId>
@@ -301,6 +349,7 @@
 			<scope>test</scope>
 			<optional>true</optional>
 		</dependency>
+
 		<dependency>
 			<groupId>javax.ws.rs</groupId>
 			<artifactId>javax.ws.rs-api</artifactId>
@@ -318,12 +367,12 @@
 		<repository>
 			<id>jsweet-release</id>
 			<name>libs-release</name>
-			<url>http://repository.jsweet.org/artifactory/libs-release-local</url>
+			<url>https://repository.jsweet.org/artifactory/libs-release-local</url>
 		</repository>
 		<snapshotRepository>
 			<id>jsweet-snapshots</id>
 			<name>libs-snapshot</name>
-			<url>http://repository.jsweet.org/artifactory/libs-snapshot-local</url>
+			<url>https://repository.jsweet.org/artifactory/libs-snapshot-local</url>
 		</snapshotRepository>
 	</distributionManagement>
 </project>

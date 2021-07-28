@@ -19,6 +19,7 @@
 package org.jsweet.transpiler;
 
 import javax.lang.model.element.PackageElement;
+import javax.lang.model.element.TypeElement;
 
 /**
  * This class describes a module import.
@@ -26,35 +27,69 @@ import javax.lang.model.element.PackageElement;
  * @author Renaud Pawlak
  */
 public class ModuleImportDescriptor {
-	public ModuleImportDescriptor(PackageElement targetPackage, String importedName, String pathToImportedClass) {
-		super();
-		this.targetPackage = targetPackage;
-		this.importedName = importedName;
-		this.pathToImportedClass = pathToImportedClass;
-	}
+    public ModuleImportDescriptor(PackageElement targetPackage, String importedName, String pathToImportedClass) {
+        super();
+        this.targetPackage = targetPackage;
+        this.importedName = importedName;
+        this.pathToImportedClass = pathToImportedClass;
+    }
+    
+    public ModuleImportDescriptor(String importedName, String pathToImportedClass) {
+        super();
+        this.importedName = importedName;
+        this.pathToImportedClass = pathToImportedClass;
+    }
 
-	private PackageElement targetPackage;
-	private String importedName;
-	private String pathToImportedClass;
+    public ModuleImportDescriptor(boolean direct, PackageElement targetPackage, String importedName,
+            String pathToImportedClass) {
+        this(targetPackage, importedName, pathToImportedClass);
+        this.direct = direct;
+    }
+    
+    public ModuleImportDescriptor(boolean direct, PackageElement targetPackage, String importedName,
+            String pathToImportedClass, TypeElement importedClass) {
+        this(direct, targetPackage, importedName, pathToImportedClass);
+        this.importedClass = importedClass;
+    }
 
-	/**
-	 * Gets the package of the element being imported.
-	 */
-	public PackageElement getTargetPackage() {
-		return targetPackage;
-	}
+    private boolean direct = false;
+    private PackageElement targetPackage;
+    private String importedName;
+    private String pathToImportedClass;
+    private TypeElement importedClass;
 
-	/**
-	 * Gets the name of the import.
-	 */
-	public String getImportedName() {
-		return importedName;
-	}
+    /**
+     * Returns the imported class if any.
+     */
+    public TypeElement getImportedClass() {
+        return importedClass;
+    }
+    
+    /**
+     * Gets the package of the element being imported.
+     */
+    public PackageElement getTargetPackage() {
+        return targetPackage;
+    }
 
-	/**
-	 * Gets the path to the imported class.
-	 */
-	public String getPathToImportedClass() {
-		return pathToImportedClass;
-	}
+    /**
+     * Gets the name of the import.
+     */
+    public String getImportedName() {
+        return importedName;
+    }
+
+    /**
+     * Gets the path to the imported class.
+     */
+    public String getPathToImportedClass() {
+        return pathToImportedClass;
+    }
+
+    /**
+     * True for a direct import.
+     */
+    public boolean isDirect() {
+        return direct;
+    }
 }

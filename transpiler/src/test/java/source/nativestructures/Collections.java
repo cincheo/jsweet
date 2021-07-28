@@ -26,340 +26,368 @@ import def.js.Array;
 @SuppressWarnings("serial")
 public class Collections implements Cloneable, Serializable {
 
-	static Array<String> trace = new Array<>();
+    static Array<String> trace = new Array<>();
 
-	public static void main(String[] args) {
-		ArrayList<String> values = new ArrayList<String>();
+    public static void main(String[] args) {
+        ArrayList<String> values = new ArrayList<String>();
         String derp = "derp";
         values.add("derp");
         String cccc = "wow cool";
         values.add(cccc);
         assert values.size() == 2;
-        
+
         String removeReturnValue = values.remove(0);
         assert removeReturnValue != null;
         assert removeReturnValue.equals(derp);
-        
+
         assert values.size() == 1;
         boolean removed = values.remove(cccc);
         assert values.size() == 0;
         assert removed;
 
         removed = values.remove(cccc);
-        assert ! removed;
-		
-		List<String> l = new ArrayList<String>();
+        assert !removed;
 
-		l.add("a");
+        List<String> l = new ArrayList<String>();
 
-		trace.push("" + l.size());
-		trace.push(l.get(0));
+        l.add("a");
 
-		l.add("b");
+        trace.push("" + l.size());
+        trace.push(l.get(0));
 
-		l.remove(0);
+        l.add("b");
 
-		trace.push("" + l.size());
-		trace.push(l.get(0));
+        l.remove(0);
 
-		l.add("a");
-		l.add("b");
+        trace.push("" + l.size());
+        trace.push(l.get(0));
 
-		trace.push("" + l.size());
+        l.add("a");
+        l.add("b");
 
-		l.add(1, "d");
+        trace.push("" + l.size());
 
-		trace.push("" + l.size());
-		trace.push(l.get(1));
-		trace.push(l.get(2));
+        l.add(1, "d");
 
-		trace.push(l.subList(1, 2).get(0));
+        trace.push("" + l.size());
+        trace.push(l.get(1));
+        trace.push(l.get(2));
 
-		l.clear();
-		trace.push("" + l.size());
+        trace.push(l.subList(1, 2).get(0));
 
-		// l.add("a");
-		// l = java.util.Collections.EMPTY_LIST;
+        l.clear();
+        trace.push("" + l.size());
 
-		trace.push("" + l.size());
+        // l.add("a");
+        // l = java.util.Collections.EMPTY_LIST;
 
-		l.add("a");
-		l = java.util.Collections.emptyList();
+        trace.push("" + l.size());
 
-		trace.push("" + l.size());
+        l.add("a");
+        l = java.util.Collections.emptyList();
 
-		l.add("a");
-		l = java.util.Collections.unmodifiableList(l);
+        trace.push("" + l.size());
 
-		trace.push("" + l.get(0));
+        l.add("a");
+        l = java.util.Collections.unmodifiableList(l);
 
-		List l2 = new ArrayList(l);
+        trace.push("" + l.get(0));
 
-		trace.push("" + l2.get(0));
+        List l2 = new ArrayList(l);
 
-		l.addAll(l2);
+        trace.push("" + l2.get(0));
 
-		trace.push("" + l.size());
-		trace.push("" + l.get(1));
+        l.addAll(l2);
 
-		trace.push("" + l.contains("a"));
-		trace.push("" + l.contains("b"));
+        trace.push("" + l.size());
+        trace.push("" + l.get(1));
 
-		String[] array = { "a", "b", "c" };
+        trace.push("" + l.contains("a"));
+        trace.push("" + l.contains("b"));
 
-		l = Arrays.asList(array);
+        String[] array = { "a", "b", "c" };
 
-		trace.push("" + l.size());
-		trace.push("" + l.get(2));
+        l = Arrays.asList(array);
 
-		Vector v = new Vector(l);
+        trace.push("" + l.size());
+        trace.push("" + l.get(2));
 
-		trace.push("" + v.elementAt(2));
+        Vector v = new Vector(l);
 
-		Enumeration<String> e = v.elements();
-		while (e.hasMoreElements()) {
-			String s = e.nextElement();
-			trace.push("" + s);
-		}
+        trace.push("" + v.elementAt(2));
 
-		Iterator it = v.iterator();
-		while (it.hasNext()) {
-			String s = (String) it.next();
-			trace.push("" + s);
-		}
+        Enumeration<String> e = v.elements();
+        while (e.hasMoreElements()) {
+            String s = e.nextElement();
+            trace.push("" + s);
+        }
 
-		trace.push("" + v.toArray()[1]);
+        Iterator it = v.iterator();
+        while (it.hasNext()) {
+            String s = (String) it.next();
+            trace.push("" + s);
+        }
 
-		String[] a = Arrays.copyOf(l.toArray(new String[0]), 1);
+        trace.push("" + v.toArray()[1]);
 
-		trace.push("" + a.length);
+        String[] a = Arrays.copyOf(l.toArray(new String[0]), 1);
 
-		Comparator<String> reverse = new Comparator<String>() {
-			@Override
-			public int compare(String o1, String o2) {
-				return o2.compareTo(o1);
-			}
-		};
+        trace.push("" + a.length);
 
-		String[] newArray = (String[]) v.toArray();
+        Comparator<String> reverse = new Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {
+                return o2.compareTo(o1);
+            }
+        };
 
-		Arrays.sort(newArray, reverse);
+        String[] newArray = (String[]) v.toArray();
 
-		trace.push(newArray[0]);
-		trace.push(newArray[1]);
-		trace.push(newArray[2]);
+        Arrays.sort(newArray, reverse);
 
-		Arrays.sort(newArray, 0, 2);
+        trace.push(newArray[0]);
+        trace.push(newArray[1]);
+        trace.push(newArray[2]);
 
-		trace.push(newArray[0]);
-		trace.push(newArray[1]);
-		trace.push(newArray[2]);
+        Arrays.sort(newArray, 0, 2);
 
-		l = new Vector<>(5);
+        trace.push(newArray[0]);
+        trace.push(newArray[1]);
+        trace.push(newArray[2]);
 
-		trace.push("" + l.size());
+        l = new Vector<>(5);
 
-		trace.push("" + l.isEmpty());
+        trace.push("" + l.size());
 
-		trace.push("" + (l instanceof Vector));
+        trace.push("" + l.isEmpty());
 
-		int i = Integer.MIN_VALUE;
-		i = Integer.MAX_VALUE;
+        trace.push("" + (l instanceof Vector));
 
-		l.add("it");
+        int i = Integer.MIN_VALUE;
+        i = Integer.MAX_VALUE;
 
-		for (String s : l) {
-			trace.push(s);
-		}
+        l.add("it");
 
-		Set<String> s = java.util.Collections.emptySet();
-		trace.push("" + s.isEmpty());
+        for (String s : l) {
+            trace.push(s);
+        }
 
-		s.add("test");
-		s.add("test");
+        Set<String> s = java.util.Collections.emptySet();
+        trace.push("" + s.isEmpty());
 
-		trace.push("" + s.size());
+        s.add("test");
+        s.add("test");
 
-		Collator c = Collator.getInstance();
+        trace.push("" + s.size());
 
-		String[] a3 = new String[] { "c", "b", "a" };
-		Arrays.sort(a3, c);
+        Collator c = Collator.getInstance();
 
-		trace.push("array[" + a3 + "]");
+        String[] a3 = new String[] { "c", "b", "a" };
+        Arrays.sort(a3, c);
 
-		trace.push("" + java.util.Collections.binarySearch(l, "it"));
+        trace.push("array[" + a3 + "]");
 
-		l.remove("it");
+        trace.push("" + java.util.Collections.binarySearch(l, "it"));
 
-		trace.push("" + (java.util.Collections.binarySearch(l, "it") >= 0));
+        l.remove("it");
 
-		double[][] points1 = new double[][] { new double[] { 1, 2 }, new double[] { 3, 4 }, new double[] { 5, 6 } };
+        trace.push("" + (java.util.Collections.binarySearch(l, "it") >= 0));
 
-		double[][] points2 = new double[][] { new double[] { 1, 2 }, new double[] { 3, 4 }, new double[] { 5, 6 } };
+        double[][] points1 = new double[][] { new double[] { 1, 2 }, new double[] { 3, 4 }, new double[] { 5, 6 } };
 
-		trace.push("" + (java.util.Arrays.deepEquals(points1, points2)));
+        double[][] points2 = new double[][] { new double[] { 1, 2 }, new double[] { 3, 4 }, new double[] { 5, 6 } };
 
-		List<String> l3 = Arrays.asList(a3);
+        trace.push("" + (java.util.Arrays.deepEquals(points1, points2)));
 
-		java.util.Collections.sort(l3);
+        List<String> l3 = Arrays.asList(a3);
 
-		java.util.Collections.sort(l3, c);
+        java.util.Collections.sort(l3);
 
-		String[] array1 = new String[l3.size()];
+        java.util.Collections.sort(l3, c);
 
-		l3.toArray(array1);
+        String[] array1 = new String[l3.size()];
 
-		trace.push("array[" + array1.toString() + "]");
+        l3.toArray(array1);
 
-		Arrays.sort(array1, MyComparator);
+        trace.push("array[" + array1.toString() + "]");
 
-		trace.push("array[" + array1.toString() + "]");
+        Arrays.sort(array1, MyComparator);
 
-		java.util.Collections.reverse(l3);
+        trace.push("array[" + array1.toString() + "]");
 
-		trace.push("" + l3 + "");
+        java.util.Collections.reverse(l3);
 
-		Stack<String> stack = new Stack<>();
-		stack.push("aa");
-		stack.push("bb");
-		stack.push("cc");
+        trace.push("listAfterReverse=" + l3 + "");
 
-		trace.push("" + stack);
+        Stack<String> stack = new Stack<>();
+        stack.push("aa");
+        stack.push("bb");
+        stack.push("cc");
 
-		trace.push("" + java.util.Collections.binarySearch(stack, "bb1"));
+        trace.push("" + stack);
 
-		trace.push("" + java.util.Collections.binarySearch(stack, "bb1", new Comparator<String>() {
-			@Override
-			public int compare(String o1, String o2) {
-				return o1.compareTo(o2);
-			}
-		}));
+        trace.push("" + java.util.Collections.binarySearch(stack, "bb1"));
 
-		trace.push(stack.peek());
+        trace.push("" + java.util.Collections.binarySearch(stack, "bb1", new Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {
+                return o1.compareTo(o2);
+            }
+        }));
 
-		stack.pop();
+        trace.push(stack.peek());
 
-		trace.push("" + stack);
+        stack.pop();
 
-		Arrays.fill(array1, "a");
+        trace.push("" + stack);
 
-		trace.push("array[" + array1 + "]");
+        Arrays.fill(array1, "a");
 
-		l.toArray(new String[l.size()]);
+        trace.push("array[" + array1 + "]");
 
-		l = new ArrayList<>();
-		l.add("a");
-		l.add("b");
-		l.add("c");
+        Arrays.fill(array1, 1, 2, "b");
 
-		List<String> ll = new ArrayList<>();
-		ll.add("d");
-		ll.add("e");
+        trace.push("array[" + array1 + "]");
 
-		l.addAll(1, ll);
+        l.toArray(new String[l.size()]);
 
-		trace.push("" + l + "");
+        l = new ArrayList<>();
+        l.add("a");
+        l.add("b");
+        l.add("c");
 
-		Deque<String> dq = new LinkedList<>();
+        List<String> ll = new ArrayList<>();
+        ll.add("d");
+        ll.add("e");
 
-		dq.addLast("a");
-		dq.addLast("b");
-		dq.addFirst("c");
-		dq.remove();
-		dq.addFirst("c");
-		dq.removeFirst();
-		dq.addFirst("c");
+        l.addAll(1, ll);
 
-		trace.push("" + dq.isEmpty());
+        trace.push("listAfterAddAll=" + l + "");
 
-		trace.push("" + dq);
+        Deque<String> dq = new LinkedList<>();
 
-		trace.push(dq.pollFirst());
+        dq.addLast("a");
+        dq.addLast("b");
+        dq.addFirst("c");
+        dq.remove();
+        dq.addFirst("c");
+        dq.removeFirst();
+        dq.addFirst("c");
 
-		trace.push("" + dq);
+        trace.push("" + dq.isEmpty());
 
-		trace.push(dq.pollLast());
+        trace.push("" + dq);
 
-		trace.push("" + dq);
+        trace.push(dq.pollFirst());
 
-		trace.push(dq.pollLast());
+        trace.push("" + dq);
 
-		trace.push("" + dq.pollLast());
+        trace.push(dq.pollLast());
 
-		trace.push("" + dq.isEmpty());
+        trace.push("" + dq);
 
-		List<String> lll = null;
+        trace.push(dq.pollLast());
 
-		trace.push("" + lll);
+        trace.push("" + dq.pollLast());
 
-		Set<Integer> set = new HashSet<Integer>();
-		set.add(5);
-		set.add(6);
-		Set<Integer> set2 = null;
+        trace.push("" + dq.isEmpty());
 
-		List<String> list = Arrays.asList("a", "b", "c", "d", "e", "f");
-		List<String> list2 = Arrays.asList("d", "e", "f", "g");
+        List<String> lll = null;
 
-		list.removeAll(list2);
-		trace.push("" + list);
+        trace.push("" + lll);
 
-		list = Arrays.asList("a", "b", "c", "d", "e", "f");
+        Set<Integer> set = new HashSet<Integer>();
+        set.add(5);
+        set.add(6);
+        Set<Integer> set2 = null;
 
-		list.retainAll(list2);
-		trace.push("" + list);
+        List<String> list = Arrays.asList("a", "b", "c", "d", "e", "f");
+        List<String> list2 = Arrays.asList("d", "e", "f", "g");
 
-		list = Arrays.asList("a", "b", "c", "d", "e", "f");
+        list.removeAll(list2);
+        trace.push("" + list);
 
-		trace.push("" + list.containsAll(list2));
+        list = Arrays.asList("a", "b", "c", "d", "e", "f");
 
-		list = Arrays.asList("a", "b", "c", "d", "e", "f", "g");
+        list.retainAll(list2);
+        trace.push("" + list);
 
-		trace.push("" + list.containsAll(list2));
+        list = Arrays.asList("a", "b", "c", "d", "e", "f");
 
-		trace.push("" + java.util.Collections.disjoint(list, list2));
+        trace.push("" + list.containsAll(list2));
 
-		list2 = Arrays.asList("h", "i");
+        list = Arrays.asList("a", "b", "c", "d", "e", "f", "g");
 
-		trace.push("" + java.util.Collections.disjoint(list, list2));
+        trace.push("list.containsAll(list2)=" + list.containsAll(list2));
 
-		Arrays.sort(newArray, new Comparator<String>() {
-			@Override
-			public int compare(String o1, String o2) {
-				return o2.compareTo(o1);
-			}
-		});
-		
-		java.util.Collections.sort(list2, new Comparator<String>() {
-			@Override
-			public int compare(String o1, String o2) {
-				return o2.compareTo(o1);
-			}
-		});
-		
-		HashSet<String> aSet = new HashSet<>();		
-		Set<String> aSet2 = new HashSet<>();		
-		Set<String> aSet3 = new TreeSet<>();		
-		List<String> aList = new ArrayList<>();		
-		
-		List<String> copies = java.util.Collections.nCopies(7, "nyan");
-		trace.push("" + copies);
-		
-		$export("trace", trace.join(","));
+        trace.push("" + java.util.Collections.disjoint(list, list2));
 
-	}
+        list2 = Arrays.asList("h", "i");
 
-	private static Comparator MyComparator = new Comparator() {
-		public int compare(Object o1, Object o2) {
-			return o2.toString().compareTo(o1.toString());
-		}
-	};
+        trace.push("" + java.util.Collections.disjoint(list, list2));
+
+        Arrays.sort(newArray, new Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {
+                return o2.compareTo(o1);
+            }
+        });
+
+        java.util.Collections.sort(list2, new Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {
+                return o2.compareTo(o1);
+            }
+        });
+
+        HashSet<String> aSet = new HashSet<>();
+        Set<String> aSet2 = new HashSet<>();
+        Set<String> aSet3 = new TreeSet<>();
+        List<String> aList = new ArrayList<>();
+
+        List<String> copies = java.util.Collections.nCopies(7, "nyan");
+        trace.push("" + copies);
+
+        testArrayListCopyConstructor();
+
+        $export("trace", trace.join(","));
+
+        List<String> testList = new ArrayList<String>();
+        testList.add("a");
+        testList.add("b");
+        testList.add("c");
+        assert testList.toString() == "[a, b, c]";
+    }
+
+    private static void testArrayListCopyConstructor() {
+        ArrayList<String> al = new ArrayList<String>();
+        al.add("foo");
+        al.add("bar");
+        ArrayList<String> a2 = new ArrayList<String>(al);
+        trace.push("a2.size=" + a2.size());
+        trace.push("a2[0]=" + a2.get(0));
+        trace.push("a2[1]=" + a2.get(1));
+    }
+
+    private static Comparator MyComparator = new Comparator() {
+        public int compare(Object o1, Object o2) {
+            return o2.toString().compareTo(o1.toString());
+        }
+    };
+
+    public List<String> nodes;
+
+    public void addNodes() {
+        String[] n = { "a", "b" };
+        this.nodes.addAll(Arrays.asList(n));
+    }
 }
 
 class TestClone {
 
-	@Override
-	protected Object clone() throws CloneNotSupportedException {
-		return super.clone();
-	}
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        return super.clone();
+    }
 
 }

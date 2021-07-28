@@ -27,7 +27,7 @@ public class AnnotationTest extends Superclass {
 	
 	public void toBeErased() {
 		// this will not be transpiled because the method will be erased
-		javax.activity.InvalidActivityException exception = null;
+		javax.accessibility.AccessibilityProvider foo = null;
 	}
 
 	public void m() {

@@ -44,7 +44,6 @@ import org.jsweet.transpiler.extension.RemoveJavaDependenciesFactory;
 import org.jsweet.transpiler.util.ProcessUtil;
 import org.jsweet.transpiler.util.Util;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import source.blocksgame.Ball;
@@ -63,8 +62,6 @@ import source.blocksgame.util.Point;
 import source.blocksgame.util.Rectangle;
 import source.blocksgame.util.Vector;
 import source.calculus.MathApi;
-import source.overload.Overload;
-import source.structural.AbstractClass;
 import source.transpiler.CanvasDrawing;
 import source.transpiler.Extended;
 import source.transpiler.PrefixExtension;
@@ -73,436 +70,373 @@ import source.transpiler.p.B;
 
 public class TranspilerTests extends AbstractTest {
 
-	private File outDir;
-	private File gameDir;
-	private File calculusDir;
+    private File outDir;
+    private File gameDir;
+    private File calculusDir;
+    private Util util;
 
-	@Before
-	public void init() throws Throwable {
-		outDir = new File(new File(TMPOUT_DIR), getCurrentTestName() + "/" + ModuleKind.none);
-		gameDir = new File(TEST_DIRECTORY_NAME + "/" + Ball.class.getPackage().getName().replace(".", "/"));
-		calculusDir = new File(TEST_DIRECTORY_NAME + "/" + MathApi.class.getPackage().getName().replace(".", "/"));
-		FileUtils.deleteQuietly(outDir);
-	}
+    @Before
+    public void init() throws Throwable {
+        outDir = new File(new File(TMPOUT_DIR), getCurrentTestName() + "/" + ModuleKind.none);
+        gameDir = new File(TEST_DIRECTORY_NAME + "/" + Ball.class.getPackage().getName().replace(".", "/"));
+        calculusDir = new File(TEST_DIRECTORY_NAME + "/" + MathApi.class.getPackage().getName().replace(".", "/"));
+        FileUtils.deleteQuietly(outDir);
 
-	@Ignore
-	@Test
-	public void testTranspilerWatchMode() {
-		TestTranspilationHandler logHandler = new TestTranspilationHandler();
-		try {
-			File overload = getSourceFile(Overload.class).getJavaFile();
-			File abstractClass = getSourceFile(AbstractClass.class).getJavaFile();
-			JSweetTranspiler transpiler = new JSweetTranspiler(new JSweetFactory());
-			transpiler.setTscWatchMode(true);
-			transpiler.setGenerateSourceMaps(true);
-			long t = System.currentTimeMillis();
-			transpiler.transpile(logHandler, new SourceFile(overload), new SourceFile(abstractClass));
-			t = System.currentTimeMillis() - t;
-			assertEquals("There should be no problems", 0, logHandler.reportedProblems.size());
-			assertTrue("Wrong transpiler state", transpiler.isTscWatchMode());
-			assertEquals("Wrong transpiler state", 2, transpiler.getWatchedFiles().length);
-			assertEquals("Wrong transpiler state", overload, transpiler.getWatchedFile(overload).getJavaFile());
+        util = new Util(null);
+    }
 
-			Thread.sleep(Math.max(4000, t * 5));
+    @Test
+    public void testCommandLine() throws Throwable {
+        LinkedList<File> files = new LinkedList<>();
+        Process process = null;
 
-			assertTrue("File not generated", transpiler.getWatchedFile(overload).getJsFile().exists());
+        process = ProcessUtil.runCommand("java", line -> {
+            System.out.println(line);
+        }, null, "-cp", TranspilerTestRunner.getTestClassPath(), //
+                JSweetCommandLineLauncher.class.getName(), //
+                "--tsout", outDir.getPath(), //
+                "--targetVersion", "ES6", //
+                "--jsout", outDir.getPath(), //
+                "--sourceMap", //
+                "-i", gameDir.getAbsolutePath());
 
-			long ts1 = transpiler.getWatchedFile(overload).getJsFileLastTranspiled();
+        assertTrue(process.exitValue() == 0);
+        files.clear();
 
-			transpiler.getWatchedFile(overload).getTsFile().setLastModified(System.currentTimeMillis());
+        util.addFiles(".ts", outDir, files);
+        assertTrue(files.size() > 1);
+        assertTrue(files.stream().anyMatch(f -> f.getName().equals("UselessClass.ts")));
+        files.clear();
+        util.addFiles(".js", outDir, files);
+        assertTrue(files.size() > 1);
+        files.clear();
+        util.addFiles(".js.map", outDir, files);
+        assertTrue(files.size() > 1);
 
-			Thread.sleep(Math.max(2000, t * 4));
+        FileUtils.deleteQuietly(outDir);
 
-			assertTrue("File not regenerated", transpiler.getWatchedFile(overload).getJsFileLastTranspiled() != ts1);
+        process = ProcessUtil.runCommand("java", line -> {
+            System.out.println(line);
+        }, null, "-cp", TranspilerTestRunner.getTestClassPath(), //
+                JSweetCommandLineLauncher.class.getName(), //
+                "--tsout", outDir.getPath(), //
+                "--jsout", outDir.getPath(), //
+                "--targetVersion", "ES6", //
+                "--sourceMap", //
+                "-i", gameDir.getAbsolutePath(), //
+                "--excludes", "UselessClass.java" + File.pathSeparatorChar + "dummy");
 
-			transpiler.transpile(logHandler, new SourceFile(overload));
-			assertEquals("There should be no problems", 0, logHandler.reportedProblems.size());
-			assertTrue("Wrong transpiler state", transpiler.isTscWatchMode());
-			assertEquals("Wrong transpiler state", 2, transpiler.getWatchedFiles().length);
-			assertEquals("Wrong transpiler state", overload, transpiler.getWatchedFile(overload).getJavaFile());
+        assertTrue(process.exitValue() == 0);
+        files.clear();
+        util.addFiles(".ts", outDir, files);
+        assertTrue(files.size() > 1);
+        assertFalse(files.stream().anyMatch(f -> f.getName().equals("UselessClass.ts")));
+        files.clear();
+        util.addFiles(".js", outDir, files);
+        assertTrue(files.size() > 1);
+        files.clear();
+        util.addFiles(".js.map", outDir, files);
+        assertTrue(files.size() > 1);
 
-			Thread.sleep(Math.max(2000, t * 4));
+        FileUtils.deleteQuietly(outDir);
 
-			assertTrue("File not regenerated", transpiler.getWatchedFile(overload).getJsFileLastTranspiled() != ts1);
+        process = ProcessUtil.runCommand("java", line -> {
+            System.out.println(line);
+        }, null, "-cp", TranspilerTestRunner.getTestClassPath(), //
+                JSweetCommandLineLauncher.class.getName(), //
+                "--tsout", outDir.getPath(), //
+                "--jsout", outDir.getPath(), //
+                "--targetVersion", "ES6", //
+                "--sourceMap", //
+                "--factoryClassName", "org.jsweet.transpiler.extension.RemoveJavaDependenciesFactory", //
+                "-i", gameDir.getAbsolutePath(), //
+                "--includes", "UselessClass.java" + File.pathSeparatorChar + "dummy");
 
-			transpiler.resetTscWatchMode();
+        assertTrue(process.exitValue() == 0);
+        files.clear();
+        util.addFiles(".ts", outDir, files);
+        assertTrue(files.size() == 3);
+        assertTrue(files.stream().anyMatch(f -> f.getName().equals("UselessClass.ts")));
 
-			transpiler.transpile(logHandler, new SourceFile(overload));
-			assertEquals("There should be no problems", 0, logHandler.reportedProblems.size());
-			assertTrue("Wrong transpiler state", transpiler.isTscWatchMode());
-			assertEquals("Wrong transpiler state", 1, transpiler.getWatchedFiles().length);
-			assertEquals("Wrong transpiler state", overload, transpiler.getWatchedFile(overload).getJavaFile());
+        process = ProcessUtil.runCommand("java", line -> {
+            System.out.println(line);
+        }, null, "-cp", TranspilerTestRunner.getTestClassPath(), //
+                JSweetCommandLineLauncher.class.getName(), //
+                "--tsout", outDir.getPath(), //
+                "--jsout", outDir.getPath(), //
+                "--sourceMap", //
+                "--factoryClassName", "org.jsweet.transpiler.extension.RemoveJavaDependenciesFactory", //
+                "-i", gameDir.getAbsolutePath(), //
+                "--includes", "UselessClass.java" + File.pathSeparatorChar + "dummy", "--targetVersion", "ES6");
 
-			Thread.sleep(Math.max(1000, t * 2));
+        assertTrue(process.exitValue() == 0);
+        files.clear();
+        util.addFiles(".ts", outDir, files);
+        assertTrue(files.size() == 3);
+        assertTrue(files.stream().anyMatch(f -> f.getName().equals("UselessClass.ts")));
 
-			assertTrue("File not regenerated", transpiler.getWatchedFile(overload).getJsFileLastTranspiled() != ts1);
+        process = ProcessUtil.runCommand("java", line -> {
+            System.out.println(line);
+        }, null, "-cp", TranspilerTestRunner.getTestClassPath(), //
+                JSweetCommandLineLauncher.class.getName(), //
+                "--tsout", outDir.getPath(), //
+                "--jsout", outDir.getPath(), //
+                "--targetVersion", "ES6", //
+                "--sourceMap", //
+                "--factoryClassName", "org.jsweet.transpiler.extension.RemoveJavaDependenciesFactory", //
+                "-i", gameDir.getAbsolutePath(), //
+                "--includes", "UselessClass.java" + File.pathSeparatorChar + "dummy");
 
-			transpiler.setTscWatchMode(false);
-			SourceFile sf = new SourceFile(overload);
-			transpiler.transpile(logHandler, sf);
-			assertEquals("There should be no problems", 0, logHandler.reportedProblems.size());
-			assertTrue("Wrong transpiler state", !transpiler.isTscWatchMode());
-			assertTrue("Wrong transpiler state", transpiler.getWatchedFiles() == null);
+        assertTrue(process.exitValue() == 0);
+        files.clear();
+        util.addFiles(".ts", outDir, files);
+        assertTrue(files.size() == 3);
+        assertTrue(files.stream().anyMatch(f -> f.getName().equals("UselessClass.ts")));
 
-			ts1 = sf.getJsFileLastTranspiled();
+    }
 
-			sf.getTsFile().setLastModified(System.currentTimeMillis());
+    @Test
+    public void testCommandLineSuccess() {
+        Process process;
+        Stream<File> sources = Stream.of(gameDir, calculusDir);
+        logger.info("launching transpiler with sources: " + sources);
 
-			Thread.sleep(Math.max(1000, t * 2));
+        process = ProcessUtil.runCommand("java", line -> {
+            System.out.println(line);
+        }, null, "-cp", TranspilerTestRunner.getTestClassPath(), //
+                JSweetCommandLineLauncher.class.getName(), //
+                "--tsout", outDir.getPath(), //
+                "--jsout", outDir.getPath(), //
+                "--targetVersion", "ES6", //
+                "--factoryClassName", RemoveJavaDependenciesFactory.class.getName(), //
+                "--sourceMap", //
+                "--verbose", //
+                "-i", sources.map(File::getAbsolutePath).collect(joining(File.pathSeparator)));
 
-			assertTrue("File regenerated", sf.getJsFileLastTranspiled() == ts1);
+        assertTrue(process.exitValue() == 0);
+        LinkedList<File> files = new LinkedList<>();
+        util.addFiles(".ts", outDir, files);
+        assertTrue("cant find useless class in " + files,
+                files.stream().anyMatch(f -> f.getName().equals("UselessClass.ts")));
+        assertTrue("cant find MathApi class in " + files,
+                files.stream().anyMatch(f -> f.getName().equals("MathApi.ts")));
+    }
 
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail("Exception occured while running test");
-		}
-	}
+    @Test
+    public void testErroneousCommandLineArgument() throws Throwable {
+        Process process;
+        process = ProcessUtil.runCommand("java", line -> {
+            System.out.println(line);
+        }, null, "-cp", TranspilerTestRunner.getTestClassPath(), //
+                JSweetCommandLineLauncher.class.getName(), //
+                "--tsout", outDir.getPath(), //
+                "--jsout", outDir.getPath(), //
+                "--sourceMap", //
+                "--factoryClassName", "org.jsweet.transpiler.extension.RemoveJavaDependenciesFactory", //
+                "-i", gameDir.getAbsolutePath(), //
+                "--includes", "UselessClass.java" + File.pathSeparatorChar + "dummy", "--targetVersion", "ES4");
 
-	@Test
-	public void testCommandLine() throws Throwable {
-		LinkedList<File> files = new LinkedList<>();
-		Process process = null;
+        assertTrue(process.exitValue() != 0);
+    }
 
-		process = ProcessUtil.runCommand("java", line -> {
-			System.out.println(line);
-		}, null, "-cp", System.getProperty("java.class.path"), //
-				JSweetCommandLineLauncher.class.getName(), //
-				"--tsout", outDir.getPath(), //
-				"--jsout", outDir.getPath(), //
-				"--sourceMap", //
-				"-i", gameDir.getAbsolutePath());
+    @Test
+    public void testSourceMapsSimple() throws Throwable {
+        JSweetTranspiler transpiler = transpilerTest().getTranspiler();
 
-		assertTrue(process.exitValue() == 0);
-		files.clear();
-		Util.addFiles(".ts", outDir, files);
-		assertTrue(files.size() > 1);
-		assertTrue(files.stream().anyMatch(f -> f.getName().equals("UselessClass.ts")));
-		files.clear();
-		Util.addFiles(".js", outDir, files);
-		assertTrue(files.size() > 1);
-		files.clear();
-		Util.addFiles(".js.map", outDir, files);
-		assertTrue(files.size() > 1);
+        transpiler.setGenerateSourceMaps(true);
+        SourceFile[] sourceFiles = { getSourceFile(CanvasDrawing.class) };
+        transpile(ModuleKind.none, logHandler -> {
 
-		FileUtils.deleteQuietly(outDir);
+            logger.info("transpilation finished: " + transpiler.getModuleKind());
+            logHandler.assertNoProblems();
+            logger.info(sourceFiles[0].getSourceMap().toString());
 
-		process = ProcessUtil.runCommand("java", line -> {
-			System.out.println(line);
-		}, null, "-cp", System.getProperty("java.class.path"), //
-				JSweetCommandLineLauncher.class.getName(), //
-				"--tsout", outDir.getPath(), //
-				"--jsout", outDir.getPath(), //
-				"--sourceMap", //
-				"-i", gameDir.getAbsolutePath(), //
-				"--excludes", "UselessClass.java:dummy");
+            assertEqualPositions(sourceFiles, sourceFiles[0], "angle += 0.05");
+            assertEqualPositions(sourceFiles, sourceFiles[0], "aTestVar");
+            assertEqualPositions(sourceFiles, sourceFiles[0], "for");
 
-		assertTrue(process.exitValue() == 0);
-		files.clear();
-		Util.addFiles(".ts", outDir, files);
-		assertTrue(files.size() > 1);
-		assertFalse(files.stream().anyMatch(f -> f.getName().equals("UselessClass.ts")));
-		files.clear();
-		Util.addFiles(".js", outDir, files);
-		assertTrue(files.size() > 1);
-		files.clear();
-		Util.addFiles(".js.map", outDir, files);
-		assertTrue(files.size() > 1);
+            assertEqualPositions(sourceFiles, sourceFiles[0], "aTestParam1");
+            assertEqualPositions(sourceFiles, sourceFiles[0], "aTestParam2");
 
-		FileUtils.deleteQuietly(outDir);
+            assertEqualPositions(sourceFiles, sourceFiles[0], "aTestString");
 
-		process = ProcessUtil.runCommand("java", line -> {
-			System.out.println(line);
-		}, null, "-cp", System.getProperty("java.class.path"), //
-				JSweetCommandLineLauncher.class.getName(), //
-				"--tsout", outDir.getPath(), //
-				"--jsout", outDir.getPath(), //
-				"--sourceMap", //
-				"--factoryClassName", "org.jsweet.transpiler.extension.RemoveJavaDependenciesFactory", //
-				"-i", gameDir.getAbsolutePath(), //
-				"--includes", "UselessClass.java:dummy");
+        }, Arrays.copyOf(sourceFiles, sourceFiles.length));
+    }
 
-		assertTrue(process.exitValue() == 0);
-		files.clear();
-		Util.addFiles(".ts", outDir, files);
-		assertTrue(files.size() == 3);
-		assertTrue(files.stream().anyMatch(f -> f.getName().equals("UselessClass.ts")));
+    @Test
+    public void testSourceMaps() throws Throwable {
+        JSweetTranspiler transpiler = transpilerTest().getTranspiler();
+        transpiler.setGenerateSourceMaps(true);
+        SourceFile[] sourceFiles = { getSourceFile(Point.class), getSourceFile(Vector.class),
+                getSourceFile(AnimatedElement.class), getSourceFile(Line.class), getSourceFile(MobileElement.class),
+                getSourceFile(Rectangle.class), getSourceFile(Direction.class), getSourceFile(Collisions.class),
+                getSourceFile(Ball.class), getSourceFile(Globals.class), getSourceFile(BlockElement.class),
+                getSourceFile(Factory.class), getSourceFile(GameArea.class), getSourceFile(GameManager.class),
+                getSourceFile(Player.class) };
+        transpile(logHandler -> {
 
-		process = ProcessUtil.runCommand("java", line -> {
-			System.out.println(line);
-		}, null, "-cp", System.getProperty("java.class.path"), //
-				JSweetCommandLineLauncher.class.getName(), //
-				"--tsout", outDir.getPath(), //
-				"--jsout", outDir.getPath(), //
-				"--sourceMap", //
-				"--factoryClassName", "org.jsweet.transpiler.extension.RemoveJavaDependenciesFactory", //
-				"-i", gameDir.getAbsolutePath(), //
-				"--includes", "UselessClass.java:dummy", "--targetVersion", "ES5");
+            logger.info("transpilation finished: " + transpiler.getModuleKind());
+            logHandler.assertNoProblems();
+            logger.info(sourceFiles[11].getSourceMap().toString());
 
-		assertTrue(process.exitValue() == 0);
-		files.clear();
-		Util.addFiles(".ts", outDir, files);
-		assertTrue(files.size() == 3);
-		assertTrue(files.stream().anyMatch(f -> f.getName().equals("UselessClass.ts")));
+            assertEqualPositions(sourceFiles, sourceFiles[0], " distance(");
+            assertEqualPositions(sourceFiles, sourceFiles[0], "class Point");
+            assertEqualPositions(sourceFiles, sourceFiles[3], "invalid query on non-vertical lines");
 
-		process = ProcessUtil.runCommand("java", line -> {
-			System.out.println(line);
-		}, null, "-cp", System.getProperty("java.class.path"), //
-				JSweetCommandLineLauncher.class.getName(), //
-				"--tsout", outDir.getPath(), //
-				"--jsout", outDir.getPath(), //
-				"--sourceMap", //
-				"--factoryClassName", "org.jsweet.transpiler.extension.RemoveJavaDependenciesFactory", //
-				"-i", gameDir.getAbsolutePath(), //
-				"--includes", "UselessClass.java:dummy", "--targetVersion", "ES3");
+            assertEqualPositions(sourceFiles, sourceFiles[11], "class InnerClass");
+            assertEqualPositions(sourceFiles, sourceFiles[11], "inner class");
 
-		assertTrue(process.exitValue() == 0);
-		files.clear();
-		Util.addFiles(".ts", outDir, files);
-		assertTrue(files.size() == 3);
-		assertTrue(files.stream().anyMatch(f -> f.getName().equals("UselessClass.ts")));
+        }, Arrays.copyOf(sourceFiles, sourceFiles.length));
+    }
 
-	}
+    private void assertEqualPositions(SourceFile[] sourceFiles, SourceFile sourceFile, String codeSnippet) {
+        assertEqualPositions(sourceFiles, sourceFile, codeSnippet, codeSnippet);
+    }
 
-	@Test
-	public void testCommandLineSuccess() {
-		Process process;
-		Stream<File> sources = Stream.of(gameDir, calculusDir);
-		logger.info("launching transpiler with sources: " + sources);
+    private void assertEqualPositions(SourceFile[] sourceFiles, SourceFile sourceFile, String javaCodeSnippet,
+            String tsCodeSnippet) {
+        logger.info("assert equal positions for '" + javaCodeSnippet + "' -> '" + tsCodeSnippet + "'");
+        SourcePosition tsPosition = getPosition(sourceFile.getTsFile(), tsCodeSnippet);
+        SourcePosition javaPosition = SourceFile.findOriginPosition(tsPosition, Arrays.asList(sourceFiles));
+        logger.info("org: " + javaPosition + " --> " + tsPosition);
+        assertEquals(getPosition(sourceFile.getJavaFile(), javaCodeSnippet).getStartLine(),
+                javaPosition.getStartLine());
+    }
 
-		process = ProcessUtil.runCommand("java", line -> {
-			System.out.println(line);
-		}, null, "-cp", System.getProperty("java.class.path"), //
-				JSweetCommandLineLauncher.class.getName(), //
-				"--tsout", outDir.getPath(), //
-				"--jsout", outDir.getPath(), //
-				"--factoryClassName", RemoveJavaDependenciesFactory.class.getName(), //
-				"--sourceMap", //
-				"--verbose", //
-				"-i", sources.map(File::getAbsolutePath).collect(joining(":")));
+    private SourcePosition getPosition(File f, String codeSnippet) {
+        try {
+            String s1 = FileUtils.readFileToString(f);
+            int index = s1.indexOf(codeSnippet);
+            if (index == -1) {
+                System.out.println("DO NOT FIND: " + codeSnippet);
+                System.out.println(s1);
+            }
+            String s = s1.substring(0, index);
+            return new SourcePosition(f, null, StringUtils.countMatches(s, "\n") + 1,
+                    s.length() - s.lastIndexOf("\n") - 1);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-		assertTrue(process.exitValue() == 0);
-		LinkedList<File> files = new LinkedList<>();
-		Util.addFiles(".ts", outDir, files);
-		assertTrue("cant find useless class in " + files,
-				files.stream().anyMatch(f -> f.getName().equals("UselessClass.ts")));
-		assertTrue("cant find MathApi class in " + files,
-				files.stream().anyMatch(f -> f.getName().equals("MathApi.ts")));
-	}
+    @Test
+    public void testExtension() {
+        TranspilerTestRunner transpilerTest = new TranspilerTestRunner(getCurrentTestOutDir(), new JSweetFactory() {
+            @Override
+            public PrinterAdapter createAdapter(JSweetContext context) {
+                return new AddPrefixToNonPublicMembersAdapter(super.createAdapter(context));
+            }
+        });
+        transpilerTest.eval(ModuleKind.none, (logHandler, result) -> {
+            logHandler.assertNoProblems();
+        }, getSourceFile(PrefixExtension.class));
+    }
 
-	@Test
-	public void testErroneousCommandLineArgument() throws Throwable {
-		Process process;
-		process = ProcessUtil.runCommand("java", line -> {
-			System.out.println(line);
-		}, null, "-cp", System.getProperty("java.class.path"), //
-				JSweetCommandLineLauncher.class.getName(), //
-				"--tsout", outDir.getPath(), //
-				"--jsout", outDir.getPath(), //
-				"--sourceMap", //
-				"--factoryClassName", "org.jsweet.transpiler.extension.RemoveJavaDependenciesFactory", //
-				"-i", gameDir.getAbsolutePath(), //
-				"--includes", "UselessClass.java:dummy", "--targetVersion", "ES4");
+    @Test
+    public void testExtension2() {
+        TranspilerTestRunner transpilerTest = new TranspilerTestRunner(getCurrentTestOutDir(), new JSweetFactory() {
+            @Override
+            public Java2TypeScriptAdapter createAdapter(JSweetContext context) {
+                return new Java2TypeScriptAdapter(super.createAdapter(context)) {
+                    {
+                        context.addAnnotation("@Erased", "**.testMethod(..)", "source.transpiler.AClass",
+                                "source.transpiler.p");
+                    }
+                };
+            }
+        });
+        transpilerTest.getTranspiler().setBundle(true);
+        transpilerTest.eval(ModuleKind.none, true, (logHandler, result) -> {
+            logHandler.assertNoProblems();
+        }, getSourceFile(A.class), getSourceFile(B.class), getSourceFile(Extended.class));
+    }
 
-		assertTrue(process.exitValue() == 1);
-	}
+    @Test
+    public void testDefaultHeader() {
+        SourceFile f = getSourceFile(CanvasDrawing.class);
+        transpile(logHandler -> {
+            logHandler.assertNoProblems();
+            try {
+                String generatedCode = FileUtils.readFileToString(f.getTsFile());
+                assertTrue(generatedCode.startsWith("/* Generated from Java with JSweet"));
+            } catch (Exception e) {
+                e.printStackTrace();
+                fail(e.getMessage());
+            }
+        }, f);
+        transpilerTest().getTranspiler().setBundle(true);
+        transpile(ModuleKind.none, logHandler -> {
+            logHandler.assertNoProblems();
+            try {
+                String generatedCode = FileUtils.readFileToString(f.getTsFile());
+                assertTrue(generatedCode.startsWith("/* Generated from Java with JSweet"));
+            } catch (Exception e) {
+                e.printStackTrace();
+                fail(e.getMessage());
+            }
+        }, f);
+    }
 
-	@Test
-	public void testSourceMapsSimple() throws Throwable {
-		JSweetTranspiler transpiler = transpilerTest().getTranspiler();
+    @Test
+    public void testHeaderFile() {
+        SourceFile f = getSourceFile(CanvasDrawing.class);
+        File headerFile = new File(f.getJavaFile().getParentFile(), "header.txt");
+        transpilerTest().getTranspiler().setHeaderFile(headerFile);
+        transpile(logHandler -> {
+            logHandler.assertNoProblems();
+            try {
+                String generatedCode = FileUtils.readFileToString(f.getTsFile());
+                assertTrue(generatedCode.startsWith("// This is a test header..."));
+            } catch (Exception e) {
+                e.printStackTrace();
+                fail(e.getMessage());
+            }
+        }, f);
+        transpilerTest().getTranspiler().setBundle(true);
+        transpile(ModuleKind.none, logHandler -> {
+            logHandler.assertNoProblems();
+            try {
+                String generatedCode = FileUtils.readFileToString(f.getTsFile());
+                assertTrue(generatedCode.startsWith("// This is a test header..."));
+            } catch (Exception e) {
+                e.printStackTrace();
+                fail(e.getMessage());
+            }
+        }, f);
+    }
 
-		transpiler.setGenerateSourceMaps(true);
-		SourceFile[] sourceFiles = { getSourceFile(CanvasDrawing.class) };
-		transpile(ModuleKind.none, logHandler -> {
-
-			logger.info("transpilation finished: " + transpiler.getModuleKind());
-			logHandler.assertNoProblems();
-			logger.info(sourceFiles[0].getSourceMap().toString());
-
-			assertEqualPositions(sourceFiles, sourceFiles[0], "angle += 0.05");
-			assertEqualPositions(sourceFiles, sourceFiles[0], "aTestVar");
-			assertEqualPositions(sourceFiles, sourceFiles[0], "for");
-
-			assertEqualPositions(sourceFiles, sourceFiles[0], "aTestParam1");
-			assertEqualPositions(sourceFiles, sourceFiles[0], "aTestParam2");
-
-			assertEqualPositions(sourceFiles, sourceFiles[0], "aTestString");
-
-		}, Arrays.copyOf(sourceFiles, sourceFiles.length));
-	}
-
-	@Test
-	public void testSourceMaps() throws Throwable {
-		JSweetTranspiler transpiler = transpilerTest().getTranspiler();
-		transpiler.setGenerateSourceMaps(true);
-		SourceFile[] sourceFiles = { getSourceFile(Point.class), getSourceFile(Vector.class),
-				getSourceFile(AnimatedElement.class), getSourceFile(Line.class), getSourceFile(MobileElement.class),
-				getSourceFile(Rectangle.class), getSourceFile(Direction.class), getSourceFile(Collisions.class),
-				getSourceFile(Ball.class), getSourceFile(Globals.class), getSourceFile(BlockElement.class),
-				getSourceFile(Factory.class), getSourceFile(GameArea.class), getSourceFile(GameManager.class),
-				getSourceFile(Player.class) };
-		transpile(logHandler -> {
-
-			logger.info("transpilation finished: " + transpiler.getModuleKind());
-			logHandler.assertNoProblems();
-			logger.info(sourceFiles[11].getSourceMap().toString());
-
-			assertEqualPositions(sourceFiles, sourceFiles[0], " distance(");
-			assertEqualPositions(sourceFiles, sourceFiles[0], "class Point");
-			assertEqualPositions(sourceFiles, sourceFiles[3], "invalid query on non-vertical lines");
-
-			assertEqualPositions(sourceFiles, sourceFiles[11], "class InnerClass");
-			assertEqualPositions(sourceFiles, sourceFiles[11], "inner class");
-
-		}, Arrays.copyOf(sourceFiles, sourceFiles.length));
-	}
-
-	private void assertEqualPositions(SourceFile[] sourceFiles, SourceFile sourceFile, String codeSnippet) {
-		assertEqualPositions(sourceFiles, sourceFile, codeSnippet, codeSnippet);
-	}
-
-	private void assertEqualPositions(SourceFile[] sourceFiles, SourceFile sourceFile, String javaCodeSnippet,
-			String tsCodeSnippet) {
-		logger.info("assert equal positions for '" + javaCodeSnippet + "' -> '" + tsCodeSnippet + "'");
-		SourcePosition tsPosition = getPosition(sourceFile.getTsFile(), tsCodeSnippet);
-		SourcePosition javaPosition = SourceFile.findOriginPosition(tsPosition, Arrays.asList(sourceFiles));
-		logger.info("org: " + javaPosition + " --> " + tsPosition);
-		assertEquals(getPosition(sourceFile.getJavaFile(), javaCodeSnippet).getStartLine(),
-				javaPosition.getStartLine());
-	}
-
-	private SourcePosition getPosition(File f, String codeSnippet) {
-		try {
-			String s1 = FileUtils.readFileToString(f);
-			int index = s1.indexOf(codeSnippet);
-			if (index == -1) {
-				System.out.println("DO NOT FIND: " + codeSnippet);
-				System.out.println(s1);
-			}
-			String s = s1.substring(0, index);
-			return new SourcePosition(f, null, StringUtils.countMatches(s, "\n") + 1,
-					s.length() - s.lastIndexOf("\n") - 1);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	@Test
-	public void testExtension() {
-		TranspilerTestRunner transpilerTest = new TranspilerTestRunner(getCurrentTestOutDir(), new JSweetFactory() {
-			@Override
-			public PrinterAdapter createAdapter(JSweetContext context) {
-				return new AddPrefixToNonPublicMembersAdapter(super.createAdapter(context));
-			}
-		});
-		transpilerTest.eval(ModuleKind.none, (logHandler, result) -> {
-			logHandler.assertNoProblems();
-		}, getSourceFile(PrefixExtension.class));
-	}
-
-	@Test
-	public void testExtension2() {
-		TranspilerTestRunner transpilerTest = new TranspilerTestRunner(getCurrentTestOutDir(), new JSweetFactory() {
-			@Override
-			public Java2TypeScriptAdapter createAdapter(JSweetContext context) {
-				return new Java2TypeScriptAdapter(super.createAdapter(context)) {
-					{
-						context.addAnnotation("@Erased", "**.testMethod(..)", "source.transpiler.AClass",
-								"source.transpiler.p");
-					}
-				};
-			}
-		});
-		transpilerTest.getTranspiler().setBundle(true);
-		transpilerTest.eval(ModuleKind.none, true, (logHandler, result) -> {
-			logHandler.assertNoProblems();
-		}, getSourceFile(A.class), getSourceFile(B.class), getSourceFile(Extended.class));
-	}
-
-	@Test
-	public void testDefaultHeader() {
-		SourceFile f = getSourceFile(CanvasDrawing.class);
-		transpile(logHandler -> {
-			logHandler.assertNoProblems();
-			try {
-				String generatedCode = FileUtils.readFileToString(f.getTsFile());
-				assertTrue(generatedCode.startsWith("/* Generated from Java with JSweet"));
-			} catch (Exception e) {
-				e.printStackTrace();
-				fail(e.getMessage());
-			}
-		}, f);
-		transpilerTest().getTranspiler().setBundle(true);
-		transpile(ModuleKind.none, logHandler -> {
-			logHandler.assertNoProblems();
-			try {
-				String generatedCode = FileUtils.readFileToString(f.getTsFile());
-				assertTrue(generatedCode.startsWith("/* Generated from Java with JSweet"));
-			} catch (Exception e) {
-				e.printStackTrace();
-				fail(e.getMessage());
-			}
-		}, f);
-	}
-
-	@Test
-	public void testHeaderFile() {
-		SourceFile f = getSourceFile(CanvasDrawing.class);
-		File headerFile = new File(f.getJavaFile().getParentFile(), "header.txt");
-		transpilerTest().getTranspiler().setHeaderFile(headerFile);
-		transpile(logHandler -> {
-			logHandler.assertNoProblems();
-			try {
-				String generatedCode = FileUtils.readFileToString(f.getTsFile());
-				assertTrue(generatedCode.startsWith("// This is a test header..."));
-			} catch (Exception e) {
-				e.printStackTrace();
-				fail(e.getMessage());
-			}
-		}, f);
-		transpilerTest().getTranspiler().setBundle(true);
-		transpile(ModuleKind.none, logHandler -> {
-			logHandler.assertNoProblems();
-			try {
-				String generatedCode = FileUtils.readFileToString(f.getTsFile());
-				assertTrue(generatedCode.startsWith("// This is a test header..."));
-			} catch (Exception e) {
-				e.printStackTrace();
-				fail(e.getMessage());
-			}
-		}, f);
-	}
-
-	@Test
-	public void testConfigurationFile() {
-		SourceFile f = getSourceFile(CanvasDrawing.class);
-		File configurationFile = new File(f.getJavaFile().getParentFile(), "configuration-nobundle.json");
-		TranspilerTestRunner transpilerTest = new TranspilerTestRunner(configurationFile, getCurrentTestOutDir(), new JSweetFactory());
-		assertTrue(transpilerTest.getTranspiler().getHeaderFile().getPath().endsWith("header.txt"));
-		assertFalse(transpilerTest.getTranspiler().isBundle());
-		transpilerTest.transpile(logHandler -> {
-			logHandler.assertNoProblems();
-			try {
-				String generatedCode = FileUtils.readFileToString(f.getTsFile());
-				assertTrue(generatedCode.startsWith("// This is a test header..."));
-			} catch (Exception e) {
-				e.printStackTrace();
-				fail(e.getMessage());
-			}
-		}, f);
-		configurationFile = new File(f.getJavaFile().getParentFile(), "configuration-bundle.json");
-		transpilerTest = new TranspilerTestRunner(configurationFile, getCurrentTestOutDir(), new JSweetFactory());
-		assertTrue(transpilerTest.getTranspiler().getHeaderFile().getPath().endsWith("header.txt"));
-		assertTrue(transpilerTest.getTranspiler().isBundle());
-		transpilerTest.transpile(ModuleKind.none, logHandler -> {
-			logHandler.assertNoProblems();
-			try {
-				String generatedCode = FileUtils.readFileToString(f.getTsFile());
-				assertTrue(generatedCode.startsWith("// This is a test header..."));
-			} catch (Exception e) {
-				e.printStackTrace();
-				fail(e.getMessage());
-			}
-		}, f);
-	}
+    @Test
+    public void testConfigurationFile() {
+        SourceFile f = getSourceFile(CanvasDrawing.class);
+        File configurationFile = new File(f.getJavaFile().getParentFile(), "configuration-nobundle.json");
+        TranspilerTestRunner transpilerTest = new TranspilerTestRunner(configurationFile, getCurrentTestOutDir(),
+                new JSweetFactory());
+        assertTrue(transpilerTest.getTranspiler().getHeaderFile().getPath().endsWith("header.txt"));
+        assertFalse(transpilerTest.getTranspiler().isBundle());
+        transpilerTest.transpile(logHandler -> {
+            logHandler.assertNoProblems();
+            try {
+                String generatedCode = FileUtils.readFileToString(f.getTsFile());
+                assertTrue(generatedCode.startsWith("// This is a test header..."));
+            } catch (Exception e) {
+                e.printStackTrace();
+                fail(e.getMessage());
+            }
+        }, f);
+        configurationFile = new File(f.getJavaFile().getParentFile(), "configuration-bundle.json");
+        transpilerTest = new TranspilerTestRunner(configurationFile, getCurrentTestOutDir(), new JSweetFactory());
+        assertTrue(transpilerTest.getTranspiler().getHeaderFile().getPath().endsWith("header.txt"));
+        assertTrue(transpilerTest.getTranspiler().isBundle());
+        transpilerTest.transpile(ModuleKind.none, logHandler -> {
+            logHandler.assertNoProblems();
+            try {
+                String generatedCode = FileUtils.readFileToString(f.getTsFile());
+                assertTrue(generatedCode.startsWith("// This is a test header..."));
+            } catch (Exception e) {
+                e.printStackTrace();
+                fail(e.getMessage());
+            }
+        }, f);
+    }
 
 }

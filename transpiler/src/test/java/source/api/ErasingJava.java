@@ -1,10 +1,11 @@
 package source.api;
 
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.ws.rs.ConstrainedTo;
+import javax.ws.rs.RuntimeType;
 
 import jsweet.lang.Erased;
 
-@XmlRootElement
+@ConstrainedTo(RuntimeType.SERVER)
 public class ErasingJava {
 	private int id;
 	private String sportIdent;

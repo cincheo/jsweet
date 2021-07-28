@@ -24,37 +24,37 @@ import java.util.function.Supplier;
 
 public class References {
 
-	void m(String s, int i) {
-		$export("s", s);
-		$export("i", i);
-		$export("m", m(MyObject::new));
-		$export("m2", m2(MyObject[]::new));
-		
-		References.this.toString();
-	}
+    void m(String s, int i) {
+        $export("s", s);
+        $export("i", i);
+        $export("m", m(MyObject::new));
+        $export("m2", m2(MyObject[]::new));
 
-	void m1(BiConsumer<String, Integer> c) {
-		c.accept("foo", 5);
-	}
+        References.this.toString();
+    }
 
-	public static void main(String[] args) {
-		References r = new References();
-		r.m1(r::m);
-	}
+    void m1(BiConsumer<String, Integer> c) {
+        c.accept("foo", 5);
+    }
 
-	public static <T> Object m(Supplier<T> supplier) {
-		return supplier.get();
-	}
+    public static void main(String[] args) {
+        References r = new References();
+        r.m1(r::m);
+    }
 
-	public static <T> T[] m2(IntFunction<T[]> intFunction) {
-		return intFunction.apply(2);
-	}
-	
+    public static <T> Object m(Supplier<T> supplier) {
+        return supplier.get();
+    }
+
+    public static <T> T[] m2(IntFunction<T[]> intFunction) {
+        return intFunction.apply(2);
+    }
+
 }
 
 class MyObject {
-	@Override
-	public String toString() {
-		return "O";
-	}
+    @Override
+    public String toString() {
+        return "O";
+    }
 }

@@ -33,6 +33,7 @@ import source.init.ConstructorField;
 import source.init.ConstructorFieldInInterface;
 import source.init.ConstructorMethod;
 import source.init.ConstructorMethodInInterface;
+import source.init.DependentFields;
 import source.init.FieldDefaultValues;
 import source.init.Initializer;
 import source.init.InitializerStatementConditionError;
@@ -246,6 +247,15 @@ public class InitTests extends AbstractTest {
 		}, getSourceFile(FieldDefaultValues.class));
 	}
 
+	@Test
+    public void testDependentFields() {
+        eval((logHandler, result) -> {
+            logHandler.assertNoProblems();
+            assertEquals("value:1", result.get("i1"));
+            assertEquals("value:0", result.get("j1"));
+        }, getSourceFile(DependentFields.class));
+    }
+	
 	@Test
 	public void testCloning() {
 		eval(ModuleKind.none, (logHandler, result) -> {

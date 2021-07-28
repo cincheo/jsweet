@@ -7,7 +7,7 @@ public class HTMLCollection extends Iterable<Element> {
     /**
       * Sets or retrieves the number of objects in a collection.
       */
-    public double length;
+    public int length;
     /**
       * Retrieves an object from various collections.
       */

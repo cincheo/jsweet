@@ -68,8 +68,7 @@ import java.util.stream.Collectors;
  * 
  * @author Renaud Pawlak
  * 
- * @param <T>
- *            the types of the nodes in the graph
+ * @param <T> the types of the nodes in the graph
  */
 public class DirectedGraph<T> implements Collection<T> {
 
@@ -238,10 +237,8 @@ public class DirectedGraph<T> implements Collection<T> {
 	/**
 	 * Add an edge between the given elements (nodes).
 	 * 
-	 * @param sourceElement
-	 *            the source element/node
-	 * @param destinationElement
-	 *            the destination element/node
+	 * @param sourceElement      the source element/node
+	 * @param destinationElement the destination element/node
 	 */
 	public void addEdge(T sourceElement, T destinationElement) {
 		if (sourceElement.equals(destinationElement)) {
@@ -254,12 +251,11 @@ public class DirectedGraph<T> implements Collection<T> {
 	}
 
 	/**
-	 * Automatically builds the edges between all the nodes of the graph by
-	 * using the given comparator. If the comparator returns 0, then no edge is
+	 * Automatically builds the edges between all the nodes of the graph by using
+	 * the given comparator. If the comparator returns 0, then no edge is
 	 * constructor between the compared nodes.
 	 * 
-	 * @param nodeComparator
-	 *            a comparator which is used to build the edges
+	 * @param nodeComparator a comparator which is used to build the edges
 	 */
 	public <U extends T> void buildEdges(Comparator<U> nodeComparator) {
 		for (T e1 : nodes.keySet()) {
@@ -277,13 +273,10 @@ public class DirectedGraph<T> implements Collection<T> {
 	}
 
 	/**
-	 * Adds some edges form the source elements to the given destination
-	 * elements.
+	 * Adds some edges form the source elements to the given destination elements.
 	 * 
-	 * @param sourceElement
-	 *            the source of the edges
-	 * @param destinationElements
-	 *            the destination elements of the edges
+	 * @param sourceElement       the source of the edges
+	 * @param destinationElements the destination elements of the edges
 	 */
 	@SuppressWarnings("unchecked")
 	public void addEdges(T sourceElement, T... destinationElements) {
@@ -294,10 +287,8 @@ public class DirectedGraph<T> implements Collection<T> {
 	 * Tells if this graph contains an edge between the given source and the
 	 * destination elements/nodes.
 	 * 
-	 * @param sourceElement
-	 *            the source node
-	 * @param destinationElement
-	 *            the destination node
+	 * @param sourceElement      the source node
+	 * @param destinationElement the destination node
 	 * @return true if an edge is found, false otherwise
 	 */
 	public boolean hasEdge(T sourceElement, T destinationElement) {
@@ -361,8 +352,7 @@ public class DirectedGraph<T> implements Collection<T> {
 	 * 
 	 * @author Renaud Pawlak
 	 *
-	 * @param <T>
-	 *            the type of object hold in the graph
+	 * @param <T> the type of object hold in the graph
 	 */
 	public static class Node<T> {
 		private DirectedGraph<T> graph;
@@ -390,10 +380,8 @@ public class DirectedGraph<T> implements Collection<T> {
 		/**
 		 * Creates a new node for the given graph and holding the given element.
 		 * 
-		 * @param graph
-		 *            the graph this node belongs to
-		 * @param element
-		 *            the element hold by this node
+		 * @param graph   the graph this node belongs to
+		 * @param element the element hold by this node
 		 */
 		public Node(DirectedGraph<T> graph, T element) {
 			this.graph = graph;
@@ -405,8 +393,8 @@ public class DirectedGraph<T> implements Collection<T> {
 		}
 
 		/**
-		 * Adds an edge starting from this node and going to a node holding the
-		 * given element.
+		 * Adds an edge starting from this node and going to a node holding the given
+		 * element.
 		 */
 		public void addEdge(T destinationElement) {
 			Node<T> node = graph.nodes.get(destinationElement);
@@ -420,8 +408,8 @@ public class DirectedGraph<T> implements Collection<T> {
 		}
 
 		/**
-		 * Adds edges starting from this node and going to nodes holding the
-		 * given elements.
+		 * Adds edges starting from this node and going to nodes holding the given
+		 * elements.
 		 */
 		@SuppressWarnings("unchecked")
 		public void addEdges(T... destinationElements) {
@@ -469,8 +457,7 @@ public class DirectedGraph<T> implements Collection<T> {
 	 * 
 	 * @author Renaud Pawlak
 	 *
-	 * @param <T>
-	 *            the type of the objects being stored in the graph
+	 * @param <T> the type of the objects being stored in the graph
 	 */
 	public static class Edge<T> {
 		/**
@@ -485,10 +472,8 @@ public class DirectedGraph<T> implements Collection<T> {
 		/**
 		 * Creates a new edge.
 		 * 
-		 * @param from
-		 *            the start node
-		 * @param to
-		 *            the end node
+		 * @param from the start node
+		 * @param to   the end node
 		 */
 		public Edge(Node<T> from, Node<T> to) {
 			this.from = from;
@@ -517,15 +502,13 @@ public class DirectedGraph<T> implements Collection<T> {
 	}
 
 	/**
-	 * Sorts this graph using a topological sort algorithm given in this
-	 * <a href=
+	 * Sorts this graph using a topological sort algorithm given in this <a href=
 	 * "http://stackoverflow.com/questions/2739392/sample-directed-graph-and-topological-sort-code"
 	 * >StackOverflow thread</a>.
 	 * 
 	 * @return the list of nodes, sorted according to the topological sort
-	 * @throws CycleFoundException
-	 *             thrown if a cycle is found in the graph (in that case no
-	 *             topological sort is possible)
+	 * @throws CycleFoundException thrown if a cycle is found in the graph (in that
+	 *                             case no topological sort is possible)
 	 */
 	public List<T> topologicalSort(Consumer<Node<T>> cycleHandler) {
 		List<Node<T>> allNodes = new ArrayList<Node<T>>(nodes.values());
@@ -580,10 +563,8 @@ public class DirectedGraph<T> implements Collection<T> {
 	/**
 	 * Dumps the found cycles to System.out.
 	 * 
-	 * @param nodes
-	 *            the nodes in which to look for cycles
-	 * @param toString
-	 *            the element's toString function
+	 * @param nodes    the nodes in which to look for cycles
+	 * @param toString the element's toString function
 	 */
 	public static <T> void dumpCycles(List<Node<T>> nodes, Function<T, String> toString) {
 		for (Node<T> node : nodes) {
@@ -612,7 +593,7 @@ public class DirectedGraph<T> implements Collection<T> {
 	/**
 	 * Just for testing.
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		DirectedGraph<Integer> g = new DirectedGraph<Integer>();
 		g.add(7, 5, 3, 11, 8, 2, 9, 10);
 		System.out.println(g.nodes.values());

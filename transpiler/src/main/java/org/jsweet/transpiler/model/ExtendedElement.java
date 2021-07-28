@@ -21,6 +21,7 @@ package org.jsweet.transpiler.model;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 
+import org.jsweet.transpiler.SourcePosition;
 import org.jsweet.transpiler.extension.PrinterAdapter;
 
 /**
@@ -37,36 +38,38 @@ import org.jsweet.transpiler.extension.PrinterAdapter;
  */
 public interface ExtendedElement {
 
-	/**
-	 * Gets the type that corresponds to this element, if any.
-	 * 
-	 * <p>
-	 * Not all elements have a type. For instance, statements such as if, case,
-	 * for, and so on do not have a type, while expressions have a type.
-	 * 
-	 * <p>
-	 * To return the corresponding element rather than the type mirror, use
-	 * {@link #getTypeAsElement()} instead.
-	 * 
-	 * see {@link #getTypeAsElement()}
-	 */
-	TypeMirror getType();
+    /**
+     * Gets the type that corresponds to this element, if any.
+     * 
+     * <p>
+     * Not all elements have a type. For instance, statements such as if, case, for,
+     * and so on do not have a type, while expressions have a type.
+     * 
+     * <p>
+     * To return the corresponding element rather than the type mirror, use
+     * {@link #getTypeAsElement()} instead.
+     * 
+     * see {@link #getTypeAsElement()}
+     */
+    TypeMirror getType();
 
-	/**
-	 * Gets the standard element that corresponds to the type (if any).
-	 * 
-	 * @see #getType()
-	 */
-	Element getTypeAsElement();
+    /**
+     * Gets the standard element that corresponds to the type (if any).
+     * 
+     * @see #getType()
+     */
+    Element getTypeAsElement();
 
-	/**
-	 * Tells if this extended element is a constant expression.
-	 */
-	boolean isConstant();
+    /**
+     * Tells if this extended element is a constant expression.
+     */
+    boolean isConstant();
 
-	/**
-	 * Tells if this extended element is a string literal.
-	 */
-	boolean isStringLiteral();
+    /**
+     * Tells if this extended element is a string literal.
+     */
+    boolean isStringLiteral();
+
+    SourcePosition getSourcePosition();
 
 }

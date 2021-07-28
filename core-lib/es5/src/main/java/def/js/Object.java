@@ -235,6 +235,11 @@ public class Object {
 	native public static Array<String> keys(java.lang.Object o);
 
 	/**
+	 * Invoke method of given name on this object with given parameters.
+	 */
+	native public <T> T $invoke(java.lang.String methodName, java.lang.Object... args);
+	
+	/**
 	 * Gets the value for the given key. Generates <code>this[key]</code>.
 	 */
 	native public <T> T $get(java.lang.String key);

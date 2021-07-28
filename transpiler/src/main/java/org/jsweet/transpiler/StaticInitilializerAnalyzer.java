@@ -22,95 +22,105 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.PackageElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 
 import org.apache.log4j.Logger;
 import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.util.DirectedGraph;
 import org.jsweet.transpiler.util.ReferenceGrabber;
+import org.jsweet.transpiler.util.Util;
 
-import com.sun.tools.javac.code.Symbol.PackageSymbol;
-import com.sun.tools.javac.code.Symbol.TypeSymbol;
-import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.JCBlock;
-import com.sun.tools.javac.tree.JCTree.JCClassDecl;
-import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
-import com.sun.tools.javac.tree.JCTree.JCImport;
-import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
-import com.sun.tools.javac.tree.TreeScanner;
+import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ImportTree;
+import com.sun.source.tree.PackageTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePathScanner;
+import com.sun.source.util.Trees;
 
 /**
  * This AST scanner creates a class dependency graph for each package, based on
  * static field initializers.
  * 
  * @author Renaud Pawlak
+ * @author Louis Grignon
  */
-public class StaticInitilializerAnalyzer extends TreeScanner {
+public class StaticInitilializerAnalyzer extends TreePathScanner<Void, Trees> {
 
 	private JSweetContext context;
-	private JCCompilationUnit currentTopLevel;
+	private CompilationUnitTree currentCompilationUnit;
 	private int pass = 1;
 	private static final Logger logger = Logger.getLogger(StaticInitilializerAnalyzer.class);
 	/**
-	 * A map containing the static initializers dependencies for each package
-	 * when using modules (empty otherwise).
+	 * A map containing the static initializers dependencies for each package when
+	 * using modules (empty otherwise).
 	 */
-	public Map<PackageSymbol, DirectedGraph<JCCompilationUnit>> staticInitializersDependencies = new HashMap<>();
+	public Map<PackageTree, DirectedGraph<CompilationUnitTree>> staticInitializersDependencies = new HashMap<>();
 
 	/**
-	 * A map containing the static initializers dependencies when not using
-	 * modules (empty otherwise).
+	 * A map containing the static initializers dependencies when not using modules
+	 * (empty otherwise).
 	 */
-	public DirectedGraph<JCCompilationUnit> globalStaticInitializersDependencies = new DirectedGraph<>();
+	public DirectedGraph<CompilationUnitTree> globalStaticInitializersDependencies = new DirectedGraph<>();
 
 	/**
 	 * Maps the types to the compilation units in which they are declared.
 	 */
-	public Map<TypeSymbol, JCCompilationUnit> typesToCompilationUnits = new HashMap<>();
+	public Map<TypeElement, CompilationUnitTree> typesToCompilationUnits = new HashMap<>();
 
 	/**
 	 * Creates the analyzer.
 	 */
 	public StaticInitilializerAnalyzer(JSweetContext context) {
 		this.context = context;
+		this.context.referenceAnalyzer = this;
 	}
 
-	private DirectedGraph<JCCompilationUnit> getGraph() {
-		if (context.useModules) {
-			DirectedGraph<JCCompilationUnit> graph = staticInitializersDependencies.get(currentTopLevel.packge);
-			if (graph == null) {
-				graph = new DirectedGraph<>();
-				staticInitializersDependencies.put(currentTopLevel.packge, graph);
-			}
-			return graph;
-		} else {
-			return globalStaticInitializersDependencies;
-		}
+	private DirectedGraph<CompilationUnitTree> getGraph() {
+	    return globalStaticInitializersDependencies;
 	}
+	
+	public boolean isDependent(CompilationUnitTree cuSource, TypeElement target) {
+	    CompilationUnitTree cuTarget = typesToCompilationUnits.get(target);
+        if (cuSource != null && cuTarget != null) {
+            return globalStaticInitializersDependencies.hasEdge(cuTarget, cuSource);
+        }
+        return false;
+    }
 
-	Set<Type> currentTopLevelImportedTypes = new HashSet<>();
+	Set<TypeMirror> currentTopLevelImportedTypes = new HashSet<>();
 
 	@Override
-	public void visitTopLevel(JCCompilationUnit compilationUnit) {
-		currentTopLevel = compilationUnit;
+	public Void visitCompilationUnit(CompilationUnitTree compilationUnit, Trees trees) {
+
+		currentCompilationUnit = compilationUnit;
 		if (pass == 1) {
 			getGraph().add(compilationUnit);
 		} else {
-			if (compilationUnit.packge.getQualifiedName().toString().startsWith(JSweetConfig.LIBS_PACKAGE + ".")) {
+			if (context.util.getPackageFullNameForCompilationUnit(compilationUnit)
+					.startsWith(JSweetConfig.LIBS_PACKAGE + ".")) {
+
 				// skip definitions
-				return;
+				return null;
 			}
 			currentTopLevelImportedTypes.clear();
-			for (JCImport i : compilationUnit.getImports()) {
-				if (i.qualid.type != null) {
-					currentTopLevelImportedTypes.add(i.qualid.type);
+			for (ImportTree importTree : compilationUnit.getImports()) {
+
+				TypeMirror importedType = getImportedType(compilationUnit, importTree);
+				if (importedType != null) {
+					currentTopLevelImportedTypes.add(importedType);
 				}
-				// TypeSymbol type = Util.getImportedType(i);
+				// TypeElement type = Util.getImportedType(i);
 				// if (type != null) {
-				// JCCompilationUnit target = typesToCompilationUnits.get(type);
+				// CompilationUnitTree target = typesToCompilationUnits.get(type);
 				// if (target != null && getGraph().contains(target)) {
 				// logger.debug("adding import dependency: " +
 				// currentTopLevel.getSourceFile() + " -> " +
@@ -121,96 +131,79 @@ public class StaticInitilializerAnalyzer extends TreeScanner {
 
 			}
 		}
-		super.visitTopLevel(compilationUnit);
-		currentTopLevel = null;
+
+		super.visitCompilationUnit(compilationUnit, trees);
+		currentCompilationUnit = null;
+
+		return null;
+	}
+
+	private TypeMirror getImportedType(CompilationUnitTree compilationUnit, ImportTree importTree) {
+		Tree importedIdentifier = importTree.getQualifiedIdentifier();
+		TypeMirror importedType = Util.getType(importedIdentifier);
+		return importedType;
 	}
 
 	@Override
-	public void visitClassDef(JCClassDecl classdecl) {
+	public Void visitClass(ClassTree classTree, Trees trees) {
 		if (pass == 1) {
-			typesToCompilationUnits.put(classdecl.sym, currentTopLevel);
+			typesToCompilationUnits.put((TypeElement) Util.getElement(classTree), currentCompilationUnit);
 		} else {
-			if (classdecl.extending != null) {
-				JCCompilationUnit target = typesToCompilationUnits.get(classdecl.extending.type.tsym);
+			if (classTree.getExtendsClause() != null) {
+				CompilationUnitTree target = typesToCompilationUnits.get(Util.getTypeElement(classTree.getExtendsClause()));
 				if (target != null && getGraph().contains(target)) {
-					logger.debug("adding inheritance dependency: " + currentTopLevel.getSourceFile() + " -> "
+					logger.debug("adding inheritance dependency: " + currentCompilationUnit.getSourceFile() + " -> "
 							+ target.getSourceFile());
-					getGraph().addEdge(target, currentTopLevel);
+					getGraph().addEdge(target, currentCompilationUnit);
 				}
 			}
 
-			for (JCTree member : classdecl.defs) {
-				if (member instanceof JCVariableDecl) {
-					JCVariableDecl field = (JCVariableDecl) member;
+			for (Tree member : classTree.getMembers()) {
+				if (member instanceof VariableTree) {
+					VariableTree field = (VariableTree) member;
 					if (field.getModifiers().getFlags().contains(Modifier.STATIC) && field.getInitializer() != null
-							&& !context.hasAnnotationType(field.sym, JSweetConfig.ANNOTATION_STRING_TYPE,
+							&& !context.hasAnnotationType(Util.getElement(field), JSweetConfig.ANNOTATION_STRING_TYPE,
 									JSweetConfig.ANNOTATION_ERASED)) {
 						acceptReferences(field.getInitializer());
 					}
-				} else if (member instanceof JCBlock) {
-					JCBlock initializer = (JCBlock) member;
+				} else if (member instanceof BlockTree) {
+					BlockTree initializer = (BlockTree) member;
 					if (initializer.isStatic()) {
 						acceptReferences(initializer);
 					}
 				}
 			}
 		}
-		super.visitClassDef(classdecl);
+		return super.visitClass(classTree, trees);
 	}
 
-	private void acceptReferences(JCTree tree) {
+	private void acceptReferences(Tree tree) {
 		ReferenceGrabber refGrabber = new ReferenceGrabber();
-		refGrabber.scan(tree);
-		for (TypeSymbol type : refGrabber.referencedTypes) {
-			if (!context.useModules || currentTopLevel.packge.equals(type.packge())) {
-				JCCompilationUnit target = typesToCompilationUnits.get(type);
-				if (target != null && !currentTopLevel.equals(target) && getGraph().contains(target)) {
-					logger.debug("adding static initializer dependency: " + currentTopLevel.getSourceFile() + " -> "
-							+ target.getSourceFile());
-					getGraph().addEdge(target, currentTopLevel);
+		refGrabber.scan(tree, context.trees);
+		for (TypeMirror referencedType : refGrabber.referencedTypes) {
+			TypeElement referencedTypeElement = (TypeElement) context.types.asElement(referencedType);
+			PackageElement referencedPackageElement = context.util.getParentElement(referencedTypeElement,
+					PackageElement.class);
+			PackageElement currentPackageElement = (PackageElement) Util.getElement(currentCompilationUnit.getPackage());
+
+			if (!context.useModules || (Objects.equals(currentPackageElement, referencedPackageElement))) {
+				CompilationUnitTree target = typesToCompilationUnits.get(referencedTypeElement);
+				if (target != null && !currentCompilationUnit.equals(target) && getGraph().contains(target)) {
+					logger.debug("adding static initializer dependency: " + currentCompilationUnit.getSourceFile()
+							+ " -> " + target.getSourceFile());
+					getGraph().addEdge(target, currentCompilationUnit);
 				}
 			}
 		}
 	}
 
-	// @Override
-	// public void visitNewClass(JCNewClass newClass) {
-	// if (pass == 1) {
-	// return;
-	// }
-	// if (!Util.isInterface(newClass.type.tsym) &&
-	// currentTopLevelImportedTypes.contains(newClass.type)) {
-	// JCCompilationUnit target =
-	// typesToCompilationUnits.get(newClass.type.tsym);
-	// if (target != null && !currentTopLevel.equals(target) &&
-	// getGraph().contains(target)) {
-	// logger.debug("adding object construction dependency: " +
-	// currentTopLevel.getSourceFile() + " -> " + target.getSourceFile());
-	// getGraph().addEdge(target, currentTopLevel);
-	// }
-	// }
-	// }
-
-	boolean isImported(Type type) {
-		for (JCImport i : currentTopLevel.getImports()) {
-			if (i.type != null && i.type.tsym.equals(type.tsym)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
 	/**
 	 * Processes all the given compilation units.
 	 */
-	public void process(Collection<JCCompilationUnit> compilationUnits) {
-		for (JCCompilationUnit cu : compilationUnits) {
-			scan(cu);
-		}
+	public void process(Collection<CompilationUnitTree> compilationUnits) {
+		scan(compilationUnits, context.trees);
 		pass++;
-		for (JCCompilationUnit cu : compilationUnits) {
-			scan(cu);
-		}
+		scan(compilationUnits, context.trees);
 	}
 
 }

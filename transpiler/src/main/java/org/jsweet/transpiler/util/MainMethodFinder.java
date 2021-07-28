@@ -1,19 +1,42 @@
 package org.jsweet.transpiler.util;
 
-import com.sun.tools.javac.code.Symbol.MethodSymbol;
-import com.sun.tools.javac.tree.TreeScanner;
-import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 
-public class MainMethodFinder extends TreeScanner {
-	public MethodSymbol mainMethod;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.util.TreePathScanner;
+import com.sun.source.util.Trees;
 
-	public void visitMethodDef(JCMethodDecl methodDecl) {
-		MethodSymbol method = methodDecl.sym;
+/**
+ * Finds the first main method in a tree.
+ * 
+ * Triggers a {@link MainMethodFoundSignal} exception (containing main method) when found 
+ * 
+ * @author Louis Grignon
+ *
+ */
+public class MainMethodFinder extends TreePathScanner<Void, Trees> {
+	private ExecutableElement mainMethod;
+
+	public static class MainMethodFoundSignal extends RuntimeException {
+		public final ExecutableElement mainMethod;
+
+		public MainMethodFoundSignal(ExecutableElement mainMethod) {
+			this.mainMethod = mainMethod;
+		}
+
+		private static final long serialVersionUID = 1L;
+	}
+
+	@Override
+	public Void visitMethod(MethodTree methodTree, Trees trees) {
+		ExecutableElement method = (ExecutableElement) trees.getElement(getCurrentPath());
 		if ("main(java.lang.String[])".equals(method.toString())) {
-			if (method.isStatic()) {
+			if (method.getModifiers().contains(Modifier.STATIC)) {
 				mainMethod = method;
-				throw new RuntimeException();
+				throw new MainMethodFoundSignal(mainMethod);
 			}
 		}
+		return null;
 	}
 }

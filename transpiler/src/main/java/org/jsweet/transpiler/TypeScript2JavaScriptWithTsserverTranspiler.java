@@ -5,6 +5,7 @@ import static java.util.stream.Collectors.toList;
 import java.io.File;
 import java.util.Collection;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import org.jsweet.transpiler.util.ErrorCountTranspilationHandler;
 import org.jsweet.transpiler.util.Position;
@@ -12,6 +13,7 @@ import org.jsweet.transpiler.util.ProcessUtil;
 
 import ts.TypeScriptException;
 import ts.TypeScriptNoContentAvailableException;
+import ts.client.ExternalFile;
 import ts.client.ITypeScriptServiceClient;
 import ts.client.ScriptKindName;
 import ts.client.TypeScriptServiceClient;
@@ -21,7 +23,6 @@ import ts.client.diagnostics.DiagnosticEvent;
 import ts.client.diagnostics.IDiagnostic;
 import ts.client.projectinfo.ProjectInfo;
 import ts.cmd.tsc.CompilerOptions;
-import ts.internal.client.protocol.OpenExternalProjectRequestArgs.ExternalFile;
 
 public class TypeScript2JavaScriptWithTsserverTranspiler extends TypeScript2JavaScriptTranspiler {
 
@@ -89,7 +90,7 @@ public class TypeScript2JavaScriptWithTsserverTranspiler extends TypeScript2Java
 		logger.debug("tsserver project opened: " + projectFileName);
 
 		for (String fileName : sourceFilePaths) {
-			client.updateFile(fileName, null);
+			client.updateFile(fileName, null, options.getHangingTscTimeout(), TimeUnit.SECONDS);
 		}
 
 		for (String fileName : sourceFilePaths) {
@@ -117,6 +118,8 @@ public class TypeScript2JavaScriptWithTsserverTranspiler extends TypeScript2Java
 
 					SourcePosition originalPosition = new SourcePosition(fileInError, null,
 							new Position(error.getStartLocation().getLine(), error.getStartLocation().getOffset()));
+					logger.error("TypeScript error: " + error.getFullText() + " at " + originalPosition.getFile() + "("
+							+ originalPosition.getStartLine() + ")");
 					SourcePosition position = SourceFile.findOriginPosition(originalPosition, tsSourceFiles);
 					if (position == null) {
 						transpilationHandler.report(JSweetProblem.INTERNAL_TSC_ERROR, originalPosition,

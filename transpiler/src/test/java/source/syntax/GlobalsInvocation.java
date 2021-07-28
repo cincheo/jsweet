@@ -24,30 +24,41 @@ import def.js.String;
 
 public class GlobalsInvocation {
 
-	String firstName;
-	String lastName;
+    String firstName;
+    String lastName;
 
-	public String getFullName() {
-		return toTitleCase(string(firstName + " " + lastName));
-	}
-	
-	public void m() {
-		Globals.m();
-		source.syntax.Globals.m();
-	}
+    public String getFullName() {
+        return toTitleCase(string(firstName + " " + lastName));
+    }
+
+    public void m() {
+        Globals.m();
+        source.syntax.Globals.m();
+    }
 }
 
 /**
  * This is a doc comment to test comments.
  */
 class Globals {
-	/**
-	 * A global method.
-	 */
-	public static String toTitleCase(String str) {
-		return str.replace(new RegExp("/\\w\\S*/g"), (tok, i) -> {
-			return tok.charAt(0).toUpperCase().concat(tok.substr(1).toLowerCase());
-		});
-	}
-	public static void m() {};
+    /**
+     * A global method.
+     */
+    public static String toTitleCase(String str) {
+        return str.replace(new RegExp("/\\w\\S*/g"), (tok, i) -> {
+            return tok.charAt(0).toUpperCase().concat(tok.substr(1).toLowerCase());
+        });
+    }
+
+    public static void m() {
+    };
+
+    public final static int explicitFinalGlobal = 1;
+    public static int implicitFinalGlobal = 1;
+    public static int notFinalGlobal = 1;
+
+    public static void init() {
+        notFinalGlobal = 1;
+    }
+
 }

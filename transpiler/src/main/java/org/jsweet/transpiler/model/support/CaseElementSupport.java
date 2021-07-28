@@ -20,17 +20,17 @@ package org.jsweet.transpiler.model.support;
 
 import org.jsweet.transpiler.model.CaseElement;
 
-import com.sun.tools.javac.tree.JCTree.JCCase;
+import com.sun.source.tree.CaseTree;
 
 /**
  * See {@link CaseElement}.
  * 
  * @author Renaud Pawlak
+ * @author Louis Grignon
  */
-public class CaseElementSupport extends ExtendedElementSupport<JCCase> implements CaseElement {
+public class CaseElementSupport extends ExtendedElementSupport<CaseTree> implements CaseElement {
 
-	public CaseElementSupport(JCCase tree) {
+	public CaseElementSupport(CaseTree tree) {
 		super(tree);
 	}
-
 }

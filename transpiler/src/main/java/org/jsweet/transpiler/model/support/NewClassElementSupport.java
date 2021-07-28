@@ -24,49 +24,50 @@ import java.util.stream.Collectors;
 import javax.lang.model.element.ExecutableElement;
 
 import org.jsweet.transpiler.model.ExtendedElement;
-import org.jsweet.transpiler.model.ExtendedElementFactory;
 import org.jsweet.transpiler.model.NewClassElement;
+import org.jsweet.transpiler.util.Util;
 
-import com.sun.tools.javac.tree.JCTree.JCNewClass;
+import com.sun.source.tree.NewClassTree;
 
 /**
  * See {@link NewClassElement}.
  * 
  * @author Renaud Pawlak
+ * @author Louis Grignon
  */
-public class NewClassElementSupport extends ExtendedElementSupport<JCNewClass> implements NewClassElement {
+public class NewClassElementSupport extends ExtendedElementSupport<NewClassTree> implements NewClassElement {
 
-	public NewClassElementSupport(JCNewClass tree) {
+	public NewClassElementSupport(NewClassTree tree) {
 		super(tree);
 	}
 
 	public List<ExtendedElement> getArguments() {
-		return tree.args.stream().map(a -> ExtendedElementFactory.INSTANCE.create(a)).collect(Collectors.toList());
+		return tree.getArguments().stream().map(this::createElement).collect(Collectors.toList());
 	}
 
 	@Override
 	public int getArgumentCount() {
-		return tree.args.size();
+		return tree.getArguments().size();
 	}
 
 	@Override
 	public List<ExtendedElement> getArgumentTail() {
-		return tree.args.tail.stream().map(a -> ExtendedElementFactory.INSTANCE.create(a)).collect(Collectors.toList());
+		return tree.getArguments().stream().skip(1).map(this::createElement).collect(Collectors.toList());
 	}
 
 	@Override
 	public ExtendedElement getArgument(int i) {
-		return ExtendedElementFactory.INSTANCE.create(tree.args.get(i));
+		return createElement(tree.getArguments().get(i));
 	}
 
 	@Override
 	public ExecutableElement getConstructor() {
-		return (ExecutableElement) tree.constructor;
+		return (ExecutableElement) Util.getElement(tree);
 	}
 
 	@Override
 	public ExtendedElement getConstructorAccess() {
-		return ExtendedElementFactory.INSTANCE.create(tree.clazz);
+		return createElement(tree.getIdentifier());
 	}
 
 }

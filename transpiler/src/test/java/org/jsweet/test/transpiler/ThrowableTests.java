@@ -16,6 +16,10 @@
  */
 package org.jsweet.test.transpiler;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import org.jsweet.transpiler.JSweetProblem;
 import org.jsweet.transpiler.ModuleKind;
 import org.junit.Assert;
@@ -26,6 +30,7 @@ import source.throwable.InvalidTryCatchTest;
 import source.throwable.MultipleTryCatchTest;
 import source.throwable.Throwables;
 import source.throwable.TryCatchFinallyTest;
+import source.throwable.TryCatchWrappedWithoutBraces;
 import source.throwable.TryWithResourcesTest;
 
 public class ThrowableTests extends AbstractTest {
@@ -35,9 +40,20 @@ public class ThrowableTests extends AbstractTest {
 		eval(ModuleKind.none, (logHandler, r) -> {
 			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
 			Assert.assertNotNull("Test was not executed", r.get("executed"));
-			Assert.assertEquals("Expected a message when the catch clause is executed", "test-message", r.get("message"));
+			Assert.assertEquals("Expected a message when the catch clause is executed", "test-message",
+					r.get("message"));
 			Assert.assertNotNull("Finally was not executed", r.get("finally_executed"));
 		}, getSourceFile(TryCatchFinallyTest.class));
+	}
+
+	@Test
+	public void testTryCatchWrappedWithoutBraces() {
+		eval(ModuleKind.none, (logHandler, r) -> {
+			logHandler.assertNoProblems();
+			assertTrue(r.get("case2_elseExecuted"));
+			assertNull(r.get("case2_tryExecuted"));
+			assertNull(r.get("case2_catchExecuted"));
+		}, getSourceFile(TryCatchWrappedWithoutBraces.class));
 	}
 
 	@Test
@@ -45,7 +61,8 @@ public class ThrowableTests extends AbstractTest {
 		eval(ModuleKind.none, (logHandler, r) -> {
 			Assert.assertEquals("There should be no errors", 0, logHandler.reportedProblems.size());
 			Assert.assertNotNull("Test was not executed", r.get("executed"));
-			Assert.assertEquals("Expected a message when the catch clause is executed", "test-message", r.get("message1"));
+			Assert.assertEquals("Expected a message when the catch clause is executed", "test-message",
+					r.get("message1"));
 			Assert.assertNotNull("Finally was not executed", r.get("finally_executed"));
 			Assert.assertNull(r.get("message2"));
 			Assert.assertNull(r.get("message3"));
@@ -55,7 +72,8 @@ public class ThrowableTests extends AbstractTest {
 	@Test
 	public void testInvalidTryCatch() {
 		transpile(ModuleKind.none, logHandler -> {
-			logHandler.assertReportedProblems(JSweetProblem.MAPPED_TSC_ERROR, JSweetProblem.MAPPED_TSC_ERROR, JSweetProblem.MAPPED_TSC_ERROR);
+			logHandler.assertReportedProblems(JSweetProblem.MAPPED_TSC_ERROR, JSweetProblem.MAPPED_TSC_ERROR,
+					JSweetProblem.MAPPED_TSC_ERROR);
 		}, getSourceFile(InvalidTryCatchTest.class));
 	}
 
@@ -90,5 +108,5 @@ public class ThrowableTests extends AbstractTest {
 			handler.assertNoProblems();
 		}, getSourceFile(ExtendedThrowables.class));
 	}
-	
+
 }

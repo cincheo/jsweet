@@ -11,6 +11,7 @@ public class WrongOverloadWithGenerics {
 		new WithGenerics<String, Integer>().m("test", 2);
 		new WithGenerics<String, Integer>().m("test", 2, 2);
 		new WithGenerics<String, Integer>().m("test", "test");
+        new WithGenerics<String, Integer>().m("test", 2, "2", true);
 		$export("trace", trace);
 	}
 
@@ -31,7 +32,11 @@ class WithGenerics<T1, T2 extends Number> {
 	}
 
 	<U> void m(T1 t, U u) {
-		array(WrongOverloadWithGenerics.trace).push("4");
-	}
+        array(WrongOverloadWithGenerics.trace).push("4");
+    }
+	
+	<U, U2> void m(T1 t, U u, U2 u2, boolean w) {
+        array(WrongOverloadWithGenerics.trace).push("5");
+    }
 
 }

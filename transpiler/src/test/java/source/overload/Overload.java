@@ -47,6 +47,11 @@ public class Overload {
 		$export("res1", o.m());
 		$export("res2", o.m("s1"));
 		$export("res3", o.m("s2", 2));
+		
+		ReturnTest r1 = getContext(String.class);
+		ReturnTest r2 = getContext("la");
+		assert r1 == null;
+		assert r2 != null;
 	}
 
 	final static String DATE_FORMAT = ""; 
@@ -79,11 +84,22 @@ public class Overload {
     public static boolean isDate(Date date) {
     	return false;
     }
-    
+ 
+    public static ReturnTest getContext(Class<?> clazz) {
+        return null;
+    }
+
+    public static ReturnTest getContext(String className) {
+        return new ReturnTest();
+    }
+
 }
 
 class OverloadCaller {
 	public static void main(String[] args) {
 		new Overload().m("a");
 	}
+}
+
+class ReturnTest {
 }

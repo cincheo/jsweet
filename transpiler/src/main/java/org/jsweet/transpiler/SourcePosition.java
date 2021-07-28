@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software Foundation,
+ * aint with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 package org.jsweet.transpiler;
@@ -22,31 +22,27 @@ import java.io.File;
 
 import org.jsweet.transpiler.util.Position;
 
-import com.sun.tools.javac.tree.JCTree;
+import com.sun.source.tree.Tree;
 
 /**
  * A non-mutable position in a source file.
  * 
  * @author Renaud Pawlak
+ * @author Louis Grignon
  */
 public final class SourcePosition {
 	/**
 	 * Creates a new source position from all indexes.
 	 * 
-	 * @param file
-	 *            the source file
-	 * @param sourceElement
-	 *            the source element if any
-	 * @param startLine
-	 *            the start line in the source file
-	 * @param startColumn
-	 *            the start column in the source file
-	 * @param endLine
-	 *            the end line in the source file
-	 * @param endColumn
-	 *            the end columb in the source file
+	 * @param file          the source file
+	 * @param sourceElement the source element if any
+	 * @param startLine     the start line in the source file
+	 * @param startColumn   the start column in the source file
+	 * @param endLine       the end line in the source file
+	 * @param endColumn     the end columb in the source file
 	 */
-	public SourcePosition(File file, JCTree sourceElement, int startLine, int startColumn, int endLine, int endColumn) {
+	public SourcePosition(File file, Tree sourceElement, int startLine, int startColumn, int endLine,
+			int endColumn) {
 		super();
 		this.file = file;
 		this.startPosition = new Position(startLine, startColumn);
@@ -57,32 +53,24 @@ public final class SourcePosition {
 	/**
 	 * A simple constructor with no element and a single position (start = end).
 	 * 
-	 * @param file
-	 *            the source file
-	 * @param sourceElement
-	 *            the source element if any
-	 * @param line
-	 *            the position's line
-	 * @param column
-	 *            the position's column
+	 * @param file          the source file
+	 * @param sourceElement the source element if any
+	 * @param line          the position's line
+	 * @param column        the position's column
 	 */
-	public SourcePosition(File file, JCTree sourceElement, int line, int column) {
+	public SourcePosition(File file, Tree sourceElement, int line, int column) {
 		this(file, sourceElement, new Position(line, column));
 	}
 
 	/**
 	 * Creates a new source position from start and end positions.
 	 * 
-	 * @param file
-	 *            the source file
-	 * @param sourceElement
-	 *            the source element if any
-	 * @param startPosition
-	 *            the start position in the source file
-	 * @param endPosition
-	 *            the end position in the source file
+	 * @param file          the source file
+	 * @param sourceElement the source element if any
+	 * @param startPosition the start position in the source file
+	 * @param endPosition   the end position in the source file
 	 */
-	public SourcePosition(File file, JCTree sourceElement, Position startPosition, Position endPosition) {
+	public SourcePosition(File file, Tree sourceElement, Position startPosition, Position endPosition) {
 		super();
 		this.file = file;
 		this.startPosition = startPosition;
@@ -91,17 +79,14 @@ public final class SourcePosition {
 	}
 
 	/**
-	 * Creates a new source position from a given position (will start and end
-	 * at the same position).
+	 * Creates a new source position from a given position (will start and end at
+	 * the same position).
 	 * 
-	 * @param file
-	 *            the source file
-	 * @param sourceElement
-	 *            the source element if any
-	 * @param position
-	 *            the position this source position with start and end at
+	 * @param file          the source file
+	 * @param sourceElement the source element if any
+	 * @param position      the position this source position with start and end at
 	 */
-	public SourcePosition(File file, JCTree sourceElement, Position position) {
+	public SourcePosition(File file, Tree sourceElement, Position position) {
 		super();
 		this.file = file;
 		this.endPosition = this.startPosition = position;
@@ -111,7 +96,7 @@ public final class SourcePosition {
 	private final File file;
 	private final Position startPosition;
 	private final Position endPosition;
-	private final JCTree sourceElement;
+	private final Tree sourceElement;
 
 	/**
 	 * The source file.
@@ -165,7 +150,7 @@ public final class SourcePosition {
 	/**
 	 * The source element (can be null).
 	 */
-	public final JCTree getSourceElement() {
+	public final Tree getSourceElement() {
 		return sourceElement;
 	}
 

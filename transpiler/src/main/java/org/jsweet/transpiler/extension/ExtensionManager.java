@@ -77,7 +77,7 @@ public class ExtensionManager {
 		JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 		StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
 		List<String> optionList = new ArrayList<String>();
-		optionList.addAll(Arrays.asList("-classpath", compileClassPath));
+		optionList.addAll(Arrays.asList("-classpath", compileClassPath, "-parameters", "-g"));
 
 		File extensionDescriptorFile = new File(workingDir, "extension.json");
 		Map<String, String> extensionDescriptor = new HashMap<>();
@@ -118,8 +118,7 @@ public class ExtensionManager {
 			} catch (Exception e) {
 				throw new RuntimeException("unable to create extension description file", e);
 			}
-			Iterable<? extends JavaFileObject> compilationUnits1 = fileManager
-					.getJavaFileObjectsFromFiles(filesToCompile);
+			Iterable<? extends JavaFileObject> compilationUnits1 = fileManager.getJavaFileObjectsFromFiles(filesToCompile);
 			if (!compiler.getTask(null, fileManager, null, optionList, null, compilationUnits1).call()) {
 				throw new RuntimeException("JSweet extension compilation failed");
 			}
@@ -155,7 +154,7 @@ public class ExtensionManager {
 				logger.debug("updated classpath with: " + extensionDir.toURI().toURL());
 			}
 		} catch (Exception e) {
-			throw new RuntimeException("fail to initalize extension classpath", e);
+			throw new RuntimeException("fail to initialize extension classpath", e);
 		}
 	}
 

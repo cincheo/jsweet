@@ -22,27 +22,27 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
 
 import org.jsweet.transpiler.model.ExtendedElement;
-import org.jsweet.transpiler.model.ExtendedElementFactory;
 import org.jsweet.transpiler.model.VariableAccessElement;
+import org.jsweet.transpiler.util.Util;
 
-import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
-import com.sun.tools.javac.tree.JCTree.JCIdent;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.Tree;
 
 /**
  * See {@link VariableAccessElement}.
  * 
  * @author Renaud Pawlak
+ * @author Louis Grignon
  */
-public class VariableAccessElementSupport extends ExtendedElementSupport<JCTree> implements VariableAccessElement {
+public class VariableAccessElementSupport extends ExtendedElementSupport<Tree> implements VariableAccessElement {
 
-	public VariableAccessElementSupport(JCTree tree) {
+	public VariableAccessElementSupport(Tree tree) {
 		super(tree);
 	}
 
 	public ExtendedElement getTargetExpression() {
-		if (tree instanceof JCFieldAccess) {
-			return ExtendedElementFactory.INSTANCE.create(((JCFieldAccess) tree).selected);
+		if (tree instanceof MemberSelectTree) {
+			return createElement(((MemberSelectTree) tree).getExpression());
 		} else {
 			return null;
 		}
@@ -50,11 +50,7 @@ public class VariableAccessElementSupport extends ExtendedElementSupport<JCTree>
 
 	@Override
 	public VariableElement getVariable() {
-		if (tree instanceof JCFieldAccess) {
-			return (VariableElement) ((JCFieldAccess) tree).sym;
-		} else {
-			return (VariableElement) ((JCIdent) tree).sym;
-		}
+		return (VariableElement)Util.getElement(tree);
 	}
 
 	@Override
@@ -64,11 +60,6 @@ public class VariableAccessElementSupport extends ExtendedElementSupport<JCTree>
 
 	@Override
 	public String getVariableName() {
-		if (tree instanceof JCFieldAccess) {
-			return ((JCFieldAccess) tree).name.toString();
-		} else {
-			return tree.toString();
-		}
+		return getVariable().getSimpleName().toString();
 	}
-
 }

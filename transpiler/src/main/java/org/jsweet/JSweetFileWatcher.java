@@ -52,7 +52,6 @@ import com.sun.nio.file.SensitivityWatchEventModifier;
  * @author Louis Grignon On the fly transpilation through maven
  * @author Renaud Pawlak adaptation to the command-line launcher
  */
-@SuppressWarnings("restriction")
 public class JSweetFileWatcher {
 
 	private static final Logger logger = Logger.getLogger(JSweetFileWatcher.class);
@@ -72,11 +71,10 @@ public class JSweetFileWatcher {
 	protected TranspilationTask transpilationTask;
 
 	/**
-	 * Creates a new watcher with a JSweet transpilation task, which is going to
-	 * be executed when a watched file changes.
+	 * Creates a new watcher with a JSweet transpilation task, which is going to be
+	 * executed when a watched file changes.
 	 * 
-	 * @param transpilationTask
-	 *            the task to be executed when a file changes
+	 * @param transpilationTask the task to be executed when a file changes
 	 */
 	public JSweetFileWatcher(TranspilationTask transpilationTask) {
 		this.transpilationTask = transpilationTask;
@@ -283,7 +281,7 @@ public class JSweetFileWatcher {
 					}
 					__Lock.unlock();
 				}
-				yield();
+				Thread.yield();
 			}
 		}
 	}
