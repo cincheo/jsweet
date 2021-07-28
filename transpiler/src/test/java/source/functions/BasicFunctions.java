@@ -17,6 +17,12 @@ public class BasicFunctions {
         assert ff instanceof MyFunc;
         
         applyItFourTimes(new MyFuncImplWithState());
+
+        MyFunc ff2 = null;
+        if (ff2 != null) {
+            ff2.doThis();
+        }
+        System.out.println("ok");
     }
 
     static MyFuncImpl getFunc() {

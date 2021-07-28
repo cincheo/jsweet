@@ -6840,7 +6840,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     method = (ExecutableElement) s;
                     String functionalMethodName = method.getSimpleName().toString();
 
-                    print("((funcInst: any) => { if (typeof funcInst == 'function') { return funcInst } ");
+                    print("((funcInst: any) => { if (funcInst == null || typeof funcInst == 'function') { return funcInst } ");
                     print("return (");
                     for (VariableElement p : method.getParameters()) {
                         print(p.getSimpleName().toString()).print(", ");
