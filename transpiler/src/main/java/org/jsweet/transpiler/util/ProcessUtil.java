@@ -1,12 +1,12 @@
-/* 
+/*
  * JSweet transpiler - http://www.jsweet.org
  * Copyright (C) 2015 CINCHEO SAS <renaud.pawlak@cincheo.fr>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
- *  
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
@@ -40,7 +40,7 @@ import org.apache.log4j.Logger;
 
 /**
  * A set of utilities to launch external processes from Java.
- * 
+ *
  * @author Renaud Pawlak
  */
 public class ProcessUtil {
@@ -118,7 +118,7 @@ public class ProcessUtil {
 
     /**
      * Gets the full path of a global package's JS main file installed with npm.
-     * 
+     *
      * @param throwError if false, returns null if not found instead of throwing
      *                   error
      */
@@ -131,6 +131,11 @@ public class ProcessUtil {
             return NPM_DIR.getPath() + File.separator + command + ".cmd";
         } else {
             String unixPath = NPM_DIR.getPath() + File.separator + "bin" + File.separator + command;
+            if (new File(unixPath).isFile()) {
+                return unixPath;
+            }
+
+            unixPath = NPM_DIR.getPath() + File.separator + "node_modules" + File.separator + ".bin" + File.separator + command;
             if (new File(unixPath).isFile()) {
                 return unixPath;
             }
@@ -173,7 +178,7 @@ public class ProcessUtil {
 
     /**
      * Gets the full path of a local package's JS main file installed with npm.
-     * 
+     *
      * @param projectDirectory
      */
     public static String getLocalNpmPackageExecutablePath(String command, File projectDirectory) {
@@ -211,7 +216,7 @@ public class ProcessUtil {
 
     /**
      * Tells if this node package is installed in global modules
-     * 
+     *
      * @param packageName package name
      */
     public static boolean isPackageInstalledGloballyWithNpm(String packageName) {
@@ -231,7 +236,7 @@ public class ProcessUtil {
 
     /**
      * Runs the given command.
-     * 
+     *
      * @param command        the command name
      * @param stdoutConsumer consumes the standard output stream as lines of
      *                       characters
@@ -248,7 +253,7 @@ public class ProcessUtil {
 
     /**
      * Runs the given command in an asynchronous manner.
-     * 
+     *
      * @param command        the command name
      * @param stdoutConsumer consumes the standard output stream as lines of
      *                       characters
@@ -266,7 +271,7 @@ public class ProcessUtil {
 
     /**
      * Runs the given command.
-     * 
+     *
      * @param command        the command name
      * @param directory      the working directory of the created process
      * @param async          tells if the command should be run asynchronously (in a
@@ -378,7 +383,7 @@ public class ProcessUtil {
     /**
      * Installs a <code>node<code> package with <code>npm</code> (assumes that
      * <code>node</code> is installed).
-     * 
+     *
      * @param nodePackageName the package name
      */
     public static void installGlobalNodePackage(String nodePackageName, String version) {
@@ -391,7 +396,7 @@ public class ProcessUtil {
     /**
      * Installs a <code>node<code> package with <code>npm</code> (assumes that
      * <code>node</code> is installed).
-     * 
+     *
      * @param nodePackageName the package name
      */
     public static void installLocalNodePackage(String nodePackageName, String version, File projectDirectory) {
@@ -410,7 +415,7 @@ public class ProcessUtil {
 
     /**
      * Checks if a node package has been installed locally.
-     * 
+     *
      * @param nodePackageName the node module to be tested
      * @return true if already installed locally
      */
@@ -429,7 +434,7 @@ public class ProcessUtil {
     /**
      * Uninstalls a <code>node<code> package with <code>npm</code> (assumes that
      * <code>node</code> is installed).
-     * 
+     *
      * @param nodePackageName the package name
      * @param location        <code>Global</code> for adding the <code>-g</code>
      *                        option
