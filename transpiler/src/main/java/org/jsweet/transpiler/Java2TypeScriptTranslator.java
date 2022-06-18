@@ -173,7 +173,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 
 	
 	/* Set to true to expose the overloads in the interfaces (will cause issues with abstract classes) */
-	private boolean __EXPERIMENTAL_expose = false;
+	public static boolean __EXPERIMENTAL_expose = true;
 	
 	/**
 	 * The name of the field where the parent class is stored in the generated
@@ -599,8 +599,10 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 	private PackageSymbol topLevelPackage;
 
 	public void useModule(ModuleImportDescriptor moduleImport) {
-		useModule(false, moduleImport.isDirect(), moduleImport.getTargetPackage(), null, moduleImport.getImportedName(),
-				moduleImport.getPathToImportedClass(), null);
+		if (moduleImport != null) {
+			useModule(false, moduleImport.isDirect(), moduleImport.getTargetPackage(), null,
+					moduleImport.getImportedName(), moduleImport.getPathToImportedClass(), null);
+		}
 	}
 
 	private void useModule(boolean require, boolean direct, PackageElement targetPackage, JCTree sourceTree,
@@ -2359,12 +2361,14 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 									println().println().printIndent();
 									printCoreMethodDelegate = false;
 								}
-								if (__EXPERIMENTAL_expose && isInterfaceMethod(parent, methodDecl) && !methodDecl.sym.isConstructor()) {
-									printCoreMethodDelegate = true;
-									visitMethodDef(overload.coreMethod);
-									println().println().printIndent();
-									printCoreMethodDelegate = false;
-								}
+								// add overloads in interfaces when the expose option is on
+//								if (__EXPERIMENTAL_expose && isInterfaceMethod(parent, methodDecl)
+//										&& !methodDecl.sym.isConstructor()) {
+//									printCoreMethodDelegate = true;
+//									visitMethodDef(overload.coreMethod);
+//									println().println().printIndent();
+//									printCoreMethodDelegate = false;
+//								}
 							} else {
 								inCoreWrongOverload = true;
 								if (methodDecl.sym.isDefault() || (!methodDecl.sym.isConstructor()
@@ -2392,14 +2396,27 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 							if (addCoreMethod) {
 								visitMethodDef(overload.coreMethod);
 								overload.printed = true;
-								if (!isInterfaceMethod(parent, methodDecl)) {
+								if (!isInterfaceMethod(parent, methodDecl) || __EXPERIMENTAL_expose) {
 									println().println().printIndent();
 								}
 							}
 							if (isInterfaceMethod(parent, methodDecl)) {
+								// add overloads in interfaces when the expose option is on
 								if (context.options.isGenerateOverloadStubs() && !__EXPERIMENTAL_expose) {
 									return;
 								}
+//								if (__EXPERIMENTAL_expose) {
+//									if (methodDecl.sym.owner != parent.sym) {
+//										for (JCVariableDecl param : methodDecl.params) {
+//											List<Type> typeParameters = methodDecl.getTypeParameters().stream()
+//													.map(t -> t.type).collect(Collectors.toList());
+//											if (param.getType().type instanceof TypeVar
+//													&& !typeParameters.contains(param.getType().type)) {
+//												return;
+//											}
+//										}
+//									}
+//								}
 							}
 						}
 					}
@@ -2617,6 +2634,19 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		print(")");
 		printMethodReturnDeclaration(methodDecl, inCoreWrongOverload);
 		if (inCoreWrongOverload && isInterfaceMethod(parent, methodDecl)) {
+			print(";");
+			return;
+		}
+		if (__EXPERIMENTAL_expose && inOverload && isInterfaceMethod(parent, methodDecl)) {
+			new UsedTypesScanner().scan(methodDecl);
+			
+			//MEMORISER TOUTES LES METHODES INJECTES ICI ET LES IMPLEMENTER DANS LES ABSTRACT CLASSES SI ELLES N'EXISTENT PAS!!!!!
+			
+//			if (methodDecl.getReturnType().type.tsym instanceof TypeElement && Util.isSourceElement(methodDecl.getReturnType().type.tsym)) {
+//				if (context.useModules) {
+//						useModule(getModuleImportDescriptor(methodDecl.getReturnType().type.tsym.getSimpleName().toString(), (TypeElement)methodDecl.getReturnType().type.tsym));
+//				}
+//			}
 			print(";");
 			return;
 		}
@@ -3301,7 +3331,12 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		StringBuilder sb = new StringBuilder(executable.getSimpleName().toString());
 		sb.append("$");
 		for (VariableElement p : executable.getParameters()) {
-			sb.append(context.modelTypes.erasure(p.asType()).toString().replace('.', '_').replace("[]", "_A"));
+			if (__EXPERIMENTAL_expose && p.asType().getKind() == TypeKind.TYPEVAR) {
+				// hack so that the name is compatible with the name exposed in the interface
+				sb.append("java_lang_Object");
+			} else {
+				sb.append(context.modelTypes.erasure(p.asType()).toString().replace('.', '_').replace("[]", "_A"));
+			}
 			sb.append("$");
 		}
 		if (!executable.getParameters().isEmpty()) {
@@ -5060,8 +5095,6 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
 		while (generatedVariableNames.contains(name)) {
 			name = variablePrefix + (++index);
 		}
-
-		System.out.println(" => " + getCurrent());
 
 		int position = stack.size() - 2;
 		while (position >= 0 && !(stack.get(position) instanceof JCMethodDecl)) {

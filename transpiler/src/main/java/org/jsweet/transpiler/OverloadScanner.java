@@ -298,60 +298,85 @@ public class OverloadScanner extends AbstractTreeScanner {
 			});
 		}
 
-		private static void safeAdd(Types types, Overload overload, JCMethodDecl method) {
-			if (!overload.methods.contains(method) && !hasMethodType(types, overload, method)) {
-				overload.methods.add(method);
+		private static void safeAdd(Types types, Overload targetOverload, JCMethodDecl method) {
+			if (method.body == null) {
+				return;
+			}
+			if (!targetOverload.methods.contains(method) && !hasMethodType(types, targetOverload, method)) {
+				targetOverload.methods.add(method);
 			}
 		}
 
 		/**
 		 * Merges the given overload with another one.
 		 */
-		public void merge(Types types, Overload otherOverload) {
+		public void merge(Types types, Overload targetOverload, boolean ignoreOverrides) {
 			// merge default methods
 			for (JCMethodDecl m : methods) {
 				if (m.getModifiers().getFlags().contains(Modifier.DEFAULT)) {
 					boolean overriden = false;
-					for (JCMethodDecl subm : new ArrayList<>(otherOverload.methods)) {
+					for (JCMethodDecl subm : new ArrayList<>(targetOverload.methods)) {
 						if (subm.getParameters().size() == m.getParameters().size()) {
 							overriden = true;
 							for (int i = 0; i < subm.getParameters().size(); i++) {
-								if (!types.isAssignable(m.getParameters().get(i).type,
-										subm.getParameters().get(i).type)) {
+								if (!types.isAssignable(types.erasureRecursive(m.getParameters().get(i).type),
+										types.erasureRecursive(subm.getParameters().get(i).type))) {
 									overriden = false;
 								}
 							}
 						}
 					}
 					if (!overriden) {
-						safeAdd(types, otherOverload, m);
+						safeAdd(types, targetOverload, m);
 					}
 				}
 			}
 			// merge other methods
-			boolean merge = false;
-			for (JCMethodDecl subm : new ArrayList<>(otherOverload.methods)) {
-				boolean overrides = false;
-				for (JCMethodDecl m : new ArrayList<>(methods)) {
-					if (subm.getParameters().size() == m.getParameters().size()) {
-						overrides = true;
-						for (int i = 0; i < subm.getParameters().size(); i++) {
-							if (!types.isAssignable(m.getParameters().get(i).type, subm.getParameters().get(i).type)) {
-								overrides = false;
+			if (ignoreOverrides) {
+				boolean merge = false;
+				for (JCMethodDecl subm : new ArrayList<>(targetOverload.methods)) {
+					boolean overrides = false;
+					for (JCMethodDecl m : new ArrayList<>(methods)) {
+						if (subm.getParameters().size() == m.getParameters().size()) {
+							overrides = true;
+							for (int i = 0; i < subm.getParameters().size(); i++) {
+								if (!types.isAssignable(types.erasureRecursive(m.getParameters().get(i).type),
+										types.erasureRecursive(subm.getParameters().get(i).type))) {
+									overrides = false;
+								}
 							}
 						}
 					}
+					merge = merge || !overrides;
 				}
-				merge = merge || !overrides;
-			}
 
-			merge = merge || methods.size() > 1;
+				merge = merge || methods.size() > 1;
 
-			if (merge) {
+				if (merge) {
+					for (JCMethodDecl m : methods) {
+						safeAdd(types, targetOverload, m);
+					}
+				}
+			} else {
 				for (JCMethodDecl m : methods) {
-					safeAdd(types, otherOverload, m);
+					boolean overriden = false;
+					for (JCMethodDecl subm : new ArrayList<>(targetOverload.methods)) {
+						if (subm.getParameters().size() == m.getParameters().size()) {
+							overriden = true;
+							for (int i = 0; i < subm.getParameters().size(); i++) {
+								if (!types.isAssignable(types.erasureRecursive(m.getParameters().get(i).type),
+										types.erasureRecursive(subm.getParameters().get(i).type))) {
+									overriden = false;
+								}
+							}
+						}
+					}
+					if (!overriden) {
+						safeAdd(types, targetOverload, m);
+					}
 				}
-			}
+			}				
+			
 		}
 	}
 
@@ -370,11 +395,14 @@ public class OverloadScanner extends AbstractTreeScanner {
 		}
 		Overload superOverload = context.getOverload(clazz, method.sym);
 		if (superOverload != null && superOverload != overload) {
-			superOverload.merge(types, overload);
-			if (!context.options.isGenerateOverloadStubs()) {
-				overload.merge(types, superOverload);
+			if (!context.options.isGenerateOverloadStubs() || Java2TypeScriptTranslator.__EXPERIMENTAL_expose) {
+				overload.merge(types, superOverload, true);
 			}
+			superOverload.merge(types, overload, true);
 		}
+//		if (Comparable.class.getName().equals(clazz.getQualifiedName().toString()) && superOverload != null && superOverload.methods.size() > 1) {
+//			System.out.println();
+//		}
 		inspectSuperTypes((ClassSymbol) clazz.getSuperclass().tsym, overload, method);
 		for (Type t : clazz.getInterfaces()) {
 			inspectSuperTypes((ClassSymbol) t.tsym, overload, method);
@@ -440,7 +468,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 			scan(cu);
 		}
 		// another pass to complete subclasses
-		if (!context.options.isGenerateOverloadStubs()) {
+		if (!context.options.isGenerateOverloadStubs() || Java2TypeScriptTranslator.__EXPERIMENTAL_expose) {
 			for (JCCompilationUnit cu : cuList) {
 				scan(cu);
 			}
@@ -453,7 +481,7 @@ public class OverloadScanner extends AbstractTreeScanner {
 				}
 			}
 		}
-		//context.dumpOverloads(System.out);
+		context.dumpOverloads(System.out);
 	}
 
 }
