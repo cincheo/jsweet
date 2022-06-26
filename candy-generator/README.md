@@ -12,7 +12,7 @@ It comes with a command that generates a default JSweet candy Maven project, whi
 
 *All commands must be executed in the project's directory*
 
-Prerequisite: build the project (see the *How to build* section).
+Prerequisite: build the project (see the [How to build](https://github.com/cincheo/jsweet/edit/master/candy-generator/README.md#how-to-build) section).
 
 ### Initialize a candy project using the `init-project` command
 
