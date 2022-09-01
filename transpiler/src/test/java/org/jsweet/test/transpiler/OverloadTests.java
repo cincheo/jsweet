@@ -59,6 +59,7 @@ import source.genericinterfaceperf.InterfaceB;
 import source.overload.AbstractMethodOverloadInAnonymousClass;
 import source.overload.BasicOverride;
 import source.overload.ConstructorOverLoadWithArray;
+import source.overload.ConstructorOverloadFieldInitOrderWithThisCall;
 import source.overload.ConstructorOverloadWithFieldInitializer;
 import source.overload.InterfaceInheritance;
 import source.overload.LocalVariablesNameCollision;
@@ -287,6 +288,15 @@ public class OverloadTests extends AbstractTest {
             logHandler.assertNoProblems();
             assertEquals("test,1", r.get("trace"));
         }, getSourceFile(ConstructorOverloadWithFieldInitializer.class));
+    }
+
+    @Test
+    public void testConstructorOverloadFieldInitOrderWithThisCall() {
+        eval(ModuleKind.none, (logHandler, r) -> {
+            logHandler.assertNoProblems();
+            assertEquals((int) 44, (int) r.get("1ary"));
+            assertEquals((int) 23, (int) r.get("0ary"));
+        }, getSourceFile(ConstructorOverloadFieldInitOrderWithThisCall.class));
     }
 
     // TODO JSweet3 This will work with new (v3) J4TS candy
