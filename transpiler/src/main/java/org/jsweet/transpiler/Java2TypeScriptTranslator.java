@@ -3181,7 +3181,7 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                 for (OverloadMethodEntry overloadMethodEntry : overload.getEntries()) {
                     if (overloadMethodEntry.methodElement.equals(ms)) {
                         printIndent();
-                        printInlinedMethod(overload, overloadMethodEntry.methodTree, inv.getArguments());
+                        printInlinedMethod(overload, overloadMethodEntry.methodTree, inv.getArguments()); // will initialize fields
                         println();
                     }
                 }
@@ -3211,7 +3211,9 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                         printBlockStatements(nextStatements);
                     }
                 } else {
-                    printFieldInitializations(actualStatements);
+                    if (!skipFirst) { // field initializations were already performed above when "this(" triggered a recursive call
+                        printFieldInitializations(actualStatements);
+                    }
                     if (!actualStatements.isEmpty() || !isConstructor) {
                         printIndent();
                     }
