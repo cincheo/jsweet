@@ -23,7 +23,7 @@ import def.jquery.JQueryXHR;
 import static jsweet.util.Lang.function;
 
 @SuppressWarnings("all")
-public class JQuery {
+public class JQueryCandy {
 
 	public static void main(String[] args) {
 		$("p").append(" (end)");

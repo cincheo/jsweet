@@ -22,10 +22,10 @@ import org.jsweet.transpiler.ModuleKind;
 import org.jsweet.transpiler.SourceFile;
 import org.junit.Test;
 
-import source.candies.Angular;
+import source.candies.AngularCandy;
 import source.candies.Babylonjs;
 import source.candies.BackboneCandy;
-import source.candies.JQuery;
+import source.candies.JQueryCandy;
 import source.candies.ReactLib;
 import source.require.b.GlobalsImport;
 import source.syntax.QualifiedNames;
@@ -34,12 +34,12 @@ public class CandiesTests extends AbstractTest {
 
     @Test
     public void testAngular() {
-        transpile(TestTranspilationHandler::assertNoProblems, getSourceFile(Angular.class));
+        transpile(TestTranspilationHandler::assertNoProblems, getSourceFile(AngularCandy.class));
     }
 
     @Test
     public void testJQuery() {
-        transpile(TestTranspilationHandler::assertNoProblems, getSourceFile(JQuery.class));
+        transpile(TestTranspilationHandler::assertNoProblems, getSourceFile(JQueryCandy.class));
     }
 
     @Test
