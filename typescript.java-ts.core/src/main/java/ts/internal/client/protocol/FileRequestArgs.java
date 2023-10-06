@@ -1,0 +1,43 @@
+/**
+ *  Copyright (c) 2015-2017 Angelo ZERR.
+ *  All rights reserved. This program and the accompanying materials
+ *  are made available under the terms of the Eclipse Public License v1.0
+ *  which accompanies this distribution, and is available at
+ *  http://www.eclipse.org/legal/epl-v10.html
+ *
+ *  Contributors:
+ *  Angelo Zerr <angelo.zerr@gmail.com> - initial API and implementation
+ */
+package ts.internal.client.protocol;
+
+/**
+ * Arguments for FileRequest messages.
+ * 
+ * @see https://github.com/Microsoft/TypeScript/blob/master/src/server/protocol.ts
+ *
+ */
+public class FileRequestArgs {
+
+	/**
+	 * The file for the request (absolute pathname required).
+	 */
+	private final String file;
+
+	/**
+	 * Optional name of project that contains file
+	 */
+	private final String projectFileName;
+
+	public FileRequestArgs(String file, String projectFileName) {
+		this.file = file;
+		this.projectFileName = projectFileName;
+	}
+
+	public String getFile() {
+		return file;
+	}
+
+	public String getProjectFileName() {
+		return projectFileName;
+	}
+}
