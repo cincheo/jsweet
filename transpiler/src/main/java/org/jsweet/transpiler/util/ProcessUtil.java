@@ -60,6 +60,10 @@ public class ProcessUtil {
                 addExtraPath("/usr/local/bin");
                 ProcessUtil.NODE_COMMAND = "/usr/local/bin/node";
                 ProcessUtil.NPM_COMMAND = "/usr/local/bin/npm";
+            } else if (!System.getenv("PATH").contains("/opt/local/bin") && new File("/opt/local/bin/node").exists()) {
+                addExtraPath("/opt/local/bin");
+                ProcessUtil.NODE_COMMAND = "/opt/local/bin/node";
+                ProcessUtil.NPM_COMMAND = "/opt/local/bin/npm";
             }
             initialized = true;
         }
