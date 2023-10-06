@@ -153,6 +153,9 @@
 	<profiles>
 		<profile>
 			<id>genparser</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
 			<build>
 				<plugins>
 					<plugin>
