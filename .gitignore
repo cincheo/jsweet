@@ -7,4 +7,7 @@ core-lib/es6/jsweet-core/
 /tmp
 node_modules/
 package-lock.json
-
+*~
+.*.swo
+.*.swp
+.DS_Store
