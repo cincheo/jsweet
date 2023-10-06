@@ -759,6 +759,22 @@ public class Java2TypeScriptTranslator extends AbstractTreePrinter {
                     packageElement, getCompilationUnit());
         }
 
+        // TypeScript access a line marked "// @ts-nocheck" at the beginning of the file
+        // to suppress certain warnings. Java won't allow us to annotate the "package" statement,
+        // so let's check all types.
+        checkTsNoCheck : for (Tree def : compilationUnit.getTypeDecls()) {
+          if (def instanceof ClassTree) {
+            for (AnnotationTree at : ((ClassTree)def).getModifiers().getAnnotations()) {
+              // NOTE This supports TsNoCheck being an annotation in any package
+              String typeStr = at.getAnnotationType().toString();
+              if ("TsNoCheck".equals(typeStr) || typeStr.endsWith(".TsNoCheck")) {
+                print("// @ts-nocheck\n");
+                break checkTsNoCheck;
+              }
+            }
+          }
+        }
+
         PackageElement rootPackage = context.getFirstEnclosingRootPackage(packageElement);
         if (rootPackage != null) {
             if (!checkRootPackageParent(compilationUnit, rootPackage,

@@ -4,7 +4,11 @@ import static jsweet.util.Lang.$export;
 import static def.js.Globals.isNaN;
 
 import def.js.Array;
+import jsweet.lang.TsNoCheck;
 
+//without this annotation, TypeScript would complain about the asserts in line 44/45
+// ("[ts] This condition will always return 'true'")
+@TsNoCheck
 public class Numbers {
 
 	static Array<String> trace = new Array<>();
