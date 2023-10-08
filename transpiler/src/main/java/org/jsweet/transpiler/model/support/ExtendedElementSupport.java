@@ -29,9 +29,9 @@ import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.ExtendedElementFactory;
 import org.jsweet.transpiler.util.Util;
 
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
+import standalone.com.sun.source.tree.ExpressionTree;
+import standalone.com.sun.source.tree.Tree;
+import standalone.com.sun.source.tree.Tree.Kind;
 
 /**
  * See {@link ExtendedElement}.

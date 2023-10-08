@@ -22,7 +22,7 @@ import org.jsweet.transpiler.model.AssignmentElement;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.VariableAccessElement;
 
-import com.sun.source.tree.AssignmentTree;
+import standalone.com.sun.source.tree.AssignmentTree;
 
 /**
  * See {@link AssignmentElement}.

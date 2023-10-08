@@ -33,13 +33,13 @@ import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.util.AbstractTreePrinter;
 import org.jsweet.transpiler.util.Util;
 
-import com.sun.source.tree.ArrayTypeTree;
-import com.sun.source.tree.AssignmentTree;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
+import standalone.com.sun.source.tree.ArrayTypeTree;
+import standalone.com.sun.source.tree.AssignmentTree;
+import standalone.com.sun.source.tree.CompilationUnitTree;
+import standalone.com.sun.source.tree.MemberSelectTree;
+import standalone.com.sun.source.tree.MethodInvocationTree;
+import standalone.com.sun.source.tree.Tree;
+import standalone.com.sun.source.tree.VariableTree;
 
 /**
  * This helper class performs extra type checking for the JSweet transpiler

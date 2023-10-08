@@ -34,15 +34,15 @@ import org.jsweet.transpiler.TranspilationHandler;
 import org.jsweet.transpiler.TypeChecker;
 import org.jsweet.transpiler.extension.PrinterAdapter;
 
-import com.sun.source.tree.BlockTree;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.StatementTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
+import standalone.com.sun.source.tree.BlockTree;
+import standalone.com.sun.source.tree.CompilationUnitTree;
+import standalone.com.sun.source.tree.ExpressionTree;
+import standalone.com.sun.source.tree.MethodInvocationTree;
+import standalone.com.sun.source.tree.MethodTree;
+import standalone.com.sun.source.tree.NewClassTree;
+import standalone.com.sun.source.tree.StatementTree;
+import standalone.com.sun.source.tree.Tree;
+import standalone.com.sun.source.tree.VariableTree;
 
 /**
  * A tree printer is a kind of tree scanner specialized in pretty printing the

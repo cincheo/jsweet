@@ -17,7 +17,7 @@ import javax.lang.model.type.TypeMirror;
 import org.jsweet.transpiler.model.TypeElement;
 import org.jsweet.transpiler.util.Util;
 
-import com.sun.source.tree.Tree;
+import standalone.com.sun.source.tree.Tree;
 
 public class TypeElementSupport extends ExtendedElementSupport<Tree> implements TypeElement {
 

@@ -18,7 +18,7 @@ import javax.lang.model.type.TypeMirror;
 import org.jsweet.transpiler.model.ExecutableElement;
 import org.jsweet.transpiler.util.Util;
 
-import com.sun.source.tree.MethodTree;
+import standalone.com.sun.source.tree.MethodTree;
 
 public class ExecutableElementSupport extends ExtendedElementSupport<MethodTree> implements ExecutableElement {
 

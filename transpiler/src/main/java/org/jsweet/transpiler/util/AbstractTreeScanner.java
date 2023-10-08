@@ -47,14 +47,14 @@ import org.jsweet.transpiler.model.ExtendedElementFactory;
 import org.jsweet.transpiler.model.support.CompilationUnitElementSupport;
 import org.jsweet.transpiler.model.support.ExtendedElementSupport;
 
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.ImportTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.util.SourcePositions;
-import com.sun.source.util.TreePath;
-import com.sun.source.util.TreePathScanner;
-import com.sun.source.util.Trees;
+import standalone.com.sun.source.tree.CompilationUnitTree;
+import standalone.com.sun.source.tree.ImportTree;
+import standalone.com.sun.source.tree.MethodTree;
+import standalone.com.sun.source.tree.Tree;
+import standalone.com.sun.source.util.SourcePositions;
+import standalone.com.sun.source.util.TreePath;
+import standalone.com.sun.source.util.TreePathScanner;
+import standalone.com.sun.source.util.Trees;
 
 /**
  * A Java AST scanner for JSweet.

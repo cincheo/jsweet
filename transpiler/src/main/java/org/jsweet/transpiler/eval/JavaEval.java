@@ -16,7 +16,7 @@ import org.jsweet.transpiler.util.EvaluationResult;
 import org.jsweet.transpiler.util.MainMethodFinder;
 import org.jsweet.transpiler.util.MainMethodFinder.MainMethodFoundSignal;
 
-import com.sun.source.tree.CompilationUnitTree;
+import standalone.com.sun.source.tree.CompilationUnitTree;
 
 public class JavaEval extends RuntimeEval {
 

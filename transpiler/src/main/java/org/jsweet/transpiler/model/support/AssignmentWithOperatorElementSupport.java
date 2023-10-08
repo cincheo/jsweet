@@ -23,7 +23,7 @@ import org.jsweet.transpiler.model.AssignmentWithOperatorElement;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.VariableAccessElement;
 
-import com.sun.source.tree.CompoundAssignmentTree;
+import standalone.com.sun.source.tree.CompoundAssignmentTree;
 
 /**
  * See {@link AssignmentWithOperatorElement}.

@@ -36,15 +36,15 @@ import org.jsweet.transpiler.util.DirectedGraph;
 import org.jsweet.transpiler.util.ReferenceGrabber;
 import org.jsweet.transpiler.util.Util;
 
-import com.sun.source.tree.BlockTree;
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.ImportTree;
-import com.sun.source.tree.PackageTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
-import com.sun.source.util.TreePathScanner;
-import com.sun.source.util.Trees;
+import standalone.com.sun.source.tree.BlockTree;
+import standalone.com.sun.source.tree.ClassTree;
+import standalone.com.sun.source.tree.CompilationUnitTree;
+import standalone.com.sun.source.tree.ImportTree;
+import standalone.com.sun.source.tree.PackageTree;
+import standalone.com.sun.source.tree.Tree;
+import standalone.com.sun.source.tree.VariableTree;
+import standalone.com.sun.source.util.TreePathScanner;
+import standalone.com.sun.source.util.Trees;
 
 /**
  * This AST scanner creates a class dependency graph for each package, based on

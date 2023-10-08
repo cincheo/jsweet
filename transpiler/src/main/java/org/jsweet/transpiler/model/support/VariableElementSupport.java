@@ -17,7 +17,7 @@ import org.jsweet.transpiler.model.ExtendedElementFactory;
 import org.jsweet.transpiler.model.VariableElement;
 import org.jsweet.transpiler.util.Util;
 
-import com.sun.source.tree.VariableTree;
+import standalone.com.sun.source.tree.VariableTree;
 
 public class VariableElementSupport extends ExtendedElementSupport<VariableTree> implements VariableElement {
 

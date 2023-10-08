@@ -28,13 +28,13 @@ import org.jsweet.transpiler.util.Util;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.CompoundAssignmentTree;
-import com.sun.source.tree.ExpressionStatementTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.VariableTree;
+import standalone.com.sun.source.tree.BinaryTree;
+import standalone.com.sun.source.tree.ClassTree;
+import standalone.com.sun.source.tree.CompilationUnitTree;
+import standalone.com.sun.source.tree.CompoundAssignmentTree;
+import standalone.com.sun.source.tree.ExpressionStatementTree;
+import standalone.com.sun.source.tree.MethodTree;
+import standalone.com.sun.source.tree.VariableTree;
 
 import source.structural.ExtendsClassInSameFile;
 

@@ -26,11 +26,11 @@ import javax.lang.model.type.TypeMirror;
 
 import org.jsweet.transpiler.JSweetContext;
 
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.NewClassTree;
-import com.sun.source.util.TreeScanner;
-import com.sun.source.util.Trees;
+import standalone.com.sun.source.tree.CompilationUnitTree;
+import standalone.com.sun.source.tree.MemberSelectTree;
+import standalone.com.sun.source.tree.NewClassTree;
+import standalone.com.sun.source.util.TreeScanner;
+import standalone.com.sun.source.util.Trees;
 
 /**
  * A utility scanner that grabs all references to types used within a code tree.

@@ -27,7 +27,7 @@ import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.NewClassElement;
 import org.jsweet.transpiler.util.Util;
 
-import com.sun.source.tree.NewClassTree;
+import standalone.com.sun.source.tree.NewClassTree;
 
 /**
  * See {@link NewClassElement}.

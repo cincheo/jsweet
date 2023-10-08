@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.NewArrayElement;
 
-import com.sun.source.tree.NewArrayTree;
+import standalone.com.sun.source.tree.NewArrayTree;
 
 /**
  * See {@link NewArrayElement}.

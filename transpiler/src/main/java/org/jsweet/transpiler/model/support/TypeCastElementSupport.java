@@ -21,7 +21,7 @@ package org.jsweet.transpiler.model.support;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.TypeCastElement;
 
-import com.sun.source.tree.TypeCastTree;
+import standalone.com.sun.source.tree.TypeCastTree;
 
 /**
  * See {@link TypeCastElement}.

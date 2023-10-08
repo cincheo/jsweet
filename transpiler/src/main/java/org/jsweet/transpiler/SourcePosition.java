@@ -22,7 +22,7 @@ import java.io.File;
 
 import org.jsweet.transpiler.util.Position;
 
-import com.sun.source.tree.Tree;
+import standalone.com.sun.source.tree.Tree;
 
 /**
  * A non-mutable position in a source file.
