@@ -93,10 +93,6 @@ public class TranspilerTests extends AbstractTest {
         process = ProcessUtil.runCommand("java", line -> {
             System.out.println(line);
         }, null, "-cp", TranspilerTestRunner.getTestClassPath(), //
-                "--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
-                "--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
-                "--add-opens=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED",
-                "--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
                 JSweetCommandLineLauncher.class.getName(), //
                 "--tsout", outDir.getPath(), //
                 "--targetVersion", "ES6", //
@@ -122,10 +118,6 @@ public class TranspilerTests extends AbstractTest {
         process = ProcessUtil.runCommand("java", line -> {
             System.out.println(line);
         }, null, "-cp", TranspilerTestRunner.getTestClassPath(), //
-                "--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
-                "--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
-                "--add-opens=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED",
-                "--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
                 JSweetCommandLineLauncher.class.getName(), //
                 "--tsout", outDir.getPath(), //
                 "--jsout", outDir.getPath(), //
@@ -151,10 +143,6 @@ public class TranspilerTests extends AbstractTest {
         process = ProcessUtil.runCommand("java", line -> {
             System.out.println(line);
         }, null, "-cp", TranspilerTestRunner.getTestClassPath(), //
-                "--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
-                "--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
-                "--add-opens=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED",
-                "--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
                 JSweetCommandLineLauncher.class.getName(), //
                 "--tsout", outDir.getPath(), //
                 "--jsout", outDir.getPath(), //
@@ -173,10 +161,6 @@ public class TranspilerTests extends AbstractTest {
         process = ProcessUtil.runCommand("java", line -> {
             System.out.println(line);
         }, null, "-cp", TranspilerTestRunner.getTestClassPath(), //
-                "--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
-                "--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
-                "--add-opens=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED",
-                "--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
                 JSweetCommandLineLauncher.class.getName(), //
                 "--tsout", outDir.getPath(), //
                 "--jsout", outDir.getPath(), //
@@ -194,10 +178,6 @@ public class TranspilerTests extends AbstractTest {
         process = ProcessUtil.runCommand("java", line -> {
             System.out.println(line);
         }, null, "-cp", TranspilerTestRunner.getTestClassPath(), //
-                "--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
-                "--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
-                "--add-opens=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED",
-                "--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
                 JSweetCommandLineLauncher.class.getName(), //
                 "--tsout", outDir.getPath(), //
                 "--jsout", outDir.getPath(), //
@@ -224,10 +204,6 @@ public class TranspilerTests extends AbstractTest {
         process = ProcessUtil.runCommand("java", line -> {
             System.out.println(line);
         }, null, "-cp", TranspilerTestRunner.getTestClassPath(), //
-                "--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
-                "--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
-                "--add-opens=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED",
-                "--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
                 JSweetCommandLineLauncher.class.getName(), //
                 "--tsout", outDir.getPath(), //
                 "--jsout", outDir.getPath(), //
@@ -252,10 +228,6 @@ public class TranspilerTests extends AbstractTest {
         process = ProcessUtil.runCommand("java", line -> {
             System.out.println(line);
         }, null, "-cp", TranspilerTestRunner.getTestClassPath(), //
-                "--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
-                "--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
-                "--add-opens=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED",
-                "--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
                 JSweetCommandLineLauncher.class.getName(), //
                 "--tsout", outDir.getPath(), //
                 "--jsout", outDir.getPath(), //
