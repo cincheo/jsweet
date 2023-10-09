@@ -21,6 +21,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.log4j.Logger;
 import org.jsweet.test.transpiler.TestTranspilationHandler;
+import org.jsweet.transpiler.ConfiguredDirectory;
 import org.jsweet.transpiler.EcmaScriptComplianceLevel;
 import org.jsweet.transpiler.JSweetFactory;
 import org.jsweet.transpiler.JSweetTranspiler;
@@ -33,7 +34,7 @@ import org.jsweet.transpiler.util.EvaluationResult;
  * 
  * @author Louis Grignon
  */
-public class TranspilerTestRunner {
+public class TranspilerTestRunner implements AutoCloseable {
 
     private final static Logger logger = Logger.getLogger(TranspilerTestRunner.class);
 
@@ -110,14 +111,18 @@ public class TranspilerTestRunner {
         logger.info("classPath: " + classPath);
         logger.info("modulePath: " + modulePath);
 
-        transpiler = new JSweetTranspiler( //
-                configurationFile, //
-                factory, //
-                null, //
-                baseTsOutputDir, //
-                null, //
-                new File(JSweetTranspiler.TMP_WORKING_DIR_NAME + "/candies/js"), //
-                classPath);
+        try {
+          transpiler = new JSweetTranspiler(null, //
+                  configurationFile, //
+                  factory, //
+                  null, //
+                  baseTsOutputDir, //
+                  null, //
+                  ConfiguredDirectory.ofTemporaryDir("jsweet-candies"), //
+                  classPath);
+        } catch (IOException e) {
+          throw new IllegalStateException(e);
+        }
         transpiler.setEcmaTargetVersion(EcmaScriptComplianceLevel.ES6);
         transpiler.setEncoding("UTF-8");
         transpiler.setSkipTypeScriptChecks(true);
@@ -247,6 +252,7 @@ public class TranspilerTestRunner {
 
     }
 
+    @Override
     public void close() throws Exception {
         transpiler.close();
     }
