@@ -79,7 +79,7 @@ public class JSweetFactory {
 							}
 							if (constructor == null) {
 								logger.debug("constructing default adapter");
-								adapter = context.isUsingJavaRuntime() ? new Java2TypeScriptAdapter(context)
+								adapter = context.getUsingJavaRuntime() != null ? new Java2TypeScriptAdapter(context)
 										: new RemoveJavaDependenciesAdapter(context);
 								try {
 									constructor = adapterClass.getConstructor(PrinterAdapter.class);
@@ -114,7 +114,7 @@ public class JSweetFactory {
 				throw new RuntimeException(e);
 			}
 		} else {
-			if (context.isUsingJavaRuntime()) {
+			if (context.getUsingJavaRuntime() != null) {
 				return new Java2TypeScriptAdapter(context);
 			} else {
 				return new RemoveJavaDependenciesAdapter(context);

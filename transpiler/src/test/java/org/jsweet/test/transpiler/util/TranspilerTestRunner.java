@@ -125,7 +125,7 @@ public class TranspilerTestRunner {
         transpiler.setGenerateSourceMaps(false);
         transpiler.setUseTsserver(true);
         transpiler.setVerbose(verbose);
-        transpiler.setUsingJavaRuntime(false);
+        transpiler.setUsingJavaRuntime(null);
 
         if (verbose) {
             logger.info("remove transpiler working dir: " + transpiler.getWorkingDirectory());

@@ -59,7 +59,13 @@ import ts.nodejs.NodejsProcess;
 
 public class AbstractTest {
 
-	protected static final String TEST_DIRECTORY_NAME = "src/test/java";
+  protected static final boolean MVN_FROM_PARENT_PROJECT = new File("transpiler/src/test/java")
+      .isDirectory();
+  protected static final String TEST_DIRECTORY_NAME = MVN_FROM_PARENT_PROJECT
+      ? "transpiler/src/test/java" : "src/test/java";
+  
+  protected static final File TEST_PATH_TO_J4TSJS = new File(MVN_FROM_PARENT_PROJECT
+      ? "transpiler/src/test/resources/j4ts.js" : "src/test/resources/j4ts.js");
 
 	protected final Logger logger = Logger.getLogger(getClass());
 
@@ -87,8 +93,8 @@ public class AbstractTest {
 
 	private TranspilerTestRunner transpilerTest;
 
-	protected static final String TMPOUT_DIR = "tempOut";
-
+	protected static final File TMPOUT_DIR = new File(MVN_FROM_PARENT_PROJECT ? "transpiler/tempOut" : "tempOut");
+	
 	protected Types types() {
 		return transpilerTest.types();
 	}
@@ -117,7 +123,7 @@ public class AbstractTest {
 	}
 
 	protected File getCurrentTestOutDir() {
-		return new File(new File(TMPOUT_DIR), getCurrentTestName());
+		return new File(TMPOUT_DIR, getCurrentTestName());
 	}
 
 	protected Pair<CompilationUnitTree, ClassTree> getSourcePublicClassDeclaration(SourceFile sourceFile)

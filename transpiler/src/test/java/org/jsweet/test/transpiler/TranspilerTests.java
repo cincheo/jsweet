@@ -77,7 +77,7 @@ public class TranspilerTests extends AbstractTest {
 
     @Before
     public void init() throws Throwable {
-        outDir = new File(new File(TMPOUT_DIR), getCurrentTestName() + "/" + ModuleKind.none);
+        outDir = new File(TMPOUT_DIR, getCurrentTestName() + "/" + ModuleKind.none);
         gameDir = new File(TEST_DIRECTORY_NAME + "/" + Ball.class.getPackage().getName().replace(".", "/"));
         calculusDir = new File(TEST_DIRECTORY_NAME + "/" + MathApi.class.getPackage().getName().replace(".", "/"));
         FileUtils.deleteQuietly(outDir);
@@ -432,6 +432,22 @@ public class TranspilerTests extends AbstractTest {
             }
         }, f);
     }
+    
+    /**
+     * If we're running from the parent project, the path to the header (as specified in
+     * either configuration-nobundle.json or configuration-bundle.json) is wrong; this
+     * method adjusts the path if necessary.
+     * 
+     * @param transpiler The transpiler to check.
+     */
+    private static void fixHeaderFilePath(JSweetTranspiler transpiler) {
+      File headerFile = transpiler.getHeaderFile();
+      String headerFilePath = headerFile.getPath();
+      if (MVN_FROM_PARENT_PROJECT && headerFile.toString()
+          .startsWith("src/test")) {
+        transpiler.setHeaderFile(new File(new File("transpiler"), headerFilePath));
+      }
+    }
 
     @Test
     public void testConfigurationFile() {
@@ -439,6 +455,7 @@ public class TranspilerTests extends AbstractTest {
         File configurationFile = new File(f.getJavaFile().getParentFile(), "configuration-nobundle.json");
         TranspilerTestRunner transpilerTest = new TranspilerTestRunner(configurationFile, getCurrentTestOutDir(),
                 new JSweetFactory());
+        fixHeaderFilePath(transpilerTest.getTranspiler());
         assertTrue(transpilerTest.getTranspiler().getHeaderFile().getPath().endsWith("header.txt"));
         assertFalse(transpilerTest.getTranspiler().isBundle());
         transpilerTest.transpile(logHandler -> {
@@ -453,6 +470,7 @@ public class TranspilerTests extends AbstractTest {
         }, f);
         configurationFile = new File(f.getJavaFile().getParentFile(), "configuration-bundle.json");
         transpilerTest = new TranspilerTestRunner(configurationFile, getCurrentTestOutDir(), new JSweetFactory());
+        fixHeaderFilePath(transpilerTest.getTranspiler());
         assertTrue(transpilerTest.getTranspiler().getHeaderFile().getPath().endsWith("header.txt"));
         assertTrue(transpilerTest.getTranspiler().isBundle());
         transpilerTest.transpile(ModuleKind.none, logHandler -> {

@@ -219,7 +219,7 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
     private boolean ignoreTypeScriptErrors = false;
     private boolean ignoreJavaErrors = false;
     private boolean forceJavaRuntime = false;
-    private boolean isUsingJavaRuntime = false;
+    private File javaRuntimeJ4TsJs = null;
     private File headerFile = null;
     private boolean debugMode = false;
     private boolean skipTypeScriptChecks = false;
@@ -246,9 +246,9 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
      * Calling this method is usually not needed since JSweet auto-detects the J4TS
      * candy. Use only to manually force the transpiler in a mode or another.
      */
-    public void setUsingJavaRuntime(boolean usingJavaRuntime) {
+    public void setUsingJavaRuntime(File pathToJ4TsJs) {
         forceJavaRuntime = true;
-        isUsingJavaRuntime = usingJavaRuntime;
+        javaRuntimeJ4TsJs = pathToJ4TsJs;
     }
 
     @Override
@@ -669,7 +669,7 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 
         if ("Java".equals(engineName)) {
 
-            JavaEval evaluator = new JavaEval(this, new EvalOptions(isUsingModules(), workingDir, false));
+            JavaEval evaluator = new JavaEval(this, new EvalOptions(isUsingModules(), workingDir, null));
             return evaluator.performEval(sourceFiles);
         } else {
             if (!areAllTranspiled(sourceFiles)) {
@@ -701,7 +701,7 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
             }
 
             JavaScriptEval evaluator = new JavaScriptEval(
-                    new EvalOptions(isUsingModules(), workingDir, context.isUsingJavaRuntime()),
+                    new EvalOptions(isUsingModules(), workingDir, context.getUsingJavaRuntime()),
                     JavaScriptRuntime.NodeJs);
             return evaluator.performEval(jsFiles);
         }
@@ -713,8 +713,8 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
         transpilationHandler.setDisabled(isIgnoreJavaErrors());
 
         context = factory.createContext(this);
-        context.setUsingJavaRuntime(forceJavaRuntime ? isUsingJavaRuntime
-                : (candiesProcessor == null ? false : candiesProcessor.isUsingJavaRuntime()));
+        context.setUsingJavaRuntime(forceJavaRuntime ? javaRuntimeJ4TsJs
+                : (candiesProcessor == null ? null : candiesProcessor.getUsingJavaRuntime()));
         context.useModules = isUsingModules();
         context.useRequireForModules = moduleKind != ModuleKind.es2015;
         

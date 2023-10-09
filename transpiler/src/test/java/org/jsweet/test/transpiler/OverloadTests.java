@@ -303,11 +303,11 @@ public class OverloadTests extends AbstractTest {
     @Ignore
     @Test
     public void testOverloadClassAndObjectWithJ4TS() {
-        transpilerTest().getTranspiler().setUsingJavaRuntime(true);
+        transpilerTest().getTranspiler().setUsingJavaRuntime(TEST_PATH_TO_J4TSJS);
         eval(ModuleKind.none, (logHandler, r) -> {
             logHandler.assertNoProblems();
         }, getSourceFile(OverLoadClassAndObject.class));
-        transpilerTest().getTranspiler().setUsingJavaRuntime(false);
+        transpilerTest().getTranspiler().setUsingJavaRuntime(null);
     }
 
     @Test
@@ -319,11 +319,11 @@ public class OverloadTests extends AbstractTest {
 
     @Test
     public void testOverloadVarargs() {
-        transpilerTest().getTranspiler().setUsingJavaRuntime(true);
+        transpilerTest().getTranspiler().setUsingJavaRuntime(TEST_PATH_TO_J4TSJS);
         eval(ModuleKind.none, (logHandler, r) -> {
             logHandler.assertNoProblems();
         }, getSourceFile(OverLoadVarags.class));
-        transpilerTest().getTranspiler().setUsingJavaRuntime(false);
+        transpilerTest().getTranspiler().setUsingJavaRuntime(null);
     }
 
     @Test

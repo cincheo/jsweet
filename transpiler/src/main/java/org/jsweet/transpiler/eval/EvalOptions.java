@@ -3,14 +3,13 @@ package org.jsweet.transpiler.eval;
 import java.io.File;
 
 public class EvalOptions {
-    public final boolean useModules;
-    public final File workingDir;
-    public final boolean useJavaRuntime;
+    final boolean useModules;
+    final File workingDir;
+    final File useJavaRuntime;
 
-    public EvalOptions(boolean useModules, File workingDir, boolean useJavaRuntime) {
+    public EvalOptions(boolean useModules, File workingDir, File pathToJ4TsJs) {
         this.useModules = useModules;
         this.workingDir = workingDir;
-        this.useJavaRuntime = useJavaRuntime;
+        this.useJavaRuntime = pathToJ4TsJs;
     }
-
 }
