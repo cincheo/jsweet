@@ -12,7 +12,8 @@
 
     <modules>
         <module>file-visitor</module>
-        <module>typescript.java-ts.core</module>
+	<module>typescript.java-ts.core</module>
+	<module>core-lib/es5</module>
         <module>candy-generator</module>
         <module>transpiler</module>
     </modules>
