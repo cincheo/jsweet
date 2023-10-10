@@ -229,7 +229,7 @@
 		<dependency>
 			<groupId>org.jsweet</groupId>
 			<artifactId>jsweet-core</artifactId>
-			<version>5.3.0</version>
+			<version>5.3.1-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>

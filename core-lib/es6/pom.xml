@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.jsweet</groupId>
 	<artifactId>jsweet-core</artifactId>
-	<version>6.3.0</version>
+	<version>6.3.1-SNAPSHOT</version>
 	<name>JSweet Core Lib</name>
 	<description>JavaScript API for JSweet</description>
 	<url>http://www.jsweet.org</url>
