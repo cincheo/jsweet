@@ -26,7 +26,7 @@ import def.angularjs.ng.route.IRoute;
 import def.angularjs.ng.route.IRouteProvider;
 import def.js.Array;
 
-public class Angular {
+public class AngularCandy {
 
 	public static void main(String[] args) {
 
