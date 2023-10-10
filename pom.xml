@@ -11,8 +11,6 @@
     </properties>
 
     <modules>
-        <module>file-visitor</module>
-	<module>typescript.java-ts.core</module>
 	<module>core-lib/es5</module>
 	<module>core-lib/es6</module>
         <module>candy-generator</module>
