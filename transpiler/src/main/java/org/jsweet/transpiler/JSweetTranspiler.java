@@ -21,7 +21,6 @@ package org.jsweet.transpiler;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.jsweet.transpiler.util.ProcessUtil.isVersionHighEnough;
-import ts.client.TypeScriptServiceClient;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -153,11 +152,6 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
     }
 
     /**
-     * The constant for the name of the directory that stores temporary files.
-     */
-    public static final String TMP_WORKING_DIR_NAME = ".jsweet";
-
-    /**
      * A constant that is used for exporting variables.
      * 
      * @see TraceBasedEvaluationResult
@@ -194,7 +188,8 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 
     private CandyProcessor candiesProcessor;
     private boolean generateSourceMaps = false;
-    private File workingDir;
+    private final ConfiguredDirectory workingDirectory;
+    private final File workingDir;
     private File tsOutputDir;
     private File jsOutputDir;
     private String classPath;
@@ -219,7 +214,7 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
     private boolean ignoreTypeScriptErrors = false;
     private boolean ignoreJavaErrors = false;
     private boolean forceJavaRuntime = false;
-    private boolean isUsingJavaRuntime = false;
+    private File javaRuntimeJ4TsJs = null;
     private File headerFile = null;
     private boolean debugMode = false;
     private boolean skipTypeScriptChecks = false;
@@ -246,9 +241,9 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
      * Calling this method is usually not needed since JSweet auto-detects the J4TS
      * candy. Use only to manually force the transpiler in a mode or another.
      */
-    public void setUsingJavaRuntime(boolean usingJavaRuntime) {
+    public void setUsingJavaRuntime(File pathToJ4TsJs) {
         forceJavaRuntime = true;
-        isUsingJavaRuntime = usingJavaRuntime;
+        javaRuntimeJ4TsJs = pathToJ4TsJs;
     }
 
     @Override
@@ -272,8 +267,9 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
      * <code>System.getProperty("java.class.path")</code>.
      * 
      * @param factory the factory used to create the transpiler objects
+     * @throws IOException on error.
      */
-    public JSweetTranspiler(JSweetFactory factory) {
+    public JSweetTranspiler(JSweetFactory factory) throws IOException {
         this(factory, new File(System.getProperty("java.io.tmpdir")), null, null,
                 System.getProperty("java.class.path"));
     }
@@ -292,9 +288,10 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
      * @param classPath                     the classpath as a string (check out
      *                                      system-specific requirements for Java
      *                                      classpathes)
+     * @throws IOException on error.
      */
     public JSweetTranspiler(JSweetFactory factory, File tsOutputDir, File jsOutputDir,
-            File extractedCandiesJavascriptDir, String classPath) {
+            File extractedCandiesJavascriptDir, String classPath) throws IOException {
         this(factory, null, tsOutputDir, jsOutputDir, extractedCandiesJavascriptDir, classPath);
     }
 
@@ -440,9 +437,10 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
      * @param classPath                     the classpath as a string (check out
      *                                      system-specific requirements for Java
      *                                      classpaths)
+     * @throws IOException on error.
      */
     public JSweetTranspiler(JSweetFactory factory, File workingDir, File tsOutputDir, File jsOutputDir,
-            File extractedCandiesJavascriptDir, String classPath) {
+            File extractedCandiesJavascriptDir, String classPath) throws IOException {
         this(null, factory, workingDir, tsOutputDir, tsOutputDir, extractedCandiesJavascriptDir, classPath);
     }
 
@@ -464,9 +462,10 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
      * @param classPath                     the classpath as a string (check out
      *                                      system-specific requirements for Java
      *                                      classpaths)
+     * @throws IOException on error.
      */
     public JSweetTranspiler(File configurationFile, JSweetFactory factory, File workingDir, File tsOutputDir,
-            File jsOutputDir, File extractedCandiesJavascriptDir, String classPath) {
+            File jsOutputDir, File extractedCandiesJavascriptDir, String classPath) throws IOException {
         this(null, configurationFile, factory, workingDir, tsOutputDir, jsOutputDir, extractedCandiesJavascriptDir,
                 classPath);
     }
@@ -489,9 +488,35 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
      * @param classPath                     the classpath as a string (check out
      *                                      system-specific requirements for Java
      *                                      classpaths)
+     * @throws IOException on error.
      */
     public JSweetTranspiler(File baseDirectory, File configurationFile, JSweetFactory factory, File workingDir,
-            File tsOutputDir, File jsOutputDir, File extractedCandiesJavascriptDir, String classPath) {
+            File tsOutputDir, File jsOutputDir, File extractedCandiesJavascriptDir, String classPath) throws IOException {
+      this(baseDirectory, configurationFile, factory, ConfiguredDirectory.ofDirOrNull(workingDir), tsOutputDir, jsOutputDir, ConfiguredDirectory.ofDirOrNull(extractedCandiesJavascriptDir), classPath);
+    }
+    
+    /**
+     * Creates a JSweet transpiler.
+     * 
+     * @param configurationFile             the configurationFile (uses default one
+     *                                      if null)
+     * @param factory                       the factory used to create the
+     *                                      transpiler objects
+     * @param workingDir                    the working directory (uses default one
+     *                                      if null)
+     * @param tsOutputDir                   the directory where TypeScript files are
+     *                                      written
+     * @param jsOutputDir                   the directory where JavaScript files are
+     *                                      written
+     * @param extractedCandiesJavascriptDir see
+     *                                      {@link #getExtractedCandyJavascriptDir()}
+     * @param classPath                     the classpath as a string (check out
+     *                                      system-specific requirements for Java
+     *                                      classpaths)
+     * @throws IOException on error.
+     */
+    public JSweetTranspiler(File baseDirectory, File configurationFile, JSweetFactory factory, ConfiguredDirectory workingDir,
+        File tsOutputDir, File jsOutputDir, ConfiguredDirectory extractedCandiesJavascriptDir, String classPath) throws IOException {
         if (baseDirectory == null) {
             baseDirectory = new File(".");
         }
@@ -504,9 +529,13 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
         if (tsOutputDir == null) {
             tsOutputDir = new File(baseDirectory, "target/ts");
         }
-        this.workingDir = workingDir == null ? new File(baseDirectory, TMP_WORKING_DIR_NAME).getAbsoluteFile()
-                : workingDir.getAbsoluteFile();
-        this.extractedCandyJavascriptDir = extractedCandiesJavascriptDir;
+
+        this.workingDirectory = ConfiguredDirectory.ofOrTemporaryDir(workingDir, "jsweet");
+        this.workingDir = workingDirectory.getPath().toFile();
+        
+        this.extractedCandyJavascriptDirectory = extractedCandiesJavascriptDir;
+        this.extractedCandyJavascriptDir = extractedCandiesJavascriptDir == null ? null
+            : extractedCandiesJavascriptDir.getPath().toFile();
         try {
             tsOutputDir.mkdirs();
             this.tsOutputDir = tsOutputDir.getCanonicalFile();
@@ -669,7 +698,7 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 
         if ("Java".equals(engineName)) {
 
-            JavaEval evaluator = new JavaEval(this, new EvalOptions(isUsingModules(), workingDir, false));
+            JavaEval evaluator = new JavaEval(this, new EvalOptions(isUsingModules(), workingDir, null));
             return evaluator.performEval(sourceFiles);
         } else {
             if (!areAllTranspiled(sourceFiles)) {
@@ -701,7 +730,7 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
             }
 
             JavaScriptEval evaluator = new JavaScriptEval(
-                    new EvalOptions(isUsingModules(), workingDir, context.isUsingJavaRuntime()),
+                    new EvalOptions(isUsingModules(), workingDir, context.getUsingJavaRuntime()),
                     JavaScriptRuntime.NodeJs);
             return evaluator.performEval(jsFiles);
         }
@@ -713,8 +742,8 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
         transpilationHandler.setDisabled(isIgnoreJavaErrors());
 
         context = factory.createContext(this);
-        context.setUsingJavaRuntime(forceJavaRuntime ? isUsingJavaRuntime
-                : (candiesProcessor == null ? false : candiesProcessor.isUsingJavaRuntime()));
+        context.setUsingJavaRuntime(forceJavaRuntime ? javaRuntimeJ4TsJs
+                : (candiesProcessor == null ? null : candiesProcessor.getUsingJavaRuntime()));
         context.useModules = isUsingModules();
         context.useRequireForModules = moduleKind != ModuleKind.es2015;
         
@@ -1228,6 +1257,7 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
 
     }
 
+    private ConfiguredDirectory extractedCandyJavascriptDirectory;
     private File extractedCandyJavascriptDir;
 
     /**
@@ -1922,13 +1952,18 @@ public class JSweetTranspiler implements JSweetOptions, AutoCloseable {
     public void setJavaCompilerExtraOptions(String[] javaCompilerExtraOptions) {
         this.javaCompilerExtraOptions = javaCompilerExtraOptions;
     }
-    
+
     @Override
     public void close() throws Exception {
         if (javaCompilationComponents != null) {
             javaCompilationComponents.close();
         }
-    }
+        workingDirectory.close();
+        ConfiguredDirectory d = extractedCandyJavascriptDirectory;
+        if (d != null) {
+          d.close();
+        }
+      }
 
     public JSweetFactory getFactory() {
         return factory;

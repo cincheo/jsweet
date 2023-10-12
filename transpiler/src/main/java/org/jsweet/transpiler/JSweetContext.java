@@ -602,7 +602,7 @@ public class JSweetContext {
 
     }
 
-    private boolean usingJavaRuntime = false;
+    private File usingJavaRuntime = null;
 
     public final Locale locale = Locale.getDefault();
 
@@ -2008,15 +2008,17 @@ public class JSweetContext {
      * Tells if the transpiler is using J4TS Java runtime. If yes, it will use the
      * adapter that tries to delegate to the Java emulation layer for the Java API.
      */
-    public boolean isUsingJavaRuntime() {
+    public File getUsingJavaRuntime() {
         return usingJavaRuntime;
     }
 
     /**
      * Sets the transpiler to use the J4TS Java runtime.
+     * 
+     * @param pathToJ4TsJs Path to j4ts.js, or {@code null} to disable.
      */
-    public void setUsingJavaRuntime(boolean usingJavaRuntime) {
-        this.usingJavaRuntime = usingJavaRuntime;
+    public void setUsingJavaRuntime(File pathToJ4TsJs) {
+        this.usingJavaRuntime = pathToJ4TsJs;
     }
 
     public final Map<String, String> getLangTypeMappings() {

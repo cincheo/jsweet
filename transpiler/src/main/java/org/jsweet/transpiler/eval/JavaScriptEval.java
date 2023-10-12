@@ -54,9 +54,11 @@ public class JavaScriptEval extends RuntimeEval {
 
             File tmpFile = new File(options.workingDir, "eval.tmp_" + System.currentTimeMillis() + ".js");
             FileUtils.deleteQuietly(tmpFile);
-            if (options.useJavaRuntime) {
+
+            File j4tsJsPath = options.useJavaRuntime;
+            if (j4tsJsPath != null) {
                 List<File> newFiles = new ArrayList<>(jsFiles);
-                newFiles.add(0, new File("src/test/resources/j4ts.js"));
+                newFiles.add(0, j4tsJsPath);
                 jsFiles = newFiles;
             }
 

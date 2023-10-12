@@ -181,17 +181,17 @@ public class CandyProcessor {
 	/**
 	 * Returns true if the candy store contains the J4TS candy.
 	 */
-	public boolean isUsingJavaRuntime() {
+	public File getUsingJavaRuntime() {
 		if (candyStore == null) {
-			return false;
+			return null;
 		} else {
 			for (CandyDescriptor c : candyStore.getCandies()) {
 				if (c.name != null && c.name.equals("j4ts")) {
 					logger.info("found j4ts Java runtime in classpath");
-					return true;
+					return null; // FIXME
 				}
 			}
-			return false;
+			return null;
 		}
 	}
 

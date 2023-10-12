@@ -83,12 +83,12 @@ public class ApiTests extends AbstractTest {
     public void testJ4TSInvocations() {
         // TODO JSweet3 This will work with new (v3) J4TS candy
         // with J4TS
-//        transpilerTest().getTranspiler().setUsingJavaRuntime(true);
+//        transpilerTest().getTranspiler().setUsingJavaRuntime(TEST_PATH_TO_J4TSJS);
 //        eval(ModuleKind.none, (logHandler, result) -> {
 //            logHandler.assertNoProblems();
 //        }, getSourceFile(J4TSInvocations.class));
         // without J4TS
-        transpilerTest().getTranspiler().setUsingJavaRuntime(false);
+        transpilerTest().getTranspiler().setUsingJavaRuntime(null);
         eval(ModuleKind.none, (logHandler, result) -> {
             logHandler.assertNoProblems();
         }, getSourceFile(J4TSInvocations.class));

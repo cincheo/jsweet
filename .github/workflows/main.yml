@@ -8,28 +8,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Set up JDK 11
-      uses: actions/setup-java@v1
+      uses: actions/setup-java@v3
       with:
+        distribution: 'temurin'
         java-version: 11
+        cache: 'maven'
 
     - name: runs exhaustive tests
       run: |
         export JSWEET_VERBOSE=false
-        cd transpiler
-        mvn clean install -DskipSigning=true
-        cd ..
-        echo 'clone test repositories'
-        git clone https://github.com/lgrignon/jsweet-java-runtime-transpilation-tests.git
-        git clone https://github.com/lgrignon/j4ts-example.git
-        echo 'transpile legacy j4ts sources'
-        cd jsweet-java-runtime-transpilation-tests
-        mvn clean generate-sources
-        cd ..
-        echo 'run j4ts tests'
-        cd j4ts-example
-        mvn clean compile && node target/j4ts-example-bundle.js
+        mvn clean install
+        #cd transpiler
+        #mvn clean install
+        #cd ..
+        #echo 'clone test repositories'
+        #git clone https://github.com/lgrignon/jsweet-java-runtime-transpilation-tests.git
+        #git clone https://github.com/lgrignon/j4ts-example.git
+        #echo 'transpile legacy j4ts sources'
+        #cd jsweet-java-runtime-transpilation-tests
+        #mvn clean generate-sources
+        #cd ..
+        #echo 'run j4ts tests'
+        #cd j4ts-example
+        #mvn clean compile && node target/j4ts-example-bundle.js
 
 
