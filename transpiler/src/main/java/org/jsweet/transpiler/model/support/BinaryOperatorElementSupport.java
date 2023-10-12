@@ -22,7 +22,7 @@ import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.BinaryOperatorElement;
 import org.jsweet.transpiler.model.ExtendedElement;
 
-import com.sun.source.tree.BinaryTree;
+import standalone.com.sun.source.tree.BinaryTree;
 
 /**
  * See {@link BinaryOperatorElement}.

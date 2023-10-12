@@ -103,17 +103,17 @@ import org.jsweet.transpiler.model.VariableAccessElement;
 import org.jsweet.transpiler.model.support.MethodInvocationElementSupport;
 import org.jsweet.transpiler.util.Util;
 
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.EnhancedForLoopTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.ImportTree;
-import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.ParameterizedTypeTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.TypeCastTree;
+import standalone.com.sun.source.tree.ClassTree;
+import standalone.com.sun.source.tree.EnhancedForLoopTree;
+import standalone.com.sun.source.tree.ExpressionTree;
+import standalone.com.sun.source.tree.IdentifierTree;
+import standalone.com.sun.source.tree.ImportTree;
+import standalone.com.sun.source.tree.MemberSelectTree;
+import standalone.com.sun.source.tree.MethodInvocationTree;
+import standalone.com.sun.source.tree.NewClassTree;
+import standalone.com.sun.source.tree.ParameterizedTypeTree;
+import standalone.com.sun.source.tree.Tree;
+import standalone.com.sun.source.tree.TypeCastTree;
 
 /**
  * This is an adapter for the TypeScript code generator. It overrides the

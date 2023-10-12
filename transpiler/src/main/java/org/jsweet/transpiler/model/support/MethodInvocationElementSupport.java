@@ -28,10 +28,10 @@ import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.MethodInvocationElement;
 import org.jsweet.transpiler.util.Util;
 
-import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.Tree;
+import standalone.com.sun.source.tree.IdentifierTree;
+import standalone.com.sun.source.tree.MemberSelectTree;
+import standalone.com.sun.source.tree.MethodInvocationTree;
+import standalone.com.sun.source.tree.Tree;
 
 /**
  * See {@link MethodInvocationElement}.

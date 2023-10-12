@@ -14,15 +14,16 @@ import java.util.Map.Entry;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
-import javax.tools.ToolProvider;
 
 import org.apache.log4j.Logger;
 import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.util.ConsoleTranspilationHandler;
 import org.jsweet.transpiler.util.Util;
 
-import com.sun.source.util.JavacTask;
-import com.sun.source.util.Trees;
+import com.kohlschutter.jdk.standaloneutil.ToolProvider;
+
+import standalone.com.sun.source.util.JavacTask;
+import standalone.com.sun.source.util.Trees;
 
 public class JavaCompilationComponents implements AutoCloseable {
 

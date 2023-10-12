@@ -211,6 +211,11 @@
 	
 	<dependencies>
 		<dependency>
+			<groupId>com.kohlschutter.jdk.compiler</groupId>
+			<artifactId>standalone-jdk11</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
 			<version>3.9</version>

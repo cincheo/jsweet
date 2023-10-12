@@ -26,10 +26,10 @@ import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.ForeachLoopElement;
 import org.jsweet.transpiler.util.Util;
 
-import com.sun.source.tree.DoWhileLoopTree;
-import com.sun.source.tree.EnhancedForLoopTree;
-import com.sun.source.util.TreeScanner;
-import com.sun.source.util.Trees;
+import standalone.com.sun.source.tree.DoWhileLoopTree;
+import standalone.com.sun.source.tree.EnhancedForLoopTree;
+import standalone.com.sun.source.util.TreeScanner;
+import standalone.com.sun.source.util.Trees;
 
 /**
  * See {@link ForeachLoopElement}.
@@ -64,19 +64,19 @@ public class ForeachLoopElementSupport extends ExtendedElementSupport<EnhancedFo
         boolean[] hasControlFlowStatement = { false };
         new TreeScanner<Void, Trees>() {
             @Override
-            public Void visitBreak(com.sun.source.tree.BreakTree node, Trees p) {
+            public Void visitBreak(standalone.com.sun.source.tree.BreakTree node, Trees p) {
                 hasControlFlowStatement[0] = true;
                 return null;
             }
 
             @Override
-            public Void visitContinue(com.sun.source.tree.ContinueTree node, Trees p) {
+            public Void visitContinue(standalone.com.sun.source.tree.ContinueTree node, Trees p) {
                 hasControlFlowStatement[0] = true;
                 return null;
             }
 
             @Override
-            public Void visitReturn(com.sun.source.tree.ReturnTree node, Trees p) {
+            public Void visitReturn(standalone.com.sun.source.tree.ReturnTree node, Trees p) {
                 hasControlFlowStatement[0] = true;
                 return null;
             }
@@ -94,13 +94,13 @@ public class ForeachLoopElementSupport extends ExtendedElementSupport<EnhancedFo
             }
 
             @Override
-            public Void visitWhileLoop(com.sun.source.tree.WhileLoopTree node, Trees p) {
+            public Void visitWhileLoop(standalone.com.sun.source.tree.WhileLoopTree node, Trees p) {
                 // do not scan inner loops
                 return null;
             }
 
             @Override
-            public Void visitForLoop(com.sun.source.tree.ForLoopTree node, Trees p) {// do not scan inner loops
+            public Void visitForLoop(standalone.com.sun.source.tree.ForLoopTree node, Trees p) {// do not scan inner loops
                 return null;
             }
 

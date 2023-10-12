@@ -51,9 +51,9 @@ import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.util.Trees;
+import standalone.com.sun.source.tree.ClassTree;
+import standalone.com.sun.source.tree.CompilationUnitTree;
+import standalone.com.sun.source.util.Trees;
 
 import ts.nodejs.NodejsProcess;
 

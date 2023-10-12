@@ -69,20 +69,20 @@ import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.util.DirectedGraph;
 import org.jsweet.transpiler.util.Util;
 
-import com.sun.source.tree.AssignmentTree;
-import com.sun.source.tree.BlockTree;
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.ExpressionStatementTree;
-import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.StatementTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
-import com.sun.source.tree.WildcardTree;
-import com.sun.source.util.Trees;
+import standalone.com.sun.source.tree.AssignmentTree;
+import standalone.com.sun.source.tree.BlockTree;
+import standalone.com.sun.source.tree.ClassTree;
+import standalone.com.sun.source.tree.CompilationUnitTree;
+import standalone.com.sun.source.tree.ExpressionStatementTree;
+import standalone.com.sun.source.tree.MemberSelectTree;
+import standalone.com.sun.source.tree.MethodInvocationTree;
+import standalone.com.sun.source.tree.MethodTree;
+import standalone.com.sun.source.tree.NewClassTree;
+import standalone.com.sun.source.tree.StatementTree;
+import standalone.com.sun.source.tree.Tree;
+import standalone.com.sun.source.tree.VariableTree;
+import standalone.com.sun.source.tree.WildcardTree;
+import standalone.com.sun.source.util.Trees;
 
 /**
  * The transpiler context, which is an extension of the Java compiler context.

@@ -20,7 +20,7 @@ package org.jsweet.transpiler.util;
 
 import java.util.function.Consumer;
 
-import com.sun.source.tree.Tree;
+import standalone.com.sun.source.tree.Tree;
 
 /**
  * This exception can be thrown to rollback the scanning of an AST.

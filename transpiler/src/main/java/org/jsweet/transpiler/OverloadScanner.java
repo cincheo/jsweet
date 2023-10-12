@@ -39,17 +39,17 @@ import org.jsweet.transpiler.JSweetContext.DefaultMethodEntry;
 import org.jsweet.transpiler.util.AbstractTreeScanner;
 import org.jsweet.transpiler.util.Util;
 
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.ExpressionStatementTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.ReturnTree;
-import com.sun.source.tree.StatementTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.util.Trees;
+import standalone.com.sun.source.tree.ClassTree;
+import standalone.com.sun.source.tree.CompilationUnitTree;
+import standalone.com.sun.source.tree.ExpressionStatementTree;
+import standalone.com.sun.source.tree.ExpressionTree;
+import standalone.com.sun.source.tree.IdentifierTree;
+import standalone.com.sun.source.tree.MethodInvocationTree;
+import standalone.com.sun.source.tree.MethodTree;
+import standalone.com.sun.source.tree.ReturnTree;
+import standalone.com.sun.source.tree.StatementTree;
+import standalone.com.sun.source.tree.Tree;
+import standalone.com.sun.source.util.Trees;
 
 /**
  * This AST scanner detects method overloads and gather them into

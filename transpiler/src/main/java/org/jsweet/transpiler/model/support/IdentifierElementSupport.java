@@ -23,7 +23,7 @@ import javax.lang.model.element.Element;
 import org.jsweet.transpiler.model.IdentifierElement;
 import org.jsweet.transpiler.util.Util;
 
-import com.sun.source.tree.IdentifierTree;
+import standalone.com.sun.source.tree.IdentifierTree;
 
 /**
  * See {@link IdentifierElement}.

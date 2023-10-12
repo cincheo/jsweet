@@ -25,8 +25,8 @@ import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.VariableAccessElement;
 import org.jsweet.transpiler.util.Util;
 
-import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.Tree;
+import standalone.com.sun.source.tree.MemberSelectTree;
+import standalone.com.sun.source.tree.Tree;
 
 /**
  * See {@link VariableAccessElement}.

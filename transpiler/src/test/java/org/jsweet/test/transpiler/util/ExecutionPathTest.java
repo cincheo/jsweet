@@ -18,19 +18,19 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.sun.source.tree.BlockTree;
-import com.sun.source.tree.BreakTree;
-import com.sun.source.tree.CaseTree;
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.ExpressionStatementTree;
-import com.sun.source.tree.ForLoopTree;
-import com.sun.source.tree.IfTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.ReturnTree;
-import com.sun.source.tree.SwitchTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.TryTree;
+import standalone.com.sun.source.tree.BlockTree;
+import standalone.com.sun.source.tree.BreakTree;
+import standalone.com.sun.source.tree.CaseTree;
+import standalone.com.sun.source.tree.ClassTree;
+import standalone.com.sun.source.tree.CompilationUnitTree;
+import standalone.com.sun.source.tree.ExpressionStatementTree;
+import standalone.com.sun.source.tree.ForLoopTree;
+import standalone.com.sun.source.tree.IfTree;
+import standalone.com.sun.source.tree.MethodTree;
+import standalone.com.sun.source.tree.ReturnTree;
+import standalone.com.sun.source.tree.SwitchTree;
+import standalone.com.sun.source.tree.Tree;
+import standalone.com.sun.source.tree.TryTree;
 
 import source.syntax.ExecutionPaths;
 

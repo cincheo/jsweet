@@ -71,47 +71,47 @@ import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.JSweetContext.DefaultMethodEntry;
 import org.jsweet.transpiler.SourcePosition;
 
-import com.sun.source.tree.AnnotationTree;
-import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.BlockTree;
-import com.sun.source.tree.BreakTree;
-import com.sun.source.tree.CaseTree;
-import com.sun.source.tree.CatchTree;
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.CompoundAssignmentTree;
-import com.sun.source.tree.DoWhileLoopTree;
-import com.sun.source.tree.EnhancedForLoopTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.ForLoopTree;
-import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.IfTree;
-import com.sun.source.tree.ImportTree;
-import com.sun.source.tree.LabeledStatementTree;
-import com.sun.source.tree.LambdaExpressionTree;
-import com.sun.source.tree.LineMap;
-import com.sun.source.tree.LiteralTree;
-import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.ModifiersTree;
-import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.PackageTree;
-import com.sun.source.tree.ReturnTree;
-import com.sun.source.tree.StatementTree;
-import com.sun.source.tree.SwitchTree;
-import com.sun.source.tree.SynchronizedTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
-import com.sun.source.tree.TryTree;
-import com.sun.source.tree.UnaryTree;
-import com.sun.source.tree.VariableTree;
-import com.sun.source.tree.WhileLoopTree;
-import com.sun.source.util.SourcePositions;
-import com.sun.source.util.TreePath;
-import com.sun.source.util.TreePathScanner;
-import com.sun.source.util.TreeScanner;
-import com.sun.source.util.Trees;
+import standalone.com.sun.source.tree.AnnotationTree;
+import standalone.com.sun.source.tree.BinaryTree;
+import standalone.com.sun.source.tree.BlockTree;
+import standalone.com.sun.source.tree.BreakTree;
+import standalone.com.sun.source.tree.CaseTree;
+import standalone.com.sun.source.tree.CatchTree;
+import standalone.com.sun.source.tree.ClassTree;
+import standalone.com.sun.source.tree.CompilationUnitTree;
+import standalone.com.sun.source.tree.CompoundAssignmentTree;
+import standalone.com.sun.source.tree.DoWhileLoopTree;
+import standalone.com.sun.source.tree.EnhancedForLoopTree;
+import standalone.com.sun.source.tree.ExpressionTree;
+import standalone.com.sun.source.tree.ForLoopTree;
+import standalone.com.sun.source.tree.IdentifierTree;
+import standalone.com.sun.source.tree.IfTree;
+import standalone.com.sun.source.tree.ImportTree;
+import standalone.com.sun.source.tree.LabeledStatementTree;
+import standalone.com.sun.source.tree.LambdaExpressionTree;
+import standalone.com.sun.source.tree.LineMap;
+import standalone.com.sun.source.tree.LiteralTree;
+import standalone.com.sun.source.tree.MemberSelectTree;
+import standalone.com.sun.source.tree.MethodInvocationTree;
+import standalone.com.sun.source.tree.MethodTree;
+import standalone.com.sun.source.tree.ModifiersTree;
+import standalone.com.sun.source.tree.NewClassTree;
+import standalone.com.sun.source.tree.PackageTree;
+import standalone.com.sun.source.tree.ReturnTree;
+import standalone.com.sun.source.tree.StatementTree;
+import standalone.com.sun.source.tree.SwitchTree;
+import standalone.com.sun.source.tree.SynchronizedTree;
+import standalone.com.sun.source.tree.Tree;
+import standalone.com.sun.source.tree.Tree.Kind;
+import standalone.com.sun.source.tree.TryTree;
+import standalone.com.sun.source.tree.UnaryTree;
+import standalone.com.sun.source.tree.VariableTree;
+import standalone.com.sun.source.tree.WhileLoopTree;
+import standalone.com.sun.source.util.SourcePositions;
+import standalone.com.sun.source.util.TreePath;
+import standalone.com.sun.source.util.TreePathScanner;
+import standalone.com.sun.source.util.TreeScanner;
+import standalone.com.sun.source.util.Trees;
 
 /**
  * Various utilities.
@@ -359,9 +359,9 @@ public class Util {
             // hack to know if it is a source file or a class file
             JavaFileObject sourceFile = javacInternals().getSourceFileObjectFromElement(clazz);
             if (sourceFile != null
-                    && (sourceFile.getClass().getName().equals("com.sun.tools.javac.file.RegularFileObject")
+                    && (sourceFile.getClass().getName().equals("standalone.com.sun.tools.javac.file.RegularFileObject")
                             || sourceFile.getClass().getName()
-                                    .equals("com.sun.tools.javac.file.PathFileObject$SimpleFileObject"))) {
+                                    .equals("standalone.com.sun.tools.javac.file.PathFileObject$SimpleFileObject"))) {
                 return true;
             }
         }
@@ -2236,7 +2236,7 @@ public class Util {
     /**
      * Returns type associated with given tree
      * 
-     * @see Trees#getTypeMirror(com.sun.source.util.TreePath)
+     * @see Trees#getTypeMirror(standalone.com.sun.source.util.TreePath)
      */
     @SuppressWarnings("unchecked")
     public <T extends TypeMirror> T getTypeForTreePath(TreePath treePath) {
@@ -2452,11 +2452,11 @@ public class Util {
 
         private JavacInternals(Types types) {
             try {
-                typesClass = this.getClass().getClassLoader().loadClass("com.sun.tools.javac.code.Types");
-                typeClass = this.getClass().getClassLoader().loadClass("com.sun.tools.javac.code.Type");
+                typesClass = this.getClass().getClassLoader().loadClass("standalone.com.sun.tools.javac.code.Types");
+                typeClass = this.getClass().getClassLoader().loadClass("standalone.com.sun.tools.javac.code.Type");
                 typesErasureRecursiveMethod = typesClass.getMethod("erasureRecursive", typeClass);
 
-                Class<?> JCTreeClass = this.getClass().getClassLoader().loadClass("com.sun.tools.javac.tree.JCTree");
+                Class<?> JCTreeClass = this.getClass().getClassLoader().loadClass("standalone.com.sun.tools.javac.tree.JCTree");
 
                 binaryTreeOperatorField = Stream.of(JCTreeClass.getDeclaredClasses())
                         .filter(innerClass -> innerClass.getSimpleName().equals("JCBinary")) //
@@ -2480,7 +2480,7 @@ public class Util {
                         .findFirst().get();
                 modifiersAnnotationsField = JCModifiersClass.getDeclaredField("annotations");
 
-                Class<?> listClass = this.getClass().getClassLoader().loadClass("com.sun.tools.javac.util.List");
+                Class<?> listClass = this.getClass().getClassLoader().loadClass("standalone.com.sun.tools.javac.util.List");
                 listAppendMethod = listClass.getMethod("append", Object.class);
 
             } catch (Exception e) {
@@ -2518,9 +2518,9 @@ public class Util {
     static {
         try {
             var classLoader = JavacInternals.class.getClassLoader();
-            typeField = classLoader.loadClass("com.sun.tools.javac.tree.JCTree").getDeclaredField("type");
+            typeField = classLoader.loadClass("standalone.com.sun.tools.javac.tree.JCTree").getDeclaredField("type");
             typeField.setAccessible(true);
-            tsymField = classLoader.loadClass("com.sun.tools.javac.code.Type").getDeclaredField("tsym");
+            tsymField = classLoader.loadClass("standalone.com.sun.tools.javac.code.Type").getDeclaredField("tsym");
             tsymField.setAccessible(true);
         } catch (Exception e) {
             throw new RuntimeException("Fatal error - cannot access legacy Javac API", e);

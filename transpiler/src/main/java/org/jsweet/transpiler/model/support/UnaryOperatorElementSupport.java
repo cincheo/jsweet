@@ -22,7 +22,7 @@ import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.UnaryOperatorElement;
 
-import com.sun.source.tree.UnaryTree;
+import standalone.com.sun.source.tree.UnaryTree;
 
 /**
  * See {@link UnaryOperatorElement}.

@@ -28,14 +28,14 @@ import javax.lang.model.element.VariableElement;
 
 import org.jsweet.transpiler.util.Util;
 
-import com.sun.source.tree.ArrayAccessTree;
-import com.sun.source.tree.AssignmentTree;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.CompoundAssignmentTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.UnaryTree;
-import com.sun.source.util.TreeScanner;
-import com.sun.source.util.Trees;
+import standalone.com.sun.source.tree.ArrayAccessTree;
+import standalone.com.sun.source.tree.AssignmentTree;
+import standalone.com.sun.source.tree.CompilationUnitTree;
+import standalone.com.sun.source.tree.CompoundAssignmentTree;
+import standalone.com.sun.source.tree.Tree;
+import standalone.com.sun.source.tree.UnaryTree;
+import standalone.com.sun.source.util.TreeScanner;
+import standalone.com.sun.source.util.Trees;
 
 /**
  * This AST scanner analyzes local variables to determine if they are locally

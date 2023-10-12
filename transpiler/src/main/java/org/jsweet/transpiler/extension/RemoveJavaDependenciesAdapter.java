@@ -57,10 +57,10 @@ import org.jsweet.transpiler.model.NewClassElement;
 import org.jsweet.transpiler.model.VariableAccessElement;
 import org.jsweet.transpiler.util.Util;
 
-import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.EnhancedForLoopTree;
-import com.sun.source.tree.LiteralTree;
-import com.sun.source.tree.ParameterizedTypeTree;
+import standalone.com.sun.source.tree.BinaryTree;
+import standalone.com.sun.source.tree.EnhancedForLoopTree;
+import standalone.com.sun.source.tree.LiteralTree;
+import standalone.com.sun.source.tree.ParameterizedTypeTree;
 
 /**
  * An adapter that removes many uses of Java APIs and replace them with

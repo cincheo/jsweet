@@ -41,25 +41,25 @@ import org.jsweet.transpiler.model.support.VariableAccessElementSupport;
 import org.jsweet.transpiler.model.support.VariableElementSupport;
 import org.jsweet.transpiler.util.Util;
 
-import com.sun.source.tree.ArrayAccessTree;
-import com.sun.source.tree.AssignmentTree;
-import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.CaseTree;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.CompoundAssignmentTree;
-import com.sun.source.tree.EnhancedForLoopTree;
-import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.ImportTree;
-import com.sun.source.tree.LiteralTree;
-import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.NewArrayTree;
-import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.TypeCastTree;
-import com.sun.source.tree.UnaryTree;
-import com.sun.source.tree.VariableTree;
+import standalone.com.sun.source.tree.ArrayAccessTree;
+import standalone.com.sun.source.tree.AssignmentTree;
+import standalone.com.sun.source.tree.BinaryTree;
+import standalone.com.sun.source.tree.CaseTree;
+import standalone.com.sun.source.tree.CompilationUnitTree;
+import standalone.com.sun.source.tree.CompoundAssignmentTree;
+import standalone.com.sun.source.tree.EnhancedForLoopTree;
+import standalone.com.sun.source.tree.IdentifierTree;
+import standalone.com.sun.source.tree.ImportTree;
+import standalone.com.sun.source.tree.LiteralTree;
+import standalone.com.sun.source.tree.MemberSelectTree;
+import standalone.com.sun.source.tree.MethodInvocationTree;
+import standalone.com.sun.source.tree.MethodTree;
+import standalone.com.sun.source.tree.NewArrayTree;
+import standalone.com.sun.source.tree.NewClassTree;
+import standalone.com.sun.source.tree.Tree;
+import standalone.com.sun.source.tree.TypeCastTree;
+import standalone.com.sun.source.tree.UnaryTree;
+import standalone.com.sun.source.tree.VariableTree;
 
 /**
  * A factory to create extended elements. It defines an overloaded create method

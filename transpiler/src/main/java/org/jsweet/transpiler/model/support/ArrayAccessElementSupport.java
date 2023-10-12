@@ -21,7 +21,7 @@ package org.jsweet.transpiler.model.support;
 import org.jsweet.transpiler.model.ArrayAccessElement;
 import org.jsweet.transpiler.model.ExtendedElement;
 
-import com.sun.source.tree.ArrayAccessTree;
+import standalone.com.sun.source.tree.ArrayAccessTree;
 
 /**
  * See {@link ArrayAccessElement}.

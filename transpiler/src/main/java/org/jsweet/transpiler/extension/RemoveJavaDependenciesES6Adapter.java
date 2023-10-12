@@ -42,7 +42,7 @@ import org.jsweet.transpiler.model.NewClassElement;
 import org.jsweet.transpiler.model.support.ForeachLoopElementSupport;
 import org.jsweet.transpiler.util.Util;
 
-import com.sun.source.tree.EnhancedForLoopTree;
+import standalone.com.sun.source.tree.EnhancedForLoopTree;
 
 /**
  * An adapter that removes many uses of Java APIs and replace them with

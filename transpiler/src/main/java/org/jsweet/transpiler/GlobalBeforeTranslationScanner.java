@@ -38,15 +38,15 @@ import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.util.AbstractTreeScanner;
 import org.jsweet.transpiler.util.Util;
 
-import com.sun.source.tree.BlockTree;
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.LiteralTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
-import com.sun.source.tree.WildcardTree;
-import com.sun.source.util.Trees;
+import standalone.com.sun.source.tree.BlockTree;
+import standalone.com.sun.source.tree.ClassTree;
+import standalone.com.sun.source.tree.CompilationUnitTree;
+import standalone.com.sun.source.tree.LiteralTree;
+import standalone.com.sun.source.tree.MethodTree;
+import standalone.com.sun.source.tree.Tree;
+import standalone.com.sun.source.tree.VariableTree;
+import standalone.com.sun.source.tree.WildcardTree;
+import standalone.com.sun.source.util.Trees;
 
 /**
  * This AST scanner performs global analysis and fills up the context with

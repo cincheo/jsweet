@@ -3,9 +3,9 @@ package org.jsweet.transpiler.util;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 
-import com.sun.source.tree.MethodTree;
-import com.sun.source.util.TreePathScanner;
-import com.sun.source.util.Trees;
+import standalone.com.sun.source.tree.MethodTree;
+import standalone.com.sun.source.util.TreePathScanner;
+import standalone.com.sun.source.util.Trees;
 
 /**
  * Finds the first main method in a tree.

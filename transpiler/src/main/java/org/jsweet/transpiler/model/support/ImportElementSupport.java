@@ -24,8 +24,8 @@ import javax.lang.model.element.TypeElement;
 import org.jsweet.transpiler.model.ImportElement;
 import org.jsweet.transpiler.util.Util;
 
-import com.sun.source.tree.ImportTree;
-import com.sun.source.tree.Tree;
+import standalone.com.sun.source.tree.ImportTree;
+import standalone.com.sun.source.tree.Tree;
 
 /**
  * See {@link ImportElement}.
