@@ -39,7 +39,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.log4j.Logger;
-import org.jsoup.helper.StringUtil;
 import org.jsweet.JSweetDefTranslatorConfig;
 import org.jsweet.input.typescriptdef.ast.ArrayTypeReference;
 import org.jsweet.input.typescriptdef.ast.AstNode;
