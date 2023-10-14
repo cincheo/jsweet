@@ -3,6 +3,7 @@ package source.extension;
 import java.util.EventObject;
 import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
 
 import jsweet.lang.Name;
 
@@ -27,7 +28,7 @@ public class AnnotationTest extends Superclass {
 	
 	public void toBeErased() {
 		// this will not be transpiled because the method will be erased
-		javax.accessibility.AccessibilityProvider foo = null;
+		ServiceLoader<?> foo = null;
 	}
 
 	public void m() {
