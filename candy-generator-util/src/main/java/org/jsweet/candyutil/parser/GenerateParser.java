@@ -100,7 +100,7 @@ public class GenerateParser {
 
     File typescriptDefScannerBackup = new File(typescriptDefScanner.toString() + "~");
 
-    JFlex.Main.main(new String[] {typescriptDefLex.toString()});
+    jflex.Main.main(new String[] {typescriptDefLex.toString()});
     Files.deleteIfExists(typescriptDefScannerBackup.toPath());
 
     // Remove date from "The following code was generated ..."

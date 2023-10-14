@@ -131,14 +131,16 @@
             </dependency>
 
             <dependency>
-                <groupId>edu.princeton.cup</groupId>
+                <!-- License (non-viral Open Source): http://www2.cs.tum.edu/projects/cup/licence.php -->
+                <groupId>com.github.vbmacher</groupId>
                 <artifactId>java-cup</artifactId>
-                <version>10k</version>
+                <version>11b-20160615-2</version>
             </dependency>
             <dependency>
+                <!-- License (3-clause-BSD-style): https://github.com/jflex-de/jflex/blob/master/LICENSE.md -->
                 <groupId>de.jflex</groupId>
                 <artifactId>jflex</artifactId>
-                <version>1.3.5</version>
+                <version>1.9.1</version>
             </dependency>
 
         </dependencies>

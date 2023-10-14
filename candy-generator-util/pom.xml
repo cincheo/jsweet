@@ -18,7 +18,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>edu.princeton.cup</groupId>
+            <groupId>com.github.vbmacher</groupId>
             <artifactId>java-cup</artifactId>
         </dependency>
         <dependency>

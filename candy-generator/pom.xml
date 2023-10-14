@@ -207,10 +207,6 @@
 			<version>2.1</version>
 		</dependency>
 		<dependency>
-			<groupId>edu.princeton.cup</groupId>
-			<artifactId>java-cup</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>de.jflex</groupId>
 			<artifactId>jflex</artifactId>
 		</dependency>
