@@ -2,11 +2,20 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.jsweet.ext</groupId>
+
+    <parent>
+        <groupId>org.jsweet</groupId>
+        <artifactId>jsweet-parent</artifactId>
+        <version>4.0.0-SNAPSHOT</version>
+        <relativePath>../</relativePath>
+    </parent>
+
+    <groupId>org.jsweet.ext</groupId>
 	<artifactId>typescript.java-ts.core</artifactId>
-	<packaging>jar</packaging>
 	<version>2.0.4</version>
-	<properties>
+    <packaging>jar</packaging>
+
+    <properties>
 		<timestamp>${maven.build.timestamp}</timestamp>
 		<maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -24,7 +33,6 @@
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.1</version>
 				<configuration>
 					<release>${java.version.release}</release>
 					<compilerVersion>${java.version}</compilerVersion>
@@ -38,7 +46,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.18.1</version>
 				<configuration>
 					<includes>
 						<include>**/*.java</include>
@@ -48,7 +55,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
-				<version>3.0.0</version>
 				<executions>
 					<execution>
 						<id>attach-sources</id>
@@ -61,7 +67,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.10.3</version>
 				<configuration>
 					<javadocVersion>1.8</javadocVersion>
 					<sourcepath>src</sourcepath>
