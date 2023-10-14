@@ -437,7 +437,7 @@ public class Util {
 	public static void checkAndAdjustDeclarationName(Declaration declaration, boolean forceLowerCase) {
 		String oldName = declaration.getName();
 
-		if (StringUtil.isBlank(oldName)) {
+		if (oldName == null || oldName.isBlank()) {
 			return;
 		}
 		String newName = toJavaName(oldName, forceLowerCase);
