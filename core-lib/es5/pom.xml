@@ -15,6 +15,7 @@
 
 	<name>JSweet Core Lib</name>
 	<description>JavaScript API for JSweet</description>
+    <url>http://www.jsweet.org</url>
 	<properties>
 		<timestamp>${maven.build.timestamp}</timestamp>
 		<maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
