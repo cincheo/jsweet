@@ -161,25 +161,40 @@
 			</activation>
 			<build>
 				<plugins>
-					<plugin>
-						<artifactId>maven-antrun-plugin</artifactId>
-						<executions>
-							<execution>
-								<phase>generate-sources</phase>
-								<configuration>
-									<target>
-										<property name="compile_classpath" refid="maven.compile.classpath" />
-										<property name="outputDir" value="${project.build.outputDirectory}" />
-										<property name="sourceDir" value="${project.build.sourceDirectory}" />
-										<ant antfile="${basedir}/build.xml" target="gen-parser" />
-									</target>
-								</configuration>
-								<goals>
-									<goal>run</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
+                    <plugin>
+                        <?m2e ignore?>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>generate-parsers</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>java</goal>
+                                </goals>
+                                <configuration>
+                                    <mainClass>
+                                        org.jsweet.candyutil.parser.GenerateParser</mainClass>
+                                    <arguments>
+                                        <argument>
+                                            ${project.build.sourceDirectory}</argument>
+                                    </arguments>
+                                    <includePluginDependencies>true</includePluginDependencies>
+                                    <executableDependency>
+                                        <groupId>org.jsweet</groupId>
+                                        <artifactId>jsweet-candy-generator-util</artifactId>
+                                    </executableDependency>
+                                </configuration>
+                            </execution>
+                        </executions>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.jsweet</groupId>
+                                <artifactId>jsweet-candy-generator-util</artifactId>
+                                <version>${project.version}</version>
+                            </dependency>
+                        </dependencies>
+                    </plugin>
 				</plugins>
 			</build>
 
@@ -194,12 +209,10 @@
 		<dependency>
 			<groupId>edu.princeton.cup</groupId>
 			<artifactId>java-cup</artifactId>
-			<version>10k</version>
 		</dependency>
 		<dependency>
 			<groupId>de.jflex</groupId>
 			<artifactId>jflex</artifactId>
-			<version>1.3.5</version>
 		</dependency>
 		<dependency>
 			<groupId>log4j</groupId>

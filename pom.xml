@@ -129,6 +129,18 @@
                 <artifactId>httpclient</artifactId>
                 <version>4.5.14</version>
             </dependency>
+
+            <dependency>
+                <groupId>edu.princeton.cup</groupId>
+                <artifactId>java-cup</artifactId>
+                <version>10k</version>
+            </dependency>
+            <dependency>
+                <groupId>de.jflex</groupId>
+                <artifactId>jflex</artifactId>
+                <version>1.3.5</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 
@@ -136,6 +148,7 @@
         <module>typescript.java-ts.core</module>
         <module>core-lib/es5</module>
         <module>core-lib/es6</module>
+        <module>candy-generator-util</module>
         <module>candy-generator</module>
         <module>transpiler</module>
     </modules>
