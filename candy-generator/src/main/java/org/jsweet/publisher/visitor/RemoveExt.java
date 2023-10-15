@@ -3,8 +3,8 @@ package org.jsweet.publisher.visitor;
 import java.io.File;
 
 import org.apache.commons.io.FileUtils;
-import org.cincheo.filevisitor.FileVisitor;
-import org.cincheo.filevisitor.ProcessUtil;
+import org.jsweet.filevisitor.FileVisitor;
+import org.jsweet.filevisitor.ProcessUtil;
 
 public class RemoveExt implements FileVisitor {
 

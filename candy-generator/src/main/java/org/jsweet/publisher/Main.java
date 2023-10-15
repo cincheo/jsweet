@@ -2,7 +2,7 @@ package org.jsweet.publisher;
 
 import java.io.File;
 
-import org.cincheo.filevisitor.FileVisitor;
+import org.jsweet.filevisitor.FileVisitor;
 import org.jsweet.publisher.visitor.UpdateVersion;
 
 // THIS IS WIP. One day we will have a really automatized publisher for the JSweet Candies Github organization...

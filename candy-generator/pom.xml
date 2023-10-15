@@ -1,9 +1,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.jsweet</groupId>
+
+    <parent>
+        <groupId>org.jsweet</groupId>
+        <artifactId>jsweet-parent</artifactId>
+        <version>4.0.0-SNAPSHOT</version>
+        <relativePath>../</relativePath>
+    </parent>
+
 	<artifactId>jsweet-candy-generator</artifactId>
-	<version>2.0.0-SNAPSHOT</version>
 	<name>JSweet candy generator</name>
 	<developers>
 		<developer>
@@ -58,20 +64,18 @@
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.1</version>
 				<configuration>
 					<source>1.8</source>
 					<target>1.8</target>
-
 				</configuration>
 			</plugin>
 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
-				<version>2.1</version>
 				<executions>
 					<execution>
+                        <?m2e ignore ?>
 						<id>copy-dependencies</id>
 						<phase>package</phase>
 						<goals>
@@ -88,7 +92,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
-				<version>2.4</version>
 				<configuration>
 					<archive>
 						<manifest>
@@ -115,7 +118,7 @@
 		</plugins>
 		<pluginManagement>
 			<plugins>
-				<!--This plugin's configuration is used to store Eclipse m2e settings 
+                <!--This plugin's configuration is used to store Eclipse m2e settings 
 					only. It has no influence on the Maven build itself. -->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
@@ -158,51 +161,54 @@
 			</activation>
 			<build>
 				<plugins>
-					<plugin>
-						<artifactId>maven-antrun-plugin</artifactId>
-						<version>1.7</version>
-						<executions>
-							<execution>
-								<phase>generate-sources</phase>
-								<configuration>
-									<target>
-										<property name="compile_classpath" refid="maven.compile.classpath" />
-										<property name="outputDir" value="${project.build.outputDirectory}" />
-										<property name="sourceDir" value="${project.build.sourceDirectory}" />
-										<ant antfile="${basedir}/build.xml" target="gen-parser" />
-									</target>
-								</configuration>
-								<goals>
-									<goal>run</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
+                    <plugin>
+                        <?m2e ignore?>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>generate-parsers</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>java</goal>
+                                </goals>
+                                <configuration>
+                                    <mainClass>
+                                        org.jsweet.candyutil.parser.GenerateParser</mainClass>
+                                    <arguments>
+                                        <argument>
+                                            ${project.build.sourceDirectory}</argument>
+                                    </arguments>
+                                    <includePluginDependencies>true</includePluginDependencies>
+                                    <executableDependency>
+                                        <groupId>org.jsweet</groupId>
+                                        <artifactId>jsweet-candy-generator-util</artifactId>
+                                    </executableDependency>
+                                </configuration>
+                            </execution>
+                        </executions>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.jsweet</groupId>
+                                <artifactId>jsweet-candy-generator-util</artifactId>
+                                <version>${project.version}</version>
+                            </dependency>
+                        </dependencies>
+                    </plugin>
 				</plugins>
 			</build>
 
 		</profile>
 	</profiles>
 	<dependencies>
-        <dependency>
-            <groupId>org.cincheo</groupId>
-            <artifactId>file-visitor</artifactId>
-            <version>1.0.0</version>
-        </dependency>
 		<dependency>
 			<groupId>com.martiansoftware</groupId>
 			<artifactId>jsap</artifactId>
 			<version>2.1</version>
 		</dependency>
 		<dependency>
-			<groupId>edu.princeton.cup</groupId>
-			<artifactId>java-cup</artifactId>
-			<version>10k</version>
-		</dependency>
-		<dependency>
 			<groupId>de.jflex</groupId>
 			<artifactId>jflex</artifactId>
-			<version>1.3.5</version>
 		</dependency>
 		<dependency>
 			<groupId>log4j</groupId>
@@ -213,17 +219,15 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
-			<version>3.3.2</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
-			<version>2.7</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jsoup</groupId>
 			<artifactId>jsoup</artifactId>
-			<version>1.7.2</version>
+			<version>1.16.1</version>
 		</dependency>
 
 		<dependency>
@@ -233,29 +237,19 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.google.code.gson</groupId>
-			<artifactId>gson</artifactId>
-			<version>2.8.9</version>
-			<scope>compile</scope>
-			<optional>false</optional>
-		</dependency>
-		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.13.1</version>
 			<scope>test</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpcore</artifactId>
-			<version>4.4.5</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
-			<version>4.5.13</version>
 			<scope>compile</scope>
 		</dependency>
 	</dependencies>

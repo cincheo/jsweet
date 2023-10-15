@@ -1,4 +1,4 @@
-package org.cincheo.filevisitor;
+package org.jsweet.filevisitor;
 
 import java.io.File;
 

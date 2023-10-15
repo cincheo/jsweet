@@ -95,13 +95,9 @@ public class DocFiller extends Scanner {
 				if (content != null) {
 					try {
 						Document doc = Jsoup.parse(content, "UTF-8");
-						NodeTraversor traversor;
-						traversor = new NodeTraversor(new MdnTableFormatGrabber(this, typeDeclaration));
-						traversor.traverse(doc.body());
-						traversor = new NodeTraversor(new MdnDefinitionListFormatGrabber(this, typeDeclaration));
-						traversor.traverse(doc.body());
-						traversor = new NodeTraversor(new MdnMainDescriptionGrabber(this, typeDeclaration));
-						traversor.traverse(doc.body());
+						NodeTraversor.traverse(new MdnTableFormatGrabber(this, typeDeclaration), doc.body());
+						NodeTraversor.traverse(new MdnDefinitionListFormatGrabber(this, typeDeclaration), doc.body());
+						NodeTraversor.traverse(new MdnMainDescriptionGrabber(this, typeDeclaration), doc.body());
 					} catch (Throwable t) {
 						context.reportError("cannot fill documentation for " + context.getTypeName(typeDeclaration),
 								typeDeclaration.getToken(), t);
@@ -165,8 +161,7 @@ public class DocFiller extends Scanner {
 
 	public static String removeTags(String html, String[] tagsToBeRemoved) {
 		StringBuilder sb = new StringBuilder();
-		NodeTraversor traversor = new NodeTraversor(new TagRemover(sb, tagsToBeRemoved));
-		traversor.traverse(Jsoup.parse(html).body());
+		NodeTraversor.traverse(new TagRemover(sb, tagsToBeRemoved), Jsoup.parse(html).body());
 		return sb.toString().replace("<p></p>", "");
 	}
 

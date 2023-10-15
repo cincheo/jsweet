@@ -2,8 +2,8 @@ package org.jsweet.publisher.visitor;
 
 import java.io.File;
 
-import org.cincheo.filevisitor.FileVisitor;
-import org.cincheo.filevisitor.ProcessUtil;
+import org.jsweet.filevisitor.FileVisitor;
+import org.jsweet.filevisitor.ProcessUtil;
 
 public class GitCommitPush implements FileVisitor {
 

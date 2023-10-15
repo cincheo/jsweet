@@ -39,7 +39,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.log4j.Logger;
-import org.jsoup.helper.StringUtil;
 import org.jsweet.JSweetDefTranslatorConfig;
 import org.jsweet.input.typescriptdef.ast.ArrayTypeReference;
 import org.jsweet.input.typescriptdef.ast.AstNode;
@@ -437,7 +436,7 @@ public class Util {
 	public static void checkAndAdjustDeclarationName(Declaration declaration, boolean forceLowerCase) {
 		String oldName = declaration.getName();
 
-		if (StringUtil.isBlank(oldName)) {
+		if (oldName == null || oldName.isBlank()) {
 			return;
 		}
 		String newName = toJavaName(oldName, forceLowerCase);
