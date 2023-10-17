@@ -13,26 +13,34 @@ As the creators and maintainers of JSweet (Renaud Pawlak & Louis Grignon), our i
 In JSweet v4, we want to upgrade Java compatibility to all Java versions and simplify JSweet to make it as sustainable and easy-to-maintain as possible for the community.
 Here is a list of objectives, from which we might be able to derivate a detailled action plan with a timeline, but all this will be best-effort-based as usual).
 
-- Make sure that the Open Source licence is compatible with a community/fundation (for instance Apache 2) and make a licence change if necessary
-- Make JSweet compatible for more Java versions (and make the support of future versions as easy as possible)
-  - Check how the new syntax constructions can be easily supported and provide some basic documentation
-  - Try to provide support up to current Java version (NOTE: the idea would not necessarily be to support all new syntax, but at least, that a Java program that only uses v8 or v11 syntax transpiles with a newer version of the JDK, for instance Java 21 if possible)
-  - Make sure that the Java AST (compilier API) provided as from JDK 11 is still compatible with newer version of Java and make the necessary refactoring to achieve that goal
+- Relicense the entire project under the Apache 2.0 license, which should help collaboration with
+  related projects, such as [TeaVM](https://teavm.org) and [j2cl](https://github.com/google/j2cl)
+- Reformat all code automatically via Maven plugins to simplify contributions
+- Make JSweet compatible with newer Java versions and make the support of future versions as easy as possible
+  - Provide runtime support up to Java JDK 21 (NOTE: it is a non-goal to add support
+    for new language features. The goal is to support transpipling Java source code using Java 8 or
+    11 with a newer version of the JDK)
+  - In order to achieve compatibility with the JDK 11 internal compiler tree API even for higher
+    Java VMs, use a [standalone implementation](https://github.com/kohlschutter/jdk.compiler.standalone)
+    of the `jdk.compiler` component.
   - Make sure that key projects that use JSweet still transpile (potentially, create a migration guide if necessary)
     - All examples
     - SweetHome3D
     - ... 
+  - Check how/if new Java syntax constructs could be supported and provide some basic documentation
 - Remove Artifactory dependency
-  - Update dependencies and make sure it works with latest versions of TSC (Typescript)
-  - Publish JSweet core arfifacts, J4TS and basic candies to Maven Central
+  - Update dependencies and make sure it works with latest version of TSC (Typescript)
+  - Publish JSweet core arfifacts, J4TS and basic candies to Maven Central; no longer rely on
+    a custom repository.
   - Make sure that it is easy to generate new candies on-the-fly (candies should not be published except for core ones), and make sure it is properly documented
-  - Unplug Artifactory
+  - The [JSweet Artifactory server](http://repository.jsweet.org/) will be unplugged at a future
+    point in time.
 - Remove JSweet Wordpress and all dependencies to legacy server
-  - Make a simple minimalistic site with Gihub pages
+  - Deploy a website with Gihub pages
   - Point jsweet.org to the new site
-  - Unplug the server
+  - The webserver will be unplugged at a future point in time.
 
 ## People and timeline
 
 This plan is based on best effort of everyone, so no timeline is possible (let's say ASAP ;)). 
-Lead will be ensured for now by @kohlschuetter (many thanks to him) and all individdual contributions are welcome. Especially, if you have a project using JSweet, making sure that it is easy to migrate and giving feedback would be great. 
+Lead will be ensured for now by @kohlschuetter (many thanks to him) and all individual contributions are welcome. Especially, if you have a project using JSweet, making sure that it is easy to migrate and giving feedback would be great. 
