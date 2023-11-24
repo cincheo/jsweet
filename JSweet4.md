@@ -13,16 +13,14 @@ As the creators and maintainers of JSweet (Renaud Pawlak & Louis Grignon), our i
 In JSweet v4, we want to upgrade Java compatibility to all Java versions and simplify JSweet to make it as sustainable and easy-to-maintain as possible for the community.
 Here is a list of objectives, from which we might be able to derivate a detailled action plan with a timeline, but all this will be best-effort-based as usual).
 
-- Relicense the entire project under the Apache 2.0 license, which should help collaboration with
-  related projects, such as [TeaVM](https://teavm.org) and [j2cl](https://github.com/google/j2cl)
+- Find a new maintainer that would have the time and motivation to take over JSweet and make JSweet 4 (and more) a reality.
+  That new maintainer should probably be an organization that already uses JSweet. To on-board this new maintainer, we are open to relicense the entire project if necessary.
+  In particular, relicensing under the Apache 2.0 license, could help collaboration with related projects, such as [TeaVM](https://teavm.org) and [j2cl](https://github.com/google/j2cl)
 - Reformat all code automatically via Maven plugins to simplify contributions
 - Make JSweet compatible with newer Java versions and make the support of future versions as easy as possible
   - Provide runtime support up to Java JDK 21 (NOTE: it is a non-goal to add support
     for new language features. The goal is to support transpipling Java source code using Java 8 or
     11 with a newer version of the JDK)
-  - In order to achieve compatibility with the JDK 11 internal compiler tree API even for higher
-    Java VMs, use a [standalone implementation](https://github.com/kohlschutter/jdk.compiler.standalone)
-    of the `jdk.compiler` component.
   - Make sure that key projects that use JSweet still transpile (potentially, create a migration guide if necessary)
     - All examples
     - SweetHome3D
@@ -40,7 +38,7 @@ Here is a list of objectives, from which we might be able to derivate a detaille
   - Point jsweet.org to the new site
   - The webserver will be unplugged at a future point in time.
 
-## People and timeline
+## Timeline
 
-This plan is based on best effort of everyone, so no timeline is possible (let's say ASAP ;)). 
-Lead will be ensured for now by @kohlschuetter (many thanks to him) and all individual contributions are welcome. Especially, if you have a project using JSweet, making sure that it is easy to migrate and giving feedback would be great. 
+The objective would be to find potential organizations to take over the maintenance by february 2024.  
+Several communications will be posted and some key orgs will be contacted. If no org is found to take over, then the backup plan is to leave mantenance to active users of the community, but open to the licensing to Apache 2.0 in order to remove potential adoption barriers w.r.t. licensing.   
